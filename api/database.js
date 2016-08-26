@@ -1,10 +1,10 @@
 const Sequelize = require('sequelize');
 const config    = require('./config');
 
-const db = new Sequelize('MDB_Auth', 'postgres', 'postgres', {
-  host: 'localhost',
-  dialect: 'postgres',
-  port: '5432',
+const db = new Sequelize(config.db.name, config.db.user, config.db.pass, {
+  host: config.db.host,
+  dialect: config.db.dialect,
+  port: config.db.port,
   pool: {
     max: 20,
     min: 0,
@@ -14,8 +14,8 @@ const db = new Sequelize('MDB_Auth', 'postgres', 'postgres', {
 
 db
   .authenticate()
-  .then(function(err) {
-    console.log('Database connection has been established successfully. ');
+  .then(function() {
+    console.log('Database connection has been established successfully.');
   })
   .catch(function (err) {
     console.log('Unable to connect to the database: ', err);
