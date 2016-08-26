@@ -2,13 +2,23 @@ const User = require('./model');
 const bcrypt = require('bcrypt');
 
 const userController = {
-  create: (req, res) => {
+  createNewUser: (req, res) => {
     createUserIfNonExistent(res, req.body.email, req.body.password);
+  },
+  showCurrentUser: (req, res) => {
+    if (req.user) {
+      const currentUser = {
+        email: req.user.email,
+        admin: req.user.admin
+      };
+      res.status(200).json(currentUser);
+    } else {
+      res.status(401);
+    }
   }
 };
 
-//TODO: refactor callback hell with co or async/await.
-
+// Create standalone functions for callbacks of each async request.
 const createUserIfNonExistent = (res, email, password) => {
   User.findOne({where:{email}}).then(data => {
     if (data) {
@@ -16,7 +26,7 @@ const createUserIfNonExistent = (res, email, password) => {
     } else {
       User.create({
         email,
-        password: bcrypt.hashSync(password, 10),
+        password: User.hashPassword(password),
         admin: false
       }).then(user => {
         res.status(201).json({id: user.id, email: user.email});
