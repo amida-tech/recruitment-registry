@@ -1,12 +1,12 @@
 //
-// Import application from app.js
-//
-const app = require('./app');
-
-//
 // Import config from config.js
 //
 const config = require('./config');
+
+//
+// Import application from app.js
+//
+const app = require('./app');
 
 //
 // Start an instance of the app on the port specified in the proper
