@@ -1,8 +1,13 @@
+/* global describe,before,after,beforeEach,afterEach,it,xit,expect*/
+'use strict';
+
 process.env.NODE_ENV = 'test';
 
 const UserModel = require('../../user/model');
 const config    = require('../../config');
 const request   = require('supertest');
+
+const app = require('../../app');
 
 let server;
 let jwt;
@@ -15,24 +20,24 @@ let user = {
 describe('Starting API Server', function() {
 
   before(function() {
-    server = require('../../app').listen(3006);
-  });
-
-  after(function(){
-    UserModel.destroy({where: {email: user.email}}).then(function(){
-      server.close();
-    });
+    return UserModel.sync({
+        force: true
+    }).then(function () {
+        return UserModel.destroy({
+          where: {}
+        });
+    })
   });
 
   it('Creates a user via REST api.', function createUser(done) {
-    request(server)
+    request(app)
       .post('/api/v1.0/user')
       .send({email: user.email, password: "password"})
       .expect(201, done)
   });
 
   it('Authenticates a user and returns a JWT', function createToken(done) {
-    request(server)
+    request(app)
       .get('/api/v1.0/user/token')
       .auth(user.email, 'password')
       .expect(200)
@@ -44,7 +49,7 @@ describe('Starting API Server', function() {
   });
 
   it('Returns a user\'s own data after authenticating the API', function showUser(done) {
-    request(server)
+    request(app)
       .get('/api/v1.0/user')
       .set('Authorization', 'Bearer ' + jwt)
       .expect(200, {
