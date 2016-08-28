@@ -14,5 +14,5 @@ const app = require('./app');
 // initialization.
 //
 app.listen(config.port, function() {
-  console.log('Server started at ', config.port);
+    console.log('Server started at ', config.port);
 });

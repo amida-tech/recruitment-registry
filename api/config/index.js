@@ -11,16 +11,16 @@ const _ = require('lodash');
 const all = {
     env: process.env.NODE_ENV,
     jwt: {
-    	secret: process.env.RECREG_CLIENT_SECRET
+        secret: process.env.RECREG_CLIENT_SECRET
     },
     port: process.env.RECREG_PORT || 9005,
     db: {
-    	name: process.env.RECREG_DB_NAME || 'recreg',
-    	user: process.env.RECREG_DB_USER,
-    	pass: process.env.RECREG_DB_PASS,
-    	host: process.env.RECREG_DB_HOST || 'localhost',
-    	port: process.env.RECREG_DB_PORT || '5432',
-    	dialect: process.env.RECREG_DB_DIALECT || 'postgres',
+        name: process.env.RECREG_DB_NAME || 'recreg',
+        user: process.env.RECREG_DB_USER,
+        pass: process.env.RECREG_DB_PASS,
+        host: process.env.RECREG_DB_HOST || 'localhost',
+        port: process.env.RECREG_DB_PORT || '5432',
+        dialect: process.env.RECREG_DB_DIALECT || 'postgres',
     }
 };
 

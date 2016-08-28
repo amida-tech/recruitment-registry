@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = {
-	jwt: {
-    	secret: 'this is a secret'
+    jwt: {
+        secret: 'this is a secret'
     }
 };

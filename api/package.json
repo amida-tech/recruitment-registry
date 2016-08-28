@@ -33,6 +33,9 @@
   },
   "devDependencies": {
     "chai": "^3.5.0",
+    "gulp-beautify": "^2.0.0",
+    "gulp-jshint": "^2.0.1",
+    "gulp-mocha": "^3.0.1",
     "mocha": "^3.0.2",
     "sequelize-cli": "^2.4.0",
     "supertest": "^2.0.0"
