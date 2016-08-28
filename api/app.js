@@ -2,8 +2,8 @@
 
 const express = require('express');
 const bodyParser = require('body-parser');
-const UserController = require('./user');
-const TokenController = require('./token');
+const UserController = require('./api/user');
+const TokenController = require('./api/token');
 const passport = require('passport');
 const auth = require('./auth');
 const BasicStrategy = require('passport-http').BasicStrategy;
