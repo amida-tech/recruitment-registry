@@ -15,7 +15,7 @@ const sequelize = new Sequelize(config.db.name, config.db.user, config.db.pass, 
     }
 });
 
-const User = sequelize.import('../user/model');
+const User = sequelize.import('../api/user/model');
 
 module.exports =  {
     Sequelize,
