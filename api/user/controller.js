@@ -1,5 +1,10 @@
-const User = require('./model');
+'use strict';
+
 const bcrypt = require('bcrypt');
+
+const db = require('../db');
+
+const User = db.User;
 
 // Create standalone functions for callbacks of each async request.
 const createUserIfNonExistent = (res, email, password) => {

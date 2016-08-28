@@ -1,22 +1,23 @@
-const SQ = require('sequelize');
-const db = require('./../database');
+'use strict';
+
 const bcrypt = require('bcrypt');
 
-
-const User = db.define('user', {
-    email: SQ.STRING(255),
-    password: SQ.STRING,
-    admin: SQ.BOOLEAN
-}, {
-    timestamps: false,
-    classMethods: {
-        hashPassword: function(password) {
-            return bcrypt.hashSync(password, 10);
-        },
-        comparePassword: function(password, hash) {
-            return bcrypt.compareSync(password, hash);
+module.exports = function (sequelize, DataTypes) {
+    const User = sequelize.define('user', {
+        email: DataTypes.TEXT,
+        password: DataTypes.TEXT,
+        admin: DataTypes.BOOLEAN
+    }, {
+        timestamps: false,
+        classMethods: {
+            hashPassword: function(password) {
+                return bcrypt.hashSync(password, 10);
+            },
+            comparePassword: function(password, hash) {
+                return bcrypt.compareSync(password, hash);
+            }
         }
-    }
-});
+    });
 
-module.exports = User;
+    return User;
+};
