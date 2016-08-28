@@ -1,16 +1,18 @@
 /* global describe,before,after,beforeEach,afterEach,it,xit,expect*/
 'use strict';
-
 process.env.NODE_ENV = 'test';
 
-const UserModel = require('../../user/model');
+const db = require('../../db');
+
 const config = require('../../config');
 const request = require('supertest');
 
-const app = require('../../app');
+const app = require('../..');
 
 let server;
 let jwt;
+
+const UserModel = db.User;
 
 let user = {
     email: 'test@amida-tech.com',
