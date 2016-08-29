@@ -25,6 +25,7 @@
     "mozilla-neo": "2.3.1"
   },
   "dependencies": {
+    "bcryptjs": "2.3.0",
     "bootstrap": "4.0.0-alpha.2",
     "ghooks": "1.3.2",
     "immutable": "3.8.1",
@@ -41,6 +42,7 @@
     "redux-devtools-log-monitor": "1.0.11",
     "redux-immutable": "3.0.6",
     "redux-logger": "2.6.1",
+    "redux-thunk": "^1.0.0",
     "redux-slider-monitor": "1.0.7"
   }
 }
