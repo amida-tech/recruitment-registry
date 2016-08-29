@@ -8,23 +8,23 @@ const db = require('../../db');
 const User = db.User;
 
 // Create standalone functions for callbacks of each async request.
-const createUserIfNonExistent = (res, email, password) => {
+const createUserIfNonExistent = (res, username, password) => {
     User.findOne({
         where: {
-            email
+            username
         }
     }).then(data => {
         if (data) {
-            res.status(400).send('An existing user has already used that email address.');
+            res.status(400).send('An existing user has already used that username address.');
         } else {
             User.create({
-                email,
+                username,
                 password,
                 admin: false
             }).then(user => {
                 res.status(201).json({
                     id: user.id,
-                    email: user.email
+                    username: user.username
                 });
             });
         }
@@ -33,12 +33,12 @@ const createUserIfNonExistent = (res, email, password) => {
 
 const userController = {
     createNewUser: (req, res) => {
-        createUserIfNonExistent(res, req.body.email, req.body.password);
+        createUserIfNonExistent(res, req.body.username, req.body.password);
     },
     showCurrentUser: (req, res) => {
         if (req.user) {
             const currentUser = {
-                email: req.user.email,
+                username: req.user.username,
                 admin: req.user.admin
             };
             res.status(200).json(currentUser);
@@ -70,7 +70,7 @@ function createJWT(payload) {
 function createUserJWT(user) {
     const payload = {
         id: user.id,
-        email: user.email,
+        username: user.username,
         admin: user.admin
     };
     return createJWT(payload);

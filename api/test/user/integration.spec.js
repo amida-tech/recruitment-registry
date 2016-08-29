@@ -15,7 +15,7 @@ let jwt;
 const UserModel = db.User;
 
 let user = {
-    email: 'test@amida-tech.com',
+    username: 'test',
     password: 'password'
 };
 
@@ -35,7 +35,7 @@ describe('Starting API Server', function() {
         request(app)
             .post('/api/v1.0/user')
             .send({
-                email: user.email,
+                username: user.username,
                 password: "password"
             })
             .expect(201, done)
@@ -44,7 +44,7 @@ describe('Starting API Server', function() {
     it('Authenticates a user and returns a JWT', function createToken(done) {
         request(app)
             .get('/api/v1.0/user/token')
-            .auth(user.email, 'password')
+            .auth(user.username, 'password')
             .expect(200)
             .end(function(err, res) {
                 if (err) return done(err);
@@ -58,7 +58,7 @@ describe('Starting API Server', function() {
             .get('/api/v1.0/user')
             .set('Authorization', 'Bearer ' + jwt)
             .expect(200, {
-                email: 'test@amida-tech.com',
+                username: 'test',
                 admin: false
             }, done);
     });

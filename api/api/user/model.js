@@ -4,6 +4,13 @@ const bcrypt = require('bcrypt');
 
 module.exports = function (sequelize, DataTypes) {
     const User = sequelize.define('user', {
+        username: {
+            type: DataTypes.TEXT,
+            unique: {
+                msg: 'The specified username is already in use.'
+            },
+            allowNull: false
+        },
         email: {
             type: DataTypes.TEXT,
             unique: {
@@ -20,7 +27,8 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.TEXT,
             validate: {
                 notEmpty: true
-            }
+            },
+            allowNull: false
         },
         admin: DataTypes.BOOLEAN,
         createdAt: {
