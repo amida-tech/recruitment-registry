@@ -4,11 +4,37 @@ const bcrypt = require('bcrypt');
 
 module.exports = function (sequelize, DataTypes) {
     const User = sequelize.define('user', {
-        email: DataTypes.TEXT,
-        password: DataTypes.TEXT,
-        admin: DataTypes.BOOLEAN
+        email: {
+            type: DataTypes.TEXT,
+            unique: {
+                msg: 'The specified email address is already in use.'
+            },
+            validate: {
+                isEmail: true
+            },
+            set: function (val) {
+                this.setDataValue('email', val.toLowerCase());
+            }
+        },
+        password: {
+            type: DataTypes.TEXT,
+            validate: {
+                notEmpty: true
+            }
+        },
+        admin: DataTypes.BOOLEAN,
+        createdAt: {
+            type: DataTypes.DATE,
+            field: 'created_at',
+        },
+        updatedAt: {
+            type: DataTypes.DATE,
+            field: 'updated_at',
+        },
     }, {
-        timestamps: false,
+        freezeTableName: true,
+        createdAt: 'createdAt',
+        updatedAt: 'updatedAt',
         hooks: {
             beforeBulkCreate: function (users, fields, fn) {
                 var totalUpdated = 0;
