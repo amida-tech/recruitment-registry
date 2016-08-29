@@ -16,7 +16,9 @@ const UserModel = db.User;
 
 let user = {
     username: 'test',
-    password: 'password'
+    password: 'password',
+    email: 'test@example.com',
+    zip: '20850'
 };
 
 describe('Starting API Server', function() {
@@ -34,10 +36,7 @@ describe('Starting API Server', function() {
     it('Creates a user via REST api.', function createUser(done) {
         request(app)
             .post('/api/v1.0/user')
-            .send({
-                username: user.username,
-                password: "password"
-            })
+            .send(user)
             .expect(201, done)
     });
 
@@ -58,8 +57,9 @@ describe('Starting API Server', function() {
             .get('/api/v1.0/user')
             .set('Authorization', 'Bearer ' + jwt)
             .expect(200, {
-                username: 'test',
-                admin: false
+                username: user.username,
+                email: user.email,
+                zip: user.zip
             }, done);
     });
 });
