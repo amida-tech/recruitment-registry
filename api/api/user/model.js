@@ -30,7 +30,9 @@ module.exports = function (sequelize, DataTypes) {
             },
             allowNull: false
         },
-        admin: DataTypes.BOOLEAN,
+        zip: {
+            type: DataTypes.TEXT
+        },
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',

@@ -8,7 +8,8 @@ const db = require('../../db');
 const User = db.User;
 
 // Create standalone functions for callbacks of each async request.
-const createUserIfNonExistent = (res, username, password) => {
+const createUserIfNonExistent = (res, req) => {
+    const username = req.body.username;
     User.findOne({
         where: {
             username
@@ -17,11 +18,7 @@ const createUserIfNonExistent = (res, username, password) => {
         if (data) {
             res.status(400).send('An existing user has already used that username address.');
         } else {
-            User.create({
-                username,
-                password,
-                admin: false
-            }).then(user => {
+            User.create(req.body).then(user => {
                 res.status(201).json({
                     id: user.id,
                     username: user.username
@@ -33,13 +30,14 @@ const createUserIfNonExistent = (res, username, password) => {
 
 const userController = {
     createNewUser: (req, res) => {
-        createUserIfNonExistent(res, req.body.username, req.body.password);
+        createUserIfNonExistent(res, req);
     },
     showCurrentUser: (req, res) => {
         if (req.user) {
             const currentUser = {
                 username: req.user.username,
-                admin: req.user.admin
+                email: req.user.email,
+                zip: req.user.zip
             };
             res.status(200).json(currentUser);
         } else {
