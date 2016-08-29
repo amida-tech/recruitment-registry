@@ -17,8 +17,17 @@ const basicStrategy = function(email, password, done) {
             email
         }
     }).then(user => {
-        if (user && User.comparePassword(password, user.password)) {
-            return done(null, user)
+        if (user) {
+            user.authenticate(password, function(err, result) {
+                if (err) {
+                    return done(err)
+                }
+                if (result) {
+                    return done(null, user);
+                } else {
+                    return done(null, false);
+                }
+            });
         } else {
             return done(null, false);
         }
