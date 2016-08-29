@@ -35,11 +35,12 @@ module.exports = function (sequelize, DataTypes) {
             }
         },
         classMethods: {
-            comparePassword: function(password, hash) {
-                return bcrypt.compareSync(password, hash);
-            }
         },
         instanceMethods: {
+            authenticate: function(password, callback) {
+                const hash = this.password;
+                bcrypt.compare(password, hash, callback);
+            },
             updatePassword: function (fn) {
                 // Handle new/update passwords
                 var value = this.password;
