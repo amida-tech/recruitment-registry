@@ -19,7 +19,7 @@ const createUserIfNonExistent = (res, email, password) => {
         } else {
             User.create({
                 email,
-                password: User.hashPassword(password),
+                password,
                 admin: false
             }).then(user => {
                 res.status(201).json({

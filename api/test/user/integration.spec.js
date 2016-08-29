@@ -16,7 +16,7 @@ const UserModel = db.User;
 
 let user = {
     email: 'test@amida-tech.com',
-    password: UserModel.hashPassword('password', 10)
+    password: 'password'
 };
 
 describe('Starting API Server', function() {
