@@ -11,10 +11,10 @@ const db = require('../db');
 
 const User = db.User;
 
-const basicStrategy = function(email, password, done) {
+const basicStrategy = function(username, password, done) {
     User.findOne({
         where: {
-            email
+            username
         }
     }).then(user => {
         if (user) {
@@ -38,7 +38,7 @@ const jwtStrategy = function(jwt_payload, done) {
     User.findOne({
         where: {
             id: jwt_payload.id,
-            email: jwt_payload.email
+            username: jwt_payload.username
         }
     }).then(user => {
         if (user) {
