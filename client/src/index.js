@@ -1,6 +1,6 @@
 import App from './app';
 import routes from './routes';
-import Layout from './components/layout';
+import Layout from './layout/index';
 import auth from './utils/auth';
 
 export const reducers = {

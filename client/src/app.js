@@ -2,6 +2,7 @@ import ChartMonitor from 'redux-devtools-chart-monitor';
 import DockMonitor from 'redux-devtools-dock-monitor';
 import LogMonitor from 'redux-devtools-log-monitor';
 import React from 'react';
+import Immutable from 'immutable';
 import ReactDOM from 'react-dom';
 import SliderMonitor from 'redux-slider-monitor';
 import createLogger from 'redux-logger';
@@ -9,8 +10,10 @@ import { Provider } from 'react-redux';
 import { Router, Route, browserHistory } from 'react-router';
 import { applyMiddleware, compose, createStore } from 'redux';
 import { createDevTools, persistState } from 'redux-devtools';
-import { homeReducer } from './reducers/reducers';
 import thunk from 'redux-thunk';
+import { LOCATION_CHANGE } from 'react-router-redux';
+
+import { homeReducer } from './form/reducers';
 
 const IS_PROD = process.env.NODE_ENV !== 'development';
 const NOOP = () => null;
@@ -32,8 +35,11 @@ const initialEnhancers = IS_PROD ? [] : [
   persistState(location.href.match(/[?&]debug_session=([^&]+)\b/))
 ];
 
+
+
 export default (options) => {
   let {
+    initialState = {},
     Layout = NOOP,
     loggerOptions = {},
     middleware = [],
@@ -51,6 +57,14 @@ export default (options) => {
       ...initialEnhancers,
       ...enhancers
     ));
+
+  const frozen = Immutable.fromJS(initialState);
+
+  /*const routing = (state = frozen, action) => {
+    return action.type === LOCATION_CHANGE ?
+      state.merge({ locationBeforeTransitions: action.payload }) :
+      state;
+  };*/
 
   const LayoutWrapper = (props) => (
     <div id="wrapper">

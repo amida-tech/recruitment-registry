@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import Nav from './nav';
+import Nav from '../nav/index';
 import { connect } from 'react-redux';
 
 class Layout extends Component {

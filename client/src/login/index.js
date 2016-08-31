@@ -1,7 +1,7 @@
 import React, { Component} from 'react';
 import { connect } from 'react-redux';
-import Form from '../form';
-import { login } from '../../actions/appActions';
+import Form from '../form/index';
+import { login } from './actions';
 
 export class Login extends Component {
   render() {
