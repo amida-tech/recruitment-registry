@@ -2,7 +2,9 @@
 'use strict';
 
 var chai = require('chai');
+var _ = require('lodash');
 
+const helper = require('../helpers');
 const db = require('../../db');
 
 var expect = chai.expect;
@@ -44,9 +46,17 @@ describe('survey unit', function() {
 
 	it('post/get survey', function() {
 		return Survey.post(example).then(function(id) {
-			return Survey.get(id);
-		}).then(function(actual) {
-			expect(actual).to.deep.equal(example);
+			return Survey.get(id).then(function(result) {
+				const ids = _.map(result.questions, 'id');
+				return helper.buildServerQuestions(example.questions, ids).then(function(expectedQuestions) {
+					const expected = {
+						id,
+						name: example.name,
+						questions: expectedQuestions
+					};
+					expect(result).to.deep.equal(expected);
+				});
+			});
 		});
 	});
 });

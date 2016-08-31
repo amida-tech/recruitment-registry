@@ -2,7 +2,9 @@
 'use strict';
 
 var chai = require('chai');
+var _ = require('lodash');
 
+const helper = require('../helpers');
 const db = require('../../db');
 
 var expect = chai.expect;
@@ -49,6 +51,14 @@ describe('question unit', function() {
 		type: 'text'
 	}];
 
+	const cleanServerQuestion = function(question) {
+		delete question.id;
+		const choices = question.choices;
+		if (choices && choices.length) {
+			question.choices = _.map(choices, 'text');
+		}
+	};
+
 	const ids = [];
 
 	it('post/get multiple choice question with multiple answers (checkboxes)', function() {
@@ -56,6 +66,7 @@ describe('question unit', function() {
 			ids.push(id);
 			return Question.get(id);
 		}).then(function(actual) {
+			cleanServerQuestion(actual);
 			expect(actual).to.deep.equal(examples[0]);
 		});
 	});
@@ -65,6 +76,7 @@ describe('question unit', function() {
 			ids.push(id);
 			return Question.get(id);
 		}).then(function(actual) {
+			cleanServerQuestion(actual);
 			expect(actual).to.deep.equal(examples[1]);
 		});
 	});
@@ -74,13 +86,16 @@ describe('question unit', function() {
 			ids.push(id);
 			return Question.get(id);
 		}).then(function(actual) {
+			cleanServerQuestion(actual);
 			expect(actual).to.deep.equal(examples[2]);
 		});
 	});
 
 	it('get multiple questions', function() {
 		return Question.getMultiple(ids).then(function(questions) {
-			expect(questions).to.deep.equal(examples);
+			return helper.buildServerQuestions(examples, ids).then(function(expected) {
+				expect(questions).to.deep.equal(expected);
+			});
 		});
 	});
 });

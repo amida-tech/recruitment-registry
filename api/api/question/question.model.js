@@ -3,9 +3,9 @@
 const _ = require('lodash');
 
 var query = 'select question.text as text, question_type.name as type from question, question_type where question.id = :id and question.type = question_type.id';
-var queryChoices = 'select text from question_choices where question_id = :id order by line';
+var queryChoices = 'select id, text from question_choices where question_id = :id order by line';
 var queryMultiple = 'select question.id as id, question.text as text, question_type.name as type from question, question_type where question.id in (:ids) and question.type = question_type.id';
-var queryChoicesMultiple = 'select text, question_id as qid from question_choices where question_id in (:ids) order by line';
+var queryChoicesMultiple = 'select id, text, question_id as qid from question_choices where question_id in (:ids) order by line';
 
 module.exports = function (sequelize, DataTypes) {
     const Question = sequelize.define('question', {
@@ -96,7 +96,7 @@ module.exports = function (sequelize, DataTypes) {
                         type: sequelize.QueryTypes.SELECT
                     }).then((choices) => {
                         if (choices && choices.length) {
-                            question.choices = _.map(choices, 'text');
+                            question.choices = choices;
                         }
                         return question;
                     });
@@ -124,17 +124,17 @@ module.exports = function (sequelize, DataTypes) {
                         if (choices && choices.length) {
                             choices.forEach(function(choice) {
                                 var qid = choice.qid;
+                                delete choice.qid;
                                 var q = map[qid];
                                 if (q.choices) {
-                                    q.choices.push(choice.text);
+                                    q.choices.push(choice);
                                 } else {
-                                    q.choices = [choice.text];
+                                    q.choices = [choice];
                                 }
                             });
                         }
                         return ids.map(function(id) {
                             var q = map[id];
-                            delete q.id;
                             return map[id];
                         });
                     });
