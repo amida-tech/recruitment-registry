@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { changeForm } from '../actions/appActions';
+import { changeForm } from '../form/actions';
 import LoadingButton from './loading-button';
 const assign = Object.assign || require('object.assign');
 

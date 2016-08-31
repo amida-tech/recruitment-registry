@@ -1,7 +1,6 @@
-import { CHANGE_FORM, SET_AUTH, SENDING_REQUEST } from '../constants/appConstants';
-import { LOCATION_CHANGE } from 'react-router-redux';
 const assign = Object.assign || require('object.assign');
 import auth from '../utils/auth';
+import { CHANGE_FORM, SET_AUTH, SENDING_REQUEST } from './constants';
 
 const initialState = {
   title: 'Recruitment Registry',
@@ -27,15 +26,6 @@ export function homeReducer(state = initialState, action) {
       return assign({}, state, {
         currentlySending: action.sending
       });
-    default:
-      return state;
-  }
-}
-
-export function routing(state = initialState, action) {
-  switch (action.type) {
-    case LOCATION_CHANGE:
-      return state.merge({ locationBeforeTransitions: action.payload })
     default:
       return state;
   }

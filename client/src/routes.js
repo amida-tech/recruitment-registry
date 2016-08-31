@@ -1,7 +1,7 @@
-import Home from './components/pages/home';
-import About from './components/pages/about';
-import Login from './components/pages/login';
-import Register from './components/pages/register';
+import Home from './home/index';
+import About from './about/index';
+import Login from './login/index';
+import Register from './register/index';
 
 export default [
   { path: '/', title: 'Home', component: Home },
