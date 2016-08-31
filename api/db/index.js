@@ -20,6 +20,7 @@ const QuestionType = sequelize.import('../api/question/question-type.model');
 const QuestionChoices = sequelize.import('../api/question/question-choices.model');
 const Question = sequelize.import('../api/question/question.model');
 const SurveyQuestion = sequelize.import('../api/survey/survey-question.model');
+const Answer = sequelize.import('../api/answer/answer.model');
 const Survey = sequelize.import('../api/survey/survey.model');
 
 module.exports =  {

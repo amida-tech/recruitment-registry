@@ -96,7 +96,7 @@ module.exports = function (sequelize, DataTypes) {
                 });
             },
             get: function(id) {
-                return sequelize.query('select name from survey where id = :id', {
+                return sequelize.query('select id, name from survey where id = :id', {
                     replacements: {id},
                     type: sequelize.QueryTypes.SELECT
                 }).then(function(surveys) {
