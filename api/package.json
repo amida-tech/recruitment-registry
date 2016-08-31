@@ -1,5 +1,5 @@
 {
-  "name": "databass-api",
+  "name": "recruitment-registry-api",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/amida-tech/databass-api.git"
+    "url": "git+https://github.com/amida-tech/recruitment-registry.git"
   },
   "author": "Amida",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/amida-tech/databass-api/issues"
+    "url": "https://github.com/amida-tech/recruitment-registry/issues"
   },
-  "homepage": "https://github.com/amida-tech/databass-api#readme",
+  "homepage": "https://github.com/amida-tech/recruitment-registry#readme",
   "dependencies": {
     "bcrypt": "^0.8.7",
     "body-parser": "^1.15.2",
@@ -28,7 +28,6 @@
     "passport-http": "^0.3.0",
     "passport-jwt": "^2.1.0",
     "pg": "^6.1.0",
-    "sequelize": "^3.24.1",
     "winston": "^2.2.0"
   },
   "devDependencies": {
@@ -37,6 +36,7 @@
     "gulp-jshint": "^2.0.1",
     "gulp-mocha": "^3.0.1",
     "mocha": "^3.0.2",
+    "sequelize": "^3.24.1",
     "sequelize-cli": "^2.4.0",
     "supertest": "^2.0.0"
   }
