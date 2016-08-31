@@ -2,6 +2,8 @@
 
 const _ = require('lodash');
 
+const db = require('../../db');
+
 const extractNewSurveyQuestions = function(survey) {
     var questions = survey.questions;
     if (questions && questions.length) {
@@ -114,6 +116,48 @@ module.exports = function (sequelize, DataTypes) {
                         return sequelize.models.question.getMultiple(questionIds);
                     }).then(function(questions) {
                         survey.questions = questions;
+                        return survey;
+                    });
+                });
+            },
+            getAnswered: function(userId, id) {
+                return Survey.get(id).then(function(survey) {
+                    return sequelize.models.answer.findAll({
+                        where: {
+                            userId,
+                            surveyId: id
+                        },
+                        raw: true
+                    }).then(function(answers) {
+                        var map = answers.reduce(function(r, answer) {
+                            const qid = answer.questionId;
+                            if (r[qid]) {
+                                r[qid].push(answer.value);
+                            } else {
+                                r[qid] = [answer.value];
+                            }
+                            return r;
+                        }, {});
+                        return map;
+                    }).then(function(answerMap) {
+                        const questionType = sequelize.models.question_type;
+                        survey.questions.forEach(function(question) {
+                            var qid = question.id;
+                            var answers = answerMap[qid];
+                            if (answers && answers.length) {
+                                if (questionType.isId(question.type)) {
+                                    answers = answers.map(function(answer) {
+                                        return parseInt(answer);
+                                    });
+                                }
+                                if (questionType.isSingle(question.type)) {
+                                    question.answer = answers[0];
+                                } else {
+                                    answers.sort();
+                                    question.answer = answers;
+                                }
+                            }
+                        });
                         return survey;
                     });
                 });

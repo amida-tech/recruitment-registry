@@ -31,5 +31,6 @@ module.exports =  {
     QuestionChoices,
     Question,
     SurveyQuestion,
+    Answer,
     Survey
 };

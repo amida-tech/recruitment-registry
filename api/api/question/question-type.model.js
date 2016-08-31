@@ -39,6 +39,12 @@ module.exports = function (sequelize, DataTypes) {
             },
             nameById: function(id) {
                 return _possibleNames[id-1];
+            },
+            isSingle(name) {
+                return name !== 'multi-choice-multi';
+            },
+            isId(name) {
+                return name === 'multi-choice-multi' || name === 'multi-choice-single';
             }
         }
     });
