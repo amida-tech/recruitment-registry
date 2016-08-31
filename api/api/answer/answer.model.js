@@ -46,26 +46,26 @@ module.exports = function (sequelize, DataTypes) {
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
         classMethods: {
-            post: function(input) {
+            post: function (input) {
                 const userId = input.userId;
                 const surveyId = input.surveyId;
-                const answers = input.answers.reduce(function(r, answer) {
+                const answers = input.answers.reduce(function (r, answer) {
                     let allAnswers = answer.answer;
-                    if (! Array.isArray(allAnswers)) {
+                    if (!Array.isArray(allAnswers)) {
                         allAnswers = [allAnswers];
                     }
                     const questionId = answer.questionId;
-                    allAnswers.forEach(function(value) {
+                    allAnswers.forEach(function (value) {
                         r.push({
                             userId,
                             surveyId,
                             questionId,
                             value
-                        })
+                        });
                     });
                     return r;
                 }, []);
-                return sequelize.Promise.all(answers.map(function(answer) {
+                return sequelize.Promise.all(answers.map(function (answer) {
                     return Answer.create(answer);
                 }));
             }

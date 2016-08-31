@@ -10,7 +10,7 @@ var queryChoicesMultiple = 'select id, text, question_id as qid from question_ch
 module.exports = function (sequelize, DataTypes) {
     const Question = sequelize.define('question', {
         text: {
-        	type: DataTypes.TEXT
+            type: DataTypes.TEXT
         },
         type: {
             type: DataTypes.INTEGER,
@@ -19,11 +19,11 @@ module.exports = function (sequelize, DataTypes) {
                 model: 'question_type',
                 key: 'id'
             },
-            get: function() {
+            get: function () {
                 var id = this.getDataValue('type');
                 return sequelize.models.question_type.nameById(id);
             },
-            set: function(type) {
+            set: function (type) {
                 var id = sequelize.models.question_type.idByName(type);
                 this.setDataValue('type', id);
             }
@@ -39,20 +39,20 @@ module.exports = function (sequelize, DataTypes) {
     }, {
         freezeTableName: true,
         createdAt: 'createdAt',
-        updatedAt: 'updatedAt', 
+        updatedAt: 'updatedAt',
         classMethods: {
-            postPromise: function(question, tx) {
+            postPromise: function (question, tx) {
                 var qx = {
                     text: question.text,
                     type: question.type
-                }
+                };
                 return Question.create(qx, {
                     transaction: tx
-                }).then(function(qx) {
+                }).then(function (qx) {
                     var id = qx.id;
                     var choices = question.choices;
                     if (choices && choices.length) {
-                        return sequelize.Promise.all(choices.map(function(c, index) {
+                        return sequelize.Promise.all(choices.map(function (c, index) {
                             var choice = {
                                 questionId: id,
                                 text: c,
@@ -71,7 +71,7 @@ module.exports = function (sequelize, DataTypes) {
                     }
                 });
             },
-            post: function(question, transaction) {
+            post: function (question, transaction) {
                 if (transaction) {
                     return Question.postPromise(question, transaction);
                 } else {
@@ -80,19 +80,23 @@ module.exports = function (sequelize, DataTypes) {
                     });
                 }
             },
-            get: function(id) {
+            get: function (id) {
                 return sequelize.query(query, {
-                    replacements: {id},
+                    replacements: {
+                        id
+                    },
                     type: sequelize.QueryTypes.SELECT
-                }).then(function(questions) {
+                }).then(function (questions) {
                     const question = questions[0];
-                    if (! question) {
+                    if (!question) {
                         return sequelize.Promise.reject('No such question');
                     }
                     return question;
-                }).then(function(question) {
+                }).then(function (question) {
                     return sequelize.query(queryChoices, {
-                        replacements: {id},
+                        replacements: {
+                            id
+                        },
                         type: sequelize.QueryTypes.SELECT
                     }).then((choices) => {
                         if (choices && choices.length) {
@@ -102,27 +106,31 @@ module.exports = function (sequelize, DataTypes) {
                     });
                 });
             },
-            getMultiple: function(ids) {
+            getMultiple: function (ids) {
                 return sequelize.query(queryMultiple, {
-                    replacements: {ids},
+                    replacements: {
+                        ids
+                    },
                     type: sequelize.QueryTypes.SELECT
-                }).then(function(questions) {
+                }).then(function (questions) {
                     const question = questions[0];
-                    if (! question) {
+                    if (!question) {
                         return sequelize.Promise.reject('No such question');
                     }
                     return questions;
-                }).then(function(questions) {
+                }).then(function (questions) {
                     return sequelize.query(queryChoicesMultiple, {
-                        replacements: {ids},
+                        replacements: {
+                            ids
+                        },
                         type: sequelize.QueryTypes.SELECT
                     }).then((choices) => {
-                        var map = questions.reduce(function(r, q) {
+                        var map = questions.reduce(function (r, q) {
                             r[q.id] = q;
                             return r;
                         }, {});
                         if (choices && choices.length) {
-                            choices.forEach(function(choice) {
+                            choices.forEach(function (choice) {
                                 var qid = choice.qid;
                                 delete choice.qid;
                                 var q = map[qid];
@@ -133,7 +141,7 @@ module.exports = function (sequelize, DataTypes) {
                                 }
                             });
                         }
-                        return ids.map(function(id) {
+                        return ids.map(function (id) {
                             var q = map[id];
                             return map[id];
                         });

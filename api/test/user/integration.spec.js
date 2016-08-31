@@ -21,23 +21,23 @@ let user = {
     zip: '20850'
 };
 
-describe('Starting API Server', function() {
+describe('Starting API Server', function () {
 
-    before(function() {
+    before(function () {
         return UserModel.sync({
             force: true
-        }).then(function() {
+        }).then(function () {
             return UserModel.destroy({
                 where: {}
             });
-        })
+        });
     });
 
     it('Creates a user via REST api.', function createUser(done) {
         request(app)
             .post('/api/v1.0/user')
             .send(user)
-            .expect(201, done)
+            .expect(201, done);
     });
 
     it('Authenticates a user and returns a JWT', function createToken(done) {
@@ -45,8 +45,10 @@ describe('Starting API Server', function() {
             .get('/api/v1.0/user/token')
             .auth(user.username, 'password')
             .expect(200)
-            .end(function(err, res) {
-                if (err) return done(err);
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
                 jwt = res.body.token;
                 done();
             });

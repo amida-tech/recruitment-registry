@@ -11,11 +11,11 @@ const db = require('./db');
 //
 
 db.sequelize.sync().then(function () {
-	app.listen(config.port, function() {
-	    console.log('Server started at ', config.port);
-	});
+    app.listen(config.port, function () {
+        console.log('Server started at ', config.port);
+    });
 }).catch(function (err) {
-     console.log('Server failed to start due to error: %s', err);
+    console.log('Server failed to start due to error: %s', err);
 });
 
 module.exports = app;

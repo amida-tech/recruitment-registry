@@ -2,6 +2,6 @@
 
 const db = require('../../db');
 
-exports.profile = function(res, req) {
+exports.profile = function (res, req) {
 
 };

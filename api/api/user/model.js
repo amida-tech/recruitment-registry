@@ -70,17 +70,16 @@ module.exports = function (sequelize, DataTypes) {
                 fn();
             }
         },
-        classMethods: {
-        },
+        classMethods: {},
         instanceMethods: {
-            authenticate: function(password, callback) {
+            authenticate: function (password, callback) {
                 const hash = this.password;
                 bcrypt.compare(password, hash, callback);
             },
             updatePassword: function (fn) {
                 // Handle new/update passwords
                 var value = this.password;
-                if (! value) {
+                if (!value) {
                     fn(new Error('Invalid password'));
                 }
                 bcrypt.hash(value, 10, (err, hash) => {
@@ -89,7 +88,7 @@ module.exports = function (sequelize, DataTypes) {
                     }
                     this.password = hash;
                     fn(null);
-                })
+                });
             }
         }
     });
