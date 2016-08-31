@@ -28,35 +28,6 @@ const createUserIfNonExistent = (res, req) => {
     });
 };
 
-const userController = {
-    createNewUser: (req, res) => {
-        createUserIfNonExistent(res, req);
-    },
-    showCurrentUser: (req, res) => {
-        if (req.user) {
-            const currentUser = {
-                username: req.user.username,
-                email: req.user.email,
-                zip: req.user.zip
-            };
-            res.status(200).json(currentUser);
-        } else {
-            res.status(401);
-        }
-    },
-    createToken: function(req, res) {
-        const token = createUserJWT(req.user);
-        if (token) {
-            res.status(200).json({
-                token
-            }); // This is for development. We will probably want to return as a cookie.
-        } else {
-            console.log("Error producing JWT: ", token);
-            res.status(400);
-        }
-    }
-};
-
 function createJWT(payload) {
     const options = {
         expiresIn: "30d"
@@ -73,5 +44,34 @@ function createUserJWT(user) {
     };
     return createJWT(payload);
 }
+
+const userController = {
+    createNewUser: (req, res) => {
+        createUserIfNonExistent(res, req);
+    },
+    showCurrentUser: (req, res) => {
+        if (req.user) {
+            const currentUser = {
+                username: req.user.username,
+                email: req.user.email,
+                zip: req.user.zip
+            };
+            res.status(200).json(currentUser);
+        } else {
+            res.status(401);
+        }
+    },
+    createToken: function (req, res) {
+        const token = createUserJWT(req.user);
+        if (token) {
+            res.status(200).json({
+                token
+            }); // This is for development. We will probably want to return as a cookie.
+        } else {
+            console.log("Error producing JWT: ", token);
+            res.status(400);
+        }
+    }
+};
 
 module.exports = userController;

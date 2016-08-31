@@ -18,7 +18,7 @@ module.exports = function (sequelize, DataTypes) {
             }
         },
         text: {
-        	type: DataTypes.TEXT
+            type: DataTypes.TEXT
         },
         line: {
             type: DataTypes.INTEGER

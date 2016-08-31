@@ -5,7 +5,7 @@ const _possibleNames = ['text', 'multi-choice-single', 'multi-choice-multi'];
 module.exports = function (sequelize, DataTypes) {
     const QuestionType = sequelize.define('question_type', {
         name: {
-        	type: DataTypes.TEXT
+            type: DataTypes.TEXT
         },
         createdAt: {
             type: DataTypes.DATE,
@@ -20,9 +20,9 @@ module.exports = function (sequelize, DataTypes) {
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
         hooks: {
-            afterSync: function(options) {
+            afterSync: function (options) {
                 if (options.force) {
-                    return sequelize.Promise.all(_possibleNames.map(function(name) {
+                    return sequelize.Promise.all(_possibleNames.map(function (name) {
                         return QuestionType.create({
                             name
                         });
@@ -31,14 +31,14 @@ module.exports = function (sequelize, DataTypes) {
             }
         },
         classMethods: {
-            possibleNames: function() {
-                return _possibleNames;
+            possibleNames: function () {
+                return _possibleNames.slice();
             },
-            idByName: function(name) {
+            idByName: function (name) {
                 return _possibleNames.indexOf(name) + 1;
             },
-            nameById: function(id) {
-                return _possibleNames[id-1];
+            nameById: function (id) {
+                return _possibleNames[id - 1];
             },
             isSingle(name) {
                 return name !== 'multi-choice-multi';

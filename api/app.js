@@ -11,7 +11,10 @@ const app = express();
 const jsonParser = bodyParser.json();
 
 /* Middleware */
-if (process.env.NODE_ENV === 'development') app.use(logger);
+if (process.env.NODE_ENV === 'development') {
+    app.use(logger);
+}
+
 app.use(jsonParser);
 app.use(passport.initialize());
 app.use(passport.session());
