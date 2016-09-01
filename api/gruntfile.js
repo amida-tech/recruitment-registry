@@ -64,15 +64,15 @@ module.exports = function (grunt) {
             test: {
                 options: {
                     reporter: 'spec',
-                    timeout: '25000',
+                    timeout: '1000',
                     bail: true
                 },
-                src: ['test/**/*.js']
+                src: ['test/**/*.spec.js']
             }
         },
         shell: {
             run_istanbul: {
-                command: "istanbul cover ./node_modules/mocha/bin/_mocha -- -R spec --recursive -t 15000"
+                command: "istanbul cover ./node_modules/mocha/bin/_mocha -- -R spec --recursive -t 1000"
             }
         }
     });
