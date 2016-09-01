@@ -8,6 +8,9 @@ var _ = require('lodash');
 const helper = require('../helpers');
 const db = require('../../db');
 
+const userExamples = require('../fixtures/user-examples');
+const surveyExamples = require('../fixtures/survey-examples');
+
 var expect = chai.expect;
 
 var Survey = db.Survey;
@@ -15,12 +18,8 @@ var Answer = db.Answer;
 var User = db.User;
 
 describe('survey unit', function () {
-    const user = {
-        username: 'test',
-        password: 'password',
-        email: 'test@example.com',
-        zip: '20850'
-    };
+    const example = surveyExamples.Example;
+    const user = userExamples.Example;
 
     var userId;
 
@@ -33,38 +32,6 @@ describe('survey unit', function () {
             userId = result.id;
         });
     });
-
-    const example = {
-        name: 'Example',
-        questions: [{
-            text: 'Which sports do you like?',
-            type: 'multi-choice-multi',
-            choices: [
-                'Football',
-                'Basketball',
-                'Soccer',
-                'Tennis'
-            ]
-        }, {
-            text: 'What is your hair color?',
-            type: 'multi-choice-single',
-            choices: [
-                'Black',
-                'Brown',
-                'Blonde',
-                'Other'
-            ]
-        }, {
-            text: 'Where were you born?',
-            type: 'text'
-        }, {
-            text: 'Are you injured?',
-            type: 'yes-no'
-        }, {
-            text: 'Do you have a cat?',
-            type: 'yes-no'
-        }]
-    };
 
     var serverSurvey;
 
