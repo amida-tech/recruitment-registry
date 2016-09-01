@@ -12,4 +12,7 @@ router.get('/', auth.isAuthenticated(), controller.showCurrentUser);
 router.get('/token', auth.initialAuth(), controller.createToken);
 router.post('/', controller.createNewUser);
 
+router.get('/ethnicity', controller.getEthnicities);
+router.get('/gender', controller.getGenders);
+
 module.exports = router;

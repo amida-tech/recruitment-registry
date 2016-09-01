@@ -2,6 +2,10 @@
 
 const bcrypt = require('bcrypt');
 
+const GENDER_MALE = 'male';
+const GENDER_FEMALE = 'female';
+const GENDER_OTHER = 'other';
+
 module.exports = function (sequelize, DataTypes) {
     const User = sequelize.define('user', {
         username: {
@@ -47,7 +51,7 @@ module.exports = function (sequelize, DataTypes) {
             }
         },
         gender: {
-            type: DataTypes.ENUM('male', 'female', 'other')
+            type: DataTypes.ENUM(GENDER_MALE, GENDER_FEMALE, GENDER_OTHER)
         },
         createdAt: {
             type: DataTypes.DATE,
@@ -97,6 +101,9 @@ module.exports = function (sequelize, DataTypes) {
                     }
                     return result;
                 });
+            },
+            genders: function () {
+                return [GENDER_MALE, GENDER_FEMALE, GENDER_OTHER];
             }
         },
         instanceMethods: {
