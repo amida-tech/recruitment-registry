@@ -69,7 +69,7 @@ describe('survey unit', function () {
 
     it('post/get survey', function () {
         return Survey.post(example).then(function (id) {
-            return Survey.get(id).then(function (result) {
+            return Survey.getSurveyById(id).then(function (result) {
                 const ids = _.map(result.questions, 'id');
                 return helper.buildServerQuestions(example.questions, ids).then(function (expectedQuestions) {
                     const expected = {
@@ -79,6 +79,19 @@ describe('survey unit', function () {
                     };
                     expect(result).to.deep.equal(expected);
                     serverSurvey = result;
+                });
+            }).then(function () {
+                return Survey.getSurveyByName(example.name).then(function (result) {
+                    const ids = _.map(result.questions, 'id');
+                    return helper.buildServerQuestions(example.questions, ids).then(function (expectedQuestions) {
+                        const expected = {
+                            id,
+                            name: example.name,
+                            questions: expectedQuestions
+                        };
+                        expect(result).to.deep.equal(expected);
+                        serverSurvey = result;
+                    });
                 });
             });
         });

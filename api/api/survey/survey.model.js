@@ -91,11 +91,9 @@ module.exports = function (sequelize, DataTypes) {
                         });
                 });
             },
-            get: function (id) {
-                return sequelize.query('select id, name from survey where id = :id', {
-                    replacements: {
-                        id
-                    },
+            get: function (query, replacements) {
+                return sequelize.query(query, {
+                    replacements,
                     type: sequelize.QueryTypes.SELECT
                 }).then(function (surveys) {
                     const survey = surveys[0];
@@ -106,7 +104,7 @@ module.exports = function (sequelize, DataTypes) {
                 }).then(function (survey) {
                     return sequelize.query('select question_id from survey_question where survey_id = :id', {
                         replacements: {
-                            id
+                            id: survey.id
                         },
                         type: sequelize.QueryTypes.SELECT
                     }).then(function (result) {
@@ -118,8 +116,20 @@ module.exports = function (sequelize, DataTypes) {
                     });
                 });
             },
+            getSurveyById: function (id) {
+                const query = 'select id, name from survey where id = :id';
+                return Survey.get(query, {
+                    id
+                });
+            },
+            getSurveyByName: function (name) {
+                const query = 'select id, name from survey where name = :name';
+                return Survey.get(query, {
+                    name
+                });
+            },
             getAnswered: function (userId, id) {
-                return Survey.get(id).then(function (survey) {
+                return Survey.getSurveyById(id).then(function (survey) {
                     return sequelize.models.answer.findAll({
                         where: {
                             userId,
