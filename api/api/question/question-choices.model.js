@@ -2,12 +2,6 @@
 
 module.exports = function (sequelize, DataTypes) {
     const QuestionChoices = sequelize.define('question_choices', {
-        id: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            primaryKey: true,
-            autoIncrement: true
-        },
         questionId: {
             type: DataTypes.INTEGER,
             field: 'question_id',
