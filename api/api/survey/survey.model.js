@@ -38,12 +38,6 @@ const newQuestionsPromise = function (sequelize, survey, transaction) {
 
 module.exports = function (sequelize, DataTypes) {
     const Survey = sequelize.define('survey', {
-        id: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            primaryKey: true,
-            autoIncrement: true
-        },
         name: {
             type: DataTypes.TEXT
         },
@@ -152,6 +146,11 @@ module.exports = function (sequelize, DataTypes) {
                                 if (questionType.isId(question.type)) {
                                     answers = answers.map(function (answer) {
                                         return parseInt(answer);
+                                    });
+                                }
+                                if (questionType.isBoolean(question.type)) {
+                                    answers = answers.map(function (answer) {
+                                        return answer === 'true';
                                     });
                                 }
                                 if (questionType.isSingle(question.type)) {

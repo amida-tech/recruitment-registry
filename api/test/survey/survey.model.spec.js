@@ -56,6 +56,12 @@ describe('survey unit', function () {
         }, {
             text: 'Where were you born?',
             type: 'text'
+        }, {
+            text: 'Are you injured?',
+            type: 'yes-no'
+        }, {
+            text: 'Do you have a cat?',
+            type: 'yes-no'
         }]
     };
 
@@ -91,6 +97,12 @@ describe('survey unit', function () {
         const q2 = serverSurvey.questions[2].id;
         const a2 = 'Washington, DC';
 
+        const q3 = serverSurvey.questions[3].id;
+        const a3 = true;
+
+        const q4 = serverSurvey.questions[4].id;
+        const a4 = false;
+
         var answers = [{
             questionId: q0,
             answer: [a00, a01]
@@ -100,6 +112,12 @@ describe('survey unit', function () {
         }, {
             questionId: q2,
             answer: a2
+        }, {
+            questionId: q3,
+            answer: a3
+        }, {
+            questionId: q4,
+            answer: a4
         }];
 
         return Answer.post({
