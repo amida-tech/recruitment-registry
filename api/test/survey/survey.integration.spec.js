@@ -4,6 +4,7 @@ process.env.NODE_ENV = 'test';
 
 var chai = require('chai');
 
+const helper = require('./survey-helper');
 const db = require('../../db');
 
 const config = require('../../config');
@@ -65,5 +66,26 @@ describe('survey integration', function () {
                 expect(!!res.body.id).to.equal(true);
             })
             .end(done);
+    });
+
+    it('get empty survey', function (done) {
+        request(app)
+            .get('/api/v1.0/survey/empty/Example')
+            .expect(200)
+            .expect(function (res) {
+                expect(!!res.body.id).to.equal(true);
+            })
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                helper.buildServerSurveyFromClientSurvey(example, res.body).then(function (expected) {
+                    expect(res.body).to.deep.equal(expected);
+                }).then(function () {
+                    done();
+                }).catch(function (err) {
+                    done(err);
+                });
+            });
     });
 });
