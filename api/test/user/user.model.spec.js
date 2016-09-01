@@ -29,7 +29,8 @@ describe('user unit', function () {
         password: 'password',
         email: 'test@example.com',
         zip: '20850',
-        ethnicity: 'Hispanic'
+        ethnicity: 'Hispanic',
+        gender: 'female'
     };
 
     var id;
