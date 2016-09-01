@@ -46,6 +46,9 @@ module.exports = function (sequelize, DataTypes) {
                 this.setDataValue('ethnicity', val);
             }
         },
+        gender: {
+            type: DataTypes.ENUM('male', 'female', 'other')
+        },
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',
