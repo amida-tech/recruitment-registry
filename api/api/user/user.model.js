@@ -33,6 +33,19 @@ module.exports = function (sequelize, DataTypes) {
         zip: {
             type: DataTypes.TEXT
         },
+        ethnicity: {
+            type: DataTypes.INTEGER,
+            references: {
+                model: 'ethnicity',
+                key: 'id'
+            },
+            set: function (val) {
+                if (typeof val === 'string') {
+                    val = sequelize.models.ethnicity.idByName(val);
+                }
+                this.setDataValue('ethnicity', val);
+            }
+        },
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',
@@ -70,7 +83,19 @@ module.exports = function (sequelize, DataTypes) {
                 fn();
             }
         },
-        classMethods: {},
+        classMethods: {
+            getUser: function (id) {
+                return User.findById(id, {
+                    raw: true
+                }).then(function (result) {
+                    var e = result.ethnicity;
+                    if (e) {
+                        result.ethnicity = sequelize.models.ethnicity.nameById(e);
+                    }
+                    return result;
+                });
+            }
+        },
         instanceMethods: {
             authenticate: function (password, callback) {
                 const hash = this.password;

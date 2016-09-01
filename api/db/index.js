@@ -15,7 +15,8 @@ const sequelize = new Sequelize(config.db.name, config.db.user, config.db.pass, 
     }
 });
 
-const User = sequelize.import('../api/user/model');
+const Ethnicity = sequelize.import('../api/user/ethnicity.model');
+const User = sequelize.import('../api/user/user.model');
 const QuestionType = sequelize.import('../api/question/question-type.model');
 const QuestionChoices = sequelize.import('../api/question/question-choices.model');
 const Question = sequelize.import('../api/question/question.model');
@@ -26,6 +27,7 @@ const Survey = sequelize.import('../api/survey/survey.model');
 module.exports =  {
     Sequelize,
     sequelize,
+    Ethnicity,
     User,
     QuestionType,
     QuestionChoices,

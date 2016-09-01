@@ -1,9 +1,14 @@
 'use strict';
 
-const _possibleNames = ['text', 'multi-choice-single', 'multi-choice-multi'];
+const _ethnicities = [
+    'Caucasion',
+    'Hispanic',
+    'African',
+    'Asian'
+];
 
 module.exports = function (sequelize, DataTypes) {
-    const QuestionType = sequelize.define('question_type', {
+    const Ethnicity = sequelize.define('ethnicity', {
         name: {
             type: DataTypes.TEXT
         },
@@ -23,9 +28,9 @@ module.exports = function (sequelize, DataTypes) {
             afterSync: function (options) {
                 if (options.force) {
                     let p = sequelize.Promise.resolve(true);
-                    _possibleNames.map(function (name) {
+                    _ethnicities.map(function (name) {
                         p = p.then(function () {
-                            return QuestionType.create({
+                            Ethnicity.create({
                                 name
                             });
                         });
@@ -35,23 +40,17 @@ module.exports = function (sequelize, DataTypes) {
             }
         },
         classMethods: {
-            possibleNames: function () {
-                return _possibleNames.slice();
+            ethnicities: function () {
+                return _ethnicities.slice();
             },
             idByName: function (name) {
-                return _possibleNames.indexOf(name) + 1;
+                return _ethnicities.indexOf(name) + 1;
             },
             nameById: function (id) {
-                return _possibleNames[id - 1];
-            },
-            isSingle(name) {
-                return name !== 'multi-choice-multi';
-            },
-            isId(name) {
-                return name === 'multi-choice-multi' || name === 'multi-choice-single';
+                return _ethnicities[id - 1];
             }
-        }
+        },
     });
 
-    return QuestionType;
+    return Ethnicity;
 };
