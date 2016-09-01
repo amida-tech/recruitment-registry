@@ -31,3 +31,17 @@ exports.Example = {
         type: 'yes-no'
     }]
 };
+
+exports.ExampleSpec = [{
+    isChoice: true,
+    answer: [1, 2]
+}, {
+    isChoice: true,
+    answer: 0
+}, {
+    answer: 'Washington, DC'
+}, {
+    answer: true
+}, {
+    answer: false
+}];

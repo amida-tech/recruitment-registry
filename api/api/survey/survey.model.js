@@ -91,7 +91,7 @@ module.exports = function (sequelize, DataTypes) {
                         });
                 });
             },
-            get: function (query, replacements) {
+            getEmptySurvey: function (query, replacements) {
                 return sequelize.query(query, {
                     replacements,
                     type: sequelize.QueryTypes.SELECT
@@ -118,22 +118,22 @@ module.exports = function (sequelize, DataTypes) {
             },
             getSurveyById: function (id) {
                 const query = 'select id, name from survey where id = :id';
-                return Survey.get(query, {
+                return Survey.getEmptySurvey(query, {
                     id
                 });
             },
             getSurveyByName: function (name) {
                 const query = 'select id, name from survey where name = :name';
-                return Survey.get(query, {
+                return Survey.getEmptySurvey(query, {
                     name
                 });
             },
-            getAnswered: function (userId, id) {
-                return Survey.getSurveyById(id).then(function (survey) {
+            getAnsweredSurvey: function (surveyPromise, userId) {
+                return surveyPromise.then(function (survey) {
                     return sequelize.models.answer.findAll({
                         where: {
                             userId,
-                            surveyId: id
+                            surveyId: survey.id
                         },
                         raw: true
                     }).then(function (answers) {
@@ -174,6 +174,14 @@ module.exports = function (sequelize, DataTypes) {
                         return survey;
                     });
                 });
+            },
+            getAnsweredSurveyById: function (userId, id) {
+                var p = Survey.getSurveyById(id);
+                return Survey.getAnsweredSurvey(p, userId);
+            },
+            getAnsweredSurveyByName: function (userId, name) {
+                var p = Survey.getSurveyByName(name);
+                return Survey.getAnsweredSurvey(p, userId);
             }
         }
     });
