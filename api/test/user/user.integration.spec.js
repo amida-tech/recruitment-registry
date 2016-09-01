@@ -1,6 +1,8 @@
-/* global describe,before,after,beforeEach,afterEach,it,xit,expect*/
+/* global describe,before,after,beforeEach,afterEach,it,xit*/
 'use strict';
 process.env.NODE_ENV = 'test';
+
+var chai = require('chai');
 
 const db = require('../../db');
 
@@ -9,10 +11,13 @@ const request = require('supertest');
 
 const app = require('../..');
 
+const expect = chai.expect;
+
 let server;
 let jwt;
 
-const UserModel = db.User;
+const User = db.User;
+const Ethnicity = db.Ethnicity;
 
 let user = {
     username: 'test',
@@ -24,13 +29,38 @@ let user = {
 describe('Starting API Server', function () {
 
     before(function () {
-        return UserModel.sync({
+        return db.sequelize.sync({
             force: true
         }).then(function () {
-            return UserModel.destroy({
+            return User.destroy({
                 where: {}
             });
         });
+    });
+
+    var ethnicities;
+    var genders;
+
+    it('get available ethnicities', function (done) {
+        request(app)
+            .get('/api/v1.0/user/ethnicity')
+            .expect(200)
+            .expect(function (res) {
+                var expected = Ethnicity.ethnicities();
+                expect(res.body).to.deep.equal(expected);
+            })
+            .end(done);
+    });
+
+    it('get available genders', function (done) {
+        request(app)
+            .get('/api/v1.0/user/gender')
+            .expect(200)
+            .expect(function (res) {
+                var expected = User.genders();
+                expect(res.body).to.deep.equal(expected);
+            })
+            .end(done);
     });
 
     it('Creates a user via REST api.', function createUser(done) {

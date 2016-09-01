@@ -1,5 +1,6 @@
 /* global describe,before,after,beforeEach,afterEach,it,xit*/
 'use strict';
+process.env.NODE_ENV = 'test';
 
 var chai = require('chai');
 var _ = require('lodash');

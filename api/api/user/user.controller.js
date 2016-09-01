@@ -6,6 +6,7 @@ const config = require('../../config');
 const db = require('../../db');
 
 const User = db.User;
+const Ethnicity = db.Ethnicity;
 
 // Create standalone functions for callbacks of each async request.
 const createUserIfNonExistent = (res, req) => {
@@ -71,6 +72,14 @@ const userController = {
             console.log("Error producing JWT: ", token);
             res.status(400);
         }
+    },
+    getEthnicities: function (req, res) {
+        const result = Ethnicity.ethnicities();
+        res.status(200).json(result);
+    },
+    getGenders: function (req, res) {
+        const result = User.genders();
+        res.status(200).json(result);
     }
 };
 
