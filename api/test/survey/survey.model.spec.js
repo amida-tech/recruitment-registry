@@ -20,6 +20,7 @@ var User = db.User;
 describe('survey unit', function () {
     const example = surveyExamples.Example;
     const user = userExamples.Example;
+    const answersSpec = surveyExamples.ExampleSpec;
 
     var userId;
 
@@ -55,50 +56,16 @@ describe('survey unit', function () {
     it('post answers, get survey with answers', function () {
         const id = serverSurvey.id;
 
-        const q0 = serverSurvey.questions[0].id;
-        const a00 = serverSurvey.questions[0].choices[1].id;
-        const a01 = serverSurvey.questions[0].choices[2].id;
-
-        const q1 = serverSurvey.questions[1].id;
-        const a1 = serverSurvey.questions[1].choices[0].id;
-
-        const q2 = serverSurvey.questions[2].id;
-        const a2 = 'Washington, DC';
-
-        const q3 = serverSurvey.questions[3].id;
-        const a3 = true;
-
-        const q4 = serverSurvey.questions[4].id;
-        const a4 = false;
-
-        var answers = [{
-            questionId: q0,
-            answer: [a00, a01]
-        }, {
-            questionId: q1,
-            answer: a1
-        }, {
-            questionId: q2,
-            answer: a2
-        }, {
-            questionId: q3,
-            answer: a3
-        }, {
-            questionId: q4,
-            answer: a4
-        }];
+        const answers = helper.formAnswersToPost(serverSurvey, answersSpec);
 
         return Answer.post({
             userId,
             surveyId: id,
             answers
         }).then(function () {
-            return Survey.getAnswered(userId, id);
+            return Survey.getAnsweredSurveyById(userId, id);
         }).then(function (survey) {
-            const expectedSurvey = _.cloneDeep(serverSurvey);
-            expectedSurvey.questions.forEach(function (question, index) {
-                question.answer = answers[index].answer;
-            });
+            const expectedSurvey = helper.formAnsweredSurvey(serverSurvey, answers);
             expect(survey).to.deep.equal(expectedSurvey);
         });
     });

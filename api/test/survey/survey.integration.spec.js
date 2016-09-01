@@ -23,6 +23,7 @@ const Ethnicity = db.Ethnicity;
 describe('survey integration', function () {
     const example = surveyExamples.Example;
     const user = userExamples.Example;
+    const answersSpec = surveyExamples.ExampleSpec;
 
     before(function () {
         return db.sequelize.sync({
@@ -68,6 +69,8 @@ describe('survey integration', function () {
             .end(done);
     });
 
+    var serverSurvey;
+
     it('get empty survey', function (done) {
         request(app)
             .get('/api/v1.0/survey/empty/Example')
@@ -81,11 +84,43 @@ describe('survey integration', function () {
                 }
                 helper.buildServerSurveyFromClientSurvey(example, res.body).then(function (expected) {
                     expect(res.body).to.deep.equal(expected);
+                    serverSurvey = res.body;
                 }).then(function () {
                     done();
                 }).catch(function (err) {
                     done(err);
                 });
+            });
+    });
+
+    var answers;
+
+    it('answer survey', function (done) {
+        answers = helper.formAnswersToPost(serverSurvey, answersSpec);
+        const id = serverSurvey.id;
+        request(app)
+            .post('/api/v1.0/survey/answer')
+            .set('Authorization', 'Bearer ' + token)
+            .send({
+                surveyId: id,
+                answers
+            })
+            .expect(201)
+            .end(done);
+    });
+
+    it('get answered survey', function (done) {
+        request(app)
+            .get('/api/v1.0/survey/named/Example')
+            .set('Authorization', 'Bearer ' + token)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                const expected = helper.formAnsweredSurvey(serverSurvey, answers);
+                expect(res.body).to.deep.equal(expected);
+                done();
             });
     });
 });
