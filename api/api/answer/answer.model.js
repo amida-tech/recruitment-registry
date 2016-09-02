@@ -46,7 +46,7 @@ module.exports = function (sequelize, DataTypes) {
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
         classMethods: {
-            post: function (input) {
+            postTx: function (input, tx) {
                 const userId = input.userId;
                 const surveyId = input.surveyId;
                 const answers = input.answers.reduce(function (r, answer) {
@@ -66,8 +66,15 @@ module.exports = function (sequelize, DataTypes) {
                     return r;
                 }, []);
                 return sequelize.Promise.all(answers.map(function (answer) {
-                    return Answer.create(answer);
+                    return Answer.create(answer, {
+                        transaction: tx
+                    });
                 }));
+            },
+            post: function (input) {
+                return sequelize.transaction(function (tx) {
+                    return Answer.postTx(input, tx);
+                });
             }
         }
     });

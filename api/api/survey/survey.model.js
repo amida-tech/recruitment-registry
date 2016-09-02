@@ -54,41 +54,44 @@ module.exports = function (sequelize, DataTypes) {
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
         classMethods: {
-            post: function (survey) {
+            postTx: function (survey, tx) {
                 var newSurvey = {
                     name: survey.name
                 };
-                return sequelize.transaction(function (t) {
-                    return Survey.create(newSurvey, {
-                            transaction: t
-                        }).then(function (result) {
-                            newSurvey.id = result.id;
-                            if (survey.questions && survey.questions.length) {
-                                newSurvey.questions = survey.questions.slice();
-                                return newQuestionsPromise(sequelize, newSurvey, t);
-                            } else {
-                                return newSurvey;
-                            }
-                        })
-                        .then((newSurvey) => {
-                            var id = newSurvey.id;
-                            var questions = newSurvey.questions;
-                            if (questions.length) {
-                                return sequelize.Promise.all(questions.map(function (question, index) {
-                                    return sequelize.models.survey_question.create({
-                                        questionId: question,
-                                        surveyId: id,
-                                        line: index
-                                    }, {
-                                        transaction: t
-                                    });
-                                })).then(function () {
-                                    return id;
+                return Survey.create(newSurvey, {
+                        transaction: tx
+                    }).then(function (result) {
+                        newSurvey.id = result.id;
+                        if (survey.questions && survey.questions.length) {
+                            newSurvey.questions = survey.questions.slice();
+                            return newQuestionsPromise(sequelize, newSurvey, tx);
+                        } else {
+                            return newSurvey;
+                        }
+                    })
+                    .then((newSurvey) => {
+                        var id = newSurvey.id;
+                        var questions = newSurvey.questions;
+                        if (questions.length) {
+                            return sequelize.Promise.all(questions.map(function (question, index) {
+                                return sequelize.models.survey_question.create({
+                                    questionId: question,
+                                    surveyId: id,
+                                    line: index
+                                }, {
+                                    transaction: tx
                                 });
-                            } else {
+                            })).then(function () {
                                 return id;
-                            }
-                        });
+                            });
+                        } else {
+                            return id;
+                        }
+                    });
+            },
+            post: function (survey) {
+                return sequelize.transaction(function (tx) {
+                    return Survey.postTx(survey, tx);
                 });
             },
             getEmptySurvey: function (query, replacements) {
@@ -98,7 +101,8 @@ module.exports = function (sequelize, DataTypes) {
                 }).then(function (surveys) {
                     const survey = surveys[0];
                     if (!survey) {
-                        return sequelize.Promise.reject('No such survey');
+                        const err = new Error('No such survey');
+                        return sequelize.Promise.reject(err);
                     }
                     return survey;
                 }).then(function (survey) {

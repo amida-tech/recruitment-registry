@@ -104,6 +104,33 @@ module.exports = function (sequelize, DataTypes) {
             },
             genders: function () {
                 return [GENDER_MALE, GENDER_FEMALE, GENDER_OTHER];
+            },
+            register: function (input) {
+                return sequelize.transaction(function (tx) {
+                    return User.create(input.user, {
+                        transaction: tx
+                    }).then(function (user) {
+                        const answerInput = {
+                            userId: user.id,
+                            surveyId: input.surveyId,
+                            answers: input.answers
+                        };
+                        return sequelize.models.answer.postTx(answerInput, tx).then(function () {
+                            return user.id;
+                        });
+                    });
+                });
+            },
+            showWithSurvey: function (input) {
+                console.log(input);
+                return User.getUser(input.userId).then(function (user) {
+                    return sequelize.models.survey.getAnsweredSurveyByName(user.id, input.surveyName).then(function (survey) {
+                        return {
+                            user,
+                            survey
+                        };
+                    });
+                });
             }
         },
         instanceMethods: {
