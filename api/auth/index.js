@@ -1,5 +1,6 @@
 'use strict';
 
+const express = require('express');
 const passport = require('passport');
 
 const BasicStrategy = require('passport-http').BasicStrategy;
@@ -8,6 +9,8 @@ const ExtractJWT = require('passport-jwt').ExtractJwt;
 
 const config = require('../config');
 const db = require('../db');
+const user = require('../api/user/user.controller');
+const auth = require('./auth.service');
 
 const User = db.User;
 
@@ -49,7 +52,7 @@ const jwtStrategy = function(jwt_payload, done) {
     });
 };
 
-exports.init = function() {
+const init = function() {
     const JWTOptions = {
         jwtFromRequest: ExtractJWT.fromAuthHeaderWithScheme('Bearer'),
         secretOrKey: config.jwt.secret
@@ -57,3 +60,11 @@ exports.init = function() {
     passport.use(new BasicStrategy(basicStrategy));
     passport.use(new JWTStrategy(JWTOptions, jwtStrategy));
 };
+
+init();
+
+var router = new express.Router();
+
+router.get('/local', auth.initialAuth(), require('./local'));
+
+module.exports = router;

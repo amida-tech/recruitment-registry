@@ -29,23 +29,6 @@ const createUserIfNonExistent = (res, req) => {
     });
 };
 
-function createJWT(payload) {
-    const options = {
-        expiresIn: "30d"
-    };
-    // replace 'development' with process ENV.
-    return jwt.sign(payload, config.jwt.secret, options);
-}
-
-function createUserJWT(user) {
-    const payload = {
-        id: user.id,
-        username: user.username,
-        admin: user.admin
-    };
-    return createJWT(payload);
-}
-
 const userController = {
     createNewUser: (req, res) => {
         createUserIfNonExistent(res, req);
@@ -60,17 +43,6 @@ const userController = {
             res.status(200).json(currentUser);
         } else {
             res.status(401);
-        }
-    },
-    createToken: function (req, res) {
-        const token = createUserJWT(req.user);
-        if (token) {
-            res.status(200).json({
-                token
-            }); // This is for development. We will probably want to return as a cookie.
-        } else {
-            console.log("Error producing JWT: ", token);
-            res.status(400);
         }
     },
     getEthnicities: function (req, res) {
