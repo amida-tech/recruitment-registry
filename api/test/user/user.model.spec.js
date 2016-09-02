@@ -7,6 +7,7 @@ var _ = require('lodash');
 
 const helper = require('../helpers');
 const db = require('../../db');
+const userExamples = require('../fixtures/user-examples');
 
 var expect = chai.expect;
 
@@ -14,6 +15,8 @@ var Ethnicity = db.Ethnicity;
 var User = db.User;
 
 describe('user unit', function () {
+    const example = userExamples.Example;
+
     before(function () {
         return Ethnicity.sync({
             force: true
@@ -23,15 +26,6 @@ describe('user unit', function () {
             });
         });
     });
-
-    const example = {
-        username: 'test',
-        password: 'password',
-        email: 'test@example.com',
-        zip: '20850',
-        ethnicity: 'Hispanic',
-        gender: 'female'
-    };
 
     var id;
 

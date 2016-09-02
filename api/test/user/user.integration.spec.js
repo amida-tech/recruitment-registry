@@ -5,6 +5,7 @@ process.env.NODE_ENV = 'test';
 var chai = require('chai');
 
 const db = require('../../db');
+const userExamples = require('../fixtures/user-examples');
 
 const config = require('../../config');
 const request = require('supertest');
@@ -19,14 +20,8 @@ let jwt;
 const User = db.User;
 const Ethnicity = db.Ethnicity;
 
-let user = {
-    username: 'test',
-    password: 'password',
-    email: 'test@example.com',
-    zip: '20850'
-};
-
 describe('Starting API Server', function () {
+    const user = userExamples.Example;
 
     before(function () {
         return db.sequelize.sync({
