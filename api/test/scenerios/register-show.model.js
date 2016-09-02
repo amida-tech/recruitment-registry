@@ -72,7 +72,7 @@ describe('user unit', function () {
             expectedUser.password = user.password;
             delete user.createdAt;
             delete user.updatedAt;
-            expect(user).to.deep.equal(user);
+            expect(user).to.deep.equal(expectedUser);
 
             const actualSurvey = result.survey;
             const expectedSurvey = helper.formAnsweredSurvey(survey, answers);
