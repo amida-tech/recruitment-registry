@@ -8,3 +8,12 @@ exports.Example = {
     ethnicity: 'Hispanic',
     gender: 'female'
 };
+
+exports.Alzhimer = {
+    username: 'ahaeimer',
+    password: 'pwalz',
+    email: 'alzheimer@example.com',
+    zip: '20857',
+    ethnicity: 'African',
+    gender: 'male'
+};
