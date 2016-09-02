@@ -9,7 +9,7 @@ exports.Example = {
     gender: 'female'
 };
 
-exports.Alzhimer = {
+exports.Alzheimer = {
     username: 'ahaeimer',
     password: 'pwalz',
     email: 'alzheimer@example.com',
