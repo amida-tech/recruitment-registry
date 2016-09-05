@@ -1,0 +1,221 @@
+swagger: '2.0'
+info:
+  version: "1.0.0"
+  title: Recruitment Registry
+  license:
+    name: Apache 2.0
+basePath: /api/v1
+schemes:
+  - http
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /user/ethnicities:
+    get:
+      summary: List available ethnicities
+      responses:
+        200:
+          description: Successful response
+          schema:
+            type: array
+            items:
+              type: string
+  /user/genders:
+    get:
+      summary: List available genders
+      responses:
+        200:
+          description: Successful response
+          schema:
+            type: array
+            items:
+              type: string
+  /survey/empty/{name}:
+    get:
+      summary: Get named survey information
+      parameters:
+        -
+          name: name
+          in: path
+          required: true
+          type: string
+      responses:
+        200:
+          description: Successul response
+          schema:
+            $ref: '#/definitions/survey'
+  /user/register:
+    post:
+      summary: Register a new user
+      parameters:
+        -
+          name: registrant
+          in: body
+          description: Registration information of new user
+          required: true
+          schema:
+            $ref: '#/definitions/registrant'
+      responses:
+        # Response code
+        201:
+          description: Successful response
+          schema:
+            description: User id
+            type: integer
+  /user/me-and-survey/{name}:
+    get:
+      summary: Get user and named survey information
+      security:
+        - UserSecurity: []
+      parameters:
+        -
+          name: name
+          in: path
+          required: true
+          type: string
+      responses:
+        200:
+          description: Successful response
+          schema:
+            $ref: '#/definitions/userAndSurvey'
+  /survey:
+    post:
+      summary: Creates a new survey
+      security:
+        - UserSecurity: []
+      parameters:
+        -
+          name: newSurvey
+          in: body
+          description: Definition of new survey
+          required: true
+          schema:
+            $ref: '#/definitions/newSurvey'
+      responses:
+        201:
+          description: Successful response
+          schema:
+            description: Survey id
+            type: integer
+securityDefinitions:
+  UserSecurity:
+    type: apiKey
+    in: header
+    name: Authorization
+definitions:
+  user:
+    type: object
+    properties:
+      username:
+        type: string
+      password:
+        type: string
+      email:
+        type: string
+      zip:
+        type: string
+      ethnicity:
+        type: string
+      gender:
+        type: string
+  newSurvey:
+    type: object
+    properties:
+      name:
+        type: string
+      questions:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: string
+            text:
+              type: string
+            type:
+              type: string
+            choices:
+              type: array
+              items:
+                type: string
+  choice:
+    type: object
+    properties:
+      id:
+        type: integer
+      text:
+        type: string
+  answer:
+    type: object
+    properties:
+      choice:
+        type: integer
+      choices:
+        type: array
+        items:
+          type: integer
+      textValue:
+        type: string
+      boolValue:
+        type: boolean
+  question:
+    type: object
+    properties:
+      id:
+        type: integer
+      text:
+        type: string
+      type:
+        type: string
+      choices:
+        type: array
+        items:
+          $ref: '#/definitions/choice'
+      answer:
+        $ref: '#/definitions/answer'
+  linkedAnswer:
+    type: object
+    properties:
+      questionId:
+        type: integer
+      choice:
+        type: integer
+      choices:
+        type: array
+        items:
+          type: integer
+      textValue:
+        type: string
+      boolValue:
+        type: boolean
+  survey:
+    type: object
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      questions:
+        type: array
+        items:
+          $ref: '#/definitions/question'
+  registrant:
+    type: object
+    properties:
+      user:
+        $ref: '#/definitions/user'
+      surveyId:
+        type: integer
+      answers:
+        type: array
+        items:
+          $ref: '#/definitions/linkedAnswer'
+  userAndSurvey:
+    type: object
+    properties:
+      user:
+        $ref: '#/definitions/user'
+      survey:
+        $ref: '#/definitions/survey'

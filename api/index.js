@@ -1,21 +1,39 @@
 'use strict';
 
 const config = require('./config');
+
 const app = require('./app');
+const swaggerTools = require('swagger-tools');
 const db = require('./db');
 
-//
-// Start an instance of the app on the port specified in the proper
-// NODE_ENV config obj. It's okay to log synchronously here on server
-// initialization.
-//
+const swaggerObject = require('./swagger.json');
 
-db.sequelize.sync().then(function () {
-    app.listen(config.port, function () {
-        console.log('Server started at ', config.port);
+swaggerTools.initializeMiddleware(swaggerObject, function (middleware) {
+    //app.use(middleware.swaggerMetadata());
+    //app.use(middleware.swaggerValidator({
+    //	validateResponse: true
+    //}));
+
+    //app.use(middleware.swaggerRouter({useStubs: true, controllers: './controllers'}));
+
+    app.use(middleware.swaggerUi());
+
+    // all other routes should return a 404
+    app.route('/*').get((req, res) => {
+        var result = {
+            status: 404
+        };
+        res.status(result.status);
+        res.json(result, result.status);
     });
-}).catch(function (err) {
-    console.log('Server failed to start due to error: %s', err);
+
+    db.sequelize.sync().then(function () {
+        app.listen(config.port, function () {
+            console.log('Server started at ', config.port);
+        });
+    }).catch(function (err) {
+        console.log('Server failed to start due to error: %s', err);
+    });
 });
 
 module.exports = app;
