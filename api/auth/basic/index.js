@@ -1,7 +1,11 @@
 'use strict';
 
-const jwt = require('jsonwebtoken');
+const express = require('express');
+const passport = require('passport');
 
+var router = express.Router();
+
+const jwt = require('jsonwebtoken');
 const config = require('../../config');
 
 function createJWT(payload) {
@@ -21,7 +25,9 @@ function createUserJWT(user) {
     return createJWT(payload);
 }
 
-module.exports = function (req, res) {
+router.get('/', passport.authenticate('basic', {
+    session: false
+}), function (req, res) {
     const token = createUserJWT(req.user);
     if (token) {
         res.status(200).json({
@@ -31,4 +37,6 @@ module.exports = function (req, res) {
         console.log("Error producing JWT: ", token);
         res.status(400);
     }
-};
+});
+
+module.exports = router;

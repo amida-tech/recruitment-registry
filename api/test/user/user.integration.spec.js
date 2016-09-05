@@ -67,7 +67,7 @@ describe('Starting API Server', function () {
 
     it('Authenticates a user and returns a JWT', function createToken(done) {
         request(app)
-            .get('/auth/v1.0/local')
+            .get('/api/v1.0/auth/basic')
             .auth(user.username, 'password')
             .expect(200)
             .end(function (err, res) {

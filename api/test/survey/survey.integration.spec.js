@@ -45,7 +45,7 @@ describe('survey integration', function () {
 
     it('authenticate user', function (done) {
         request(app)
-            .get('/auth/v1.0/local')
+            .get('/api/v1.0/auth/basic')
             .auth(user.username, user.password)
             .expect(200)
             .end(function (err, res) {

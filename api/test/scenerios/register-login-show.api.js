@@ -106,7 +106,7 @@ describe('Starting API Server', function () {
 
     it('login', function (done) {
         request(app)
-            .get('/auth/v1.0/local')
+            .get('/api/v1.0/auth/basic')
             .auth(userExample.username, userExample.password)
             .expect(200)
             .end(function (err, res) {
