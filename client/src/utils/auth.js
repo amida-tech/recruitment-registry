@@ -26,10 +26,11 @@ var auth = {
     return !!localStorage.token;
   },
 
-  register(username, password, callback) {
-    request.post('/api/v1.0/user/register', { username, password }, (response) => {
+  register(data, callback) {
+    request.post('/api/v1.0/user/register', data, (response) => {
       if (response.registered === true) {
-        this.login(username, password, callback);
+        console.log("logging in");
+        this.login(data.username, data.password, callback);
       } else {
         callback(false, response.error);
       }

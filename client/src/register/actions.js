@@ -1,13 +1,68 @@
-import bcrypt from 'bcryptjs';
-import auth from '../utils/auth';
-import genSalt from '../utils/salt';
-import { sendingRequest, removeLastFormError, anyElementsEmpty, requestFailed, setAuthState, forwardTo, changeForm } from '../form/actions';
+import * as t from './actionTypes';
 
-export function register(username, password) {
+import { browserHistory } from 'react-router';
+import auth from '../utils/auth';
+
+export function changeForm(newState) {
+  return { type: t.CHANGE_FORM, newState };
+}
+
+export function update(name, value) {
+  return dispatch => dispatch({
+    type: t.CHANGE_FORM,
+    name, value
+  });
+}
+
+export function sendingRequest(sending) {
+  return { type: t.SENDING_REQUEST, sending };
+}
+
+export function removeLastFormError() {
+  const form = document.querySelector('.form-page__form-wrapper');
+  form.classList.remove('js-form__err--' + lastErrType);
+}
+
+export function anyElementsEmpty(elements) {
+  for (let element in elements) {
+    if (!elements[element]) {
+      console.log(element);
+      return true;
+    }
+  }
+  return false;
+}
+
+let lastErrType = "";
+
+export function requestFailed(err) {
+  removeLastFormError();
+  const form = document.querySelector('.form-page__form-wrapper');
+  form.classList.add('js-form__err');
+  form.classList.add('js-form__err-animation');
+  form.classList.add('js-form__err--' + err.type);
+  lastErrType = err.type;
+  setTimeout(() => {
+    form.classList.remove('js-form__err-animation');
+  }, 150);
+}
+
+export function setAuthState(newState) {
+  return { type: t.SET_AUTH, newState };
+}
+
+export function forwardTo(location) {
+  console.log('forwardTo(' + location + ')');
+  browserHistory.push(location);
+}
+
+export function register(data) {
   return (dispatch) => {
     dispatch(sendingRequest(true));
+
     removeLastFormError();
-    if (anyElementsEmpty({ username, password })) {
+
+    if (anyElementsEmpty(data)) {
       requestFailed({
         type: "field-missing"
       });
@@ -15,30 +70,15 @@ export function register(username, password) {
       return;
     }
 
-    const salt = genSalt(username);
+    auth.register(data, (success, err) => {
 
-    bcrypt.hash(password, salt, (err, hash) => {
-      if (err) {
-        requestFailed({
-          type: 'failed'
-        });
-        return;
+      dispatch(sendingRequest(false));
+      dispatch(setAuthState(success));
+      if (success) {
+        forwardTo('/');
+      } else {
+        requestFailed(err);
       }
-
-      auth.register(username, hash, (success, err) => {
-
-        dispatch(sendingRequest(false));
-        dispatch(setAuthState(success));
-        if (success) {
-          forwardTo('/');
-          dispatch(changeForm({
-            username: "",
-            password: ""
-          }));
-        } else {
-          requestFailed(err);
-        }
-      });
     });
   }
 }

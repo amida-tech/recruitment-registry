@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
-import { changeForm } from '../form/actions';
+import actions from '../index';
 import LoadingButton from './loading-button';
 const assign = Object.assign || require('object.assign');
 
 class Form extends Component {
   render() {
+
     return(
       <form className="form" onSubmit={this._onSubmit.bind(this)}>
         <div className="form__error-wrapper">
@@ -54,7 +55,7 @@ class Form extends Component {
   }
 
   _emitChange(newState) {
-    this.props.dispatch(changeForm(newState));
+    this.props.dispatch(actions.changeForm(newState));
   }
 
   _onSubmit(evt) {

@@ -8,12 +8,10 @@ import SliderMonitor from 'redux-slider-monitor';
 import createLogger from 'redux-logger';
 import { Provider } from 'react-redux';
 import { Router, Route, browserHistory } from 'react-router';
-import { applyMiddleware, compose, createStore } from 'redux';
+import { applyMiddleware, compose, createStore, combineReducers } from 'redux';
 import { createDevTools, persistState } from 'redux-devtools';
 import thunk from 'redux-thunk';
-import { LOCATION_CHANGE } from 'react-router-redux';
 
-import { homeReducer } from './form/reducers';
 
 const IS_PROD = process.env.NODE_ENV !== 'development';
 const NOOP = () => null;
@@ -44,14 +42,16 @@ export default (options) => {
     loggerOptions = {},
     middleware = [],
     enhancers = {},
-    routes = []
+    routes = [],
+    reducers = {}
   } = options;
 
   const initialMiddleware = [createLogger(loggerOptions)];
 
   const createStoreWithMiddleware = applyMiddleware(thunk)(createStore);
   const store = createStoreWithMiddleware(
-    homeReducer,
+    combineReducers(reducers),
+    initialState,
     compose(
       applyMiddleware(...initialMiddleware, ...middleware),
       ...initialEnhancers,

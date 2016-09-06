@@ -1,20 +1,16 @@
-import bcrypt from 'bcryptjs';
-import genSalt from './salt';
-const salt = bcrypt.genSaltSync(10);
 let users;
 let localStorage = global.window.localStorage;
 
 var server = {
   init() {
-    if (localStorage.users === undefined || !localStorage.encrypted) {
+    if (localStorage.users === undefined) {
       const defaultUsername = "admin";
-      const defaultUsernameSalt = genSalt(defaultUsername);
-      const defaultUserPass = bcrypt.hashSync("pass", defaultUsernameSalt);
       users = {
-        [defaultUsername]: bcrypt.hashSync(defaultUserPass, salt)
+        [defaultUsername]: {
+          password: "pass"
+        }
       };
       localStorage.users = JSON.stringify(users);
-      localStorage.encrypted = true;
     } else {
       users = JSON.parse(localStorage.users);
     }
@@ -22,7 +18,7 @@ var server = {
   },
   login(username, password, callback) {
     const userExists = this.doesUserExist(username);
-    if (userExists && bcrypt.compareSync(password, users[username])) {
+    if (userExists && password === users[username].password) {
       if (callback) callback({
         authenticated: true,
         token: Math.random().toString(36).substring(7)
@@ -44,9 +40,9 @@ var server = {
       });
     }
   },
-  register(username, password, callback) {
-    if (!this.doesUserExist(username)) {
-      users[username] = bcrypt.hashSync(password, salt);
+  register(data, callback) {
+    if (!this.doesUserExist(data.username)) {
+      users[data.username] = data;
       localStorage.users = JSON.stringify(users);
       if (callback) callback({
         registered: true

@@ -4,8 +4,8 @@ import { connect } from 'react-redux';
 class Home extends Component {
   render() {
 
-    const { loggedIn, title } = this.props.data;
-
+    const { title } = this.props.data;
+    const {loggedIn} = this.props.data.loggedIn;
     return (
       <div>
         <h1>Home</h1>
