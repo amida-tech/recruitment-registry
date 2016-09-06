@@ -1,9 +1,9 @@
 'use strict';
 
-const db = require('../../db');
+const models = require('../../models');
 
-const Survey = db.Survey;
-const Answer = db.Answer;
+const Survey = models.Survey;
+const Answer = models.Answer;
 
 exports.getEmptySurvey = function (req, res) {
     var name = req.params.name;

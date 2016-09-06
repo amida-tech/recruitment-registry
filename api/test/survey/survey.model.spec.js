@@ -6,16 +6,16 @@ var chai = require('chai');
 var _ = require('lodash');
 
 const helper = require('./survey-helper');
-const db = require('../../db');
+const models = require('../../models');
 
 const userExamples = require('../fixtures/user-examples');
 const surveyExamples = require('../fixtures/survey-examples');
 
 var expect = chai.expect;
 
-var Survey = db.Survey;
-var Answer = db.Answer;
-var User = db.User;
+var Survey = models.Survey;
+var Answer = models.Answer;
+var User = models.User;
 
 describe('survey unit', function () {
     const example = surveyExamples.Example;
@@ -25,7 +25,7 @@ describe('survey unit', function () {
     var userId;
 
     before(function () {
-        return db.sequelize.sync({
+        return models.sequelize.sync({
             force: true
         }).then(function () {
             return User.create(user);

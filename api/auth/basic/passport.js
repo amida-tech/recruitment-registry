@@ -3,9 +3,9 @@
 const passport = require('passport');
 const passportHttp = require('passport-http');
 
-const db = require('../../db');
+const models = require('../../models');
 
-const User = db.User;
+const User = models.User;
 
 const basicStrategy = function (username, password, done) {
     User.findOne({

@@ -4,7 +4,7 @@ process.env.NODE_ENV = 'test';
 
 var chai = require('chai');
 
-const db = require('../../db');
+const models = require('../../models');
 const userExamples = require('../fixtures/user-examples');
 
 const config = require('../../config');
@@ -17,14 +17,14 @@ const expect = chai.expect;
 let server;
 let jwt;
 
-const User = db.User;
-const Ethnicity = db.Ethnicity;
+const User = models.User;
+const Ethnicity = models.Ethnicity;
 
 describe('Starting API Server', function () {
     const user = userExamples.Example;
 
     before(function () {
-        return db.sequelize.sync({
+        return models.sequelize.sync({
             force: true
         }).then(function () {
             return User.destroy({

@@ -4,7 +4,7 @@ const config = require('./config');
 
 const app = require('./app');
 const swaggerTools = require('swagger-tools');
-const db = require('./db');
+const models = require('./models');
 
 const swaggerObject = require('./swagger.json');
 
@@ -27,7 +27,7 @@ swaggerTools.initializeMiddleware(swaggerObject, function (middleware) {
         res.json(result, result.status);
     });
 
-    db.sequelize.sync().then(function () {
+    models.sequelize.sync().then(function () {
         app.listen(config.port, function () {
             console.log('Server started at ', config.port);
         });

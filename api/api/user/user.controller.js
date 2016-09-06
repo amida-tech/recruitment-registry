@@ -3,10 +3,10 @@
 const jwt = require('jsonwebtoken');
 
 const config = require('../../config');
-const db = require('../../db');
+const models = require('../../models');
 
-const User = db.User;
-const Ethnicity = db.Ethnicity;
+const User = models.User;
+const Ethnicity = models.Ethnicity;
 
 // Create standalone functions for callbacks of each async request.
 const createUserIfNonExistent = (res, req) => {

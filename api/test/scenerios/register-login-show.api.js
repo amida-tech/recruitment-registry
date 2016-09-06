@@ -6,7 +6,7 @@ var _ = require('lodash');
 var chai = require('chai');
 
 const helper = require('../survey/survey-helper');
-const db = require('../../db');
+const models = require('../../models');
 
 const userExamples = require('../fixtures/user-examples');
 const surveyExamples = require('../fixtures/survey-examples');
@@ -18,8 +18,8 @@ const app = require('../..');
 
 const expect = chai.expect;
 
-const User = db.User;
-const Survey = db.Survey;
+const User = models.User;
+const Survey = models.Survey;
 
 describe('Starting API Server', function () {
     const userExample = userExamples.Alzheimer;
@@ -29,7 +29,7 @@ describe('Starting API Server', function () {
     // -------- syncAndLoadAlzheimer
 
     before(function () {
-        return db.sequelize.sync({
+        return models.sequelize.sync({
             force: true
         });
     });

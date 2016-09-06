@@ -6,13 +6,13 @@ var chai = require('chai');
 var _ = require('lodash');
 
 const helper = require('../helpers');
-const db = require('../../db');
+const models = require('../../models');
 
 var expect = chai.expect;
 
-var QuestionType = db.QuestionType;
-var QuestionChoices = db.QuestionChoices;
-var Question = db.Question;
+var QuestionType = models.QuestionType;
+var QuestionChoices = models.QuestionChoices;
+var Question = models.Question;
 
 describe('question unit', function () {
     before(function () {

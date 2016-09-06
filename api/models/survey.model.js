@@ -2,8 +2,6 @@
 
 const _ = require('lodash');
 
-const db = require('../../db');
-
 const extractNewSurveyQuestions = function (survey) {
     var questions = survey.questions;
     if (questions && questions.length) {

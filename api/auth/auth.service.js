@@ -7,9 +7,9 @@ const passport = require('passport');
 const JWTStrategy = require('passport-jwt').Strategy;
 const ExtractJWT = require('passport-jwt').ExtractJwt;
 
-const db = require('../db');
+const models = require('../models');
 
-const User = db.User;
+const User = models.User;
 
 const jwtStrategy = function (jwt_payload, done) {
     User.findOne({

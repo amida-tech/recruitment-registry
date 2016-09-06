@@ -6,13 +6,13 @@ var chai = require('chai');
 var _ = require('lodash');
 
 const helper = require('../helpers');
-const db = require('../../db');
+const models = require('../../models');
 const userExamples = require('../fixtures/user-examples');
 
 var expect = chai.expect;
 
-var Ethnicity = db.Ethnicity;
-var User = db.User;
+var Ethnicity = models.Ethnicity;
+var User = models.User;
 
 describe('user unit', function () {
     const example = userExamples.Example;

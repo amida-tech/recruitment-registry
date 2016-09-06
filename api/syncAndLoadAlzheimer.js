@@ -1,16 +1,16 @@
 'use strict';
 
-const db = require('./db');
+const models = require('./models');
 
 const surveyExamples = require('../fixtures/survey-examples');
 
-db.sequelize.sync({
-	force: true
-}).then(function() {
-	db.Survey.post(surveyExamples.Alzheimer);
-}).then(function() {
-	console.log('success');
-}).catch(function(err) {
-	console.log('failure');
-	console.log(err);
+models.sequelize.sync({
+    force: true
+}).then(function () {
+    models.Survey.post(surveyExamples.Alzheimer);
+}).then(function () {
+    console.log('success');
+}).catch(function (err) {
+    console.log('failure');
+    console.log(err);
 });

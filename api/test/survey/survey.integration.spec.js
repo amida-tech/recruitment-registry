@@ -5,7 +5,7 @@ process.env.NODE_ENV = 'test';
 var chai = require('chai');
 
 const helper = require('./survey-helper');
-const db = require('../../db');
+const models = require('../../models');
 
 const config = require('../../config');
 const request = require('supertest');
@@ -17,8 +17,8 @@ const surveyExamples = require('../fixtures/survey-examples');
 
 const expect = chai.expect;
 
-const User = db.User;
-const Ethnicity = db.Ethnicity;
+const User = models.User;
+const Ethnicity = models.Ethnicity;
 
 describe('survey integration', function () {
     const example = surveyExamples.Example;
@@ -26,7 +26,7 @@ describe('survey integration', function () {
     const answersSpec = surveyExamples.ExampleSpec;
 
     before(function () {
-        return db.sequelize.sync({
+        return models.sequelize.sync({
             force: true
         }).then(function () {
             return User.create(user);
