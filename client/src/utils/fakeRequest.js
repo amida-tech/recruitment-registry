@@ -8,7 +8,7 @@ var fakeRequest = {
           server.login(data.username, data.password, callback);
           break;
         case '/api/v1.0/user/register':
-          server.register(data.username, data.password, callback);
+          server.register(data, callback);
           break;
         case '/api/v1.0/user/logout':
           server.logout(callback);
