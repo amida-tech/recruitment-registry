@@ -53,6 +53,9 @@ module.exports = function (sequelize, DataTypes) {
         gender: {
             type: DataTypes.ENUM(GENDER_MALE, GENDER_FEMALE, GENDER_OTHER)
         },
+        role: {
+            type: DataTypes.ENUM('admin', 'participant', 'clinician')
+        },
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',
