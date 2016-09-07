@@ -5,7 +5,7 @@ exports.Example = {
     questions: [{
         content: {
             text: 'Which sports do you like?',
-            type: 'multi-choice-multi',
+            type: 'choices',
             choices: [
                 'Football',
                 'Basketball',
@@ -16,7 +16,7 @@ exports.Example = {
     }, {
         content: {
             text: 'What is your hair color?',
-            type: 'multi-choice-single',
+            type: 'choice',
             choices: [
                 'Black',
                 'Brown',
@@ -32,12 +32,12 @@ exports.Example = {
     }, {
         content: {
             text: 'Are you injured?',
-            type: 'yes-no'
+            type: 'bool'
         }
     }, {
         content: {
             text: 'Do you have a cat?',
-            type: 'yes-no'
+            type: 'bool'
         }
     }]
 };
@@ -59,12 +59,12 @@ exports.Alzheimer = {
     questions: [{
         content: {
             text: 'Family history of memory disorders/AD/dementia?',
-            type: 'yes-no'
+            type: 'bool'
         }
     }, {
         content: {
             text: 'How did you hear about us?',
-            type: 'multi-choice-multi',
+            type: 'choices',
             choices: [
                 'TV',
                 'Radio',
@@ -79,7 +79,7 @@ exports.Alzheimer = {
     }, {
         content: {
             text: 'Are you interested in receiving more information?',
-            type: 'multi-choice-multi',
+            type: 'choices',
             choices: [
                 'Brain Health',
                 'Clinical Trials on Brain Health'
@@ -88,7 +88,7 @@ exports.Alzheimer = {
     }, {
         content: {
             text: 'Are you interested in volunterring in clinical research?',
-            type: 'yes-no'
+            type: 'bool'
         }
     }]
 };
