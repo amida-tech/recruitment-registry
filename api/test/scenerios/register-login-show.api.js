@@ -63,7 +63,7 @@ describe('Starting API Server', function () {
 
     it('get survey', function (done) {
         request(app)
-            .get('/api/v1.0/survey/empty/Alzheimer')
+            .get('/api/v1.0/surveys/empty/Alzheimer')
             .expect(200)
             .end(function (err, res) {
                 if (err) {

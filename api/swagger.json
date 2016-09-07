@@ -46,7 +46,7 @@
                 }
             }
         },
-        "/survey": {
+        "/surveys": {
             "post": {
                 "summary": "Creates a new survey",
                 "security": [
@@ -108,7 +108,7 @@
                 }
             }
         },
-        "/survey/empty/{name}": {
+        "/surveys/empty/{name}": {
             "get": {
                 "summary": "Get named survey information",
                 "parameters": [

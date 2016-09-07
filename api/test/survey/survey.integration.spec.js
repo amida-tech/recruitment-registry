@@ -35,7 +35,7 @@ describe('survey integration', function () {
 
     it('post survey example unauthorized', function (done) {
         request(app)
-            .post('/api/v1.0/survey')
+            .post('/api/v1.0/surveys')
             .send(example)
             .expect(401)
             .end(done);
@@ -59,7 +59,7 @@ describe('survey integration', function () {
 
     it('post survey example authorized', function (done) {
         request(app)
-            .post('/api/v1.0/survey')
+            .post('/api/v1.0/surveys')
             .set('Authorization', 'Bearer ' + token)
             .send(example)
             .expect(201)
@@ -73,7 +73,7 @@ describe('survey integration', function () {
 
     it('get empty survey', function (done) {
         request(app)
-            .get('/api/v1.0/survey/empty/Example')
+            .get('/api/v1.0/surveys/empty/Example')
             .expect(200)
             .expect(function (res) {
                 expect(!!res.body.id).to.equal(true);
@@ -99,7 +99,7 @@ describe('survey integration', function () {
         answers = helper.formAnswersToPost(serverSurvey, answersSpec);
         const id = serverSurvey.id;
         request(app)
-            .post('/api/v1.0/survey/answer')
+            .post('/api/v1.0/surveys/answer')
             .set('Authorization', 'Bearer ' + token)
             .send({
                 surveyId: id,
@@ -111,7 +111,7 @@ describe('survey integration', function () {
 
     it('get answered survey', function (done) {
         request(app)
-            .get('/api/v1.0/survey/named/Example')
+            .get('/api/v1.0/surveys/named/Example')
             .set('Authorization', 'Bearer ' + token)
             .expect(200)
             .end(function (err, res) {
