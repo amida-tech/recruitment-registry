@@ -18,6 +18,34 @@
         "application/json"
     ],
     "paths": {
+        "/auth/basic": {
+            "get": {
+                "summary": "Authorization JWT",
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "description": "Basic authentication header 'Basic ...' where '...' is base64 encoded string for 'username:password'",
+                        "in": "header",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "description": "Returns JWT token that can be used as API key.  Prefix with 'Bearer ' before pasting.",
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "token": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/user/ethnicity": {
             "get": {
                 "summary": "List available ethnicities",

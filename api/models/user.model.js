@@ -1,6 +1,9 @@
 'use strict';
 
+const _ = require('lodash');
 const bcrypt = require('bcrypt');
+
+const config = require('../config');
 
 const GENDER_MALE = 'male';
 const GENDER_FEMALE = 'female';
@@ -69,6 +72,14 @@ module.exports = function (sequelize, DataTypes) {
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
         hooks: {
+            afterSync: function (options) {
+                if (options.force) {
+                    var user = _.assign(config.initialUser, {
+                        role: 'admin'
+                    });
+                    return User.create(user);
+                }
+            },
             beforeBulkCreate: function (users, fields, fn) {
                 var totalUpdated = 0;
                 users.forEach(function (user) {
