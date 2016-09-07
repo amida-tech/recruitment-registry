@@ -47,14 +47,14 @@ describe('Starting API Server', function () {
 
     it('get available ethnicities', function (done) {
         request(app)
-            .get('/api/v1.0/user/ethnicity')
+            .get('/api/v1.0/ethnicities')
             .expect(200)
             .end(done);
     });
 
     it('get available genders', function (done) {
         request(app)
-            .get('/api/v1.0/user/gender')
+            .get('/api/v1.0/genders')
             .expect(200)
             .end(done);
     });

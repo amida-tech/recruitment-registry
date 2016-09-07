@@ -45,14 +45,6 @@ const userController = {
             res.status(401);
         }
     },
-    getEthnicities: function (req, res) {
-        const result = Ethnicity.ethnicities();
-        res.status(200).json(result);
-    },
-    getGenders: function (req, res) {
-        const result = User.genders();
-        res.status(200).json(result);
-    },
     register: function (req, res) {
         User.register(req.body).then(function (id) {
             res.status(201).json({
