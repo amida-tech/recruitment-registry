@@ -7,7 +7,7 @@ const surveyExamples = require('../fixtures/survey-examples');
 models.sequelize.sync({
     force: true
 }).then(function () {
-    models.Survey.post(surveyExamples.Alzheimer);
+    models.Survey.createSurvey(surveyExamples.Alzheimer);
 }).then(function () {
     console.log('success');
 }).catch(function (err) {

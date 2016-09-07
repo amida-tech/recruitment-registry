@@ -35,7 +35,7 @@ describe('Starting API Server', function () {
     });
 
     it('post survey example unauthorized', function () {
-        return Survey.post(surveyExample);
+        return Survey.createSurvey(surveyExample);
     });
 
     // --------

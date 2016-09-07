@@ -46,6 +46,36 @@
                 }
             }
         },
+        "/survey": {
+            "post": {
+                "summary": "Creates a new survey",
+                "security": [
+                    {
+                        "admin": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "newSurvey",
+                        "in": "body",
+                        "description": "Definition of a new survey.  Existing questions have 'id' only and new questions have 'content' only.",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/newSurvey"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Successful response",
+                        "schema": {
+                            "description": "Survey id",
+                            "type": "integer"
+                        }
+                    }
+                }
+            }
+        },
         "/user/ethnicity": {
             "get": {
                 "summary": "List available ethnicities",
@@ -129,7 +159,7 @@
                 "summary": "Get user and named survey information",
                 "security": [
                     {
-                        "UserSecurity": []
+                        "participant": []
                     }
                 ],
                 "parameters": [
@@ -149,40 +179,15 @@
                     }
                 }
             }
-        },
-        "/survey": {
-            "post": {
-                "summary": "Creates a new survey",
-                "security": [
-                    {
-                        "UserSecurity": []
-                    }
-                ],
-                "parameters": [
-                    {
-                        "name": "newSurvey",
-                        "in": "body",
-                        "description": "Definition of new survey",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/newSurvey"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Successful response",
-                        "schema": {
-                            "description": "Survey id",
-                            "type": "integer"
-                        }
-                    }
-                }
-            }
         }
     },
     "securityDefinitions": {
-        "UserSecurity": {
+        "admin": {
+            "type": "apiKey",
+            "in": "header",
+            "name": "Authorization"
+        },
+        "participant": {
             "type": "apiKey",
             "in": "header",
             "name": "Authorization"
@@ -214,6 +219,10 @@
         },
         "newSurvey": {
             "type": "object",
+            "required": [
+                "name",
+                "questions"
+            ],
             "properties": {
                 "name": {
                     "type": "string"
@@ -226,20 +235,32 @@
                             "id": {
                                 "type": "string"
                             },
-                            "text": {
-                                "type": "string"
-                            },
-                            "type": {
-                                "type": "string"
-                            },
-                            "choices": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string"
+                            "content": {
+                                "type": "object",
+                                "required": [
+                                    "text",
+                                    "type"
+                                ],
+                                "properties": {
+                                    "text": {
+                                        "type": "string"
+                                    },
+                                    "type": {
+                                        "type": "string"
+                                    },
+                                    "choices": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
                                 }
                             }
-                        }
-                    }
+                        },
+                        "minProperties": 1,
+                        "maxProperties": 1
+                    },
+                    "minLength": 1
                 }
             }
         },

@@ -26,7 +26,7 @@ describe('user unit', function () {
         return models.sequelize.sync({
             force: true
         }).then(function () {
-            return Survey.post(surveyExample);
+            return Survey.createSurvey(surveyExample);
         });
     });
 

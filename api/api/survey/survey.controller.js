@@ -16,7 +16,7 @@ exports.getEmptySurvey = function (req, res) {
 
 exports.createSurvey = function (req, res) {
     const survey = req.body;
-    Survey.post(survey).then(function (id) {
+    Survey.createSurvey(survey).then(function (id) {
         res.status(201).json({
             id
         });

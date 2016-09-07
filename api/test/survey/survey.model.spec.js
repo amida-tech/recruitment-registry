@@ -37,7 +37,7 @@ describe('survey unit', function () {
     var serverSurvey;
 
     it('post/get survey', function () {
-        return Survey.post(example).then(function (id) {
+        return Survey.createSurvey(example).then(function (id) {
             return Survey.getSurveyById(id).then(function (result) {
                 return helper.buildServerSurveyFromClientSurvey(example, result).then(function (expected) {
                     expect(result).to.deep.equal(expected);
