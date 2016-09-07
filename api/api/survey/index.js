@@ -8,9 +8,8 @@ const auth = require('../../auth/auth.service');
 
 var router = new express.Router();
 
-router.get('/empty/:name', controller.getEmptySurvey);
 router.post('/', auth.isAuthenticated(), controller.createSurvey);
-router.post('/answer', auth.isAuthenticated(), controller.answerSurvey);
-router.get('/named/:name', auth.isAuthenticated(), controller.getSurveyByName);
+router.get('/empty/:name', controller.getEmptySurvey);
+router.get('/:name', auth.isAuthenticated(), controller.getSurveyByName);
 
 module.exports = router;

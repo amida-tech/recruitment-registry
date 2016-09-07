@@ -4,7 +4,7 @@ process.env.NODE_ENV = 'test';
 
 var chai = require('chai');
 
-const db = require('../../db');
+const models = require('../../models');
 const userExamples = require('../fixtures/user-examples');
 
 const config = require('../../config');
@@ -17,14 +17,14 @@ const expect = chai.expect;
 let server;
 let jwt;
 
-const User = db.User;
-const Ethnicity = db.Ethnicity;
+const User = models.User;
+const Ethnicity = models.Ethnicity;
 
 describe('Starting API Server', function () {
     const user = userExamples.Example;
 
     before(function () {
-        return db.sequelize.sync({
+        return models.sequelize.sync({
             force: true
         }).then(function () {
             return User.destroy({
@@ -38,7 +38,7 @@ describe('Starting API Server', function () {
 
     it('get available ethnicities', function (done) {
         request(app)
-            .get('/api/v1.0/user/ethnicity')
+            .get('/api/v1.0/ethnicities')
             .expect(200)
             .expect(function (res) {
                 var expected = Ethnicity.ethnicities();
@@ -49,7 +49,7 @@ describe('Starting API Server', function () {
 
     it('get available genders', function (done) {
         request(app)
-            .get('/api/v1.0/user/gender')
+            .get('/api/v1.0/genders')
             .expect(200)
             .expect(function (res) {
                 var expected = User.genders();
@@ -60,14 +60,14 @@ describe('Starting API Server', function () {
 
     it('Creates a user via REST api.', function createUser(done) {
         request(app)
-            .post('/api/v1.0/user')
+            .post('/api/v1.0/users')
             .send(user)
             .expect(201, done);
     });
 
     it('Authenticates a user and returns a JWT', function createToken(done) {
         request(app)
-            .get('/auth/v1.0/local')
+            .get('/api/v1.0/auth/basic')
             .auth(user.username, 'password')
             .expect(200)
             .end(function (err, res) {
@@ -81,12 +81,19 @@ describe('Starting API Server', function () {
 
     it('Returns a user\'s own data after authenticating the API', function showUser(done) {
         request(app)
-            .get('/api/v1.0/user')
+            .get('/api/v1.0/users/me')
             .set('Authorization', 'Bearer ' + jwt)
-            .expect(200, {
-                username: user.username,
-                email: user.email,
-                zip: user.zip
-            }, done);
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                expect(res.body).to.deep.equal({
+                    username: user.username,
+                    email: user.email,
+                    zip: user.zip
+                });
+                done();
+            });
     });
 });

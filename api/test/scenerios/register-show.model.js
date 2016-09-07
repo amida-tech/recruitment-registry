@@ -6,16 +6,16 @@ var chai = require('chai');
 var _ = require('lodash');
 
 const helper = require('../survey/survey-helper');
-const db = require('../../db');
+const models = require('../../models');
 
 const userExamples = require('../fixtures/user-examples');
 const surveyExamples = require('../fixtures/survey-examples');
 
 var expect = chai.expect;
 
-var Ethnicity = db.Ethnicity;
-var User = db.User;
-var Survey = db.Survey;
+var Ethnicity = models.Ethnicity;
+var User = models.User;
+var Survey = models.Survey;
 
 describe('user unit', function () {
     const userExample = userExamples.Alzheimer;
@@ -23,10 +23,10 @@ describe('user unit', function () {
     const answersSpec = surveyExamples.AlzheimerSpec;
 
     before(function () {
-        return db.sequelize.sync({
+        return models.sequelize.sync({
             force: true
         }).then(function () {
-            return Survey.post(surveyExample);
+            return Survey.createSurvey(surveyExample);
         });
     });
 

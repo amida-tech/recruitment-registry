@@ -5,11 +5,11 @@ process.env.NODE_ENV = 'test';
 var chai = require('chai');
 var _ = require('lodash');
 
-const db = require('../../db');
+const models = require('../../models');
 
 var expect = chai.expect;
 
-var QuestionType = db.QuestionType;
+var QuestionType = models.QuestionType;
 
 describe('question-type unit', function () {
     before(function () {

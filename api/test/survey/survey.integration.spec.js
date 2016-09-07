@@ -5,7 +5,7 @@ process.env.NODE_ENV = 'test';
 var chai = require('chai');
 
 const helper = require('./survey-helper');
-const db = require('../../db');
+const models = require('../../models');
 
 const config = require('../../config');
 const request = require('supertest');
@@ -17,8 +17,8 @@ const surveyExamples = require('../fixtures/survey-examples');
 
 const expect = chai.expect;
 
-const User = db.User;
-const Ethnicity = db.Ethnicity;
+const User = models.User;
+const Ethnicity = models.Ethnicity;
 
 describe('survey integration', function () {
     const example = surveyExamples.Example;
@@ -26,7 +26,7 @@ describe('survey integration', function () {
     const answersSpec = surveyExamples.ExampleSpec;
 
     before(function () {
-        return db.sequelize.sync({
+        return models.sequelize.sync({
             force: true
         }).then(function () {
             return User.create(user);
@@ -35,7 +35,7 @@ describe('survey integration', function () {
 
     it('post survey example unauthorized', function (done) {
         request(app)
-            .post('/api/v1.0/survey')
+            .post('/api/v1.0/surveys')
             .send(example)
             .expect(401)
             .end(done);
@@ -45,7 +45,7 @@ describe('survey integration', function () {
 
     it('authenticate user', function (done) {
         request(app)
-            .get('/auth/v1.0/local')
+            .get('/api/v1.0/auth/basic')
             .auth(user.username, user.password)
             .expect(200)
             .end(function (err, res) {
@@ -59,7 +59,7 @@ describe('survey integration', function () {
 
     it('post survey example authorized', function (done) {
         request(app)
-            .post('/api/v1.0/survey')
+            .post('/api/v1.0/surveys')
             .set('Authorization', 'Bearer ' + token)
             .send(example)
             .expect(201)
@@ -73,7 +73,7 @@ describe('survey integration', function () {
 
     it('get empty survey', function (done) {
         request(app)
-            .get('/api/v1.0/survey/empty/Example')
+            .get('/api/v1.0/surveys/empty/Example')
             .expect(200)
             .expect(function (res) {
                 expect(!!res.body.id).to.equal(true);
@@ -99,7 +99,7 @@ describe('survey integration', function () {
         answers = helper.formAnswersToPost(serverSurvey, answersSpec);
         const id = serverSurvey.id;
         request(app)
-            .post('/api/v1.0/survey/answer')
+            .post('/api/v1.0/answers')
             .set('Authorization', 'Bearer ' + token)
             .send({
                 surveyId: id,
@@ -111,7 +111,7 @@ describe('survey integration', function () {
 
     it('get answered survey', function (done) {
         request(app)
-            .get('/api/v1.0/survey/named/Example')
+            .get('/api/v1.0/surveys/Example')
             .set('Authorization', 'Bearer ' + token)
             .expect(200)
             .end(function (err, res) {

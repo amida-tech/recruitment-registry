@@ -6,7 +6,7 @@ var _ = require('lodash');
 var chai = require('chai');
 
 const helper = require('../survey/survey-helper');
-const db = require('../../db');
+const models = require('../../models');
 
 const userExamples = require('../fixtures/user-examples');
 const surveyExamples = require('../fixtures/survey-examples');
@@ -18,8 +18,8 @@ const app = require('../..');
 
 const expect = chai.expect;
 
-const User = db.User;
-const Survey = db.Survey;
+const User = models.User;
+const Survey = models.Survey;
 
 describe('Starting API Server', function () {
     const userExample = userExamples.Alzheimer;
@@ -29,13 +29,13 @@ describe('Starting API Server', function () {
     // -------- syncAndLoadAlzheimer
 
     before(function () {
-        return db.sequelize.sync({
+        return models.sequelize.sync({
             force: true
         });
     });
 
     it('post survey example unauthorized', function () {
-        return Survey.post(surveyExample);
+        return Survey.createSurvey(surveyExample);
     });
 
     // --------
@@ -47,14 +47,14 @@ describe('Starting API Server', function () {
 
     it('get available ethnicities', function (done) {
         request(app)
-            .get('/api/v1.0/user/ethnicity')
+            .get('/api/v1.0/ethnicities')
             .expect(200)
             .end(done);
     });
 
     it('get available genders', function (done) {
         request(app)
-            .get('/api/v1.0/user/gender')
+            .get('/api/v1.0/genders')
             .expect(200)
             .end(done);
     });
@@ -63,7 +63,7 @@ describe('Starting API Server', function () {
 
     it('get survey', function (done) {
         request(app)
-            .get('/api/v1.0/survey/empty/Alzheimer')
+            .get('/api/v1.0/surveys/empty/Alzheimer')
             .expect(200)
             .end(function (err, res) {
                 if (err) {
@@ -83,7 +83,7 @@ describe('Starting API Server', function () {
         answers = helper.formAnswersToPost(survey, answersSpec);
 
         request(app)
-            .post('/api/v1.0/user/register')
+            .post('/api/v1.0/registries/user-profile')
             .send({
                 user: userExample,
                 surveyId: survey.id,
@@ -106,7 +106,7 @@ describe('Starting API Server', function () {
 
     it('login', function (done) {
         request(app)
-            .get('/auth/v1.0/local')
+            .get('/api/v1.0/auth/basic')
             .auth(userExample.username, userExample.password)
             .expect(200)
             .end(function (err, res) {
@@ -124,7 +124,7 @@ describe('Starting API Server', function () {
 
     it('show', function (done) {
         request(app)
-            .get('/api/v1.0/user/me-and-survey/Alzheimer')
+            .get('/api/v1.0/registries/user-profile/Alzheimer')
             .set('Authorization', 'Bearer ' + token)
             .expect(200)
             .end(function (err, res) {

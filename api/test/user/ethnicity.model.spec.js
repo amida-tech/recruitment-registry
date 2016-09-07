@@ -5,11 +5,11 @@ process.env.NODE_ENV = 'test';
 var chai = require('chai');
 var _ = require('lodash');
 
-const db = require('../../db');
+const models = require('../../models');
 
 var expect = chai.expect;
 
-var Ethnicity = db.Ethnicity;
+var Ethnicity = models.Ethnicity;
 
 describe('ethnicity unit', function () {
     before(function () {

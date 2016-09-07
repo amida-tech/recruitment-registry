@@ -42,6 +42,12 @@ RECREG_DB_DIALECT=postgres
 
 > First beautifies and lints all files and then runs all tests.
 
+## API
+
+[swagger.json](./swagger.json) describes the API.  You can view by various swagger tools.
+
+When the server running `/doc` path serves API user interface (`localhost:9005/docs` for default settings).
+
 ## References
 
 - [Node.js](https://nodejs.org/en/)
@@ -53,3 +59,4 @@ RECREG_DB_DIALECT=postgres
 - [Chai](http://chaijs.com/)
 - [Supertest](https://github.com/visionmedia/supertest)
 - [Babel](http://babeljs.io/)
+- [Swagger](http://swagger.io/)

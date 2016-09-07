@@ -3,88 +3,102 @@
 exports.Example = {
     name: 'Example',
     questions: [{
-        text: 'Which sports do you like?',
-        type: 'multi-choice-multi',
-        choices: [
-            'Football',
-            'Basketball',
-            'Soccer',
-            'Tennis'
-        ]
+        content: {
+            text: 'Which sports do you like?',
+            type: 'choices',
+            choices: [
+                'Football',
+                'Basketball',
+                'Soccer',
+                'Tennis'
+            ]
+        }
     }, {
-        text: 'What is your hair color?',
-        type: 'multi-choice-single',
-        choices: [
-            'Black',
-            'Brown',
-            'Blonde',
-            'Other'
-        ]
+        content: {
+            text: 'What is your hair color?',
+            type: 'choice',
+            choices: [
+                'Black',
+                'Brown',
+                'Blonde',
+                'Other'
+            ]
+        }
     }, {
-        text: 'Where were you born?',
-        type: 'text'
+        content: {
+            text: 'Where were you born?',
+            type: 'text'
+        }
     }, {
-        text: 'Are you injured?',
-        type: 'yes-no'
+        content: {
+            text: 'Are you injured?',
+            type: 'bool'
+        }
     }, {
-        text: 'Do you have a cat?',
-        type: 'yes-no'
+        content: {
+            text: 'Do you have a cat?',
+            type: 'bool'
+        }
     }]
 };
 
 exports.ExampleSpec = [{
-    isChoice: true,
-    answer: [1, 2]
+    choices: [1, 2]
 }, {
-    isChoice: true,
-    answer: 0
+    choice: 0
 }, {
-    answer: 'Washington, DC'
+    textValue: 'Washington, DC'
 }, {
-    answer: true
+    boolValue: true
 }, {
-    answer: false
+    boolValue: false
 }];
 
 exports.Alzheimer = {
     name: 'Alzheimer',
     questions: [{
-        text: 'Family history of memory disorders/AD/dementia?',
-        type: 'yes-no'
+        content: {
+            text: 'Family history of memory disorders/AD/dementia?',
+            type: 'bool'
+        }
     }, {
-        text: 'How did you hear about us?',
-        type: 'multi-choice-multi',
-        choices: [
-            'TV',
-            'Radio',
-            'Newspaper',
-            'Facebook/Google Ad/OtherInternet ad',
-            'Physician/nurse/healthcare professional',
-            'Caregiver',
-            'Friend/Family member',
-            'Community Event',
-        ],
+        content: {
+            text: 'How did you hear about us?',
+            type: 'choices',
+            choices: [
+                'TV',
+                'Radio',
+                'Newspaper',
+                'Facebook/Google Ad/OtherInternet ad',
+                'Physician/nurse/healthcare professional',
+                'Caregiver',
+                'Friend/Family member',
+                'Community Event',
+            ]
+        }
     }, {
-        text: 'Are you interested in receiving more information?',
-        type: 'multi-choice-multi',
-        choices: [
-            'Brain Health',
-            'Clinical Trials on Brain Health'
-        ],
+        content: {
+            text: 'Are you interested in receiving more information?',
+            type: 'choices',
+            choices: [
+                'Brain Health',
+                'Clinical Trials on Brain Health'
+            ]
+        }
     }, {
-        text: 'Are you interested in volunterring in clinical research?',
-        type: 'yes-no'
+        content: {
+            text: 'Are you interested in volunterring in clinical research?',
+            type: 'bool'
+        }
     }]
 };
 
 exports.AlzheimerSpec = [{
-    answer: true
+    boolValue: true
 }, {
-    isChoice: true,
-    answer: [0, 5]
+    choices: [0, 5]
 }, {
-    isChoice: true,
-    answer: [1]
+    choices: [1]
 }, {
-    answer: true
+    boolValue: true
 }];
