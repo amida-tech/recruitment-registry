@@ -57,8 +57,7 @@ describe('survey unit', function () {
         const id = serverSurvey.id;
 
         const answers = helper.formAnswersToPost(serverSurvey, answersSpec);
-
-        return Answer.post({
+        return Answer.createAnswers({
             userId,
             surveyId: id,
             answers

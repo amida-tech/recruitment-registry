@@ -129,7 +129,7 @@ module.exports = function (sequelize, DataTypes) {
                             surveyId: input.surveyId,
                             answers: input.answers
                         };
-                        return sequelize.models.answer.postTx(answerInput, tx).then(function () {
+                        return sequelize.models.answer.createAnswersTx(answerInput, tx).then(function () {
                             return user.id;
                         });
                     });

@@ -331,24 +331,16 @@
         },
         "linkedAnswer": {
             "type": "object",
+            "required": [
+                "questionId",
+                "answer"
+            ],
             "properties": {
                 "questionId": {
                     "type": "integer"
                 },
-                "choice": {
-                    "type": "integer"
-                },
-                "choices": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "textValue": {
-                    "type": "string"
-                },
-                "boolValue": {
-                    "type": "boolean"
+                "answer": {
+                    "$ref": "#/definitions/answer"
                 }
             }
         },
@@ -377,6 +369,10 @@
         },
         "newUserProfile": {
             "type": "object",
+            "required": [
+                "user",
+                "surveyId"
+            ],
             "properties": {
                 "user": {
                     "$ref": "#/definitions/user"

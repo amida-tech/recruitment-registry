@@ -22,19 +22,19 @@ exports.formAnswersToPost = function (survey, answersSpec) {
     var result = answersSpec.reduce(function (r, spec, index) {
         if (spec !== null) {
             var entry = {
-                questionId: questions[index].id
+                questionId: questions[index].id,
+                answer: {}
             };
-            if (spec.isChoice) {
-                let answer = spec.answer;
-                if (Array.isArray(answer)) {
-                    entry.answer = answer.map(function (cindex) {
-                        return questions[index].choices[cindex].id;
-                    });
-                } else {
-                    entry.answer = questions[index].choices[spec.answer].id;
-                }
-            } else {
-                entry.answer = spec.answer;
+            if (spec.choices) {
+                entry.answer.choices = spec.choices.map(function (cindex) {
+                    return questions[index].choices[cindex].id;
+                });
+            } else if (spec.hasOwnProperty('choice')) {
+                entry.answer.choice = questions[index].choices[spec.choice].id;
+            } else if (spec.hasOwnProperty('textValue')) {
+                entry.answer.textValue = spec.textValue;
+            } else if (spec.hasOwnProperty('boolValue')) {
+                entry.answer.boolValue = spec.boolValue;
             }
             r.push(entry);
         }
@@ -46,7 +46,8 @@ exports.formAnswersToPost = function (survey, answersSpec) {
 exports.formAnsweredSurvey = function (survey, answers) {
     const result = _.cloneDeep(survey);
     result.questions.forEach(function (question, index) {
-        question.answer = answers[index].answer;
+        const answer = answers[index].answer;
+        question.answer = answer.choices || answer.choice || answer.textValue || answer.boolValue;
     });
     return result;
 };

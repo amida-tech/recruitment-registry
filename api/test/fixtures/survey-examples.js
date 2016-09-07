@@ -43,17 +43,15 @@ exports.Example = {
 };
 
 exports.ExampleSpec = [{
-    isChoice: true,
-    answer: [1, 2]
+    choices: [1, 2]
 }, {
-    isChoice: true,
-    answer: 0
+    choice: 0
 }, {
-    answer: 'Washington, DC'
+    textValue: 'Washington, DC'
 }, {
-    answer: true
+    boolValue: true
 }, {
-    answer: false
+    boolValue: false
 }];
 
 exports.Alzheimer = {
@@ -96,13 +94,11 @@ exports.Alzheimer = {
 };
 
 exports.AlzheimerSpec = [{
-    answer: true
+    boolValue: true
 }, {
-    isChoice: true,
-    answer: [0, 5]
+    choices: [0, 5]
 }, {
-    isChoice: true,
-    answer: [1]
+    choices: [1]
 }, {
-    answer: true
+    boolValue: true
 }];

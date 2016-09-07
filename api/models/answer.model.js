@@ -46,16 +46,26 @@ module.exports = function (sequelize, DataTypes) {
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
         classMethods: {
-            postTx: function (input, tx) {
+            createAnswersTx: function (input, tx) {
                 const userId = input.userId;
                 const surveyId = input.surveyId;
-                const answers = input.answers.reduce(function (r, answer) {
-                    let allAnswers = answer.answer;
-                    if (!Array.isArray(allAnswers)) {
-                        allAnswers = [allAnswers];
+                const answers = input.answers.reduce(function (r, q) {
+                    const answer = q.answer;
+                    let values = answer.choices;
+                    if (!values) {
+                        if (answer.hasOwnProperty('choice')) {
+                            values = answer.choice;
+                        } else if (answer.hasOwnProperty('boolValue')) {
+                            values = answer.boolValue;
+                        } else if (answer.hasOwnProperty('textValue')) {
+                            values = answer.textValue;
+                        }
                     }
-                    const questionId = answer.questionId;
-                    allAnswers.forEach(function (value) {
+                    if (!Array.isArray(values)) {
+                        values = [values];
+                    }
+                    const questionId = q.questionId;
+                    values.forEach(function (value) {
                         r.push({
                             userId,
                             surveyId,
@@ -71,9 +81,9 @@ module.exports = function (sequelize, DataTypes) {
                     });
                 }));
             },
-            post: function (input) {
+            createAnswers: function (input) {
                 return sequelize.transaction(function (tx) {
-                    return Answer.postTx(input, tx);
+                    return Answer.createAnswersTx(input, tx);
                 });
             }
         }
