@@ -46,6 +46,49 @@
                 }
             }
         },
+        "/users": {
+            "post": {
+                "summary": "Creates a new user",
+                "security": [
+                    {
+                        "participant": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "body",
+                        "description": "User specification",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/user"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Successful response",
+                        "schema": {
+                            "description": "Survey id",
+                            "type": "integer"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/me": {
+            "get": {
+                "summary": "Gets the current user",
+                "responses": {
+                    "200": {
+                        "description": "Successul response",
+                        "schema": {
+                            "$ref": "#/definitions/user"
+                        }
+                    }
+                }
+            }
+        },
         "/surveys": {
             "post": {
                 "summary": "Creates a new survey",

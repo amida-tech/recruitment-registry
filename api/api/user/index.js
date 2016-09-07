@@ -8,7 +8,7 @@ const controller = require('./user.controller');
 
 var router = new express.Router();
 
-router.get('/', auth.isAuthenticated(), controller.showCurrentUser);
+router.get('/me', auth.isAuthenticated(), controller.showCurrentUser);
 router.post('/', controller.createNewUser);
 
 module.exports = router;

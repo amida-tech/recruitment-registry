@@ -60,7 +60,7 @@ describe('Starting API Server', function () {
 
     it('Creates a user via REST api.', function createUser(done) {
         request(app)
-            .post('/api/v1.0/user')
+            .post('/api/v1.0/users')
             .send(user)
             .expect(201, done);
     });
@@ -81,12 +81,19 @@ describe('Starting API Server', function () {
 
     it('Returns a user\'s own data after authenticating the API', function showUser(done) {
         request(app)
-            .get('/api/v1.0/user')
+            .get('/api/v1.0/users/me')
             .set('Authorization', 'Bearer ' + jwt)
-            .expect(200, {
-                username: user.username,
-                email: user.email,
-                zip: user.zip
-            }, done);
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                expect(res.body).to.deep.equal({
+                    username: user.username,
+                    email: user.email,
+                    zip: user.zip
+                });
+                done();
+            });
     });
 });
