@@ -70,7 +70,6 @@ describe('Starting API Server', function () {
                     return done(err);
                 }
                 survey = res.body;
-                console.log(JSON.stringify(survey, undefined, 4));
                 done();
             });
     });
@@ -84,7 +83,7 @@ describe('Starting API Server', function () {
         answers = helper.formAnswersToPost(survey, answersSpec);
 
         request(app)
-            .post('/api/v1.0/user/register')
+            .post('/api/v1.0/registries/user-profile')
             .send({
                 user: userExample,
                 surveyId: survey.id,
@@ -125,7 +124,7 @@ describe('Starting API Server', function () {
 
     it('show', function (done) {
         request(app)
-            .get('/api/v1.0/user/me-and-survey/Alzheimer')
+            .get('/api/v1.0/registries/user-profile/Alzheimer')
             .set('Authorization', 'Bearer ' + token)
             .expect(200)
             .end(function (err, res) {

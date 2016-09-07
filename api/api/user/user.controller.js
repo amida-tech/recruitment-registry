@@ -1,12 +1,8 @@
 'use strict';
 
-const jwt = require('jsonwebtoken');
-
-const config = require('../../config');
 const models = require('../../models');
 
 const User = models.User;
-const Ethnicity = models.Ethnicity;
 
 // Create standalone functions for callbacks of each async request.
 const createUserIfNonExistent = (res, req) => {
@@ -44,26 +40,6 @@ const userController = {
         } else {
             res.status(401);
         }
-    },
-    register: function (req, res) {
-        User.register(req.body).then(function (id) {
-            res.status(201).json({
-                id
-            });
-        }).catch(function (err) {
-            res.status(401).send(err);
-        });
-    },
-    meAndSurvey: function (req, res) {
-        const input = {
-            userId: req.user.id,
-            surveyName: req.params.name
-        };
-        User.showWithSurvey(input).then(function (result) {
-            res.status(200).json(result);
-        }).catch(function (err) {
-            res.status(400).send(err);
-        });
     }
 };
 

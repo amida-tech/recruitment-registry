@@ -129,17 +129,17 @@
                 }
             }
         },
-        "/user/register": {
+        "/registries/user-profile": {
             "post": {
                 "summary": "Register a new user",
                 "parameters": [
                     {
-                        "name": "registrant",
+                        "name": "newUserProfile",
                         "in": "body",
                         "description": "Registration information of new user",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/registrant"
+                            "$ref": "#/definitions/newUserProfile"
                         }
                     }
                 ],
@@ -154,7 +154,7 @@
                 }
             }
         },
-        "/user/me-and-survey/{name}": {
+        "/registries/user-profile/{registryName}": {
             "get": {
                 "summary": "Get user and named survey information",
                 "security": [
@@ -164,7 +164,7 @@
                 ],
                 "parameters": [
                     {
-                        "name": "name",
+                        "name": "registryName",
                         "in": "path",
                         "required": true,
                         "type": "string"
@@ -174,7 +174,7 @@
                     "200": {
                         "description": "Successful response",
                         "schema": {
-                            "$ref": "#/definitions/userAndSurvey"
+                            "$ref": "#/definitions/userProfile"
                         }
                     }
                 }
@@ -375,7 +375,7 @@
                 }
             }
         },
-        "registrant": {
+        "newUserProfile": {
             "type": "object",
             "properties": {
                 "user": {
@@ -392,7 +392,7 @@
                 }
             }
         },
-        "userAndSurvey": {
+        "userProfile": {
             "type": "object",
             "properties": {
                 "user": {
