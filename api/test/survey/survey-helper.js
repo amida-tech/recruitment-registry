@@ -46,8 +46,7 @@ exports.formAnswersToPost = function (survey, answersSpec) {
 exports.formAnsweredSurvey = function (survey, answers) {
     const result = _.cloneDeep(survey);
     result.questions.forEach(function (question, index) {
-        const answer = answers[index].answer;
-        question.answer = answer.choices || answer.choice || answer.textValue || answer.boolValue;
+        question.answer = answers[index].answer;
     });
     return result;
 };

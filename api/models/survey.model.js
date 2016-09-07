@@ -154,21 +154,32 @@ module.exports = function (sequelize, DataTypes) {
                             var qid = question.id;
                             var answers = answerMap[qid];
                             if (answers && answers.length) {
+                                if (questionType.isBoolean(question.type)) {
+                                    question.answer = {
+                                        boolValue: answers[0] === 'true'
+                                    };
+                                    return;
+                                }
+                                if (!questionType.isId(question.type)) {
+                                    question.answer = {
+                                        textValue: answers[0]
+                                    };
+                                    return;
+                                }
                                 if (questionType.isId(question.type)) {
                                     answers = answers.map(function (answer) {
                                         return parseInt(answer);
                                     });
-                                }
-                                if (questionType.isBoolean(question.type)) {
-                                    answers = answers.map(function (answer) {
-                                        return answer === 'true';
-                                    });
-                                }
-                                if (questionType.isSingle(question.type)) {
-                                    question.answer = answers[0];
-                                } else {
-                                    answers.sort();
-                                    question.answer = answers;
+                                    if (questionType.isSingle(question.type)) {
+                                        question.answer = {
+                                            choice: answers[0]
+                                        };
+                                    } else {
+                                        answers.sort();
+                                        question.answer = {
+                                            choices: answers
+                                        };
+                                    }
                                 }
                             }
                         });
