@@ -6,13 +6,13 @@ var chai = require('chai');
 var _ = require('lodash');
 
 const helper = require('../helpers');
-const db = require('../../db');
+const models = require('../../models');
 
 var expect = chai.expect;
 
-var QuestionType = db.QuestionType;
-var QuestionChoices = db.QuestionChoices;
-var Question = db.Question;
+var QuestionType = models.QuestionType;
+var QuestionChoices = models.QuestionChoices;
+var Question = models.Question;
 
 describe('question unit', function () {
     before(function () {
@@ -31,7 +31,7 @@ describe('question unit', function () {
 
     const examples = [{
         text: 'Which sports do you like?',
-        type: 'multi-choice-multi',
+        type: 'choices',
         choices: [
             'Football',
             'Basketball',
@@ -40,7 +40,7 @@ describe('question unit', function () {
         ]
     }, {
         text: 'What is your hair color?',
-        type: 'multi-choice-single',
+        type: 'choice',
         choices: [
             'Black',
             'Brown',

@@ -1,6 +1,6 @@
 'use strict';
 
-const _possibleNames = ['text', 'multi-choice-single', 'multi-choice-multi', 'yes-no'];
+const _possibleNames = ['text', 'choice', 'choices', 'bool'];
 
 module.exports = function (sequelize, DataTypes) {
     const QuestionType = sequelize.define('question_type', {
@@ -45,13 +45,13 @@ module.exports = function (sequelize, DataTypes) {
                 return _possibleNames[id - 1];
             },
             isSingle(name) {
-                return name !== 'multi-choice-multi';
+                return name !== 'choices';
             },
             isId(name) {
-                return name === 'multi-choice-multi' || name === 'multi-choice-single';
+                return name === 'choices' || name === 'choice';
             },
             isBoolean(name) {
-                return name === 'yes-no';
+                return name === 'bool';
             }
         }
     });

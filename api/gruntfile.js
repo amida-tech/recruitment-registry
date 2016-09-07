@@ -9,8 +9,47 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-mocha-test');
     grunt.loadNpmTasks('grunt-shell');
 
+    const swaggerValidation = function () {
+        var done = this.async();
+        var spec = require('swagger-tools').specs.v2; // Using the latest Swagger 2.x specification
+        var swaggerObject = require('./swagger.json'); // This assumes you're in the root of the swagger-tools
+        spec.validate(swaggerObject, function (err, result) {
+            if (err) {
+                grunt.log.error(err);
+                return done(false);
+            }
+            if (typeof result !== 'undefined') {
+                if (result.errors.length > 0) {
+                    grunt.log.error('The Swagger document is invalid...');
+                    grunt.log.error('');
+                    grunt.log.error('Errors');
+                    grunt.log.error('------');
+                    result.errors.forEach(function (err) {
+                        grunt.log.error('#/' + err.path.join('/') + ': ' + err.message);
+                    });
+                    grunt.log.error('');
+                }
+                if (result.warnings.length > 0) {
+                    grunt.log.warning('Warnings');
+                    grunt.log.warning('--------');
+                    result.warnings.forEach(function (warn) {
+                        grunt.log.warning('#/' + warn.path.join('/') + ': ' + warn.message);
+                    });
+                }
+                if (result.errors.length > 0) {
+                    return done(false);
+                } else {
+                    done();
+                }
+            } else {
+                grunt.log.writeln('Swagger document is valid');
+                return done();
+            }
+        });
+    };
+
     grunt.initConfig({
-        alljsfiles: ['api/**/*.js', 'test/**/*.js', 'gruntfile.js', 'package.json', 'index.js', 'app.js'],
+        alljsfiles: ['**/*.js', '!node_modules/**/*.js', 'gruntfile.js', 'package.json', 'index.js', 'app.js'],
         jsbeautifier: {
             beautify: {
                 src: '<%= alljsfiles%>',
@@ -80,7 +119,8 @@ module.exports = function (grunt) {
     grunt.registerTask('beautify', ['jsbeautifier:beautify']);
     grunt.registerTask('mocha', ['mochaTest']);
     grunt.registerTask('coverage', ['shell:run_istanbul']);
-    grunt.registerTask('default', ['beautify', 'jshint', 'mocha']);
+    grunt.registerTask('swagger', 'Validates api definition', swaggerValidation);
+    grunt.registerTask('default', ['beautify', 'jshint', 'swagger', 'mocha']);
 
     // Print a timestamp (useful for when watching)
     grunt.registerTask('timestamp', function () {

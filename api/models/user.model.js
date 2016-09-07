@@ -1,6 +1,9 @@
 'use strict';
 
+const _ = require('lodash');
 const bcrypt = require('bcrypt');
+
+const config = require('../config');
 
 const GENDER_MALE = 'male';
 const GENDER_FEMALE = 'female';
@@ -53,6 +56,9 @@ module.exports = function (sequelize, DataTypes) {
         gender: {
             type: DataTypes.ENUM(GENDER_MALE, GENDER_FEMALE, GENDER_OTHER)
         },
+        role: {
+            type: DataTypes.ENUM('admin', 'participant', 'clinician')
+        },
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',
@@ -66,6 +72,14 @@ module.exports = function (sequelize, DataTypes) {
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
         hooks: {
+            afterSync: function (options) {
+                if (options.force) {
+                    var user = _.assign(config.initialUser, {
+                        role: 'admin'
+                    });
+                    return User.create(user);
+                }
+            },
             beforeBulkCreate: function (users, fields, fn) {
                 var totalUpdated = 0;
                 users.forEach(function (user) {
@@ -115,7 +129,7 @@ module.exports = function (sequelize, DataTypes) {
                             surveyId: input.surveyId,
                             answers: input.answers
                         };
-                        return sequelize.models.answer.postTx(answerInput, tx).then(function () {
+                        return sequelize.models.answer.createAnswersTx(answerInput, tx).then(function () {
                             return user.id;
                         });
                     });
