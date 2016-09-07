@@ -76,6 +76,27 @@
                 }
             }
         },
+        "/surveys/empty/{name}": {
+            "get": {
+                "summary": "Get named survey information",
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "path",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successul response",
+                        "schema": {
+                            "$ref": "#/definitions/survey"
+                        }
+                    }
+                }
+            }
+        },
         "/ethnicities": {
             "get": {
                 "summary": "List available ethnicities",
@@ -103,27 +124,6 @@
                             "items": {
                                 "type": "string"
                             }
-                        }
-                    }
-                }
-            }
-        },
-        "/surveys/empty/{name}": {
-            "get": {
-                "summary": "Get named survey information",
-                "parameters": [
-                    {
-                        "name": "name",
-                        "in": "path",
-                        "required": true,
-                        "type": "string"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Successul response",
-                        "schema": {
-                            "$ref": "#/definitions/survey"
                         }
                     }
                 }
@@ -266,6 +266,10 @@
         },
         "choice": {
             "type": "object",
+            "required": [
+                "id",
+                "text"
+            ],
             "properties": {
                 "id": {
                     "type": "integer"
@@ -293,10 +297,17 @@
                 "boolValue": {
                     "type": "boolean"
                 }
-            }
+            },
+            "minProperties": 1,
+            "maxProperties": 1
         },
         "question": {
             "type": "object",
+            "required": [
+                "id",
+                "text",
+                "type"
+            ],
             "properties": {
                 "id": {
                     "type": "integer"
@@ -343,6 +354,11 @@
         },
         "survey": {
             "type": "object",
+            "required": [
+                "id",
+                "name",
+                "questions"
+            ],
             "properties": {
                 "id": {
                     "type": "integer"
@@ -354,7 +370,8 @@
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/question"
-                    }
+                    },
+                    "minLength": 1
                 }
             }
         },

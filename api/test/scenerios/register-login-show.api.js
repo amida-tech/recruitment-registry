@@ -70,6 +70,7 @@ describe('Starting API Server', function () {
                     return done(err);
                 }
                 survey = res.body;
+                console.log(JSON.stringify(survey, undefined, 4));
                 done();
             });
     });
