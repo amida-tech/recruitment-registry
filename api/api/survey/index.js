@@ -10,7 +10,6 @@ var router = new express.Router();
 
 router.post('/', auth.isAuthenticated(), controller.createSurvey);
 router.get('/empty/:name', controller.getEmptySurvey);
-
-router.get('/named/:name', auth.isAuthenticated(), controller.getSurveyByName);
+router.get('/:name', auth.isAuthenticated(), controller.getSurveyByName);
 
 module.exports = router;

@@ -97,6 +97,27 @@
                 }
             }
         },
+        "/surveys/{name}": {
+            "get": {
+                "summary": "Get named survey with answers",
+                "parameters": [
+                    {
+                        "name": "name",
+                        "in": "path",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successul response",
+                        "schema": {
+                            "$ref": "#/definitions/survey"
+                        }
+                    }
+                }
+            }
+        },
         "/answers": {
             "post": {
                 "summary": "Creates answers to a survey",

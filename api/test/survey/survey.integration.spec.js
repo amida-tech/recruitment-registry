@@ -111,7 +111,7 @@ describe('survey integration', function () {
 
     it('get answered survey', function (done) {
         request(app)
-            .get('/api/v1.0/surveys/named/Example')
+            .get('/api/v1.0/surveys/Example')
             .set('Authorization', 'Bearer ' + token)
             .expect(200)
             .end(function (err, res) {
