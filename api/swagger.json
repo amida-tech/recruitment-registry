@@ -97,6 +97,36 @@
                 }
             }
         },
+        "/answers": {
+            "post": {
+                "summary": "Creates answers to a survey",
+                "security": [
+                    {
+                        "participant": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "surveyAnswers",
+                        "in": "body",
+                        "description": "Array of answers",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/surveyAnswers"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Successful response",
+                        "schema": {
+                            "description": "Survey id",
+                            "type": "integer"
+                        }
+                    }
+                }
+            }
+        },
         "/ethnicities": {
             "get": {
                 "summary": "List available ethnicities",
@@ -377,6 +407,24 @@
                 "user": {
                     "$ref": "#/definitions/user"
                 },
+                "surveyId": {
+                    "type": "integer"
+                },
+                "answers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/linkedAnswer"
+                    }
+                }
+            }
+        },
+        "surveyAnswers": {
+            "type": "object",
+            "required": [
+                "surveyId",
+                "answers"
+            ],
+            "properties": {
                 "surveyId": {
                     "type": "integer"
                 },

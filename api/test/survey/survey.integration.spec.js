@@ -99,7 +99,7 @@ describe('survey integration', function () {
         answers = helper.formAnswersToPost(serverSurvey, answersSpec);
         const id = serverSurvey.id;
         request(app)
-            .post('/api/v1.0/surveys/answer')
+            .post('/api/v1.0/answers')
             .set('Authorization', 'Bearer ' + token)
             .send({
                 surveyId: id,

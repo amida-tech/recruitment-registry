@@ -9,5 +9,6 @@ module.exports = function (app) {
     app.use('/api/v1.0/genders', require('./api/gender'));
     app.use('/api/v1.0/user', require('./api/user'));
     app.use('/api/v1.0/surveys', require('./api/survey'));
+    app.use('/api/v1.0/answers', require('./api/answer'));
     app.use('/api/v1.0/registries', require('./api/registry'));
 };

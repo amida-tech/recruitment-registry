@@ -25,16 +25,6 @@ exports.createSurvey = function (req, res) {
     });
 };
 
-exports.answerSurvey = function (req, res) {
-    var answers = req.body;
-    answers.userId = req.user.id;
-    Answer.createAnswers(answers).then(function () {
-        res.status(201).end();
-    }).catch(function (err) {
-        res.status(401).send(err);
-    });
-};
-
 exports.getSurveyByName = function (req, res) {
     const name = req.params.name;
     const userId = req.user.id;
