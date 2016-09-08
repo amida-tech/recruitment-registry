@@ -2,7 +2,7 @@
 
 const models = require('./models');
 
-const surveyExamples = require('../fixtures/survey-examples');
+const surveyExamples = require('./test/fixtures/survey-examples');
 
 models.sequelize.sync({
     force: true
