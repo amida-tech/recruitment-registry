@@ -21,7 +21,4 @@ app.use(jsonParser);
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Routes
-require('./routes')(app);
-
 module.exports = app;
