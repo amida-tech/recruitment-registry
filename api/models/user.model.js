@@ -51,6 +51,13 @@ module.exports = function (sequelize, DataTypes) {
                     val = sequelize.models.ethnicity.idByName(val);
                 }
                 this.setDataValue('ethnicity', val);
+            },
+            get: function () {
+                const value = this.getDataValue('ethnicity');
+                if ((value === null || value === undefined)) {
+                    return value;
+                }
+                return sequelize.models.ethnicity.nameById(value);
             }
         },
         gender: {
@@ -121,6 +128,7 @@ module.exports = function (sequelize, DataTypes) {
             },
             register: function (input) {
                 return sequelize.transaction(function (tx) {
+                    input.user.role = 'participant';
                     return User.create(input.user, {
                         transaction: tx
                     }).then(function (user) {
@@ -136,7 +144,6 @@ module.exports = function (sequelize, DataTypes) {
                 });
             },
             showWithSurvey: function (input) {
-                console.log(input);
                 return User.getUser(input.userId).then(function (user) {
                     return sequelize.models.survey.getAnsweredSurveyByName(user.id, input.surveyName).then(function (survey) {
                         return {

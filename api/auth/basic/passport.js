@@ -12,7 +12,7 @@ const basicStrategy = function (username, password, done) {
         where: {
             username
         }
-    }).then(user => {
+    }).then(function (user) {
         if (user) {
             user.authenticate(password, function (err, result) {
                 if (err) {

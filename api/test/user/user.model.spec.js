@@ -38,6 +38,7 @@ describe('user unit', function () {
                 expected.password = user.password;
                 delete actual.createdAt;
                 delete actual.updatedAt;
+                delete actual.role;
                 expect(actual).to.deep.equal(expected);
             });
         });

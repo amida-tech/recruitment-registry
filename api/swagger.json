@@ -69,8 +69,24 @@
                     "201": {
                         "description": "Successful response",
                         "schema": {
-                            "description": "Survey id",
-                            "type": "integer"
+                            "description": "Selected user fields",
+                            "type": "object",
+                            "required": [
+                                "id",
+                                "username",
+                                "role"
+                            ],
+                            "properties": {
+                                "id": {
+                                    "type": "integer"
+                                },
+                                "username": {
+                                    "type": "string"
+                                },
+                                "role": {
+                                    "type": "string"
+                                }
+                            }
                         }
                     }
                 }
@@ -113,7 +129,13 @@
                         "description": "Successful response",
                         "schema": {
                             "description": "Survey id",
-                            "type": "integer"
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "integer"
+                                }
+                            }
+
                         }
                     }
                 }
@@ -184,8 +206,10 @@
                     "201": {
                         "description": "Successful response",
                         "schema": {
-                            "description": "Survey id",
-                            "type": "integer"
+                            "description": "Empty",
+                            "type": "object",
+                            "properties": {
+                            }
                         }
                     }
                 }
@@ -242,7 +266,12 @@
                         "description": "Successful response",
                         "schema": {
                             "description": "User id",
-                            "type": "integer"
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "integer"
+                                }
+                            }
                         }
                     }
                 }
@@ -295,6 +324,9 @@
                     "type": "string"
                 },
                 "password": {
+                    "type": "string"
+                },
+                "role": {
                     "type": "string"
                 },
                 "email": {
