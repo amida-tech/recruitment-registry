@@ -6,6 +6,6 @@ import Register from './register/components/index';
 export default [
   { path: '/', title: 'Home', component: Home },
   { path: '/about', title: 'About', component: About },
-  { path: '/login', title: 'LoginContainer', component: Login },
+  { path: '/login', title: 'Login', component: Login },
   { path: '/register', title: 'Register', component: Register}
 ];

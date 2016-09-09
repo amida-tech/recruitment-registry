@@ -14,6 +14,13 @@ export function update(name, value) {
   });
 }
 
+export function updateChoicesAnswer(data) {
+  return dispatch => dispatch({
+    type: "UPDATE_CHOICES_ANSWER",
+    payload: data
+  });
+}
+
 export function removeLastFormError() {
   const form = document.querySelector('.form-page__form-wrapper');
   form.classList.remove('js-form__err--' + lastErrType);
@@ -22,7 +29,6 @@ export function removeLastFormError() {
 export function anyElementsEmpty(elements) {
   for (let element in elements) {
     if (!elements[element]) {
-      console.log(element);
       return true;
     }
   }
@@ -32,7 +38,6 @@ export function anyElementsEmpty(elements) {
 let lastErrType = "";
 
 export function requestFailed(err) {
-  removeLastFormError();
   const form = document.querySelector('.form-page__form-wrapper');
   form.classList.add('js-form__err');
   form.classList.add('js-form__err-animation');
@@ -48,7 +53,6 @@ export function setAuthState(newState) {
 }
 
 export function forwardTo(location) {
-  console.log('forwardTo(' + location + ')');
   browserHistory.push(location);
 }
 

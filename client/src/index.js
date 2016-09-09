@@ -23,6 +23,20 @@ export const initialState = {
     formState: {
       username: '',
       password: ''
+    },
+    availableEthnicities: [
+      "Caucasion",
+      "Hispanic",
+      "African",
+      "Asian"
+    ],
+    availableGenders: [
+      "male",
+      "female",
+      "other"
+    ],
+    survey: {
+      questions: []
     }
   },
   loggedIn: localStorage.token ? localStorage.token : false
@@ -39,12 +53,23 @@ export const reducers = {
       case "LOGIN_ERROR":
         return false;
       case "LOGOUT":
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
         return false;
       default:
         return state;
     }
   },
-  title: (state = initialState) => state
+  title: (state = initialState) => state,
+  profile: (state = initialState, action) => {
+    switch (action.type) {
+      case 'GET_PROFILE_SUCCESS':
+        // console.log(action.payload);
+        return action.payload
+      default:
+        return state;
+    }
+  }
 };
 
 

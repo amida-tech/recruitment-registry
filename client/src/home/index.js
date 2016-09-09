@@ -19,6 +19,10 @@ class Home extends Component {
       </div>
     );
   }
+
+  componentWillMount() {
+    this.props.dispatch({type: 'GET_PROFILE', surveyName: 'Alzheimer'})
+  }
 }
 
 Home.displayName = 'Home';

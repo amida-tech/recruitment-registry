@@ -6,7 +6,6 @@ const apiProvider = store => next => action => {
   next(action)
   switch (action.type) {
     case 'GET_USER':
-      console.log(store);
       request
         .get(apiUrl + '/users/me')
         .set("Authorization", "Bearer " + store.getState().loggedIn.token)
@@ -24,7 +23,6 @@ const apiProvider = store => next => action => {
         })
       break
     case 'LOGIN':
-      console.log(action);
       request
         .get(apiUrl + '/auth/basic')
         .auth(action.payload.username, action.payload.password)
@@ -60,7 +58,63 @@ const apiProvider = store => next => action => {
             })
           }
         })
-      break;
+      break
+    case 'GET_ETHNICITIES':
+      request
+        .get(apiUrl + '/ethnicities')
+        .end((error, response) => {
+          if (!error) {
+            next({
+              type: 'GET_ETHNICITIES_SUCCESS',
+              payload: response.body
+            })
+          } else {
+            next({type: 'GET_ETHNICITIES_ERROR'})
+          }
+        })
+      break
+    case 'GET_SURVEY':
+      request
+        .get(apiUrl + '/surveys/empty/' + action.surveyName)
+        .end((error, response) => {
+          if (!error) {
+            next({
+              type: 'GET_SURVEY_SUCCESS',
+              payload: response.body
+            })
+          } else {
+            next({type:'GET_SURVEY_ERROR'})
+          }
+        })
+      break
+    case 'GET_PROFILE':
+      request
+        .get(apiUrl + '/registries/user-profile/' + action.surveyName)
+        .set("Authorization", "Bearer " + JSON.parse(store.getState().loggedIn).token)
+        .end((error, response) => {
+          if (!error) {
+            console.log(response.body)
+            next({
+              type: 'GET_PROFILE_SUCCESS',
+              payload: response.body
+            })
+          } else {
+            next({type:'GET_PROFILE_ERROR'})
+          }
+        })
+      break
+    case 'REGISTER':
+      request
+        .post(apiUrl + '/registries/user-profile')
+        .send(action.payload)
+        .end((error, response) => {
+          if (!error) {
+            next({
+              type: 'REGISTER_SUCCESS'
+            })
+          }
+        })
+      break
     default:
       break
   }

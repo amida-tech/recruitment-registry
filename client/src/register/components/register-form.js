@@ -7,7 +7,7 @@ class Form extends Component {
     const renderInputField = (id, type, placeholder, label) => (
       <div className="form-group">
         <label htmlFor={id}>{label}</label>
-        <input className="form-control" id={id} type={type} value={this.props.data[id]} placeholder={placeholder} onChange={this.props.changeForm} />
+        <input className="form-control" id={id} type={type} value={this.props.data[id]} onChange={this.props.changeForm} />
       </div>
     );
 
@@ -15,14 +15,18 @@ class Form extends Component {
       <div className="form-group">
         <label htmlFor="gender">{label}</label>
         <select onChange={this.props.changeForm} value={defaultValue} className="form-control" id={id}>
-          {options.map(option => <option key={option.key} value={option.key}>{option.label}</option>)}
+          {options.map(option => <option key={option} value={option}>{option}</option>)}
         </select>
       </div>
     );
 
-    const renderCheckbox = (value, label) => (
+    const renderCheckbox = (surveyId, questionId, choiceId, label) => (
       <div className="checkbox">
-        <label><input type="checkbox" id={value} onChange={this.props.changeForm} value="true"/> {label}</label>
+        <label><input type="checkbox"
+                      name={surveyId + '.' + questionId + '.' + choiceId}
+                      id={surveyId + '.' + questionId + '.' + choiceId}
+                      onChange={this.props.changeChoice}
+                      value={surveyId + '.' + questionId + '.' + choiceId}/> {label}</label>
       </div>
     );
 
@@ -40,7 +44,6 @@ class Form extends Component {
           <div className="login-info">
             {renderInputField("username", "text", "admin", "Username")}
             {renderInputField("password", "password", "••••••••••", "Password")}
-            {renderInputField("confirmPassword", "password", "••••••••••", "Confirm password")}
           </div>
 
           <div className="personal-info">
@@ -52,16 +55,26 @@ class Form extends Component {
 
             {renderInputField("dob", "text", "mm/dd/yyyy", "Date of birth")}
 
-            {renderSelectField("gender", this.props.data.gender, "Gender", [{value:"female", label:"Female"}, {value:"male", label:"Male"}])}
-            {renderSelectField("ethnicity", this.props.data.ethnicity, "Ethnicity", [{value:"asian", label:"Asian"}, {value:"black", label:"Black"}])}
-            {renderSelectField("familyHistory", this.props.data.familyHistory, "Family history", [{key:"memoryDisorders", label:"Memory disorders"}, {key:"dementia", label:"Dementia"}, {key:"ad", label:"AD"}])}
+            {renderSelectField("gender", this.props.data.gender, "Gender", this.props.availableGenders)}
+            {renderSelectField("ethnicity", this.props.data.ethnicity, "Ethnicity", this.props.availableEthnicities)}
 
           </div>
         </div>
 
         <div className="col-sm-6">
           <div className="registry-specific">
+            {this.props.survey.questions.map(question => {
+              switch (question.type) {
+                case 'choices':
+                  return question.choices.map(choice => {
+                    return renderCheckbox(this.props.survey.id, question.id, choice.id, choice.text);
+                  })
+                // case 'bool':
+                  // return renderCheckbox(this.props.survey.id, question.id, '-1', question.text);
+              }
+            })}
 
+            {/*{renderSelectField("familyHistory", this.props.data.familyHistory, "Family history", [{key:"memoryDisorders", label:"Memory disorders"}, {key:"dementia", label:"Dementia"}, {key:"ad", label:"AD"}])}
             <div className="form-group">
               <label>How did you hear about us?</label>
               {renderCheckbox("tv", "TV")}
@@ -81,7 +94,7 @@ class Form extends Component {
             </div>
 
 
-            {renderCheckbox("volunteer", "Are you interested in volunteering in clinical research?")}
+            {renderCheckbox("volunteer", "Are you interested in volunteering in clinical research?")}*/}
           </div>
         </div>
 
@@ -100,7 +113,8 @@ Form.propTypes = {
   onSubmit: React.PropTypes.func.isRequired,
   btnText: React.PropTypes.string.isRequired,
   changeForm: React.PropTypes.func.isRequired,
-  data: React.PropTypes.object.isRequired
+  data: React.PropTypes.object.isRequired,
+  changeChoice: React.PropTypes.func.isRequired
 }
 
 export default Form;
