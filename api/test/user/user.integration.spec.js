@@ -5,6 +5,8 @@ process.env.NODE_ENV = 'test';
 var chai = require('chai');
 var _ = require('lodash');
 
+const appgen = require('../../app-generator');
+
 const models = require('../../models');
 const userExamples = require('../fixtures/user-examples');
 
@@ -21,12 +23,13 @@ describe('user integration', function () {
 
     let server;
 
-    before(function () {
-        return models.sequelize.sync({
-            force: true
-        }).then(function () {
-            const app = require('../..');
+    before(function (done) {
+        appgen.generate(function (err, app) {
+            if (err) {
+                return done(err);
+            }
             server = request(app);
+            done();
         });
     });
 

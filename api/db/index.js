@@ -24,7 +24,7 @@ const SurveyQuestion = sequelize.import('../api/survey/survey-question.model');
 const Answer = sequelize.import('../api/answer/answer.model');
 const Survey = sequelize.import('../api/survey/survey.model');
 
-module.exports =  {
+module.exports = {
     Sequelize,
     sequelize,
     Ethnicity,

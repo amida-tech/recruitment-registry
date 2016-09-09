@@ -4,6 +4,8 @@ process.env.NODE_ENV = 'test';
 
 var chai = require('chai');
 
+const appgen = require('../../app-generator');
+
 const helper = require('./survey-helper');
 const models = require('../../models');
 
@@ -25,13 +27,17 @@ describe('survey integration', function () {
 
     let server;
 
-    before(function () {
-        return models.sequelize.sync({
-            force: true
-        }).then(function () {
-            const app = require('../..');
-            server = request(app);
-            return User.create(user);
+    before(function (done) {
+        appgen.generate(function (err, app) {
+            if (err) {
+                return done(err);
+            }
+            User.create(user).then(function () {
+                server = request(app);
+                done();
+            }).catch(function (err) {
+                done(err);
+            });
         });
     });
 
