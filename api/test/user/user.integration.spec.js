@@ -137,7 +137,7 @@ describe('user integration', function () {
             });
     });
 
-    xit('handle database error (invalid email)', function (done) {
+    it('handle database error (invalid email)', function (done) {
         const userEmailErr = _.cloneDeep(user);
         userEmailErr.email = 'notanemail';
         userEmailErr.username = user.username + '1';
