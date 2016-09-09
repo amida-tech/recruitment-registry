@@ -21,7 +21,7 @@ const expect = chai.expect;
 const User = models.User;
 const Survey = models.Survey;
 
-describe('Starting API Server', function () {
+describe('register-login-show scenario', function () {
     const userExample = userExamples.Alzheimer;
     const surveyExample = surveyExamples.Alzheimer;
     const answersSpec = surveyExamples.AlzheimerSpec;
@@ -137,6 +137,7 @@ describe('Starting API Server', function () {
                 const user = result.user;
                 expectedUser.id = user.id;
                 expectedUser.password = user.password;
+                expectedUser.role = 'participant';
                 delete user.createdAt;
                 delete user.updatedAt;
                 expect(user).to.deep.equal(expectedUser);

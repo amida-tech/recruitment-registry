@@ -20,7 +20,7 @@ function createUserJWT(user) {
     const payload = {
         id: user.id,
         username: user.username,
-        admin: user.admin
+        role: user.role
     };
     return createJWT(payload);
 }

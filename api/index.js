@@ -19,6 +19,10 @@ const errHandler = function (err, req, res, next) {
         err = {
             message: 'Unknown error'
         };
+    } else {
+        if (err.name === 'SequelizeValidationError') {
+            res.statusCode = 400;
+        }
     }
 
     res.send(err);

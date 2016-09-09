@@ -6,8 +6,7 @@ exports.Example = {
     email: 'test@example.com',
     zip: '20850',
     ethnicity: 'Hispanic',
-    gender: 'female',
-    role: 'participant'
+    gender: 'female'
 };
 
 exports.Alzheimer = {
@@ -16,6 +15,5 @@ exports.Alzheimer = {
     email: 'alzheimer@example.com',
     zip: '20857',
     ethnicity: 'African',
-    gender: 'male',
-    role: 'participant'
+    gender: 'male'
 };

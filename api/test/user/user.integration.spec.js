@@ -3,6 +3,7 @@
 process.env.NODE_ENV = 'test';
 
 var chai = require('chai');
+var _ = require('lodash');
 
 const models = require('../../models');
 const userExamples = require('../fixtures/user-examples');
@@ -14,22 +15,15 @@ const app = require('../..');
 
 const expect = chai.expect;
 
-let server;
-let jwt;
-
 const User = models.User;
 const Ethnicity = models.Ethnicity;
 
-describe('Starting API Server', function () {
+describe('user integration', function () {
     const user = userExamples.Example;
 
     before(function () {
         return models.sequelize.sync({
             force: true
-        }).then(function () {
-            return User.destroy({
-                where: {}
-            });
         });
     });
 
@@ -58,14 +52,54 @@ describe('Starting API Server', function () {
             .end(done);
     });
 
-    it('Creates a user via REST api.', function createUser(done) {
+    let token;
+
+    it('no user authentication error', function (done) {
+        request(app)
+            .get('/api/v1.0/users/me')
+            .expect(401, done);
+    });
+
+    it('login default user', function (done) {
+        const iu = config.initialUser;
+        request(app)
+            .get('/api/v1.0/auth/basic')
+            .auth(iu.username, iu.password)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                token = res.body.token;
+                done();
+            });
+    });
+
+    it('get default user', function (done) {
+        request(app)
+            .get('/api/v1.0/users/me')
+            .set('Authorization', 'Bearer ' + token)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                var user = res.body;
+                expect(!user).to.equal(false);
+                expect(user.username).to.equal(config.initialUser.username);
+                expect(user.role).to.equal('admin');
+                done();
+            });
+    });
+
+    it('create a new user', function (done) {
         request(app)
             .post('/api/v1.0/users')
             .send(user)
             .expect(201, done);
     });
 
-    it('Authenticates a user and returns a JWT', function createToken(done) {
+    it('login with the new user', function (done) {
         request(app)
             .get('/api/v1.0/auth/basic')
             .auth(user.username, 'password')
@@ -74,26 +108,45 @@ describe('Starting API Server', function () {
                 if (err) {
                     return done(err);
                 }
-                jwt = res.body.token;
+                token = res.body.token;
                 done();
             });
     });
 
-    it('Returns a user\'s own data after authenticating the API', function showUser(done) {
+    it('get the new user', function (done) {
         request(app)
             .get('/api/v1.0/users/me')
-            .set('Authorization', 'Bearer ' + jwt)
+            .set('Authorization', 'Bearer ' + token)
             .expect(200)
             .end(function (err, res) {
                 if (err) {
                     return done(err);
                 }
-                expect(res.body).to.deep.equal({
-                    username: user.username,
-                    email: user.email,
-                    zip: user.zip
-                });
+                delete res.body.id;
+                var expectedUser = _.cloneDeep(user);
+                expectedUser.role = 'participant';
+                delete expectedUser.password;
+                expect(res.body).to.deep.equal(expectedUser);
                 done();
             });
+    });
+
+    xit('handle database error (invalid email)', function (done) {
+        const userEmailErr = _.cloneDeep(user);
+        userEmailErr.email = 'notanemail';
+        userEmailErr.username = user.username + '1';
+        request(app)
+            .post('/api/v1.0/users')
+            .send(userEmailErr)
+            .expect(400)
+            .end(done);
+    });
+
+    it('create the new user again to err', function (done) {
+        request(app)
+            .post('/api/v1.0/users')
+            .send(user)
+            .expect(400)
+            .end(done);
     });
 });

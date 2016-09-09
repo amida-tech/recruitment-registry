@@ -73,13 +73,17 @@
                             "type": "object",
                             "required": [
                                 "id",
-                                "username"
+                                "username",
+                                "role"
                             ],
                             "properties": {
                                 "id": {
                                     "type": "integer"
                                 },
                                 "username": {
+                                    "type": "string"
+                                },
+                                "role": {
                                     "type": "string"
                                 }
                             }
@@ -320,6 +324,9 @@
                     "type": "string"
                 },
                 "password": {
+                    "type": "string"
+                },
+                "role": {
                     "type": "string"
                 },
                 "email": {

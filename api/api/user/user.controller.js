@@ -1,11 +1,12 @@
 'use strict';
 
+const _ = require('lodash');
+
 const models = require('../../models');
 
 const User = models.User;
 
-// Create standalone functions for callbacks of each async request.
-const createUserIfNonExistent = (res, req) => {
+exports.createNewUser = function (req, res, next) {
     const username = req.body.username;
     User.findOne({
         where: {
@@ -13,34 +14,30 @@ const createUserIfNonExistent = (res, req) => {
         }
     }).then(data => {
         if (data) {
-            res.status(400).send('An existing user has already used that username address.');
+            return res.status(400).json({
+                message: 'An existing user has already used that username address.'
+            });
         } else {
-            User.create(req.body).then(user => {
-                res.status(201).json({
+            var newUser = req.body;
+            newUser.role = 'participant';
+            return User.create(req.body).then(user => {
+                return res.status(201).json({
                     id: user.id,
-                    username: user.username
+                    username: user.username,
+                    role: user.role
                 });
             });
         }
+    }).catch(function (err) {
+        next(err);
     });
 };
 
-const userController = {
-    createNewUser: (req, res) => {
-        createUserIfNonExistent(res, req);
-    },
-    showCurrentUser: (req, res) => {
-        if (req.user) {
-            const currentUser = {
-                username: req.user.username,
-                email: req.user.email,
-                zip: req.user.zip
-            };
-            res.status(200).json(currentUser);
-        } else {
-            res.status(401);
-        }
+exports.showCurrentUser = function (req, res) {
+    if (req.user) {
+        const currentUser = _.omitBy(req.user, _.isNil);
+        res.status(200).json(currentUser);
+    } else {
+        res.status(401).json({});
     }
 };
-
-module.exports = userController;
