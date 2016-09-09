@@ -11,8 +11,6 @@ const userExamples = require('../fixtures/user-examples');
 const config = require('../../config');
 const request = require('supertest');
 
-const app = require('../..');
-
 const expect = chai.expect;
 
 const User = models.User;
@@ -21,9 +19,14 @@ const Ethnicity = models.Ethnicity;
 describe('user integration', function () {
     const user = userExamples.Example;
 
+    let server;
+
     before(function () {
         return models.sequelize.sync({
             force: true
+        }).then(function () {
+            const app = require('../..');
+            server = request(app);
         });
     });
 
@@ -31,7 +34,7 @@ describe('user integration', function () {
     var genders;
 
     it('get available ethnicities', function (done) {
-        request(app)
+        server
             .get('/api/v1.0/ethnicities')
             .expect(200)
             .expect(function (res) {
@@ -42,7 +45,7 @@ describe('user integration', function () {
     });
 
     it('get available genders', function (done) {
-        request(app)
+        server
             .get('/api/v1.0/genders')
             .expect(200)
             .expect(function (res) {
@@ -55,14 +58,14 @@ describe('user integration', function () {
     let token;
 
     it('no user authentication error', function (done) {
-        request(app)
+        server
             .get('/api/v1.0/users/me')
             .expect(401, done);
     });
 
     it('login default user', function (done) {
         const iu = config.initialUser;
-        request(app)
+        server
             .get('/api/v1.0/auth/basic')
             .auth(iu.username, iu.password)
             .expect(200)
@@ -76,7 +79,7 @@ describe('user integration', function () {
     });
 
     it('get default user', function (done) {
-        request(app)
+        server
             .get('/api/v1.0/users/me')
             .set('Authorization', 'Bearer ' + token)
             .expect(200)
@@ -93,14 +96,14 @@ describe('user integration', function () {
     });
 
     it('create a new user', function (done) {
-        request(app)
+        server
             .post('/api/v1.0/users')
             .send(user)
             .expect(201, done);
     });
 
     it('login with the new user', function (done) {
-        request(app)
+        server
             .get('/api/v1.0/auth/basic')
             .auth(user.username, 'password')
             .expect(200)
@@ -114,7 +117,7 @@ describe('user integration', function () {
     });
 
     it('get the new user', function (done) {
-        request(app)
+        server
             .get('/api/v1.0/users/me')
             .set('Authorization', 'Bearer ' + token)
             .expect(200)
@@ -135,7 +138,7 @@ describe('user integration', function () {
         const userEmailErr = _.cloneDeep(user);
         userEmailErr.email = 'notanemail';
         userEmailErr.username = user.username + '1';
-        request(app)
+        server
             .post('/api/v1.0/users')
             .send(userEmailErr)
             .expect(400)
@@ -143,7 +146,7 @@ describe('user integration', function () {
     });
 
     it('create the new user again to err', function (done) {
-        request(app)
+        server
             .post('/api/v1.0/users')
             .send(user)
             .expect(400)

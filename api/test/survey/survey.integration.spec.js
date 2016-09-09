@@ -10,8 +10,6 @@ const models = require('../../models');
 const config = require('../../config');
 const request = require('supertest');
 
-const app = require('../..');
-
 const userExamples = require('../fixtures/user-examples');
 const surveyExamples = require('../fixtures/survey-examples');
 
@@ -25,16 +23,20 @@ describe('survey integration', function () {
     const user = userExamples.Example;
     const answersSpec = surveyExamples.ExampleSpec;
 
+    let server;
+
     before(function () {
         return models.sequelize.sync({
             force: true
         }).then(function () {
+            const app = require('../..');
+            server = request(app);
             return User.create(user);
         });
     });
 
     it('post survey example unauthorized', function (done) {
-        request(app)
+        server
             .post('/api/v1.0/surveys')
             .send(example)
             .expect(401)
@@ -44,7 +46,7 @@ describe('survey integration', function () {
     let token;
 
     it('authenticate user', function (done) {
-        request(app)
+        server
             .get('/api/v1.0/auth/basic')
             .auth(user.username, user.password)
             .expect(200)
@@ -58,7 +60,7 @@ describe('survey integration', function () {
     });
 
     it('post survey example authorized', function (done) {
-        request(app)
+        server
             .post('/api/v1.0/surveys')
             .set('Authorization', 'Bearer ' + token)
             .send(example)
@@ -72,7 +74,7 @@ describe('survey integration', function () {
     var serverSurvey;
 
     it('get empty survey', function (done) {
-        request(app)
+        server
             .get('/api/v1.0/surveys/empty/Example')
             .expect(200)
             .expect(function (res) {
@@ -98,7 +100,7 @@ describe('survey integration', function () {
     it('answer survey', function (done) {
         answers = helper.formAnswersToPost(serverSurvey, answersSpec);
         const id = serverSurvey.id;
-        request(app)
+        server
             .post('/api/v1.0/answers')
             .set('Authorization', 'Bearer ' + token)
             .send({
@@ -110,7 +112,7 @@ describe('survey integration', function () {
     });
 
     it('get answered survey', function (done) {
-        request(app)
+        server
             .get('/api/v1.0/surveys/Example')
             .set('Authorization', 'Bearer ' + token)
             .expect(200)

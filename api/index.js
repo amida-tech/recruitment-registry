@@ -54,9 +54,11 @@ swaggerTools.initializeMiddleware(swaggerObject, function (middleware) {
     app.use(errHandler);
 
     models.sequelize.sync().then(function () {
-        app.listen(config.port, function () {
-            console.log('Server started at ', config.port);
-        });
+        if (process.env.NODE_ENV !== 'test') {
+            app.listen(config.port, function () {
+                console.log('Server started at ', config.port);
+            });
+        }
     }).catch(function (err) {
         console.log('Server failed to start due to error: %s', err);
     });
