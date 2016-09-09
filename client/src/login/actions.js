@@ -1,16 +1,9 @@
 import * as t from './actionTypes';
 
 import { browserHistory } from 'react-router';
-import bcrypt from 'bcryptjs';
-import auth from '../utils/auth';
-import genSalt from '../utils/salt';
 
 export function changeForm(newState) {
   return { type: t.CHANGE_FORM, newState };
-}
-
-export function sendingRequest(sending) {
-  return { type: t.SENDING_REQUEST, sending };
 }
 
 export function removeLastFormError() {
@@ -52,17 +45,17 @@ export function forwardTo(location) {
 
 export function login(username, password) {
   return (dispatch) => {
-    dispatch(sendingRequest(true));
     removeLastFormError();
     if (anyElementsEmpty({ username, password })) {
       requestFailed({
         type: "field-missing"
       });
-      dispatch(sendingRequest(false));
       return;
     }
 
-    auth.login(username, password, (success, err) => {
+    dispatch({type: "LOGIN", payload: { username: username, password: password } })
+
+    /*apiProvider.login(username, password, (success, err) => {
       dispatch(sendingRequest(false));
       dispatch(setAuthState(success));
 
@@ -75,14 +68,14 @@ export function login(username, password) {
       } else {
         requestFailed(err);
       }
-    });
+    });*/
   }
 }
 
 export function logout() {
   return (dispatch) => {
-    dispatch(sendingRequest(true));
-    auth.logout((success, err) => {
+    dispatch({type: "LOGOUT"});
+    /*apiProvider.logout((success, err) => {
       if (success === true) {
         dispatch(sendingRequest(false));
         dispatch(setAuthState(false));
@@ -90,6 +83,6 @@ export function logout() {
       } else {
         requestFailed(err);
       }
-    });
+    });*/
   }
 }

@@ -1,29 +1,31 @@
 import App from './app';
 import routes from './routes';
 import Layout from './layout/index';
-import auth from './utils/auth';
 import login from './login';
 import register from './register';
-import * as t from './login/actionTypes';
 
-const assign = Object.assign || require('object.assign');
+/*const assign = Object.assign || require('object.assign');*/
 
 export const initialState = {
+  title: "Recruitment Registry",
   login: {
     formState: {
       username: '',
       password: ''
     },
-    currentlySending: false
+    user: localStorage.user ? JSON.parse(localStorage.user) : {
+      username: "",
+      role: "",
+      id: ""
+    }
   },
   register: {
     formState: {
       username: '',
       password: ''
-    },
-    currentlySending: false
+    }
   },
-  loggedIn: auth.loggedIn()
+  loggedIn: localStorage.token ? localStorage.token : false
 };
 
 export const reducers = {
@@ -31,14 +33,18 @@ export const reducers = {
   [register.constants.NAME]: register.reducer,
   loggedIn: (state = initialState, action) => {
     switch (action.type) {
-      case t.SET_AUTH:
-        return assign({}, state, {
-          loggedIn: action.newState
-        });
+      case "LOGIN_SUCCESS":
+        localStorage.token = JSON.stringify(action.data)
+        return action.data;
+      case "LOGIN_ERROR":
+        return false;
+      case "LOGOUT":
+        return false;
       default:
         return state;
     }
-  }
+  },
+  title: (state = initialState) => state
 };
 
 

@@ -22,7 +22,9 @@
   },
   "keywords": [],
   "devDependencies": {
-    "mozilla-neo": "2.3.1"
+    "mozilla-neo": "2.3.1",
+    "request": "^2.74.0",
+    "request-promise": "^4.1.1"
   },
   "dependencies": {
     "bcryptjs": "2.3.0",
@@ -36,13 +38,15 @@
     "react-router": "2.6.1",
     "react-router-redux": "4.0.5",
     "redux": "3.5.2",
+    "redux-api-middleware": "^1.0.2",
     "redux-devtools": "3.3.1",
     "redux-devtools-chart-monitor": "1.4.2",
     "redux-devtools-dock-monitor": "1.1.1",
     "redux-devtools-log-monitor": "1.0.11",
     "redux-immutable": "3.0.6",
     "redux-logger": "2.6.1",
+    "redux-slider-monitor": "1.0.7",
     "redux-thunk": "^1.0.0",
-    "redux-slider-monitor": "1.0.7"
+    "superagent": "^2.2.0"
   }
 }

@@ -1,7 +1,7 @@
 import * as t from './actionTypes';
 
 import { browserHistory } from 'react-router';
-import auth from '../utils/auth';
+import apiProvider from '../utils/api';
 
 export function changeForm(newState) {
   return { type: t.CHANGE_FORM, newState };
@@ -12,10 +12,6 @@ export function update(name, value) {
     type: t.CHANGE_FORM,
     name, value
   });
-}
-
-export function sendingRequest(sending) {
-  return { type: t.SENDING_REQUEST, sending };
 }
 
 export function removeLastFormError() {
@@ -58,7 +54,6 @@ export function forwardTo(location) {
 
 export function register(data) {
   return (dispatch) => {
-    dispatch(sendingRequest(true));
 
     removeLastFormError();
 
@@ -66,13 +61,11 @@ export function register(data) {
       requestFailed({
         type: "field-missing"
       });
-      dispatch(sendingRequest(false));
       return;
     }
 
-    auth.register(data, (success, err) => {
+    apiProvider.register(data, (success, err) => {
 
-      dispatch(sendingRequest(false));
       dispatch(setAuthState(success));
       if (success) {
         forwardTo('/');

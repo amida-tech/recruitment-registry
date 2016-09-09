@@ -1,6 +1,4 @@
 import React, { Component } from 'react';
-import LoadingButton from './loading-button';
-
 import './index.scss';
 
 class Form extends Component {
@@ -90,11 +88,7 @@ class Form extends Component {
 
 
         <div className="form__submit-btn-wrapper">
-          {this.props.currentlySending ? (
-            <LoadingButton />
-          ) : (
-            <button className="form__submit-btn" type="submit">{this.props.btnText}</button>
-          )}
+          <button className="form__submit-btn" type="submit">{this.props.btnText}</button>
         </div>
       </form>
     );

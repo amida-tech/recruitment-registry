@@ -6,8 +6,8 @@ import { login } from '../../login/actions';
 export class LoginContainer extends Component {
   render() {
     const dispatch = this.props.dispatch;
-    const { formState, currentlySending } = this.props.data;
-    const { loggedIn } = this.props.loggedIn;
+    const { formState } = this.props.data;
+    const { loggedIn } = this.props;
     return (
       <div> { !loggedIn ? (
         <div className="form-page__wrapper">
@@ -15,7 +15,7 @@ export class LoginContainer extends Component {
             <div className="form-page__form-header">
               <h2 className="form-page__form-heading">Login</h2>
             </div>
-            <Form dispatch={dispatch} data={formState} location={location} history={this.props.history} onSubmit={::this._login} btnText={"LoginContainer"} currentlySending={currentlySending}/>
+            <Form dispatch={dispatch} data={formState} location={location} history={this.props.history} onSubmit={::this._login} btnText={"LoginContainer"} />
           </div>
         </div>) : (<h3>You are already logged in :)</h3>) }
       </div>

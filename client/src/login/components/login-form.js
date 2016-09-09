@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import actions from '../index';
-import LoadingButton from './loading-button';
 const assign = Object.assign || require('object.assign');
 
 class Form extends Component {
@@ -24,11 +23,7 @@ class Form extends Component {
           <label className="form__field-label" htmlFor="password">Password</label>
         </div>
         <div className="form__submit-btn-wrapper">
-          {this.props.currentlySending ? (
-            <LoadingButton />
-          ) : (
-            <button className="form__submit-btn" type="submit">{this.props.btnText}</button>
-          )}
+          <button className="form__submit-btn" type="submit">{this.props.btnText}</button>
         </div>
       </form>
     );

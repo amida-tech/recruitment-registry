@@ -7,7 +7,7 @@ import { logout } from '../login/actions';
 class Nav extends Component {
   render() {
     const {title} = this.props.data;
-    const {loggedIn} = this.props.data.loggedIn;
+    const {loggedIn} = this.props.data;
 
     return (
       <nav className="navbar navbar-full navbar-dark bg-inverse">

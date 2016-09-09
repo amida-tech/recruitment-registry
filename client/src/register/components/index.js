@@ -6,8 +6,8 @@ import register from '../index';
 export class RegisterContainer extends Component {
   render() {
     const dispatch = this.props.dispatch;
-    const { formState, currentlySending } = this.props.data;
-    const { loggedIn } = this.props.loggedIn;
+    const { formState } = this.props.data;
+    const { loggedIn } = this.props;
     return (
       <div> { !loggedIn ? (
         <div className="container">
@@ -20,7 +20,6 @@ export class RegisterContainer extends Component {
                   history={this.props.history}
                   onSubmit={::this._onSubmit}
                   btnText={"Register"}
-                  currentlySending={currentlySending}
                   changeForm={::this._changeForm}/>
         </div>) : ( <h3>You are already logged in :)</h3>) }
       </div>)
