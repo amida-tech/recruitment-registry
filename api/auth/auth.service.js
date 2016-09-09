@@ -11,14 +11,22 @@ const models = require('../models');
 
 const User = models.User;
 
-const jwtStrategy = function (jwt_payload, done) {
+const jwtStrategy = function (jwtPayload, done) {
     User.findOne({
         where: {
-            id: jwt_payload.id,
-            username: jwt_payload.username
+            id: jwtPayload.id,
+            username: jwtPayload.username
+        },
+        attributes: {
+            exclude: [
+                'createdAt', 'updatedAt', 'password'
+            ]
         }
     }).then(user => {
         if (user) {
+            user = user.get(undefined, {
+                plain: true
+            });
             return done(null, user);
         } else {
             return done(null, false);
