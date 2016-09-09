@@ -1,15 +1,24 @@
-import React from 'react';
-import Nav from '../nav';
+import React, { Component } from 'react';
+import Nav from '../nav/index';
+import { connect } from 'react-redux';
 
-import './index.scss';
-
-export default function Layout({ children }) {
-  return (
-    <div>
-      <Nav />
-      <main id="content">{children}</main>
-    </div>
-  );
+class Layout extends Component {
+  render() {
+    return (
+      <div>
+        <Nav />
+        <main id="content" className="container">{this.props.children}</main>
+      </div>
+    );
+  }
 }
 
 Layout.displayName = 'Layout';
+
+function select(state) {
+  return {
+    data: state
+  };
+}
+
+export default connect(select)(Layout);
