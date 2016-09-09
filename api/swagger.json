@@ -421,7 +421,7 @@
                     "type": "string"
                 },
                 "boolValue": {
-                    "type": "boolean"
+                    "type": "string"
                 }
             },
             "minProperties": 1,

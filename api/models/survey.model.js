@@ -156,7 +156,7 @@ module.exports = function (sequelize, DataTypes) {
                             if (answers && answers.length) {
                                 if (questionType.isBoolean(question.type)) {
                                     question.answer = {
-                                        boolValue: answers[0] === 'true'
+                                        boolValue: answers[0] //; // === 'true'
                                     };
                                     return;
                                 }
