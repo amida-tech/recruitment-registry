@@ -14,8 +14,6 @@ const surveyExamples = require('../fixtures/survey-examples');
 const config = require('../../config');
 const request = require('supertest');
 
-const app = require('../..');
-
 const expect = chai.expect;
 
 const User = models.User;
@@ -28,9 +26,14 @@ describe('register-login-show scenario', function () {
 
     // -------- syncAndLoadAlzheimer
 
+    let server;
+
     before(function () {
         return models.sequelize.sync({
             force: true
+        }).then(function () {
+            const app = require('../..');
+            server = request(app);
         });
     });
 
@@ -46,14 +49,14 @@ describe('register-login-show scenario', function () {
     var genders;
 
     it('get available ethnicities', function (done) {
-        request(app)
+        server
             .get('/api/v1.0/ethnicities')
             .expect(200)
             .end(done);
     });
 
     it('get available genders', function (done) {
-        request(app)
+        server
             .get('/api/v1.0/genders')
             .expect(200)
             .end(done);
@@ -62,7 +65,7 @@ describe('register-login-show scenario', function () {
     var survey;
 
     it('get survey', function (done) {
-        request(app)
+        server
             .get('/api/v1.0/surveys/empty/Alzheimer')
             .expect(200)
             .end(function (err, res) {
@@ -82,7 +85,7 @@ describe('register-login-show scenario', function () {
     it('register', function (done) {
         answers = helper.formAnswersToPost(survey, answersSpec);
 
-        request(app)
+        server
             .post('/api/v1.0/registries/user-profile')
             .send({
                 user: userExample,
@@ -105,7 +108,7 @@ describe('register-login-show scenario', function () {
     var token;
 
     it('login', function (done) {
-        request(app)
+        server
             .get('/api/v1.0/auth/basic')
             .auth(userExample.username, userExample.password)
             .expect(200)
@@ -123,7 +126,7 @@ describe('register-login-show scenario', function () {
     // -------- show
 
     it('show', function (done) {
-        request(app)
+        server
             .get('/api/v1.0/registries/user-profile/Alzheimer')
             .set('Authorization', 'Bearer ' + token)
             .expect(200)
