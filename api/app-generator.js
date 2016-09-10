@@ -46,18 +46,6 @@ exports.initialize = function (app, callback) {
 
         app.use(middleware.swaggerUi());
 
-        // Routes
-        require('./routes')(app);
-
-        // all other routes should return a 404
-        app.route('/*').get((req, res) => {
-            var result = {
-                status: 404
-            };
-            res.status(result.status);
-            res.json(result, result.status);
-        });
-
         app.use(errHandler);
 
         models.sequelize.sync({

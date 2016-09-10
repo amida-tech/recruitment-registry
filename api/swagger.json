@@ -19,8 +19,10 @@
     ],
     "paths": {
         "/auth/basic": {
+            "x-swagger-router-controller": "auth.controller",
             "get": {
                 "summary": "Authorization JWT",
+                "operationId": "authenticateBasic",
                 "parameters": [
                     {
                         "name": "Authorization",

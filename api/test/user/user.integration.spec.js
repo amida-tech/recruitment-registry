@@ -36,6 +36,13 @@ describe('user integration', function () {
     var ethnicities;
     var genders;
 
+    it('invalid path', function (done) {
+        server
+            .get('/xxxxxxx')
+            .expect(404)
+            .end(done);
+    });
+
     it('get available ethnicities', function (done) {
         server
             .get('/api/v1.0/ethnicities')
