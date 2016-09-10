@@ -1,6 +1,8 @@
 'use strict';
 
-const models = require('../../models');
+const _ = require('lodash');
+
+const models = require('../models');
 
 const User = models.User;
 
@@ -15,9 +17,10 @@ exports.createProfile = function (req, res) {
 };
 
 exports.getProfile = function (req, res) {
+    const name = _.get(req, 'swagger.params.registryName.value');
     const input = {
         userId: req.user.id,
-        surveyName: req.params.name
+        surveyName: name
     };
     User.showWithSurvey(input).then(function (result) {
         res.status(200).json(result);

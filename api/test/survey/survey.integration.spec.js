@@ -2,7 +2,10 @@
 'use strict';
 process.env.NODE_ENV = 'test';
 
-var chai = require('chai');
+const chai = require('chai');
+const _ = require('lodash');
+
+const appgen = require('../../app-generator');
 
 const helper = require('./survey-helper');
 const models = require('../../models');
@@ -25,17 +28,23 @@ describe('survey integration', function () {
 
     let server;
 
-    before(function () {
-        return models.sequelize.sync({
-            force: true
-        }).then(function () {
-            const app = require('../..');
-            server = request(app);
-            return User.create(user);
+    before(function (done) {
+        appgen.generate(function (err, app) {
+            if (err) {
+                return done(err);
+            }
+            const userin = _.cloneDeep(user);
+            userin.role = 'participant';
+            User.create(userin).then(function () {
+                server = request(app);
+                done();
+            }).catch(function (err) {
+                done(err);
+            });
         });
     });
 
-    it('post survey example unauthorized', function (done) {
+    it('post survey example nobody authorized', function (done) {
         server
             .post('/api/v1.0/surveys')
             .send(example)
@@ -45,10 +54,33 @@ describe('survey integration', function () {
 
     let token;
 
-    it('authenticate user', function (done) {
+    it('authenticate basic user', function (done) {
         server
             .get('/api/v1.0/auth/basic')
             .auth(user.username, user.password)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                token = res.body.token;
+                done();
+            });
+    });
+
+    it('post survey example participant', function (done) {
+        server
+            .post('/api/v1.0/surveys')
+            .set('Authorization', 'Bearer ' + token)
+            .send(example)
+            .expect(403, done);
+    });
+
+    it('authenticate admin', function (done) {
+        const admin = config.initialUser;
+        server
+            .get('/api/v1.0/auth/basic')
+            .auth(admin.username, admin.password)
             .expect(200)
             .end(function (err, res) {
                 if (err) {
@@ -96,6 +128,20 @@ describe('survey integration', function () {
     });
 
     var answers;
+
+    it('authenticate basic user', function (done) {
+        server
+            .get('/api/v1.0/auth/basic')
+            .auth(user.username, user.password)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                token = res.body.token;
+                done();
+            });
+    });
 
     it('answer survey', function (done) {
         answers = helper.formAnswersToPost(serverSurvey, answersSpec);

@@ -19,8 +19,10 @@
     ],
     "paths": {
         "/auth/basic": {
+            "x-swagger-router-controller": "auth.controller",
             "get": {
                 "summary": "Authorization JWT",
+                "operationId": "authenticateBasic",
                 "parameters": [
                     {
                         "name": "Authorization",
@@ -47,11 +49,13 @@
             }
         },
         "/users": {
+            "x-swagger-router-controller": "user.controller",
             "post": {
+                "operationId": "createNewUser",
                 "summary": "Creates a new user",
                 "security": [
                     {
-                        "participant": []
+                        "admin": []
                     }
                 ],
                 "parameters": [
@@ -93,8 +97,15 @@
             }
         },
         "/users/me": {
+            "x-swagger-router-controller": "user.controller",
             "get": {
+                "operationId": "showCurrentUser",
                 "summary": "Gets the current user",
+                "security": [
+                    {
+                        "self": []
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Successul response",
@@ -106,8 +117,10 @@
             }
         },
         "/surveys": {
+            "x-swagger-router-controller": "survey.controller",
             "post": {
                 "summary": "Creates a new survey",
+                "operationId": "createSurvey",
                 "security": [
                     {
                         "admin": []
@@ -142,8 +155,10 @@
             }
         },
         "/surveys/empty/{name}": {
+            "x-swagger-router-controller": "survey.controller",
             "get": {
                 "summary": "Get named survey information",
+                "operationId": "getEmptySurvey",
                 "parameters": [
                     {
                         "name": "name",
@@ -163,8 +178,15 @@
             }
         },
         "/surveys/{name}": {
+            "x-swagger-router-controller": "survey.controller",
             "get": {
                 "summary": "Get named survey with answers",
+                "operationId": "getSurveyByName",
+                "security": [
+                    {
+                        "participant": []
+                    }
+                ],
                 "parameters": [
                     {
                         "name": "name",
@@ -184,8 +206,10 @@
             }
         },
         "/answers": {
+            "x-swagger-router-controller": "answer.controller",
             "post": {
                 "summary": "Creates answers to a survey",
+                "operationId": "createAnswers",
                 "security": [
                     {
                         "participant": []
@@ -216,8 +240,10 @@
             }
         },
         "/ethnicities": {
+            "x-swagger-router-controller": "ethnicity.controller",
             "get": {
                 "summary": "List available ethnicities",
+                "operationId": "getEthnicities",
                 "responses": {
                     "200": {
                         "description": "Successful response",
@@ -232,8 +258,10 @@
             }
         },
         "/genders": {
+            "x-swagger-router-controller": "gender.controller",
             "get": {
                 "summary": "List available genders",
+                "operationId": "getGenders",
                 "responses": {
                     "200": {
                         "description": "Successful response",
@@ -248,8 +276,10 @@
             }
         },
         "/registries/user-profile": {
+            "x-swagger-router-controller": "registry.controller",
             "post": {
                 "summary": "Register a new user",
+                "operationId": "createProfile",
                 "parameters": [
                     {
                         "name": "newUserProfile",
@@ -278,8 +308,10 @@
             }
         },
         "/registries/user-profile/{registryName}": {
+            "x-swagger-router-controller": "registry.controller",
             "get": {
                 "summary": "Get user and named survey information",
+                "operationId": "getProfile",
                 "security": [
                     {
                         "participant": []
@@ -314,6 +346,11 @@
             "type": "apiKey",
             "in": "header",
             "name": "Authorization"
+        },
+        "self": {
+            "type": "apiKey",
+            "in": "header",
+            "name": "Authorization"
         }
     },
     "definitions": {
@@ -330,16 +367,17 @@
                     "type": "string"
                 },
                 "email": {
-                    "type": "string"
+                    "type": ["string", "null"],
+                    "format": "email"
                 },
                 "zip": {
-                    "type": "string"
+                    "type": ["string", "null"]
                 },
                 "ethnicity": {
-                    "type": "string"
+                    "type": ["string", "null"]
                 },
                 "gender": {
-                    "type": "string"
+                    "type": ["string", "null"]
                 }
             }
         },

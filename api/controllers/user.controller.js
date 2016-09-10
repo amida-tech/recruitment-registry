@@ -2,7 +2,7 @@
 
 const _ = require('lodash');
 
-const models = require('../../models');
+const models = require('../models');
 
 const User = models.User;
 

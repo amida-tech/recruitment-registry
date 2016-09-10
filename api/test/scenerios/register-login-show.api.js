@@ -5,6 +5,8 @@ process.env.NODE_ENV = 'test';
 var _ = require('lodash');
 var chai = require('chai');
 
+const appgen = require('../../app-generator');
+
 const helper = require('../survey/survey-helper');
 const models = require('../../models');
 
@@ -28,12 +30,13 @@ describe('register-login-show scenario', function () {
 
     let server;
 
-    before(function () {
-        return models.sequelize.sync({
-            force: true
-        }).then(function () {
-            const app = require('../..');
+    before(function (done) {
+        appgen.generate(function (err, app) {
+            if (err) {
+                return done(err);
+            }
             server = request(app);
+            done();
         });
     });
 
@@ -104,6 +107,12 @@ describe('register-login-show scenario', function () {
     });
 
     // --------- login
+
+    it('show without authorization', function (done) {
+        server
+            .get('/api/v1.0/registries/user-profile/Alzheimer')
+            .expect(401, done);
+    });
 
     var token;
 

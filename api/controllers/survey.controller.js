@@ -1,16 +1,18 @@
 'use strict';
 
-const models = require('../../models');
+const _ = require('lodash');
+
+const models = require('../models');
 
 const Survey = models.Survey;
 const Answer = models.Answer;
 
 exports.getEmptySurvey = function (req, res) {
-    var name = req.params.name;
+    const name = _.get(req, 'swagger.params.name.value');
     Survey.getSurveyByName(name).then(function (survey) {
         res.status(200).json(survey);
     }).catch(function (err) {
-        res.status(401).send(err);
+        res.status(500).send(err);
     });
 };
 
@@ -26,8 +28,8 @@ exports.createSurvey = function (req, res) {
 };
 
 exports.getSurveyByName = function (req, res) {
-    const name = req.params.name;
     const userId = req.user.id;
+    const name = _.get(req, 'swagger.params.name.value');
     Survey.getAnsweredSurveyByName(userId, name).then(function (survey) {
         res.status(200).json(survey);
     }).catch(function (err) {
