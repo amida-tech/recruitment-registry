@@ -38,7 +38,11 @@ exports.initialize = function (app, callback) {
 
         app.use(middleware.swaggerSecurity(security));
 
-        //app.use(middleware.swaggerRouter({useStubs: true, controllers: './controllers'}));
+        app.use(middleware.swaggerRouter({
+            useStubs: false,
+            ignoreMissingHandlers: true,
+            controllers: './controllers'
+        }));
 
         app.use(middleware.swaggerUi());
 
