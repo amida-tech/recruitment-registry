@@ -9,6 +9,6 @@ const controller = require('./registry.controller');
 var router = new express.Router();
 
 router.post('/user-profile', controller.createProfile);
-router.get('/user-profile/:name', auth.isAuthenticated(), controller.getProfile);
+router.get('/user-profile/:name', controller.getProfile);
 
 module.exports = router;

@@ -25,6 +25,7 @@
         "express": "^4.14.0",
         "express-winston": "^2.0.0",
         "jsonwebtoken": "^7.1.9",
+        "node-jwt": "0.0.1",
         "passport": "^0.3.2",
         "passport-http": "^0.3.0",
         "passport-jwt": "^2.1.0",

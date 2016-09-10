@@ -3,9 +3,10 @@
 const config = require('./config');
 
 const swaggerTools = require('swagger-tools');
-const models = require('./models');
 
+const models = require('./models');
 const swaggerObject = require('./swagger.json');
+const security = require('./security');
 
 const errHandler = function (err, req, res, next) {
     if (res.headersSent) {
@@ -34,6 +35,8 @@ exports.initialize = function (app, callback) {
         app.use(middleware.swaggerValidator({
             validateResponse: true
         }));
+
+        app.use(middleware.swaggerSecurity(security));
 
         //app.use(middleware.swaggerRouter({useStubs: true, controllers: './controllers'}));
 

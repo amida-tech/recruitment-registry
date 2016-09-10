@@ -51,7 +51,7 @@
                 "summary": "Creates a new user",
                 "security": [
                     {
-                        "participant": []
+                        "admin": []
                     }
                 ],
                 "parameters": [
@@ -95,6 +95,11 @@
         "/users/me": {
             "get": {
                 "summary": "Gets the current user",
+                "security": [
+                    {
+                        "self": []
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Successul response",
@@ -165,6 +170,11 @@
         "/surveys/{name}": {
             "get": {
                 "summary": "Get named survey with answers",
+                "security": [
+                    {
+                        "participant": []
+                    }
+                ],
                 "parameters": [
                     {
                         "name": "name",
@@ -311,6 +321,11 @@
             "name": "Authorization"
         },
         "participant": {
+            "type": "apiKey",
+            "in": "header",
+            "name": "Authorization"
+        },
+        "self": {
             "type": "apiKey",
             "in": "header",
             "name": "Authorization"

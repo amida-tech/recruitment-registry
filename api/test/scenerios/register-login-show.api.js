@@ -108,6 +108,12 @@ describe('register-login-show scenario', function () {
 
     // --------- login
 
+    it('show without authorization', function (done) {
+        server
+            .get('/api/v1.0/registries/user-profile/Alzheimer')
+            .expect(401, done);
+    });
+
     var token;
 
     it('login', function (done) {

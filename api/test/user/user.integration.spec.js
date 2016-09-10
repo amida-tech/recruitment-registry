@@ -81,6 +81,13 @@ describe('user integration', function () {
             });
     });
 
+    it('wrong authorization error', function (done) {
+        server
+            .get('/api/v1.0/users/me')
+            .set('Authorization', 'Bearer ' + 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwidXNlcm5hbWUiOiJ1ZXN0Iiwicm9sZSI6bnVsbCwiaWF0IjoxNDczNTAwNzE5LCJleHAiOjE0NzYwOTI3MTl9.e0ymr0xrDPuQEBmdQLjb5-WegNtYcqAcpKp_DtDRKo8')
+            .expect(401, done);
+    });
+
     it('get default user', function (done) {
         server
             .get('/api/v1.0/users/me')
@@ -101,6 +108,7 @@ describe('user integration', function () {
     it('create a new user', function (done) {
         server
             .post('/api/v1.0/users')
+            .set('Authorization', 'Bearer ' + token)
             .send(user)
             .expect(201, done);
     });
@@ -137,12 +145,28 @@ describe('user integration', function () {
             });
     });
 
+    it('login default user', function (done) {
+        const iu = config.initialUser;
+        server
+            .get('/api/v1.0/auth/basic')
+            .auth(iu.username, iu.password)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                token = res.body.token;
+                done();
+            });
+    });
+
     it('handle database error (invalid email)', function (done) {
         const userEmailErr = _.cloneDeep(user);
         userEmailErr.email = 'notanemail';
         userEmailErr.username = user.username + '1';
         server
             .post('/api/v1.0/users')
+            .set('Authorization', 'Bearer ' + token)
             .send(userEmailErr)
             .expect(400)
             .end(done);
@@ -151,6 +175,7 @@ describe('user integration', function () {
     it('create the new user again to err', function (done) {
         server
             .post('/api/v1.0/users')
+            .set('Authorization', 'Bearer ' + token)
             .send(user)
             .expect(400)
             .end(done);
@@ -163,6 +188,7 @@ describe('user integration', function () {
         userWithNulls.username = user.username + '1';
         server
             .post('/api/v1.0/users')
+            .set('Authorization', 'Bearer ' + token)
             .send(userWithNulls)
             .expect(201)
             .end(done);
