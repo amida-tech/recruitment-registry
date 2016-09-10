@@ -330,17 +330,17 @@
                     "type": "string"
                 },
                 "email": {
-                    "type": "string",
+                    "type": ["string", "null"],
                     "format": "email"
                 },
                 "zip": {
-                    "type": "string"
+                    "type": ["string", "null"]
                 },
                 "ethnicity": {
-                    "type": "string"
+                    "type": ["string", "null"]
                 },
                 "gender": {
-                    "type": "string"
+                    "type": ["string", "null"]
                 }
             }
         },

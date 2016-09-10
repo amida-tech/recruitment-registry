@@ -43,4 +43,22 @@ describe('user unit', function () {
             });
         });
     });
+
+    it('post/get user with null values', function () {
+        const exampleWNull = _.cloneDeep(example);
+        exampleWNull.username += '1';
+        exampleWNull.email = null;
+        return User.create(exampleWNull).then(function (user) {
+            id = user.id;
+            return User.getUser(user.id).then(function (actual) {
+                var expected = _.cloneDeep(exampleWNull);
+                expected.id = user.id;
+                expected.password = user.password;
+                delete actual.createdAt;
+                delete actual.updatedAt;
+                delete actual.role;
+                expect(actual).to.deep.equal(expected);
+            });
+        });
+    });
 });

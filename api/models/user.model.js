@@ -27,7 +27,7 @@ module.exports = function (sequelize, DataTypes) {
                 isEmail: true
             },
             set: function (val) {
-                this.setDataValue('email', val.toLowerCase());
+                this.setDataValue('email', val && val.toLowerCase());
             }
         },
         password: {

@@ -155,4 +155,16 @@ describe('user integration', function () {
             .expect(400)
             .end(done);
     });
+
+    it('send down null items', function (done) {
+        const userWithNulls = _.cloneDeep(user);
+        userWithNulls.email = null;
+        userWithNulls.gender = null;
+        userWithNulls.username = user.username + '1';
+        server
+            .post('/api/v1.0/users')
+            .send(userWithNulls)
+            .expect(201)
+            .end(done);
+    });
 });
