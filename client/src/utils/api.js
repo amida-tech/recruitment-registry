@@ -8,7 +8,7 @@ const apiProvider = store => next => action => {
     case 'GET_USER':
       request
         .get(apiUrl + '/users/me')
-        .set("Authorization", "Bearer " + store.getState().loggedIn.token)
+        .set("Authorization", "Bearer " + store.getState().loggedIn)
         .end((error, response) => {
           if (error) {
             return next({
@@ -90,10 +90,9 @@ const apiProvider = store => next => action => {
     case 'GET_PROFILE':
       request
         .get(apiUrl + '/registries/user-profile/' + action.surveyName)
-        .set("Authorization", "Bearer " + JSON.parse(store.getState().loggedIn).token)
+        .set("Authorization", "Bearer " + store.getState().loggedIn)
         .end((error, response) => {
           if (!error) {
-            console.log(response.body)
             next({
               type: 'GET_PROFILE_SUCCESS',
               payload: response.body

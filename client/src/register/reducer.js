@@ -40,20 +40,21 @@ export default (state = initialState, action) => {
 
       var answers = {};
 
+      var qid = action.payload.questionId
+      var cid = action.payload.choiceId
+
       if (state.surveyResult && state.surveyResult.answers) {
         answers = state.surveyResult.answers;
       }
 
-      if (!answers[action.payload.questionId + ""]) {
-        answers[action.payload.questionId + ""] = {};
-      }
+      answers[qid] = answers[qid] ? answers[qid] : {}
 
-      if (!answers[action.payload.questionId + ""][action.payload.choiceId + ""]) {
-        answers[action.payload.questionId + ""][action.payload.choiceId + ""] = true;
+      if (!answers[qid][cid]) {
+        // TODO: Change back to boolean
+        answers[qid][cid] = "true";
       } else {
-        answers[action.payload.questionId + ""][action.payload.choiceId + ""] = false;
+        answers[qid][cid] = "false";
       }
-
 
       return assign({}, state, {
         surveyResult: {

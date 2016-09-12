@@ -20,6 +20,18 @@ export default (state = initialState, action) => {
       return assign({}, state, {
         formState: action.newState
       });
+    case 'LOGIN_ERROR':
+      return assign({}, state, {
+        formState: {
+          hasErrors: true
+        }
+      });
+    case 'LOGIN_SUCCESS':
+      return assign({}, state, {
+        formState: {
+          hasErrors: false
+        }
+      });
     case "GET_USER_SUCCESS":
       localStorage.user = JSON.stringify(action.payload)
       return assign({}, state, {

@@ -3,6 +3,7 @@ import routes from './routes';
 import Layout from './layout/index';
 import login from './login';
 import register from './register';
+import {browserHistory} from 'react-router';
 
 /*const assign = Object.assign || require('object.assign');*/
 
@@ -10,6 +11,7 @@ export const initialState = {
   title: "Recruitment Registry",
   login: {
     formState: {
+      hasErrors: false,
       username: '',
       password: ''
     },
@@ -22,7 +24,9 @@ export const initialState = {
   register: {
     formState: {
       username: '',
-      password: ''
+      password: '',
+      ethnicity: 'Caucasion',
+      gender: 'male'
     },
     availableEthnicities: [
       "Caucasion",
@@ -48,11 +52,10 @@ export const reducers = {
   loggedIn: (state = initialState, action) => {
     switch (action.type) {
       case "LOGIN_SUCCESS":
-        localStorage.token = JSON.stringify(action.data)
-        return action.data;
-      case "LOGIN_ERROR":
-        return false;
+        localStorage.setItem("token", action.data.token)
+        return action.data.token;
       case "LOGOUT":
+        browserHistory.push('/login');
         localStorage.removeItem("token");
         localStorage.removeItem("user");
         return false;
