@@ -459,7 +459,7 @@
                     "type": "string"
                 },
                 "boolValue": {
-                    "type": "string"
+                    "type": "boolean"
                 }
             },
             "minProperties": 1,
