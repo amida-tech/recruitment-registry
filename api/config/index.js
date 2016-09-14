@@ -30,6 +30,9 @@ const all = {
     logging: {
         express: false,
         disable: false
+    },
+    crypt: {
+        hashrounds: process.env.RECREG_CRYPT_HASHROUNDS || 10
     }
 };
 

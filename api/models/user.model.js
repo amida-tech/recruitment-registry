@@ -173,7 +173,7 @@ module.exports = function (sequelize, DataTypes) {
                 });
             },
             updatePassword: function () {
-                return bchash(this.password, 10).then((hash) => {
+                return bchash(this.password, config.crypt.hashrounds).then((hash) => {
                     this.password = hash;
                 });
             }
