@@ -17,7 +17,7 @@ var Ethnicity = models.Ethnicity;
 var User = models.User;
 var Survey = models.Survey;
 
-describe('register unit', function () {
+describe('user set up unit', function () {
     const userExample = userExamples.Alzheimer;
     const surveyExample = surveyExamples.Alzheimer;
 
@@ -48,7 +48,7 @@ describe('register unit', function () {
     var userId;
     var answers;
 
-    it('register user', function () {
+    it('setup user with profile', function () {
         answers = helper.formAnswersToPost(survey, surveyExample.answer);
 
         return User.register({
@@ -60,7 +60,7 @@ describe('register unit', function () {
         });
     });
 
-    it('show user', function () {
+    it('verify user profile', function () {
         return User.showWithSurvey({
             userId,
             surveyName: surveyExample.survey.name
