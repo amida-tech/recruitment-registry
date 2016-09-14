@@ -40,6 +40,63 @@ describe('user unit', function () {
         };
     })();
 
+    describe('username', function () {
+        it('normal set/get', function () {
+            const inputUser = fnNewUser();
+            return User.create(inputUser).then(function (user) {
+                expect(user.username).to.equal(inputUser.username);
+                return user;
+            }).then(function (user) {
+                return User.findOne({
+                    where: {
+                        id: user.id
+                    },
+                    raw: true,
+                    attributes: ['username']
+                });
+            }).then(function (user) {
+                expect(user.username).to.equal(inputUser.username);
+            });
+        });
+
+        it('reject non unique username', function () {
+            const inputUser = fnNewUser();
+            return User.create(inputUser).then(function (user) {
+                expect(user.username).to.equal(inputUser.username);
+                return user;
+            }).then(function (user) {
+                const nextInputUser = fnNewUser();
+                nextInputUser.username = inputUser.username;
+                return User.create(nextInputUser).then(function () {
+                    throw new Error('unique username accepted');
+                }).catch(function (err) {
+                    expect(err).not.to.equal('unique username accepted');
+                });
+            });
+        });
+
+        it('reject invalid/null/undefined email/missing/empty string', function () {
+            var p = models.sequelize.Promise.resolve(fnNewUser());
+            [null, undefined, '--', ''].forEach(function (value) {
+                p = p.then(function (inputUser) {
+                    if (value === '--') {
+                        delete inputUser.username;
+                    } else {
+                        inputUser.username = value;
+                    }
+                    return User.create(inputUser).then(function () {
+                        throw new Error('no error for \'' + value + '\'');
+                    }).catch(function (err) {
+                        expect(!!err.message).to.equal(true);
+                        expect(err.message).not.to.equal('no error for \'' + value + '\'');
+                        return inputUser;
+                    });
+                });
+            });
+            return p;
+        });
+    });
+
     describe('e-mail', function () {
         it('normal set/get', function () {
             const inputUser = fnNewUser();
@@ -95,9 +152,9 @@ describe('user unit', function () {
             });
         });
 
-        it('reject invalid/null/undefined email/missing', function () {
+        it('reject invalid/null/undefined email/missing/empty string', function () {
             var p = models.sequelize.Promise.resolve(fnNewUser());
-            ['noatemail', null, undefined, '--'].forEach(function (value) {
+            ['noatemail', null, undefined, '--', ''].forEach(function (value) {
                 p = p.then(function (inputUser) {
                     if (value === '--') {
                         delete inputUser.email;

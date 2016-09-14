@@ -16,6 +16,9 @@ module.exports = function (sequelize, DataTypes) {
             unique: {
                 msg: 'The specified username is already in use.'
             },
+            validate: {
+                notEmpty: true
+            },
             allowNull: false
         },
         email: {
