@@ -7,18 +7,17 @@ const userExamples = require('./test/fixtures/user-examples');
 
 const userExample = userExamples.Alzheimer;
 const surveyExample = surveyExamples.Alzheimer;
-const answersSpec = surveyExamples.AlzheimerSpec;
 
 const helper = require('./test/survey/survey-helper');
 
 models.sequelize.sync({
     force: true
 }).then(function () {
-    return models.Survey.createSurvey(surveyExamples.Alzheimer);
+    return models.Survey.createSurvey(surveyExamples.Alzheimer.survey);
 }).then(function () {
     return models.Survey.getSurveyByName('Alzheimer');
 }).then(function (survey) {
-    const answers = helper.formAnswersToPost(survey, answersSpec);
+    const answers = helper.formAnswersToPost(survey, surveyExamples.Alzheimer.answer);
     return models.User.register({
         user: userExample,
         surveyId: survey.id,

@@ -22,9 +22,9 @@ const all = {
         port: process.env.RECREG_DB_PORT || '5432',
         dialect: process.env.RECREG_DB_DIALECT || 'postgres',
     },
-    initialUser: {
-        username: process.env.RECREG_INIT_USER_USERNAME || 'admin',
-        password: process.env.RECREG_INIT_USER_PASSWORD || 'admin'
+    superUser: {
+        username: process.env.RECREG_SUPER_USER_USERNAME || 'super',
+        password: process.env.RECREG_SUPER_USER_PASSWORD || 'Am!d@2017PW'
     }
 };
 

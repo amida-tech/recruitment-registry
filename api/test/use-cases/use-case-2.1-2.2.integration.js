@@ -8,8 +8,8 @@ var chai = require('chai');
 const appgen = require('../../app-generator');
 
 const helper = require('../survey/survey-helper');
-const models = require('../../models');
 
+const shared = require('../shared.integration');
 const userExamples = require('../fixtures/user-examples');
 const surveyExamples = require('../fixtures/survey-examples');
 
@@ -18,30 +18,39 @@ const request = require('supertest');
 
 const expect = chai.expect;
 
-const User = models.User;
-const Survey = models.Survey;
-
-describe('register-login-show scenario', function () {
+describe('user set-up and login', function () {
     const userExample = userExamples.Alzheimer;
     const surveyExample = surveyExamples.Alzheimer;
-    const answersSpec = surveyExamples.AlzheimerSpec;
 
-    // -------- syncAndLoadAlzheimer
+    // -------- set up system (syncAndLoadAlzheimer)
 
-    let server;
+    const store = {
+        server: null,
+        auth: null
+    };
 
     before(function (done) {
         appgen.generate(function (err, app) {
             if (err) {
                 return done(err);
             }
-            server = request(app);
+            store.server = request(app);
             done();
         });
     });
 
-    it('post survey example unauthorized', function () {
-        return Survey.createSurvey(surveyExample);
+    it('login as super user', shared.loginFn(store, config.superUser));
+
+    it('post example survey', function (done) {
+        store.server
+            .post('/api/v1.0/surveys')
+            .set('Authorization', store.auth)
+            .send(surveyExample.survey)
+            .expect(201)
+            .expect(function (res) {
+                expect(!!res.body.id).to.equal(true);
+            })
+            .end(done);
     });
 
     // --------
@@ -50,25 +59,24 @@ describe('register-login-show scenario', function () {
 
     var ethnicities;
     var genders;
+    let survey;
 
     it('get available ethnicities', function (done) {
-        server
+        store.server
             .get('/api/v1.0/ethnicities')
             .expect(200)
             .end(done);
     });
 
     it('get available genders', function (done) {
-        server
+        store.server
             .get('/api/v1.0/genders')
             .expect(200)
             .end(done);
     });
 
-    var survey;
-
-    it('get survey', function (done) {
-        server
+    it('get profile survey', function (done) {
+        store.server
             .get('/api/v1.0/surveys/empty/Alzheimer')
             .expect(200)
             .end(function (err, res) {
@@ -80,15 +88,15 @@ describe('register-login-show scenario', function () {
             });
     });
 
-    // ---------
+    // --------- set up account
 
     var answers;
     var userId;
 
-    it('register', function (done) {
-        answers = helper.formAnswersToPost(survey, answersSpec);
+    it('fill user profile and submit', function (done) {
+        answers = helper.formAnswersToPost(survey, surveyExample.answer);
 
-        server
+        store.server
             .post('/api/v1.0/registries/user-profile')
             .send({
                 user: userExample,
@@ -108,36 +116,22 @@ describe('register-login-show scenario', function () {
 
     // --------- login
 
-    it('show without authorization', function (done) {
-        server
+    it('error show user profile without user logs in', function (done) {
+        store.server
             .get('/api/v1.0/registries/user-profile/Alzheimer')
             .expect(401, done);
     });
 
-    var token;
-
-    it('login', function (done) {
-        server
-            .get('/api/v1.0/auth/basic')
-            .auth(userExample.username, userExample.password)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-                token = res.body.token;
-                done();
-            });
-    });
+    it('login', shared.loginFn(store, userExample));
 
     // -----------
 
-    // -------- show
+    // -------- verification
 
-    it('show', function (done) {
-        server
+    it('verify user profile', function (done) {
+        store.server
             .get('/api/v1.0/registries/user-profile/Alzheimer')
-            .set('Authorization', 'Bearer ' + token)
+            .set('Authorization', store.auth)
             .expect(200)
             .end(function (err, res) {
                 if (err) {
