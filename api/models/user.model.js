@@ -10,6 +10,13 @@ const GENDER_FEMALE = 'female';
 const GENDER_OTHER = 'other';
 
 module.exports = function (sequelize, DataTypes) {
+    var bccompare = sequelize.Promise.promisify(bcrypt.compare, {
+        context: bcrypt
+    });
+    var bchash = sequelize.Promise.promisify(bcrypt.hash, {
+        context: bcrypt
+    });
+
     const User = sequelize.define('user', {
         username: {
             type: DataTypes.TEXT,
@@ -105,14 +112,13 @@ module.exports = function (sequelize, DataTypes) {
                     });
                 });
             },
-            beforeCreate: function (user, fields, fn) {
-                user.updatePassword(fn);
+            beforeCreate: function (user, fields) {
+                return user.updatePassword();
             },
-            beforeUpdate: function (user, fields, fn) {
+            beforeUpdate: function (user, fields) {
                 if (user.changed('password')) {
-                    return user.updatePassword(fn);
+                    return user.updatePassword();
                 }
-                fn();
             }
         },
         classMethods: {
@@ -159,22 +165,16 @@ module.exports = function (sequelize, DataTypes) {
             }
         },
         instanceMethods: {
-            authenticate: function (password, callback) {
-                const hash = this.password;
-                bcrypt.compare(password, hash, callback);
-            },
-            updatePassword: function (fn) {
-                // Handle new/update passwords
-                var value = this.password;
-                if (!value) {
-                    fn(new Error('Invalid password'));
-                }
-                bcrypt.hash(value, 10, (err, hash) => {
-                    if (err) {
-                        return fn(err);
+            authenticate: function (password) {
+                return bccompare(password, this.password).then(function (result) {
+                    if (!result) {
+                        throw new Error('Authentication error.');
                     }
+                });
+            },
+            updatePassword: function () {
+                return bchash(this.password, 10).then((hash) => {
                     this.password = hash;
-                    fn(null);
                 });
             }
         }

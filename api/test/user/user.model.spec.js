@@ -75,7 +75,7 @@ describe('user unit', function () {
             });
         });
 
-        it('reject invalid/null/undefined email/missing/empty string', function () {
+        it('reject null/undefined/missing/empty', function () {
             var p = models.sequelize.Promise.resolve(fnNewUser());
             [null, undefined, '--', ''].forEach(function (value) {
                 p = p.then(function (inputUser) {
@@ -83,6 +83,51 @@ describe('user unit', function () {
                         delete inputUser.username;
                     } else {
                         inputUser.username = value;
+                    }
+                    return User.create(inputUser).then(function () {
+                        throw new Error('no error for \'' + value + '\'');
+                    }).catch(function (err) {
+                        expect(!!err.message).to.equal(true);
+                        expect(err.message).not.to.equal('no error for \'' + value + '\'');
+                        return inputUser;
+                    });
+                });
+            });
+            return p;
+        });
+    });
+
+    describe('password', function () {
+        it('normal set and authenticate', function () {
+            const inputUser = fnNewUser();
+            return User.create(inputUser).then(function (user) {
+                return User.findOne({
+                    where: {
+                        id: user.id
+                    }
+                });
+            }).then(function (user) {
+                return user.authenticate(inputUser.password).then(function () {
+                    return user;
+                });
+            }).then(function (user) {
+                return user.authenticate(inputUser.password + 'f').then(function () {
+                    throw new Error('expected error no');
+                }).catch(function (err) {
+                    expect(err.message).not.to.equal('expected error no');
+                    expect(err.message).to.equal('Authentication error.');
+                });
+            });
+        });
+
+        it('reject null/undefined/missing/empty', function () {
+            var p = models.sequelize.Promise.resolve(fnNewUser());
+            [null, undefined, '--', ''].forEach(function (value) {
+                p = p.then(function (inputUser) {
+                    if (value === '--') {
+                        delete inputUser.password;
+                    } else {
+                        inputUser.password = value;
                     }
                     return User.create(inputUser).then(function () {
                         throw new Error('no error for \'' + value + '\'');
