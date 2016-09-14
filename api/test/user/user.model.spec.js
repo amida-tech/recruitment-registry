@@ -18,12 +18,8 @@ describe('user unit', function () {
     const example = userExamples.Example;
 
     before(function () {
-        return Ethnicity.sync({
+        return models.sequelize.sync({
             force: true
-        }).then(function () {
-            return User.sync({
-                force: true
-            });
         });
     });
 
