@@ -81,7 +81,7 @@ module.exports = function (sequelize, DataTypes) {
         hooks: {
             afterSync: function (options) {
                 if (options.force) {
-                    var user = _.assign(config.initialUser, {
+                    var user = _.assign(config.superUser, {
                         role: 'admin'
                     });
                     return User.create(user);

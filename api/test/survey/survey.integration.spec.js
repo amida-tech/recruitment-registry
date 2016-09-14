@@ -65,7 +65,7 @@ describe('survey integration', function () {
             .expect(403, done);
     });
 
-    it('login with admin', shared.loginFn(store, config.initialUser));
+    it('login with admin', shared.loginFn(store, config.superUser));
 
     it('post survey example authorized', function (done) {
         store.server

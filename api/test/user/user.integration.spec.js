@@ -75,7 +75,7 @@ describe('user integration', function () {
             .expect(401, done);
     });
 
-    it('login default user', shared.loginFn(store, config.initialUser));
+    it('login default user', shared.loginFn(store, config.superUser));
 
     it('wrong authorization error', function (done) {
         store.server
@@ -95,7 +95,7 @@ describe('user integration', function () {
                 }
                 var user = res.body;
                 expect(!user).to.equal(false);
-                expect(user.username).to.equal(config.initialUser.username);
+                expect(user.username).to.equal(config.superUser.username);
                 expect(user.role).to.equal('admin');
                 done();
             });
@@ -129,7 +129,7 @@ describe('user integration', function () {
             });
     });
 
-    it('login default user', shared.loginFn(store, config.initialUser));
+    it('login default user', shared.loginFn(store, config.superUser));
 
     it('handle database error (invalid email)', function (done) {
         const userEmailErr = _.cloneDeep(user);
