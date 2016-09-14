@@ -1,6 +1,7 @@
 'use strict';
 
 const dotenv = require('dotenv');
+const moment = require('moment');
 
 dotenv.config();
 
@@ -32,8 +33,17 @@ const all = {
         disable: false
     },
     crypt: {
-        hashrounds: process.env.RECREG_CRYPT_HASHROUNDS || 10
+        hashrounds: process.env.RECREG_CRYPT_HASHROUNDS || 10,
+        resetTokenLength: process.env.RECREG_CRYPT_RESET_TOKEN_LENGTH || 20,
+        resetPasswordLength: process.env.RECREG_CRYPT_RESET_PASSWORD_LENGTH || 10,
+        resetExpires: process.env.RECREG_CRYPT_RESET_EXPIRES || 3600,
     }
+};
+
+all.expiresForDB = function () {
+    let m = moment.utc();
+    m.add(this.crypt.resetExpires, 'seconds');
+    return m.format();
 };
 
 module.exports = _.merge(all, require('./' + all.env + '.js'));

@@ -2,6 +2,8 @@
 
 const _ = require('lodash');
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
+const moment = require('moment');
 
 const config = require('../config');
 
@@ -10,11 +12,14 @@ const GENDER_FEMALE = 'female';
 const GENDER_OTHER = 'other';
 
 module.exports = function (sequelize, DataTypes) {
-    var bccompare = sequelize.Promise.promisify(bcrypt.compare, {
+    const bccompare = sequelize.Promise.promisify(bcrypt.compare, {
         context: bcrypt
     });
-    var bchash = sequelize.Promise.promisify(bcrypt.hash, {
+    const bchash = sequelize.Promise.promisify(bcrypt.hash, {
         context: bcrypt
+    });
+    const randomBytes = sequelize.Promise.promisify(crypto.randomBytes, {
+        context: crypto
     });
 
     const User = sequelize.define('user', {
@@ -77,6 +82,15 @@ module.exports = function (sequelize, DataTypes) {
         role: {
             type: DataTypes.ENUM('admin', 'participant', 'clinician')
         },
+        resetPasswordToken: {
+            unique: {
+                msg: 'Internal error generating unique token.'
+            },
+            type: DataTypes.STRING,
+        },
+        resetPasswordExpires: {
+            type: DataTypes.DATE,
+        },
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',
@@ -124,7 +138,16 @@ module.exports = function (sequelize, DataTypes) {
         classMethods: {
             getUser: function (id) {
                 return User.findById(id, {
-                    raw: true
+                    raw: true,
+                    attributes: {
+                        exclude: [
+                            'createdAt',
+                            'updatedAt',
+                            'password',
+                            'resetPasswordToken',
+                            'resetPasswordExpires'
+                        ]
+                    }
                 }).then(function (result) {
                     var e = result.ethnicity;
                     if (e) {
@@ -162,6 +185,44 @@ module.exports = function (sequelize, DataTypes) {
                         };
                     });
                 });
+            },
+            resetPasswordToken: function (email) {
+                return this.find({
+                    where: {
+                        email: email
+                    }
+                }).then((user) => {
+                    if (!user) {
+                        var err = new Error('Email is invalid.');
+                        return sequelize.Promise.reject(err);
+                    } else {
+                        return user.updateResetPWToken();
+                    }
+                });
+            },
+            resetPassword: function (token, password) {
+                var rejection = function () {
+                    var err = new Error('Password reset token is invalid or has expired.');
+                    return sequelize.Promise.reject(err);
+                };
+                return this.find({
+                    where: {
+                        resetPasswordToken: token
+                    }
+                }).then((user) => {
+                    if (!user) {
+                        return rejection();
+                    } else {
+                        var expires = user.resetPasswordExpires;
+                        var mExpires = moment.utc(expires);
+                        if (moment.utc().isAfter(mExpires)) {
+                            return rejection();
+                        } else {
+                            user.password = password;
+                            return user.save();
+                        }
+                    }
+                });
             }
         },
         instanceMethods: {
@@ -175,6 +236,26 @@ module.exports = function (sequelize, DataTypes) {
             updatePassword: function () {
                 return bchash(this.password, config.crypt.hashrounds).then((hash) => {
                     this.password = hash;
+                });
+            },
+            updateResetPWToken: function () {
+                return randomBytes(config.crypt.resetTokenLength).then((buf) => {
+                    var token = buf.toString('hex');
+                    return token;
+                }).then((token) => {
+                    return randomBytes(config.crypt.resetPasswordLength).then((passwordBuf) => {
+                        return {
+                            token,
+                            password: passwordBuf.toString('hex')
+                        };
+                    });
+                }).then((result) => {
+                    this.resetPasswordToken = result.token;
+                    this.password = result.password;
+                    this.resetPasswordExpires = config.expiresForDB();
+                    return this.save().then((user) => {
+                        return result.token;
+                    });
                 });
             }
         }

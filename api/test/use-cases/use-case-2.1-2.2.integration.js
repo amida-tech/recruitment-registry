@@ -18,7 +18,7 @@ const request = require('supertest');
 
 const expect = chai.expect;
 
-describe('user set-up and login', function () {
+describe('user set-up and login use-case', function () {
     const userExample = userExamples.Alzheimer;
     const surveyExample = surveyExamples.Alzheimer;
 
@@ -142,10 +142,8 @@ describe('user set-up and login', function () {
                 const expectedUser = _.cloneDeep(userExample);
                 const user = result.user;
                 expectedUser.id = user.id;
-                expectedUser.password = user.password;
                 expectedUser.role = 'participant';
-                delete user.createdAt;
-                delete user.updatedAt;
+                delete expectedUser.password;
                 expect(user).to.deep.equal(expectedUser);
 
                 const actualSurvey = result.survey;

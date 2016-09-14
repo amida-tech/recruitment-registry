@@ -219,38 +219,75 @@ describe('user unit', function () {
         });
     });
 
-    var id;
+    describe('create/get users', function () {
+        it('post/get user', function () {
+            return User.create(example).then(function (user) {
+                var id = user.id;
+                return User.getUser(user.id).then(function (actual) {
+                    var expected = _.cloneDeep(example);
+                    expected.id = user.id;
+                    delete actual.role;
+                    delete expected.password;
+                    expect(actual).to.deep.equal(expected);
+                });
+            });
+        });
 
-    it('post/get user', function () {
-        return User.create(example).then(function (user) {
-            id = user.id;
-            return User.getUser(user.id).then(function (actual) {
-                var expected = _.cloneDeep(example);
-                expected.id = user.id;
-                expected.password = user.password;
-                delete actual.createdAt;
-                delete actual.updatedAt;
-                delete actual.role;
-                expect(actual).to.deep.equal(expected);
+        it('post/get user with null values', function () {
+            const exampleWNull = _.cloneDeep(example);
+            exampleWNull.username += '1';
+            exampleWNull.email = 'a' + exampleWNull.email;
+            exampleWNull.zip = null;
+            return User.create(exampleWNull).then(function (user) {
+                var id = user.id;
+                return User.getUser(user.id).then(function (actual) {
+                    var expected = _.cloneDeep(exampleWNull);
+                    expected.id = user.id;
+                    delete actual.role;
+                    delete expected.password;
+                    expect(actual).to.deep.equal(expected);
+                });
             });
         });
     });
 
-    it('post/get user with null values', function () {
-        const exampleWNull = _.cloneDeep(example);
-        exampleWNull.username += '1';
-        exampleWNull.email = 'a' + exampleWNull.email;
-        exampleWNull.zip = null;
-        return User.create(exampleWNull).then(function (user) {
-            id = user.id;
-            return User.getUser(user.id).then(function (actual) {
-                var expected = _.cloneDeep(exampleWNull);
-                expected.id = user.id;
-                expected.password = user.password;
-                delete actual.createdAt;
-                delete actual.updatedAt;
-                delete actual.role;
-                expect(actual).to.deep.equal(expected);
+    describe('reset password', function () {
+        var id;
+
+        it('normal flow', function () {
+            const inputUser = fnNewUser();
+            return User.create(inputUser).then(function (user) {
+                let token;
+
+                return User.resetPasswordToken(user.email).then(function (result) {
+                    token = result;
+                    expect(!!token).to.equal(true);
+                    return token;
+                }).then(function (token) {
+                    return User.findOne({
+                        where: {
+                            email: inputUser.email
+                        }
+                    }).then(function (user) {
+                        return user.authenticate(inputUser.password).then(function () {
+                            throw new Error('authentication should not have succeeded');
+                        }).catch(function (err) {
+                            expect(err.message).not.to.equal('authentication should not have succeeded');
+                            expect(err.message).to.equal('Authentication error.');
+                            return token;
+                        });
+                    });
+                }).then(function (token) {
+                    return User.resetPassword(token, 'newPassword');
+                });
+            }).then(function () {
+                return User.findOne({
+                    where: {
+                        email: inputUser.email
+                    }
+                }).then(function (user) {
+                    return user.authenticate('newPassword');
+                });
             });
         });
     });
