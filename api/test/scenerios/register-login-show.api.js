@@ -25,7 +25,6 @@ const Survey = models.Survey;
 describe('register-login-show scenario', function () {
     const userExample = userExamples.Alzheimer;
     const surveyExample = surveyExamples.Alzheimer;
-    const answersSpec = surveyExamples.AlzheimerSpec;
 
     // -------- syncAndLoadAlzheimer
 
@@ -45,7 +44,7 @@ describe('register-login-show scenario', function () {
     });
 
     it('post survey example unauthorized', function () {
-        return Survey.createSurvey(surveyExample);
+        return Survey.createSurvey(surveyExample.survey);
     });
 
     // --------
@@ -90,7 +89,7 @@ describe('register-login-show scenario', function () {
     var userId;
 
     it('register', function (done) {
-        answers = helper.formAnswersToPost(survey, answersSpec);
+        answers = helper.formAnswersToPost(survey, surveyExample.answer);
 
         store.server
             .post('/api/v1.0/registries/user-profile')

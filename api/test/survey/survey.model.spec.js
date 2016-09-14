@@ -20,7 +20,6 @@ var User = models.User;
 describe('survey unit', function () {
     const example = surveyExamples.Example;
     const user = userExamples.Example;
-    const answersSpec = surveyExamples.ExampleSpec;
 
     var userId;
 
@@ -37,15 +36,15 @@ describe('survey unit', function () {
     var serverSurvey;
 
     it('post/get survey', function () {
-        return Survey.createSurvey(example).then(function (id) {
+        return Survey.createSurvey(example.survey).then(function (id) {
             return Survey.getSurveyById(id).then(function (result) {
-                return helper.buildServerSurveyFromClientSurvey(example, result).then(function (expected) {
+                return helper.buildServerSurveyFromClientSurvey(example.survey, result).then(function (expected) {
                     expect(result).to.deep.equal(expected);
                     serverSurvey = result;
                 });
             }).then(function () {
-                return Survey.getSurveyByName(example.name).then(function (result) {
-                    return helper.buildServerSurveyFromClientSurvey(example, result).then(function (expected) {
+                return Survey.getSurveyByName(example.survey.name).then(function (result) {
+                    return helper.buildServerSurveyFromClientSurvey(example.survey, result).then(function (expected) {
                         expect(result).to.deep.equal(expected);
                     });
                 });
@@ -56,7 +55,7 @@ describe('survey unit', function () {
     it('post answers, get survey with answers', function () {
         const id = serverSurvey.id;
 
-        const answers = helper.formAnswersToPost(serverSurvey, answersSpec);
+        const answers = helper.formAnswersToPost(serverSurvey, example.answer);
         return Answer.createAnswers({
             userId,
             surveyId: id,

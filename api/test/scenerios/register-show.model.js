@@ -17,16 +17,15 @@ var Ethnicity = models.Ethnicity;
 var User = models.User;
 var Survey = models.Survey;
 
-describe('user unit', function () {
+describe('register unit', function () {
     const userExample = userExamples.Alzheimer;
     const surveyExample = surveyExamples.Alzheimer;
-    const answersSpec = surveyExamples.AlzheimerSpec;
 
     before(function () {
         return models.sequelize.sync({
             force: true
         }).then(function () {
-            return Survey.createSurvey(surveyExample);
+            return Survey.createSurvey(surveyExample.survey);
         });
     });
 
@@ -40,7 +39,7 @@ describe('user unit', function () {
         }).then(function (result) {
             ethnicities = Ethnicity.ethnicities();
             genders = User.genders();
-            return Survey.getSurveyByName(surveyExample.name);
+            return Survey.getSurveyByName(surveyExample.survey.name);
         }).then(function (result) {
             survey = result;
         });
@@ -50,7 +49,7 @@ describe('user unit', function () {
     var answers;
 
     it('register user', function () {
-        answers = helper.formAnswersToPost(survey, answersSpec);
+        answers = helper.formAnswersToPost(survey, surveyExample.answer);
 
         return User.register({
             user: userExample,
@@ -64,7 +63,7 @@ describe('user unit', function () {
     it('show user', function () {
         return User.showWithSurvey({
             userId,
-            surveyName: surveyExample.name
+            surveyName: surveyExample.survey.name
         }).then(function (result) {
             const expectedUser = _.cloneDeep(userExample);
             const user = result.user;

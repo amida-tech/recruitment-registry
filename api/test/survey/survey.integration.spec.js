@@ -25,7 +25,6 @@ const Ethnicity = models.Ethnicity;
 describe('survey integration', function () {
     const example = surveyExamples.Example;
     const user = userExamples.Example;
-    const answersSpec = surveyExamples.ExampleSpec;
 
     const store = {
         server: null,
@@ -51,7 +50,7 @@ describe('survey integration', function () {
     it('post survey example nobody authorized', function (done) {
         store.server
             .post('/api/v1.0/surveys')
-            .send(example)
+            .send(example.survey)
             .expect(401)
             .end(done);
     });
@@ -62,7 +61,7 @@ describe('survey integration', function () {
         store.server
             .post('/api/v1.0/surveys')
             .set('Authorization', store.auth)
-            .send(example)
+            .send(example.survey)
             .expect(403, done);
     });
 
@@ -72,7 +71,7 @@ describe('survey integration', function () {
         store.server
             .post('/api/v1.0/surveys')
             .set('Authorization', store.auth)
-            .send(example)
+            .send(example.survey)
             .expect(201)
             .expect(function (res) {
                 expect(!!res.body.id).to.equal(true);
@@ -93,7 +92,7 @@ describe('survey integration', function () {
                 if (err) {
                     return done(err);
                 }
-                helper.buildServerSurveyFromClientSurvey(example, res.body).then(function (expected) {
+                helper.buildServerSurveyFromClientSurvey(example.survey, res.body).then(function (expected) {
                     expect(res.body).to.deep.equal(expected);
                     serverSurvey = res.body;
                 }).then(function () {
@@ -109,7 +108,7 @@ describe('survey integration', function () {
     it('login with user', shared.loginFn(store, user));
 
     it('answer survey', function (done) {
-        answers = helper.formAnswersToPost(serverSurvey, answersSpec);
+        answers = helper.formAnswersToPost(serverSurvey, example.answer);
         const id = serverSurvey.id;
         store.server
             .post('/api/v1.0/answers')
