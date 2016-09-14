@@ -11,6 +11,8 @@ const models = require('../../models');
 const userExamples = require('../fixtures/user-examples');
 
 const config = require('../../config');
+const shared = require('../shared.integration');
+
 const request = require('supertest');
 
 const expect = chai.expect;
@@ -20,15 +22,17 @@ const Ethnicity = models.Ethnicity;
 
 describe('user integration', function () {
     const user = userExamples.Example;
-
-    let server;
+    const store = {
+        server: null,
+        auth: null
+    };
 
     before(function (done) {
         appgen.generate(function (err, app) {
             if (err) {
                 return done(err);
             }
-            server = request(app);
+            store.server = request(app);
             done();
         });
     });
@@ -37,14 +41,14 @@ describe('user integration', function () {
     var genders;
 
     it('invalid path', function (done) {
-        server
+        store.server
             .get('/xxxxxxx')
             .expect(404)
             .end(done);
     });
 
     it('get available ethnicities', function (done) {
-        server
+        store.server
             .get('/api/v1.0/ethnicities')
             .expect(200)
             .expect(function (res) {
@@ -55,7 +59,7 @@ describe('user integration', function () {
     });
 
     it('get available genders', function (done) {
-        server
+        store.server
             .get('/api/v1.0/genders')
             .expect(200)
             .expect(function (res) {
@@ -65,40 +69,25 @@ describe('user integration', function () {
             .end(done);
     });
 
-    let token;
-
     it('no user authentication error', function (done) {
-        server
+        store.server
             .get('/api/v1.0/users/me')
             .expect(401, done);
     });
 
-    it('login default user', function (done) {
-        const iu = config.initialUser;
-        server
-            .get('/api/v1.0/auth/basic')
-            .auth(iu.username, iu.password)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-                token = res.body.token;
-                done();
-            });
-    });
+    it('login default user', shared.loginFn(store, config.initialUser));
 
     it('wrong authorization error', function (done) {
-        server
+        store.server
             .get('/api/v1.0/users/me')
             .set('Authorization', 'Bearer ' + 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwidXNlcm5hbWUiOiJ1ZXN0Iiwicm9sZSI6bnVsbCwiaWF0IjoxNDczNTAwNzE5LCJleHAiOjE0NzYwOTI3MTl9.e0ymr0xrDPuQEBmdQLjb5-WegNtYcqAcpKp_DtDRKo8')
             .expect(401, done);
     });
 
     it('get default user', function (done) {
-        server
+        store.server
             .get('/api/v1.0/users/me')
-            .set('Authorization', 'Bearer ' + token)
+            .set('Authorization', store.auth)
             .expect(200)
             .end(function (err, res) {
                 if (err) {
@@ -113,31 +102,19 @@ describe('user integration', function () {
     });
 
     it('create a new user', function (done) {
-        server
+        store.server
             .post('/api/v1.0/users')
-            .set('Authorization', 'Bearer ' + token)
+            .set('Authorization', store.auth)
             .send(user)
             .expect(201, done);
     });
 
-    it('login with the new user', function (done) {
-        server
-            .get('/api/v1.0/auth/basic')
-            .auth(user.username, 'password')
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-                token = res.body.token;
-                done();
-            });
-    });
+    it('login with the new user', shared.loginFn(store, user));
 
     it('get the new user', function (done) {
-        server
+        store.server
             .get('/api/v1.0/users/me')
-            .set('Authorization', 'Bearer ' + token)
+            .set('Authorization', store.auth)
             .expect(200)
             .end(function (err, res) {
                 if (err) {
@@ -152,37 +129,24 @@ describe('user integration', function () {
             });
     });
 
-    it('login default user', function (done) {
-        const iu = config.initialUser;
-        server
-            .get('/api/v1.0/auth/basic')
-            .auth(iu.username, iu.password)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-                token = res.body.token;
-                done();
-            });
-    });
+    it('login default user', shared.loginFn(store, config.initialUser));
 
     it('handle database error (invalid email)', function (done) {
         const userEmailErr = _.cloneDeep(user);
         userEmailErr.email = 'notanemail';
         userEmailErr.username = user.username + '1';
-        server
+        store.server
             .post('/api/v1.0/users')
-            .set('Authorization', 'Bearer ' + token)
+            .set('Authorization', store.auth)
             .send(userEmailErr)
             .expect(400)
             .end(done);
     });
 
     it('create the new user again to err', function (done) {
-        server
+        store.server
             .post('/api/v1.0/users')
-            .set('Authorization', 'Bearer ' + token)
+            .set('Authorization', store.auth)
             .send(user)
             .expect(400)
             .end(done);
@@ -193,9 +157,9 @@ describe('user integration', function () {
         userWithNulls.email = null;
         userWithNulls.gender = null;
         userWithNulls.username = user.username + '1';
-        server
+        store.server
             .post('/api/v1.0/users')
-            .set('Authorization', 'Bearer ' + token)
+            .set('Authorization', store.auth)
             .send(userWithNulls)
             .expect(201)
             .end(done);

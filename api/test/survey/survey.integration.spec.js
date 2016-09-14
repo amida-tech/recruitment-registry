@@ -13,6 +13,7 @@ const models = require('../../models');
 const config = require('../../config');
 const request = require('supertest');
 
+const shared = require('../shared.integration');
 const userExamples = require('../fixtures/user-examples');
 const surveyExamples = require('../fixtures/survey-examples');
 
@@ -26,7 +27,10 @@ describe('survey integration', function () {
     const user = userExamples.Example;
     const answersSpec = surveyExamples.ExampleSpec;
 
-    let server;
+    const store = {
+        server: null,
+        auth: null
+    };
 
     before(function (done) {
         appgen.generate(function (err, app) {
@@ -36,7 +40,7 @@ describe('survey integration', function () {
             const userin = _.cloneDeep(user);
             userin.role = 'participant';
             User.create(userin).then(function () {
-                server = request(app);
+                store.server = request(app);
                 done();
             }).catch(function (err) {
                 done(err);
@@ -45,56 +49,29 @@ describe('survey integration', function () {
     });
 
     it('post survey example nobody authorized', function (done) {
-        server
+        store.server
             .post('/api/v1.0/surveys')
             .send(example)
             .expect(401)
             .end(done);
     });
 
-    let token;
-
-    it('authenticate basic user', function (done) {
-        server
-            .get('/api/v1.0/auth/basic')
-            .auth(user.username, user.password)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-                token = res.body.token;
-                done();
-            });
-    });
+    it('login with user', shared.loginFn(store, user));
 
     it('post survey example participant', function (done) {
-        server
+        store.server
             .post('/api/v1.0/surveys')
-            .set('Authorization', 'Bearer ' + token)
+            .set('Authorization', store.auth)
             .send(example)
             .expect(403, done);
     });
 
-    it('authenticate admin', function (done) {
-        const admin = config.initialUser;
-        server
-            .get('/api/v1.0/auth/basic')
-            .auth(admin.username, admin.password)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-                token = res.body.token;
-                done();
-            });
-    });
+    it('login with admin', shared.loginFn(store, config.initialUser));
 
     it('post survey example authorized', function (done) {
-        server
+        store.server
             .post('/api/v1.0/surveys')
-            .set('Authorization', 'Bearer ' + token)
+            .set('Authorization', store.auth)
             .send(example)
             .expect(201)
             .expect(function (res) {
@@ -106,7 +83,7 @@ describe('survey integration', function () {
     var serverSurvey;
 
     it('get empty survey', function (done) {
-        server
+        store.server
             .get('/api/v1.0/surveys/empty/Example')
             .expect(200)
             .expect(function (res) {
@@ -129,26 +106,14 @@ describe('survey integration', function () {
 
     var answers;
 
-    it('authenticate basic user', function (done) {
-        server
-            .get('/api/v1.0/auth/basic')
-            .auth(user.username, user.password)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-                token = res.body.token;
-                done();
-            });
-    });
+    it('login with user', shared.loginFn(store, user));
 
     it('answer survey', function (done) {
         answers = helper.formAnswersToPost(serverSurvey, answersSpec);
         const id = serverSurvey.id;
-        server
+        store.server
             .post('/api/v1.0/answers')
-            .set('Authorization', 'Bearer ' + token)
+            .set('Authorization', store.auth)
             .send({
                 surveyId: id,
                 answers
@@ -158,9 +123,9 @@ describe('survey integration', function () {
     });
 
     it('get answered survey', function (done) {
-        server
+        store.server
             .get('/api/v1.0/surveys/Example')
-            .set('Authorization', 'Bearer ' + token)
+            .set('Authorization', store.auth)
             .expect(200)
             .end(function (err, res) {
                 if (err) {

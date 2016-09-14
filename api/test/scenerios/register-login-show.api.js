@@ -10,6 +10,7 @@ const appgen = require('../../app-generator');
 const helper = require('../survey/survey-helper');
 const models = require('../../models');
 
+const shared = require('../shared.integration');
 const userExamples = require('../fixtures/user-examples');
 const surveyExamples = require('../fixtures/survey-examples');
 
@@ -28,14 +29,17 @@ describe('register-login-show scenario', function () {
 
     // -------- syncAndLoadAlzheimer
 
-    let server;
+    const store = {
+        server: null,
+        auth: null
+    };
 
     before(function (done) {
         appgen.generate(function (err, app) {
             if (err) {
                 return done(err);
             }
-            server = request(app);
+            store.server = request(app);
             done();
         });
     });
@@ -52,14 +56,14 @@ describe('register-login-show scenario', function () {
     var genders;
 
     it('get available ethnicities', function (done) {
-        server
+        store.server
             .get('/api/v1.0/ethnicities')
             .expect(200)
             .end(done);
     });
 
     it('get available genders', function (done) {
-        server
+        store.server
             .get('/api/v1.0/genders')
             .expect(200)
             .end(done);
@@ -68,7 +72,7 @@ describe('register-login-show scenario', function () {
     var survey;
 
     it('get survey', function (done) {
-        server
+        store.server
             .get('/api/v1.0/surveys/empty/Alzheimer')
             .expect(200)
             .end(function (err, res) {
@@ -88,7 +92,7 @@ describe('register-login-show scenario', function () {
     it('register', function (done) {
         answers = helper.formAnswersToPost(survey, answersSpec);
 
-        server
+        store.server
             .post('/api/v1.0/registries/user-profile')
             .send({
                 user: userExample,
@@ -109,35 +113,21 @@ describe('register-login-show scenario', function () {
     // --------- login
 
     it('show without authorization', function (done) {
-        server
+        store.server
             .get('/api/v1.0/registries/user-profile/Alzheimer')
             .expect(401, done);
     });
 
-    var token;
-
-    it('login', function (done) {
-        server
-            .get('/api/v1.0/auth/basic')
-            .auth(userExample.username, userExample.password)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-                token = res.body.token;
-                done();
-            });
-    });
+    it('login', shared.loginFn(store, userExample));
 
     // -----------
 
     // -------- show
 
     it('show', function (done) {
-        server
+        store.server
             .get('/api/v1.0/registries/user-profile/Alzheimer')
-            .set('Authorization', 'Bearer ' + token)
+            .set('Authorization', store.auth)
             .expect(200)
             .end(function (err, res) {
                 if (err) {
