@@ -50,10 +50,9 @@ export default (state = initialState, action) => {
       answers[qid] = answers[qid] ? answers[qid] : {}
 
       if (!answers[qid][cid]) {
-        // TODO: Change back to boolean
-        answers[qid][cid] = "true";
+        answers[qid][cid] = true;
       } else {
-        answers[qid][cid] = "false";
+        answers[qid][cid] = false;
       }
 
       return assign({}, state, {
