@@ -13,6 +13,10 @@ class ProfileContainer extends Component {
         <div>
           { loggedIn && survey ? (
             <div>
+              <h2>{user.username}</h2>
+              <div>
+
+              </div>
               <h2>{survey.name}</h2>
               <div>
                 { survey.questions.map(question => {

@@ -52,7 +52,7 @@ export default (state = initialState, action) => {
       if (!answers[qid][cid]) {
         answers[qid][cid] = true;
       } else {
-        answers[qid][cid] = false;
+        answers[qid][cid] = false
       }
 
       return assign({}, state, {

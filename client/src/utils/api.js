@@ -106,7 +106,7 @@ const apiProvider = store => next => action => {
       request
         .post(apiUrl + '/registries/user-profile')
         .send(action.payload)
-        .end((error, response) => {
+        .end((error) => {
           if (!error) {
             next({
               type: 'REGISTER_SUCCESS'
