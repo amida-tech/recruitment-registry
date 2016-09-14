@@ -7,25 +7,33 @@ const swaggerTools = require('swagger-tools');
 const models = require('./models');
 const swaggerObject = require('./swagger.json');
 const security = require('./security');
+const logger = require('./logger');
 
 const errHandler = function (err, req, res, next) {
+    if (typeof err !== 'object') { // send error for now, meybe we should message for error from different packages
+        err = {
+            message: 'Unknown error',
+            original: err
+        };
+    }
+
+    logger.error(err);
+
     if (res.headersSent) {
         return next(err);
     }
     if ((!res.statusCode) || (res.statusCode < 300)) {
         res.statusCode = 500;
     }
-    if (typeof err !== 'object') { // send error for now, meybe we should message for error from different packages
-        err = {
-            message: 'Unknown error'
-        };
-    } else {
-        if (err.name === 'SequelizeValidationError') {
+
+    // assume all sequelize errors are invalid input
+    if (err.name && (typeof err.name === 'string')) {
+        if ((err.name.toLowerCase().slice(0, 9) === 'sequelize')) {
             res.statusCode = 400;
         }
     }
 
-    res.send(err);
+    res.json(err);
 };
 
 exports.initialize = function (app, callback) {

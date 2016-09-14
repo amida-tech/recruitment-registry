@@ -24,7 +24,12 @@ const all = {
     },
     superUser: {
         username: process.env.RECREG_SUPER_USER_USERNAME || 'super',
-        password: process.env.RECREG_SUPER_USER_PASSWORD || 'Am!d@2017PW'
+        password: process.env.RECREG_SUPER_USER_PASSWORD || 'Am!d@2017PW',
+        email: process.env.RECREG_SUPER_USER_EMAIL || 'rr_demo@amida.com'
+    },
+    logging: {
+        express: false,
+        disable: false
     }
 };
 

@@ -28,7 +28,8 @@ module.exports = function (sequelize, DataTypes) {
             },
             set: function (val) {
                 this.setDataValue('email', val && val.toLowerCase());
-            }
+            },
+            allowNull: false
         },
         password: {
             type: DataTypes.TEXT,
