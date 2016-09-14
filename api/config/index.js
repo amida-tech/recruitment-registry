@@ -43,7 +43,7 @@ const all = {
 all.expiresForDB = function () {
     let m = moment.utc();
     m.add(this.crypt.resetExpires, 'seconds');
-    return m.format();
+    return m.toISOString();
 };
 
 module.exports = _.merge(all, require('./' + all.env + '.js'));

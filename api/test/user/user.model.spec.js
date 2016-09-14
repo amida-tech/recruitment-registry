@@ -2,17 +2,20 @@
 'use strict';
 process.env.NODE_ENV = 'test';
 
-var chai = require('chai');
-var _ = require('lodash');
+const chai = require('chai');
+const sinon = require('sinon');
+const moment = require('moment');
+const _ = require('lodash');
 
+const config = require('../../config');
 const helper = require('../helpers');
 const models = require('../../models');
 const userExamples = require('../fixtures/user-examples');
 
-var expect = chai.expect;
+const expect = chai.expect;
 
-var Ethnicity = models.Ethnicity;
-var User = models.User;
+const Ethnicity = models.Ethnicity;
+const User = models.User;
 
 describe('user unit', function () {
     const example = userExamples.Example;
@@ -278,7 +281,16 @@ describe('user unit', function () {
                         });
                     });
                 }).then(function (token) {
-                    return User.resetPassword(token, 'newPassword');
+                    const wrongToken = '1' + token.slice(1);
+                    return User.resetPassword(wrongToken, 'newPassword').then(function () {
+                        throw new Error('unexpected no error for no token');
+                    }).catch(function (err) {
+                        expect(err.message).not.to.equal('unexpected no error for no token');
+                        expect(err.message).to.equal('Password reset token is invalid or has expired.');
+                        return token;
+                    }).then(function (token) {
+                        return User.resetPassword(token, 'newPassword');
+                    });
                 });
             }).then(function () {
                 return User.findOne({
@@ -287,6 +299,40 @@ describe('user unit', function () {
                     }
                 }).then(function (user) {
                     return user.authenticate('newPassword');
+                });
+            });
+        });
+
+        it('invalid email', function () {
+            return User.resetPasswordToken('a@a.com').then(function () {
+                throw new Error('unexpected no error ');
+            }).catch(function (err) {
+                expect(err.message).not.to.equal('unexpected no error');
+                expect(err.message).to.equal('Email is invalid.');
+            });
+        });
+
+        it('expired reset token', function () {
+            const stub = sinon.stub(config, 'expiresForDB', function () {
+                let m = moment.utc();
+                m.add(250, 'ms');
+                return m.toISOString();
+            });
+            const inputUser = fnNewUser();
+            return User.create(inputUser).then(function (user) {
+                return User.resetPasswordToken(user.email);
+            }).then(function (token) {
+                return User.resetPassword(token, 'newPassword').then(function () {
+                    return models.sequelize.Promise.delay(600);
+                }).then(function () {
+                    return User.resetPassword(token, 'newPassword');
+                }).then(function () {
+                    throw new Error('unexpected no expiration error');
+                }).catch(function (err) {
+                    expect(err.message).not.to.equal('unexpected no expiration error');
+                    expect(err.message).to.equal('Password reset token is invalid or has expired.');
+                }).then(function () {
+                    config.expiresForDB.restore();
                 });
             });
         });
