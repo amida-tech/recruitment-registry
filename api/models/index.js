@@ -12,7 +12,8 @@ const sequelize = new Sequelize(config.db.name, config.db.user, config.db.pass, 
         max: 20,
         min: 0,
         idle: 10000
-    }
+    },
+    logging: false
 });
 
 const Ethnicity = sequelize.import('./ethnicity.model');

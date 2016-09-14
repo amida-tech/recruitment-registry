@@ -2,7 +2,7 @@
 
 const config = require('../config');
 
-const superUser = config.initialUser;
+const superUser = config.superUser;
 
 const buffer = new Buffer(superUser.username + ':' + superUser.password);
 
