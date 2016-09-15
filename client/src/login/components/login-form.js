@@ -8,7 +8,7 @@ class Form extends Component {
     return(
       <form className="form" onSubmit={this._onSubmit.bind(this)}>
         <div className="">
-          { this.props.data.hasErrors ? (<p>Something went wrong, please try again!</p>) : (<p></p>) }
+          { this.props.data.hasErrors ? (<p>Invalid credentials!</p>) : (<p></p>) }
         </div>
         <div className="form__field-wrapper">
           <input className="form__field-input" type="text" id="username" value={this.props.data.username} onChange={this._changeUsername.bind(this)} autoCorrect="off" autoCapitalize="off" spellCheck="false" />

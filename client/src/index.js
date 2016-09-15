@@ -3,9 +3,8 @@ import routes from './routes';
 import Layout from './layout/index';
 import login from './login';
 import register from './register';
-import {browserHistory} from 'react-router';
+import { browserHistory } from 'react-router';
 
-/*const assign = Object.assign || require('object.assign');*/
 
 export const initialState = {
   title: "Recruitment Registry",
@@ -56,14 +55,14 @@ export const reducers = {
     switch (action.type) {
       case "LOGIN_SUCCESS":
         localStorage.setItem("token", action.data.token)
-        return action.data.token;
+        return action.data.token
       case "LOGOUT":
-        browserHistory.push('/login');
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        return false;
+        browserHistory.push('/login')
+        localStorage.removeItem("token")
+        localStorage.removeItem("user")
+        return false
       default:
-        return state;
+        return state
     }
   },
   title: (state = initialState) => state,
@@ -77,6 +76,6 @@ export const reducers = {
   }
 };
 
-import './styles/main.scss';
+import './styles/main.scss'
 
-App({ reducers, initialState, Layout, routes }).render();
+App({ reducers, initialState, Layout, routes }).render()
