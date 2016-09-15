@@ -5,8 +5,8 @@ class Home extends Component {
   render() {
 
     const { title } = this.props.data;
-    const {loggedIn} = this.props.data;
-    const {role, username} = this.props.user;
+    const { loggedIn } = this.props.data;
+    const { role, username } = this.props.user;
     return (
       <div>
         <h1>Home</h1>
@@ -18,10 +18,6 @@ class Home extends Component {
         </div>
       </div>
     );
-  }
-
-  componentWillMount() {
-    this.props.dispatch({type: 'GET_PROFILE', surveyName: 'Alzheimer'})
   }
 }
 

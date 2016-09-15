@@ -32,14 +32,6 @@ class Form extends Component {
 
     return(
       <form className="" onSubmit={this.props.onSubmit}>
-        <div className="form__error-wrapper">
-          <p className="form__error form__error--username-taken">Sorry, but this username is already taken.</p>
-          <p className="form__error form__error--username-not-registered">This username does not exist.</p>
-          <p className="form__error form__error--wrong-password">Wrong password.</p>
-          <p className="form__error form__error--field-missing">Please fill out the entire form.</p>
-          <p className="form__error form__error--failed">Something went wrong, please try again!</p>
-        </div>
-
         <div className="col-sm-6">
           <div className="login-info">
             {renderInputField("username", "text", "admin", "Username")}

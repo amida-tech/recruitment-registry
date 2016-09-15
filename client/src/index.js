@@ -42,7 +42,7 @@ export const initialState = {
     survey: {
       questions: []
     },
-    surveyResults: {
+    surveyResult: {
       answers: []
     }
   },
@@ -70,15 +70,12 @@ export const reducers = {
   profile: (state = initialState, action) => {
     switch (action.type) {
       case 'GET_PROFILE_SUCCESS':
-        // console.log(action.payload);
         return action.payload
       default:
-        return state;
+        return {}
     }
   }
 };
-
-
 
 import './styles/main.scss';
 

@@ -59,7 +59,9 @@ class ProfileContainer extends Component {
   }
 
   componentWillMount() {
-    this.props.dispatch({type: 'GET_PROFILE', surveyName: 'Alzheimer'})
+    if (this.props.loggedIn) {
+      this.props.dispatch({type: 'GET_PROFILE', surveyName: 'Alzheimer'})
+    }
   }
 }
 
