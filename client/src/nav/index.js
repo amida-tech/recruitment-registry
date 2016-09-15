@@ -6,15 +6,23 @@ import { logout } from '../login/actions';
 
 class Nav extends Component {
   render() {
-    const {title} = this.props.data;
-    const {loggedIn} = this.props.data;
+    const { title } = this.props.data;
+    const { loggedIn } = this.props.data;
+
+    var nav;
+
+    if (loggedIn) {
+      var routesAuthed = routes.filter(r => r.requiresAuth || !r.newUsers)
+      nav = routesAuthed.map(r => <Link className="nav-item nav-link" key={r.path} to={r.path}>{r.title}</Link>)
+    } else {
+      var routesNewUsers = routes.filter(r => !r.requiresAuth || r.newUsers)
+      nav = routesNewUsers.map(r => <Link className="nav-item nav-link" key={r.path} to={r.path}>{r.title}</Link>)
+    }
 
     return (
       <nav className="navbar navbar-full navbar-dark bg-inverse">
         <a className="navbar-brand" href="/">{ title }</a>
-        <div className="nav navbar-nav">
-          {routes.map(r => <Link className="nav-item nav-link" key={r.path} to={r.path}>{r.title}</Link>)}
-        </div>
+        <div className="nav navbar-nav">{nav}</div>
         <div>
           { loggedIn ? (
             <div>

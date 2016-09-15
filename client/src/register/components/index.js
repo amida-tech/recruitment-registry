@@ -58,11 +58,11 @@ export class RegisterContainer extends Component {
     survey.questions.forEach((question) => {
       let ans;
       if (question.type === 'choices') {
-        let choices = this.props.data.surveyResult.answers[question.id];
+        let choices = this.props.data.surveyResult.answers[question.id]
 
         if (choices) {
           choices = Object.keys(choices).filter((key) => {
-            return choices[key];
+            return choices[key]
           });
           choices = choices.map((id) => parseInt(id));
           ans = { choices: choices}
@@ -96,4 +96,4 @@ const mapStateToProps = function(store) {
   }
 }
 
-export default connect(mapStateToProps)(RegisterContainer);
+export default connect(mapStateToProps)(RegisterContainer)
