@@ -1,5 +1,6 @@
 'use strict';
 
+const util = require('util');
 const _ = require('lodash');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
@@ -21,6 +22,11 @@ module.exports = function (sequelize, DataTypes) {
     const randomBytes = sequelize.Promise.promisify(crypto.randomBytes, {
         context: crypto
     });
+
+    const clientUpdatableFields = ['email', 'password', 'zip', 'ethnicity', 'gender'].reduce(function (r, p) {
+        r[p] = true;
+        return r;
+    }, {});
 
     const User = sequelize.define('user', {
         username: {
@@ -184,6 +190,22 @@ module.exports = function (sequelize, DataTypes) {
                             survey
                         };
                     });
+                });
+            },
+            updateUser: function (id, values) {
+                return User.findById(id).then(function (user) {
+                    Object.keys(values).forEach(function (key) {
+                        if (!clientUpdatableFields[key]) {
+                            const msg = util.format('Field %s cannot be updated.', key);
+                            throw new sequelize.ValidationError(msg);
+                        }
+                    });
+                    return user.update(values);
+                });
+            },
+            authenticateUser: function (id, password) {
+                return User.findById(id).then(function (user) {
+                    return user.authenticate(password);
                 });
             },
             resetPasswordToken: function (email) {

@@ -44,7 +44,7 @@ describe('user unit', function () {
     })();
 
     describe('username', function () {
-        it('normal set/get', function () {
+        it('create and update', function () {
             const inputUser = fnNewUser();
             return User.create(inputUser).then(function (user) {
                 expect(user.username).to.equal(inputUser.username);
@@ -59,6 +59,16 @@ describe('user unit', function () {
                 });
             }).then(function (user) {
                 expect(user.username).to.equal(inputUser.username);
+                return user;
+            }).then(function (user) {
+                return User.updateUser(user.id, {
+                    username: 'rejectusername'
+                }).then(function () {
+                    throw new Error('unexpected no error');
+                }).catch(function (err) {
+                    expect(err.message).to.not.equal('unexpected no error');
+                    expect(err.message).to.equal('Field username cannot be updated.');
+                });
             });
         });
 
@@ -101,7 +111,7 @@ describe('user unit', function () {
     });
 
     describe('password', function () {
-        it('normal set and authenticate', function () {
+        it('create, update and authenticate', function () {
             const inputUser = fnNewUser();
             return User.create(inputUser).then(function (user) {
                 return User.findOne({
@@ -119,6 +129,15 @@ describe('user unit', function () {
                 }).catch(function (err) {
                     expect(err.message).not.to.equal('expected error no');
                     expect(err.message).to.equal('Authentication error.');
+                    return user.id;
+                });
+            }).then(function (id) {
+                return User.updateUser(id, {
+                    password: 'newPassword'
+                }).then(function () {
+                    return User.findById(id).then(function (user) {
+                        return user.authenticate('newPassword');
+                    });
                 });
             });
         });
@@ -138,6 +157,27 @@ describe('user unit', function () {
                         expect(!!err.message).to.equal(true);
                         expect(err.message).not.to.equal('no error for \'' + value + '\'');
                         return inputUser;
+                    });
+                });
+            });
+            return p;
+        });
+
+        it('reject update with null/undefined/empty', function () {
+            const inputValue = fnNewUser();
+            var p = User.create(inputValue).then(function (user) {
+                return user.id;
+            });
+            [null, undefined, ''].forEach(function (value) {
+                p = p.then(function (id) {
+                    return User.updateUser(id, {
+                        password: value
+                    }).then(function () {
+                        throw new Error('no error for \'' + value + '\'');
+                    }).catch(function (err) {
+                        expect(!!err.message).to.equal(true);
+                        expect(err.message).not.to.equal('no error for \'' + value + '\'');
+                        return id;
                     });
                 });
             });
@@ -200,7 +240,7 @@ describe('user unit', function () {
             });
         });
 
-        it('reject invalid/null/undefined email/missing/empty string', function () {
+        it('reject create invalid/null/undefined/missing/empty', function () {
             var p = models.sequelize.Promise.resolve(fnNewUser());
             ['noatemail', null, undefined, '--', ''].forEach(function (value) {
                 p = p.then(function (inputUser) {
@@ -215,6 +255,27 @@ describe('user unit', function () {
                         expect(!!err.message).to.equal(true);
                         expect(err.message).not.to.equal('no error for ' + value);
                         return inputUser;
+                    });
+                });
+            });
+            return p;
+        });
+
+        it('reject update with invalid/null/undefined/empty', function () {
+            const inputValue = fnNewUser();
+            var p = User.create(inputValue).then(function (user) {
+                return user.id;
+            });
+            ['noatemail', null, undefined, ''].forEach(function (value) {
+                p = p.then(function (id) {
+                    return User.updateUser(id, {
+                        email: value
+                    }).then(function () {
+                        throw new Error('no error for \'' + value + '\'');
+                    }).catch(function (err) {
+                        expect(!!err.message).to.equal(true);
+                        expect(err.message).not.to.equal('no error for \'' + value + '\'');
+                        return id;
                     });
                 });
             });
@@ -249,6 +310,67 @@ describe('user unit', function () {
                     delete actual.role;
                     delete expected.password;
                     expect(actual).to.deep.equal(expected);
+                });
+            });
+        });
+    });
+
+    describe('update users', function () {
+        it('normal flow', function () {
+            const inputUser = fnNewUser({
+                zip: null,
+                ethnicity: null,
+                gender: null
+            });
+            return User.create(inputUser).then(function (user) {
+                const id = user.id;
+                const attributes = ['email', 'zip', 'ethnicity', 'gender'];
+                let updateObj = {
+                    email: 'newone@example.com',
+                    password: 'newpasword!!',
+                    zip: '20888',
+                    ethnicity: 'Caucasion',
+                    gender: 'other'
+                };
+                return User.updateUser(id, updateObj).then(function () {
+                    return User.authenticateUser(id, updateObj.password);
+                }).then(function () {
+                    return User.findById(id, {
+                        attributes
+                    }).then(function (user) {
+                        const actualAttrs = user.get();
+                        delete updateObj.password;
+                        expect(actualAttrs).to.deep.equal(updateObj);
+                    });
+                }).then(function () {
+                    const incUpdateObj = {
+                        zip: '20555',
+                        gender: 'female'
+                    };
+                    return User.updateUser(id, incUpdateObj).then(function () {
+                        return User.findById(id, {
+                            attributes
+                        });
+                    }).then(function (user) {
+                        const actualAttrs = user.get();
+                        updateObj = _.assign(updateObj, incUpdateObj);
+                        expect(actualAttrs).to.deep.equal(updateObj);
+                    });
+                }).then(function () {
+                    const incUpdateObj = {
+                        zip: null,
+                        gender: 'male',
+                        ethnicity: null
+                    };
+                    return User.updateUser(id, incUpdateObj).then(function () {
+                        return User.findById(id, {
+                            attributes
+                        });
+                    }).then(function (user) {
+                        const actualAttrs = user.get();
+                        updateObj = _.assign(updateObj, incUpdateObj);
+                        expect(actualAttrs).to.deep.equal(updateObj);
+                    });
                 });
             });
         });
