@@ -64,17 +64,14 @@ export class RegisterContainer extends Component {
           choices = Object.keys(choices).filter((key) => {
             return choices[key];
           });
-          // TODO
           choices = choices.map((id) => parseInt(id));
-          // choices = choices.map((id) => id + "");
           ans = { choices: choices}
         } else {
           ans = {choices: []}
         }
 
       } else if (question.type === 'bool') {
-        // TODO change back to bool
-        ans = { boolValue: this.props.data.surveyResult.answers[question.id]['-1'] }
+        ans = { boolValue: this.props.data.surveyResult.answers[question.id] && !!this.props.data.surveyResult.answers[question.id]['-1'] }
       }
       answersParsed.push({
         questionId: question.id,

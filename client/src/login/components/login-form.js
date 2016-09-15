@@ -25,10 +25,6 @@ class Form extends Component {
     );
   }
 
-  shouldComponentUpdate(nextProps, nextState) {
-    return true;
-  }
-
   _changeUsername(evt) {
     var newState = this._mergeWithCurrentState({
       username: evt.target.value

@@ -25,10 +25,6 @@ export class LoginContainer extends Component {
   _login(username, password) {
     this.props.dispatch(login(username, password));
   }
-
-  shouldComponentUpdate(nextProps, nextState) {
-    return true;
-  }
 }
 
 const mapStateToProps = function(store) {

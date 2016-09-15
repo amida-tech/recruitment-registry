@@ -41,6 +41,9 @@ export const initialState = {
     ],
     survey: {
       questions: []
+    },
+    surveyResults: {
+      answers: []
     }
   },
   loggedIn: localStorage.token ? localStorage.token : false

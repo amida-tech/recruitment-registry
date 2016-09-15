@@ -21,7 +21,7 @@ class Form extends Component {
     );
 
     const renderCheckbox = (surveyId, questionId, choiceId, label) => (
-      <div className="checkbox">
+      <div className="checkbox" key={surveyId + '.' + questionId + '.' + choiceId}>
         <label><input type="checkbox"
                       name={surveyId + '.' + questionId + '.' + choiceId}
                       id={surveyId + '.' + questionId + '.' + choiceId}
