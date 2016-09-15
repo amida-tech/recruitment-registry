@@ -69,6 +69,7 @@ const sendToken = function (req, res) {
 exports.authenticateBasic = function (req, res, next) {
     authenticate(req, res, function (err) {
         if (err) {
+            res.status(401);
             return next(err);
         }
         sendToken(req, res);

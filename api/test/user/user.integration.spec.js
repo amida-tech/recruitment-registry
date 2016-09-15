@@ -54,6 +54,7 @@ describe('user integration', function () {
             .expect(function (res) {
                 var expected = Ethnicity.ethnicities();
                 expect(res.body).to.deep.equal(expected);
+                ethnicities = expected;
             })
             .end(done);
     });
@@ -65,6 +66,7 @@ describe('user integration', function () {
             .expect(function (res) {
                 var expected = User.genders();
                 expect(res.body).to.deep.equal(expected);
+                genders = res.body;
             })
             .end(done);
     });
@@ -164,5 +166,79 @@ describe('user integration', function () {
             .send(userWithNulls)
             .expect(201)
             .end(done);
+    });
+
+    it('login with the new user', shared.loginFn(store, user));
+
+    let userUpdate = {
+        email: 'newone@example.com',
+        password: 'newone',
+        zip: '20899'
+    };
+
+    it('full update user', function (done) {
+        userUpdate.ethnicity = ethnicities[1];
+        userUpdate.gender = genders[1];
+        store.server
+            .put('/api/v1.0/users/me')
+            .set('Authorization', store.auth)
+            .send(userUpdate)
+            .expect(200, done);
+    });
+
+    it('bad login with old password', shared.badLoginFn(store, user));
+
+    it('login with updated password', shared.loginFn(store, {
+        username: user.username,
+        password: userUpdate.password
+    }));
+
+    it('verify fields', function (done) {
+        store.server
+            .get('/api/v1.0/users/me')
+            .set('Authorization', store.auth)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                const expected = _.cloneDeep(userUpdate);
+                expected.role = 'participant';
+                expected.id = res.body.id;
+                delete expected.password;
+                expected.username = user.username;
+                expect(res.body).to.deep.equal(expected);
+                done();
+            });
+    });
+
+    it('partial update user', function (done) {
+        userUpdate.ethnicity = null;
+        userUpdate.gender = genders[0];
+        userUpdate.zip = '20817';
+        store.server
+            .put('/api/v1.0/users/me')
+            .set('Authorization', store.auth)
+            .send(_.pick(userUpdate, ['ethnicity', 'gender', 'zip']))
+            .expect(200, done);
+    });
+
+    it('verify fields', function (done) {
+        store.server
+            .get('/api/v1.0/users/me')
+            .set('Authorization', store.auth)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                const expected = _.pick(userUpdate, ['zip', 'gender', 'ethnicity', 'email']);
+                const actual = _.omit(res.body, ['id', 'role', 'username']);
+                if (!actual.hasOwnProperty('ethnicity')) {
+                    actual.ethnicity = null;
+                }
+                expect(actual).to.deep.equal(expected);
+                done();
+            });
     });
 });

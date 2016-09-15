@@ -29,8 +29,8 @@ const all = {
         email: process.env.RECREG_SUPER_USER_EMAIL || 'rr_demo@amida.com'
     },
     logging: {
-        express: false,
-        disable: false
+        express: (process.env.RECREG_LOGGING_EXPRESS) === 'true',
+        disable: (process.env.RECREG_LOGGING_DISABLE) === 'true'
     },
     crypt: {
         hashrounds: process.env.RECREG_CRYPT_HASHROUNDS || 10,

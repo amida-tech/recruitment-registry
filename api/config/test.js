@@ -8,7 +8,6 @@ module.exports = {
         name: 'recregtest',
     },
     logging: {
-        express: false,
-        disable: true
+        express: false
     }
 };

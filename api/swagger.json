@@ -101,16 +101,39 @@
             "get": {
                 "operationId": "showCurrentUser",
                 "summary": "Gets the current user",
-                "security": [
-                    {
-                        "self": []
-                    }
-                ],
+                "security": [{
+                    "self": []
+                }],
                 "responses": {
                     "200": {
                         "description": "Successul response",
                         "schema": {
                             "$ref": "#/definitions/user"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "operationId": "updateCurrentUser",
+                "summary": "Updates the current user",
+                "security": [{
+                    "self": []
+                }],
+                "parameters": [{
+                    "name": "user",
+                    "in": "body",
+                    "description": "User fields to be updated",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/userUpdate"
+                    }
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successul response",
+                        "schema": {
+                            "type": "object",
+                            "maxProperties": 0
                         }
                     }
                 }
@@ -367,7 +390,28 @@
                     "type": "string"
                 },
                 "email": {
-                    "type": ["string", "null"],
+                    "type": "string",
+                    "format": "email"
+                },
+                "zip": {
+                    "type": ["string", "null"]
+                },
+                "ethnicity": {
+                    "type": ["string", "null"]
+                },
+                "gender": {
+                    "type": ["string", "null"]
+                }
+            }
+        },
+        "userUpdate": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string",
                     "format": "email"
                 },
                 "zip": {

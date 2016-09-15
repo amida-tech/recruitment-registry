@@ -21,3 +21,12 @@ exports.loginFn = function (store, login) {
             });
     };
 };
+
+exports.badLoginFn = function (store, login) {
+    return function (done) {
+        store.server
+            .get('/api/v1.0/auth/basic')
+            .auth(login.username, login.password)
+            .expect(401, done);
+    };
+};
