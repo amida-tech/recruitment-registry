@@ -139,6 +139,44 @@
                 }
             }
         },
+        "/users/password": {
+            "x-swagger-router-controller": "user.controller",
+            "post": {
+                "operationId": "resetPassword",
+                "summary": "Resets the password",
+                "parameters": [{
+                    "name": "resetInfo",
+                    "in": "body",
+                    "description": "Reset token and new password",
+                    "required": true,
+                    "schema": {
+                        "type": "object",
+                        "required": [
+                            "token",
+                            "password"
+                        ],
+                        "properties": {
+                            "token": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "password": {
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        }
+                    }
+                }],
+                "responses": {
+                    "201": {
+                        "description": "Successul response",
+                        "schema": {
+                            "$ref": "#/definitions/emptyObject"
+                        }
+                    }
+                }
+            }
+        },
         "/surveys": {
             "x-swagger-router-controller": "survey.controller",
             "post": {
@@ -385,7 +423,39 @@
                     }
                 }
             }
+        },
+        "/reset-tokens": {
+            "x-swagger-router-controller": "reset-token.controller",
+            "post": {
+                "summary": "Generate reset token and e-mail",
+                "operationId": "resetToken",
+                "parameters": [{
+                    "name": "email",
+                    "in": "body",
+                    "description": "User email for password reset",
+                    "required": true,
+                    "schema": {
+                        "type": "object",
+                        "required": ["email"],
+                        "properties": {
+                            "email": {
+                                "type": "string",
+                                "format": "email"
+                            }
+                        }
+                    }
+                }],
+                "responses": {
+                    "201": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/emptyObject"
+                        }
+                    }
+                }
+            }
         }
+
     },
     "securityDefinitions": {
         "admin": {
@@ -672,6 +742,10 @@
                     "$ref": "#/definitions/survey"
                 }
             }
+        },
+        "emptyObject": {
+            "type": "object",
+            "maxProperties": 0
         }
     }
 }
