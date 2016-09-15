@@ -37,6 +37,12 @@ const all = {
         resetTokenLength: process.env.RECREG_CRYPT_RESET_TOKEN_LENGTH || 20,
         resetPasswordLength: process.env.RECREG_CRYPT_RESET_PASSWORD_LENGTH || 10,
         resetExpires: process.env.RECREG_CRYPT_RESET_EXPIRES || 3600,
+    },
+    resetPw: {
+        emailUri: process.env.RECREG_RESETPW_EMAIL_URI,
+        emailFrom: process.env.RECREG_RESETPW_EMAIL_FROM,
+        emailName: process.env.RECREG_RESETPW_EMAIL_NAME,
+        clientBaseUrl: process.env.RECREG_RESETPW_CLIENT_BASE_URL
     }
 };
 

@@ -54,3 +54,12 @@ exports.updateCurrentUser = function (req, res, next) {
         res.status(401).json({});
     }
 };
+
+exports.resetPassword = function (req, res, next) {
+    User.resetPassword(req.body.token, req.body.password).then(function () {
+        res.status(201).json({});
+    }).catch(function (err) {
+        res.status(401);
+        next(err);
+    });
+};
