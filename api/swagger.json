@@ -301,7 +301,7 @@
         "/registries/user-profile": {
             "x-swagger-router-controller": "registry.controller",
             "post": {
-                "summary": "Register a new user",
+                "summary": "Creates a registry user profile",
                 "operationId": "createProfile",
                 "parameters": [
                     {
@@ -325,6 +325,34 @@
                                     "type": "integer"
                                 }
                             }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "summary": "Updates a registry user profile",
+                "operationId": "updateProfile",
+                "security": [{
+                    "participant": []
+                }],
+                "parameters": [
+                    {
+                        "name": "updateUserProfile",
+                        "in": "body",
+                        "description": "Update information of user",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/updateUserProfile"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "description": "Empty object",
+                            "type": "object",
+                            "maxProperties": 0
                         }
                     }
                 }
@@ -540,8 +568,7 @@
         "linkedAnswer": {
             "type": "object",
             "required": [
-                "questionId",
-                "answer"
+                "questionId"
             ],
             "properties": {
                 "questionId": {
@@ -584,6 +611,27 @@
             "properties": {
                 "user": {
                     "$ref": "#/definitions/user"
+                },
+                "surveyId": {
+                    "type": "integer"
+                },
+                "answers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/linkedAnswer"
+                    }
+                }
+            }
+        },
+        "updateUserProfile": {
+            "type": "object",
+            "required": [
+                "user",
+                "surveyId"
+            ],
+            "properties": {
+                "user": {
+                    "$ref": "#/definitions/userUpdate"
                 },
                 "surveyId": {
                     "type": "integer"

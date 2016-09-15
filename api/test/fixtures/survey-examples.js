@@ -52,6 +52,17 @@ exports.Example = {
         boolValue: true
     }, {
         boolValue: false
+    }],
+    answerUpdate: [{
+        choices: [2, 3]
+    }, {
+        choice: 2
+    }, {
+        textValue: 'Boston, MA'
+    }, {
+        boolValue: false
+    }, {
+        boolValue: true
     }]
 };
 
@@ -102,5 +113,14 @@ exports.Alzheimer = {
         choices: [1]
     }, {
         boolValue: true
+    }],
+    answerUpdate: [{
+        boolValue: true
+    }, {
+        choices: [2, 3]
+    }, {
+        choices: [0, 1]
+    }, {
+        boolValue: false
     }]
 };

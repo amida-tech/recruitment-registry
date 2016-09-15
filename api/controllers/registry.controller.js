@@ -16,6 +16,14 @@ exports.createProfile = function (req, res) {
     });
 };
 
+exports.updateProfile = function (req, res) {
+    User.updateRegister(req.user.id, req.body).then(function () {
+        res.status(200).json({});
+    }).catch(function (err) {
+        res.status(422).send(err);
+    });
+};
+
 exports.getProfile = function (req, res) {
     const name = _.get(req, 'swagger.params.registryName.value');
     const input = {

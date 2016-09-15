@@ -182,6 +182,20 @@ module.exports = function (sequelize, DataTypes) {
                     });
                 });
             },
+            updateRegister: function (id, input) {
+                return sequelize.transaction(function (tx) {
+                    return User.updateUser(id, input.user, {
+                        transaction: tx
+                    }).then(function () {
+                        const answerInput = {
+                            userId: id,
+                            surveyId: input.surveyId,
+                            answers: input.answers
+                        };
+                        return sequelize.models.answer.updateAnswersTx(answerInput, tx);
+                    });
+                });
+            },
             showWithSurvey: function (input) {
                 return User.getUser(input.userId).then(function (user) {
                     return sequelize.models.survey.getAnsweredSurveyByName(user.id, input.surveyName).then(function (survey) {
@@ -192,15 +206,16 @@ module.exports = function (sequelize, DataTypes) {
                     });
                 });
             },
-            updateUser: function (id, values) {
-                return User.findById(id).then(function (user) {
+            updateUser: function (id, values, options) {
+                options = options || {};
+                return User.findById(id, options).then(function (user) {
                     Object.keys(values).forEach(function (key) {
                         if (!clientUpdatableFields[key]) {
                             const msg = util.format('Field %s cannot be updated.', key);
                             throw new sequelize.ValidationError(msg);
                         }
                     });
-                    return user.update(values);
+                    return user.update(values, options);
                 });
             },
             authenticateUser: function (id, password) {
