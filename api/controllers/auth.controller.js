@@ -16,15 +16,10 @@ const basicStrategy = function (username, password, done) {
         }
     }).then(function (user) {
         if (user) {
-            user.authenticate(password, function (err, result) {
-                if (err) {
-                    return done(err);
-                }
-                if (result) {
-                    return done(null, user);
-                } else {
-                    return done(null, false);
-                }
+            return user.authenticate(password).then(function () {
+                done(null, user);
+            }).catch(function (err) {
+                done(err);
             });
         } else {
             return done(null, false);
@@ -74,6 +69,7 @@ const sendToken = function (req, res) {
 exports.authenticateBasic = function (req, res, next) {
     authenticate(req, res, function (err) {
         if (err) {
+            res.status(401);
             return next(err);
         }
         sendToken(req, res);

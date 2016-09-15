@@ -1,5 +1,7 @@
 'use strict';
 
+var _ = require('lodash');
+
 module.exports = function (sequelize, DataTypes) {
     const Answer = sequelize.define('answer', {
         userId: {
@@ -80,6 +82,29 @@ module.exports = function (sequelize, DataTypes) {
                         transaction: tx
                     });
                 }));
+            },
+            updateAnswersTx: function (input, tx) {
+                const ids = _.map(input.answers, 'questionId');
+                return Answer.destroy({
+                    where: {
+                        questionId: { in: ids
+                        },
+                        surveyId: input.surveyId,
+                        userId: input.userId
+                    },
+                    transaction: tx
+                }).then(function (numberRemoved) {
+                    const answers = _.filter(input.answers, function (answer) {
+                        return answer.answer;
+                    });
+                    if (answers.length) {
+                        return Answer.createAnswersTx({
+                            userId: input.userId,
+                            surveyId: input.surveyId,
+                            answers
+                        }, tx);
+                    }
+                });
             },
             createAnswers: function (input) {
                 return sequelize.transaction(function (tx) {

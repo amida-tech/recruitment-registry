@@ -1,7 +1,10 @@
 'use strict';
 
+const util = require('util');
 const _ = require('lodash');
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
+const moment = require('moment');
 
 const config = require('../config');
 
@@ -10,11 +13,29 @@ const GENDER_FEMALE = 'female';
 const GENDER_OTHER = 'other';
 
 module.exports = function (sequelize, DataTypes) {
+    const bccompare = sequelize.Promise.promisify(bcrypt.compare, {
+        context: bcrypt
+    });
+    const bchash = sequelize.Promise.promisify(bcrypt.hash, {
+        context: bcrypt
+    });
+    const randomBytes = sequelize.Promise.promisify(crypto.randomBytes, {
+        context: crypto
+    });
+
+    const clientUpdatableFields = ['email', 'password', 'zip', 'ethnicity', 'gender'].reduce(function (r, p) {
+        r[p] = true;
+        return r;
+    }, {});
+
     const User = sequelize.define('user', {
         username: {
             type: DataTypes.TEXT,
             unique: {
                 msg: 'The specified username is already in use.'
+            },
+            validate: {
+                notEmpty: true
             },
             allowNull: false
         },
@@ -28,7 +49,8 @@ module.exports = function (sequelize, DataTypes) {
             },
             set: function (val) {
                 this.setDataValue('email', val && val.toLowerCase());
-            }
+            },
+            allowNull: false
         },
         password: {
             type: DataTypes.TEXT,
@@ -66,6 +88,15 @@ module.exports = function (sequelize, DataTypes) {
         role: {
             type: DataTypes.ENUM('admin', 'participant', 'clinician')
         },
+        resetPasswordToken: {
+            unique: {
+                msg: 'Internal error generating unique token.'
+            },
+            type: DataTypes.STRING,
+        },
+        resetPasswordExpires: {
+            type: DataTypes.DATE,
+        },
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',
@@ -101,20 +132,28 @@ module.exports = function (sequelize, DataTypes) {
                     });
                 });
             },
-            beforeCreate: function (user, fields, fn) {
-                user.updatePassword(fn);
+            beforeCreate: function (user, fields) {
+                return user.updatePassword();
             },
-            beforeUpdate: function (user, fields, fn) {
+            beforeUpdate: function (user, fields) {
                 if (user.changed('password')) {
-                    return user.updatePassword(fn);
+                    return user.updatePassword();
                 }
-                fn();
             }
         },
         classMethods: {
             getUser: function (id) {
                 return User.findById(id, {
-                    raw: true
+                    raw: true,
+                    attributes: {
+                        exclude: [
+                            'createdAt',
+                            'updatedAt',
+                            'password',
+                            'resetPasswordToken',
+                            'resetPasswordExpires'
+                        ]
+                    }
                 }).then(function (result) {
                     var e = result.ethnicity;
                     if (e) {
@@ -143,6 +182,20 @@ module.exports = function (sequelize, DataTypes) {
                     });
                 });
             },
+            updateRegister: function (id, input) {
+                return sequelize.transaction(function (tx) {
+                    return User.updateUser(id, input.user, {
+                        transaction: tx
+                    }).then(function () {
+                        const answerInput = {
+                            userId: id,
+                            surveyId: input.surveyId,
+                            answers: input.answers
+                        };
+                        return sequelize.models.answer.updateAnswersTx(answerInput, tx);
+                    });
+                });
+            },
             showWithSurvey: function (input) {
                 return User.getUser(input.userId).then(function (user) {
                     return sequelize.models.survey.getAnsweredSurveyByName(user.id, input.surveyName).then(function (survey) {
@@ -152,25 +205,94 @@ module.exports = function (sequelize, DataTypes) {
                         };
                     });
                 });
+            },
+            updateUser: function (id, values, options) {
+                options = options || {};
+                return User.findById(id, options).then(function (user) {
+                    Object.keys(values).forEach(function (key) {
+                        if (!clientUpdatableFields[key]) {
+                            const msg = util.format('Field %s cannot be updated.', key);
+                            throw new sequelize.ValidationError(msg);
+                        }
+                    });
+                    return user.update(values, options);
+                });
+            },
+            authenticateUser: function (id, password) {
+                return User.findById(id).then(function (user) {
+                    return user.authenticate(password);
+                });
+            },
+            resetPasswordToken: function (email) {
+                return this.find({
+                    where: {
+                        email: email
+                    }
+                }).then((user) => {
+                    if (!user) {
+                        var err = new Error('Email is invalid.');
+                        return sequelize.Promise.reject(err);
+                    } else {
+                        return user.updateResetPWToken();
+                    }
+                });
+            },
+            resetPassword: function (token, password) {
+                var rejection = function () {
+                    var err = new Error('Password reset token is invalid or has expired.');
+                    return sequelize.Promise.reject(err);
+                };
+                return this.find({
+                    where: {
+                        resetPasswordToken: token
+                    }
+                }).then((user) => {
+                    if (!user) {
+                        return rejection();
+                    } else {
+                        var expires = user.resetPasswordExpires;
+                        var mExpires = moment.utc(expires);
+                        if (moment.utc().isAfter(mExpires)) {
+                            return rejection();
+                        } else {
+                            user.password = password;
+                            return user.save();
+                        }
+                    }
+                });
             }
         },
         instanceMethods: {
-            authenticate: function (password, callback) {
-                const hash = this.password;
-                bcrypt.compare(password, hash, callback);
-            },
-            updatePassword: function (fn) {
-                // Handle new/update passwords
-                var value = this.password;
-                if (!value) {
-                    fn(new Error('Invalid password'));
-                }
-                bcrypt.hash(value, 10, (err, hash) => {
-                    if (err) {
-                        return fn(err);
+            authenticate: function (password) {
+                return bccompare(password, this.password).then(function (result) {
+                    if (!result) {
+                        throw new Error('Authentication error.');
                     }
+                });
+            },
+            updatePassword: function () {
+                return bchash(this.password, config.crypt.hashrounds).then((hash) => {
                     this.password = hash;
-                    fn(null);
+                });
+            },
+            updateResetPWToken: function () {
+                return randomBytes(config.crypt.resetTokenLength).then((buf) => {
+                    var token = buf.toString('hex');
+                    return token;
+                }).then((token) => {
+                    return randomBytes(config.crypt.resetPasswordLength).then((passwordBuf) => {
+                        return {
+                            token,
+                            password: passwordBuf.toString('hex')
+                        };
+                    });
+                }).then((result) => {
+                    this.resetPasswordToken = result.token;
+                    this.password = result.password;
+                    this.resetPasswordExpires = config.expiresForDB();
+                    return this.save().then((user) => {
+                        return result.token;
+                    });
                 });
             }
         }

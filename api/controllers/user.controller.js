@@ -41,3 +41,16 @@ exports.showCurrentUser = function (req, res) {
         res.status(401).json({});
     }
 };
+
+exports.updateCurrentUser = function (req, res, next) {
+    if (req.user) {
+        User.updateUser(req.user.id, req.body).then(function () {
+            res.status(200).json({});
+        }).catch(function (err) {
+            res.status(422);
+            next(err);
+        });
+    } else {
+        res.status(401).json({});
+    }
+};

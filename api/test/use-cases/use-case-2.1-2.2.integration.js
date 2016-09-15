@@ -18,7 +18,7 @@ const request = require('supertest');
 
 const expect = chai.expect;
 
-describe('user set-up and login', function () {
+describe('user set-up and login use-case', function () {
     const userExample = userExamples.Alzheimer;
     const surveyExample = surveyExamples.Alzheimer;
 
@@ -142,10 +142,8 @@ describe('user set-up and login', function () {
                 const expectedUser = _.cloneDeep(userExample);
                 const user = result.user;
                 expectedUser.id = user.id;
-                expectedUser.password = user.password;
                 expectedUser.role = 'participant';
-                delete user.createdAt;
-                delete user.updatedAt;
+                delete expectedUser.password;
                 expect(user).to.deep.equal(expectedUser);
 
                 const actualSurvey = result.survey;
@@ -157,4 +155,49 @@ describe('user set-up and login', function () {
     });
 
     // --------
+
+    it('update user profile', function (done) {
+        answers = helper.formAnswersToPost(survey, surveyExample.answerUpdate);
+        const userUpdates = {
+            zip: '20999',
+            gender: 'other'
+        };
+        store.server
+            .put('/api/v1.0/registries/user-profile')
+            .set('Authorization', store.auth)
+            .send({
+                user: userUpdates,
+                surveyId: survey.id,
+                answers
+            })
+            .expect(200, done);
+    });
+
+    it('verify user profile', function (done) {
+        store.server
+            .get('/api/v1.0/registries/user-profile/Alzheimer')
+            .set('Authorization', store.auth)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                const result = res.body;
+
+                const expectedUser = _.cloneDeep(userExample);
+                expectedUser.zip = '20999';
+                expectedUser.gender = 'other';
+                const user = result.user;
+                expectedUser.id = user.id;
+                expectedUser.role = 'participant';
+                delete expectedUser.password;
+                expect(user).to.deep.equal(expectedUser);
+
+                const actualSurvey = result.survey;
+                const expectedSurvey = helper.formAnsweredSurvey(survey, answers);
+                expect(actualSurvey).to.deep.equal(expectedSurvey);
+
+                done();
+            });
+    });
 });

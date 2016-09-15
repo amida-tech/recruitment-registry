@@ -175,7 +175,7 @@ module.exports = function (sequelize, DataTypes) {
                                             choice: answers[0]
                                         };
                                     } else {
-                                        answers.sort();
+                                        answers = _.sortBy(answers);
                                         question.answer = {
                                             choices: answers
                                         };

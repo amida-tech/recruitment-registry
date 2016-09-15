@@ -1,6 +1,7 @@
 'use strict';
 
 const dotenv = require('dotenv');
+const moment = require('moment');
 
 dotenv.config();
 
@@ -24,8 +25,25 @@ const all = {
     },
     superUser: {
         username: process.env.RECREG_SUPER_USER_USERNAME || 'super',
-        password: process.env.RECREG_SUPER_USER_PASSWORD || 'Am!d@2017PW'
+        password: process.env.RECREG_SUPER_USER_PASSWORD || 'Am!d@2017PW',
+        email: process.env.RECREG_SUPER_USER_EMAIL || 'rr_demo@amida.com'
+    },
+    logging: {
+        express: (process.env.RECREG_LOGGING_EXPRESS) === 'true',
+        disable: (process.env.RECREG_LOGGING_DISABLE) === 'true'
+    },
+    crypt: {
+        hashrounds: process.env.RECREG_CRYPT_HASHROUNDS || 10,
+        resetTokenLength: process.env.RECREG_CRYPT_RESET_TOKEN_LENGTH || 20,
+        resetPasswordLength: process.env.RECREG_CRYPT_RESET_PASSWORD_LENGTH || 10,
+        resetExpires: process.env.RECREG_CRYPT_RESET_EXPIRES || 3600,
     }
+};
+
+all.expiresForDB = function () {
+    let m = moment.utc();
+    m.add(this.crypt.resetExpires, 'seconds');
+    return m.toISOString();
 };
 
 module.exports = _.merge(all, require('./' + all.env + '.js'));

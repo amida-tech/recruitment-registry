@@ -13,7 +13,7 @@ var QuestionType = models.QuestionType;
 
 describe('question-type unit', function () {
     before(function () {
-        return QuestionType.sync({
+        return models.sequelize.sync({
             force: true
         });
     });
