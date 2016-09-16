@@ -2,11 +2,8 @@
 'use strict';
 process.env.NODE_ENV = 'test';
 
-const request = require('supertest');
 const chai = require('chai');
 const _ = require('lodash');
-
-const appgen = require('../../app-generator');
 
 const helper = require('../survey/survey-helper');
 
@@ -15,7 +12,6 @@ const userExamples = require('../fixtures/user-examples');
 const surveyExamples = require('../fixtures/survey-examples');
 
 const config = require('../../config');
-const controller = require('../../controllers/reset-token.controller');
 
 const expect = chai.expect;
 
@@ -30,29 +26,11 @@ describe('user set-up and login use-case', function () {
         auth: null
     };
 
-    before(function (done) {
-        appgen.generate(function (err, app) {
-            if (err) {
-                return done(err);
-            }
-            store.server = request(app);
-            done();
-        });
-    });
+    before(shared.setUpFn(store));
 
     it('login as super user', shared.loginFn(store, config.superUser));
 
-    it('post example survey', function (done) {
-        store.server
-            .post('/api/v1.0/surveys')
-            .set('Authorization', store.auth)
-            .send(surveyExample.survey)
-            .expect(201)
-            .expect(function (res) {
-                expect(!!res.body.id).to.equal(true);
-            })
-            .end(done);
-    });
+    it('post example survey', shared.postSurveyFn(store, surveyExample.survey));
 
     // --------
 
@@ -80,6 +58,8 @@ describe('user set-up and login use-case', function () {
 
     it('fill user profile and submit', function (done) {
         answers = helper.formAnswersToPost(survey, surveyExample.answer);
+
+        userExample.email = config.resetPw.emailFrom; // send to self
 
         store.server
             .post('/api/v1.0/registries/user-profile')

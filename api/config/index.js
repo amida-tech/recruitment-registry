@@ -29,8 +29,8 @@ const all = {
         email: process.env.RECREG_SUPER_USER_EMAIL || 'rr_demo@amida.com'
     },
     logging: {
-        express: (process.env.RECREG_LOGGING_EXPRESS) === 'true',
-        disable: (process.env.RECREG_LOGGING_DISABLE) === 'true'
+        disable: (process.env.RECREG_LOGGING_DISABLE) === 'true',
+        level: process.env.RECREG_LOGGING_LEVEL
     },
     crypt: {
         hashrounds: process.env.RECREG_CRYPT_HASHROUNDS || 10,
@@ -42,6 +42,7 @@ const all = {
         emailUri: process.env.RECREG_RESETPW_EMAIL_URI,
         emailFrom: process.env.RECREG_RESETPW_EMAIL_FROM,
         emailName: process.env.RECREG_RESETPW_EMAIL_NAME,
+        emailSubject: process.env.RECREG_RESETPW_EMAIL_SUBJECT,
         clientBaseUrl: process.env.RECREG_RESETPW_CLIENT_BASE_URL
     }
 };

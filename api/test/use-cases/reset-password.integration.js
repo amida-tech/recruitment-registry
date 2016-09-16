@@ -2,12 +2,9 @@
 'use strict';
 process.env.NODE_ENV = 'test';
 
-const request = require('supertest');
 const chai = require('chai');
 const sinon = require('sinon');
 const _ = require('lodash');
-
-const appgen = require('../../app-generator');
 
 const helper = require('../survey/survey-helper');
 
@@ -16,7 +13,7 @@ const userExamples = require('../fixtures/user-examples');
 const surveyExamples = require('../fixtures/survey-examples');
 
 const config = require('../../config');
-const controller = require('../../controllers/reset-token.controller');
+const mailer = require('../../lib/mailer');
 
 const expect = chai.expect;
 
@@ -31,29 +28,11 @@ describe('reset password use-case', function () {
         auth: null
     };
 
-    before(function (done) {
-        appgen.generate(function (err, app) {
-            if (err) {
-                return done(err);
-            }
-            store.server = request(app);
-            done();
-        });
-    });
+    before(shared.setUpFn(store));
 
     it('login as super user', shared.loginFn(store, config.superUser));
 
-    it('post example survey', function (done) {
-        store.server
-            .post('/api/v1.0/surveys')
-            .set('Authorization', store.auth)
-            .send(surveyExample.survey)
-            .expect(201)
-            .expect(function (res) {
-                expect(!!res.body.id).to.equal(true);
-            })
-            .end(done);
-    });
+    it('post example survey', shared.postSurveyFn(store, surveyExample.survey));
 
     // --------
 
@@ -107,9 +86,10 @@ describe('reset password use-case', function () {
     let token;
 
     it('generate reset tokens', function (done) {
-        const stub = sinon.stub(controller, 'sendEmail', function (res, next, email, text, tokenin) {
-            token = tokenin;
-            res.status(201).json({});
+        const stub = sinon.stub(mailer, 'sendEmail', function (spec, callback) {
+            const linkPieces = spec.link.split('/');
+            token = linkPieces[linkPieces.length - 1];
+            callback(null);
         });
         store.server
             .post('/api/v1.0/reset-tokens')
@@ -118,7 +98,10 @@ describe('reset password use-case', function () {
             })
             .expect(201)
             .end(function (err, res) {
-                controller.sendEmail.restore();
+                if (err) {
+                    return done(err);
+                }
+                mailer.sendEmail.restore();
                 expect(!!token).to.equal(true);
                 done();
             });

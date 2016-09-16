@@ -6,7 +6,6 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const passport = require('passport');
-const winston = require('winston');
 const expressWinston = require('express-winston');
 
 const logger = require('./logger');
@@ -15,14 +14,9 @@ const app = express();
 
 const jsonParser = bodyParser.json();
 
-if (config.logging.express) {
+if (!config.logging.disable) {
     app.use(expressWinston.logger({
-        transports: [
-            new winston.transports.Console({
-                json: true,
-                colorize: true
-            })
-        ],
+        winstonInstance: logger,
         msg: "HTTP {{req.method}} {{req.url}}",
         expressFormat: true,
         colorize: true

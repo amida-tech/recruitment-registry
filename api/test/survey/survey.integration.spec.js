@@ -5,22 +5,15 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 const _ = require('lodash');
 
-const appgen = require('../../app-generator');
-
 const helper = require('./survey-helper');
-const models = require('../../models');
 
 const config = require('../../config');
-const request = require('supertest');
 
 const shared = require('../shared.integration');
 const userExamples = require('../fixtures/user-examples');
 const surveyExamples = require('../fixtures/survey-examples');
 
 const expect = chai.expect;
-
-const User = models.User;
-const Ethnicity = models.Ethnicity;
 
 describe('survey integration', function () {
     const example = surveyExamples.Example;
@@ -31,23 +24,9 @@ describe('survey integration', function () {
         auth: null
     };
 
-    before(function (done) {
-        appgen.generate(function (err, app) {
-            if (err) {
-                return done(err);
-            }
-            const userin = _.cloneDeep(user);
-            userin.role = 'participant';
-            User.create(userin).then(function () {
-                store.server = request(app);
-                done();
-            }).catch(function (err) {
-                done(err);
-            });
-        });
-    });
+    before(shared.setUpFn(store));
 
-    it('post survey example nobody authorized', function (done) {
+    it('error: create survey unauthorized', function (done) {
         store.server
             .post('/api/v1.0/surveys')
             .send(example.survey)
@@ -55,9 +34,13 @@ describe('survey integration', function () {
             .end(done);
     });
 
-    it('login with user', shared.loginFn(store, user));
+    it('login as super', shared.loginFn(store, config.superUser));
 
-    it('post survey example participant', function (done) {
+    it('create a new user', shared.postUserFn(store, user));
+
+    it('login as user', shared.loginFn(store, user));
+
+    it('error: create survey as non admin', function (done) {
         store.server
             .post('/api/v1.0/surveys')
             .set('Authorization', store.auth)
@@ -65,19 +48,9 @@ describe('survey integration', function () {
             .expect(403, done);
     });
 
-    it('login with admin', shared.loginFn(store, config.superUser));
+    it('login as super', shared.loginFn(store, config.superUser));
 
-    it('post survey example authorized', function (done) {
-        store.server
-            .post('/api/v1.0/surveys')
-            .set('Authorization', store.auth)
-            .send(example.survey)
-            .expect(201)
-            .expect(function (res) {
-                expect(!!res.body.id).to.equal(true);
-            })
-            .end(done);
-    });
+    it('create example survey', shared.postSurveyFn(store, example.survey));
 
     var serverSurvey;
 
@@ -105,7 +78,7 @@ describe('survey integration', function () {
 
     var answers;
 
-    it('login with user', shared.loginFn(store, user));
+    it('login as user', shared.loginFn(store, user));
 
     it('answer survey', function (done) {
         answers = helper.formAnswersToPost(serverSurvey, example.answer);

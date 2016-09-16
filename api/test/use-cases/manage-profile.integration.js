@@ -5,8 +5,6 @@ process.env.NODE_ENV = 'test';
 var _ = require('lodash');
 var chai = require('chai');
 
-const appgen = require('../../app-generator');
-
 const helper = require('../survey/survey-helper');
 
 const shared = require('../shared.integration');
@@ -14,7 +12,6 @@ const userExamples = require('../fixtures/user-examples');
 const surveyExamples = require('../fixtures/survey-examples');
 
 const config = require('../../config');
-const request = require('supertest');
 
 const expect = chai.expect;
 
@@ -29,29 +26,11 @@ describe('user set-up and login use-case', function () {
         auth: null
     };
 
-    before(function (done) {
-        appgen.generate(function (err, app) {
-            if (err) {
-                return done(err);
-            }
-            store.server = request(app);
-            done();
-        });
-    });
+    before(shared.setUpFn(store));
 
     it('login as super user', shared.loginFn(store, config.superUser));
 
-    it('post example survey', function (done) {
-        store.server
-            .post('/api/v1.0/surveys')
-            .set('Authorization', store.auth)
-            .send(surveyExample.survey)
-            .expect(201)
-            .expect(function (res) {
-                expect(!!res.body.id).to.equal(true);
-            })
-            .end(done);
-    });
+    it('post example survey', shared.postSurveyFn(store, surveyExample.survey));
 
     // --------
 

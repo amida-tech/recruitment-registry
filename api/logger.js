@@ -17,6 +17,6 @@ if (config.logging.disable) {
                 colorize: true
             })
         ],
-        level: 'error'
+        level: config.logging.level || 'info'
     });
 }
