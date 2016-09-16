@@ -30,10 +30,10 @@ module.exports = function (grunt) {
                     grunt.log.error('');
                 }
                 if (result.warnings.length > 0) {
-                    grunt.log.warning('Warnings');
-                    grunt.log.warning('--------');
+                    grunt.log.writeln('Warnings');
+                    grunt.log.writeln('--------');
                     result.warnings.forEach(function (warn) {
-                        grunt.log.warning('#/' + warn.path.join('/') + ': ' + warn.message);
+                        grunt.log.writeln('#/' + warn.path.join('/') + ': ' + warn.message);
                     });
                 }
                 if (result.errors.length > 0) {

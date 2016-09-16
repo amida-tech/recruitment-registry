@@ -77,6 +77,7 @@ module.exports = function (sequelize, DataTypes) {
                     });
                     return r;
                 }, []);
+                // Switch to bulkCreate when Sequelize 4 arrives
                 return sequelize.Promise.all(answers.map(function (answer) {
                     return Answer.create(answer, {
                         transaction: tx
