@@ -5,15 +5,11 @@ process.env.NODE_ENV = 'test';
 var chai = require('chai');
 var _ = require('lodash');
 
-const appgen = require('../../app-generator');
-
 const models = require('../../models');
 const userExamples = require('../fixtures/user-examples');
 
 const config = require('../../config');
 const shared = require('../shared.integration');
-
-const request = require('supertest');
 
 const expect = chai.expect;
 
@@ -27,15 +23,7 @@ describe('user integration', function () {
         auth: null
     };
 
-    before(function (done) {
-        appgen.generate(function (err, app) {
-            if (err) {
-                return done(err);
-            }
-            store.server = request(app);
-            done();
-        });
-    });
+    before(shared.setUpFn(store));
 
     var ethnicities;
     var genders;

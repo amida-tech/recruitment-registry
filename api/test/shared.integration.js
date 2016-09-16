@@ -1,10 +1,25 @@
 /* global token:true,server*/
 'use strict';
 
+const request = require('supertest');
 var chai = require('chai');
 var _ = require('lodash');
 
+const appgen = require('../app-generator');
+
 const expect = chai.expect;
+
+exports.setUpFn = function (store) {
+    return function (done) {
+        appgen.generate(function (err, app) {
+            if (err) {
+                return done(err);
+            }
+            store.server = request(app);
+            done();
+        });
+    };
+};
 
 exports.loginFn = function (store, login) {
     return function (done) {

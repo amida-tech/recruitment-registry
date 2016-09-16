@@ -2,12 +2,9 @@
 'use strict';
 process.env.NODE_ENV = 'test';
 
-const request = require('supertest');
 const chai = require('chai');
 const sinon = require('sinon');
 const _ = require('lodash');
-
-const appgen = require('../../app-generator');
 
 const helper = require('../survey/survey-helper');
 
@@ -31,15 +28,7 @@ describe('reset password use-case', function () {
         auth: null
     };
 
-    before(function (done) {
-        appgen.generate(function (err, app) {
-            if (err) {
-                return done(err);
-            }
-            store.server = request(app);
-            done();
-        });
-    });
+    before(shared.setUpFn(store));
 
     it('login as super user', shared.loginFn(store, config.superUser));
 

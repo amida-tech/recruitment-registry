@@ -5,12 +5,9 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 const _ = require('lodash');
 
-const appgen = require('../../app-generator');
-
 const helper = require('./survey-helper');
 
 const config = require('../../config');
-const request = require('supertest');
 
 const shared = require('../shared.integration');
 const userExamples = require('../fixtures/user-examples');
@@ -27,15 +24,7 @@ describe('survey integration', function () {
         auth: null
     };
 
-    before(function (done) {
-        appgen.generate(function (err, app) {
-            if (err) {
-                return done(err);
-            }
-            store.server = request(app);
-            done();
-        });
-    });
+    before(shared.setUpFn(store));
 
     it('post survey example nobody authorized', function (done) {
         store.server
