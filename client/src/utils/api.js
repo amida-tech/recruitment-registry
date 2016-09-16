@@ -102,6 +102,21 @@ const apiProvider = store => next => action => {
           }
         })
       break
+    case 'SAVE_PROFILE':
+      request
+        .put(apiUrl + '/users/me')
+        .send(store.getState().profile.userUpdated)
+        .set("Authorization", "Bearer " + store.getState().loggedIn)
+        .end((error) => {
+          if (!error) {
+            next({
+              type: 'SAVE_PROFILE_SUCCESS'
+            })
+          } else {
+            next({type:'SAVE_PROFILE_ERROR'})
+          }
+        })
+      break
     case 'REGISTER':
       request
         .post(apiUrl + '/registries/user-profile')

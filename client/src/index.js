@@ -3,6 +3,7 @@ import routes from './routes';
 import Layout from './layout/index';
 import login from './login';
 import register from './register';
+import profile from './profile';
 import { browserHistory } from 'react-router';
 
 
@@ -45,15 +46,18 @@ export const initialState = {
       answers: []
     }
   },
-  loggedIn: localStorage.token ? localStorage.token : false
+  loggedIn: localStorage.token ? localStorage.token : false,
+  profile: {}
 };
 
 export const reducers = {
   [login.constants.NAME]: login.reducer,
   [register.constants.NAME]: register.reducer,
+  [profile.constants.NAME]: profile.reducer,
   loggedIn: (state = initialState, action) => {
     switch (action.type) {
       case "LOGIN_SUCCESS":
+        browserHistory.push('/home')
         localStorage.setItem("token", action.data.token)
         return action.data.token
       case "LOGOUT":
@@ -65,15 +69,7 @@ export const reducers = {
         return state
     }
   },
-  title: (state = initialState) => state,
-  profile: (state = initialState, action) => {
-    switch (action.type) {
-      case 'GET_PROFILE_SUCCESS':
-        return action.payload
-      default:
-        return {}
-    }
-  }
+  title: (state = initialState) => state
 };
 
 import './styles/main.scss'

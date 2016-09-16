@@ -7,7 +7,7 @@ class Form extends Component {
     const renderInputField = (id, type, placeholder, label) => (
       <div className="form-group">
         <label htmlFor={id}>{label}</label>
-        <input required className="form-control" id={id} type={type} value={this.props.data[id]} onChange={this.props.changeForm} />
+        <input required className="form-control" id={id} type={type} onChange={this.props.changeForm} />
       </div>
     );
 
