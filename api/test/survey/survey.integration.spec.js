@@ -50,17 +50,7 @@ describe('survey integration', function () {
 
     it('login with admin', shared.loginFn(store, config.superUser));
 
-    it('post survey example authorized', function (done) {
-        store.server
-            .post('/api/v1.0/surveys')
-            .set('Authorization', store.auth)
-            .send(example.survey)
-            .expect(201)
-            .expect(function (res) {
-                expect(!!res.body.id).to.equal(true);
-            })
-            .end(done);
-    });
+    it('post survey example authorized', shared.postSurveyFn(store, example.survey));
 
     var serverSurvey;
 

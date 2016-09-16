@@ -32,17 +32,7 @@ describe('reset password use-case', function () {
 
     it('login as super user', shared.loginFn(store, config.superUser));
 
-    it('post example survey', function (done) {
-        store.server
-            .post('/api/v1.0/surveys')
-            .set('Authorization', store.auth)
-            .send(surveyExample.survey)
-            .expect(201)
-            .expect(function (res) {
-                expect(!!res.body.id).to.equal(true);
-            })
-            .end(done);
-    });
+    it('post example survey', shared.postSurveyFn(store, surveyExample.survey));
 
     // --------
 

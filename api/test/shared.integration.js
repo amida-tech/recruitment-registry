@@ -55,3 +55,17 @@ exports.postUserFn = function (store, user) {
             .expect(201, done);
     };
 };
+
+exports.postSurveyFn = function (store, survey) {
+    return function (done) {
+        store.server
+            .post('/api/v1.0/surveys')
+            .set('Authorization', store.auth)
+            .send(survey)
+            .expect(201)
+            .expect(function (res) {
+                expect(!!res.body.id).to.equal(true);
+            })
+            .end(done);
+    };
+};
