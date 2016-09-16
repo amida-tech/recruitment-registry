@@ -30,7 +30,8 @@ const all = {
     },
     logging: {
         express: (process.env.RECREG_LOGGING_EXPRESS) === 'true',
-        disable: (process.env.RECREG_LOGGING_DISABLE) === 'true'
+        disable: (process.env.RECREG_LOGGING_DISABLE) === 'true',
+        level: process.env.RECREG_LOGGING_LEVEL
     },
     crypt: {
         hashrounds: process.env.RECREG_CRYPT_HASHROUNDS || 10,
