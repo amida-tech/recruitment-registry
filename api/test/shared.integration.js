@@ -30,3 +30,13 @@ exports.badLoginFn = function (store, login) {
             .expect(401, done);
     };
 };
+
+exports.postUserFn = function (store, user) {
+    return function (done) {
+        store.server
+            .post('/api/v1.0/users')
+            .set('Authorization', store.auth)
+            .send(user)
+            .expect(201, done);
+    };
+};

@@ -8,7 +8,6 @@ const _ = require('lodash');
 const appgen = require('../../app-generator');
 
 const helper = require('./survey-helper');
-const models = require('../../models');
 
 const config = require('../../config');
 const request = require('supertest');
@@ -18,9 +17,6 @@ const userExamples = require('../fixtures/user-examples');
 const surveyExamples = require('../fixtures/survey-examples');
 
 const expect = chai.expect;
-
-const User = models.User;
-const Ethnicity = models.Ethnicity;
 
 describe('survey integration', function () {
     const example = surveyExamples.Example;
@@ -36,14 +32,8 @@ describe('survey integration', function () {
             if (err) {
                 return done(err);
             }
-            const userin = _.cloneDeep(user);
-            userin.role = 'participant';
-            User.create(userin).then(function () {
-                store.server = request(app);
-                done();
-            }).catch(function (err) {
-                done(err);
-            });
+            store.server = request(app);
+            done();
         });
     });
 
@@ -54,6 +44,10 @@ describe('survey integration', function () {
             .expect(401)
             .end(done);
     });
+
+    it('login with super', shared.loginFn(store, config.superUser));
+
+    it('create a new user', shared.postUserFn(store, user));
 
     it('login with user', shared.loginFn(store, user));
 
