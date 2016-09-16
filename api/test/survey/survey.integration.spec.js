@@ -26,7 +26,7 @@ describe('survey integration', function () {
 
     before(shared.setUpFn(store));
 
-    it('post survey example nobody authorized', function (done) {
+    it('error: create survey unauthorized', function (done) {
         store.server
             .post('/api/v1.0/surveys')
             .send(example.survey)
@@ -34,13 +34,13 @@ describe('survey integration', function () {
             .end(done);
     });
 
-    it('login with super', shared.loginFn(store, config.superUser));
+    it('login as super', shared.loginFn(store, config.superUser));
 
     it('create a new user', shared.postUserFn(store, user));
 
-    it('login with user', shared.loginFn(store, user));
+    it('login as user', shared.loginFn(store, user));
 
-    it('post survey example participant', function (done) {
+    it('error: create survey as non admin', function (done) {
         store.server
             .post('/api/v1.0/surveys')
             .set('Authorization', store.auth)
@@ -48,9 +48,9 @@ describe('survey integration', function () {
             .expect(403, done);
     });
 
-    it('login with admin', shared.loginFn(store, config.superUser));
+    it('login as super', shared.loginFn(store, config.superUser));
 
-    it('post survey example authorized', shared.postSurveyFn(store, example.survey));
+    it('create example survey', shared.postSurveyFn(store, example.survey));
 
     var serverSurvey;
 
@@ -78,7 +78,7 @@ describe('survey integration', function () {
 
     var answers;
 
-    it('login with user', shared.loginFn(store, user));
+    it('login as user', shared.loginFn(store, user));
 
     it('answer survey', function (done) {
         answers = helper.formAnswersToPost(serverSurvey, example.answer);

@@ -59,22 +59,22 @@ describe('user integration', function () {
             .end(done);
     });
 
-    it('no user authentication error', function (done) {
+    it('error: get user without previous authentication', function (done) {
         store.server
             .get('/api/v1.0/users/me')
             .expect(401, done);
     });
 
-    it('login default user', shared.loginFn(store, config.superUser));
+    it('login as super', shared.loginFn(store, config.superUser));
 
-    it('wrong authorization error', function (done) {
+    it('error: get user with wrong jwt token', function (done) {
         store.server
             .get('/api/v1.0/users/me')
             .set('Authorization', 'Bearer ' + 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwidXNlcm5hbWUiOiJ1ZXN0Iiwicm9sZSI6bnVsbCwiaWF0IjoxNDczNTAwNzE5LCJleHAiOjE0NzYwOTI3MTl9.e0ymr0xrDPuQEBmdQLjb5-WegNtYcqAcpKp_DtDRKo8')
             .expect(401, done);
     });
 
-    it('get default user', function (done) {
+    it('get super user', function (done) {
         store.server
             .get('/api/v1.0/users/me')
             .set('Authorization', store.auth)
@@ -99,9 +99,9 @@ describe('user integration', function () {
             .expect(201, done);
     });
 
-    it('login with the new user', shared.loginFn(store, user));
+    it('login as new user', shared.loginFn(store, user));
 
-    it('get the new user', function (done) {
+    it('get new user', function (done) {
         store.server
             .get('/api/v1.0/users/me')
             .set('Authorization', store.auth)
@@ -119,9 +119,9 @@ describe('user integration', function () {
             });
     });
 
-    it('login default user', shared.loginFn(store, config.superUser));
+    it('login as super', shared.loginFn(store, config.superUser));
 
-    it('handle database error (invalid email)', function (done) {
+    it('error: create user with bad email', function (done) {
         const userEmailErr = _.cloneDeep(user);
         userEmailErr.email = 'notanemail';
         userEmailErr.username = user.username + '1';
@@ -133,7 +133,7 @@ describe('user integration', function () {
             .end(done);
     });
 
-    it('create the new user again to err', function (done) {
+    it('error: create the same user', function (done) {
         store.server
             .post('/api/v1.0/users')
             .set('Authorization', store.auth)
@@ -142,7 +142,7 @@ describe('user integration', function () {
             .end(done);
     });
 
-    it('send down null items', function (done) {
+    it('create user with null items (zip, gender)', function (done) {
         const userWithNulls = _.cloneDeep(user);
         userWithNulls.zip = null;
         userWithNulls.gender = null;
@@ -156,7 +156,7 @@ describe('user integration', function () {
             .end(done);
     });
 
-    it('login with the new user', shared.loginFn(store, user));
+    it('login as new user', shared.loginFn(store, user));
 
     let userUpdate = {
         email: 'newone@example.com',
@@ -164,7 +164,7 @@ describe('user integration', function () {
         zip: '20899'
     };
 
-    it('full update user', function (done) {
+    it('update all user fields including password', function (done) {
         userUpdate.ethnicity = ethnicities[1];
         userUpdate.gender = genders[1];
         store.server
@@ -174,14 +174,14 @@ describe('user integration', function () {
             .expect(200, done);
     });
 
-    it('bad login with old password', shared.badLoginFn(store, user));
+    it('error: bad login with old password', shared.badLoginFn(store, user));
 
     it('login with updated password', shared.loginFn(store, {
         username: user.username,
         password: userUpdate.password
     }));
 
-    it('verify fields', function (done) {
+    it('verify updated user fields', function (done) {
         store.server
             .get('/api/v1.0/users/me')
             .set('Authorization', store.auth)
@@ -200,7 +200,7 @@ describe('user integration', function () {
             });
     });
 
-    it('partial update user', function (done) {
+    it('update selected user fields', function (done) {
         userUpdate.ethnicity = null;
         userUpdate.gender = genders[0];
         userUpdate.zip = '20817';
@@ -211,7 +211,7 @@ describe('user integration', function () {
             .expect(200, done);
     });
 
-    it('verify fields', function (done) {
+    it('verify updated user fields', function (done) {
         store.server
             .get('/api/v1.0/users/me')
             .set('Authorization', store.auth)
