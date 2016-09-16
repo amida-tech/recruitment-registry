@@ -1,3 +1,3 @@
-export const CHANGE_FORM = 'CHANGE_FORM';
-export const SET_AUTH = 'SET_AUTH';
+export const UPDATE_CREDENTIALS = 'UPDATE_CREDENTIALS';
 export const LOGIN = 'LOGIN';
+export const LOGOUT = 'LOGOUT';

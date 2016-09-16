@@ -3,10 +3,6 @@ import * as t from './actionTypes';
 import { browserHistory } from 'react-router';
 import apiProvider from '../utils/api';
 
-export function changeForm(newState) {
-  return { type: t.CHANGE_FORM, newState };
-}
-
 export function update(name, value) {
   return dispatch => dispatch({
     type: t.CHANGE_FORM,

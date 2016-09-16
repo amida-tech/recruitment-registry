@@ -1,11 +1,10 @@
 import React, { Component} from 'react';
 import { connect } from 'react-redux';
 import Form from './login-form';
-import { login } from '../../login/actions';
+import login from '../index';
 
 export class LoginContainer extends Component {
   render() {
-    const dispatch = this.props.dispatch;
     const { formState } = this.props.data;
     const { loggedIn } = this.props;
     return (
@@ -15,15 +14,25 @@ export class LoginContainer extends Component {
             <div className="form-page__form-header">
               <h2 className="form-page__form-heading">Login</h2>
             </div>
-            <Form dispatch={dispatch} data={formState} location={location} history={this.props.history} onSubmit={::this._login} btnText={"LoginContainer"} />
+            <Form data={formState}
+                  location={location}
+                  history={this.props.history}
+                  changeForm={::this._changeForm}
+                  onSubmit={::this._login}
+                  btnText={"Login"} />
           </div>
         </div>) : (<h3>You are already logged in :)</h3>) }
       </div>
     );
   }
 
-  _login(username, password) {
-    this.props.dispatch(login(username, password));
+  _login(evt) {
+    evt.preventDefault()
+    this.props.dispatch(login.actions.login(this.props.data.formState.username, this.props.data.formState.password));
+  }
+
+  _changeForm(evt) {
+    this.props.dispatch(login.actions.update(evt.target.id, evt.target.value))
   }
 }
 

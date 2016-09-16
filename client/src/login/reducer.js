@@ -16,15 +16,17 @@ const initialState = {
 
 export default (state = initialState, action) => {
   switch (action.type) {
-    case t.CHANGE_FORM:
+    case t.UPDATE_CREDENTIALS:
       return assign({}, state, {
-        formState: action.newState
+        formState: assign({}, state.formState, {
+          [action.name]: action.value
+        })
       });
     case 'LOGIN_ERROR':
       return assign({}, state, {
-        formState: {
+        formState: assign({}, state.formState, {
           hasErrors: true
-        }
+        })
       });
     case 'LOGIN_SUCCESS':
       return assign({}, state, {
