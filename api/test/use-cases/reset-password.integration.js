@@ -16,7 +16,7 @@ const userExamples = require('../fixtures/user-examples');
 const surveyExamples = require('../fixtures/survey-examples');
 
 const config = require('../../config');
-const controller = require('../../controllers/reset-token.controller');
+const mailer = require('../../lib/mailer');
 
 const expect = chai.expect;
 
@@ -107,9 +107,10 @@ describe('reset password use-case', function () {
     let token;
 
     it('generate reset tokens', function (done) {
-        const stub = sinon.stub(controller, 'sendEmail', function (res, next, email, text, tokenin) {
-            token = tokenin;
-            res.status(201).json({});
+        const stub = sinon.stub(mailer, 'sendEmail', function (spec, callback) {
+            const linkPieces = spec.link.split('/');
+            token = linkPieces[linkPieces.length - 1];
+            callback(null);
         });
         store.server
             .post('/api/v1.0/reset-tokens')
@@ -118,7 +119,10 @@ describe('reset password use-case', function () {
             })
             .expect(201)
             .end(function (err, res) {
-                controller.sendEmail.restore();
+                if (err) {
+                    return done(err);
+                }
+                mailer.sendEmail.restore();
                 expect(!!token).to.equal(true);
                 done();
             });

@@ -15,7 +15,6 @@ const userExamples = require('../fixtures/user-examples');
 const surveyExamples = require('../fixtures/survey-examples');
 
 const config = require('../../config');
-const controller = require('../../controllers/reset-token.controller');
 
 const expect = chai.expect;
 
@@ -80,6 +79,8 @@ describe('user set-up and login use-case', function () {
 
     it('fill user profile and submit', function (done) {
         answers = helper.formAnswersToPost(survey, surveyExample.answer);
+
+        userExample.email = config.resetPw.emailFrom; // send to self
 
         store.server
             .post('/api/v1.0/registries/user-profile')

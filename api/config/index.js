@@ -42,6 +42,7 @@ const all = {
         emailUri: process.env.RECREG_RESETPW_EMAIL_URI,
         emailFrom: process.env.RECREG_RESETPW_EMAIL_FROM,
         emailName: process.env.RECREG_RESETPW_EMAIL_NAME,
+        emailSubject: process.env.RECREG_RESETPW_EMAIL_SUBJECT,
         clientBaseUrl: process.env.RECREG_RESETPW_CLIENT_BASE_URL
     }
 };
