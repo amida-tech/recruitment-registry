@@ -133,57 +133,15 @@ module.exports = function (sequelize, DataTypes) {
             },
             getAnsweredSurvey: function (surveyPromise, userId) {
                 return surveyPromise.then(function (survey) {
-                    return sequelize.models.answer.findAll({
-                        where: {
-                            userId,
-                            surveyId: survey.id
-                        },
-                        raw: true
+                    return sequelize.models.answer.getSurveyAnswers({
+                        userId,
+                        surveyId: survey.id
                     }).then(function (answers) {
-                        var map = answers.reduce(function (r, answer) {
+                        const qmap = _.keyBy(survey.questions, 'id');
+                        answers.forEach(function (answer) {
                             const qid = answer.questionId;
-                            if (r[qid]) {
-                                r[qid].push(answer.value);
-                            } else {
-                                r[qid] = [answer.value];
-                            }
-                            return r;
-                        }, {});
-                        return map;
-                    }).then(function (answerMap) {
-                        const questionType = sequelize.models.question_type;
-                        survey.questions.forEach(function (question) {
-                            var qid = question.id;
-                            var answers = answerMap[qid];
-                            if (answers && answers.length) {
-                                if (questionType.isBoolean(question.type)) {
-                                    question.answer = {
-                                        boolValue: answers[0] === 'true'
-                                    };
-                                    return;
-                                }
-                                if (!questionType.isId(question.type)) {
-                                    question.answer = {
-                                        textValue: answers[0]
-                                    };
-                                    return;
-                                }
-                                if (questionType.isId(question.type)) {
-                                    answers = answers.map(function (answer) {
-                                        return parseInt(answer);
-                                    });
-                                    if (questionType.isSingle(question.type)) {
-                                        question.answer = {
-                                            choice: answers[0]
-                                        };
-                                    } else {
-                                        answers = _.sortBy(answers);
-                                        question.answer = {
-                                            choices: answers
-                                        };
-                                    }
-                                }
-                            }
+                            const question = qmap[qid];
+                            question.answer = answer.answer;
                         });
                         return survey;
                     });
