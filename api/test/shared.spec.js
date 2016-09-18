@@ -105,12 +105,10 @@ exports.genNewSurvey = (function () {
 exports.createSurvey = function (store, qxIndices) {
     return function () {
         const inputSurvey = exports.genNewSurvey();
-        inputSurvey.questions = qxIndices.map(function (index) {
-            return {
-                id: store.questions[index].id
-            };
-        });
-        return models.Survey.createSurvey(inputSurvey).then(function (id) {
+        inputSurvey.questions = qxIndices.map(index => ({
+            id: store.questions[index].id
+        }));
+        return models.Survey.createSurvey(inputSurvey).then(id => {
             store.surveys.push(id);
         });
     };

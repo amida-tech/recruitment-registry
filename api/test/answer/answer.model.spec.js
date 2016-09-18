@@ -95,7 +95,7 @@ describe('answer unit', function () {
 
     const createTestFn = function (userIndex, surveyIndex, qxIndices) {
         return function () {
-            var answers = qxIndices.map(genQuestionAnswer);
+            const answers = qxIndices.map(genQuestionAnswer);
             const input = {
                 userId: store.users[userIndex],
                 surveyId: store.surveys[surveyIndex],

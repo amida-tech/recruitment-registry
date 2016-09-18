@@ -67,8 +67,10 @@ module.exports = function (grunt) {
         },
         jshint: {
             files: '<%= alljsfiles%>',
+            //jshintrc: true
             options: {
-                browser: true,
+                node: true,
+                esversion: 6,
                 curly: true,
                 eqeqeq: true,
                 immed: true,
@@ -79,9 +81,7 @@ module.exports = function (grunt) {
                 undef: false,
                 boss: true,
                 eqnull: true,
-                node: true,
                 expr: true,
-                esversion: 6,
                 globals: {
                     'xit': true,
                     'xdescribe': true,

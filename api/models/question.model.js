@@ -142,7 +142,6 @@ module.exports = function (sequelize, DataTypes) {
                             });
                         }
                         return ids.map(function (id) {
-                            var q = map[id];
                             return map[id];
                         });
                     });

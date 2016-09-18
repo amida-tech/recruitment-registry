@@ -94,10 +94,8 @@ module.exports = function (sequelize, DataTypes) {
                         userId: input.userId
                     },
                     transaction: tx
-                }).then(function (numberRemoved) {
-                    const answers = _.filter(input.answers, function (answer) {
-                        return answer.answer;
-                    });
+                }).then(function () {
+                    const answers = _.filter(input.answers, answer => answer.answer);
                     if (answers.length) {
                         return Answer.createAnswersTx({
                             userId: input.userId,
@@ -114,25 +112,17 @@ module.exports = function (sequelize, DataTypes) {
             },
             getSurveyAnswers: function (input) {
                 const generateAnswer = {
-                    text: function (entries) {
-                        return {
-                            textValue: entries[0].value
-                        };
-                    },
-                    bool: function (entries) {
-                        return {
-                            boolValue: entries[0].value === 'true'
-                        };
-                    },
-                    choice: function (entries) {
-                        return {
-                            choice: parseInt(entries[0].value, 10)
-                        };
-                    },
-                    choices: function (entries) {
-                        entries = entries.map(function (r) {
-                            return parseInt(r.value, 10);
-                        });
+                    text: entries => ({
+                        textValue: entries[0].value
+                    }),
+                    bool: entries => ({
+                        boolValue: entries[0].value === 'true'
+                    }),
+                    choice: entries => ({
+                        choice: parseInt(entries[0].value, 10)
+                    }),
+                    choices: entries => {
+                        entries = entries.map(r => parseInt(r.value, 10));
                         entries = _.sortBy(entries);
                         return {
                             choices: entries

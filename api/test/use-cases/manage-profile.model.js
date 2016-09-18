@@ -36,7 +36,7 @@ describe('user set up unit', function () {
     it('load selection lists and survey', function () {
         return Ethnicity.findAll({
             raw: true
-        }).then(function (result) {
+        }).then(function () {
             ethnicities = Ethnicity.ethnicities();
             genders = User.genders();
             return Survey.getSurveyByName(surveyExample.survey.name);
