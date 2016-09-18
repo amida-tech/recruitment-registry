@@ -1,4 +1,3 @@
-/* global describe,before,after,beforeEach,afterEach,it,xit*/
 'use strict';
 
 const _ = require('lodash');

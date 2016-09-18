@@ -132,10 +132,10 @@ module.exports = function (sequelize, DataTypes) {
                     });
                 });
             },
-            beforeCreate: function (user, fields) {
+            beforeCreate: function (user) {
                 return user.updatePassword();
             },
-            beforeUpdate: function (user, fields) {
+            beforeUpdate: function (user) {
                 if (user.changed('password')) {
                     return user.updatePassword();
                 }
@@ -290,7 +290,7 @@ module.exports = function (sequelize, DataTypes) {
                     this.resetPasswordToken = result.token;
                     this.password = result.password;
                     this.resetPasswordExpires = config.expiresForDB();
-                    return this.save().then((user) => {
+                    return this.save().then(() => {
                         return result.token;
                     });
                 });

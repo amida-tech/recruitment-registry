@@ -1,7 +1,5 @@
 'use strict';
 
-const _ = require('lodash');
-
 var query = 'select question.text as text, question_type.name as type from question, question_type where question.id = :id and question.type = question_type.id';
 var queryChoices = 'select id, text from question_choices where question_id = :id order by line';
 var queryMultiple = 'select question.id as id, question.text as text, question_type.name as type from question, question_type where question.id in (:ids) and question.type = question_type.id';

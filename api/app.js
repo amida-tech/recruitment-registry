@@ -17,7 +17,7 @@ const jsonParser = bodyParser.json();
 if (!config.logging.disable) {
     app.use(expressWinston.logger({
         winstonInstance: logger,
-        msg: "HTTP {{req.method}} {{req.url}}",
+        msg: 'HTTP {{req.method}} {{req.url}}',
         expressFormat: true,
         colorize: true
     }));

@@ -2,7 +2,6 @@
 
 const request = require('supertest');
 var chai = require('chai');
-var _ = require('lodash');
 
 const appgen = require('../app-generator');
 

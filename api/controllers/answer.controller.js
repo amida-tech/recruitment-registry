@@ -1,7 +1,5 @@
 'use strict';
 
-const _ = require('lodash');
-
 const models = require('../models');
 
 const Answer = models.Answer;

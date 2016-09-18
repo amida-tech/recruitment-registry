@@ -1,4 +1,4 @@
-/* global describe,before,after,beforeEach,afterEach,it,xit*/
+/* global describe,before,it*/
 'use strict';
 process.env.NODE_ENV = 'test';
 
@@ -9,13 +9,11 @@ const _ = require('lodash');
 
 const shared = require('../shared.spec');
 const config = require('../../config');
-const helper = require('../helpers');
 const models = require('../../models');
 const userExamples = require('../fixtures/user-examples');
 
 const expect = chai.expect;
 
-const Ethnicity = models.Ethnicity;
 const User = models.User;
 
 describe('user unit', function () {
@@ -57,7 +55,7 @@ describe('user unit', function () {
             return User.create(inputUser).then(function (user) {
                 expect(user.username).to.equal(inputUser.username);
                 return user;
-            }).then(function (user) {
+            }).then(function () {
                 const nextInputUser = shared.genNewUser();
                 nextInputUser.username = inputUser.username;
                 return User.create(nextInputUser).then(function () {
@@ -189,7 +187,7 @@ describe('user unit', function () {
             return User.create(inputUser).then(function (user) {
                 expect(user.email).to.equal(inputUser.email);
                 return user;
-            }).then(function (user) {
+            }).then(function () {
                 const nextInputUser = shared.genNewUser();
                 nextInputUser.email = inputUser.email;
                 return User.create(nextInputUser).then(function () {
@@ -266,7 +264,6 @@ describe('user unit', function () {
     describe('create/get users', function () {
         it('post/get user', function () {
             return User.create(example).then(function (user) {
-                var id = user.id;
                 return User.getUser(user.id).then(function (actual) {
                     var expected = _.cloneDeep(example);
                     expected.id = user.id;
@@ -283,7 +280,6 @@ describe('user unit', function () {
             exampleWNull.email = 'a' + exampleWNull.email;
             exampleWNull.zip = null;
             return User.create(exampleWNull).then(function (user) {
-                var id = user.id;
                 return User.getUser(user.id).then(function (actual) {
                     var expected = _.cloneDeep(exampleWNull);
                     expected.id = user.id;
@@ -357,8 +353,6 @@ describe('user unit', function () {
     });
 
     describe('reset password', function () {
-        var id;
-
         it('normal flow', function () {
             const inputUser = shared.genNewUser();
             return User.create(inputUser).then(function (user) {
@@ -375,9 +369,9 @@ describe('user unit', function () {
                         }
                     }).then(function (user) {
                         return user.authenticate(inputUser.password).then(function () {
-                            throw new Error('authentication should not have succeeded');
+                            throw new Error('authentication should have failed');
                         }).catch(function (err) {
-                            expect(err.message).not.to.equal('authentication should not have succeeded');
+                            expect(err.message).not.to.equal('authentication should have failed');
                             expect(err.message).to.equal('Authentication error.');
                             return token;
                         });
@@ -388,7 +382,8 @@ describe('user unit', function () {
                         throw new Error('unexpected no error for no token');
                     }).catch(function (err) {
                         expect(err.message).not.to.equal('unexpected no error for no token');
-                        expect(err.message).to.equal('Password reset token is invalid or has expired.');
+                        const emsg = 'Password reset token is invalid or has expired.';
+                        expect(err.message).to.equal(emsg);
                         return token;
                     }).then(function (token) {
                         return User.resetPassword(token, 'newPassword');
@@ -434,6 +429,7 @@ describe('user unit', function () {
                     expect(err.message).not.to.equal('unexpected no expiration error');
                     expect(err.message).to.equal('Password reset token is invalid or has expired.');
                 }).then(function () {
+                    expect(stub.called).to.equal(true);
                     config.expiresForDB.restore();
                 });
             });

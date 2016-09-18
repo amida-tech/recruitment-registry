@@ -2,7 +2,6 @@
   "expr": true,
   "node": true,
   "esversion": 6,
-  "camelcase": true,
   "bitwise": true,
   "eqeqeq": true,
   "immed": true,
@@ -13,7 +12,6 @@
   "smarttabs": true,
   "asi": true,
   "debug": true,
-  "maxlen": 100,
   "unused": true,
   "quotmark": "single",
   "strict": false

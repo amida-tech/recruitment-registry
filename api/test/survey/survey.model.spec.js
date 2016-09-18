@@ -1,9 +1,8 @@
-/* global describe,before,after,beforeEach,afterEach,it,xit*/
+/* global describe,before,it*/
 'use strict';
 process.env.NODE_ENV = 'test';
 
 var chai = require('chai');
-var _ = require('lodash');
 
 const helper = require('./survey-helper');
 const models = require('../../models');

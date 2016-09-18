@@ -35,7 +35,7 @@ exports.init();
 
 const createJWT = function (payload) {
     const options = {
-        expiresIn: "30d"
+        expiresIn: '30d'
     };
     // replace 'development' with process ENV.
     return jwt.sign(payload, config.jwt.secret, options);
@@ -61,7 +61,7 @@ const sendToken = function (req, res) {
             token
         }); // This is for development. We will probably want to return as a cookie.
     } else {
-        console.log("Error producing JWT: ", token);
+        console.log('Error producing JWT: ', token);
         res.status(400);
     }
 };

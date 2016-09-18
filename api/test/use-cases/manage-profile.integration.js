@@ -1,4 +1,4 @@
-/* global describe,before,after,beforeEach,afterEach,it,xit*/
+/* global describe,before,it*/
 'use strict';
 process.env.NODE_ENV = 'test';
 
@@ -36,8 +36,6 @@ describe('user set-up and login use-case', function () {
 
     // -------- client initialization
 
-    var ethnicities;
-    var genders;
     let survey;
 
     it('get available ethnicities', function (done) {

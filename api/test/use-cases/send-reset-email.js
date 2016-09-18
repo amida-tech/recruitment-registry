@@ -1,9 +1,6 @@
-/* global describe,before,after,beforeEach,afterEach,it,xit*/
+/* global describe,before,it*/
 'use strict';
 process.env.NODE_ENV = 'test';
-
-const chai = require('chai');
-const _ = require('lodash');
 
 const helper = require('../survey/survey-helper');
 
@@ -12,8 +9,6 @@ const userExamples = require('../fixtures/user-examples');
 const surveyExamples = require('../fixtures/survey-examples');
 
 const config = require('../../config');
-
-const expect = chai.expect;
 
 describe('user set-up and login use-case', function () {
     const userExample = userExamples.Alzheimer;
@@ -88,7 +83,7 @@ describe('user set-up and login use-case', function () {
                 email: userExample.email
             })
             .expect(201)
-            .end(function (err, res) {
+            .end(function () {
                 done();
             });
     });

@@ -1,4 +1,4 @@
-/* global describe,before,after,beforeEach,afterEach,it,xit*/
+/* global describe,before,it*/
 'use strict';
 
 const chai = require('chai');

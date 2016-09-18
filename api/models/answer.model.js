@@ -129,10 +129,10 @@ module.exports = function (sequelize, DataTypes) {
                         };
                     }
                 };
-                return sequelize.query('select a.value as value, qt.name as type, q.id as qid from answer a, question q, question_type qt where a.user_id = :user_id and a.survey_id = :survey_id and a.question_id = q.id and q.type = qt.id', {
+                return sequelize.query('select a.value as value, qt.name as type, q.id as qid from answer a, question q, question_type qt where a.user_id = :userid and a.survey_id = :surveyid and a.question_id = q.id and q.type = qt.id', {
                     replacements: {
-                        user_id: input.userId,
-                        survey_id: input.surveyId
+                        userid: input.userId,
+                        surveyid: input.surveyId
                     },
                     type: sequelize.QueryTypes.SELECT
                 }).then(function (result) {

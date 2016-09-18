@@ -1,10 +1,9 @@
-/* global describe,before,after,beforeEach,afterEach,it,xit*/
+/* global describe,before,it*/
 'use strict';
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
 const sinon = require('sinon');
-const _ = require('lodash');
 
 const helper = require('../survey/survey-helper');
 
@@ -97,10 +96,11 @@ describe('reset password use-case', function () {
                 email: userExample.email
             })
             .expect(201)
-            .end(function (err, res) {
+            .end(function (err) {
                 if (err) {
                     return done(err);
                 }
+                expect(stub.called).to.equal(true);
                 mailer.sendEmail.restore();
                 expect(!!token).to.equal(true);
                 done();
