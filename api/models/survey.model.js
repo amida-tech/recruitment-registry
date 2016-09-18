@@ -24,7 +24,9 @@ const newQuestionsPromise = function (sequelize, survey, transaction) {
     if (newQuestions.length) {
         return sequelize.Promise.all(newQuestions.map(function (q) {
             return sequelize.models.question.post(q.content, transaction).then(function (id) {
-                survey.questions[q.index] = id;
+                survey.questions[q.index] = {
+                    id
+                };
             });
         })).then(function () {
             return survey;
@@ -72,7 +74,7 @@ module.exports = function (sequelize, DataTypes) {
                     if (questions.length) {
                         return sequelize.Promise.all(questions.map(function (question, index) {
                             return sequelize.models.survey_question.create({
-                                questionId: question,
+                                questionId: question.id,
                                 surveyId: id,
                                 line: index
                             }, {

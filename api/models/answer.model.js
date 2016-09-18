@@ -111,6 +111,50 @@ module.exports = function (sequelize, DataTypes) {
                 return sequelize.transaction(function (tx) {
                     return Answer.createAnswersTx(input, tx);
                 });
+            },
+            getSurveyAnswers: function (input) {
+                const generateAnswer = {
+                    text: function (entries) {
+                        return {
+                            textValue: entries[0].value
+                        };
+                    },
+                    bool: function (entries) {
+                        return {
+                            boolValue: entries[0].value === 'true'
+                        };
+                    },
+                    choice: function (entries) {
+                        return {
+                            choice: parseInt(entries[0].value, 10)
+                        };
+                    },
+                    choices: function (entries) {
+                        entries = entries.map(function (r) {
+                            return parseInt(r.value, 10);
+                        });
+                        entries = _.sortBy(entries);
+                        return {
+                            choices: entries
+                        };
+                    }
+                };
+                return sequelize.query('select a.value as value, qt.name as type, q.id as qid from answer a, question q, question_type qt where a.user_id = :user_id and a.survey_id = :survey_id and a.question_id = q.id and q.type = qt.id', {
+                    replacements: {
+                        user_id: input.userId,
+                        survey_id: input.surveyId
+                    },
+                    type: sequelize.QueryTypes.SELECT
+                }).then(function (result) {
+                    const groupedResult = _.groupBy(result, 'qid');
+                    return Object.keys(groupedResult).map(function (key) {
+                        var v = groupedResult[key];
+                        return {
+                            questionId: v[0].qid,
+                            answer: generateAnswer[v[0].type](v)
+                        };
+                    });
+                });
             }
         }
     });

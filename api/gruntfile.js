@@ -49,7 +49,7 @@ module.exports = function (grunt) {
     };
 
     grunt.initConfig({
-        alljsfiles: ['**/*.js', '!node_modules/**/*.js', 'gruntfile.js', 'package.json', 'index.js', 'app.js'],
+        alljsfiles: ['**/*.js', '!node_modules/**/*.js', '!coverage/**/*.js', 'gruntfile.js', 'package.json', 'index.js', 'app.js'],
         jsbeautifier: {
             beautify: {
                 src: '<%= alljsfiles%>',

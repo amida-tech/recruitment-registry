@@ -1,4 +1,3 @@
-/* global token:true,server*/
 'use strict';
 
 const request = require('supertest');
