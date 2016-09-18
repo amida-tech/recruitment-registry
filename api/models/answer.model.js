@@ -1,6 +1,6 @@
 'use strict';
 
-var _ = require('lodash');
+const _ = require('lodash');
 
 module.exports = function (sequelize, DataTypes) {
     const Answer = sequelize.define('answer', {
@@ -138,7 +138,7 @@ module.exports = function (sequelize, DataTypes) {
                 }).then(function (result) {
                     const groupedResult = _.groupBy(result, 'qid');
                     return Object.keys(groupedResult).map(function (key) {
-                        var v = groupedResult[key];
+                        const v = groupedResult[key];
                         return {
                             questionId: v[0].qid,
                             answer: generateAnswer[v[0].type](v)

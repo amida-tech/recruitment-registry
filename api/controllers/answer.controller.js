@@ -5,8 +5,8 @@ const models = require('../models');
 const Answer = models.Answer;
 
 exports.createAnswers = function (req, res) {
-    var userId = req.user.id;
-    var answers = req.body;
+    const userId = req.user.id;
+    const answers = req.body;
     answers.userId = userId;
     Answer.createAnswers(answers).then(function () {
         res.status(201).json({});

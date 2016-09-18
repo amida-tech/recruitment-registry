@@ -2,14 +2,14 @@
 'use strict';
 process.env.NODE_ENV = 'test';
 
-var chai = require('chai');
-var _ = require('lodash');
+const chai = require('chai');
+const _ = require('lodash');
 
 const models = require('../../models');
 
-var expect = chai.expect;
+const expect = chai.expect;
 
-var Ethnicity = models.Ethnicity;
+const Ethnicity = models.Ethnicity;
 
 describe('ethnicity unit', function () {
     before(function () {
@@ -25,7 +25,7 @@ describe('ethnicity unit', function () {
             const expected = Ethnicity.ethnicities().sort();
             const actual = _.map(result, 'name').sort();
             expect(actual).to.deep.equal(expected);
-            var name1st = Ethnicity.ethnicities()[1];
+            const name1st = Ethnicity.ethnicities()[1];
             expect(Ethnicity.idByName(name1st)).to.equal(2);
             expect(Ethnicity.nameById(2)).to.equal(name1st);
         });

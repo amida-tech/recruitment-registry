@@ -51,7 +51,7 @@ describe('survey integration', function () {
 
     it('create example survey', shared.postSurveyFn(store, example.survey));
 
-    var serverSurvey;
+    let serverSurvey;
 
     it('get empty survey', function (done) {
         store.server
@@ -75,7 +75,7 @@ describe('survey integration', function () {
             });
     });
 
-    var answers;
+    let answers;
 
     it('login as user', shared.loginFn(store, user));
 

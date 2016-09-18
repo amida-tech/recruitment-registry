@@ -2,14 +2,14 @@
 'use strict';
 process.env.NODE_ENV = 'test';
 
-var chai = require('chai');
-var _ = require('lodash');
+const chai = require('chai');
+const _ = require('lodash');
 
 const models = require('../../models');
 
-var expect = chai.expect;
+const expect = chai.expect;
 
-var QuestionType = models.QuestionType;
+const QuestionType = models.QuestionType;
 
 describe('question-type unit', function () {
     before(function () {
@@ -25,7 +25,7 @@ describe('question-type unit', function () {
             const expected = QuestionType.possibleNames().sort();
             const actual = _.map(result, 'name').sort();
             expect(actual).to.deep.equal(expected);
-            var name1st = QuestionType.possibleNames()[1];
+            const name1st = QuestionType.possibleNames()[1];
             expect(QuestionType.idByName(name1st)).to.equal(2);
             expect(QuestionType.nameById(2)).to.equal(name1st);
         });

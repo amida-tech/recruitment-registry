@@ -18,9 +18,9 @@ exports.buildServerSurveyFromClientSurvey = function (clientSurvey, serverSurvey
 
 exports.formAnswersToPost = function (survey, answersSpec) {
     const questions = survey.questions;
-    var result = answersSpec.reduce(function (r, spec, index) {
+    const result = answersSpec.reduce(function (r, spec, index) {
         if (spec !== null) {
-            var entry = {
+            const entry = {
                 questionId: questions[index].id,
                 answer: {}
             };

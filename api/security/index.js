@@ -2,8 +2,8 @@
 
 const config = require('../config');
 
-var jwt = require('jsonwebtoken');
-var _ = require('lodash');
+const jwt = require('jsonwebtoken');
+const _ = require('lodash');
 
 const models = require('../models');
 
@@ -11,7 +11,7 @@ const User = models.User;
 
 const jwtAuth = function (req, header, verifyUserFn, callback) {
     if (header) {
-        var matches = header.match(/(\S+)\s+(\S+)/);
+        const matches = header.match(/(\S+)\s+(\S+)/);
         if (matches[1] === 'Bearer') {
             const token = matches[2];
             if (token) {

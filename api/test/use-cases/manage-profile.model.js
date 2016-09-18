@@ -2,8 +2,8 @@
 'use strict';
 process.env.NODE_ENV = 'test';
 
-var chai = require('chai');
-var _ = require('lodash');
+const chai = require('chai');
+const _ = require('lodash');
 
 const helper = require('../survey/survey-helper');
 const models = require('../../models');
@@ -11,11 +11,11 @@ const models = require('../../models');
 const userExamples = require('../fixtures/user-examples');
 const surveyExamples = require('../fixtures/survey-examples');
 
-var expect = chai.expect;
+const expect = chai.expect;
 
-var Ethnicity = models.Ethnicity;
-var User = models.User;
-var Survey = models.Survey;
+const Ethnicity = models.Ethnicity;
+const User = models.User;
+const Survey = models.Survey;
 
 describe('user set up unit', function () {
     const userExample = userExamples.Alzheimer;
@@ -29,9 +29,9 @@ describe('user set up unit', function () {
         });
     });
 
-    var ethnicities;
-    var genders;
-    var survey;
+    let ethnicities;
+    let genders;
+    let survey;
 
     it('load selection lists and survey', function () {
         return Ethnicity.findAll({
@@ -45,8 +45,8 @@ describe('user set up unit', function () {
         });
     });
 
-    var userId;
-    var answers;
+    let userId;
+    let answers;
 
     it('setup user with profile', function () {
         answers = helper.formAnswersToPost(survey, surveyExample.answer);

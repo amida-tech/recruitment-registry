@@ -67,7 +67,7 @@ describe('user unit', function () {
         });
 
         it('reject null/undefined/missing/empty', function () {
-            var p = models.sequelize.Promise.resolve(shared.genNewUser());
+            let p = models.sequelize.Promise.resolve(shared.genNewUser());
             [null, undefined, '--', ''].forEach(function (value) {
                 p = p.then(function (inputUser) {
                     if (value === '--') {
@@ -121,7 +121,7 @@ describe('user unit', function () {
         });
 
         it('reject null/undefined/missing/empty', function () {
-            var p = models.sequelize.Promise.resolve(shared.genNewUser());
+            let p = models.sequelize.Promise.resolve(shared.genNewUser());
             [null, undefined, '--', ''].forEach(function (value) {
                 p = p.then(function (inputUser) {
                     if (value === '--') {
@@ -143,7 +143,7 @@ describe('user unit', function () {
 
         it('reject update with null/undefined/empty', function () {
             const inputValue = shared.genNewUser();
-            var p = User.create(inputValue).then(function (user) {
+            let p = User.create(inputValue).then(function (user) {
                 return user.id;
             });
             [null, undefined, ''].forEach(function (value) {
@@ -219,7 +219,7 @@ describe('user unit', function () {
         });
 
         it('reject create invalid/null/undefined/missing/empty', function () {
-            var p = models.sequelize.Promise.resolve(shared.genNewUser());
+            let p = models.sequelize.Promise.resolve(shared.genNewUser());
             ['noatemail', null, undefined, '--', ''].forEach(function (value) {
                 p = p.then(function (inputUser) {
                     if (value === '--') {
@@ -241,7 +241,7 @@ describe('user unit', function () {
 
         it('reject update with invalid/null/undefined/empty', function () {
             const inputValue = shared.genNewUser();
-            var p = User.create(inputValue).then(function (user) {
+            let p = User.create(inputValue).then(function (user) {
                 return user.id;
             });
             ['noatemail', null, undefined, ''].forEach(function (value) {
@@ -265,7 +265,7 @@ describe('user unit', function () {
         it('post/get user', function () {
             return User.create(example).then(function (user) {
                 return User.getUser(user.id).then(function (actual) {
-                    var expected = _.cloneDeep(example);
+                    const expected = _.cloneDeep(example);
                     expected.id = user.id;
                     delete actual.role;
                     delete expected.password;
@@ -281,7 +281,7 @@ describe('user unit', function () {
             exampleWNull.zip = null;
             return User.create(exampleWNull).then(function (user) {
                 return User.getUser(user.id).then(function (actual) {
-                    var expected = _.cloneDeep(exampleWNull);
+                    const expected = _.cloneDeep(exampleWNull);
                     expected.id = user.id;
                     delete actual.role;
                     delete expected.password;

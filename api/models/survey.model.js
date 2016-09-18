@@ -3,7 +3,7 @@
 const _ = require('lodash');
 
 const extractNewSurveyQuestions = function (survey) {
-    var questions = survey.questions;
+    const questions = survey.questions;
     if (questions && questions.length) {
         return questions.reduce(function (r, question, index) {
             if (question.content) {
@@ -55,7 +55,7 @@ module.exports = function (sequelize, DataTypes) {
         updatedAt: 'updatedAt',
         classMethods: {
             createSurveyTx: function (survey, tx) {
-                var newSurvey = {
+                const newSurvey = {
                     name: survey.name
                 };
                 return Survey.create(newSurvey, {
@@ -69,8 +69,8 @@ module.exports = function (sequelize, DataTypes) {
                         return newSurvey;
                     }
                 }).then((newSurvey) => {
-                    var id = newSurvey.id;
-                    var questions = newSurvey.questions;
+                    const id = newSurvey.id;
+                    const questions = newSurvey.questions;
                     if (questions.length) {
                         return sequelize.Promise.all(questions.map(function (question, index) {
                             return sequelize.models.survey_question.create({
@@ -148,11 +148,11 @@ module.exports = function (sequelize, DataTypes) {
                 });
             },
             getAnsweredSurveyById: function (userId, id) {
-                var p = Survey.getSurveyById(id);
+                const p = Survey.getSurveyById(id);
                 return Survey.getAnsweredSurvey(p, userId);
             },
             getAnsweredSurveyByName: function (userId, name) {
-                var p = Survey.getSurveyByName(name);
+                const p = Survey.getSurveyByName(name);
                 return Survey.getAnsweredSurvey(p, userId);
             }
         }

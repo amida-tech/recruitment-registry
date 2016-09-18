@@ -9,12 +9,12 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-mocha-test');
     grunt.loadNpmTasks('grunt-shell');
 
-    const mochaBin = './node_modules/mocha/bin/_mocha'
+    const mochaBin = './node_modules/mocha/bin/_mocha';
 
     const swaggerValidation = function () {
-        var done = this.async();
-        var spec = require('swagger-tools').specs.v2;
-        var swaggerObject = require('./swagger.json');
+        const done = this.async();
+        const spec = require('swagger-tools').specs.v2;
+        const swaggerObject = require('./swagger.json');
         spec.validate(swaggerObject, function (err, result) {
             if (err) {
                 grunt.log.error(err);

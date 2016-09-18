@@ -1,7 +1,7 @@
 'use strict';
 
 const request = require('supertest');
-var chai = require('chai');
+const chai = require('chai');
 
 const appgen = require('../app-generator');
 

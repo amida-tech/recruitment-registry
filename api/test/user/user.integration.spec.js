@@ -2,8 +2,8 @@
 'use strict';
 process.env.NODE_ENV = 'test';
 
-var chai = require('chai');
-var _ = require('lodash');
+const chai = require('chai');
+const _ = require('lodash');
 
 const models = require('../../models');
 const userExamples = require('../fixtures/user-examples');
@@ -25,8 +25,8 @@ describe('user integration', function () {
 
     before(shared.setUpFn(store));
 
-    var ethnicities;
-    var genders;
+    let ethnicities;
+    let genders;
 
     it('invalid path', function (done) {
         store.server
@@ -40,7 +40,7 @@ describe('user integration', function () {
             .get('/api/v1.0/ethnicities')
             .expect(200)
             .expect(function (res) {
-                var expected = Ethnicity.ethnicities();
+                const expected = Ethnicity.ethnicities();
                 expect(res.body).to.deep.equal(expected);
                 ethnicities = expected;
             })
@@ -52,7 +52,7 @@ describe('user integration', function () {
             .get('/api/v1.0/genders')
             .expect(200)
             .expect(function (res) {
-                var expected = User.genders();
+                const expected = User.genders();
                 expect(res.body).to.deep.equal(expected);
                 genders = res.body;
             })
@@ -83,7 +83,7 @@ describe('user integration', function () {
                 if (err) {
                     return done(err);
                 }
-                var user = res.body;
+                const user = res.body;
                 expect(!user).to.equal(false);
                 expect(user.username).to.equal(config.superUser.username);
                 expect(user.role).to.equal('admin');
@@ -111,7 +111,7 @@ describe('user integration', function () {
                     return done(err);
                 }
                 delete res.body.id;
-                var expectedUser = _.cloneDeep(user);
+                const expectedUser = _.cloneDeep(user);
                 expectedUser.role = 'participant';
                 delete expectedUser.password;
                 expect(res.body).to.deep.equal(expectedUser);

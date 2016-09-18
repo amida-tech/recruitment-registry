@@ -2,7 +2,7 @@
 'use strict';
 process.env.NODE_ENV = 'test';
 
-var chai = require('chai');
+const chai = require('chai');
 
 const helper = require('./survey-helper');
 const models = require('../../models');
@@ -10,17 +10,17 @@ const models = require('../../models');
 const userExamples = require('../fixtures/user-examples');
 const surveyExamples = require('../fixtures/survey-examples');
 
-var expect = chai.expect;
+const expect = chai.expect;
 
-var Survey = models.Survey;
-var Answer = models.Answer;
-var User = models.User;
+const Survey = models.Survey;
+const Answer = models.Answer;
+const User = models.User;
 
 describe('survey unit', function () {
     const example = surveyExamples.Example;
     const user = userExamples.Example;
 
-    var userId;
+    let userId;
 
     before(function () {
         return models.sequelize.sync({
@@ -32,7 +32,7 @@ describe('survey unit', function () {
         });
     });
 
-    var serverSurvey;
+    let serverSurvey;
 
     it('post/get survey', function () {
         return Survey.createSurvey(example.survey).then(function (id) {

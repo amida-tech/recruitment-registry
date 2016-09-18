@@ -2,8 +2,8 @@
 'use strict';
 process.env.NODE_ENV = 'test';
 
-var _ = require('lodash');
-var chai = require('chai');
+const _ = require('lodash');
+const chai = require('chai');
 
 const helper = require('../survey/survey-helper');
 
@@ -67,8 +67,8 @@ describe('user set-up and login use-case', function () {
 
     // --------- set up account
 
-    var answers;
-    var userId;
+    let answers;
+    let userId;
 
     it('fill user profile and submit', function (done) {
         answers = helper.formAnswersToPost(survey, surveyExample.answer);

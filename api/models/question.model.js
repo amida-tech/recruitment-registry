@@ -1,9 +1,9 @@
 'use strict';
 
-var query = 'select question.text as text, question_type.name as type from question, question_type where question.id = :id and question.type = question_type.id';
-var queryChoices = 'select id, text from question_choices where question_id = :id order by line';
-var queryMultiple = 'select question.id as id, question.text as text, question_type.name as type from question, question_type where question.id in (:ids) and question.type = question_type.id';
-var queryChoicesMultiple = 'select id, text, question_id as qid from question_choices where question_id in (:ids) order by line';
+const query = 'select question.text as text, question_type.name as type from question, question_type where question.id = :id and question.type = question_type.id';
+const queryChoices = 'select id, text from question_choices where question_id = :id order by line';
+const queryMultiple = 'select question.id as id, question.text as text, question_type.name as type from question, question_type where question.id in (:ids) and question.type = question_type.id';
+const queryChoicesMultiple = 'select id, text, question_id as qid from question_choices where question_id in (:ids) order by line';
 
 module.exports = function (sequelize, DataTypes) {
     const Question = sequelize.define('question', {
@@ -18,11 +18,11 @@ module.exports = function (sequelize, DataTypes) {
                 key: 'id'
             },
             get: function () {
-                var id = this.getDataValue('type');
+                const id = this.getDataValue('type');
                 return sequelize.models.question_type.nameById(id);
             },
             set: function (type) {
-                var id = sequelize.models.question_type.idByName(type);
+                const id = sequelize.models.question_type.idByName(type);
                 this.setDataValue('type', id);
             }
         },
@@ -40,18 +40,18 @@ module.exports = function (sequelize, DataTypes) {
         updatedAt: 'updatedAt',
         classMethods: {
             postPromise: function (question, tx) {
-                var qx = {
+                const qx = {
                     text: question.text,
                     type: question.type
                 };
                 return Question.create(qx, {
                     transaction: tx
                 }).then(function (qx) {
-                    var id = qx.id;
-                    var choices = question.choices;
+                    const id = qx.id;
+                    const choices = question.choices;
                     if (choices && choices.length) {
                         return sequelize.Promise.all(choices.map(function (c, index) {
-                            var choice = {
+                            const choice = {
                                 questionId: id,
                                 text: c,
                                 line: index
@@ -123,15 +123,15 @@ module.exports = function (sequelize, DataTypes) {
                         },
                         type: sequelize.QueryTypes.SELECT
                     }).then((choices) => {
-                        var map = questions.reduce(function (r, q) {
+                        const map = questions.reduce(function (r, q) {
                             r[q.id] = q;
                             return r;
                         }, {});
                         if (choices && choices.length) {
                             choices.forEach(function (choice) {
-                                var qid = choice.qid;
+                                const qid = choice.qid;
                                 delete choice.qid;
-                                var q = map[qid];
+                                const q = map[qid];
                                 if (q.choices) {
                                     q.choices.push(choice);
                                 } else {

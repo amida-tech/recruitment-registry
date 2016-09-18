@@ -54,8 +54,8 @@ describe('reset password use-case', function () {
 
     // --------- set up account
 
-    var answers;
-    var userId;
+    let answers;
+    let userId;
 
     it('fill user profile and submit', function (done) {
         answers = helper.formAnswersToPost(survey, surveyExample.answer);
