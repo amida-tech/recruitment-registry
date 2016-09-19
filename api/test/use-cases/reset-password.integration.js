@@ -33,6 +33,8 @@ describe('reset password use-case', function () {
 
     it('post example survey', shared.postSurveyFn(store, surveyExample.survey));
 
+    it('logout as super user', shared.logoutFn(store));
+
     // --------
 
     // -------- client initialization
@@ -55,7 +57,6 @@ describe('reset password use-case', function () {
     // --------- set up account
 
     let answers;
-    let userId;
 
     it('fill user profile and submit', function (done) {
         answers = helper.formAnswersToPost(survey, surveyExample.answer);
@@ -67,15 +68,7 @@ describe('reset password use-case', function () {
                 surveyId: survey.id,
                 answers
             })
-            .expect(201)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-                const result = res.body;
-                userId = result.id;
-                done();
-            });
+            .expect(201, done);
     });
 
     // --------- login

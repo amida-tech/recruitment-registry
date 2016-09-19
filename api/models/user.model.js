@@ -7,6 +7,7 @@ const crypto = require('crypto');
 const moment = require('moment');
 
 const config = require('../config');
+const tokener = require('../lib/tokener');
 
 const GENDER_MALE = 'male';
 const GENDER_FEMALE = 'female';
@@ -168,18 +169,17 @@ module.exports = function (sequelize, DataTypes) {
             register: function (input) {
                 return sequelize.transaction(function (tx) {
                     input.user.role = 'participant';
-                    return User.create(input.user, {
-                        transaction: tx
-                    }).then(function (user) {
-                        const answerInput = {
-                            userId: user.id,
-                            surveyId: input.surveyId,
-                            answers: input.answers
-                        };
-                        return sequelize.models.answer.createAnswersTx(answerInput, tx).then(function () {
-                            return user.id;
+                    return User.create(input.user, { transaction: tx })
+                        .then(function (user) {
+                            const answerInput = {
+                                userId: user.id,
+                                surveyId: input.surveyId,
+                                answers: input.answers
+                            };
+                            const answerModel = sequelize.models.answer;
+                            return answerModel.createAnswersTx(answerInput, tx)
+                                .then(() => ({ token: tokener.createJWT(user) }));
                         });
-                    });
                 });
             },
             updateRegister: function (id, input) {

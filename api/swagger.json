@@ -44,6 +44,9 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/responses/badRequest"
                     }
                 }
             }
@@ -362,13 +365,15 @@
                     "201": {
                         "description": "Successful response",
                         "schema": {
-                            "description": "User id",
+                            "description": "User JWT token",
                             "type": "object",
+                            "required": ["token"],
                             "properties": {
-                                "id": {
-                                    "type": "integer"
+                                "token": {
+                                    "type": "string"
                                 }
-                            }
+                            },
+                            "additionalProperties": false
                         }
                     }
                 }

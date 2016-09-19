@@ -7,13 +7,9 @@ const models = require('../models');
 const User = models.User;
 
 exports.createProfile = function (req, res) {
-    User.register(req.body).then(function (id) {
-        res.status(201).json({
-            id
-        });
-    }).catch(function (err) {
-        res.status(401).send(err);
-    });
+    User.register(req.body)
+        .then(tokenObj => res.status(201).json(tokenObj))
+        .catch(err => res.status(401).send(err));
 };
 
 exports.updateProfile = function (req, res) {

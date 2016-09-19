@@ -32,6 +32,8 @@ describe('user set-up and login use-case', function () {
 
     it('post example survey', shared.postSurveyFn(store, surveyExample.survey));
 
+    it('logout as super user', shared.logoutFn(store));
+
     // --------
 
     // -------- client initialization
@@ -68,7 +70,6 @@ describe('user set-up and login use-case', function () {
     // --------- set up account
 
     let answers;
-    let userId;
 
     it('fill user profile and submit', function (done) {
         answers = helper.formAnswersToPost(survey, surveyExample.answer);
@@ -85,23 +86,10 @@ describe('user set-up and login use-case', function () {
                 if (err) {
                     return done(err);
                 }
-                const result = res.body;
-                userId = result.id;
+                store.auth = 'Bearer ' + res.body.token;
                 done();
             });
     });
-
-    // --------- login
-
-    it('error show user profile without user logs in', function (done) {
-        store.server
-            .get('/api/v1.0/registries/user-profile/Alzheimer')
-            .expect(401, done);
-    });
-
-    it('login', shared.loginFn(store, userExample));
-
-    // -----------
 
     // -------- verification
 

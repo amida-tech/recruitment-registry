@@ -35,6 +35,12 @@ exports.loginFn = function (store, login) {
     };
 };
 
+exports.logoutFn = function (store) {
+    return function () {
+        store.auth = null;
+    };
+};
+
 exports.badLoginFn = function (store, login) {
     return function (done) {
         store.server
