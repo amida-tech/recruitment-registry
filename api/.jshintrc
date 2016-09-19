@@ -1,15 +1,14 @@
 {
-  "expr": true,
   "node": true,
-  "esnext": true,
+  "esversion": 6,
   "bitwise": true,
+  "curly": true,
   "eqeqeq": true,
-  "immed": true,
-  "latedef": "nofunc",
-  "newcap": true,
+  "latedef": "true",
   "noarg": true,
+  "quotmark": "single",
+  "strict": false,
   "undef": true,
-  "smarttabs": true,
-  "asi": true,
-  "debug": true
+  "unused": true,
+  "varstmt": true
 }

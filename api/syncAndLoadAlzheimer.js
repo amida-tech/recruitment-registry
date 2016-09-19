@@ -6,7 +6,6 @@ const surveyExamples = require('./test/fixtures/survey-examples');
 const userExamples = require('./test/fixtures/user-examples');
 
 const userExample = userExamples.Alzheimer;
-const surveyExample = surveyExamples.Alzheimer;
 
 const helper = require('./test/survey/survey-helper');
 

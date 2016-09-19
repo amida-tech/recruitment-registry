@@ -1,9 +1,9 @@
-/* global describe,before,after,beforeEach,afterEach,it,xit*/
+/* global describe,before,it*/
 'use strict';
 process.env.NODE_ENV = 'test';
 
-var _ = require('lodash');
-var chai = require('chai');
+const _ = require('lodash');
+const chai = require('chai');
 
 const helper = require('../survey/survey-helper');
 
@@ -32,12 +32,12 @@ describe('user set-up and login use-case', function () {
 
     it('post example survey', shared.postSurveyFn(store, surveyExample.survey));
 
+    it('logout as super user', shared.logoutFn(store));
+
     // --------
 
     // -------- client initialization
 
-    var ethnicities;
-    var genders;
     let survey;
 
     it('get available ethnicities', function (done) {
@@ -69,8 +69,7 @@ describe('user set-up and login use-case', function () {
 
     // --------- set up account
 
-    var answers;
-    var userId;
+    let answers;
 
     it('fill user profile and submit', function (done) {
         answers = helper.formAnswersToPost(survey, surveyExample.answer);
@@ -87,23 +86,10 @@ describe('user set-up and login use-case', function () {
                 if (err) {
                     return done(err);
                 }
-                const result = res.body;
-                userId = result.id;
+                store.auth = 'Bearer ' + res.body.token;
                 done();
             });
     });
-
-    // --------- login
-
-    it('error show user profile without user logs in', function (done) {
-        store.server
-            .get('/api/v1.0/registries/user-profile/Alzheimer')
-            .expect(401, done);
-    });
-
-    it('login', shared.loginFn(store, userExample));
-
-    // -----------
 
     // -------- verification
 

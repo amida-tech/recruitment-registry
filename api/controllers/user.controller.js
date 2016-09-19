@@ -18,7 +18,7 @@ exports.createNewUser = function (req, res, next) {
                 message: 'An existing user has already used that username address.'
             });
         } else {
-            var newUser = req.body;
+            const newUser = req.body;
             newUser.role = 'participant';
             return User.create(req.body).then(user => {
                 return res.status(201).json({

@@ -1,9 +1,7 @@
-/* global token:true,server*/
 'use strict';
 
 const request = require('supertest');
-var chai = require('chai');
-var _ = require('lodash');
+const chai = require('chai');
 
 const appgen = require('../app-generator');
 
@@ -34,6 +32,12 @@ exports.loginFn = function (store, login) {
                 store.auth = 'Bearer ' + res.body.token;
                 done();
             });
+    };
+};
+
+exports.logoutFn = function (store) {
+    return function () {
+        store.auth = null;
     };
 };
 

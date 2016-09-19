@@ -1,6 +1,6 @@
 /*global module */
 
-"use strict";
+'use strict';
 
 module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-jshint');
@@ -9,10 +9,12 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-mocha-test');
     grunt.loadNpmTasks('grunt-shell');
 
+    const mochaBin = './node_modules/mocha/bin/_mocha';
+
     const swaggerValidation = function () {
-        var done = this.async();
-        var spec = require('swagger-tools').specs.v2; // Using the latest Swagger 2.x specification
-        var swaggerObject = require('./swagger.json'); // This assumes you're in the root of the swagger-tools
+        const done = this.async();
+        const spec = require('swagger-tools').specs.v2;
+        const swaggerObject = require('./swagger.json');
         spec.validate(swaggerObject, function (err, result) {
             if (err) {
                 grunt.log.error(err);
@@ -30,10 +32,10 @@ module.exports = function (grunt) {
                     grunt.log.error('');
                 }
                 if (result.warnings.length > 0) {
-                    grunt.log.warning('Warnings');
-                    grunt.log.warning('--------');
+                    grunt.log.writeln('Warnings');
+                    grunt.log.writeln('--------');
                     result.warnings.forEach(function (warn) {
-                        grunt.log.warning('#/' + warn.path.join('/') + ': ' + warn.message);
+                        grunt.log.writeln('#/' + warn.path.join('/') + ': ' + warn.message);
                     });
                 }
                 if (result.errors.length > 0) {
@@ -49,7 +51,15 @@ module.exports = function (grunt) {
     };
 
     grunt.initConfig({
-        alljsfiles: ['**/*.js', '!node_modules/**/*.js', 'gruntfile.js', 'package.json', 'index.js', 'app.js'],
+        alljsfiles: [
+            '**/*.js',
+            '!node_modules/**/*.js',
+            '!coverage/**/*.js',
+            'gruntfile.js',
+            'package.json',
+            'index.js',
+            'app.js'
+        ],
         jsbeautifier: {
             beautify: {
                 src: '<%= alljsfiles%>',
@@ -66,31 +76,16 @@ module.exports = function (grunt) {
             }
         },
         jshint: {
-            files: '<%= alljsfiles%>',
+            files: [
+                '**/*.js',
+                '!node_modules/**/*.js',
+                '!coverage/**/*.js',
+                'gruntfile.js',
+                'index.js',
+                'app.js'
+            ],
             options: {
-                browser: true,
-                curly: true,
-                eqeqeq: true,
-                immed: true,
-                latedef: true,
-                newcap: true,
-                noarg: true,
-                sub: true,
-                undef: false,
-                boss: true,
-                eqnull: true,
-                node: true,
-                expr: true,
-                esversion: 6,
-                globals: {
-                    'xit': true,
-                    'xdescribe': true,
-                    'it': true,
-                    'describe': true,
-                    'before': true,
-                    'after': true,
-                    'done': true
-                }
+                jshintrc: '.jshintrc'
             }
         },
         watch: {
@@ -110,15 +105,15 @@ module.exports = function (grunt) {
             }
         },
         shell: {
-            run_istanbul: {
-                command: "istanbul cover ./node_modules/mocha/bin/_mocha -- -R spec --recursive -t 1000"
+            runIstanbul: {
+                command: `istanbul cover ${mochaBin} -- -R spec --recursive -t 1000`
             }
         }
     });
 
     grunt.registerTask('beautify', ['jsbeautifier:beautify']);
     grunt.registerTask('mocha', ['mochaTest']);
-    grunt.registerTask('coverage', ['shell:run_istanbul']);
+    grunt.registerTask('coverage', ['shell:runIstanbul']);
     grunt.registerTask('swagger', 'Validates api definition', swaggerValidation);
     grunt.registerTask('default', ['beautify', 'jshint', 'swagger', 'mocha']);
 

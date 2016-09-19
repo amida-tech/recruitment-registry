@@ -2,8 +2,8 @@
 
 const config = require('../config');
 
-var jwt = require('jsonwebtoken');
-var _ = require('lodash');
+const jwt = require('jsonwebtoken');
+const _ = require('lodash');
 
 const models = require('../models');
 
@@ -11,8 +11,8 @@ const User = models.User;
 
 const jwtAuth = function (req, header, verifyUserFn, callback) {
     if (header) {
-        var matches = header.match(/(\S+)\s+(\S+)/);
-        if (matches[1] === 'Bearer') {
+        const matches = header.match(/(\S+)\s+(\S+)/);
+        if (matches && matches[1] === 'Bearer') {
             const token = matches[2];
             if (token) {
                 return jwt.verify(token, config.jwt.secret, {}, function (err, payload) {
@@ -53,6 +53,12 @@ const jwtAuth = function (req, header, verifyUserFn, callback) {
                     });
                 });
             }
+        } else {
+            return callback({
+                message: 'Invalid authorization',
+                code: 'invalid_auth',
+                statusCode: 401
+            });
         }
     }
     let err = {

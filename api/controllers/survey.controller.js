@@ -5,7 +5,6 @@ const _ = require('lodash');
 const models = require('../models');
 
 const Survey = models.Survey;
-const Answer = models.Answer;
 
 exports.getEmptySurvey = function (req, res) {
     const name = _.get(req, 'swagger.params.name.value');

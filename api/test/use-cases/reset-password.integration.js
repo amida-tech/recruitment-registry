@@ -1,10 +1,9 @@
-/* global describe,before,after,beforeEach,afterEach,it,xit*/
+/* global describe,before,it*/
 'use strict';
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
 const sinon = require('sinon');
-const _ = require('lodash');
 
 const helper = require('../survey/survey-helper');
 
@@ -34,6 +33,8 @@ describe('reset password use-case', function () {
 
     it('post example survey', shared.postSurveyFn(store, surveyExample.survey));
 
+    it('logout as super user', shared.logoutFn(store));
+
     // --------
 
     // -------- client initialization
@@ -55,8 +56,7 @@ describe('reset password use-case', function () {
 
     // --------- set up account
 
-    var answers;
-    var userId;
+    let answers;
 
     it('fill user profile and submit', function (done) {
         answers = helper.formAnswersToPost(survey, surveyExample.answer);
@@ -68,15 +68,7 @@ describe('reset password use-case', function () {
                 surveyId: survey.id,
                 answers
             })
-            .expect(201)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-                const result = res.body;
-                userId = result.id;
-                done();
-            });
+            .expect(201, done);
     });
 
     // --------- login
@@ -97,10 +89,11 @@ describe('reset password use-case', function () {
                 email: userExample.email
             })
             .expect(201)
-            .end(function (err, res) {
+            .end(function (err) {
                 if (err) {
                     return done(err);
                 }
+                expect(stub.called).to.equal(true);
                 mailer.sendEmail.restore();
                 expect(!!token).to.equal(true);
                 done();

@@ -7,6 +7,7 @@ const crypto = require('crypto');
 const moment = require('moment');
 
 const config = require('../config');
+const tokener = require('../lib/tokener');
 
 const GENDER_MALE = 'male';
 const GENDER_FEMALE = 'female';
@@ -112,14 +113,14 @@ module.exports = function (sequelize, DataTypes) {
         hooks: {
             afterSync: function (options) {
                 if (options.force) {
-                    var user = _.assign(config.superUser, {
+                    const user = _.assign(config.superUser, {
                         role: 'admin'
                     });
                     return User.create(user);
                 }
             },
             beforeBulkCreate: function (users, fields, fn) {
-                var totalUpdated = 0;
+                let totalUpdated = 0;
                 users.forEach(function (user) {
                     user.updatePassword(function (err) {
                         if (err) {
@@ -132,10 +133,10 @@ module.exports = function (sequelize, DataTypes) {
                     });
                 });
             },
-            beforeCreate: function (user, fields) {
+            beforeCreate: function (user) {
                 return user.updatePassword();
             },
-            beforeUpdate: function (user, fields) {
+            beforeUpdate: function (user) {
                 if (user.changed('password')) {
                     return user.updatePassword();
                 }
@@ -155,7 +156,7 @@ module.exports = function (sequelize, DataTypes) {
                         ]
                     }
                 }).then(function (result) {
-                    var e = result.ethnicity;
+                    const e = result.ethnicity;
                     if (e) {
                         result.ethnicity = sequelize.models.ethnicity.nameById(e);
                     }
@@ -168,18 +169,17 @@ module.exports = function (sequelize, DataTypes) {
             register: function (input) {
                 return sequelize.transaction(function (tx) {
                     input.user.role = 'participant';
-                    return User.create(input.user, {
-                        transaction: tx
-                    }).then(function (user) {
-                        const answerInput = {
-                            userId: user.id,
-                            surveyId: input.surveyId,
-                            answers: input.answers
-                        };
-                        return sequelize.models.answer.createAnswersTx(answerInput, tx).then(function () {
-                            return user.id;
+                    return User.create(input.user, { transaction: tx })
+                        .then(function (user) {
+                            const answerInput = {
+                                userId: user.id,
+                                surveyId: input.surveyId,
+                                answers: input.answers
+                            };
+                            const answerModel = sequelize.models.answer;
+                            return answerModel.createAnswersTx(answerInput, tx)
+                                .then(() => ({ token: tokener.createJWT(user) }));
                         });
-                    });
                 });
             },
             updateRegister: function (id, input) {
@@ -230,7 +230,7 @@ module.exports = function (sequelize, DataTypes) {
                     }
                 }).then((user) => {
                     if (!user) {
-                        var err = new Error('Email is invalid.');
+                        const err = new Error('Email is invalid.');
                         return sequelize.Promise.reject(err);
                     } else {
                         return user.updateResetPWToken();
@@ -238,8 +238,8 @@ module.exports = function (sequelize, DataTypes) {
                 });
             },
             resetPassword: function (token, password) {
-                var rejection = function () {
-                    var err = new Error('Password reset token is invalid or has expired.');
+                const rejection = function () {
+                    const err = new Error('Password reset token is invalid or has expired.');
                     return sequelize.Promise.reject(err);
                 };
                 return this.find({
@@ -250,8 +250,8 @@ module.exports = function (sequelize, DataTypes) {
                     if (!user) {
                         return rejection();
                     } else {
-                        var expires = user.resetPasswordExpires;
-                        var mExpires = moment.utc(expires);
+                        const expires = user.resetPasswordExpires;
+                        const mExpires = moment.utc(expires);
                         if (moment.utc().isAfter(mExpires)) {
                             return rejection();
                         } else {
@@ -277,7 +277,7 @@ module.exports = function (sequelize, DataTypes) {
             },
             updateResetPWToken: function () {
                 return randomBytes(config.crypt.resetTokenLength).then((buf) => {
-                    var token = buf.toString('hex');
+                    const token = buf.toString('hex');
                     return token;
                 }).then((token) => {
                     return randomBytes(config.crypt.resetPasswordLength).then((passwordBuf) => {
@@ -290,7 +290,7 @@ module.exports = function (sequelize, DataTypes) {
                     this.resetPasswordToken = result.token;
                     this.password = result.password;
                     this.resetPasswordExpires = config.expiresForDB();
-                    return this.save().then((user) => {
+                    return this.save().then(() => {
                         return result.token;
                     });
                 });

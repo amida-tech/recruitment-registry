@@ -1,7 +1,5 @@
 'use strict';
 
-const config = require('./config');
-
 const swaggerTools = require('swagger-tools');
 
 const models = require('./models');
@@ -10,7 +8,7 @@ const security = require('./security');
 const logger = require('./logger');
 
 const errHandler = function (err, req, res, next) {
-    if (typeof err !== 'object') { // send error for now, meybe we should message for error from different packages
+    if (typeof err !== 'object') {
         err = {
             message: 'Unknown error',
             original: err

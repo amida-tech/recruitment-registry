@@ -1,6 +1,6 @@
 'use strict';
 
-var _ = require('lodash');
+const _ = require('lodash');
 
 module.exports = function (sequelize, DataTypes) {
     const Answer = sequelize.define('answer', {
@@ -77,6 +77,7 @@ module.exports = function (sequelize, DataTypes) {
                     });
                     return r;
                 }, []);
+                // Switch to bulkCreate when Sequelize 4 arrives
                 return sequelize.Promise.all(answers.map(function (answer) {
                     return Answer.create(answer, {
                         transaction: tx
@@ -93,10 +94,8 @@ module.exports = function (sequelize, DataTypes) {
                         userId: input.userId
                     },
                     transaction: tx
-                }).then(function (numberRemoved) {
-                    const answers = _.filter(input.answers, function (answer) {
-                        return answer.answer;
-                    });
+                }).then(function () {
+                    const answers = _.filter(input.answers, answer => answer.answer);
                     if (answers.length) {
                         return Answer.createAnswersTx({
                             userId: input.userId,
@@ -109,6 +108,42 @@ module.exports = function (sequelize, DataTypes) {
             createAnswers: function (input) {
                 return sequelize.transaction(function (tx) {
                     return Answer.createAnswersTx(input, tx);
+                });
+            },
+            getSurveyAnswers: function (input) {
+                const generateAnswer = {
+                    text: entries => ({
+                        textValue: entries[0].value
+                    }),
+                    bool: entries => ({
+                        boolValue: entries[0].value === 'true'
+                    }),
+                    choice: entries => ({
+                        choice: parseInt(entries[0].value, 10)
+                    }),
+                    choices: entries => {
+                        entries = entries.map(r => parseInt(r.value, 10));
+                        entries = _.sortBy(entries);
+                        return {
+                            choices: entries
+                        };
+                    }
+                };
+                return sequelize.query('select a.value as value, qt.name as type, q.id as qid from answer a, question q, question_type qt where a.user_id = :userid and a.survey_id = :surveyid and a.question_id = q.id and q.type = qt.id', {
+                    replacements: {
+                        userid: input.userId,
+                        surveyid: input.surveyId
+                    },
+                    type: sequelize.QueryTypes.SELECT
+                }).then(function (result) {
+                    const groupedResult = _.groupBy(result, 'qid');
+                    return Object.keys(groupedResult).map(function (key) {
+                        const v = groupedResult[key];
+                        return {
+                            questionId: v[0].qid,
+                            answer: generateAnswer[v[0].type](v)
+                        };
+                    });
                 });
             }
         }

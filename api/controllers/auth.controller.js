@@ -2,10 +2,9 @@
 
 const passport = require('passport');
 const passportHttp = require('passport-http');
-const jwt = require('jsonwebtoken');
 
-const config = require('../config');
 const models = require('../models');
+const tokener = require('../lib/tokener');
 
 const User = models.User;
 
@@ -33,36 +32,20 @@ exports.init = function () {
 
 exports.init();
 
-const createJWT = function (payload) {
-    const options = {
-        expiresIn: "30d"
-    };
-    // replace 'development' with process ENV.
-    return jwt.sign(payload, config.jwt.secret, options);
-};
-
-const createUserJWT = function (user) {
-    const payload = {
-        id: user.id,
-        username: user.username,
-        role: user.role
-    };
-    return createJWT(payload);
-};
-
 const authenticate = passport.authenticate('basic', {
     session: false
 });
 
 const sendToken = function (req, res) {
-    const token = createUserJWT(req.user);
+    const token = tokener.createJWT(req.user);
     if (token) {
         res.status(200).json({
             token
         }); // This is for development. We will probably want to return as a cookie.
     } else {
-        console.log("Error producing JWT: ", token);
-        res.status(400);
+        res.status(400).json({
+            message: 'Unexpected error.'
+        });
     }
 };
 

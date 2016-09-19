@@ -1,18 +1,18 @@
-/* global describe,before,after,beforeEach,afterEach,it,xit*/
+/* global describe,before,it*/
 'use strict';
 process.env.NODE_ENV = 'test';
 
-var chai = require('chai');
-var _ = require('lodash');
+const chai = require('chai');
+const _ = require('lodash');
 
 const helper = require('../helpers');
 const models = require('../../models');
 
-var expect = chai.expect;
+const expect = chai.expect;
 
-var QuestionType = models.QuestionType;
-var QuestionChoices = models.QuestionChoices;
-var Question = models.Question;
+const QuestionType = models.QuestionType;
+const QuestionChoices = models.QuestionChoices;
+const Question = models.Question;
 
 describe('question unit', function () {
     before(function () {

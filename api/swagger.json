@@ -44,6 +44,9 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "$ref": "#/responses/badRequest"
                     }
                 }
             }
@@ -269,33 +272,39 @@
         "/answers": {
             "x-swagger-router-controller": "answer.controller",
             "post": {
-                "summary": "Creates answers to a survey",
+                "description": "This persists answers to survey questions.  Old answers are soft deleted.  For each question for which there is no answer property, any existing answer will be soft deleted.",
+                "summary": "Creates answers",
                 "operationId": "createAnswers",
-                "security": [
-                    {
-                        "participant": []
+                "security": [{
+                    "participant": []
+                }],
+                "parameters": [{
+                    "name": "surveyAnswers",
+                    "in": "body",
+                    "description": "Array of answers",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/surveyAnswers"
                     }
-                ],
-                "parameters": [
-                    {
-                        "name": "surveyAnswers",
-                        "in": "body",
-                        "description": "Array of answers",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/surveyAnswers"
-                        }
-                    }
-                ],
+                }],
                 "responses": {
                     "201": {
-                        "description": "Successful response",
-                        "schema": {
-                            "description": "Empty",
-                            "type": "object",
-                            "properties": {
-                            }
-                        }
+                        "$ref": "#/responses/emptySuccess"
+                    },
+                    "400": {
+                        "$ref": "#/responses/badRequest"
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/responses/forbidden"
+                    },
+                    "422": {
+                        "$ref": "#/responses/unprocessable"
+                    },
+                    "500": {
+                        "$ref": "#/responses/internal"
                     }
                 }
             }
@@ -356,13 +365,15 @@
                     "201": {
                         "description": "Successful response",
                         "schema": {
-                            "description": "User id",
+                            "description": "User JWT token",
                             "type": "object",
+                            "required": ["token"],
                             "properties": {
-                                "id": {
-                                    "type": "integer"
+                                "token": {
+                                    "type": "string"
                                 }
-                            }
+                            },
+                            "additionalProperties": false
                         }
                     }
                 }
@@ -474,7 +485,57 @@
             "name": "Authorization"
         }
     },
+    "responses": {
+        "unauthorized": {
+            "description": "User is not authenticated.",
+            "schema": {
+                "$ref": "#/definitions/error"
+            }
+        },
+        "forbidden": {
+            "description": "User does not have permission.",
+            "schema": {
+                "$ref": "#/definitions/error"
+            }
+        },
+        "badRequest": {
+            "description": "Invalid request parameters.",
+            "schema": {
+                "$ref": "#/definitions/error"
+            }
+        },
+        "unprocessable": {
+            "description": "Request cannot be fullfilled",
+            "schema": {
+                "$ref": "#/definitions/error"
+            }
+        },
+        "emptySuccess": {
+            "description": "Successful response.",
+            "schema": {
+                "$ref": "#/definitions/emptyObject"
+            }
+        },
+        "internal": {
+            "description": "Unexpected error.",
+            "schema": {
+                "$ref": "#/definitions/error"
+            }
+        }
+    },
     "definitions": {
+        "error": {
+            "type": "object",
+            "required": [
+                "message"
+            ],
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": true
+        },
         "user": {
             "type": "object",
             "properties": {
@@ -589,12 +650,14 @@
             "type": "object",
             "properties": {
                 "choice": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 1
                 },
                 "choices": {
                     "type": "array",
                     "items": {
-                        "type": "integer"
+                        "type": "integer",
+                        "minimum": 1
                     }
                 },
                 "textValue": {
@@ -642,7 +705,8 @@
             ],
             "properties": {
                 "questionId": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 1
                 },
                 "answer": {
                     "$ref": "#/definitions/answer"
@@ -722,13 +786,15 @@
             ],
             "properties": {
                 "surveyId": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 1
                 },
                 "answers": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/linkedAnswer"
-                    }
+                    },
+                    "minItems": 1
                 }
             }
         },

@@ -1,4 +1,4 @@
-/* global describe,before,after,beforeEach,afterEach,it,xit*/
+/* global describe,before,it*/
 'use strict';
 process.env.NODE_ENV = 'test';
 
@@ -7,45 +7,23 @@ const sinon = require('sinon');
 const moment = require('moment');
 const _ = require('lodash');
 
+const shared = require('../shared.spec');
 const config = require('../../config');
-const helper = require('../helpers');
 const models = require('../../models');
 const userExamples = require('../fixtures/user-examples');
 
 const expect = chai.expect;
 
-const Ethnicity = models.Ethnicity;
 const User = models.User;
 
 describe('user unit', function () {
     const example = userExamples.Example;
 
-    before(function () {
-        return models.sequelize.sync({
-            force: true
-        });
-    });
-
-    const fnNewUser = (function () {
-        var index = -1;
-
-        return function (override) {
-            ++index;
-            let user = {
-                username: 'username_' + index,
-                password: 'password_' + index,
-                email: 'email_' + index + '@example.com'
-            };
-            if (override) {
-                user = _.assign(user, override);
-            }
-            return user;
-        };
-    })();
+    before(shared.setUpFn());
 
     describe('username', function () {
         it('create and update', function () {
-            const inputUser = fnNewUser();
+            const inputUser = shared.genNewUser();
             return User.create(inputUser).then(function (user) {
                 expect(user.username).to.equal(inputUser.username);
                 return user;
@@ -73,12 +51,12 @@ describe('user unit', function () {
         });
 
         it('reject non unique username', function () {
-            const inputUser = fnNewUser();
+            const inputUser = shared.genNewUser();
             return User.create(inputUser).then(function (user) {
                 expect(user.username).to.equal(inputUser.username);
                 return user;
-            }).then(function (user) {
-                const nextInputUser = fnNewUser();
+            }).then(function () {
+                const nextInputUser = shared.genNewUser();
                 nextInputUser.username = inputUser.username;
                 return User.create(nextInputUser).then(function () {
                     throw new Error('unique username accepted');
@@ -89,7 +67,7 @@ describe('user unit', function () {
         });
 
         it('reject null/undefined/missing/empty', function () {
-            var p = models.sequelize.Promise.resolve(fnNewUser());
+            let p = models.sequelize.Promise.resolve(shared.genNewUser());
             [null, undefined, '--', ''].forEach(function (value) {
                 p = p.then(function (inputUser) {
                     if (value === '--') {
@@ -112,7 +90,7 @@ describe('user unit', function () {
 
     describe('password', function () {
         it('create, update and authenticate', function () {
-            const inputUser = fnNewUser();
+            const inputUser = shared.genNewUser();
             return User.create(inputUser).then(function (user) {
                 return User.findOne({
                     where: {
@@ -143,7 +121,7 @@ describe('user unit', function () {
         });
 
         it('reject null/undefined/missing/empty', function () {
-            var p = models.sequelize.Promise.resolve(fnNewUser());
+            let p = models.sequelize.Promise.resolve(shared.genNewUser());
             [null, undefined, '--', ''].forEach(function (value) {
                 p = p.then(function (inputUser) {
                     if (value === '--') {
@@ -164,8 +142,8 @@ describe('user unit', function () {
         });
 
         it('reject update with null/undefined/empty', function () {
-            const inputValue = fnNewUser();
-            var p = User.create(inputValue).then(function (user) {
+            const inputValue = shared.genNewUser();
+            let p = User.create(inputValue).then(function (user) {
                 return user.id;
             });
             [null, undefined, ''].forEach(function (value) {
@@ -187,7 +165,7 @@ describe('user unit', function () {
 
     describe('e-mail', function () {
         it('normal set/get', function () {
-            const inputUser = fnNewUser();
+            const inputUser = shared.genNewUser();
             return User.create(inputUser).then(function (user) {
                 expect(user.email).to.equal(inputUser.email);
                 return user;
@@ -205,12 +183,12 @@ describe('user unit', function () {
         });
 
         it('reject non unique e-mail', function () {
-            const inputUser = fnNewUser();
+            const inputUser = shared.genNewUser();
             return User.create(inputUser).then(function (user) {
                 expect(user.email).to.equal(inputUser.email);
                 return user;
-            }).then(function (user) {
-                const nextInputUser = fnNewUser();
+            }).then(function () {
+                const nextInputUser = shared.genNewUser();
                 nextInputUser.email = inputUser.email;
                 return User.create(nextInputUser).then(function () {
                     throw new Error('unique email accepted');
@@ -221,7 +199,7 @@ describe('user unit', function () {
         });
 
         it('lowercase emails with capital letters', function () {
-            const inputUser = fnNewUser({
+            const inputUser = shared.genNewUser({
                 email: 'CamelCase@EXAMPLE.COM'
             });
             return User.create(inputUser).then(function (user) {
@@ -241,7 +219,7 @@ describe('user unit', function () {
         });
 
         it('reject create invalid/null/undefined/missing/empty', function () {
-            var p = models.sequelize.Promise.resolve(fnNewUser());
+            let p = models.sequelize.Promise.resolve(shared.genNewUser());
             ['noatemail', null, undefined, '--', ''].forEach(function (value) {
                 p = p.then(function (inputUser) {
                     if (value === '--') {
@@ -262,8 +240,8 @@ describe('user unit', function () {
         });
 
         it('reject update with invalid/null/undefined/empty', function () {
-            const inputValue = fnNewUser();
-            var p = User.create(inputValue).then(function (user) {
+            const inputValue = shared.genNewUser();
+            let p = User.create(inputValue).then(function (user) {
                 return user.id;
             });
             ['noatemail', null, undefined, ''].forEach(function (value) {
@@ -286,9 +264,8 @@ describe('user unit', function () {
     describe('create/get users', function () {
         it('post/get user', function () {
             return User.create(example).then(function (user) {
-                var id = user.id;
                 return User.getUser(user.id).then(function (actual) {
-                    var expected = _.cloneDeep(example);
+                    const expected = _.cloneDeep(example);
                     expected.id = user.id;
                     delete actual.role;
                     delete expected.password;
@@ -303,9 +280,8 @@ describe('user unit', function () {
             exampleWNull.email = 'a' + exampleWNull.email;
             exampleWNull.zip = null;
             return User.create(exampleWNull).then(function (user) {
-                var id = user.id;
                 return User.getUser(user.id).then(function (actual) {
-                    var expected = _.cloneDeep(exampleWNull);
+                    const expected = _.cloneDeep(exampleWNull);
                     expected.id = user.id;
                     delete actual.role;
                     delete expected.password;
@@ -317,7 +293,7 @@ describe('user unit', function () {
 
     describe('update users', function () {
         it('normal flow', function () {
-            const inputUser = fnNewUser({
+            const inputUser = shared.genNewUser({
                 zip: null,
                 ethnicity: null,
                 gender: null
@@ -377,10 +353,8 @@ describe('user unit', function () {
     });
 
     describe('reset password', function () {
-        var id;
-
         it('normal flow', function () {
-            const inputUser = fnNewUser();
+            const inputUser = shared.genNewUser();
             return User.create(inputUser).then(function (user) {
                 let token;
 
@@ -395,9 +369,9 @@ describe('user unit', function () {
                         }
                     }).then(function (user) {
                         return user.authenticate(inputUser.password).then(function () {
-                            throw new Error('authentication should not have succeeded');
+                            throw new Error('authentication should have failed');
                         }).catch(function (err) {
-                            expect(err.message).not.to.equal('authentication should not have succeeded');
+                            expect(err.message).not.to.equal('authentication should have failed');
                             expect(err.message).to.equal('Authentication error.');
                             return token;
                         });
@@ -408,7 +382,8 @@ describe('user unit', function () {
                         throw new Error('unexpected no error for no token');
                     }).catch(function (err) {
                         expect(err.message).not.to.equal('unexpected no error for no token');
-                        expect(err.message).to.equal('Password reset token is invalid or has expired.');
+                        const emsg = 'Password reset token is invalid or has expired.';
+                        expect(err.message).to.equal(emsg);
                         return token;
                     }).then(function (token) {
                         return User.resetPassword(token, 'newPassword');
@@ -440,7 +415,7 @@ describe('user unit', function () {
                 m.add(250, 'ms');
                 return m.toISOString();
             });
-            const inputUser = fnNewUser();
+            const inputUser = shared.genNewUser();
             return User.create(inputUser).then(function (user) {
                 return User.resetPasswordToken(user.email);
             }).then(function (token) {
@@ -454,6 +429,7 @@ describe('user unit', function () {
                     expect(err.message).not.to.equal('unexpected no expiration error');
                     expect(err.message).to.equal('Password reset token is invalid or has expired.');
                 }).then(function () {
+                    expect(stub.called).to.equal(true);
                     config.expiresForDB.restore();
                 });
             });
