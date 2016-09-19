@@ -39,7 +39,7 @@ module.exports = function (sequelize, DataTypes) {
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
         classMethods: {
-            postPromise: function (question, tx) {
+            createQuestionTx: function (question, tx) {
                 const qx = {
                     text: question.text,
                     type: question.type
@@ -69,16 +69,12 @@ module.exports = function (sequelize, DataTypes) {
                     }
                 });
             },
-            post: function (question, transaction) {
-                if (transaction) {
-                    return Question.postPromise(question, transaction);
-                } else {
-                    return sequelize.transaction(function (t) {
-                        return Question.postPromise(question, t);
-                    });
-                }
+            createQuestion: function (question) {
+                return sequelize.transaction(function (tx) {
+                    return Question.createQuestionTx(question, tx);
+                });
             },
-            get: function (id) {
+            getQuestion: function (id) {
                 return sequelize.query(query, {
                     replacements: {
                         id
@@ -104,7 +100,7 @@ module.exports = function (sequelize, DataTypes) {
                     });
                 });
             },
-            getMultiple: function (ids) {
+            getQuestions: function (ids) {
                 return sequelize.query(queryMultiple, {
                     replacements: {
                         ids

@@ -63,9 +63,9 @@ describe('question unit', function () {
     const ids = [];
 
     it('post/get multiple choice question with multiple answers (checkboxes)', function () {
-        return Question.post(examples[0]).then(function (id) {
+        return Question.createQuestion(examples[0]).then(function (id) {
             ids.push(id);
-            return Question.get(id);
+            return Question.getQuestion(id);
         }).then(function (actual) {
             cleanServerQuestion(actual);
             expect(actual).to.deep.equal(examples[0]);
@@ -73,9 +73,9 @@ describe('question unit', function () {
     });
 
     it('post/get multiple choice question with single answer (drop down)', function () {
-        return Question.post(examples[1]).then(function (id) {
+        return Question.createQuestion(examples[1]).then(function (id) {
             ids.push(id);
-            return Question.get(id);
+            return Question.getQuestion(id);
         }).then(function (actual) {
             cleanServerQuestion(actual);
             expect(actual).to.deep.equal(examples[1]);
@@ -83,9 +83,9 @@ describe('question unit', function () {
     });
 
     it('post/get text question', function () {
-        return Question.post(examples[2]).then(function (id) {
+        return Question.createQuestion(examples[2]).then(function (id) {
             ids.push(id);
-            return Question.get(id);
+            return Question.getQuestion(id);
         }).then(function (actual) {
             cleanServerQuestion(actual);
             expect(actual).to.deep.equal(examples[2]);
@@ -93,7 +93,7 @@ describe('question unit', function () {
     });
 
     it('get multiple questions', function () {
-        return Question.getMultiple(ids).then(function (questions) {
+        return Question.getQuestions(ids).then(function (questions) {
             return helper.buildServerQuestions(examples, ids).then(function (expected) {
                 expect(questions).to.deep.equal(expected);
             });

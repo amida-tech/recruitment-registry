@@ -19,11 +19,11 @@ const extractNewSurveyQuestions = function (survey) {
     }
 };
 
-const newQuestionsPromise = function (sequelize, survey, transaction) {
+const newQuestionsPromise = function (sequelize, survey, tx) {
     const newQuestions = extractNewSurveyQuestions(survey);
     if (newQuestions.length) {
         return sequelize.Promise.all(newQuestions.map(function (q) {
-            return sequelize.models.question.post(q.content, transaction).then(function (id) {
+            return sequelize.models.question.createQuestionTx(q.content, tx).then(function (id) {
                 survey.questions[q.index] = {
                     id
                 };
@@ -112,7 +112,7 @@ module.exports = function (sequelize, DataTypes) {
                         type: sequelize.QueryTypes.SELECT
                     }).then(function (result) {
                         const questionIds = _.map(result, 'question_id');
-                        return sequelize.models.question.getMultiple(questionIds);
+                        return sequelize.models.question.getQuestions(questionIds);
                     }).then(function (questions) {
                         survey.questions = questions;
                         return survey;
