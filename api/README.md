@@ -19,6 +19,17 @@ Recruitment Registry API
 5. Install dependencies: `npm install`
 6. Create a `.env` file in this directory
 
+## Windows Caveat
+
+Due to variances between Windows and Linux and Mac OSes, Windows users will have to add a few steps for
+installing the needed components for node-gyp. And all users will probably have to install Python 2.7 as well.
+
+1. Download & install Python 2.7.
+2. Set the Environmental Variables for the Python install, including the variable 'PYTHON.'
+3. Download & install Visual C++ Build Tools. (http://landinghub.visualstudio.com/visual-cpp-build-tools)
+4. Run 'npm config set msvs_version 2015 --global'
+5. If errors continue to occur, update to the latest version of npm with 'npm install npm -g'
+
 ## Configuration
 
 1. Use `export NODE_ENV='development` (or `production` or `test`) to set node environment
