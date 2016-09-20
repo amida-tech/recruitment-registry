@@ -5,7 +5,6 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 const _ = require('lodash');
 
-const helper = require('../helpers');
 const models = require('../../models');
 const shared = require('../shared.spec.js');
 const qxHelper = require('./question-helper');
@@ -56,11 +55,9 @@ describe('question unit', function () {
         it(`create/get/update question ${i} type ${examples[i].type}`, qxBasicFn(i));
     }
 
-    const multipleQuestionsVerify = function (indices = _.range(examples.length)) {
+    const questionsVerifyFn = function (indices = _.range(examples.length)) {
         return function (questions) {
-            const testIds = _.pullAt(ids.slice(), indices);
-            const samples = _.pullAt(examples.slice(), indices);
-            return helper.buildServerQuestions(samples, testIds)
+            return qxHelper.prepareClientQuestions(examples, ids, indices)
                 .then(expected => {
                     expect(questions).to.deep.equal(expected);
                 });
@@ -68,17 +65,17 @@ describe('question unit', function () {
     };
 
     it('get multiple questions', function () {
-        return Question.getQuestions(ids).then(multipleQuestionsVerify());
+        return Question.getQuestions(ids).then(questionsVerifyFn());
     });
 
     it('get all questions', function () {
-        return Question.getAllQuestions().then(multipleQuestionsVerify());
+        return Question.getAllQuestions().then(questionsVerifyFn());
     });
 
     it('remove some question and verify', function () {
         return Question.deleteQuestion(ids[1])
             .then(() => Question.deleteQuestion(ids[3]))
             .then(() => Question.getAllQuestions())
-            .then(multipleQuestionsVerify([0, 2]));
+            .then(questionsVerifyFn([0, 2]));
     });
 });
