@@ -2,7 +2,7 @@
 
 const _ = require('lodash');
 
-const query = 'select question.text as text, question_type.name as type from question, question_type where question.id = :id and question.type = question_type.id';
+const query = 'select question.id as id, question.text as text, question_type.name as type from question, question_type where question.id = :id and question.type = question_type.id';
 const queryChoices = 'select id, text from question_choices where question_id = :id order by line';
 const queryMultiple = 'select question.id as id, question.text as text, question_type.name as type from question, question_type where question.deleted_at is null and question.id in (:ids) and question.type = question_type.id';
 const queryChoicesMultiple = 'select id, text, question_id as qid from question_choices where question_id in (:ids) order by line';

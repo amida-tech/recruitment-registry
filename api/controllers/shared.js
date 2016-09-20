@@ -1,21 +1,10 @@
 'use strict';
 
-const toJSON = function (err) {
-    if (typeof err === 'object') {
-        return Object.getOwnPropertyNames(err).reduce((r, key) => {
-            r[key] = err[key];
-            return r;
-        }, {});
-    }
-    return {
-        message: 'Unknown internal error.',
-        original: err
-    };
-};
+const jsutil = require('../lib/jsutil');
 
 exports.handleError = function (res) {
     return function (err) {
-        const json = toJSON(err);
+        const json = jsutil.errToJSON(err);
         res.status(500).json(json);
     };
 };

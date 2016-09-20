@@ -465,8 +465,154 @@
                     }
                 }
             }
+        },
+        "/questions": {
+            "x-swagger-router-controller": "question.controller",
+            "post": {
+                "summary": "Creates a new question",
+                "operationId": "createQuestion",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "newQuestion",
+                    "in": "body",
+                    "description": "Question object",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/newQuestion"
+                    }
+                }],
+                "responses": {
+                    "201": {
+                        "$ref": "#/responses/idSuccess"
+                    },
+                    "400": {
+                        "$ref": "#/responses/badRequest"
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/responses/forbidden"
+                    },
+                    "500": {
+                        "$ref": "#/responses/internal"
+                    }
+                }
+            },
+            "get": {
+                "summary": "Gets all questions",
+                "operationId": "getAllQuestions",
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/questions"
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/responses/badRequest"
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/responses/forbidden"
+                    },
+                    "500": {
+                        "$ref": "#/responses/internal"
+                    }
+                }
+            }
+        },
+        "/questions/{id}": {
+            "x-swagger-router-controller": "question.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
+            "get": {
+                "summary": "Gets the question",
+                "operationId": "getQuestion",
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/question"
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/responses/badRequest"
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/responses/forbidden"
+                    },
+                    "500": {
+                        "$ref": "#/responses/internal"
+                    }
+                }
+            },
+            "put": {
+                "summary": "Updates the question",
+                "operationId": "updateQuestion",
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "204": {
+                        "$ref": "#/responses/emptySuccess"
+                    },
+                    "400": {
+                        "$ref": "#/responses/badRequest"
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/responses/forbidden"
+                    },
+                    "500": {
+                        "$ref": "#/responses/internal"
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Deletes the question",
+                "operationId": "deleteQuestion",
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "204": {
+                        "$ref": "#/responses/emptySuccess"
+                    },
+                    "400": {
+                        "$ref": "#/responses/badRequest"
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/responses/forbidden"
+                    },
+                    "500": {
+                        "$ref": "#/responses/internal"
+                    }
+                }
+            }
         }
-
     },
     "securityDefinitions": {
         "admin": {
@@ -516,6 +662,18 @@
                 "$ref": "#/definitions/emptyObject"
             }
         },
+        "idSuccess" : {
+            "description": "Successful response",
+            "schema": {
+                "description": "Id",
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
         "internal": {
             "description": "Unexpected error.",
             "schema": {
@@ -533,8 +691,7 @@
                 "message": {
                     "type": "string"
                 }
-            },
-            "additionalProperties": true
+            }
         },
         "user": {
             "type": "object",
@@ -695,6 +852,34 @@
                 },
                 "answer": {
                     "$ref": "#/definitions/answer"
+                }
+            }
+        },
+        "questions": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/question"
+            },
+            "minLength": 1
+        },
+        "newQuestion": {
+            "type": "object",
+            "required": [
+                "text",
+                "type"
+            ],
+            "properties": {
+                "text": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "choices": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },
