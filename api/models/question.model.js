@@ -1,9 +1,13 @@
 'use strict';
 
-const query = 'select question.text as text, question_type.name as type from question, question_type where question.id = :id and question.type = question_type.id';
+const _ = require('lodash');
+
+const query = 'select question.id as id, question.text as text, question_type.name as type from question, question_type where question.id = :id and question.type = question_type.id';
 const queryChoices = 'select id, text from question_choices where question_id = :id order by line';
-const queryMultiple = 'select question.id as id, question.text as text, question_type.name as type from question, question_type where question.id in (:ids) and question.type = question_type.id';
+const queryMultiple = 'select question.id as id, question.text as text, question_type.name as type from question, question_type where question.deleted_at is null and question.id in (:ids) and question.type = question_type.id';
 const queryChoicesMultiple = 'select id, text, question_id as qid from question_choices where question_id in (:ids) order by line';
+const queryAll = 'select question.id as id, question.text as text, question_type.name as type from question, question_type where question.deleted_at is null and question.type = question_type.id order by id';
+const queryChoicesAll = 'select id, text, question_id as qid from question_choices order by line';
 
 module.exports = function (sequelize, DataTypes) {
     const Question = sequelize.define('question', {
@@ -33,56 +37,44 @@ module.exports = function (sequelize, DataTypes) {
         updatedAt: {
             type: DataTypes.DATE,
             field: 'updated_at',
+        },
+        deletedAt: {
+            type: DataTypes.DATE,
+            field: 'deleted_at'
         }
     }, {
         freezeTableName: true,
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
+        deletedAt: 'deletedAt',
+        paranoid: true,
         classMethods: {
-            postPromise: function (question, tx) {
-                const qx = {
-                    text: question.text,
-                    type: question.type
-                };
-                return Question.create(qx, {
-                    transaction: tx
-                }).then(function (qx) {
-                    const id = qx.id;
-                    const choices = question.choices;
-                    if (choices && choices.length) {
-                        return sequelize.Promise.all(choices.map(function (c, index) {
-                            const choice = {
-                                questionId: id,
-                                text: c,
-                                line: index
-                            };
-                            return sequelize.models.question_choices.create(choice, {
-                                transaction: tx
-                            }).then(() => {
-                                return id;
-                            });
-                        })).then(() => {
-                            return id;
-                        });
-                    } else {
+            createQuestionTx: function ({ text, type, choices }, tx) {
+                return Question.create({ text, type }, { transaction: tx })
+                    .then(({ id }) => {
+                        if (choices && choices.length) {
+                            return sequelize.Promise.all(choices.map(function (c, index) {
+                                const choice = {
+                                    questionId: id,
+                                    text: c,
+                                    line: index
+                                };
+                                return sequelize.models.question_choices.create(choice, {
+                                    transaction: tx
+                                }).then(() => id);
+                            })).then(() => id);
+                        }
                         return id;
-                    }
+                    });
+            },
+            createQuestion: function (question) {
+                return sequelize.transaction(function (tx) {
+                    return Question.createQuestionTx(question, tx);
                 });
             },
-            post: function (question, transaction) {
-                if (transaction) {
-                    return Question.postPromise(question, transaction);
-                } else {
-                    return sequelize.transaction(function (t) {
-                        return Question.postPromise(question, t);
-                    });
-                }
-            },
-            get: function (id) {
+            getQuestion: function (id) {
                 return sequelize.query(query, {
-                    replacements: {
-                        id
-                    },
+                    replacements: { id },
                     type: sequelize.QueryTypes.SELECT
                 }).then(function (questions) {
                     const question = questions[0];
@@ -104,46 +96,53 @@ module.exports = function (sequelize, DataTypes) {
                     });
                 });
             },
-            getMultiple: function (ids) {
-                return sequelize.query(queryMultiple, {
-                    replacements: {
-                        ids
-                    },
-                    type: sequelize.QueryTypes.SELECT
-                }).then(function (questions) {
+            updateQuestion: function (id, { text }) {
+                return Question.findById(id).then(qx => qx.update({ text }));
+            },
+            deleteQuestion: function (id) {
+                return Question.destroy({
+                    where: { id }
+                });
+            },
+            getQuestionsCommon: function (query, queryChoices, options) {
+                return sequelize.query(query, options).then(questions => {
                     const question = questions[0];
                     if (!question) {
                         return sequelize.Promise.reject('No such question');
                     }
                     return questions;
-                }).then(function (questions) {
-                    return sequelize.query(queryChoicesMultiple, {
-                        replacements: {
-                            ids
-                        },
-                        type: sequelize.QueryTypes.SELECT
-                    }).then((choices) => {
-                        const map = questions.reduce(function (r, q) {
-                            r[q.id] = q;
-                            return r;
-                        }, {});
+                }).then(questions => {
+                    return sequelize.query(queryChoices, options).then((choices) => {
+                        const map = _.keyBy(questions, 'id');
                         if (choices && choices.length) {
                             choices.forEach(function (choice) {
-                                const qid = choice.qid;
-                                delete choice.qid;
-                                const q = map[qid];
-                                if (q.choices) {
-                                    q.choices.push(choice);
-                                } else {
-                                    q.choices = [choice];
+                                const q = map[choice.qid];
+                                if (q) {
+                                    delete choice.qid;
+                                    if (q.choices) {
+                                        q.choices.push(choice);
+                                    } else {
+                                        q.choices = [choice];
+                                    }
                                 }
                             });
                         }
-                        return ids.map(function (id) {
-                            return map[id];
-                        });
+                        return { questions, map };
                     });
                 });
+            },
+            getQuestions: function (ids) {
+                return Question.getQuestionsCommon(queryMultiple, queryChoicesMultiple, {
+                        replacements: { ids },
+                        type: sequelize.QueryTypes.SELECT
+                    })
+                    .then(({ map }) => ids.map(id => map[id]));
+            },
+            getAllQuestions: function () {
+                return Question.getQuestionsCommon(queryAll, queryChoicesAll, {
+                        type: sequelize.QueryTypes.SELECT
+                    })
+                    .then(({ questions }) => questions);
             }
         }
     });

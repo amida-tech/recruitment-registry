@@ -65,7 +65,7 @@ exports.createQuestion = function (store) {
     return function () {
         const inputQx = exports.genNewQuestion();
         const type = inputQx.type;
-        return models.Question.post(inputQx).then(function (id) {
+        return models.Question.createQuestion(inputQx).then(function (id) {
             const qx = {
                 id,
                 choices: null,

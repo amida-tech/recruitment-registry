@@ -7,96 +7,78 @@ const _ = require('lodash');
 
 const helper = require('../helpers');
 const models = require('../../models');
+const shared = require('../shared.spec.js');
+const qxHelper = require('./question-helper');
+const examples = require('../fixtures/question-examples');
 
 const expect = chai.expect;
 
-const QuestionType = models.QuestionType;
-const QuestionChoices = models.QuestionChoices;
 const Question = models.Question;
 
 describe('question unit', function () {
-    before(function () {
-        return QuestionType.sync({
-            force: true
-        }).then(function () {
-            return QuestionChoices.sync({
-                force: true
-            });
-        }).then(function () {
-            return Question.sync({
-                force: true
-            });
-        });
-    });
-
-    const examples = [{
-        text: 'Which sports do you like?',
-        type: 'choices',
-        choices: [
-            'Football',
-            'Basketball',
-            'Soccer',
-            'Tennis'
-        ]
-    }, {
-        text: 'What is your hair color?',
-        type: 'choice',
-        choices: [
-            'Black',
-            'Brown',
-            'Blonde',
-            'Other'
-        ]
-    }, {
-        text: 'Where were you born?',
-        type: 'text'
-    }];
-
-    const cleanServerQuestion = function (question) {
-        delete question.id;
-        const choices = question.choices;
-        if (choices && choices.length) {
-            question.choices = _.map(choices, 'text');
-        }
-    };
+    before(shared.setUpFn());
 
     const ids = [];
 
-    it('post/get multiple choice question with multiple answers (checkboxes)', function () {
-        return Question.post(examples[0]).then(function (id) {
-            ids.push(id);
-            return Question.get(id);
-        }).then(function (actual) {
-            cleanServerQuestion(actual);
-            expect(actual).to.deep.equal(examples[0]);
-        });
-    });
+    const qxBasicFn = function (index) {
+        return function () {
+            return Question.createQuestion(examples[index])
+                .then(id => {
+                    ids.push(id);
+                    return Question.getQuestion(id);
+                })
+                .then(actual => {
+                    qxHelper.prepareServerQuestion(actual);
+                    expect(actual).to.deep.equal(examples[index]);
+                })
+                .then(() => {
+                    const text = `Updated ${examples[index]}`;
+                    return Question.updateQuestion(ids[index], { text });
+                })
+                .then(() => {
+                    const id = ids[index];
+                    return Question.getQuestion(id);
+                })
+                .then(actual => {
+                    qxHelper.prepareServerQuestion(actual);
+                    const expected = _.cloneDeep(examples[index]);
+                    expected.text = `Updated ${examples[index]}`;
+                    expect(actual).to.deep.equal(expected);
+                })
+                .then(() => {
+                    const text = examples[index].text;
+                    return Question.updateQuestion(ids[index], { text });
+                });
+        };
+    };
 
-    it('post/get multiple choice question with single answer (drop down)', function () {
-        return Question.post(examples[1]).then(function (id) {
-            ids.push(id);
-            return Question.get(id);
-        }).then(function (actual) {
-            cleanServerQuestion(actual);
-            expect(actual).to.deep.equal(examples[1]);
-        });
-    });
+    for (let i = 0; i < examples.length; ++i) {
+        it(`create/get/update question ${i} type ${examples[i].type}`, qxBasicFn(i));
+    }
 
-    it('post/get text question', function () {
-        return Question.post(examples[2]).then(function (id) {
-            ids.push(id);
-            return Question.get(id);
-        }).then(function (actual) {
-            cleanServerQuestion(actual);
-            expect(actual).to.deep.equal(examples[2]);
-        });
-    });
+    const multipleQuestionsVerify = function (indices = _.range(examples.length)) {
+        return function (questions) {
+            const testIds = _.pullAt(ids.slice(), indices);
+            const samples = _.pullAt(examples.slice(), indices);
+            return helper.buildServerQuestions(samples, testIds)
+                .then(expected => {
+                    expect(questions).to.deep.equal(expected);
+                });
+        };
+    };
 
     it('get multiple questions', function () {
-        return Question.getMultiple(ids).then(function (questions) {
-            return helper.buildServerQuestions(examples, ids).then(function (expected) {
-                expect(questions).to.deep.equal(expected);
-            });
-        });
+        return Question.getQuestions(ids).then(multipleQuestionsVerify());
+    });
+
+    it('get all questions', function () {
+        return Question.getAllQuestions().then(multipleQuestionsVerify());
+    });
+
+    it('remove some question and verify', function () {
+        return Question.deleteQuestion(ids[1])
+            .then(() => Question.deleteQuestion(ids[3]))
+            .then(() => Question.getAllQuestions())
+            .then(multipleQuestionsVerify([0, 2]));
     });
 });

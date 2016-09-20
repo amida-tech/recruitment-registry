@@ -15,6 +15,9 @@ const app = express();
 const jsonParser = bodyParser.json();
 
 if (!config.logging.disable) {
+    expressWinston.requestWhitelist.push('body');
+    expressWinston.responseWhitelist.push('body');
+
     app.use(expressWinston.logger({
         winstonInstance: logger,
         msg: 'HTTP {{req.method}} {{req.url}}',

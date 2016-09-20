@@ -6,16 +6,12 @@ const models = require('./models');
 const swaggerObject = require('./swagger.json');
 const security = require('./security');
 const logger = require('./logger');
+const jsutil = require('./lib/jsutil');
 
 const errHandler = function (err, req, res, next) {
-    if (typeof err !== 'object') {
-        err = {
-            message: 'Unknown error',
-            original: err
-        };
-    }
-
     logger.error(err);
+
+    err = jsutil.errToJSON(err);
 
     if (res.headersSent) {
         return next(err);
