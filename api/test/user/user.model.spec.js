@@ -7,7 +7,7 @@ const sinon = require('sinon');
 const moment = require('moment');
 const _ = require('lodash');
 
-const shared = require('../shared.spec');
+const shared = require('../shared-spec');
 const config = require('../../config');
 const models = require('../../models');
 const userExamples = require('../fixtures/user-examples');

@@ -2,7 +2,7 @@
 
 const _ = require('lodash');
 
-const models = require('../models');
+const models = require('../../models');
 
 exports.buildServerQuestion = function (question, id) {
     return models.sequelize.query('select id, text from question_choices where question_id = :id', {
@@ -34,4 +34,19 @@ exports.buildServerQuestions = function (questions, ids) {
     return models.sequelize.Promise.all(_.range(0, questions.length).map(function (index) {
         return exports.buildServerQuestion(questions[index], ids[index]);
     }));
+};
+
+exports.prepareServerQuestion = function (question) {
+    delete question.id;
+    const choices = question.choices;
+    if (choices && choices.length) {
+        question.choices = _.map(choices, 'text');
+    }
+    return question;
+};
+
+exports.prepareClientQuestions = function (questions, ids, indices) {
+    const testIds = _.pullAt(ids.slice(), indices);
+    const samples = _.pullAt(questions.slice(), indices);
+    return exports.buildServerQuestions(samples, testIds);
 };

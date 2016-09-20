@@ -2,11 +2,11 @@
 
 const _ = require('lodash');
 
-const helper = require('../helpers');
+const qxHelper = require('./question-helper');
 
 exports.buildServerSurveyFromClientSurvey = function (clientSurvey, serverSurvey) {
     const ids = _.map(serverSurvey.questions, 'id');
-    return helper.buildServerQuestions(clientSurvey.questions, ids).then(function (expectedQuestions) {
+    return qxHelper.buildServerQuestions(clientSurvey.questions, ids).then(function (expectedQuestions) {
         const result = {
             id: serverSurvey.id,
             name: clientSurvey.name,
