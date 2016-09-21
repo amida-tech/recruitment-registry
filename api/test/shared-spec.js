@@ -4,6 +4,8 @@ const _ = require('lodash');
 
 const models = require('../models');
 
+const registryExamaples = require('./fixtures/registry-examples');
+
 exports.setUpFn = function () {
     return function () {
         return models.sequelize.sync({
@@ -111,5 +113,13 @@ exports.createSurvey = function (store, qxIndices) {
         return models.Survey.createSurvey(inputSurvey).then(id => {
             store.surveys.push(id);
         });
+    };
+};
+
+exports.createRegistry = function (store) {
+    return function () {
+        const inputRegistry = registryExamaples[0];
+        return models.Registry.createRegistry(inputRegistry)
+            .then(() => store.registryName = inputRegistry.name);
     };
 };

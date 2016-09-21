@@ -24,9 +24,7 @@ exports.createSurvey = function (req, res) {
 exports.getSurveyByName = function (req, res) {
     const userId = req.user.id;
     const name = _.get(req, 'swagger.params.name.value');
-    Survey.getAnsweredSurveyByName(userId, name).then(function (survey) {
-        res.status(200).json(survey);
-    }).catch(function (err) {
-        res.status(401).json(err);
-    });
+    Survey.getAnsweredSurveyByName(userId, name)
+        .then(survey => res.status(200).json(survey))
+        .catch(shared.handleError(res));
 };

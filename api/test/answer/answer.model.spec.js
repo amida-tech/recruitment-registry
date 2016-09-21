@@ -5,7 +5,7 @@ const chai = require('chai');
 const _ = require('lodash');
 
 const models = require('../../models');
-const shared = require('../shared.spec');
+const shared = require('../shared-spec');
 
 const expect = chai.expect;
 

@@ -7,9 +7,9 @@ const _ = require('lodash');
 
 const config = require('../../config');
 
-const shared = require('../shared.integration');
+const shared = require('../shared-integration');
 const userExamples = require('../fixtures/user-examples');
-const qxHelper = require('./question-helper');
+const qxHelper = require('../helper/question-helper');
 const examples = require('../fixtures/question-examples');
 
 const expect = chai.expect;

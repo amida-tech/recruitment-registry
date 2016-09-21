@@ -5,11 +5,12 @@ process.env.NODE_ENV = 'test';
 const _ = require('lodash');
 const chai = require('chai');
 
-const helper = require('../survey/survey-helper');
+const helper = require('../helper/survey-helper');
 
-const shared = require('../shared.integration');
+const shared = require('../shared-integration');
 const userExamples = require('../fixtures/user-examples');
 const surveyExamples = require('../fixtures/survey-examples');
+const registryExamples = require('../fixtures/registry-examples');
 
 const config = require('../../config');
 
@@ -18,6 +19,7 @@ const expect = chai.expect;
 describe('user set-up and login use-case', function () {
     const userExample = userExamples.Alzheimer;
     const surveyExample = surveyExamples.Alzheimer;
+    const registryExample = registryExamples[0];
 
     // -------- set up system (syncAndLoadAlzheimer)
 
@@ -30,7 +32,7 @@ describe('user set-up and login use-case', function () {
 
     it('login as super user', shared.loginFn(store, config.superUser));
 
-    it('post example survey', shared.postSurveyFn(store, surveyExample.survey));
+    it('post example survey', shared.postRegistryFn(store, registryExample));
 
     it('logout as super user', shared.logoutFn(store));
 
@@ -56,7 +58,7 @@ describe('user set-up and login use-case', function () {
 
     it('get profile survey', function (done) {
         store.server
-            .get('/api/v1.0/surveys/empty/Alzheimer')
+            .get('/api/v1.0/registries/profile-survey/Alzheimer')
             .expect(200)
             .end(function (err, res) {
                 if (err) {
@@ -78,7 +80,7 @@ describe('user set-up and login use-case', function () {
             .post('/api/v1.0/registries/user-profile')
             .send({
                 user: userExample,
-                surveyId: survey.id,
+                registryName: survey.name,
                 answers
             })
             .expect(201)
@@ -95,7 +97,7 @@ describe('user set-up and login use-case', function () {
 
     it('verify user profile', function (done) {
         store.server
-            .get('/api/v1.0/registries/user-profile/Alzheimer')
+            .get('/api/v1.0/registries/user-profile')
             .set('Authorization', store.auth)
             .expect(200)
             .end(function (err, res) {
@@ -108,6 +110,7 @@ describe('user set-up and login use-case', function () {
                 const user = result.user;
                 expectedUser.id = user.id;
                 expectedUser.role = 'participant';
+                expectedUser.registryId = user.registryId;
                 delete expectedUser.password;
                 expect(user).to.deep.equal(expectedUser);
 
@@ -132,7 +135,6 @@ describe('user set-up and login use-case', function () {
             .set('Authorization', store.auth)
             .send({
                 user: userUpdates,
-                surveyId: survey.id,
                 answers
             })
             .expect(200, done);
@@ -140,7 +142,7 @@ describe('user set-up and login use-case', function () {
 
     it('verify user profile', function (done) {
         store.server
-            .get('/api/v1.0/registries/user-profile/Alzheimer')
+            .get('/api/v1.0/registries/user-profile')
             .set('Authorization', store.auth)
             .expect(200)
             .end(function (err, res) {
@@ -155,6 +157,7 @@ describe('user set-up and login use-case', function () {
                 const user = result.user;
                 expectedUser.id = user.id;
                 expectedUser.role = 'participant';
+                expectedUser.registryId = user.registryId;
                 delete expectedUser.password;
                 expect(user).to.deep.equal(expectedUser);
 

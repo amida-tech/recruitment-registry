@@ -7,7 +7,7 @@ const sinon = require('sinon');
 const moment = require('moment');
 const _ = require('lodash');
 
-const shared = require('../shared.spec');
+const shared = require('../shared-spec');
 const config = require('../../config');
 const models = require('../../models');
 const userExamples = require('../fixtures/user-examples');
@@ -268,6 +268,7 @@ describe('user unit', function () {
                     const expected = _.cloneDeep(example);
                     expected.id = user.id;
                     delete actual.role;
+                    delete actual.registryId;
                     delete expected.password;
                     expect(actual).to.deep.equal(expected);
                 });
@@ -284,6 +285,7 @@ describe('user unit', function () {
                     const expected = _.cloneDeep(exampleWNull);
                     expected.id = user.id;
                     delete actual.role;
+                    delete actual.registryId;
                     delete expected.password;
                     expect(actual).to.deep.equal(expected);
                 });
