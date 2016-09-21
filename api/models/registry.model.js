@@ -62,17 +62,25 @@ module.exports = function (sequelize, DataTypes) {
             },
             createProfile: function (input) {
                 return sequelize.transaction(function (tx) {
-                    input.user.role = 'participant';
-                    return sequelize.models.user.create(input.user, { transaction: tx })
-                        .then(function (user) {
-                            const answerInput = {
-                                userId: user.id,
-                                surveyId: input.surveyId,
-                                answers: input.answers
-                            };
-                            const answerModel = sequelize.models.answer;
-                            return answerModel.createAnswersTx(answerInput, tx)
-                                .then(() => ({ token: tokener.createJWT(user) }));
+                    return Registry.find({
+                        where: {name: input.registryName},
+                        raw: true,
+                        attribues: ['id', 'profileSurveyId']
+                    })
+                        .then(({id, profileSurveyId}) => {
+                            input.user.role = 'participant';
+                            input.user.registryId = id;
+                            return sequelize.models.user.create(input.user, { transaction: tx })
+                                .then(function (user) {
+                                    const answerInput = {
+                                        userId: user.id,
+                                        surveyId: profileSurveyId,
+                                        answers: input.answers
+                                    };
+                                    const answerModel = sequelize.models.answer;
+                                    return answerModel.createAnswersTx(answerInput, tx)
+                                        .then(() => ({ token: tokener.createJWT(user) }));
+                                });
                         });
                 });
             },
@@ -80,25 +88,42 @@ module.exports = function (sequelize, DataTypes) {
                 return sequelize.transaction(function (tx) {
                     return sequelize.models.user.updateUser(id, input.user, {
                         transaction: tx
-                    }).then(function () {
-                        const answerInput = {
-                            userId: id,
-                            surveyId: input.surveyId,
-                            answers: input.answers
-                        };
-                        return sequelize.models.answer.updateAnswersTx(answerInput, tx);
-                    });
+                    })
+                        .then(() => sequelize.models.user.findById(id, {
+                            raw: true,
+                            attributes: ['registryId']
+                        }, {transaction: tx}))
+                        .then(({registryId}) => sequelize.models.registry.findById(registryId, {
+                            raw: true,
+                            attributes: ['profileSurveyId']
+                        }, {transaction: tx}))
+                        .then(({profileSurveyId}) => {
+                            const answerInput = {
+                                userId: id,
+                                surveyId: profileSurveyId,
+                                answers: input.answers
+                            };
+                            return sequelize.models.answer.updateAnswersTx(answerInput, tx);
+                        });
                 });
             },
             getProfile: function (input) {
-                return sequelize.models.user.getUser(input.userId).then(function (user) {
-                    return sequelize.models.survey.getAnsweredSurveyByName(user.id, input.surveyName).then(function (survey) {
-                        return {
-                            user,
-                            survey
-                        };
+                return sequelize.models.user.getUser(input.userId)
+                    .then(function (user) {
+                        return sequelize.models.registry.findById(user.registryId, {
+                            raw: true,
+                            attributes: ['name']
+                        })
+                            .then(({name}) => {
+                                return sequelize.models.survey.getAnsweredSurveyByName(user.id, name)
+                                    .then(function (survey) {
+                                        return {
+                                            user,
+                                            survey
+                                        };
+                                    });
+                                });
                     });
-                });
             }
         }
     });

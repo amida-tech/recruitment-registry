@@ -97,6 +97,13 @@ module.exports = function (sequelize, DataTypes) {
         resetPasswordExpires: {
             type: DataTypes.DATE,
         },
+        registryId: {
+            type: DataTypes.INTEGER,
+            references: {
+                model: 'registry',
+                key: 'id'
+            }
+        },
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',

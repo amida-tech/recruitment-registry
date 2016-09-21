@@ -26,6 +26,7 @@ const Survey = models.Survey;
 describe('registry unit', function () {
     const userExample = userExamples.Alzheimer;
     const surveyExample = surveyExamples.Alzheimer;
+    const registryExample = examples[0];
 
     before(shared.setUpFn());
 
@@ -81,8 +82,8 @@ describe('registry unit', function () {
         answers = helper.formAnswersToPost(survey, surveyExample.answer);
 
         return Registry.createProfile({
+                registryName: registryExample.name,
                 user: userExample,
-                surveyId: survey.id,
                 answers
             })
             .then(({ token }) => tokener.verifyJWT(token))
@@ -90,21 +91,51 @@ describe('registry unit', function () {
     });
 
     it('verify user profile', function () {
-        return Registry.getProfile({
-            userId,
-            surveyName: surveyExample.survey.name
-        }).then(function (result) {
-            const expectedUser = _.cloneDeep(userExample);
-            const user = result.user;
-            expectedUser.id = user.id;
-            delete expectedUser.password;
-            delete user.createdAt;
-            delete user.updatedAt;
-            expect(user).to.deep.equal(expectedUser);
+        return Registry.getProfile({userId})
+            .then(function (result) {
+                const expectedUser = _.cloneDeep(userExample);
+                const user = result.user;
+                expectedUser.id = user.id;
+                delete expectedUser.password;
+                delete user.createdAt;
+                delete user.updatedAt;
+                expect(user).to.deep.equal(expectedUser);
 
-            const actualSurvey = result.survey;
-            const expectedSurvey = helper.formAnsweredSurvey(survey, answers);
-            expect(actualSurvey).to.deep.equal(expectedSurvey);
-        });
+                const actualSurvey = result.survey;
+                const expectedSurvey = helper.formAnsweredSurvey(survey, answers);
+                expect(actualSurvey).to.deep.equal(expectedSurvey);
+            });
+    });
+
+    it('update user profile', function () {
+        answers = helper.formAnswersToPost(survey, surveyExample.answerUpdate);
+        const userUpdates = {
+            zip: '20999',
+            gender: 'other'
+        };
+        const updateObj = {
+            user: userUpdates,
+            answers
+        };
+        return Registry.updateProfile(userId, updateObj);
+    });
+
+    it('verify user profile', function () {
+        return Registry.getProfile({userId})
+            .then(function (result) {
+                const expectedUser = _.cloneDeep(userExample);
+                const user = result.user;
+                expectedUser.id = user.id;
+                expectedUser.zip = '20999';
+                expectedUser.gender = 'other';
+                delete expectedUser.password;
+                delete user.createdAt;
+                delete user.updatedAt;
+                expect(user).to.deep.equal(expectedUser);
+
+                const actualSurvey = result.survey;
+                const expectedSurvey = helper.formAnsweredSurvey(survey, answers);
+                expect(actualSurvey).to.deep.equal(expectedSurvey);
+            });
     });
 });
