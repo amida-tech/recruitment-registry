@@ -60,14 +60,43 @@ module.exports = function (sequelize, DataTypes) {
                             .then(survey => ({ name, survey }));
                     });
             },
+            getRegistryByName: function (name) {
+                return Registry.find({
+                        where: { name },
+                        raw: true,
+                        attributes: ['id', 'name', 'profileSurveyId']
+                    })
+                    .then((registry) => {
+                        if (!registry) {
+                            return sequelize.Promise.reject(new Error('No such registry.'));
+                        }
+                        const { name, profileSurveyId } = registry;
+                        return sequelize.models.survey.getSurveyById(profileSurveyId)
+                            .then(survey => ({ name, survey }));
+                    });
+            },
+            getRegistryProfileSurvey: function (name) {
+                return Registry.find({
+                        where: { name },
+                        raw: true,
+                        attributes: ['id', 'name', 'profileSurveyId']
+                    })
+                    .then((registry) => {
+                        if (!registry) {
+                            return sequelize.Promise.reject(new Error('No such registry.'));
+                        }
+                        const { profileSurveyId } = registry;
+                        return sequelize.models.survey.getSurveyById(profileSurveyId);
+                    });
+            },
             createProfile: function (input) {
                 return sequelize.transaction(function (tx) {
                     return Registry.find({
-                        where: {name: input.registryName},
-                        raw: true,
-                        attribues: ['id', 'profileSurveyId']
-                    })
-                        .then(({id, profileSurveyId}) => {
+                            where: { name: input.registryName },
+                            raw: true,
+                            attribues: ['id', 'profileSurveyId']
+                        })
+                        .then(({ id, profileSurveyId }) => {
                             input.user.role = 'participant';
                             input.user.registryId = id;
                             return sequelize.models.user.create(input.user, { transaction: tx })
@@ -87,17 +116,17 @@ module.exports = function (sequelize, DataTypes) {
             updateProfile: function (id, input) {
                 return sequelize.transaction(function (tx) {
                     return sequelize.models.user.updateUser(id, input.user, {
-                        transaction: tx
-                    })
+                            transaction: tx
+                        })
                         .then(() => sequelize.models.user.findById(id, {
                             raw: true,
                             attributes: ['registryId']
-                        }, {transaction: tx}))
-                        .then(({registryId}) => sequelize.models.registry.findById(registryId, {
+                        }, { transaction: tx }))
+                        .then(({ registryId }) => sequelize.models.registry.findById(registryId, {
                             raw: true,
                             attributes: ['profileSurveyId']
-                        }, {transaction: tx}))
-                        .then(({profileSurveyId}) => {
+                        }, { transaction: tx }))
+                        .then(({ profileSurveyId }) => {
                             const answerInput = {
                                 userId: id,
                                 surveyId: profileSurveyId,
@@ -111,10 +140,10 @@ module.exports = function (sequelize, DataTypes) {
                 return sequelize.models.user.getUser(input.userId)
                     .then(function (user) {
                         return sequelize.models.registry.findById(user.registryId, {
-                            raw: true,
-                            attributes: ['name']
-                        })
-                            .then(({name}) => {
+                                raw: true,
+                                attributes: ['name']
+                            })
+                            .then(({ name }) => {
                                 return sequelize.models.survey.getAnsweredSurveyByName(user.id, name)
                                     .then(function (survey) {
                                         return {
@@ -122,7 +151,7 @@ module.exports = function (sequelize, DataTypes) {
                                             survey
                                         };
                                     });
-                                });
+                            });
                     });
             }
         }

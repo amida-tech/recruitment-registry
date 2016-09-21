@@ -10,6 +10,7 @@ const helper = require('../helper/survey-helper');
 const shared = require('../shared-integration');
 const userExamples = require('../fixtures/user-examples');
 const surveyExamples = require('../fixtures/survey-examples');
+const registryExamples = require('../fixtures/registry-examples');
 
 const config = require('../../config');
 const mailer = require('../../lib/mailer');
@@ -19,6 +20,7 @@ const expect = chai.expect;
 describe('reset password use-case', function () {
     const userExample = userExamples.Alzheimer;
     const surveyExample = surveyExamples.Alzheimer;
+    const registryExample = registryExamples[0];
 
     // -------- set up system (syncAndLoadAlzheimer)
 
@@ -31,7 +33,7 @@ describe('reset password use-case', function () {
 
     it('login as super user', shared.loginFn(store, config.superUser));
 
-    it('post example survey', shared.postSurveyFn(store, surveyExample.survey));
+    it('post example survey', shared.postRegistryFn(store, registryExample));
 
     it('logout as super user', shared.logoutFn(store));
 
@@ -43,7 +45,7 @@ describe('reset password use-case', function () {
 
     it('get profile survey', function (done) {
         store.server
-            .get('/api/v1.0/surveys/empty/Alzheimer')
+            .get('/api/v1.0/registries/profile-survey/Alzheimer')
             .expect(200)
             .end(function (err, res) {
                 if (err) {
@@ -65,7 +67,7 @@ describe('reset password use-case', function () {
             .post('/api/v1.0/registries/user-profile')
             .send({
                 user: userExample,
-                surveyId: survey.id,
+                registryName: survey.name,
                 answers
             })
             .expect(201, done);

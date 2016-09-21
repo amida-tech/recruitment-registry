@@ -73,3 +73,17 @@ exports.postSurveyFn = function (store, survey) {
             .end(done);
     };
 };
+
+exports.postRegistryFn = function (store, registry) {
+    return function (done) {
+        store.server
+            .post('/api/v1.0/registries')
+            .set('Authorization', store.auth)
+            .send(registry)
+            .expect(201)
+            .expect(function (res) {
+                expect(!!res.body.id).to.equal(true);
+            })
+            .end(done);
+    };
+};

@@ -20,6 +20,20 @@ exports.getRegistry = function (req, res) {
         .catch(shared.handleError(res));
 };
 
+exports.getRegistryByName = function (req, res) {
+    const name = _.get(req, 'swagger.params.name.value');
+    Registry.getRegistryByName(name)
+        .then(result => res.status(200).json(result))
+        .catch(shared.handleError(res));
+};
+
+exports.getRegistryProfileSurvey = function (req, res) {
+    const name = _.get(req, 'swagger.params.name.value');
+    Registry.getRegistryProfileSurvey(name)
+        .then(result => res.status(200).json(result))
+        .catch(shared.handleError(res));
+};
+
 exports.createProfile = function (req, res) {
     Registry.createProfile(req.body)
         .then(tokenObj => res.status(201).json(tokenObj))
@@ -33,12 +47,7 @@ exports.updateProfile = function (req, res) {
 };
 
 exports.getProfile = function (req, res) {
-    const name = _.get(req, 'swagger.params.registryName.value');
-    const input = {
-        userId: req.user.id,
-        surveyName: name
-    };
-    Registry.getProfile(input)
+    Registry.getProfile({ userId: req.user.id })
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };

@@ -54,9 +54,36 @@ describe('registry unit', function () {
         };
     };
 
+    const verifyByNameFn = function (index) {
+        return function () {
+            return Registry.getRegistryByName(examples[index].name)
+                .then(actual => {
+                    expect(actual.name).to.equal(examples[index].name);
+                    return surveyHelper.buildServerSurveyFromClientSurvey(examples[index].survey, actual.survey)
+                        .then(function (expected) {
+                            expect(actual.survey).to.deep.equal(expected);
+                        });
+                });
+        };
+    };
+
+    const verifyProfileSurveyFn = function (index) {
+        return function () {
+            return Registry.getRegistryProfileSurvey(examples[index].name)
+                .then(actual => {
+                    return surveyHelper.buildServerSurveyFromClientSurvey(examples[index].survey, actual)
+                        .then(function (expected) {
+                            expect(actual).to.deep.equal(expected);
+                        });
+                });
+        };
+    };
+
     for (let i = 0; i < examples.length; ++i) {
         it(`create registry ${i}`, registryBasicFn(i));
         it(`get registry ${i} and verify`, verifyFn(i));
+        it(`get registry by name ${i} and verify`, verifyByNameFn(i));
+        it(`get registry ${i} survey and verify`, verifyProfileSurveyFn(i));
     }
 
     let ethnicities;
@@ -91,7 +118,7 @@ describe('registry unit', function () {
     });
 
     it('verify user profile', function () {
-        return Registry.getProfile({userId})
+        return Registry.getProfile({ userId })
             .then(function (result) {
                 const expectedUser = _.cloneDeep(userExample);
                 const user = result.user;
@@ -121,7 +148,7 @@ describe('registry unit', function () {
     });
 
     it('verify user profile', function () {
-        return Registry.getProfile({userId})
+        return Registry.getProfile({ userId })
             .then(function (result) {
                 const expectedUser = _.cloneDeep(userExample);
                 const user = result.user;

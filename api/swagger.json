@@ -416,6 +416,74 @@
                 }
             }
         },
+        "/registries/name/{name}": {
+            "x-swagger-router-controller": "registry.controller",
+            "get": {
+                "summary": "Finds a registry",
+                "operationId": "getRegistryByName",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "name",
+                    "in": "path",
+                    "required": true,
+                    "type": "string"
+                }],
+                "responses": {
+                    "200" : {
+                        "$ref": "#/responses/idSuccess"
+                    },
+                    "400": {
+                        "$ref": "#/responses/badRequest"
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/responses/forbidden"
+                    },
+                    "500": {
+                        "$ref": "#/responses/internal"
+                    }
+
+                }
+            }
+        },
+        "/registries/profile-survey/{name}": {
+            "x-swagger-router-controller": "registry.controller",
+            "get": {
+                "summary": "Finds a registry profile survey",
+                "operationId": "getRegistryProfileSurvey",
+                "parameters": [{
+                    "name": "name",
+                    "in": "path",
+                    "required": true,
+                    "type": "string"
+                }],
+                "responses": {
+                    "200" : {
+                        "description": "Successul response",
+                        "schema": {
+                            "$ref": "#/definitions/survey"
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/responses/badRequest"
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/responses/forbidden"
+                    },
+                    "500": {
+                        "$ref": "#/responses/internal"
+                    }
+
+                }
+            }
+        },
         "/registries/user-profile": {
             "x-swagger-router-controller": "registry.controller",
             "post": {
@@ -476,26 +544,13 @@
                         }
                     }
                 }
-            }
-        },
-        "/registries/user-profile/{registryName}": {
-            "x-swagger-router-controller": "registry.controller",
+            },
             "get": {
-                "summary": "Get user and named survey information",
+                "summary": "Get registry user profile",
                 "operationId": "getProfile",
-                "security": [
-                    {
-                        "participant": []
-                    }
-                ],
-                "parameters": [
-                    {
-                        "name": "registryName",
-                        "in": "path",
-                        "required": true,
-                        "type": "string"
-                    }
-                ],
+                "security": [{
+                    "participant": []
+                }],
                 "responses": {
                     "200": {
                         "description": "Successful response",
@@ -1014,14 +1069,14 @@
             "type": "object",
             "required": [
                 "user",
-                "surveyId"
+                "registryName"
             ],
             "properties": {
                 "user": {
                     "$ref": "#/definitions/user"
                 },
-                "surveyId": {
-                    "type": "integer"
+                "registryName": {
+                    "type": "string"
                 },
                 "answers": {
                     "type": "array",
@@ -1033,16 +1088,10 @@
         },
         "updateUserProfile": {
             "type": "object",
-            "required": [
-                "user",
-                "surveyId"
-            ],
+            "required": ["user"],
             "properties": {
                 "user": {
                     "$ref": "#/definitions/userUpdate"
-                },
-                "surveyId": {
-                    "type": "integer"
                 },
                 "answers": {
                     "type": "array",
