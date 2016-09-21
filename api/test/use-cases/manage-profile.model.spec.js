@@ -7,15 +7,18 @@ const _ = require('lodash');
 
 const helper = require('../helper/survey-helper');
 const models = require('../../models');
+const tokener = require('../../lib/tokener');
 
 const userExamples = require('../fixtures/user-examples');
 const surveyExamples = require('../fixtures/survey-examples');
+//const registryExamples = require('../fixtures/registry-examples');
 
 const expect = chai.expect;
 
 const Ethnicity = models.Ethnicity;
 const User = models.User;
 const Survey = models.Survey;
+const Registry = models.Registry;
 
 describe('user set up unit', function () {
     const userExample = userExamples.Alzheimer;
@@ -51,24 +54,24 @@ describe('user set up unit', function () {
     it('setup user with profile', function () {
         answers = helper.formAnswersToPost(survey, surveyExample.answer);
 
-        return User.register({
-            user: userExample,
-            surveyId: survey.id,
-            answers
-        }).then(function (id) {
-            userId = id;
-        });
+        return Registry.createProfile({
+                user: userExample,
+                surveyId: survey.id,
+                answers
+            })
+            .then(({ token }) => tokener.verifyJWT(token))
+            .then(({ id }) => userId = id);
     });
 
     it('verify user profile', function () {
-        return User.showWithSurvey({
+        return Registry.getProfile({
             userId,
             surveyName: surveyExample.survey.name
         }).then(function (result) {
             const expectedUser = _.cloneDeep(userExample);
             const user = result.user;
             expectedUser.id = user.id;
-            expectedUser.password = user.password;
+            delete expectedUser.password;
             delete user.createdAt;
             delete user.updatedAt;
             expect(user).to.deep.equal(expectedUser);
