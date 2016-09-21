@@ -345,6 +345,77 @@
                 }
             }
         },
+        "/registries": {
+            "x-swagger-router-controller": "registry.controller",
+            "post": {
+                "summary": "Creates a registry",
+                "operationId": "createRegistry",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "newRegistry",
+                    "in": "body",
+                    "description": "Registry information",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/newRegistry"
+                    }
+                }],
+                "responses": {
+                    "201" : {
+                        "$ref": "#/responses/idSuccess"
+                    },
+                    "400": {
+                        "$ref": "#/responses/badRequest"
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/responses/forbidden"
+                    },
+                    "500": {
+                        "$ref": "#/responses/internal"
+                    }
+
+                }
+            }
+        },
+        "/registries/{id}": {
+            "x-swagger-router-controller": "registry.controller",
+            "get": {
+                "summary": "Finds a registry",
+                "operationId": "getRegistry",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "id",
+                    "in": "path",
+                    "required": true,
+                    "type": "integer"
+                }],
+                "responses": {
+                    "200" : {
+                        "$ref": "#/responses/idSuccess"
+                    },
+                    "400": {
+                        "$ref": "#/responses/badRequest"
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/responses/forbidden"
+                    },
+                    "500": {
+                        "$ref": "#/responses/internal"
+                    }
+
+                }
+            }
+        },
         "/registries/user-profile": {
             "x-swagger-router-controller": "registry.controller",
             "post": {
@@ -787,6 +858,24 @@
                     "minLength": 1
                 }
             }
+        },
+        "newRegistry": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "surveyId": {
+                    "type": "integer"
+                },
+                "survey": {
+                    "$ref": "#/definitions/newSurvey"
+                }
+            },
+            "maxProperties": 2
         },
         "choice": {
             "type": "object",
