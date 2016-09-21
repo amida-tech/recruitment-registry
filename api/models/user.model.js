@@ -7,7 +7,6 @@ const crypto = require('crypto');
 const moment = require('moment');
 
 const config = require('../config');
-const tokener = require('../lib/tokener');
 
 const GENDER_MALE = 'male';
 const GENDER_FEMALE = 'female';
@@ -165,46 +164,6 @@ module.exports = function (sequelize, DataTypes) {
             },
             genders: function () {
                 return [GENDER_MALE, GENDER_FEMALE, GENDER_OTHER];
-            },
-            register: function (input) {
-                return sequelize.transaction(function (tx) {
-                    input.user.role = 'participant';
-                    return User.create(input.user, { transaction: tx })
-                        .then(function (user) {
-                            const answerInput = {
-                                userId: user.id,
-                                surveyId: input.surveyId,
-                                answers: input.answers
-                            };
-                            const answerModel = sequelize.models.answer;
-                            return answerModel.createAnswersTx(answerInput, tx)
-                                .then(() => ({ token: tokener.createJWT(user) }));
-                        });
-                });
-            },
-            updateRegister: function (id, input) {
-                return sequelize.transaction(function (tx) {
-                    return User.updateUser(id, input.user, {
-                        transaction: tx
-                    }).then(function () {
-                        const answerInput = {
-                            userId: id,
-                            surveyId: input.surveyId,
-                            answers: input.answers
-                        };
-                        return sequelize.models.answer.updateAnswersTx(answerInput, tx);
-                    });
-                });
-            },
-            showWithSurvey: function (input) {
-                return User.getUser(input.userId).then(function (user) {
-                    return sequelize.models.survey.getAnsweredSurveyByName(user.id, input.surveyName).then(function (survey) {
-                        return {
-                            user,
-                            survey
-                        };
-                    });
-                });
             },
             updateUser: function (id, values, options) {
                 options = options || {};

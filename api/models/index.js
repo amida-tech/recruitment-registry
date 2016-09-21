@@ -29,6 +29,7 @@ const Question = sequelize.import('./question.model');
 const SurveyQuestion = sequelize.import('./survey-question.model');
 const Answer = sequelize.import('./answer.model');
 const Survey = sequelize.import('./survey.model');
+const Registry = sequelize.import('./registry.model');
 
 module.exports = {
     Sequelize,
@@ -40,5 +41,6 @@ module.exports = {
     Question,
     SurveyQuestion,
     Answer,
-    Survey
+    Survey,
+    Registry
 };
