@@ -238,7 +238,7 @@
                 }
             }
         },
-        "/surveys/empty/{name}": {
+        "/surveys/name/{name}": {
             "x-swagger-router-controller": "survey.controller",
             "get": {
                 "summary": "Get named survey information",
@@ -261,7 +261,7 @@
                 }
             }
         },
-        "/surveys/{name}": {
+        "/surveys/answered/name/{name}": {
             "x-swagger-router-controller": "survey.controller",
             "get": {
                 "summary": "Get named survey with answers",

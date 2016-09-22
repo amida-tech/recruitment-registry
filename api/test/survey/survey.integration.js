@@ -55,7 +55,7 @@ describe('survey integration', function () {
 
     it('get empty survey', function (done) {
         store.server
-            .get('/api/v1.0/surveys/empty/Example')
+            .get('/api/v1.0/surveys/name/Example')
             .expect(200)
             .expect(function (res) {
                 expect(!!res.body.id).to.equal(true);
@@ -95,7 +95,7 @@ describe('survey integration', function () {
 
     it('get answered survey', function (done) {
         store.server
-            .get('/api/v1.0/surveys/Example')
+            .get('/api/v1.0/surveys/answered/name/Example')
             .set('Authorization', store.auth)
             .expect(200)
             .end(function (err, res) {
