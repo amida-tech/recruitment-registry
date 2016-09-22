@@ -14,7 +14,7 @@ exports.getSurveyById = function (req, res) {
         .catch(shared.handleError(res));
 };
 
-exports.getEmptySurvey = function (req, res) {
+exports.getSurveyByName = function (req, res) {
     const name = _.get(req, 'swagger.params.name.value');
     Survey.getSurveyByName(name)
         .then(survey => res.status(200).json(survey))
@@ -34,7 +34,7 @@ exports.listSurveys = function (req, res) {
         .catch(shared.handleError(res));
 };
 
-exports.getSurveyByName = function (req, res) {
+exports.getAnsweredSurveyByName = function (req, res) {
     const userId = req.user.id;
     const name = _.get(req, 'swagger.params.name.value');
     Survey.getAnsweredSurveyByName(userId, name)
