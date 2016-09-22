@@ -41,23 +41,26 @@ exports.createUser = function (store) {
 };
 
 exports.genNewQuestion = (function () {
-    const types = ['text', 'choice', 'choices', 'bool'];
+    const types = ['text', 'choice', 'choices', 'bool', 'choicesplus'];
     let index = -1;
     let choiceIndex = 1;
 
     return function () {
         ++index;
-        const type = types[index % 4];
+        const type = types[index % 5];
         const question = {
             text: `text_${index}`,
             type
         };
-        if ((type === 'choice') || (type === 'choices')) {
+        if ((type === 'choice') || (type === 'choices') || (type === 'choicesplus')) {
             question.choices = [];
             ++choiceIndex;
             for (let i = choiceIndex; i < choiceIndex + 5; ++i) {
                 question.choices.push(`choice_${i}`);
             }
+        }
+        if (type === 'choicesplus') {
+            question.additionalText = `additional_text_${index}`;
         }
         return question;
     };
@@ -73,7 +76,7 @@ exports.createQuestion = function (store) {
                 choices: null,
                 type
             };
-            if ((type === 'choices') || (type === 'choice')) {
+            if ((type === 'choices') || (type === 'choice') || (type === 'choicesplus')) {
                 return models.QuestionChoices.findAll({
                     where: {
                         questionId: id
