@@ -9,6 +9,7 @@ const models = require('../../models');
 
 const userExamples = require('../fixtures/user-examples');
 const surveyExamples = require('../fixtures/survey-examples');
+const shared = require('../shared-spec.js');
 
 const expect = chai.expect;
 
@@ -33,6 +34,44 @@ describe('survey unit', function () {
     });
 
     let serverSurvey;
+
+    const store = {
+        inputSurveys: [],
+        surveys: []
+    };
+
+    it('verify no surveys', function () {
+        return Survey.listSurveys()
+            .then((surveys) => {
+                expect(surveys).to.have.length(0);
+            });
+    });
+
+    const createVerifySurveyFn = function (index) {
+        return function () {
+            const inputSurvey = shared.genNewSurvey(true);
+            store.inputSurveys.push(inputSurvey);
+            return Survey.createSurvey(inputSurvey)
+                .then(id => Survey.getSurveyById(id))
+                .then((serverSurvey) => {
+                    return helper.buildServerSurveyFromClientSurvey(inputSurvey, serverSurvey)
+                        .then(expected => {
+                            expect(serverSurvey).to.deep.equal(expected);
+                            store.surveys.push(serverSurvey);
+                        });
+                })
+                .then(() => Survey.listSurveys())
+                .then(surveys => {
+                    expect(surveys).to.have.length(index + 1);
+                    const expected = store.surveys.map(({ id, name }) => ({ id, name }));
+                    expect(surveys).to.deep.equal(expected);
+                });
+        };
+    };
+
+    for (let i = 0; i < 4; ++i) {
+        it(`create/verify survey ${i} and list all`, createVerifySurveyFn(i));
+    }
 
     it('post/get survey', function () {
         return Survey.createSurvey(example.survey).then(function (id) {

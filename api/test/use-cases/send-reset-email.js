@@ -25,7 +25,7 @@ describe('user set-up and login use-case', function () {
 
     it('login as super user', shared.loginFn(store, config.superUser));
 
-    it('post example survey', shared.postSurveyFn(store, surveyExample.survey));
+    it('create registry', shared.postSurveyFn(store, surveyExample.survey));
 
     // --------
 
