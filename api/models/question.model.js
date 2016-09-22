@@ -2,11 +2,11 @@
 
 const _ = require('lodash');
 
-const query = 'select question.id as id, question.text as text, question_type.name as type from question, question_type where question.id = :id and question.type = question_type.id';
+const query = 'select question.id as id, question.text as text, question.type as type from question where question.id = :id';
 const queryChoices = 'select id, text from question_choices where question_id = :id order by line';
-const queryMultiple = 'select question.id as id, question.text as text, question_type.name as type from question, question_type where question.deleted_at is null and question.id in (:ids) and question.type = question_type.id';
+const queryMultiple = 'select question.id as id, question.text as text, question.type as type from question where question.deleted_at is null and question.id in (:ids)';
 const queryChoicesMultiple = 'select id, text, question_id as qid from question_choices where question_id in (:ids) order by line';
-const queryAll = 'select question.id as id, question.text as text, question_type.name as type from question, question_type where question.deleted_at is null and question.type = question_type.id order by id';
+const queryAll = 'select question.id as id, question.text as text, question.type as type from question where question.deleted_at is null order by id';
 const queryChoicesAll = 'select id, text, question_id as qid from question_choices order by line';
 
 module.exports = function (sequelize, DataTypes) {
@@ -15,20 +15,12 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.TEXT
         },
         type: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.TEXT,
             allowNull: false,
             references: {
                 model: 'question_type',
-                key: 'id'
+                key: 'name'
             },
-            get: function () {
-                const id = this.getDataValue('type');
-                return sequelize.models.question_type.nameById(id);
-            },
-            set: function (type) {
-                const id = sequelize.models.question_type.idByName(type);
-                this.setDataValue('type', id);
-            }
         },
         createdAt: {
             type: DataTypes.DATE,

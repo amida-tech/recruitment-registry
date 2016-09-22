@@ -129,7 +129,7 @@ module.exports = function (sequelize, DataTypes) {
                         };
                     }
                 };
-                return sequelize.query('select a.value as value, qt.name as type, q.id as qid from answer a, question q, question_type qt where a.user_id = :userid and a.survey_id = :surveyid and a.question_id = q.id and q.type = qt.id', {
+                return sequelize.query('select a.value as value, q.type as type, q.id as qid from answer a, question q where a.user_id = :userid and a.survey_id = :surveyid and a.question_id = q.id', {
                     replacements: {
                         userid: input.userId,
                         surveyid: input.surveyId
