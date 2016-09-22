@@ -4,6 +4,14 @@ const _ = require('lodash');
 
 module.exports = function (sequelize, DataTypes) {
     const QX_TYPES_W_CHOICES = ['choice', 'choices', 'choicesplus'];
+    const QX_FIND_ATTRS = ['id', 'text', 'type', 'additionalText'];
+
+    const cleanQx = function (question) {
+        if ((question.type !== 'choicesplus') || (question.additionalText === null)) {
+            delete question.additionalText;
+        }
+        return question;
+    };
 
     const Question = sequelize.define('question', {
         text: {
@@ -16,6 +24,10 @@ module.exports = function (sequelize, DataTypes) {
                 model: 'question_type',
                 key: 'name'
             },
+        },
+        additionalText: {
+            type: DataTypes.TEXT,
+            field: 'additional_text'
         },
         createdAt: {
             type: DataTypes.DATE,
@@ -36,8 +48,8 @@ module.exports = function (sequelize, DataTypes) {
         deletedAt: 'deletedAt',
         paranoid: true,
         classMethods: {
-            createQuestionTx: function ({ text, type, choices }, tx) {
-                return Question.create({ text, type }, { transaction: tx })
+            createQuestionTx: function ({ text, type, choices, additionalText }, tx) {
+                return Question.create({ text, type, additionalText }, { transaction: tx })
                     .then(({ id }) => {
                         if (choices && choices.length) {
                             return sequelize.Promise.all(choices.map(function (c, index) {
@@ -60,12 +72,12 @@ module.exports = function (sequelize, DataTypes) {
                 });
             },
             getQuestion: function (id) {
-                return Question.findById(id, { raw: true, attributes: ['id', 'text', 'type'] })
+                return Question.findById(id, { raw: true, attributes: QX_FIND_ATTRS })
                     .then(question => {
                         if (!question) {
                             return sequelize.Promise.reject('No such question');
                         }
-                        return question;
+                        return cleanQx(question);
                     })
                     .then(question => {
                         if (QX_TYPES_W_CHOICES.indexOf(question.type) < 0) {
@@ -97,7 +109,7 @@ module.exports = function (sequelize, DataTypes) {
                         if (!question) {
                             return sequelize.Promise.reject('No such question');
                         }
-                        return questions;
+                        return questions.map(cleanQx);
                     })
                     .then(questions => {
                         return sequelize.models.question_choices.findAll(choiceOptions)
@@ -124,7 +136,7 @@ module.exports = function (sequelize, DataTypes) {
                 const options = {
                     where: { id: { in: ids } },
                     raw: true,
-                    attributes: ['id', 'text', 'type'],
+                    attributes: QX_FIND_ATTRS,
                     order: 'id'
                 };
                 const choicesOptions = {
@@ -139,7 +151,7 @@ module.exports = function (sequelize, DataTypes) {
             getAllQuestions: function () {
                 const options = {
                     raw: true,
-                    attributes: ['id', 'text', 'type'],
+                    attributes: QX_FIND_ATTRS,
                     order: 'id'
                 };
                 const choicesOptions = {

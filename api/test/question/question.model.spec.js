@@ -76,6 +76,6 @@ describe('question unit', function () {
         return Question.deleteQuestion(ids[1])
             .then(() => Question.deleteQuestion(ids[3]))
             .then(() => Question.getAllQuestions())
-            .then(questionsVerifyFn([0, 2]));
+            .then(questionsVerifyFn([0, 2, 4]));
     });
 });

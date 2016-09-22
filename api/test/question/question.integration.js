@@ -10,11 +10,14 @@ const config = require('../../config');
 const shared = require('../shared-integration');
 const userExamples = require('../fixtures/user-examples');
 const qxHelper = require('../helper/question-helper');
-const examples = require('../fixtures/question-examples');
+let examples = require('../fixtures/question-examples');
 
 const expect = chai.expect;
 
 describe('question integration', function () {
+    examples = examples.slice();
+    examples.splice(4, 1);
+
     const user = userExamples.Example;
 
     const store = {
