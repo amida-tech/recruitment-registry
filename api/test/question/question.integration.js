@@ -10,14 +10,11 @@ const config = require('../../config');
 const shared = require('../shared-integration');
 const userExamples = require('../fixtures/user-examples');
 const qxHelper = require('../helper/question-helper');
-let examples = require('../fixtures/question-examples');
+const examples = require('../fixtures/question-examples');
 
 const expect = chai.expect;
 
 describe('question integration', function () {
-    examples = examples.slice();
-    examples.splice(4, 1);
-
     const user = userExamples.Example;
 
     const store = {
@@ -170,7 +167,7 @@ describe('question integration', function () {
                 if (err) {
                     return done(err);
                 }
-                qxHelper.prepareClientQuestions(examples, ids, [1, 3])
+                qxHelper.prepareClientQuestions(examples, ids, [1, 3, 4])
                     .then(expected => {
                         expect(res.body).to.deep.equal(expected);
                         done();
