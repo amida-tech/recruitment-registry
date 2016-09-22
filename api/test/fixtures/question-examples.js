@@ -24,4 +24,14 @@ module.exports = [{
 }, {
     text: 'Do you have pets?',
     type: 'bool'
+}, {
+    text: 'How did you hear about us?',
+    type: 'choicesplus',
+    choices: [
+        'TV',
+        'Newspaper',
+        'Internet',
+        'Friends'
+    ],
+    additionalText: 'Other'
 }];

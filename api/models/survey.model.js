@@ -96,7 +96,7 @@ module.exports = function (sequelize, DataTypes) {
             listSurveys: function () {
                 return Survey.findAll({ raw: true, attributes: ['id', 'name'], order: 'id' });
             },
-            getEmptySurvey: function (query, replacements) {
+            getSurvey: function (query, replacements) {
                 return sequelize.query(query, {
                     replacements,
                     type: sequelize.QueryTypes.SELECT
@@ -124,13 +124,13 @@ module.exports = function (sequelize, DataTypes) {
             },
             getSurveyById: function (id) {
                 const query = 'select id, name from survey where id = :id';
-                return Survey.getEmptySurvey(query, {
+                return Survey.getSurvey(query, {
                     id
                 });
             },
             getSurveyByName: function (name) {
                 const query = 'select id, name from survey where name = :name';
-                return Survey.getEmptySurvey(query, {
+                return Survey.getSurvey(query, {
                     name
                 });
             },

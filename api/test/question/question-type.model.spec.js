@@ -13,41 +13,29 @@ const QuestionType = models.QuestionType;
 
 describe('question-type unit', function () {
     before(function () {
-        return models.sequelize.sync({
-            force: true
-        });
+        return models.sequelize.sync({ force: true });
     });
 
-    it('default names', function () {
+    it('verify unforced sync keeps existing types', function () {
         return QuestionType.findAll({
-            raw: true
-        }).then(function (result) {
-            const expected = QuestionType.possibleNames().sort();
-            const actual = _.map(result, 'name').sort();
-            expect(actual).to.deep.equal(expected);
-            const name1st = QuestionType.possibleNames()[1];
-            expect(QuestionType.idByName(name1st)).to.equal(2);
-            expect(QuestionType.nameById(2)).to.equal(name1st);
-        });
-    });
-
-    it('sync without force keeps default names', function () {
-        const possibleNames = QuestionType.possibleNames();
-        const removeName = possibleNames.splice(0, 1)[0];
-        return QuestionType.destroy({
-            where: {
-                name: removeName
-            }
-        }).then(function () {
-            return QuestionType.sync();
-        }).then(function () {
-            return QuestionType.findAll({
-                raw: true
+                raw: true,
+                attributes: ['name']
+            })
+            .then(result => _.map(result, 'name').sort())
+            .then(types => {
+                const rmName = types.splice(1, 1);
+                return QuestionType.destroy({ where: { name: rmName } })
+                    .then(() => QuestionType.sync())
+                    .then(() => {
+                        return QuestionType.findAll({
+                            raw: true,
+                            attributes: ['name']
+                        });
+                    })
+                    .then(result => _.map(result, 'name').sort())
+                    .then(newTypes => {
+                        expect(newTypes).to.deep.equal(types);
+                    });
             });
-        }).then(function (result) {
-            const expected = possibleNames.sort();
-            const actual = _.map(result, 'name').sort();
-            expect(actual).to.deep.equal(expected);
-        });
     });
 });

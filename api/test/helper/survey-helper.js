@@ -28,11 +28,14 @@ exports.formAnswersToPost = function (survey, answersSpec) {
                 entry.answer.choices = spec.choices.map(function (cindex) {
                     return questions[index].choices[cindex].id;
                 });
-            } else if (spec.hasOwnProperty('choice')) {
+            }
+            if (spec.hasOwnProperty('choice')) {
                 entry.answer.choice = questions[index].choices[spec.choice].id;
-            } else if (spec.hasOwnProperty('textValue')) {
+            }
+            if (spec.hasOwnProperty('textValue')) {
                 entry.answer.textValue = spec.textValue;
-            } else if (spec.hasOwnProperty('boolValue')) {
+            }
+            if (spec.hasOwnProperty('boolValue')) {
                 entry.answer.boolValue = spec.boolValue;
             }
             r.push(entry);

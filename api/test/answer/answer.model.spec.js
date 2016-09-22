@@ -72,6 +72,7 @@ describe('answer unit', function () {
                 };
             },
             choices: function (question) {
+                ++answerIndex;
                 choicesCountIndex = (choicesCountIndex + 1) % 3;
                 const choices = _.range(choicesCountIndex + 1).map(function () {
                     ++answerIndex;
@@ -84,6 +85,11 @@ describe('answer unit', function () {
                         choices: _.sortBy(choices)
                     }
                 };
+            },
+            choicesplus: function (question) {
+                const result = this.choices(question);
+                result.answer.textValue = `text_${answerIndex}`;
+                return result;
             }
         };
 
@@ -101,16 +107,18 @@ describe('answer unit', function () {
                 surveyId: store.surveys[surveyIndex],
                 answers
             };
-            return models.Answer.createAnswers(input).then(function () {
-                return models.Answer.getSurveyAnswers({
-                    userId: store.users[userIndex],
-                    surveyId: store.surveys[surveyIndex]
-                }).then(function (result) {
-                    const expected = _.sortBy(answers, 'questionId');
-                    const actual = _.sortBy(result, 'questionId');
-                    expect(actual).to.deep.equal(expected);
+            return models.Answer.createAnswers(input)
+                .then(function () {
+                    return models.Answer.getSurveyAnswers({
+                            userId: store.users[userIndex],
+                            surveyId: store.surveys[surveyIndex]
+                        })
+                        .then(function (result) {
+                            const expected = _.sortBy(answers, 'questionId');
+                            const actual = _.sortBy(result, 'questionId');
+                            expect(actual).to.deep.equal(expected);
+                        });
                 });
-            });
         };
     };
 

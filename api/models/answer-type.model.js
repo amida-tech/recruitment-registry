@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    const QuestionType = sequelize.define('question_type', {
+    const AnswerType = sequelize.define('answer_type', {
         name: {
             type: DataTypes.TEXT,
             allowNull: false,
@@ -17,13 +17,13 @@ module.exports = function (sequelize, DataTypes) {
         hooks: {
             afterSync: function (options) {
                 if (options.force) {
-                    const names = ['text', 'choice', 'choices', 'bool', 'choicesplus'];
-                    const ps = names.map(name => QuestionType.create({ name }));
+                    const names = ['choice', 'text', 'bool'];
+                    const ps = names.map(name => AnswerType.create({ name }));
                     return sequelize.Promise.all(ps);
                 }
             }
         }
     });
 
-    return QuestionType;
+    return AnswerType;
 };

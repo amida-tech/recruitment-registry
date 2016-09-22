@@ -77,7 +77,7 @@ exports.Alzheimer = {
         }, {
             content: {
                 text: 'How did you hear about us?',
-                type: 'choices',
+                type: 'choicesplus',
                 choices: [
                     'TV',
                     'Radio',
@@ -87,7 +87,8 @@ exports.Alzheimer = {
                     'Caregiver',
                     'Friend/Family member',
                     'Community Event',
-                ]
+                ],
+                additionalText: 'Other source'
             }
         }, {
             content: {
@@ -108,7 +109,8 @@ exports.Alzheimer = {
     answer: [{
         boolValue: true
     }, {
-        choices: [0, 5]
+        choices: [0, 5],
+        textValue: 'Internet'
     }, {
         choices: [1]
     }, {
@@ -117,7 +119,8 @@ exports.Alzheimer = {
     answerUpdate: [{
         boolValue: true
     }, {
-        choices: [2, 3]
+        choices: [2, 3],
+        textValue: 'Metro Ad'
     }, {
         choices: [0, 1]
     }, {

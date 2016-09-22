@@ -269,7 +269,7 @@
             "x-swagger-router-controller": "survey.controller",
             "get": {
                 "summary": "Get named survey information",
-                "operationId": "getEmptySurvey",
+                "operationId": "getSurveyByName",
                 "parameters": [{
                     "name": "name",
                     "in": "path",
@@ -293,7 +293,7 @@
             "x-swagger-router-controller": "survey.controller",
             "get": {
                 "summary": "Get named survey with answers",
-                "operationId": "getSurveyByName",
+                "operationId": "getAnsweredSurveyByName",
                 "security": [{
                     "participant": []
                 }],
@@ -1022,7 +1022,7 @@
                 }
             },
             "minProperties": 1,
-            "maxProperties": 1
+            "maxProperties": 2
         },
         "question": {
             "type": "object",

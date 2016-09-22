@@ -167,7 +167,7 @@ describe('question integration', function () {
                 if (err) {
                     return done(err);
                 }
-                qxHelper.prepareClientQuestions(examples, ids, [1, 3])
+                qxHelper.prepareClientQuestions(examples, ids, [1, 3, 4])
                     .then(expected => {
                         expect(res.body).to.deep.equal(expected);
                         done();
