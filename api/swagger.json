@@ -185,86 +185,133 @@
             "post": {
                 "summary": "Creates a new survey",
                 "operationId": "createSurvey",
-                "security": [
-                    {
-                        "admin": []
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "newSurvey",
+                    "in": "body",
+                    "description": "Definition of a new survey.  Existing questions have 'id' only and new questions have 'content' only.",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/newSurvey"
                     }
-                ],
-                "parameters": [
-                    {
-                        "name": "newSurvey",
-                        "in": "body",
-                        "description": "Definition of a new survey.  Existing questions have 'id' only and new questions have 'content' only.",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/newSurvey"
-                        }
-                    }
-                ],
+                }],
                 "responses": {
                     "201": {
-                        "description": "Successful response",
+                        "$ref": "#/responses/idSuccess"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "get": {
+                "summary": "Lists all surveys",
+                "description": "Only returns id and name fields.",
+                "operationId": "listSurveys",
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response.",
                         "schema": {
-                            "description": "Survey id",
-                            "type": "object",
-                            "properties": {
-                                "id": {
-                                    "type": "integer"
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "required": ["id", "name"],
+                                "properties": {
+                                    "id": {
+                                        "type": "integer"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
                                 }
                             }
-
                         }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
                     }
                 }
             }
         },
-        "/surveys/empty/{name}": {
+        "/surveys/{id}": {
+            "x-swagger-router-controller": "survey.controller",
+            "get": {
+                "summary": "Gets the survey",
+                "operationId": "getSurveyById",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "id",
+                    "in": "path",
+                    "required": true,
+                    "type": "integer"
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successul response",
+                        "schema": {
+                            "$ref": "#/definitions/survey"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/surveys/name/{name}": {
             "x-swagger-router-controller": "survey.controller",
             "get": {
                 "summary": "Get named survey information",
                 "operationId": "getEmptySurvey",
-                "parameters": [
-                    {
-                        "name": "name",
-                        "in": "path",
-                        "required": true,
-                        "type": "string"
-                    }
-                ],
+                "parameters": [{
+                    "name": "name",
+                    "in": "path",
+                    "required": true,
+                    "type": "string"
+                }],
                 "responses": {
                     "200": {
                         "description": "Successul response",
                         "schema": {
                             "$ref": "#/definitions/survey"
                         }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
                     }
                 }
             }
         },
-        "/surveys/{name}": {
+        "/surveys/answered/name/{name}": {
             "x-swagger-router-controller": "survey.controller",
             "get": {
                 "summary": "Get named survey with answers",
                 "operationId": "getSurveyByName",
-                "security": [
-                    {
-                        "participant": []
-                    }
-                ],
-                "parameters": [
-                    {
-                        "name": "name",
-                        "in": "path",
-                        "required": true,
-                        "type": "string"
-                    }
-                ],
+                "security": [{
+                    "participant": []
+                }],
+                "parameters": [{
+                    "name": "name",
+                    "in": "path",
+                    "required": true,
+                    "type": "string"
+                }],
                 "responses": {
                     "200": {
                         "description": "Successul response",
                         "schema": {
                             "$ref": "#/definitions/survey"
                         }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
                     }
                 }
             }
@@ -778,6 +825,12 @@
         },
         "unprocessable": {
             "description": "Request cannot be fullfilled",
+            "schema": {
+                "$ref": "#/definitions/error"
+            }
+        },
+        "genericError": {
+            "description": "Error response",
             "schema": {
                 "$ref": "#/definitions/error"
             }

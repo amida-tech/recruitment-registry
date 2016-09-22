@@ -93,6 +93,9 @@ module.exports = function (sequelize, DataTypes) {
                     return Survey.createSurveyTx(survey, tx);
                 });
             },
+            listSurveys: function () {
+                return Survey.findAll({ raw: true, attributes: ['id', 'name'], order: 'id' });
+            },
             getEmptySurvey: function (query, replacements) {
                 return sequelize.query(query, {
                     replacements,

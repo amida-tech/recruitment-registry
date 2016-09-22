@@ -33,7 +33,7 @@ describe('reset password use-case', function () {
 
     it('login as super user', shared.loginFn(store, config.superUser));
 
-    it('post example survey', shared.postRegistryFn(store, registryExample));
+    it('create registry', shared.postRegistryFn(store, registryExample));
 
     it('logout as super user', shared.logoutFn(store));
 

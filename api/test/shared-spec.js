@@ -96,11 +96,13 @@ exports.createQuestion = function (store) {
 exports.genNewSurvey = (function () {
     let index = -1;
 
-    return function () {
+    return function (withQuestions) {
         ++index;
-        return {
-            name: `name_${index}`
-        };
+        const result = { name: `name_${index}` };
+        if (withQuestions) {
+            result.questions = _.range(5).map(() => ({ content: exports.genNewQuestion() }));
+        }
+        return result;
     };
 })();
 

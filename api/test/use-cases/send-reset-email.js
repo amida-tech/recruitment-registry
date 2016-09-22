@@ -25,7 +25,7 @@ describe('user set-up and login use-case', function () {
 
     it('login as super user', shared.loginFn(store, config.superUser));
 
-    it('post example survey', shared.postSurveyFn(store, surveyExample.survey));
+    it('create registry', shared.postSurveyFn(store, surveyExample.survey));
 
     // --------
 
@@ -35,7 +35,7 @@ describe('user set-up and login use-case', function () {
 
     it('get profile survey', function (done) {
         store.server
-            .get('/api/v1.0/surveys/empty/Alzheimer')
+            .get('/api/v1.0/surveys/name/Alzheimer')
             .expect(200)
             .end(function (err, res) {
                 if (err) {
