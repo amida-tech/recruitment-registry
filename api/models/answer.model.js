@@ -133,6 +133,11 @@ module.exports = function (sequelize, DataTypes) {
                     return Answer.createAnswersTx(input, tx);
                 });
             },
+            updateAnswers: function (input) {
+                return sequelize.transaction(function (tx) {
+                    return Answer.updateAnswersTx(input, tx);
+                });
+            },
             getSurveyAnswers: function (input) {
                 const generateAnswer = {
                     text: entries => ({ textValue: entries[0].value }),
