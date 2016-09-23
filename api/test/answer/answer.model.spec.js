@@ -29,20 +29,13 @@ describe('answer unit', function () {
         it(`create question ${i}`, shared.createQuestion(store));
     }
 
-    const surveyQuestions = [
-        [0, 1, 2, 3, 4],
-        [4, 5, 6, 0],
-        [7, 8, 9, 10, 11, 12],
-        [9, 11, 13, 6],
-        [14, 15, 16, 17, 18, 19]
-    ];
-
     const testQuestions = [{
         survey: [0, 1, 2, 3, 4],
         answerSequences: [
             [
                 [0, 1, 2, 3, 4],
-                [0, 1, 2, 3, 4]
+                [0, 1, 2, 3, 4],
+                [-1, -2]
             ]
         ]
     }, {
@@ -50,7 +43,8 @@ describe('answer unit', function () {
         answerSequences: [
             [
                 [4, 5, 6, 0],
-                [4, -6]
+                [4, -6],
+                [6, 0]
             ]
         ]
     }, {
@@ -58,7 +52,8 @@ describe('answer unit', function () {
         answerSequences: [
             [
                 [8, 10, 11, 12],
-                [7, 10, -12]
+                [7, 10, -12],
+                [9, 10, 11, -8]
             ]
         ]
     }, {
@@ -66,11 +61,13 @@ describe('answer unit', function () {
         answerSequences: [
             [
                 [9, 13],
-                [6, 11]
+                [6, 11],
+                [-9, 11]
             ],
             [
                 [9, 11, 13, 6],
-                [9, 11, -6]
+                [9, 11, -6],
+                [11, 13]
             ]
         ]
     }, {
@@ -78,12 +75,13 @@ describe('answer unit', function () {
         answerSequences: [
             [
                 [14, 15, 16, 17, 18, 19],
-                [-15, 16, -17, -19]
+                [-15, 16, -17, -19],
+                [14, 17, 19]
             ]
         ]
     }];
 
-    surveyQuestions.forEach((surveyQuestion, index) => {
+    _.map(testQuestions, 'survey').forEach((surveyQuestion, index) => {
         return it(`create survey ${index}`, shared.createSurvey(store, surveyQuestion));
     });
 
@@ -190,12 +188,12 @@ describe('answer unit', function () {
         };
     };
 
-    it('user 0 answers survey 0 create full', createTestFn(0, 0, [0, 1, 2, 3, 4], 'a'));
-    it('user 1 answers survey 1 create full', createTestFn(1, 1, [4, 5, 6, 0], 'b'));
-    it('user 2 answers survey 2 create partial', createTestFn(2, 2, [8, 10, 11, 12], 'c'));
-    it('user 3 answers survey 3 create partial', createTestFn(3, 3, [9, 13], 'd'));
-    it('user 2 answers survey 4 create full', createTestFn(2, 4, [14, 15, 16, 17, 18, 19], 'e'));
-    it('user 0 answers survey 3 create full', createTestFn(0, 3, [9, 11, 13, 6], 'f'));
+    it('user 0 answers survey 0 1st time', createTestFn(0, 0, testQuestions[0].answerSequences[0][0], 'a'));
+    it('user 1 answers survey 1 1st time', createTestFn(1, 1, testQuestions[1].answerSequences[0][0], 'b'));
+    it('user 2 answers survey 2 1st time', createTestFn(2, 2, testQuestions[2].answerSequences[0][0], 'c'));
+    it('user 3 answers survey 3 1st time', createTestFn(3, 3, testQuestions[3].answerSequences[0][0], 'd'));
+    it('user 2 answers survey 4 1st time', createTestFn(2, 4, testQuestions[4].answerSequences[0][0], 'e'));
+    it('user 0 answers survey 3 1st time', createTestFn(0, 3, testQuestions[3].answerSequences[1][0], 'f'));
 
     const pullExpectedAnswers = function (key) {
         const answersSpec = store.hxAnswers[key];
@@ -234,10 +232,17 @@ describe('answer unit', function () {
         };
     };
 
-    it('user 0 answers survey 0 answer 1', updateTestFn(0, 0, testQuestions[0].answerSequences[0][1], 'a'));
-    it('user 1 answers survey 1 answer 1', updateTestFn(1, 1, testQuestions[1].answerSequences[0][1], 'b'));
-    it('user 2 answers survey 2 answer 1', updateTestFn(2, 2, testQuestions[2].answerSequences[0][1], 'c'));
-    it('user 3 answers survey 3 answer 1', updateTestFn(3, 3, testQuestions[3].answerSequences[0][1], 'd'));
-    it('user 2 answers survey 4 answer 1', updateTestFn(2, 4, testQuestions[4].answerSequences[0][1], 'e'));
-    it('user 0 answers survey 3 answer 1', updateTestFn(0, 3, testQuestions[3].answerSequences[1][1], 'f'));
+    it('user 0 answers survey 0 2nd time', updateTestFn(0, 0, testQuestions[0].answerSequences[0][1], 'a'));
+    it('user 1 answers survey 1 2nd time', updateTestFn(1, 1, testQuestions[1].answerSequences[0][1], 'b'));
+    it('user 2 answers survey 2 2nd time', updateTestFn(2, 2, testQuestions[2].answerSequences[0][1], 'c'));
+    it('user 3 answers survey 3 2nd time', updateTestFn(3, 3, testQuestions[3].answerSequences[0][1], 'd'));
+    it('user 2 answers survey 4 2nd time', updateTestFn(2, 4, testQuestions[4].answerSequences[0][1], 'e'));
+    it('user 0 answers survey 3 2nd time', updateTestFn(0, 3, testQuestions[3].answerSequences[1][1], 'f'));
+
+    it('user 0 answers survey 0 3rd time', updateTestFn(0, 0, testQuestions[0].answerSequences[0][2], 'a'));
+    it('user 1 answers survey 1 3rd time', updateTestFn(1, 1, testQuestions[1].answerSequences[0][2], 'b'));
+    it('user 2 answers survey 2 3rd time', updateTestFn(2, 2, testQuestions[2].answerSequences[0][2], 'c'));
+    it('user 3 answers survey 3 3rd time', updateTestFn(3, 3, testQuestions[3].answerSequences[0][2], 'd'));
+    it('user 2 answers survey 4 3rd time', updateTestFn(2, 4, testQuestions[4].answerSequences[0][2], 'e'));
+    it('user 0 answers survey 3 3rd time', updateTestFn(0, 3, testQuestions[3].answerSequences[1][2], 'f'));
 });
