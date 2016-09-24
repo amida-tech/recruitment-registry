@@ -34,6 +34,25 @@ module.exports = function (sequelize, DataTypes) {
         return result;
     };
 
+    const generateAnswer = {
+        text: entries => ({ textValue: entries[0].value }),
+        bool: entries => ({ boolValue: entries[0].value === 'true' }),
+        choice: entries => ({ choice: parseInt(entries[0].value, 10) }),
+        choices: entries => {
+            let choices = entries.map(r => parseInt(r.value, 10));
+            choices = _.sortBy(choices);
+            return { choices };
+        },
+        choicesplus: entries => {
+            const freeChoiceArr = _.remove(entries, ['type', 'text']);
+            const result = generateAnswer.choices(entries);
+            if (freeChoiceArr && freeChoiceArr.length) {
+                result.textValue = freeChoiceArr[0].value;
+            }
+            return result;
+        }
+    };
+
     const Answer = sequelize.define('answer', {
         userId: {
             type: DataTypes.INTEGER,
@@ -79,14 +98,15 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.DATE,
             field: 'created_at',
         },
-        updatedAt: {
+        deletedAt: {
             type: DataTypes.DATE,
-            field: 'updated_at',
+            field: 'deleted_at',
         }
     }, {
         freezeTableName: true,
         createdAt: 'createdAt',
-        updatedAt: 'updatedAt',
+        deletedAt: 'deletedAt',
+        paranoid: true,
         classMethods: {
             createAnswersTx: function ({ userId, surveyId, answers }, tx) {
                 // TO DO: Put an assertion here to check the answers match with question type
@@ -138,29 +158,11 @@ module.exports = function (sequelize, DataTypes) {
                     return Answer.updateAnswersTx(input, tx);
                 });
             },
-            getSurveyAnswers: function (input) {
-                const generateAnswer = {
-                    text: entries => ({ textValue: entries[0].value }),
-                    bool: entries => ({ boolValue: entries[0].value === 'true' }),
-                    choice: entries => ({ choice: parseInt(entries[0].value, 10) }),
-                    choices: entries => {
-                        let choices = entries.map(r => parseInt(r.value, 10));
-                        choices = _.sortBy(choices);
-                        return { choices };
-                    },
-                    choicesplus: entries => {
-                        const freeChoiceArr = _.remove(entries, ['type', 'text']);
-                        const result = generateAnswer.choices(entries);
-                        if (freeChoiceArr && freeChoiceArr.length) {
-                            result.textValue = freeChoiceArr[0].value;
-                        }
-                        return result;
-                    }
-                };
-                return sequelize.query('select a.value as value, a.answer_type_id as type, q.type as qtype, q.id as qid from answer a, question q where a.user_id = :userid and a.survey_id = :surveyid and a.question_id = q.id', {
+            getSurveyAnswers: function ({ userId, surveyId }) {
+                return sequelize.query('select a.value as value, a.answer_type_id as type, q.type as qtype, q.id as qid from answer a, question q where a.deleted_at is null and a.user_id = :userid and a.survey_id = :surveyid and a.question_id = q.id', {
                         replacements: {
-                            userid: input.userId,
-                            surveyid: input.surveyId
+                            userid: { userId, surveyId }.userId,
+                            surveyid: { userId, surveyId }.surveyId
                         },
                         type: sequelize.QueryTypes.SELECT
                     })
@@ -173,6 +175,46 @@ module.exports = function (sequelize, DataTypes) {
                                 answer: generateAnswer[v[0].qtype](v)
                             };
                         });
+                    });
+            },
+            getOldAnswers: function ({ userId, surveyId }) {
+                return Answer.findAll({
+                        paranoid: false,
+                        where: { userId, surveyId, deletedAt: { $ne: null } },
+                        raw: true,
+                        order: 'deleted_at',
+                        attributes: [
+                            'value',
+                            'type',
+                            'questionId', [sequelize.fn('to_char', sequelize.col('deleted_at'), 'SSSS.MS'), 'deletedAt']
+                        ]
+                    })
+                    .then(rawAnswers => {
+                        const qidGrouped = _.groupBy(rawAnswers, 'questionId');
+                        const qids = Object.keys(qidGrouped);
+                        return sequelize.models.question.findAll({
+                                where: { id: { $in: qids } },
+                                raw: true,
+                                attributes: ['id', 'type']
+                            })
+                            .then(rawQuestions => _.keyBy(rawQuestions, 'id'))
+                            .then(qxMap => {
+                                const rmGrouped = _.groupBy(rawAnswers, 'deletedAt');
+                                return Object.keys(rmGrouped).reduce(function (r, date) {
+                                    //console.log(date);
+                                    const rmGroup = rmGrouped[date];
+                                    const qxGrouped = _.groupBy(rmGroup, 'questionId');
+                                    const newValue = Object.keys(qxGrouped).map(function (qid) {
+                                        const qxGroup = qxGrouped[qid];
+                                        return {
+                                            questionId: parseInt(qid),
+                                            answer: generateAnswer[qxMap[qid].type](qxGroup)
+                                        };
+                                    });
+                                    r[date] = _.sortBy(newValue, 'questionId');
+                                    return r;
+                                }, {});
+                            });
                     });
             }
         }

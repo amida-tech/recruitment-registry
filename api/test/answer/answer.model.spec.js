@@ -207,6 +207,24 @@ describe('answer unit', function () {
         }, []);
     };
 
+    const pullExpectedRemovedAnswers = function (key) {
+        const answersSpec = store.hxAnswers[key];
+        const removed = jsutil.findRemoved(_.map(answersSpec, 'qxIndices'));
+        const result = removed.reduce((r, answerIndices, index) => {
+            answerIndices.forEach((answerIndex) => {
+                if (answerIndex.removed.length) {
+                    const timeIndex = answerIndex.timeIndex;
+                    const arr = r[timeIndex] || (r[timeIndex] = []);
+                    const answers = answerIndex.removed.map(r => answersSpec[index].qxAnswers[r]);
+                    arr.push(...answers);
+                    arr.sort((a, b) => a.questionId - b.questionId);
+                }
+            });
+            return r;
+        }, {});
+        return result;
+    };
+
     const updateTestFn = function (userIndex, surveyIndex, qxIndices, key) {
         return function () {
             const answers = qxIndices.map(genQuestionAnswer);
@@ -227,6 +245,27 @@ describe('answer unit', function () {
                             const expected = _.sortBy(expectedAnswers, 'questionId');
                             const actual = _.sortBy(result, 'questionId');
                             expect(actual).to.deep.equal(expected);
+                        })
+                        .then(() => models.Answer.getOldAnswers({
+                            userId: store.users[userIndex],
+                            surveyId: store.surveys[surveyIndex]
+                        }))
+                        .then((actual) => {
+                            const expectedAnswers = pullExpectedRemovedAnswers(key);
+                            const keys = Object.keys(expectedAnswers).sort();
+                            const expected = {};
+                            keys.forEach(key => {
+                                const value = _.sortBy(expectedAnswers[key], 'questionId');
+                                if (value.length) {
+                                    expected[key] = value;
+                                }
+                            });
+                            const expectedKeys = _.sortBy(Object.keys(expectedAnswers), r => Number(r));
+                            const actualKeys = _.sortBy(Object.keys(actual), r => Number(r));
+                            expect(actualKeys.length).to.equal(expectedKeys.length);
+                            for (let i = 0; i < expectedKeys.length; ++i) {
+                                expect(actual[actualKeys[i]]).to.deep.equal(expectedAnswers[expectedKeys[i]]);
+                            }
                         });
                 });
         };

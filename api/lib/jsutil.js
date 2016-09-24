@@ -18,11 +18,27 @@ exports.errToJSON = function (err) {
 exports.findStanding = function (selections) {
     const result = [];
     selections.forEach(selection => {
-        const newResultElement = selection.slice();
-        const removed = _.remove(newResultElement, r => r < 0).map(r => -r);
-        result.forEach(r => _.pullAll(r, removed));
-        result.forEach(r => _.pullAll(r, newResultElement));
-        result.push(_.sortBy(newResultElement));
+        const toBeRemoved = selection.map(r => r < 0 ? -r : r);
+        const toBeInserted = selection.filter(r => r >= 0);
+        result.forEach(r => _.pullAll(r, toBeRemoved));
+        result.push(_.sortBy(toBeInserted));
     });
     return result;
+};
+
+exports.findRemoved = function (selections) {
+    const result = [];
+    const actualResult = [];
+    selections.forEach((selection, timeIndex) => {
+        const toBeRemoved = selection.map(r => r < 0 ? -r : r);
+        const toBeInserted = selection.filter(r => r >= 0);
+        result.forEach((r, index) => {
+            const levelRemoved = _.intersection(r, toBeRemoved);
+            _.pullAll(r, toBeRemoved);
+            actualResult[index].push({ timeIndex, removed: levelRemoved });
+        });
+        result.push(_.sortBy(toBeInserted));
+        actualResult.push([]);
+    });
+    return actualResult;
 };
