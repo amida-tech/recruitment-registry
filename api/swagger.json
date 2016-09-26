@@ -354,6 +354,46 @@
                         "$ref": "#/responses/internal"
                     }
                 }
+            },
+            "get": {
+                "summary": "Gets answers",
+                "operationId": "getAnswers",
+                "security": [{
+                    "participant": []
+                }],
+                "parameters": [{
+                    "name": "surveyId",
+                    "in": "query",
+                    "description": "Survey id",
+                    "required": true,
+                    "type": "integer"
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response.",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/linkedAnswer"
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/responses/badRequest"
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/responses/forbidden"
+                    },
+                    "422": {
+                        "$ref": "#/responses/unprocessable"
+                    },
+                    "500": {
+                        "$ref": "#/responses/internal"
+                    }
+                }
             }
         },
         "/ethnicities": {
@@ -936,7 +976,7 @@
                         "type": "object",
                         "properties": {
                             "id": {
-                                "type": "string"
+                                "type": "integer"
                             },
                             "content": {
                                 "type": "object",

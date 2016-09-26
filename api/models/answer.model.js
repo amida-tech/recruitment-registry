@@ -158,7 +158,7 @@ module.exports = function (sequelize, DataTypes) {
                     return Answer.updateAnswersTx(input, tx);
                 });
             },
-            getSurveyAnswers: function ({ userId, surveyId }) {
+            getAnswers: function ({ userId, surveyId }) {
                 return sequelize.query('select a.value as value, a.answer_type_id as type, q.type as qtype, q.id as qid from answer a, question q where a.deleted_at is null and a.user_id = :userid and a.survey_id = :surveyid and a.question_id = q.id', {
                         replacements: {
                             userid: { userId, surveyId }.userId,
