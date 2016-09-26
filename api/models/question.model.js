@@ -87,7 +87,7 @@ module.exports = function (sequelize, DataTypes) {
                                     type: c.type || 'bool',
                                     line: index
                                 };
-                                return sequelize.models.question_choices.create(choice, {
+                                return sequelize.models.question_choice.create(choice, {
                                     transaction: tx
                                 }).then(() => id);
                             })).then(() => id);
@@ -112,7 +112,7 @@ module.exports = function (sequelize, DataTypes) {
                         if (QX_TYPES_W_CHOICES.indexOf(question.type) < 0) {
                             return question;
                         }
-                        return sequelize.models.question_choices.findAll({
+                        return sequelize.models.question_choice.findAll({
                                 where: { questionId: question.id },
                                 raw: true,
                                 attributes: ['id', 'text', 'type']
@@ -152,7 +152,7 @@ module.exports = function (sequelize, DataTypes) {
                         return questions.map(cleanQx);
                     })
                     .then(questions => {
-                        return sequelize.models.question_choices.findAll(choiceOptions)
+                        return sequelize.models.question_choice.findAll(choiceOptions)
                             .then(choices => {
                                 const map = _.keyBy(questions, 'id');
                                 if (choices.length) {

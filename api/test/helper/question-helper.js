@@ -5,7 +5,7 @@ const _ = require('lodash');
 const models = require('../../models');
 
 exports.buildServerQuestion = function (question, id) {
-    return models.sequelize.query('select id, text, type from question_choices where question_id = :id', {
+    return models.sequelize.query('select id, text, type from question_choice where question_id = :id', {
         replacements: {
             id
         },
