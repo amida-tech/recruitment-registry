@@ -979,25 +979,7 @@
                                 "type": "integer"
                             },
                             "content": {
-                                "type": "object",
-                                "required": [
-                                    "text",
-                                    "type"
-                                ],
-                                "properties": {
-                                    "text": {
-                                        "type": "string"
-                                    },
-                                    "type": {
-                                        "type": "string"
-                                    },
-                                    "choices": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
+                                "$ref": "#/definitions/newQuestion"
                             }
                         },
                         "minProperties": 1,
