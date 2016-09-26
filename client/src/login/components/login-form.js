@@ -6,7 +6,7 @@ class Form extends Component {
     return(
       <form className="form" onSubmit={this.props.onSubmit}>
         <div className="">
-          { this.props.data.hasErrors ? (<p>Invalid credentials!</p>) : (<p></p>) }
+          { this.props.data.get('hasErrors') ? (<p>Invalid credentials!</p>) : (<p></p>) }
         </div>
         <div className="form__field-wrapper">
           <input className="form__field-input" type="text" id="username" onChange={ this.props.changeForm } autoCorrect="off" autoCapitalize="off" spellCheck="false" />

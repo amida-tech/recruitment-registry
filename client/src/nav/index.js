@@ -6,8 +6,8 @@ import { logout } from '../login/actions';
 
 class Nav extends Component {
   render() {
-    const { title } = this.props.data;
-    const { loggedIn } = this.props.data;
+    const title = this.props.data.get('title');
+    const loggedIn = this.props.data.get('loggedIn');
 
     var nav;
 

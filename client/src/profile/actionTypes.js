@@ -1,3 +1,5 @@
 export const UPDATE_PROFILE = 'UPDATE_PROFILE'
+export const GET_PROFILE = 'GET_PROFILE'
+export const GET_SURVEY = 'GET_SURVEY'
 export const GET_PROFILE_SUCCESS = 'GET_PROFILE_SUCCESS'
 export const SAVE_PROFILE = 'SAVE_PROFILE'
