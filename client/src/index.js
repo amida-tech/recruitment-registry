@@ -47,7 +47,14 @@ export const initialState = {
     }
   },
   loggedIn: localStorage.token ? localStorage.token : false,
-  profile: {}
+  profile: {
+    user: {
+      name: ""
+    },
+    survey: {
+      questions: []
+    }
+  }
 };
 
 export const reducers = {

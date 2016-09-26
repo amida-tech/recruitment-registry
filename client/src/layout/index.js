@@ -15,10 +15,10 @@ class Layout extends Component {
 
 Layout.displayName = 'Layout';
 
-function select(state) {
+function mapStateToProps(state) {
   return {
     data: state
   };
 }
 
-export default connect(select)(Layout);
+export default connect(mapStateToProps)(Layout);

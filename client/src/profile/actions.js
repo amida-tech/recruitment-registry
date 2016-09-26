@@ -1,14 +1,22 @@
-import * as t from './actionTypes';
+import * as actionTypes from './actionTypes';
 
 export function updateProfile(name, value) {
   return dispatch => dispatch({
-    type: t.UPDATE_PROFILE,
+    type: actionTypes.UPDATE_PROFILE,
     name, value
   });
 }
 
 export function saveProfile() {
   return dispatch => dispatch({
-    type: t.SAVE_PROFILE
+    type: actionTypes.SAVE_PROFILE
   });
 }
+
+export function getProfile(surveyName) {
+  return dispatch => dispatch({
+    type: actionTypes.GET_PROFILE,
+    surveyName: surveyName
+  });
+}
+

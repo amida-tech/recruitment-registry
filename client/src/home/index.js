@@ -4,9 +4,10 @@ import { connect } from 'react-redux';
 class Home extends Component {
   render() {
 
-    const { title } = this.props.data;
-    const { loggedIn } = this.props.data;
-    const { role, username } = this.props.user;
+    const title = this.props.data.get('title');
+    const loggedIn = this.props.data.get('loggedIn');
+    const role = this.props.user.get('role');
+    const username = this.props.user.get('username');
     return (
       <div>
         <h1>Home</h1>
@@ -23,11 +24,11 @@ class Home extends Component {
 
 Home.displayName = 'Home';
 
-function select(state) {
+function mapStateToProps(state) {
   return {
     data: state,
-    user: state.login.user
+    user: state.getIn(['login', 'user'])
   };
 }
 
-export default connect(select)(Home);
+export default connect(mapStateToProps)(Home);

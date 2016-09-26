@@ -1,9 +1,9 @@
-import * as t from './actionTypes';
+import * as actionTypes from './actionTypes';
 
 export function login(username, password) {
   return (dispatch) => {
     dispatch({
-      type: t.LOGIN,
+      type: actionTypes.LOGIN,
       payload: {
         username: username,
         password: password
@@ -15,14 +15,14 @@ export function login(username, password) {
 export function logout() {
   return (dispatch) => {
     dispatch({
-      type: t.LOGOUT
+      type: actionTypes.LOGOUT
     });
   }
 }
 
 export function update(name, value) {
   return dispatch => dispatch({
-    type: t.UPDATE_CREDENTIALS,
+    type: actionTypes.UPDATE_CREDENTIALS,
     name, value
   });
 }

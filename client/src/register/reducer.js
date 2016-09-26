@@ -1,7 +1,6 @@
 import * as t from './actionTypes';
-
+import Immutable from 'immutable'
 import { browserHistory } from 'react-router';
-const assign = Object.assign || require('object.assign');
 
 const initialState = {
   formState: {
@@ -24,18 +23,20 @@ const initialState = {
   }
 };
 
-export default (state = initialState, action) => {
+const immutableState = Immutable.fromJS(initialState)
+
+export default (state = immutableState, action) => {
   switch (action.type) {
     case t.CHANGE_FORM:
-      return assign({}, state, {
-        formState: assign({}, state.formState, {
+      return state.merge({
+        formState: state.get('formState').merge({
           [action.name]: action.value
         })
-      });
+      })
     case 'GET_SURVEY_SUCCESS':
-      return assign({}, state, {
+      return state.merge({
         survey: action.payload
-      });
+      })
     case 'UPDATE_CHOICES_ANSWER':
 
       var answers = {};
@@ -55,7 +56,7 @@ export default (state = initialState, action) => {
         answers[qid][cid] = false
       }
 
-      return assign({}, state, {
+      return state.merge({
         surveyResult: {
           surveyId: action.payload.surveyId,
           answers: answers

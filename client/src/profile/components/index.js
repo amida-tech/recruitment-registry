@@ -1,30 +1,31 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { Link } from 'react-router'
-import Form from './profile-form'
 import profile from '../index'
+import UserForm from './user-form'
+import SurveyForm from './survey-form'
 
 class ProfileContainer extends Component {
   render() {
 
-    const { survey, user } = this.props.data;
-    const {loggedIn} = this.props;
+    const survey = this.props.data.get('survey')
+    const user = this.props.data.get('user')
 
     return (
       <div>
         <h1>Profile</h1>
         <div>
-          { loggedIn && survey ? (
-            <Form survey={survey}
-                  user={user}
-                  hasChanges={!!this.props.data.userUpdated}
-                  profileSaved={this.props.data.profileSaved}
-                  availableEthnicities={this.props.availableEthnicities}
-                  availableGenders={this.props.availableGenders}
-                  changeProfile={ ::this._changeProfile }
-                  onSubmit={ ::this._onSubmit }/>
-          ) : (<div><Link to="/login">Login</Link></div>)
-          }
+          <UserForm
+            user={user}
+            changeProfile={::this._changeProfile}
+            onSubmit={::this._saveProfile}
+            availableEthnicities={this.props.availableEthnicities}
+            availableGenders={this.props.availableGenders}
+            hasChanges={!!this.props.data.get('userUpdated')}
+            profileSaved={this.props.data.get('profileSaved')}
+          />
+
+          <SurveyForm
+            survey={survey}/>
         </div>
       </div>
     );
@@ -35,12 +36,10 @@ class ProfileContainer extends Component {
   }
 
   componentWillMount() {
-    if (this.props.loggedIn) {
-      this.props.dispatch({type: 'GET_PROFILE', surveyName: 'Alzheimer'})
-    }
+    this.props.dispatch(profile.actions.getProfile('Alzheimer'))
   }
 
-  _onSubmit(evt) {
+  _saveProfile(evt) {
     evt.preventDefault()
 
     this.props.dispatch(profile.actions.saveProfile());
@@ -49,13 +48,12 @@ class ProfileContainer extends Component {
 
 ProfileContainer.displayName = 'Profile';
 
-function select(state) {
+function mapStateToProps(state) {
   return {
-    data: state.profile,
-    loggedIn: state.loggedIn,
-    availableEthnicities: state.register.availableEthnicities,
-    availableGenders: state.register.availableGenders
+    data: state.get('profile'),
+    availableEthnicities: state.getIn(['register', 'availableEthnicities']),
+    availableGenders: state.getIn(['register', 'availableGenders'])
   };
 }
 
-export default connect(select)(ProfileContainer);
+export default connect(mapStateToProps)(ProfileContainer);

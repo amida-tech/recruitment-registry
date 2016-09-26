@@ -1,6 +1,6 @@
-import * as t from './actionTypes';
+import * as actionTypes from './actionTypes'
+import Immutable from 'immutable'
 
-const assign = Object.assign || require('object.assign');
 
 const initialState = {
   formState: {
@@ -14,31 +14,19 @@ const initialState = {
   }
 };
 
-export default (state = initialState, action) => {
+var immutableState = Immutable.fromJS(initialState);
+
+export default (state = immutableState, action) => {
   switch (action.type) {
-    case t.UPDATE_CREDENTIALS:
-      return assign({}, state, {
-        formState: assign({}, state.formState, {
-          [action.name]: action.value
-        })
-      });
-    case 'LOGIN_ERROR':
-      return assign({}, state, {
-        formState: assign({}, state.formState, {
-          hasErrors: true
-        })
-      });
-    case 'LOGIN_SUCCESS':
-      return assign({}, state, {
-        formState: {
-          hasErrors: false
-        }
-      });
-    case "GET_USER_SUCCESS":
+    case actionTypes.UPDATE_CREDENTIALS:
+      return state.setIn(['formState', action.name], action.value)
+    case actionTypes.LOGIN_ERROR:
+      return state.setIn(['formState', 'hasErrors'], true)
+    case actionTypes.LOGIN_SUCCESS:
+      return state.setIn(['formState', 'hasErrors'], false)
+    case actionTypes.GET_USER_SUCCESS:
       localStorage.user = JSON.stringify(action.payload)
-      return assign({}, state, {
-        user: action.payload
-      });
+      return state.update('user', action.payload);
     default:
       return state;
   }

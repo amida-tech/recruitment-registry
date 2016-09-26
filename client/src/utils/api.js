@@ -1,4 +1,4 @@
-import request from 'superagent';
+import request from 'superagent'
 
 var apiUrl = 'http://localhost:9005/api/v1.0';
 
@@ -8,7 +8,7 @@ const apiProvider = store => next => action => {
     case 'GET_USER':
       request
         .get(apiUrl + '/users/me')
-        .set("Authorization", "Bearer " + store.getState().loggedIn)
+        .set("Authorization", "Bearer " + store.getState().get('loggedIn'))
         .end((error, response) => {
           if (error) {
             return next({
@@ -75,7 +75,7 @@ const apiProvider = store => next => action => {
       break
     case 'GET_SURVEY':
       request
-        .get(apiUrl + '/surveys/empty/' + action.surveyName)
+        .get(apiUrl + '/registries/profile-survey/' + action.surveyName)
         .end((error, response) => {
           if (!error) {
             next({
@@ -90,7 +90,7 @@ const apiProvider = store => next => action => {
     case 'GET_PROFILE':
       request
         .get(apiUrl + '/registries/user-profile/' + action.surveyName)
-        .set("Authorization", "Bearer " + store.getState().loggedIn)
+        .set("Authorization", "Bearer " + store.getState().get('loggedIn'))
         .end((error, response) => {
           if (!error) {
             next({
@@ -106,7 +106,7 @@ const apiProvider = store => next => action => {
       request
         .put(apiUrl + '/users/me')
         .send(store.getState().profile.userUpdated)
-        .set("Authorization", "Bearer " + store.getState().loggedIn)
+        .set("Authorization", "Bearer " + store.getState().get('loggedIn'))
         .end((error) => {
           if (!error) {
             next({

@@ -5,27 +5,22 @@ import register from '../index';
 
 export class RegisterContainer extends Component {
   render() {
-    const dispatch = this.props.dispatch
-    const { formState, survey, availableEthnicities, availableGenders } = this.props.data
-    const { loggedIn } = this.props
+    const { formState, survey, availableEthnicities, availableGenders } = this.props.data.toJS()
     return (
-      <div> { !loggedIn ? (
-        <div className="container">
-            <div className="form-page__form-header">
-              <h2 className="form-page__form-heading">Register</h2>
-            </div>
-            <Form data={ formState }
-                  dispatch={ dispatch }
-                  location={ location }
-                  availableEthnicities={ availableEthnicities }
-                  availableGenders={ availableGenders }
-                  history={ this.props.history }
-                  onSubmit={ ::this._onSubmit }
-                  btnText={ "Register" }
-                  survey={ survey }
-                  changeForm={ ::this._changeForm }
-                  changeChoice={ ::this._changeChoice }/>
-        </div>) : ( <h3>You are already logged in :)</h3>) }
+      <div className="container">
+          <div className="form-page__form-header">
+            <h2 className="form-page__form-heading">Register</h2>
+          </div>
+          <Form data={formState}
+                location={location}
+                availableEthnicities={availableEthnicities}
+                availableGenders={availableGenders}
+                history={this.props.history}
+                onSubmit={::this._onSubmit}
+                btnText={"Register"}
+                survey={survey}
+                changeForm={::this._changeForm}
+                changeChoice={::this._changeChoice}/>
       </div>)
   }
 
@@ -43,7 +38,7 @@ export class RegisterContainer extends Component {
   }
 
   componentWillMount() {
-    this.props.dispatch({type: 'GET_SURVEY', surveyName: 'Alzheimer'})
+    this.props.dispatch(register.actions.getSurvey('Alzheimer'))
   }
 
   _onSubmit(evt) {
@@ -52,13 +47,13 @@ export class RegisterContainer extends Component {
     var answersParsed = []
 
 
-    var survey = this.props.data.survey
+    var survey = this.props.data.get('survey').toJS()
 
 
     survey.questions.forEach((question) => {
       let ans;
+      let choices = this.props.data.get('surveyResult').toJS().answers[question.id]
       if (question.type === 'choices') {
-        let choices = this.props.data.surveyResult.answers[question.id]
 
         if (choices) {
           choices = Object.keys(choices).filter((key) => {
@@ -71,7 +66,7 @@ export class RegisterContainer extends Component {
         }
 
       } else if (question.type === 'bool') {
-        var isChecked = !!this.props.data.surveyResult.answers[question.id] && !!this.props.data.surveyResult.answers[question.id]['-1']
+        var isChecked = !!choices && !!choices['-1']
         ans = { boolValue: isChecked }
         console.log(ans);
       }
@@ -83,7 +78,7 @@ export class RegisterContainer extends Component {
 
     this.props.dispatch({type: 'REGISTER', payload: {
       user: this.props.data.formState,
-      surveyId: 1,
+      registryName: 'Alzheimer',
       answers: answersParsed
     }})
   }
@@ -91,8 +86,7 @@ export class RegisterContainer extends Component {
 
 const mapStateToProps = function(store) {
   return {
-    data: store.register,
-    loggedIn: store.loggedIn
+    data: store.get('register')
   }
 }
 

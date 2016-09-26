@@ -1,14 +1,15 @@
 import ChartMonitor from 'redux-devtools-chart-monitor';
 import DockMonitor from 'redux-devtools-dock-monitor';
 import LogMonitor from 'redux-devtools-log-monitor';
-import React from 'react';/*
-import Immutable from 'immutable';*/
+import React from 'react';
+import Immutable from 'immutable';
 import ReactDOM from 'react-dom';
 import SliderMonitor from 'redux-slider-monitor';
 import createLogger from 'redux-logger';
 import { Provider } from 'react-redux';
 import { Router, Route, browserHistory } from 'react-router';
-import { applyMiddleware, compose, createStore, combineReducers } from 'redux';
+import { applyMiddleware, compose, createStore } from 'redux';
+import { combineReducers } from 'redux-immutable'
 import { createDevTools, persistState } from 'redux-devtools';
 import thunk from 'redux-thunk';
 import dataService from './utils/api';
@@ -33,8 +34,6 @@ const initialEnhancers = IS_PROD ? [] : [
   persistState(location.href.match(/[?&]debug_session=([^&]+)\b/))
 ];
 
-
-
 export default (options) => {
   let {
     initialState = {},
@@ -47,18 +46,19 @@ export default (options) => {
   } = options;
 
   const initialMiddleware = [createLogger(loggerOptions)];
+  const frozen = Immutable.fromJS(initialState);
 
   const createStoreWithMiddleware = applyMiddleware(thunk)(createStore);
   const store = createStoreWithMiddleware(
     combineReducers(reducers),
-    initialState,
+    frozen,
     compose(
       applyMiddleware(...initialMiddleware, ...middleware),
       ...initialEnhancers,
       ...enhancers
     ));
 
-  /*const frozen = Immutable.fromJS(initialState);*/
+  /**/
 
   /*const routing = (state = frozen, action) => {
     return action.type === LOCATION_CHANGE ?
