@@ -14,6 +14,14 @@ module.exports = function (sequelize, DataTypes) {
         text: {
             type: DataTypes.TEXT
         },
+        type: {
+            type: DataTypes.TEXT,
+            allowNull: false,
+            references: {
+                model: 'answer_type',
+                key: 'name'
+            },
+        },
         line: {
             type: DataTypes.INTEGER
         },

@@ -8,10 +8,10 @@ exports.Example = {
                 text: 'Which sports do you like?',
                 type: 'choices',
                 choices: [
-                    'Football',
-                    'Basketball',
-                    'Soccer',
-                    'Tennis'
+                    { text: 'Football' },
+                    { text: 'Basketball' },
+                    { text: 'Soccer' },
+                    { text: 'Tennis' }
                 ]
             }
         }, {
@@ -19,10 +19,10 @@ exports.Example = {
                 text: 'What is your hair color?',
                 type: 'choice',
                 choices: [
-                    'Black',
-                    'Brown',
-                    'Blonde',
-                    'Other'
+                    { text: 'Black' },
+                    { text: 'Brown' },
+                    { text: 'Blonde' },
+                    { text: 'Other' }
                 ]
             }
         }, {
@@ -79,14 +79,14 @@ exports.Alzheimer = {
                 text: 'How did you hear about us?',
                 type: 'choicesplus',
                 choices: [
-                    'TV',
-                    'Radio',
-                    'Newspaper',
-                    'Facebook/Google Ad/OtherInternet ad',
-                    'Physician/nurse/healthcare professional',
-                    'Caregiver',
-                    'Friend/Family member',
-                    'Community Event',
+                    { text: 'TV' },
+                    { text: 'Radio' },
+                    { text: 'Newspaper' },
+                    { text: 'Facebook/Google Ad/OtherInternet ad' },
+                    { text: 'Physician/nurse/healthcare professional' },
+                    { text: 'Caregiver' },
+                    { text: 'Friend/Family member' },
+                    { text: 'Community Event' },
                 ],
                 additionalText: 'Other source'
             }
@@ -95,8 +95,8 @@ exports.Alzheimer = {
                 text: 'Are you interested in receiving more information?',
                 type: 'choices',
                 choices: [
-                    'Brain Health',
-                    'Clinical Trials on Brain Health'
+                    { text: 'Brain Health' },
+                    { text: 'Clinical Trials on Brain Health' }
                 ]
             }
         }, {

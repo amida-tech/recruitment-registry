@@ -4,15 +4,15 @@ module.exports = [{
     text: 'Which sports do you like?',
     type: 'choices',
     choices: [
-        'Football',
-        'Basketball',
-        'Soccer',
-        'Tennis'
+        { text: 'Football' },
+        { text: 'Basketball', type: 'bool' },
+        { text: 'Soccer' },
+        { text: 'Tennis', type: 'bool' }
     ]
 }, {
     text: 'What is your hair color?',
     type: 'choice',
-    choices: [
+    oneOfChoices: [
         'Black',
         'Brown',
         'Blonde',
@@ -28,10 +28,10 @@ module.exports = [{
     text: 'How did you hear about us?',
     type: 'choicesplus',
     choices: [
-        'TV',
-        'Newspaper',
-        'Internet',
-        'Friends'
+        { text: 'TV' },
+        { text: 'Newspaper' },
+        { text: 'Internet', type: 'bool' },
+        { text: 'Friends', type: 'bool' }
     ],
     additionalText: 'Other'
 }];

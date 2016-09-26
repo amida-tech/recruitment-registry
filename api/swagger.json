@@ -1019,6 +1019,9 @@
                 },
                 "text": {
                     "type": "string"
+                },
+                "type": {
+                    "type": "string"
                 }
             }
         },
@@ -1094,10 +1097,25 @@
                 "type": {
                     "type": "string"
                 },
-                "choices": {
+                "oneOfchoices": {
                     "type": "array",
                     "items": {
                         "type": "string"
+                    }
+                },
+                "choices": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": ["text"],
+                        "properties": {
+                            "text": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            }
+                        }
                     }
                 }
             }

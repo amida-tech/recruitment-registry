@@ -21,14 +21,16 @@ describe('question unit', function () {
 
     const qxBasicFn = function (index) {
         return function () {
+            const expected = _.cloneDeep(examples[index]);
+            qxHelper.prepareClientQuestion(expected);
             return Question.createQuestion(examples[index])
                 .then(id => {
                     ids.push(id);
                     return Question.getQuestion(id);
                 })
                 .then(actual => {
-                    qxHelper.prepareServerQuestion(actual);
-                    expect(actual).to.deep.equal(examples[index]);
+                    qxHelper.prepareServerQuestion(actual, examples[index]);
+                    expect(actual).to.deep.equal(expected);
                 })
                 .then(() => {
                     const text = `Updated ${examples[index]}`;
@@ -39,8 +41,7 @@ describe('question unit', function () {
                     return Question.getQuestion(id);
                 })
                 .then(actual => {
-                    qxHelper.prepareServerQuestion(actual);
-                    const expected = _.cloneDeep(examples[index]);
+                    qxHelper.prepareServerQuestion(actual, examples[index]);
                     expected.text = `Updated ${examples[index]}`;
                     expect(actual).to.deep.equal(expected);
                 })

@@ -5,7 +5,7 @@ const _ = require('lodash');
 const models = require('../../models');
 
 exports.buildServerQuestion = function (question, id) {
-    return models.sequelize.query('select id, text from question_choices where question_id = :id', {
+    return models.sequelize.query('select id, text, type from question_choices where question_id = :id', {
         replacements: {
             id
         },
@@ -18,12 +18,25 @@ exports.buildServerQuestion = function (question, id) {
     }).then(function (choiceMap) {
         const result = _.cloneDeep(question.content || question);
         result.id = id;
-        if (result.choices) {
-            result.choices = result.choices.map(function (choice) {
+        if (result.oneOfChoices) {
+            result.choices = result.oneOfChoices.map(function (choice) {
                 return {
                     text: choice,
                     id: choiceMap[choice]
                 };
+            });
+            delete result.oneOfChoices;
+        }
+        if (result.choices) {
+            result.choices = result.choices.map(function (choice) {
+                const choiceObj = {
+                    text: choice.text,
+                    id: choiceMap[choice.text]
+                };
+                if (result.type !== 'choice') {
+                    choiceObj.type = choice.type || 'bool';
+                }
+                return choiceObj;
             });
         }
         return result;
@@ -36,11 +49,23 @@ exports.buildServerQuestions = function (questions, ids) {
     }));
 };
 
-exports.prepareServerQuestion = function (question) {
+exports.prepareServerQuestion = function (question, clientQuestion) {
     delete question.id;
     const choices = question.choices;
     if (choices && choices.length) {
-        question.choices = _.map(choices, 'text');
+        if (clientQuestion.oneOfChoices) {
+            question.oneOfChoices = _.map(choices, 'text');
+            delete question.choices;
+        } else {
+            choices.forEach((choice) => delete choice.id);
+        }
+    }
+    return question;
+};
+
+exports.prepareClientQuestion = function (question) {
+    if (question.type === 'choices' || question.type === 'choicesplus') {
+        question.choices.forEach((choice) => choice.type = choice.type || 'bool');
     }
     return question;
 };

@@ -56,7 +56,7 @@ exports.genNewQuestion = (function () {
             question.choices = [];
             ++choiceIndex;
             for (let i = choiceIndex; i < choiceIndex + 5; ++i) {
-                question.choices.push(`choice_${i}`);
+                question.choices.push({ text: `choice_${i}` });
             }
         }
         if (type === 'choicesplus') {

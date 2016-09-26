@@ -48,14 +48,43 @@ module.exports = function (sequelize, DataTypes) {
         deletedAt: 'deletedAt',
         paranoid: true,
         classMethods: {
-            createQuestionTx: function ({ text, type, choices, additionalText }, tx) {
+            createQuestionTx: function ({ text, type, oneOfChoices, choices, additionalText }, tx) {
+                const nOneOfChoices = (oneOfChoices && oneOfChoices.length) || 0;
+                const nChoices = (choices && choices.length) || 0;
+                if (nOneOfChoices && nChoices) {
+                    const err = new Error(`'oneOfChoices' and 'choices' cannot be specified simultaneously.`);
+                    return sequelize.Promise.reject(err);
+                }
+                if ((type === 'choices') && !nChoices) {
+                    const err = new Error(`'choices' was not specified for 'choices' type question.`);
+                    return sequelize.Promise.reject(err);
+                }
+                if ((type === 'choice') && !(nOneOfChoices || nChoices)) {
+                    const err = new Error(`'oneOfChoices' or 'choices' was not specified for 'choice' type question.`);
+                    return sequelize.Promise.reject(err);
+                }
+                if ((type === 'choice') && nChoices) {
+                    const notBoolChoices = choices.filter((choice) => !(_.isNil(choice.type) || (choice.type !== 'bool')));
+                    if (notBoolChoices.length) {
+                        const err = new Error(`'choices' can only be 'bool' type for 'choice' type question.`);
+                        return sequelize.Promise.reject(err);
+                    }
+                }
+                if ((type !== 'choice') && (type !== 'choices') && (type !== 'choicesplus') && (nOneOfChoices || nChoices)) {
+                    const err = new Error(`'choices' or 'oneOfChoices' cannot be specified for '${type}' type question.`);
+                    return sequelize.Promise.reject(err);
+                }
                 return Question.create({ text, type, additionalText }, { transaction: tx })
                     .then(({ id }) => {
-                        if (choices && choices.length) {
+                        if (nOneOfChoices || nChoices) {
+                            if (nOneOfChoices) {
+                                choices = oneOfChoices.map(text => ({ text, type: 'bool' }));
+                            }
                             return sequelize.Promise.all(choices.map(function (c, index) {
                                 const choice = {
                                     questionId: id,
-                                    text: c,
+                                    text: c.text,
+                                    type: c.type || 'bool',
                                     line: index
                                 };
                                 return sequelize.models.question_choices.create(choice, {
@@ -86,11 +115,22 @@ module.exports = function (sequelize, DataTypes) {
                         return sequelize.models.question_choices.findAll({
                                 where: { questionId: question.id },
                                 raw: true,
-                                attributes: ['id', 'text']
+                                attributes: ['id', 'text', 'type']
                             })
                             .then(choices => {
                                 if (choices.length) {
-                                    question.choices = choices;
+                                    if (question.type === 'choice') {
+                                        question.choices = choices.map(({ id, text }) => ({
+                                            id,
+                                            text
+                                        }));
+                                    } else {
+                                        question.choices = choices.map(({ id, text, type }) => ({
+                                            id,
+                                            text,
+                                            type: type
+                                        }));
+                                    }
                                 }
                                 return question;
                             });
@@ -120,6 +160,9 @@ module.exports = function (sequelize, DataTypes) {
                                         const q = map[choice.questionId];
                                         if (q) {
                                             delete choice.questionId;
+                                            if (q.type === 'choice') {
+                                                delete choice.type;
+                                            }
                                             if (q.choices) {
                                                 q.choices.push(choice);
                                             } else {
@@ -142,7 +185,7 @@ module.exports = function (sequelize, DataTypes) {
                 const choicesOptions = {
                     where: { questionId: { in: ids } },
                     raw: true,
-                    attributes: ['id', 'text', 'questionId'],
+                    attributes: ['id', 'text', 'type', 'questionId'],
                     order: 'line'
                 };
                 return Question.getQuestionsCommon(options, choicesOptions)
@@ -156,7 +199,7 @@ module.exports = function (sequelize, DataTypes) {
                 };
                 const choicesOptions = {
                     raw: true,
-                    attributes: ['id', 'text', 'questionId'],
+                    attributes: ['id', 'text', 'type', 'questionId'],
                     order: 'line'
                 };
                 return Question.getQuestionsCommon(options, choicesOptions)
