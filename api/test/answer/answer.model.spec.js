@@ -40,8 +40,10 @@ describe('answer unit', function () {
 
     const updateHxAnswers = answerCommon.updateHxAnswers;
 
-    const createTestFn = function (userIndex, surveyIndex, qxIndices, key) {
+    const createTestFn = function (userIndex, surveyIndex, seqIndex, stepIndex) {
         return function () {
+            const qxIndices = testQuestions[surveyIndex].answerSequences[seqIndex][stepIndex];
+            const key = `${userIndex}_${surveyIndex}_${seqIndex}`;
             const answers = qxIndices.map(generateQxAnswer);
             updateHxAnswers(store, key, qxIndices, answers);
             const input = {
@@ -64,13 +66,6 @@ describe('answer unit', function () {
         };
     };
 
-    it('user 0 answers survey 0 1st time', createTestFn(0, 0, testQuestions[0].answerSequences[0][0], 'a'));
-    it('user 1 answers survey 1 1st time', createTestFn(1, 1, testQuestions[1].answerSequences[0][0], 'b'));
-    it('user 2 answers survey 2 1st time', createTestFn(2, 2, testQuestions[2].answerSequences[0][0], 'c'));
-    it('user 3 answers survey 3 1st time', createTestFn(3, 3, testQuestions[3].answerSequences[0][0], 'd'));
-    it('user 2 answers survey 4 1st time', createTestFn(2, 4, testQuestions[4].answerSequences[0][0], 'e'));
-    it('user 0 answers survey 3 1st time', createTestFn(0, 3, testQuestions[3].answerSequences[1][0], 'f'));
-
     const pullExpectedAnswers = answerCommon.pullExpectedAnswers;
 
     const pullExpectedRemovedAnswers = function (key) {
@@ -91,8 +86,10 @@ describe('answer unit', function () {
         return result;
     };
 
-    const updateTestFn = function (userIndex, surveyIndex, qxIndices, key) {
+    const updateTestFn = function (userIndex, surveyIndex, seqIndex, stepIndex) {
         return function () {
+            const qxIndices = testQuestions[surveyIndex].answerSequences[seqIndex][stepIndex];
+            const key = `${userIndex}_${surveyIndex}_${seqIndex}`;
             const answers = qxIndices.map(generateQxAnswer);
             updateHxAnswers(store, key, qxIndices, answers);
             const input = {
@@ -137,17 +134,26 @@ describe('answer unit', function () {
         };
     };
 
-    it('user 0 answers survey 0 2nd time', updateTestFn(0, 0, testQuestions[0].answerSequences[0][1], 'a'));
-    it('user 1 answers survey 1 2nd time', updateTestFn(1, 1, testQuestions[1].answerSequences[0][1], 'b'));
-    it('user 2 answers survey 2 2nd time', updateTestFn(2, 2, testQuestions[2].answerSequences[0][1], 'c'));
-    it('user 3 answers survey 3 2nd time', updateTestFn(3, 3, testQuestions[3].answerSequences[0][1], 'd'));
-    it('user 2 answers survey 4 2nd time', updateTestFn(2, 4, testQuestions[4].answerSequences[0][1], 'e'));
-    it('user 0 answers survey 3 2nd time', updateTestFn(0, 3, testQuestions[3].answerSequences[1][1], 'f'));
+    const cases = [
+        { userIndex: 0, surveyIndex: 0, seqIndex: 0 },
+        { userIndex: 1, surveyIndex: 1, seqIndex: 0 },
+        { userIndex: 2, surveyIndex: 2, seqIndex: 0 },
+        { userIndex: 3, surveyIndex: 3, seqIndex: 0 },
+        { userIndex: 2, surveyIndex: 4, seqIndex: 0 },
+        { userIndex: 0, surveyIndex: 3, seqIndex: 1 },
+    ];
 
-    it('user 0 answers survey 0 3rd time', updateTestFn(0, 0, testQuestions[0].answerSequences[0][2], 'a'));
-    it('user 1 answers survey 1 3rd time', updateTestFn(1, 1, testQuestions[1].answerSequences[0][2], 'b'));
-    it('user 2 answers survey 2 3rd time', updateTestFn(2, 2, testQuestions[2].answerSequences[0][2], 'c'));
-    it('user 3 answers survey 3 3rd time', updateTestFn(3, 3, testQuestions[3].answerSequences[0][2], 'd'));
-    it('user 2 answers survey 4 3rd time', updateTestFn(2, 4, testQuestions[4].answerSequences[0][2], 'e'));
-    it('user 0 answers survey 3 3rd time', updateTestFn(0, 3, testQuestions[3].answerSequences[1][2], 'f'));
+    for (let i = 0; i < cases.length; ++i) {
+        const { userIndex, surveyIndex, seqIndex } = cases[i];
+        const msg = `user ${userIndex} answers survey ${surveyIndex}-${seqIndex} step 0`;
+        it(msg, createTestFn(userIndex, surveyIndex, seqIndex, 0));
+    }
+
+    for (let j = 1; j < 3; ++j) {
+        for (let i = 0; i < cases.length; ++i) {
+            const { userIndex, surveyIndex, seqIndex } = cases[i];
+            const msg = `user ${userIndex} answers survey ${surveyIndex}-${seqIndex} step ${j}`;
+            it(msg, updateTestFn(userIndex, surveyIndex, seqIndex, j));
+        }
+    }
 });

@@ -2,6 +2,7 @@
 
 const request = require('supertest');
 const chai = require('chai');
+const _ = require('lodash');
 
 const appgen = require('../app-generator');
 const entityGen = require('./shared-spec');
@@ -22,6 +23,9 @@ exports.setUpFn = function (store) {
 
 exports.loginFn = function (store, login) {
     return function (done) {
+        if (typeof login !== 'object') {
+            login = store.users[login];
+        }
         store.server
             .get('/api/v1.0/auth/basic')
             .auth(login.username, login.password)
@@ -79,7 +83,7 @@ exports.createQxFn = function (store) {
                 if (err) {
                     return done(err);
                 }
-                store.questionIds.push(res.body.id.toString());
+                store.questionIds.push(res.body.id);
                 done();
             });
     };
@@ -96,12 +100,11 @@ exports.fillQxFn = function (store) {
                 if (err) {
                     return done(err);
                 }
-                const question = res.body;
-                store.questions.push({
-                    id,
-                    type: question.type,
-                    choices: question.choices
-                });
+                const question = { id, type: res.body.type };
+                if (res.body.choices) {
+                    question.choices = _.map(res.body.choices, 'id');
+                }
+                store.questions.push(question);
                 done();
             });
 
