@@ -136,7 +136,7 @@ module.exports = function (sequelize, DataTypes) {
             },
             getAnsweredSurvey: function (surveyPromise, userId) {
                 return surveyPromise.then(function (survey) {
-                    return sequelize.models.answer.getSurveyAnswers({
+                    return sequelize.models.answer.getAnswers({
                         userId,
                         surveyId: survey.id
                     }).then(function (answers) {
