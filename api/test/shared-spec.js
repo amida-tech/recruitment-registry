@@ -41,26 +41,31 @@ exports.createUser = function (store) {
 };
 
 exports.genNewQuestion = (function () {
-    const types = ['text', 'choice', 'choices', 'bool', 'choicesplus'];
+    const types = ['text', 'choice', 'choices', 'bool'];
     let index = -1;
     let choiceIndex = 1;
+    let choicesTextSwitch = false;
 
     return function () {
         ++index;
-        const type = types[index % 5];
+        const type = types[index % 4];
         const question = {
             text: `text_${index}`,
             type
         };
-        if ((type === 'choice') || (type === 'choices') || (type === 'choicesplus')) {
+        if ((type === 'choice') || (type === 'choices')) {
             question.choices = [];
             ++choiceIndex;
-            for (let i = choiceIndex; i < choiceIndex + 5; ++i) {
-                question.choices.push(`choice_${i}`);
+            if (type === 'choices') {
+                choicesTextSwitch = !choicesTextSwitch;
             }
-        }
-        if (type === 'choicesplus') {
-            question.additionalText = `additional_text_${index}`;
+            for (let i = choiceIndex; i < choiceIndex + 5; ++i) {
+                const choice = { text: `choice_${i}` };
+                if ((type === 'choices') && choicesTextSwitch && (i === choiceIndex + 4)) {
+                    choice.type = 'text';
+                }
+                question.choices.push(choice);
+            }
         }
         return question;
     };
@@ -77,14 +82,18 @@ exports.createQuestion = function (store) {
                 type
             };
             if ((type === 'choices') || (type === 'choice') || (type === 'choicesplus')) {
-                return models.QuestionChoices.findAll({
+                return models.QuestionChoice.findAll({
                     where: {
                         questionId: id
                     },
                     raw: true,
-                    attributes: ['id']
+                    attributes: ['id', 'type']
                 }).then(function (choices) {
-                    qx.choices = _.map(choices, 'id');
+                    if (type === 'choice') {
+                        qx.choices = _.map(choices, 'id');
+                    } else {
+                        qx.choices = _.map(choices, choice => ({ id: choice.id, type: choice.type }));
+                    }
                     return qx;
                 });
             } else {

@@ -85,8 +85,9 @@ describe('question integration', function () {
                     if (err) {
                         return done(err);
                     }
-                    const actual = qxHelper.prepareServerQuestion(res.body);
-                    expect(actual).to.deep.equal(examples[index]);
+                    const actual = qxHelper.prepareServerQuestion(res.body, examples[index]);
+                    const expected = qxHelper.prepareClientQuestion(_.cloneDeep(examples[index]));
+                    expect(actual).to.deep.equal(expected);
                     done();
                 });
         };

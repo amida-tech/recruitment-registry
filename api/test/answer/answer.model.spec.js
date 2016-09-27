@@ -58,7 +58,8 @@ describe('answer unit', function () {
                             surveyId: store.surveys[surveyIndex]
                         })
                         .then(function (result) {
-                            const expected = _.sortBy(answers, 'questionId');
+                            const modifiedAnswers = answerCommon.prepareClientAnswers(answers);
+                            const expected = _.sortBy(modifiedAnswers, 'questionId');
                             const actual = _.sortBy(result, 'questionId');
                             expect(actual).to.deep.equal(expected);
                         });
@@ -105,7 +106,8 @@ describe('answer unit', function () {
                         })
                         .then(function (result) {
                             const expectedAnswers = pullExpectedAnswers(store, key);
-                            const expected = _.sortBy(expectedAnswers, 'questionId');
+                            const modifiedAnswers = answerCommon.prepareClientAnswers(expectedAnswers);
+                            const expected = _.sortBy(modifiedAnswers, 'questionId');
                             const actual = _.sortBy(result, 'questionId');
                             expect(actual).to.deep.equal(expected);
                         })
@@ -127,7 +129,8 @@ describe('answer unit', function () {
                             const actualKeys = _.sortBy(Object.keys(actual), r => Number(r));
                             expect(actualKeys.length).to.equal(expectedKeys.length);
                             for (let i = 0; i < expectedKeys.length; ++i) {
-                                expect(actual[actualKeys[i]]).to.deep.equal(expectedAnswers[expectedKeys[i]]);
+                                const modifiedAnswers = answerCommon.prepareClientAnswers(expectedAnswers[expectedKeys[i]]);
+                                expect(actual[actualKeys[i]]).to.deep.equal(modifiedAnswers);
                             }
                         });
                 });

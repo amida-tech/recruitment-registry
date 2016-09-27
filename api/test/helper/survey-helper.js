@@ -26,7 +26,14 @@ exports.formAnswersToPost = function (survey, answersSpec) {
             };
             if (spec.choices) {
                 entry.answer.choices = spec.choices.map(function (cindex) {
-                    return questions[index].choices[cindex].id;
+                    const { id } = questions[index].choices[cindex.index];
+                    const result = { id };
+                    if (cindex.textValue) {
+                        result.textValue = cindex.textValue;
+                    } else {
+                        result.boolValue = true;
+                    }
+                    return result;
                 });
             }
             if (spec.hasOwnProperty('choice')) {

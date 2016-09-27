@@ -979,25 +979,7 @@
                                 "type": "integer"
                             },
                             "content": {
-                                "type": "object",
-                                "required": [
-                                    "text",
-                                    "type"
-                                ],
-                                "properties": {
-                                    "text": {
-                                        "type": "string"
-                                    },
-                                    "type": {
-                                        "type": "string"
-                                    },
-                                    "choices": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
+                                "$ref": "#/definitions/newQuestion"
                             }
                         },
                         "minProperties": 1,
@@ -1037,6 +1019,9 @@
                 },
                 "text": {
                     "type": "string"
+                },
+                "type": {
+                    "type": "string"
                 }
             }
         },
@@ -1050,8 +1035,21 @@
                 "choices": {
                     "type": "array",
                     "items": {
-                        "type": "integer",
-                        "minimum": 1
+                        "type": "object",
+                        "required": ["id"],
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "minimum": 1
+                            },
+                            "boolValue": {
+                                "type": "boolean"
+                            },
+                            "textValue": {
+                                "type": "string"
+                            }
+                        },
+                        "maxProperties": 2
                     }
                 },
                 "textValue": {
@@ -1062,7 +1060,7 @@
                 }
             },
             "minProperties": 1,
-            "maxProperties": 2
+            "maxProperties": 1
         },
         "question": {
             "type": "object",
@@ -1112,10 +1110,25 @@
                 "type": {
                     "type": "string"
                 },
-                "choices": {
+                "oneOfchoices": {
                     "type": "array",
                     "items": {
                         "type": "string"
+                    }
+                },
+                "choices": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": ["text"],
+                        "properties": {
+                            "text": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            }
+                        }
                     }
                 }
             }

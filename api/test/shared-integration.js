@@ -101,8 +101,13 @@ exports.fillQxFn = function (store) {
                     return done(err);
                 }
                 const question = { id, type: res.body.type };
-                if (res.body.choices) {
-                    question.choices = _.map(res.body.choices, 'id');
+                const choices = res.body.choices;
+                if (choices) {
+                    if (question.type === 'choice') {
+                        question.choices = _.map(res.body.choices, 'id');
+                    } else {
+                        question.choices = _.map(choices, choice => ({ id: choice.id, type: choice.type }));
+                    }
                 }
                 store.questions.push(question);
                 done();

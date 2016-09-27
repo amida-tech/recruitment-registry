@@ -8,10 +8,10 @@ exports.Example = {
                 text: 'Which sports do you like?',
                 type: 'choices',
                 choices: [
-                    'Football',
-                    'Basketball',
-                    'Soccer',
-                    'Tennis'
+                    { text: 'Football' },
+                    { text: 'Basketball' },
+                    { text: 'Soccer' },
+                    { text: 'Tennis' }
                 ]
             }
         }, {
@@ -19,10 +19,10 @@ exports.Example = {
                 text: 'What is your hair color?',
                 type: 'choice',
                 choices: [
-                    'Black',
-                    'Brown',
-                    'Blonde',
-                    'Other'
+                    { text: 'Black' },
+                    { text: 'Brown' },
+                    { text: 'Blonde' },
+                    { text: 'Other' }
                 ]
             }
         }, {
@@ -43,7 +43,7 @@ exports.Example = {
         }]
     },
     answer: [{
-        choices: [1, 2]
+        choices: [{ index: 1 }, { index: 2 }]
     }, {
         choice: 0
     }, {
@@ -54,7 +54,7 @@ exports.Example = {
         boolValue: false
     }],
     answerUpdate: [{
-        choices: [2, 3]
+        choices: [{ index: 2 }, { index: 3 }]
     }, {
         choice: 2
     }, {
@@ -77,26 +77,26 @@ exports.Alzheimer = {
         }, {
             content: {
                 text: 'How did you hear about us?',
-                type: 'choicesplus',
+                type: 'choices',
                 choices: [
-                    'TV',
-                    'Radio',
-                    'Newspaper',
-                    'Facebook/Google Ad/OtherInternet ad',
-                    'Physician/nurse/healthcare professional',
-                    'Caregiver',
-                    'Friend/Family member',
-                    'Community Event',
-                ],
-                additionalText: 'Other source'
+                    { text: 'TV' },
+                    { text: 'Radio' },
+                    { text: 'Newspaper' },
+                    { text: 'Facebook/Google Ad/OtherInternet ad' },
+                    { text: 'Physician/nurse/healthcare professional' },
+                    { text: 'Caregiver' },
+                    { text: 'Friend/Family member' },
+                    { text: 'Community Event' },
+                    { text: 'Other source', type: 'text' }
+                ]
             }
         }, {
             content: {
                 text: 'Are you interested in receiving more information?',
                 type: 'choices',
                 choices: [
-                    'Brain Health',
-                    'Clinical Trials on Brain Health'
+                    { text: 'Brain Health' },
+                    { text: 'Clinical Trials on Brain Health' }
                 ]
             }
         }, {
@@ -109,20 +109,18 @@ exports.Alzheimer = {
     answer: [{
         boolValue: true
     }, {
-        choices: [0, 5],
-        textValue: 'Internet'
+        choices: [{ index: 0 }, { index: 5 }, { index: 8, textValue: 'Internet' }]
     }, {
-        choices: [1]
+        choices: [{ index: 1 }]
     }, {
         boolValue: true
     }],
     answerUpdate: [{
         boolValue: true
     }, {
-        choices: [2, 3],
-        textValue: 'Metro Ad'
+        choices: [{ index: 2 }, { index: 3 }, { index: 8, textValue: 'Metro Ad' }]
     }, {
-        choices: [0, 1]
+        choices: [{ index: 0 }, { index: 1 }]
     }, {
         boolValue: false
     }]

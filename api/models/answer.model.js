@@ -7,21 +7,31 @@ module.exports = function (sequelize, DataTypes) {
         let result = [];
         if (answer.hasOwnProperty('choices')) {
             answer.choices.forEach(choice => {
-                result.push({
-                    value: choice,
-                    type: 'choice'
-                });
+                const dbAnswer = {
+                    questionChoiceId: choice.id
+                };
+                if (choice.hasOwnProperty('textValue')) {
+                    dbAnswer.value = choice.textValue;
+                    dbAnswer.type = 'text';
+                } else if (choice.hasOwnProperty('boolValue')) {
+                    dbAnswer.value = (choice.boolValue ? 'true' : 'false');
+                    dbAnswer.type = 'bool';
+                } else {
+                    dbAnswer.value = 'true';
+                    dbAnswer.type = 'bool';
+                }
+                result.push(dbAnswer);
             });
         }
         if (answer.hasOwnProperty('choice')) {
             result.push({
-                value: answer.choice,
+                questionChoiceId: answer.choice,
                 type: 'choice'
             });
         }
         if (answer.hasOwnProperty('boolValue')) {
             result.push({
-                value: answer.boolValue,
+                value: answer.boolValue ? 'true' : 'false',
                 type: 'bool'
             });
         }
@@ -37,10 +47,18 @@ module.exports = function (sequelize, DataTypes) {
     const generateAnswer = {
         text: entries => ({ textValue: entries[0].value }),
         bool: entries => ({ boolValue: entries[0].value === 'true' }),
-        choice: entries => ({ choice: parseInt(entries[0].value, 10) }),
+        choice: entries => ({ choice: entries[0].questionChoiceId }),
         choices: entries => {
-            let choices = entries.map(r => parseInt(r.value, 10));
-            choices = _.sortBy(choices);
+            let choices = entries.map(r => {
+                const answer = { id: r.questionChoiceId };
+                if (r.type === 'text') {
+                    answer.textValue = r.value;
+                } else if (r.type === 'bool') {
+                    answer.boolValue = (r.value === 'true');
+                }
+                return answer;
+            });
+            choices = _.sortBy(choices, 'id');
             return { choices };
         },
         choicesplus: entries => {
@@ -81,9 +99,16 @@ module.exports = function (sequelize, DataTypes) {
                 key: 'id'
             }
         },
+        questionChoiceId: {
+            type: DataTypes.INTEGER,
+            field: 'question_choice_id',
+            references: {
+                model: 'question_choice',
+                key: 'id'
+            }
+        },
         value: {
-            type: DataTypes.TEXT,
-            allowNull: false
+            type: DataTypes.TEXT
         },
         type: {
             type: DataTypes.TEXT,
@@ -116,6 +141,7 @@ module.exports = function (sequelize, DataTypes) {
                         userId,
                         surveyId,
                         questionId,
+                        questionChoiceId: value.questionChoiceId || null,
                         value: value.value,
                         type: value.type
                     }));
@@ -159,7 +185,7 @@ module.exports = function (sequelize, DataTypes) {
                 });
             },
             getAnswers: function ({ userId, surveyId }) {
-                return sequelize.query('select a.value as value, a.answer_type_id as type, q.type as qtype, q.id as qid from answer a, question q where a.deleted_at is null and a.user_id = :userid and a.survey_id = :surveyid and a.question_id = q.id', {
+                return sequelize.query('select a.question_choice_id as "questionChoiceId", a.value as value, a.answer_type_id as type, q.type as qtype, q.id as qid from answer a, question q where a.deleted_at is null and a.user_id = :userid and a.survey_id = :surveyid and a.question_id = q.id', {
                         replacements: {
                             userid: { userId, surveyId }.userId,
                             surveyid: { userId, surveyId }.surveyId
@@ -170,10 +196,11 @@ module.exports = function (sequelize, DataTypes) {
                         const groupedResult = _.groupBy(result, 'qid');
                         return Object.keys(groupedResult).map(function (key) {
                             const v = groupedResult[key];
-                            return {
+                            const r = {
                                 questionId: v[0].qid,
                                 answer: generateAnswer[v[0].qtype](v)
                             };
+                            return r;
                         });
                     });
             },
@@ -184,6 +211,7 @@ module.exports = function (sequelize, DataTypes) {
                         raw: true,
                         order: 'deleted_at',
                         attributes: [
+                            'questionChoiceId',
                             'value',
                             'type',
                             'questionId', [sequelize.fn('to_char', sequelize.col('deleted_at'), 'SSSS.MS'), 'deletedAt']
@@ -201,7 +229,6 @@ module.exports = function (sequelize, DataTypes) {
                             .then(qxMap => {
                                 const rmGrouped = _.groupBy(rawAnswers, 'deletedAt');
                                 return Object.keys(rmGrouped).reduce(function (r, date) {
-                                    //console.log(date);
                                     const rmGroup = rmGrouped[date];
                                     const qxGrouped = _.groupBy(rmGroup, 'questionId');
                                     const newValue = Object.keys(qxGrouped).map(function (qid) {

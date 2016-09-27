@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    const QuestionChoices = sequelize.define('question_choices', {
+    const QuestionChoice = sequelize.define('question_choice', {
         questionId: {
             type: DataTypes.INTEGER,
             field: 'question_id',
@@ -13,6 +13,14 @@ module.exports = function (sequelize, DataTypes) {
         },
         text: {
             type: DataTypes.TEXT
+        },
+        type: {
+            type: DataTypes.TEXT,
+            allowNull: false,
+            references: {
+                model: 'answer_type',
+                key: 'name'
+            },
         },
         line: {
             type: DataTypes.INTEGER
@@ -31,5 +39,5 @@ module.exports = function (sequelize, DataTypes) {
         updatedAt: 'updatedAt'
     });
 
-    return QuestionChoices;
+    return QuestionChoice;
 };
