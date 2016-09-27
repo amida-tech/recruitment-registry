@@ -3,15 +3,8 @@
 const _ = require('lodash');
 
 module.exports = function (sequelize, DataTypes) {
-    const QX_TYPES_W_CHOICES = ['choice', 'choices', 'choicesplus'];
-    const QX_FIND_ATTRS = ['id', 'text', 'type', 'additionalText'];
-
-    const cleanQx = function (question) {
-        if ((question.type !== 'choicesplus') || (question.additionalText === null)) {
-            delete question.additionalText;
-        }
-        return question;
-    };
+    const QX_TYPES_W_CHOICES = ['choice', 'choices'];
+    const QX_FIND_ATTRS = ['id', 'text', 'type'];
 
     const Question = sequelize.define('question', {
         text: {
@@ -24,10 +17,6 @@ module.exports = function (sequelize, DataTypes) {
                 model: 'question_type',
                 key: 'name'
             },
-        },
-        additionalText: {
-            type: DataTypes.TEXT,
-            field: 'additional_text'
         },
         createdAt: {
             type: DataTypes.DATE,
@@ -48,7 +37,7 @@ module.exports = function (sequelize, DataTypes) {
         deletedAt: 'deletedAt',
         paranoid: true,
         classMethods: {
-            createQuestionTx: function ({ text, type, oneOfChoices, choices, additionalText }, tx) {
+            createQuestionTx: function ({ text, type, oneOfChoices, choices }, tx) {
                 const nOneOfChoices = (oneOfChoices && oneOfChoices.length) || 0;
                 const nChoices = (choices && choices.length) || 0;
                 if (nOneOfChoices && nChoices) {
@@ -74,7 +63,7 @@ module.exports = function (sequelize, DataTypes) {
                     const err = new Error(`'choices' or 'oneOfChoices' cannot be specified for '${type}' type question.`);
                     return sequelize.Promise.reject(err);
                 }
-                return Question.create({ text, type, additionalText }, { transaction: tx })
+                return Question.create({ text, type }, { transaction: tx })
                     .then(({ id }) => {
                         if (nOneOfChoices || nChoices) {
                             if (nOneOfChoices) {
@@ -106,7 +95,7 @@ module.exports = function (sequelize, DataTypes) {
                         if (!question) {
                             return sequelize.Promise.reject('No such question');
                         }
-                        return cleanQx(question);
+                        return question;
                     })
                     .then(question => {
                         if (QX_TYPES_W_CHOICES.indexOf(question.type) < 0) {
@@ -149,7 +138,7 @@ module.exports = function (sequelize, DataTypes) {
                         if (!question) {
                             return sequelize.Promise.reject('No such question');
                         }
-                        return questions.map(cleanQx);
+                        return questions;
                     })
                     .then(questions => {
                         return sequelize.models.question_choice.findAll(choiceOptions)

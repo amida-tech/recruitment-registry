@@ -17,7 +17,7 @@ module.exports = function (sequelize, DataTypes) {
         hooks: {
             afterSync: function (options) {
                 if (options.force) {
-                    const names = ['text', 'choice', 'choices', 'bool', 'choicesplus'];
+                    const names = ['text', 'choice', 'choices', 'bool'];
                     const ps = names.map(name => QuestionType.create({ name }));
                     return sequelize.Promise.all(ps);
                 }

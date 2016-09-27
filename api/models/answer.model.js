@@ -60,14 +60,6 @@ module.exports = function (sequelize, DataTypes) {
             });
             choices = _.sortBy(choices, 'id');
             return { choices };
-        },
-        choicesplus: entries => {
-            const freeChoiceArr = _.remove(entries, ['type', 'text']);
-            const result = generateAnswer.choices(entries);
-            if (freeChoiceArr && freeChoiceArr.length) {
-                result.textValue = freeChoiceArr[0].value;
-            }
-            return result;
         }
     };
 

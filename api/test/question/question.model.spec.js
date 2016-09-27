@@ -17,6 +17,34 @@ const Question = models.Question;
 describe('question unit', function () {
     before(shared.setUpFn());
 
+    it('error: oneOfChoices and choices together', function() {
+        const input = {
+            text: 'Example',
+            type: 'choice',
+            oneOfChoices: ['a', 'b', 'c'],
+            choices: [{text: 'x'}, {text: 'y', type: 'bool'}, {text: 'z', type: 'text'}]
+        };
+        return Question.createQuestion(input)
+            .then(() => {throw new Error('unexpected no error');})
+            .catch(err => {
+                expect(_.isNull(err.message)).to.equal(false);
+                expect(err.message).to.not .equal('unexpected no error');
+            });
+    });
+
+    it('error: no oneOfChoices or choices for choice', function() {
+        const input = {
+            text: 'Example',
+            type: 'choice'
+        };
+        return Question.createQuestion(input)
+            .then(() => {throw new Error('unexpected no error');})
+            .catch(err => {
+                expect(_.isNull(err.message)).to.equal(false);
+                expect(err.message).to.not .equal('unexpected no error');
+            });
+    });
+
     const ids = [];
 
     const qxBasicFn = function (index) {
