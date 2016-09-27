@@ -23,14 +23,11 @@ const newQuestionsPromise = function (sequelize, survey, tx) {
     const newQuestions = extractNewSurveyQuestions(survey);
     if (newQuestions.length) {
         return sequelize.Promise.all(newQuestions.map(function (q) {
-            return sequelize.models.question.createQuestionTx(q.content, tx).then(function (id) {
-                survey.questions[q.index] = {
-                    id
-                };
-            });
-        })).then(function () {
-            return survey;
-        });
+                return sequelize.models.question.createQuestionTx(q.content, tx).then(function (id) {
+                    survey.questions[q.index] = { id };
+                });
+            }))
+            .then(() => survey);
     } else {
         return survey;
     }
@@ -58,35 +55,35 @@ module.exports = function (sequelize, DataTypes) {
                 const newSurvey = {
                     name: survey.name
                 };
-                return Survey.create(newSurvey, {
-                    transaction: tx
-                }).then(function (result) {
-                    newSurvey.id = result.id;
-                    if (survey.questions && survey.questions.length) {
-                        newSurvey.questions = survey.questions.slice();
-                        return newQuestionsPromise(sequelize, newSurvey, tx);
-                    } else {
-                        return newSurvey;
-                    }
-                }).then((newSurvey) => {
-                    const id = newSurvey.id;
-                    const questions = newSurvey.questions;
-                    if (questions.length) {
-                        return sequelize.Promise.all(questions.map(function (question, index) {
-                            return sequelize.models.survey_question.create({
-                                questionId: question.id,
-                                surveyId: id,
-                                line: index
-                            }, {
-                                transaction: tx
+                return Survey.create(newSurvey, { transaction: tx })
+                    .then(function (result) {
+                        newSurvey.id = result.id;
+                        if (survey.questions && survey.questions.length) {
+                            newSurvey.questions = survey.questions.slice();
+                            return newQuestionsPromise(sequelize, newSurvey, tx);
+                        } else {
+                            return newSurvey;
+                        }
+                    })
+                    .then((newSurvey) => {
+                        const id = newSurvey.id;
+                        const questions = newSurvey.questions;
+                        if (questions.length) {
+                            return sequelize.Promise.all(questions.map(function (question, index) {
+                                return sequelize.models.survey_question.create({
+                                    questionId: question.id,
+                                    surveyId: id,
+                                    line: index
+                                }, {
+                                    transaction: tx
+                                });
+                            })).then(function () {
+                                return id;
                             });
-                        })).then(function () {
+                        } else {
                             return id;
-                        });
-                    } else {
-                        return id;
-                    }
-                });
+                        }
+                    });
             },
             createSurvey: function (survey) {
                 return sequelize.transaction(function (tx) {
@@ -109,45 +106,44 @@ module.exports = function (sequelize, DataTypes) {
                     return survey;
                 }).then(function (survey) {
                     return sequelize.query('select question_id from survey_question where survey_id = :id', {
-                        replacements: {
-                            id: survey.id
-                        },
-                        type: sequelize.QueryTypes.SELECT
-                    }).then(function (result) {
-                        const questionIds = _.map(result, 'question_id');
-                        return sequelize.models.question.getQuestions(questionIds);
-                    }).then(function (questions) {
-                        survey.questions = questions;
-                        return survey;
-                    });
+                            replacements: {
+                                id: survey.id
+                            },
+                            type: sequelize.QueryTypes.SELECT
+                        })
+                        .then(function (result) {
+                            const questionIds = _.map(result, 'question_id');
+                            return sequelize.models.question.getQuestions(questionIds);
+                        })
+                        .then(function (questions) {
+                            survey.questions = questions;
+                            return survey;
+                        });
                 });
             },
             getSurveyById: function (id) {
                 const query = 'select id, name from survey where id = :id';
-                return Survey.getSurvey(query, {
-                    id
-                });
+                return Survey.getSurvey(query, { id });
             },
             getSurveyByName: function (name) {
                 const query = 'select id, name from survey where name = :name';
-                return Survey.getSurvey(query, {
-                    name
-                });
+                return Survey.getSurvey(query, { name });
             },
             getAnsweredSurvey: function (surveyPromise, userId) {
                 return surveyPromise.then(function (survey) {
                     return sequelize.models.answer.getAnswers({
-                        userId,
-                        surveyId: survey.id
-                    }).then(function (answers) {
-                        const qmap = _.keyBy(survey.questions, 'id');
-                        answers.forEach(function (answer) {
-                            const qid = answer.questionId;
-                            const question = qmap[qid];
-                            question.answer = answer.answer;
+                            userId,
+                            surveyId: survey.id
+                        })
+                        .then(function (answers) {
+                            const qmap = _.keyBy(survey.questions, 'id');
+                            answers.forEach(function (answer) {
+                                const qid = answer.questionId;
+                                const question = qmap[qid];
+                                question.answer = answer.answer;
+                            });
+                            return survey;
                         });
-                        return survey;
-                    });
                 });
             },
             getAnsweredSurveyById: function (userId, id) {
