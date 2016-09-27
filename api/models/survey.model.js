@@ -4,33 +4,18 @@ const _ = require('lodash');
 
 const RRError = require('../lib/rr-error');
 
-const extractNewSurveyQuestions = function (questions) {
-    return questions.reduce(function (r, { content }, index) {
-        if (content) {
-            r.push({ content, index });
-        }
-        return r;
-    }, []);
-};
-
-const newQuestionsPromise = function (sequelize, survey, tx) {
-    const newQuestions = extractNewSurveyQuestions(survey.questions);
-    if (newQuestions.length) {
-        return sequelize.Promise.all(newQuestions.map(function (q) {
-                return sequelize.models.question.createQuestionTx(q.content, tx).then(function (id) {
-                    survey.questions[q.index] = { id };
-                });
-            }))
-            .then(() => survey);
-    } else {
-        return survey;
-    }
-};
-
 module.exports = function (sequelize, DataTypes) {
     const Survey = sequelize.define('survey', {
         name: {
             type: DataTypes.TEXT
+        },
+        version: {
+            type: DataTypes.INTEGER,
+            allowNull: false
+        },
+        groupId: {
+            type: DataTypes.INTEGER,
+            field: 'group_id'
         },
         createdAt: {
             type: DataTypes.DATE,
@@ -45,38 +30,52 @@ module.exports = function (sequelize, DataTypes) {
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
         classMethods: {
-            createSurveyTx: function (survey, tx) {
-                const newSurvey = {
-                    name: survey.name
-                };
-                return Survey.create(newSurvey, { transaction: tx })
-                    .then(function (result) {
-                        newSurvey.id = result.id;
-                        if (survey.questions && survey.questions.length) {
-                            newSurvey.questions = survey.questions.slice();
-                            return newQuestionsPromise(sequelize, newSurvey, tx);
-                        } else {
-                            return newSurvey;
-                        }
-                    })
-                    .then((newSurvey) => {
-                        const id = newSurvey.id;
-                        const questions = newSurvey.questions;
-                        if (questions.length) {
-                            return sequelize.Promise.all(questions.map(function (question, index) {
+            createNewQuestionsTx: function (questions, tx) {
+                const newQuestions = questions.reduce(function (r, { content }, index) {
+                    if (content) {
+                        r.push({ content, index });
+                    }
+                    return r;
+                }, []);
+                if (newQuestions.length) {
+                    return sequelize.Promise.all(newQuestions.map(function (q) {
+                            return sequelize.models.question.createQuestionTx(q.content, tx).then(function (id) {
+                                questions[q.index] = { id };
+                            });
+                        }))
+                            .then(() => questions);
+                } else {
+                    return sequelize.Promise.resolve(questions);
+                }
+            },
+            updateQuestionsTx: function (inputQxs, surveyId, tx) {
+                if (inputQxs && inputQxs.length) {
+                    const questions = inputQxs.slice();
+                    return Survey.createNewQuestionsTx(questions, tx)
+                        .then((questions) => {
+                            return sequelize.Promise.all(questions.map(function ({ id: questionId }, line) {
                                 return sequelize.models.survey_question.create({
-                                    questionId: question.id,
-                                    surveyId: id,
-                                    line: index
+                                    questionId,
+                                    surveyId,
+                                    line
                                 }, {
                                     transaction: tx
                                 });
-                            })).then(function () {
-                                return id;
-                            });
-                        } else {
-                            return id;
-                        }
+                            }));
+                        });
+                } else {
+                    return sequelize.Promise.resolve(null);
+                }
+            },
+            createSurveyTx: function (survey, tx) {
+                return Survey.create({ name: survey.name, version: 1 }, { transaction: tx })
+                    .then((created) => {
+                        // TODO: Find a way to use postgres sequences instead of update
+                        return created.update({ groupId: created.id });
+                    })
+                    .then(function ({ id }) {
+                        return Survey.updateQuestionsTx(survey.questions, id, tx)
+                            .then(() => id);
                     });
             },
             createSurvey: function (survey) {
