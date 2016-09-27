@@ -81,7 +81,7 @@ exports.createQuestion = function (store) {
                 choices: null,
                 type
             };
-            if ((type === 'choices') || (type === 'choice') || (type === 'choicesplus')) {
+            if ((type === 'choices') || (type === 'choice')) {
                 return models.QuestionChoice.findAll({
                     where: {
                         questionId: id
