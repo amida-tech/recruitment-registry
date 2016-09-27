@@ -1,10 +1,15 @@
 'use strict';
 
 const jsutil = require('../lib/jsutil');
+const RRError = require('../lib/rr-error');
 
 exports.handleError = function (res) {
     return function (err) {
+        let statusCode = 500;
+        if (err instanceof RRError) {
+            statusCode = 400;
+        }
         const json = jsutil.errToJSON(err);
-        res.status(500).json(json);
+        res.status(statusCode).json(json);
     };
 };
