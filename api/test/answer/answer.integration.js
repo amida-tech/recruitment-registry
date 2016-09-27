@@ -90,7 +90,8 @@ describe('answer integration', function () {
                     if (err) {
                         return done(err);
                     }
-                    const expected = _.sortBy(pullExpectedAnswers(store, key), 'questionId');
+                    const preExpected = _.sortBy(pullExpectedAnswers(store, key), 'questionId');
+                    const expected = answerCommon.prepareClientAnswers(preExpected);
                     const actual = _.sortBy(res.body, 'questionId');
                     expect(actual).to.deep.equal(expected);
                     done();

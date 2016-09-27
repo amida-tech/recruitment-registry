@@ -93,13 +93,20 @@ exports.generateQxAnswer = (function () {
             choicesCountIndex = (choicesCountIndex + 1) % 3;
             const choices = _.range(choicesCountIndex + 1).map(function () {
                 ++answerIndex;
-                return question.choices[answerIndex % question.choices.length];
+                const choice = question.choices[answerIndex % question.choices.length];
+                const answer = {
+                    id: choice.id
+                };
+                if (choice.type === 'text') {
+                    choice.textValue = `text_${answerIndex}`;
+                }
+                return answer;
             });
 
             return {
                 questionId: question.id,
                 answer: {
-                    choices: _.sortBy(choices)
+                    choices: _.sortBy(choices, 'id')
                 }
             };
         },
@@ -145,4 +152,18 @@ exports.pullExpectedAnswers = function (store, key) {
         });
         return r;
     }, []);
+};
+
+exports.prepareClientAnswers = function (clientAnswers) {
+    const result = _.cloneDeep(clientAnswers);
+    result.forEach(({ answer }) => {
+        if (answer.choices) {
+            answer.choices.forEach((choice) => {
+                if (!(choice.hasOwnProperty('textValue') || choice.hasOwnProperty('boolValue'))) {
+                    choice.boolValue = true;
+                }
+            });
+        }
+    });
+    return result;
 };

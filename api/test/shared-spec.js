@@ -44,6 +44,7 @@ exports.genNewQuestion = (function () {
     const types = ['text', 'choice', 'choices', 'bool', 'choicesplus'];
     let index = -1;
     let choiceIndex = 1;
+    let choicesTextSwitch = false;
 
     return function () {
         ++index;
@@ -55,8 +56,15 @@ exports.genNewQuestion = (function () {
         if ((type === 'choice') || (type === 'choices') || (type === 'choicesplus')) {
             question.choices = [];
             ++choiceIndex;
+            if (type === 'choices') {
+                choicesTextSwitch = !choicesTextSwitch;
+            }
             for (let i = choiceIndex; i < choiceIndex + 5; ++i) {
-                question.choices.push({ text: `choice_${i}` });
+                const choice = { text: `choice_${i}` };
+                if ((type === 'choices') && choicesTextSwitch && (i === choiceIndex + 4)) {
+                    choice.type = 'text';
+                }
+                question.choices.push(choice);
             }
         }
         if (type === 'choicesplus') {
@@ -82,9 +90,13 @@ exports.createQuestion = function (store) {
                         questionId: id
                     },
                     raw: true,
-                    attributes: ['id']
+                    attributes: ['id', 'type']
                 }).then(function (choices) {
-                    qx.choices = _.map(choices, 'id');
+                    if (type === 'choice') {
+                        qx.choices = _.map(choices, 'id');
+                    } else {
+                        qx.choices = _.map(choices, choice => ({ id: choice.id, type: choice.type }));
+                    }
                     return qx;
                 });
             } else {

@@ -7,10 +7,20 @@ module.exports = function (sequelize, DataTypes) {
         let result = [];
         if (answer.hasOwnProperty('choices')) {
             answer.choices.forEach(choice => {
-                result.push({
-                    questionChoiceId: choice,
-                    type: 'choice'
-                });
+                const dbAnswer = {
+                    questionChoiceId: choice.id
+                };
+                if (choice.hasOwnProperty('textValue')) {
+                    dbAnswer.value = choice.textValuer.value;
+                    dbAnswer.type = 'text';
+                } else if (choice.hasOwnProperty('boolValue')) {
+                    dbAnswer.value = (choice.boolValue ? 'true' : 'false');
+                    dbAnswer.type = 'bool';
+                } else {
+                    dbAnswer.value = 'true';
+                    dbAnswer.type = 'bool';
+                }
+                result.push(dbAnswer);
             });
         }
         if (answer.hasOwnProperty('choice')) {
@@ -39,8 +49,16 @@ module.exports = function (sequelize, DataTypes) {
         bool: entries => ({ boolValue: entries[0].value === 'true' }),
         choice: entries => ({ choice: entries[0].questionChoiceId }),
         choices: entries => {
-            let choices = entries.map(r => r.questionChoiceId);
-            choices = _.sortBy(choices);
+            let choices = entries.map(r => {
+                const answer = { id: r.questionChoiceId };
+                if (r.type === 'text') {
+                    answer.textValue = r.value;
+                } else if (r.type === 'bool') {
+                    answer.boolValue = (r.value === 'true');
+                }
+                return answer;
+            });
+            choices = _.sortBy(choices, 'id');
             return { choices };
         },
         choicesplus: entries => {

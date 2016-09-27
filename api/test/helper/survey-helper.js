@@ -26,7 +26,8 @@ exports.formAnswersToPost = function (survey, answersSpec) {
             };
             if (spec.choices) {
                 entry.answer.choices = spec.choices.map(function (cindex) {
-                    return questions[index].choices[cindex].id;
+                    const { id } = questions[index].choices[cindex];
+                    return { id, boolValue: true };
                 });
             }
             if (spec.hasOwnProperty('choice')) {

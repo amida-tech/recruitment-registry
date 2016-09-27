@@ -1035,8 +1035,21 @@
                 "choices": {
                     "type": "array",
                     "items": {
-                        "type": "integer",
-                        "minimum": 1
+                        "type": "object",
+                        "required": ["id"],
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "minimum": 1
+                            },
+                            "boolValue": {
+                                "type": "boolean"
+                            },
+                            "textValue": {
+                                "type": "string"
+                            }
+                        },
+                        "maxProperties": 2
                     }
                 },
                 "textValue": {
