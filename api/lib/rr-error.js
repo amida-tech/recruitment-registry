@@ -70,3 +70,7 @@ errors.qxCreateChoicesOther = {
 errors.qxNotFound = {
     msg: 'No such question.'
 };
+
+errors.surveyNotFound = {
+    msg: 'No such survey.'
+};

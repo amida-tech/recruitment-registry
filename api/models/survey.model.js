@@ -2,6 +2,8 @@
 
 const _ = require('lodash');
 
+const RRError = require('../lib/rr-error');
+
 const extractNewSurveyQuestions = function (survey) {
     const questions = survey.questions;
     if (questions && questions.length) {
@@ -93,41 +95,32 @@ module.exports = function (sequelize, DataTypes) {
             listSurveys: function () {
                 return Survey.findAll({ raw: true, attributes: ['id', 'name'], order: 'id' });
             },
-            getSurvey: function (query, replacements) {
-                return sequelize.query(query, {
-                    replacements,
-                    type: sequelize.QueryTypes.SELECT
-                }).then(function (surveys) {
-                    const survey = surveys[0];
-                    if (!survey) {
-                        const err = new Error('No such survey');
-                        return sequelize.Promise.reject(err);
-                    }
-                    return survey;
-                }).then(function (survey) {
-                    return sequelize.query('select question_id from survey_question where survey_id = :id', {
-                            replacements: {
-                                id: survey.id
-                            },
-                            type: sequelize.QueryTypes.SELECT
-                        })
-                        .then(function (result) {
-                            const questionIds = _.map(result, 'question_id');
-                            return sequelize.models.question.getQuestions(questionIds);
-                        })
-                        .then(function (questions) {
-                            survey.questions = questions;
-                            return survey;
-                        });
-                });
+            getSurvey: function (where) {
+                return Survey.find({ where, raw: true, attributes: ['id', 'name'] })
+                    .then(function (survey) {
+                        if (!survey) {
+                            return RRError.reject('surveyNotFound');
+                        }
+                        return sequelize.models.survey_question.findAll({
+                                where: { surveyId: survey.id },
+                                raw: true,
+                                attributes: ['questionId']
+                            })
+                            .then(function (result) {
+                                const questionIds = _.map(result, 'questionId');
+                                return sequelize.models.question.getQuestions(questionIds);
+                            })
+                            .then(function (questions) {
+                                survey.questions = questions;
+                                return survey;
+                            });
+                    });
             },
             getSurveyById: function (id) {
-                const query = 'select id, name from survey where id = :id';
-                return Survey.getSurvey(query, { id });
+                return Survey.getSurvey({ id });
             },
             getSurveyByName: function (name) {
-                const query = 'select id, name from survey where name = :name';
-                return Survey.getSurvey(query, { name });
+                return Survey.getSurvey({ name });
             },
             getAnsweredSurvey: function (surveyPromise, userId) {
                 return surveyPromise.then(function (survey) {
