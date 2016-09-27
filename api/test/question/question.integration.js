@@ -11,6 +11,7 @@ const shared = require('../shared-integration');
 const userExamples = require('../fixtures/user-examples');
 const qxHelper = require('../helper/question-helper');
 const examples = require('../fixtures/question-examples');
+const qxCommon = require('./question-common');
 
 const expect = chai.expect;
 
@@ -51,6 +52,25 @@ describe('question integration', function () {
     it('logout as user', shared.logoutFn(store));
 
     it('login as super', shared.loginFn(store, config.superUser));
+
+    qxCommon.rrErrors.forEach(rrError => {
+        it(`error: ${rrError.code}`, function (done) {
+            store.server
+                .post('/api/v1.0/questions')
+                .set('Authorization', store.auth)
+                .send(rrError.input)
+                .expect(400)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    const rrErr = res.body;
+                    expect(rrErr.code).to.equal(rrError.code);
+                    expect(!!rrErr.message).to.equal(true);
+                    done();
+                });
+        });
+    });
 
     const ids = [];
 

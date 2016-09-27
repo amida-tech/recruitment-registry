@@ -9,6 +9,8 @@ const models = require('../../models');
 const shared = require('../shared-spec.js');
 const qxHelper = require('../helper/question-helper');
 const examples = require('../fixtures/question-examples');
+const qxCommon = require('./question-common');
+const RRError = require('../../lib/rr-error');
 
 const expect = chai.expect;
 
@@ -17,31 +19,21 @@ const Question = models.Question;
 describe('question unit', function () {
     before(shared.setUpFn());
 
-    it('error: oneOfChoices and choices together', function() {
-        const input = {
-            text: 'Example',
-            type: 'choice',
-            oneOfChoices: ['a', 'b', 'c'],
-            choices: [{text: 'x'}, {text: 'y', type: 'bool'}, {text: 'z', type: 'text'}]
-        };
-        return Question.createQuestion(input)
-            .then(() => {throw new Error('unexpected no error');})
-            .catch(err => {
-                expect(_.isNull(err.message)).to.equal(false);
-                expect(err.message).to.not .equal('unexpected no error');
-            });
+    qxCommon.rrErrors.forEach(rrError => {
+        it(`error: ${rrError.code}`, function () {
+            return Question.createQuestion(rrError.input)
+                .then(() => { throw new Error('unexpected no error'); })
+                .catch(err => {
+                    expect(err instanceof RRError).to.equal(true);
+                    expect(err.code).to.equal(rrError.code);
+                });
+        });
     });
 
-    it('error: no oneOfChoices or choices for choice', function() {
-        const input = {
-            text: 'Example',
-            type: 'choice'
-        };
-        return Question.createQuestion(input)
-            .then(() => {throw new Error('unexpected no error');})
-            .catch(err => {
-                expect(_.isNull(err.message)).to.equal(false);
-                expect(err.message).to.not .equal('unexpected no error');
+    it('get all questions when none', function () {
+        return Question.getAllQuestions()
+            .then((questions) => {
+                expect(questions).to.have.length(0);
             });
     });
 
@@ -84,6 +76,15 @@ describe('question unit', function () {
         it(`create/get/update question ${i} type ${examples[i].type}`, qxBasicFn(i));
     }
 
+    it('error: get with non-existant id', function () {
+        return Question.getQuestion(99999)
+            .then(() => { throw new Error('unexpected no error'); })
+            .catch(err => {
+                expect(err instanceof RRError).to.equal(true);
+                expect(err.code).to.equal('qxNotFound');
+            });
+    });
+
     const questionsVerifyFn = function (indices = _.range(examples.length)) {
         return function (questions) {
             return qxHelper.prepareClientQuestions(examples, ids, indices)
@@ -99,6 +100,15 @@ describe('question unit', function () {
 
     it('get all questions', function () {
         return Question.getAllQuestions().then(questionsVerifyFn());
+    });
+
+    it('error: get multiple with non-existant id', function () {
+        return Question.getQuestions([1, 99999])
+            .then(() => { throw new Error('unexpected no error'); })
+            .catch(err => {
+                expect(err instanceof RRError).to.equal(true);
+                expect(err.code).to.equal('qxNotFound');
+            });
     });
 
     it('remove some question and verify', function () {

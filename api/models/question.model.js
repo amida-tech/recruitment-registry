@@ -2,6 +2,8 @@
 
 const _ = require('lodash');
 
+const RRError = require('../lib/rr-error');
+
 module.exports = function (sequelize, DataTypes) {
     const QX_TYPES_W_CHOICES = ['choice', 'choices'];
     const QX_FIND_ATTRS = ['id', 'text', 'type'];
@@ -41,27 +43,22 @@ module.exports = function (sequelize, DataTypes) {
                 const nOneOfChoices = (oneOfChoices && oneOfChoices.length) || 0;
                 const nChoices = (choices && choices.length) || 0;
                 if (nOneOfChoices && nChoices) {
-                    const err = new Error(`'oneOfChoices' and 'choices' cannot be specified simultaneously.`);
-                    return sequelize.Promise.reject(err);
+                    return RRError.reject('qxCreateChoicesBoth');
                 }
                 if ((type === 'choices') && !nChoices) {
-                    const err = new Error(`'choices' was not specified for 'choices' type question.`);
-                    return sequelize.Promise.reject(err);
+                    return RRError.reject('qxCreateChoicesNone');
                 }
                 if ((type === 'choice') && !(nOneOfChoices || nChoices)) {
-                    const err = new Error(`'oneOfChoices' or 'choices' was not specified for 'choice' type question.`);
-                    return sequelize.Promise.reject(err);
+                    return RRError.reject('qxCreateChoiceNone');
                 }
                 if ((type === 'choice') && nChoices) {
-                    const notBoolChoices = choices.filter((choice) => !(_.isNil(choice.type) || (choice.type !== 'bool')));
+                    const notBoolChoices = choices.filter((choice) => !(_.isNil(choice.type) || (choice.type === 'bool')));
                     if (notBoolChoices.length) {
-                        const err = new Error(`'choices' can only be 'bool' type for 'choice' type question.`);
-                        return sequelize.Promise.reject(err);
+                        return RRError.reject('qxCreateChoiceNotBool');
                     }
                 }
-                if ((type !== 'choice') && (type !== 'choices') && (type !== 'choicesplus') && (nOneOfChoices || nChoices)) {
-                    const err = new Error(`'choices' or 'oneOfChoices' cannot be specified for '${type}' type question.`);
-                    return sequelize.Promise.reject(err);
+                if ((type !== 'choice') && (type !== 'choices') && (nOneOfChoices || nChoices)) {
+                    return RRError.reject('qxCreateChoicesOther');
                 }
                 return Question.create({ text, type }, { transaction: tx })
                     .then(({ id }) => {
@@ -93,7 +90,7 @@ module.exports = function (sequelize, DataTypes) {
                 return Question.findById(id, { raw: true, attributes: QX_FIND_ATTRS })
                     .then(question => {
                         if (!question) {
-                            return sequelize.Promise.reject('No such question');
+                            return RRError.reject('qxNotFound');
                         }
                         return question;
                     })
@@ -134,13 +131,9 @@ module.exports = function (sequelize, DataTypes) {
             getQuestionsCommon: function (options, choiceOptions) {
                 return Question.findAll(options)
                     .then(questions => {
-                        const question = questions[0];
-                        if (!question) {
-                            return sequelize.Promise.reject('No such question');
+                        if (!questions.length) {
+                            return { questions, map: {} };
                         }
-                        return questions;
-                    })
-                    .then(questions => {
                         return sequelize.models.question_choice.findAll(choiceOptions)
                             .then(choices => {
                                 const map = _.keyBy(questions, 'id');
@@ -178,6 +171,12 @@ module.exports = function (sequelize, DataTypes) {
                     order: 'line'
                 };
                 return Question.getQuestionsCommon(options, choicesOptions)
+                    .then(({ questions, map }) => {
+                        if (questions.length !== ids.length) {
+                            return RRError.reject('qxNotFound');
+                        }
+                        return { questions, map };
+                    })
                     .then(({ map }) => ids.map(id => map[id]));
             },
             getAllQuestions: function () {
