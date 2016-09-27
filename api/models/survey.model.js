@@ -4,25 +4,17 @@ const _ = require('lodash');
 
 const RRError = require('../lib/rr-error');
 
-const extractNewSurveyQuestions = function (survey) {
-    const questions = survey.questions;
-    if (questions && questions.length) {
-        return questions.reduce(function (r, question, index) {
-            if (question.content) {
-                r.push({
-                    content: question.content,
-                    index
-                });
-            }
-            return r;
-        }, []);
-    } else {
-        return [];
-    }
+const extractNewSurveyQuestions = function (questions) {
+    return questions.reduce(function (r, { content }, index) {
+        if (content) {
+            r.push({ content, index });
+        }
+        return r;
+    }, []);
 };
 
 const newQuestionsPromise = function (sequelize, survey, tx) {
-    const newQuestions = extractNewSurveyQuestions(survey);
+    const newQuestions = extractNewSurveyQuestions(survey.questions);
     if (newQuestions.length) {
         return sequelize.Promise.all(newQuestions.map(function (q) {
                 return sequelize.models.question.createQuestionTx(q.content, tx).then(function (id) {
@@ -106,11 +98,11 @@ module.exports = function (sequelize, DataTypes) {
                                 raw: true,
                                 attributes: ['questionId']
                             })
-                            .then(function (result) {
+                            .then(result => {
                                 const questionIds = _.map(result, 'questionId');
                                 return sequelize.models.question.getQuestions(questionIds);
                             })
-                            .then(function (questions) {
+                            .then(questions => {
                                 survey.questions = questions;
                                 return survey;
                             });
@@ -123,21 +115,22 @@ module.exports = function (sequelize, DataTypes) {
                 return Survey.getSurvey({ name });
             },
             getAnsweredSurvey: function (surveyPromise, userId) {
-                return surveyPromise.then(function (survey) {
-                    return sequelize.models.answer.getAnswers({
-                            userId,
-                            surveyId: survey.id
-                        })
-                        .then(function (answers) {
-                            const qmap = _.keyBy(survey.questions, 'id');
-                            answers.forEach(function (answer) {
-                                const qid = answer.questionId;
-                                const question = qmap[qid];
-                                question.answer = answer.answer;
+                return surveyPromise
+                    .then(function (survey) {
+                        return sequelize.models.answer.getAnswers({
+                                userId,
+                                surveyId: survey.id
+                            })
+                            .then(function (answers) {
+                                const qmap = _.keyBy(survey.questions, 'id');
+                                answers.forEach(answer => {
+                                    const qid = answer.questionId;
+                                    const question = qmap[qid];
+                                    question.answer = answer.answer;
+                                });
+                                return survey;
                             });
-                            return survey;
-                        });
-                });
+                    });
             },
             getAnsweredSurveyById: function (userId, id) {
                 const p = Survey.getSurveyById(id);
