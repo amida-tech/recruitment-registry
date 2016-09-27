@@ -41,19 +41,19 @@ exports.createUser = function (store) {
 };
 
 exports.genNewQuestion = (function () {
-    const types = ['text', 'choice', 'choices', 'bool', 'choicesplus'];
+    const types = ['text', 'choice', 'choices', 'bool'];
     let index = -1;
     let choiceIndex = 1;
     let choicesTextSwitch = false;
 
     return function () {
         ++index;
-        const type = types[index % 5];
+        const type = types[index % 4];
         const question = {
             text: `text_${index}`,
             type
         };
-        if ((type === 'choice') || (type === 'choices') || (type === 'choicesplus')) {
+        if ((type === 'choice') || (type === 'choices')) {
             question.choices = [];
             ++choiceIndex;
             if (type === 'choices') {
@@ -66,9 +66,6 @@ exports.genNewQuestion = (function () {
                 }
                 question.choices.push(choice);
             }
-        }
-        if (type === 'choicesplus') {
-            question.additionalText = `additional_text_${index}`;
         }
         return question;
     };

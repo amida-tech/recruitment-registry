@@ -43,7 +43,7 @@ exports.Example = {
         }]
     },
     answer: [{
-        choices: [1, 2]
+        choices: [{ index: 1 }, { index: 2 }]
     }, {
         choice: 0
     }, {
@@ -54,7 +54,7 @@ exports.Example = {
         boolValue: false
     }],
     answerUpdate: [{
-        choices: [2, 3]
+        choices: [{ index: 2 }, { index: 3 }]
     }, {
         choice: 2
     }, {
@@ -77,7 +77,7 @@ exports.Alzheimer = {
         }, {
             content: {
                 text: 'How did you hear about us?',
-                type: 'choicesplus',
+                type: 'choices',
                 choices: [
                     { text: 'TV' },
                     { text: 'Radio' },
@@ -87,8 +87,8 @@ exports.Alzheimer = {
                     { text: 'Caregiver' },
                     { text: 'Friend/Family member' },
                     { text: 'Community Event' },
-                ],
-                additionalText: 'Other source'
+                    { text: 'Other source', type: 'text' }
+                ]
             }
         }, {
             content: {
@@ -109,20 +109,18 @@ exports.Alzheimer = {
     answer: [{
         boolValue: true
     }, {
-        choices: [0, 5],
-        textValue: 'Internet'
+        choices: [{ index: 0 }, { index: 5 }, { index: 8, textValue: 'Internet' }]
     }, {
-        choices: [1]
+        choices: [{ index: 1 }]
     }, {
         boolValue: true
     }],
     answerUpdate: [{
         boolValue: true
     }, {
-        choices: [2, 3],
-        textValue: 'Metro Ad'
+        choices: [{ index: 2 }, { index: 3 }, { index: 8, textValue: 'Metro Ad' }]
     }, {
-        choices: [0, 1]
+        choices: [{ index: 0 }, { index: 1 }]
     }, {
         boolValue: false
     }]

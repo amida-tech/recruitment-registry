@@ -26,12 +26,12 @@ module.exports = [{
     type: 'bool'
 }, {
     text: 'How did you hear about us?',
-    type: 'choicesplus',
+    type: 'choices',
     choices: [
         { text: 'TV' },
         { text: 'Newspaper' },
         { text: 'Internet', type: 'bool' },
-        { text: 'Friends', type: 'bool' }
-    ],
-    additionalText: 'Other'
+        { text: 'Friends', type: 'bool' },
+        { text: 'Other', type: 'text' }
+    ]
 }];

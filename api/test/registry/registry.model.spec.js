@@ -107,7 +107,6 @@ describe('registry unit', function () {
 
     it('setup user with profile', function () {
         answers = helper.formAnswersToPost(survey, surveyExample.answer);
-
         return Registry.createProfile({
                 registryName: registryExample.name,
                 user: userExample,

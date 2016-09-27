@@ -64,7 +64,7 @@ exports.prepareServerQuestion = function (question, clientQuestion) {
 };
 
 exports.prepareClientQuestion = function (question) {
-    if (question.type === 'choices' || question.type === 'choicesplus') {
+    if (question.type === 'choices') {
         question.choices.forEach((choice) => choice.type = choice.type || 'bool');
     }
     return question;

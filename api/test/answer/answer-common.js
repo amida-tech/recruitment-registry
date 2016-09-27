@@ -109,11 +109,6 @@ exports.generateQxAnswer = (function () {
                     choices: _.sortBy(choices, 'id')
                 }
             };
-        },
-        choicesplus: function (question) {
-            const result = this.choices(question);
-            result.answer.textValue = `text_${answerIndex}`;
-            return result;
         }
     };
 

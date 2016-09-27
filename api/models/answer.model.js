@@ -11,7 +11,7 @@ module.exports = function (sequelize, DataTypes) {
                     questionChoiceId: choice.id
                 };
                 if (choice.hasOwnProperty('textValue')) {
-                    dbAnswer.value = choice.textValuer.value;
+                    dbAnswer.value = choice.textValue;
                     dbAnswer.type = 'text';
                 } else if (choice.hasOwnProperty('boolValue')) {
                     dbAnswer.value = (choice.boolValue ? 'true' : 'false');
