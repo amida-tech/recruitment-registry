@@ -82,9 +82,29 @@ describe('survey unit', function () {
         };
     };
 
+    it('error: create survey without questions', function() {
+        return Survey.createSurvey({name: 'name', released: false})
+            .then(() => { throw new Error('unexpected no error'); })
+            .catch(err => {
+                expect(err).to.be.instanceof(RRError);
+                expect(err.code).to.equal('surveyNoQuestions');
+                expect(!!err.message).to.equal(true);
+            });
+    });
+
     for (let i = 0; i < 8; ++i) {
         it(`create/verify/update survey ${i} and list all`, createVerifySurveyFn(i));
     }
+
+    it('error: show a non existant survey', function () {
+        return Survey.getSurveyById(999)
+            .then(() => { throw new Error('unexpected no error'); })
+            .catch(err => {
+                expect(err).to.be.instanceof(RRError);
+                expect(err.code).to.equal('surveyNotFound');
+                expect(!!err.message).to.equal(true);
+            });
+    });
 
     it('error: release an already released survey', function () {
         const releasedSurvey = store.surveys[1];

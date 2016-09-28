@@ -59,26 +59,25 @@ module.exports = function (sequelize, DataTypes) {
                 }
             },
             updateQuestionsTx: function (inputQxs, surveyId, tx) {
-                if (inputQxs && inputQxs.length) {
-                    const questions = inputQxs.slice();
-                    return Survey.createNewQuestionsTx(questions, tx)
-                        .then((questions) => {
-                            return sequelize.Promise.all(questions.map(function ({ id: questionId }, line) {
-                                return sequelize.models.survey_question.create({
-                                    questionId,
-                                    surveyId,
-                                    line
-                                }, {
-                                    transaction: tx
-                                });
-                            }));
-                        });
-                } else {
-                    return sequelize.Promise.resolve(null);
-                }
+                const questions = inputQxs.slice();
+                return Survey.createNewQuestionsTx(questions, tx)
+                    .then((questions) => {
+                        return sequelize.Promise.all(questions.map(function ({ id: questionId }, line) {
+                            return sequelize.models.survey_question.create({
+                                questionId,
+                                surveyId,
+                                line
+                            }, {
+                                transaction: tx
+                            });
+                        }));
+                    });
             },
             createSurveyTx: function (survey, tx) {
                 const { name, released } = survey;
+                if (! (survey.questions && survey.questions.length)) {
+                    return RRError.reject('surveyNoQuestions');
+                }
                 return Survey.create({ name, released, version: 1 }, { transaction: tx })
                     .then((created) => {
                         // TODO: Find a way to use postgres sequences instead of update

@@ -82,3 +82,7 @@ errors.surveyNotFound = {
 errors.surveyAlreadyReleased = {
     msg: 'Survey is already released.'
 };
+
+errors.surveyNoQuestions = {
+    msg: 'Surveys without questions are not accepted.'
+};
