@@ -99,6 +99,19 @@ module.exports = function (sequelize, DataTypes) {
                     .then(survey => survey.update({ name }))
                     .then(() => ({}));
             },
+            releaseSurvey: function (id) {
+                return Survey.findById(id)
+                    .then(survey => {
+                        if (!survey) {
+                            return RRError.reject('surveyNotFound');
+                        }
+                        if (survey.released) {
+                            return RRError.reject('surveyAlreadyReleased');
+                        }
+                        return survey.update({ released: true });
+                    })
+                    .then(() => ({}));
+            },
             listSurveys: function () {
                 return Survey.findAll({ raw: true, attributes: ['id', 'name', 'released'], order: 'id' });
             },

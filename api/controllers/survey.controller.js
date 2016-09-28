@@ -35,6 +35,13 @@ exports.updateSurvey = function (req, res) {
         .catch(shared.handleError(res));
 };
 
+exports.releaseSurvey = function (req, res) {
+    const id = _.get(req, 'swagger.params.id.value');
+    Survey.releaseSurvey(id)
+        .then((result) => res.status(200).json(result))
+        .catch(shared.handleError(res));
+};
+
 exports.listSurveys = function (req, res) {
     Survey.listSurveys()
         .then(surveys => res.status(200).json(surveys))

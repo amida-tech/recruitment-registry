@@ -10,6 +10,7 @@ const models = require('../../models');
 const userExamples = require('../fixtures/user-examples');
 const surveyExamples = require('../fixtures/survey-examples');
 const shared = require('../shared-spec.js');
+const RRError = require('../../lib/rr-error');
 
 const expect = chai.expect;
 
@@ -81,9 +82,45 @@ describe('survey unit', function () {
         };
     };
 
-    for (let i = 0; i < 6; ++i) {
+    for (let i = 0; i < 8; ++i) {
         it(`create/verify/update survey ${i} and list all`, createVerifySurveyFn(i));
     }
+
+    it('error: release an already released survey', function () {
+        const releasedSurvey = store.surveys[1];
+        expect(releasedSurvey.released).to.equal(true);
+        return Survey.releaseSurvey(releasedSurvey.id)
+            .then(() => { throw new Error('unexpected no error'); })
+            .catch(err => {
+                expect(err).to.be.instanceof(RRError);
+                expect(err.code).to.equal('surveyAlreadyReleased');
+                expect(!!err.message).to.equal(true);
+            });
+    });
+
+    it('error: release a non existant survey', function () {
+        return Survey.releaseSurvey(999)
+            .then(() => { throw new Error('unexpected no error'); })
+            .catch(err => {
+                expect(err).to.be.instanceof(RRError);
+                expect(err.code).to.equal('surveyNotFound');
+                expect(!!err.message).to.equal(true);
+            });
+    });
+
+    it('release a survey', function () {
+        const survey = store.surveys[4];
+        expect(survey.released).to.equal(false);
+        return Survey.releaseSurvey(survey.id)
+            .then((empty) => {
+                expect(empty).to.deep.equal({});
+                return Survey.getSurveyById(survey.id);
+            })
+            .then((actual) => {
+                survey.released = true;
+                expect(actual).to.deep.equal(survey);
+            });
+    });
 
     it('post/get survey', function () {
         return Survey.createSurvey(example.survey).then(function (id) {

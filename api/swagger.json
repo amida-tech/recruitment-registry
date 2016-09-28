@@ -300,6 +300,39 @@
                 }
             }
         },
+        "/surveys/released/{id}": {
+            "x-swagger-router-controller": "survey.controller",
+            "put": {
+                "summary": "Releases the survey",
+                "description": "Surveys can only be released once after being created.",
+                "operationId": "releaseSurvey",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "id",
+                    "in": "path",
+                    "required": true,
+                    "type": "integer"
+                }, {
+                    "name": "empty",
+                    "in": "body",
+                    "required": true,
+                    "schema": {
+                        "type": "object",
+                        "maxProperties": 0
+                    }
+                }],
+                "responses": {
+                    "200": {
+                        "$ref": "#/responses/emptySuccess"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
         "/surveys/name/{name}": {
             "x-swagger-router-controller": "survey.controller",
             "get": {

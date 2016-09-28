@@ -27,6 +27,10 @@ class RRError extends Error {
         const err = new RRError(code, params);
         return Sequelize.Promise.reject(err); // TODO: Change to ES6 Promise with Sequelize 4
     }
+
+    static message(code) {
+        return (errors[code] || errors.unknown).msg;
+    }
 }
 
 module.exports = RRError;
@@ -73,4 +77,8 @@ errors.qxNotFound = {
 
 errors.surveyNotFound = {
     msg: 'No such survey.'
+};
+
+errors.surveyAlreadyReleased = {
+    msg: 'Survey is already released.'
 };
