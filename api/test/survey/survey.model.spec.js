@@ -82,8 +82,8 @@ describe('survey unit', function () {
         };
     };
 
-    it('error: create survey without questions', function() {
-        return Survey.createSurvey({name: 'name', released: false})
+    it('error: create survey without questions', function () {
+        return Survey.createSurvey({ name: 'name', released: false })
             .then(() => { throw new Error('unexpected no error'); })
             .catch(err => {
                 expect(err).to.be.instanceof(RRError);

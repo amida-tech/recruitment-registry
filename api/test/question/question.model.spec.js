@@ -24,7 +24,7 @@ describe('question unit', function () {
             return Question.createQuestion(rrError.input)
                 .then(() => { throw new Error('unexpected no error'); })
                 .catch(err => {
-                    expect(err instanceof RRError).to.equal(true);
+                    expect(err).to.be.instanceof(RRError);
                     expect(err.code).to.equal(rrError.code);
                 });
         });
@@ -80,7 +80,7 @@ describe('question unit', function () {
         return Question.getQuestion(99999)
             .then(() => { throw new Error('unexpected no error'); })
             .catch(err => {
-                expect(err instanceof RRError).to.equal(true);
+                expect(err).to.be.instanceof(RRError);
                 expect(err.code).to.equal('qxNotFound');
             });
     });
@@ -106,7 +106,7 @@ describe('question unit', function () {
         return Question.getQuestions([1, 99999])
             .then(() => { throw new Error('unexpected no error'); })
             .catch(err => {
-                expect(err instanceof RRError).to.equal(true);
+                expect(err).to.be.instanceof(RRError);
                 expect(err.code).to.equal('qxNotFound');
             });
     });

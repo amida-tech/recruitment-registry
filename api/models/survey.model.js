@@ -75,7 +75,7 @@ module.exports = function (sequelize, DataTypes) {
             },
             createSurveyTx: function (survey, tx) {
                 const { name, released } = survey;
-                if (! (survey.questions && survey.questions.length)) {
+                if (!(survey.questions && survey.questions.length)) {
                     return RRError.reject('surveyNoQuestions');
                 }
                 return Survey.create({ name, released, version: 1 }, { transaction: tx })
