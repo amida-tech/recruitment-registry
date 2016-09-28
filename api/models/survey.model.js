@@ -39,6 +39,7 @@ module.exports = function (sequelize, DataTypes) {
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
         deletedAt: 'deletedAt',
+        paranoid: true,
         classMethods: {
             createNewQuestionsTx: function (questions, tx) {
                 const newQuestions = questions.reduce(function (r, { content }, index) {
@@ -107,9 +108,61 @@ module.exports = function (sequelize, DataTypes) {
                         if (survey.released) {
                             return RRError.reject('surveyAlreadyReleased');
                         }
-                        return survey.update({ released: true });
+                        return sequelize.transaction(function (tx) {
+                            return Survey.destroy({ where: { groupId: survey.groupId, released: true } })
+                                .then(() => survey.update({ released: true }, { transaction: tx }));
+                        });
                     })
                     .then(() => ({}));
+            },
+            createSurveyVersion(survey, replacement) {
+                return sequelize.transaction(function (tx) {
+                    replacement.version = survey.version + 1;
+                    replacement.groupId = survey.groupId;
+                    const newSurvey = {
+                        name: replacement.name,
+                        released: replacement.released,
+                        version: survey.version + 1,
+                        groupId: survey.groupId
+                    };
+                    return Survey.create(newSurvey, { transaction: tx })
+                        .then(function ({ id }) {
+                            return Survey.updateQuestionsTx(replacement.questions, id, tx)
+                                .then(() => id);
+                        })
+                        .then((id) => {
+                            if (replacement.released) {
+                                return Survey.destroy({ where: { id: survey.id } })
+                                    .then(() => id);
+                            }
+                            return id;
+                        });
+                });
+            },
+            versionSurvey: function ({ id, replacement }) {
+                if (!_.get(replacement, 'questions.length')) {
+                    return RRError.reject('surveyNoQuestions');
+                }
+                return Survey.findById(id)
+                    .then(survey => {
+                        if (!survey) {
+                            return RRError.reject('surveyNotFound');
+                        }
+                        return survey;
+                    })
+                    .then(survey => {
+                        return Survey.count({ where: { groupId: survey.groupId, released: false } })
+                            .then(count => {
+                                if (count) {
+                                    return RRError.reject('surveyVersionAlreadyDraft');
+                                } else {
+                                    return Survey.createSurveyVersion(survey, replacement);
+                                }
+                            });
+                    });
+            },
+            deleteSurvey: function (id) {
+                return Survey.destroy({ where: { id } });
             },
             listSurveys: function () {
                 return Survey.findAll({ raw: true, attributes: ['id', 'name', 'released'], order: 'id' });
