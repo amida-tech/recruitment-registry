@@ -58,8 +58,20 @@ describe('survey unit', function () {
                         .then(expected => {
                             expect(serverSurvey).to.deep.equal(expected);
                             store.surveys.push(serverSurvey);
+                            return serverSurvey.id;
                         });
                 })
+                .then((id) => Survey.updateSurvey(id, { name: inputSurvey.name + 'xyz' }))
+                .then(() => Survey.getSurveyByName(inputSurvey.name + 'xyz'))
+                .then(serverSurvey => {
+                    const updatedSurvey = Object.assign({}, inputSurvey, { name: inputSurvey.name + 'xyz' });
+                    return surveyHelper.buildServerSurvey(updatedSurvey, serverSurvey)
+                        .then(expected => {
+                            expect(serverSurvey).to.deep.equal(expected);
+                            return serverSurvey.id;
+                        });
+                })
+                .then((id) => Survey.updateSurvey(id, { name: inputSurvey.name }))
                 .then(() => Survey.listSurveys())
                 .then(surveys => {
                     expect(surveys).to.have.length(index + 1);
@@ -70,7 +82,7 @@ describe('survey unit', function () {
     };
 
     for (let i = 0; i < 6; ++i) {
-        it(`create/verify survey ${i} and list all`, createVerifySurveyFn(i));
+        it(`create/verify/update survey ${i} and list all`, createVerifySurveyFn(i));
     }
 
     it('post/get survey', function () {

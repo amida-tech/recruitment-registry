@@ -244,17 +244,17 @@
         },
         "/surveys/{id}": {
             "x-swagger-router-controller": "survey.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
             "get": {
                 "summary": "Gets the survey",
                 "operationId": "getSurveyById",
                 "security": [{
                     "admin": []
-                }],
-                "parameters": [{
-                    "name": "id",
-                    "in": "path",
-                    "required": true,
-                    "type": "integer"
                 }],
                 "responses": {
                     "200": {
@@ -262,6 +262,37 @@
                         "schema": {
                             "$ref": "#/definitions/survey"
                         }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "put": {
+                "summary": "Updates the survey",
+                "description": "Only the name of the survey can be updated here. See [POST /surveys/version].",
+                "operationId": "updateSurvey",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "updateObj",
+                    "in": "body",
+                    "required": true,
+                    "schema": {
+                        "type": "object",
+                        "required": ["name"],
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }],
+                "responses": {
+                    "200": {
+                        "$ref": "#/responses/emptySuccess"
                     },
                     "default": {
                         "$ref": "#/responses/genericError"

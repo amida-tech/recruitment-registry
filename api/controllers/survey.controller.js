@@ -28,6 +28,13 @@ exports.createSurvey = function (req, res) {
         .catch(shared.handleError(res));
 };
 
+exports.updateSurvey = function (req, res) {
+    const id = _.get(req, 'swagger.params.id.value');
+    Survey.updateSurvey(id, req.body)
+        .then((result) => res.status(200).json(result))
+        .catch(shared.handleError(res));
+};
+
 exports.listSurveys = function (req, res) {
     Survey.listSurveys()
         .then(surveys => res.status(200).json(surveys))

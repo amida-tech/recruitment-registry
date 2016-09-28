@@ -3,6 +3,7 @@
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
+const _ = require('lodash');
 
 const helper = require('../helper/survey-helper');
 
@@ -58,10 +59,10 @@ describe('survey integration', function () {
         };
     };
 
-    const showSurveyFn = function () {
+    const showSurveyFn = function (index, update = {}) {
         return function (done) {
-            const lastSurvey = store.inputSurveys[store.inputSurveys.length - 1];
-            const id = store.surveyIds[store.surveyIds.length - 1];
+            const inputSurvey = store.inputSurveys[index];
+            const id = store.surveyIds[index];
             store.server
                 .get(`/api/v1.0/surveys/${id}`)
                 .set('Authorization', store.auth)
@@ -70,13 +71,35 @@ describe('survey integration', function () {
                     if (err) {
                         return done(err);
                     }
-                    store.surveys.push(res.body);
-                    helper.buildServerSurvey(lastSurvey, res.body)
+                    if (_.isEmpty(update)) {
+                        store.surveys.push(res.body);
+                    }
+                    const expected = Object.assign({}, inputSurvey, update);
+                    helper.buildServerSurvey(expected, res.body)
                         .then(function (expected) {
                             expect(res.body).to.deep.equal(expected);
                         })
                         .then(() => done())
                         .catch(err => done(err));
+                });
+        };
+    };
+
+    const updateSurveyFn = function (index, name) {
+        return function (done) {
+            const id = store.surveyIds[index];
+            name = name || store.inputSurveys[index].name;
+            store.server
+                .put(`/api/v1.0/surveys/${id}`)
+                .set('Authorization', store.auth)
+                .send({ name })
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    expect(res.body).to.deep.equal({});
+                    done();
                 });
         };
     };
@@ -103,8 +126,28 @@ describe('survey integration', function () {
     for (let i = 0; i < 6; ++i) {
         it(`create survey ${i}`, createSurveyFn(i));
         it(`verify survey ${i}`, showSurveyFn(i));
+        const name = `updated_name_${i}`;
+        it(`update survey ${i}`, updateSurveyFn(i, name));
+        it(`verify survey ${i}`, showSurveyFn(i, { name }));
+        it(`update survey ${i}`, updateSurveyFn(i));
         it(`list surveys and verify`, listSurveysFn(i));
     }
+
+    it('error: update name and release', function (done) {
+        const id = store.surveyIds[2];
+        store.server
+            .put(`/api/v1.0/surveys/${id}`)
+            .set('Authorization', store.auth)
+            .send({ name: 'any_name', released: true })
+            .expect(400)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                expect(!!res.body.message).to.equal(true);
+                done();
+            });
+    });
 
     it('create a new user', shared.postUserFn(store, user));
 
