@@ -242,6 +242,44 @@
                 }
             }
         },
+        "/surveys/version": {
+            "x-swagger-router-controller": "survey.controller",
+            "post": {
+                "summary": "Creates a new version of the survey",
+                "operationId": "versionSurvey",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "newSurveyVersion",
+                    "in": "body",
+                    "description": "Id of the parent survey and all the fields of the new version.",
+                    "required": true,
+                    "schema": {
+                        "type": "object",
+                        "required": ["id", "replacement"],
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "minimum": 1
+                            },
+                            "replacement": {
+                                "$ref": "#/definitions/newSurvey"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }],
+                "responses": {
+                    "201": {
+                        "$ref": "#/responses/idSuccess"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
         "/surveys/{id}": {
             "x-swagger-router-controller": "survey.controller",
             "parameters": [{
@@ -264,6 +302,21 @@
                         }
                     },
                     "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Deletes the survey",
+                "operationId": "deleteSurvey",
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "200": {
+                        "$ref": "#/responses/emptySuccess"
+                    },
+                   "default": {
                         "$ref": "#/responses/genericError"
                     }
                 }
