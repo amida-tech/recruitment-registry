@@ -220,15 +220,19 @@
                             "type": "array",
                             "items": {
                                 "type": "object",
-                                "required": ["id", "name"],
+                                "required": ["id", "name", "released"],
                                 "properties": {
                                     "id": {
                                         "type": "integer"
                                     },
                                     "name": {
                                         "type": "string"
+                                    },
+                                    "released": {
+                                        "type": "boolean"
                                     }
-                                }
+                                },
+                                "additionalProperties": false
                             }
                         }
                     },
@@ -964,7 +968,8 @@
             "type": "object",
             "required": [
                 "name",
-                "questions"
+                "questions",
+                "released"
             ],
             "properties": {
                 "name": {
@@ -986,8 +991,12 @@
                         "maxProperties": 1
                     },
                     "minLength": 1
+                },
+                "released": {
+                    "type": "boolean"
                 }
-            }
+            },
+            "additionalProperties": false
         },
         "newRegistry": {
             "type": "object",
@@ -1153,6 +1162,7 @@
             "required": [
                 "id",
                 "name",
+                "released",
                 "questions"
             ],
             "properties": {
@@ -1162,6 +1172,9 @@
                 "name": {
                     "type": "string"
                 },
+                "released": {
+                    "type": "boolean"
+                },
                 "questions": {
                     "type": "array",
                     "items": {
@@ -1169,7 +1182,8 @@
                     },
                     "minLength": 1
                 }
-            }
+            },
+            "additionalProperties": false
         },
         "newUserProfile": {
             "type": "object",

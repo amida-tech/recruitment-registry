@@ -39,9 +39,9 @@ describe('survey integration', function () {
 
     it('login as super', shared.loginFn(store, config.superUser));
 
-    const createSurveyFn = function () {
+    const createSurveyFn = function (index) {
         return function (done) {
-            const inputSurvey = sharedSpec.genNewSurvey(true);
+            const inputSurvey = sharedSpec.genNewSurvey({ released: index < 4 });
             store.inputSurveys.push(inputSurvey);
             store.server
                 .post('/api/v1.0/surveys')
@@ -71,7 +71,7 @@ describe('survey integration', function () {
                         return done(err);
                     }
                     store.surveys.push(res.body);
-                    helper.buildServerSurveyFromClientSurvey(lastSurvey, res.body)
+                    helper.buildServerSurvey(lastSurvey, res.body)
                         .then(function (expected) {
                             expect(res.body).to.deep.equal(expected);
                         })
@@ -93,14 +93,14 @@ describe('survey integration', function () {
                     }
                     const surveys = res.body;
                     expect(surveys).to.have.length(index + 1);
-                    const expected = store.surveys.map(({ id, name }) => ({ id, name }));
+                    const expected = store.surveys.map(({ id, name, released }) => ({ id, name, released }));
                     expect(surveys).to.deep.equal(expected);
                     done();
                 });
         };
     };
 
-    for (let i = 0; i < 4; ++i) {
+    for (let i = 0; i < 6; ++i) {
         it(`create survey ${i}`, createSurveyFn(i));
         it(`verify survey ${i}`, showSurveyFn(i));
         it(`list surveys and verify`, listSurveysFn(i));
@@ -135,7 +135,7 @@ describe('survey integration', function () {
                 if (err) {
                     return done(err);
                 }
-                helper.buildServerSurveyFromClientSurvey(example.survey, res.body).then(function (expected) {
+                helper.buildServerSurvey(example.survey, res.body).then(function (expected) {
                     expect(res.body).to.deep.equal(expected);
                     serverSurvey = res.body;
                 }).then(function () {

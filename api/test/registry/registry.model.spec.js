@@ -46,7 +46,7 @@ describe('registry unit', function () {
             return Registry.getRegistry(ids[index])
                 .then(actual => {
                     expect(actual.name).to.equal(examples[index].name);
-                    return surveyHelper.buildServerSurveyFromClientSurvey(examples[index].survey, actual.survey)
+                    return surveyHelper.buildServerSurvey(examples[index].survey, actual.survey)
                         .then(function (expected) {
                             expect(actual.survey).to.deep.equal(expected);
                         });
@@ -59,7 +59,7 @@ describe('registry unit', function () {
             return Registry.getRegistryByName(examples[index].name)
                 .then(actual => {
                     expect(actual.name).to.equal(examples[index].name);
-                    return surveyHelper.buildServerSurveyFromClientSurvey(examples[index].survey, actual.survey)
+                    return surveyHelper.buildServerSurvey(examples[index].survey, actual.survey)
                         .then(function (expected) {
                             expect(actual.survey).to.deep.equal(expected);
                         });
@@ -71,7 +71,7 @@ describe('registry unit', function () {
         return function () {
             return Registry.getRegistryProfileSurvey(examples[index].name)
                 .then(actual => {
-                    return surveyHelper.buildServerSurveyFromClientSurvey(examples[index].survey, actual)
+                    return surveyHelper.buildServerSurvey(examples[index].survey, actual)
                         .then(function (expected) {
                             expect(actual).to.deep.equal(expected);
                         });

@@ -21,14 +21,24 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.DATE,
             field: 'created_at',
         },
+        released: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: false
+        },
         updatedAt: {
             type: DataTypes.DATE,
             field: 'updated_at',
+        },
+        deletedAt: {
+            type: DataTypes.DATE,
+            field: 'deleted_at',
         }
     }, {
         freezeTableName: true,
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
+        deletedAt: 'deletedAt',
         classMethods: {
             createNewQuestionsTx: function (questions, tx) {
                 const newQuestions = questions.reduce(function (r, { content }, index) {
@@ -43,7 +53,7 @@ module.exports = function (sequelize, DataTypes) {
                                 questions[q.index] = { id };
                             });
                         }))
-                            .then(() => questions);
+                        .then(() => questions);
                 } else {
                     return sequelize.Promise.resolve(questions);
                 }
@@ -68,7 +78,8 @@ module.exports = function (sequelize, DataTypes) {
                 }
             },
             createSurveyTx: function (survey, tx) {
-                return Survey.create({ name: survey.name, version: 1 }, { transaction: tx })
+                const { name, released } = survey;
+                return Survey.create({ name, released, version: 1 }, { transaction: tx })
                     .then((created) => {
                         // TODO: Find a way to use postgres sequences instead of update
                         return created.update({ groupId: created.id });
@@ -84,10 +95,10 @@ module.exports = function (sequelize, DataTypes) {
                 });
             },
             listSurveys: function () {
-                return Survey.findAll({ raw: true, attributes: ['id', 'name'], order: 'id' });
+                return Survey.findAll({ raw: true, attributes: ['id', 'name', 'released'], order: 'id' });
             },
             getSurvey: function (where) {
-                return Survey.find({ where, raw: true, attributes: ['id', 'name'] })
+                return Survey.find({ where, raw: true, attributes: ['id', 'name', 'released'] })
                     .then(function (survey) {
                         if (!survey) {
                             return RRError.reject('surveyNotFound');

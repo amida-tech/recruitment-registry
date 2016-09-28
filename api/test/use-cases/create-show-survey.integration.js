@@ -93,7 +93,7 @@ describe('create-show-survey use case', function () {
                 if (err) {
                     return done(err);
                 }
-                helper.buildServerSurveyFromClientSurvey(surveyExamples.Example.survey, res.body)
+                helper.buildServerSurvey(surveyExamples.Example.survey, res.body)
                     .then(function (expected) {
                         expect(res.body).to.deep.equal(expected);
                     })
