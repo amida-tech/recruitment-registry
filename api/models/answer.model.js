@@ -69,7 +69,7 @@ module.exports = function (sequelize, DataTypes) {
             allowNull: false,
             field: 'user_id',
             references: {
-                model: 'user',
+                model: 'registry_user',
                 key: 'id'
             }
         },

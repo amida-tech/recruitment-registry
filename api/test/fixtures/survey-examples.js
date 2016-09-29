@@ -109,10 +109,10 @@ exports.Alzheimer = {
                     { text: 'Clinical Trials on Brain Health' }
                 ],
                 actions: [{
-                    type: true,
+                    type: 'true',
                     text: 'Subscribe'
                 }, {
-                    type: false,
+                    type: 'false',
                     text: 'I don\'t want to receive emails'
                 }]
             }
