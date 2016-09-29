@@ -1193,7 +1193,8 @@
             "required": [
                 "id",
                 "text",
-                "type"
+                "type",
+                "selectable"
             ],
             "properties": {
                 "id": {
@@ -1204,6 +1205,9 @@
                 },
                 "type": {
                     "type": "string"
+                },
+                "selectable": {
+                    "type": "boolean"
                 },
                 "choices": {
                     "type": "array",
@@ -1227,7 +1231,8 @@
             "type": "object",
             "required": [
                 "text",
-                "type"
+                "type",
+                "selectable"
             ],
             "properties": {
                 "text": {
@@ -1235,6 +1240,9 @@
                 },
                 "type": {
                     "type": "string"
+                },
+                "selectable": {
+                    "type": "boolean"
                 },
                 "oneOfchoices": {
                     "type": "array",

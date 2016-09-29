@@ -52,7 +52,8 @@ exports.genNewQuestion = (function () {
         const type = types[index % 4];
         const question = {
             text: `text_${index}`,
-            type
+            type,
+            selectable: (index % 2 === 0)
         };
         if ((type === 'choice') || (type === 'choices')) {
             question.choices = [];
