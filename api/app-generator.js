@@ -3,7 +3,7 @@
 const swaggerTools = require('swagger-tools');
 
 const models = require('./models');
-const swaggerObject = require('./swagger.json');
+const swaggerJson = require('./swagger.json');
 const security = require('./security');
 const logger = require('./logger');
 const jsutil = require('./lib/jsutil');
@@ -30,7 +30,8 @@ const errHandler = function (err, req, res, next) {
     res.json(err);
 };
 
-exports.initialize = function (app, callback) {
+exports.initialize = function (app, options, callback) {
+    const swaggerObject = options.swaggerJson || swaggerJson;
     swaggerTools.initializeMiddleware(swaggerObject, function (middleware) {
         app.use(middleware.swaggerMetadata());
 
@@ -60,7 +61,7 @@ exports.initialize = function (app, callback) {
     });
 };
 
-exports.generate = function (callback) {
+exports.generate = function (options, callback) {
     const app = require('./app');
-    exports.initialize(app, callback);
+    exports.initialize(app, options, callback);
 };

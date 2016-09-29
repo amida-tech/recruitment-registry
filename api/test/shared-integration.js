@@ -9,9 +9,9 @@ const entityGen = require('./shared-spec');
 
 const expect = chai.expect;
 
-exports.setUpFn = function (store) {
+exports.setUpFn = function (store, options = {}) {
     return function (done) {
-        appgen.generate(function (err, app) {
+        appgen.generate(options, function (err, app) {
             if (err) {
                 return done(err);
             }
