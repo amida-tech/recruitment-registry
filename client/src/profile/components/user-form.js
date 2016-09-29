@@ -16,9 +16,9 @@ class UserForm extends Component {
 
     return(
       <div>
-    { user ? (
+    { user.username ? (
       <form onSubmit={this.props.onSubmit}>
-        <h2>{user.get('username')}</h2>
+        <h2>{user.username}</h2>
         <div>
 
           <div className="form-group">
@@ -28,7 +28,7 @@ class UserForm extends Component {
 
           <div className="form-group">
             <label>Email</label>
-            <input className="form-control" type="text" id="email" defaultValue={user.get('email')}
+            <input className="form-control" type="text" id="email" defaultValue={user.email}
                    onChange={this.props.changeProfile}/>
           </div>
 
@@ -38,9 +38,9 @@ class UserForm extends Component {
                    onChange={this.props.changeProfile}/>
           </div>
 
-          {renderSelectField("gender", user.get('gender'), "Gender", this.props.availableGenders)}
+          {renderSelectField("gender", user.gender, "Gender", this.props.availableGenders)}
 
-          {renderSelectField("ethnicity", user.get('ethnicity'), "Ethnicity", this.props.availableEthnicities)}
+          {renderSelectField("ethnicity", user.ethnicity, "Ethnicity", this.props.availableEthnicities)}
 
           <p>{this.props.profileSaved ? "Profile Saved" : ""}</p>
 

@@ -1,6 +1,67 @@
 import request from 'superagent'
 
 var apiUrl = 'http://localhost:9005/api/v1.0';
+var isFake = false;
+
+var fakeSurvey =  {
+  "id": 1,
+  "name": "Alz",
+  "questions": [
+    {
+      "id": 1,
+      "text": "What's up dawg?",
+      "type": "bool",
+      actions: [
+        {
+          type: true,
+          text: "not much"
+        },
+        {
+          type: true,
+          text: "goin' good"
+        },
+        {
+          type: false,
+          text: "not good"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "text": "Which sides you'd like?",
+      "type": "choices",
+      "choices": [
+        {
+          "id": 1,
+          "text": "Mayo"
+        },
+        {
+          "id": 2,
+          "text": "Ketchup"
+        },
+        {
+          "id": 3,
+          "text": "Fries"
+        },
+        {
+          "id": 4,
+          "text": "Other",
+          type: "text"
+        }
+      ],
+      actions: [
+        {
+          type: true,
+          text: "Done, gimme my burger"
+        },
+        {
+          type: false,
+          text: "Changed my mind"
+        }
+      ]
+    }
+  ]
+}
 
 const apiProvider = store => next => action => {
   next(action)
@@ -80,7 +141,7 @@ const apiProvider = store => next => action => {
           if (!error) {
             next({
               type: 'GET_SURVEY_SUCCESS',
-              payload: response.body
+              payload: (isFake && fakeSurvey) ? fakeSurvey : response.body
             })
           } else {
             next({type:'GET_SURVEY_ERROR'})
@@ -89,7 +150,7 @@ const apiProvider = store => next => action => {
       break
     case 'GET_PROFILE':
       request
-        .get(apiUrl + '/registries/user-profile/' + action.surveyName)
+        .get(apiUrl + '/registries/user-profile')
         .set("Authorization", "Bearer " + store.getState().get('loggedIn'))
         .end((error, response) => {
           if (!error) {
@@ -105,7 +166,7 @@ const apiProvider = store => next => action => {
     case 'SAVE_PROFILE':
       request
         .put(apiUrl + '/users/me')
-        .send(store.getState().profile.userUpdated)
+        .send(store.getState().getIn(['profile', 'userUpdated']))
         .set("Authorization", "Bearer " + store.getState().get('loggedIn'))
         .end((error) => {
           if (!error) {
@@ -121,11 +182,13 @@ const apiProvider = store => next => action => {
       request
         .post(apiUrl + '/registries/user-profile')
         .send(action.payload)
-        .end((error) => {
+        .end((error, response) => {
           if (!error) {
             next({
-              type: 'REGISTER_SUCCESS'
+              type: 'LOGIN_SUCCESS',
+              data: response.body
             })
+            store.dispatch({type: 'GET_USER'})
           }
         })
       break

@@ -17,10 +17,12 @@ export class RegisterContainer extends Component {
                 availableGenders={availableGenders}
                 history={this.props.history}
                 onSubmit={::this._onSubmit}
+                onChoicesClear={::this._onChoicesClick}
                 btnText={"Register"}
                 survey={survey}
                 changeForm={::this._changeForm}
-                changeChoice={::this._changeChoice}/>
+                changeChoice={::this._changeChoice}
+                changeBoolQuestion={::this._changeBoolQuestion}/>
       </div>)
   }
 
@@ -35,6 +37,23 @@ export class RegisterContainer extends Component {
       questionId: dataTmp[1],
       choiceId: dataTmp[2]
     }))
+  }
+
+  _changeBoolQuestion(data, evt) {
+    this.props.dispatch(register.actions.updateChoicesAnswer({
+      surveyId: data.surveyId,
+      questionId: data.questionId,
+      choiceId: data.choiceId
+    }))
+  }
+
+  _onChoicesClick(data, e) {
+    this.props.dispatch(register.actions.clearChoices({
+      surveyId: data.surveyId,
+      questionId: data.questionId
+    }))
+
+    this.next()
   }
 
   componentWillMount() {
@@ -59,8 +78,14 @@ export class RegisterContainer extends Component {
           choices = Object.keys(choices).filter((key) => {
             return choices[key]
           });
-          choices = choices.map((id) => parseInt(id));
-          ans = { choices: choices}
+          choices = choices.map((id) => {
+            return {
+              id: parseInt(id),
+              boolValue: true
+            }
+          });
+
+          ans = { choices: choices }
         } else {
           ans = { choices: [] }
         }
@@ -77,7 +102,7 @@ export class RegisterContainer extends Component {
     })
 
     this.props.dispatch({type: 'REGISTER', payload: {
-      user: this.props.data.formState,
+      user: this.props.data.get('formState'),
       registryName: 'Alzheimer',
       answers: answersParsed
     }})
