@@ -72,7 +72,7 @@ describe('registry integration', function () {
                     }
                     const { name, survey } = res.body;
                     expect(name).to.equal(examples[index].name);
-                    return surveyHelper.buildServerSurveyFromClientSurvey(examples[index].survey, survey)
+                    return surveyHelper.buildServerSurvey(examples[index].survey, survey)
                         .then(function (expected) {
                             expect(survey).to.deep.equal(expected);
                         })
@@ -98,7 +98,7 @@ describe('registry integration', function () {
                     }
                     const { name, survey } = res.body;
                     expect(name).to.equal(examples[index].name);
-                    return surveyHelper.buildServerSurveyFromClientSurvey(examples[index].survey, survey)
+                    return surveyHelper.buildServerSurvey(examples[index].survey, survey)
                         .then(function (expected) {
                             expect(survey).to.deep.equal(expected);
                         })
@@ -124,7 +124,7 @@ describe('registry integration', function () {
                         return done(err);
                     }
                     const survey = res.body;
-                    return surveyHelper.buildServerSurveyFromClientSurvey(examples[index].survey, survey)
+                    return surveyHelper.buildServerSurvey(examples[index].survey, survey)
                         .then(function (expected) {
                             expect(survey).to.deep.equal(expected);
                         })

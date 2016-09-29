@@ -3,10 +3,12 @@
 exports.Example = {
     survey: {
         name: 'Example',
+        released: true,
         questions: [{
             content: {
                 text: 'Which sports do you like?',
                 type: 'choices',
+                selectable: false,
                 choices: [
                     { text: 'Football' },
                     { text: 'Basketball' },
@@ -18,6 +20,7 @@ exports.Example = {
             content: {
                 text: 'What is your hair color?',
                 type: 'choice',
+                selectable: false,
                 choices: [
                     { text: 'Black' },
                     { text: 'Brown' },
@@ -28,16 +31,19 @@ exports.Example = {
         }, {
             content: {
                 text: 'Where were you born?',
+                selectable: false,
                 type: 'text'
             }
         }, {
             content: {
                 text: 'Are you injured?',
+                selectable: false,
                 type: 'bool'
             }
         }, {
             content: {
                 text: 'Do you have a cat?',
+                selectable: true,
                 type: 'bool'
             }
         }]
@@ -69,15 +75,18 @@ exports.Example = {
 exports.Alzheimer = {
     survey: {
         name: 'Alzheimer',
+        released: true,
         questions: [{
             content: {
                 text: 'Family history of memory disorders/AD/dementia?',
+                selectable: false,
                 type: 'bool'
             }
         }, {
             content: {
                 text: 'How did you hear about us?',
                 type: 'choices',
+                selectable: true,
                 choices: [
                     { text: 'TV' },
                     { text: 'Radio' },
@@ -94,6 +103,7 @@ exports.Alzheimer = {
             content: {
                 text: 'Are you interested in receiving more information?',
                 type: 'choices',
+                selectable: false,
                 choices: [
                     { text: 'Brain Health' },
                     { text: 'Clinical Trials on Brain Health' }
@@ -102,7 +112,8 @@ exports.Alzheimer = {
         }, {
             content: {
                 text: 'Are you interested in volunterring in clinical research?',
-                type: 'bool'
+                type: 'bool',
+                selectable: true
             }
         }]
     },

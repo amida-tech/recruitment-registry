@@ -24,7 +24,7 @@ describe('question unit', function () {
             return Question.createQuestion(rrError.input)
                 .then(() => { throw new Error('unexpected no error'); })
                 .catch(err => {
-                    expect(err instanceof RRError).to.equal(true);
+                    expect(err).to.be.instanceof(RRError);
                     expect(err.code).to.equal(rrError.code);
                 });
         });
@@ -54,7 +54,8 @@ describe('question unit', function () {
                 })
                 .then(() => {
                     const text = `Updated ${examples[index]}`;
-                    return Question.updateQuestion(ids[index], { text });
+                    const selectable = !examples[index].selectable;
+                    return Question.updateQuestion(ids[index], { text, selectable });
                 })
                 .then(() => {
                     const id = ids[index];
@@ -63,11 +64,13 @@ describe('question unit', function () {
                 .then(actual => {
                     qxHelper.prepareServerQuestion(actual, examples[index]);
                     expected.text = `Updated ${examples[index]}`;
+                    expected.selectable = !examples[index].selectable;
                     expect(actual).to.deep.equal(expected);
                 })
                 .then(() => {
                     const text = examples[index].text;
-                    return Question.updateQuestion(ids[index], { text });
+                    const selectable = examples[index].selectable;
+                    return Question.updateQuestion(ids[index], { text, selectable });
                 });
         };
     };
@@ -80,7 +83,7 @@ describe('question unit', function () {
         return Question.getQuestion(99999)
             .then(() => { throw new Error('unexpected no error'); })
             .catch(err => {
-                expect(err instanceof RRError).to.equal(true);
+                expect(err).to.be.instanceof(RRError);
                 expect(err.code).to.equal('qxNotFound');
             });
     });
@@ -106,7 +109,7 @@ describe('question unit', function () {
         return Question.getQuestions([1, 99999])
             .then(() => { throw new Error('unexpected no error'); })
             .catch(err => {
-                expect(err instanceof RRError).to.equal(true);
+                expect(err).to.be.instanceof(RRError);
                 expect(err.code).to.equal('qxNotFound');
             });
     });

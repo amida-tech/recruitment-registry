@@ -6,7 +6,7 @@ const RRError = require('../lib/rr-error');
 
 module.exports = function (sequelize, DataTypes) {
     const QX_TYPES_W_CHOICES = ['choice', 'choices'];
-    const QX_FIND_ATTRS = ['id', 'text', 'type'];
+    const QX_FIND_ATTRS = ['id', 'text', 'type', 'selectable'];
 
     const Question = sequelize.define('question', {
         text: {
@@ -19,6 +19,10 @@ module.exports = function (sequelize, DataTypes) {
                 model: 'question_type',
                 key: 'name'
             },
+        },
+        selectable: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false
         },
         createdAt: {
             type: DataTypes.DATE,
@@ -39,7 +43,7 @@ module.exports = function (sequelize, DataTypes) {
         deletedAt: 'deletedAt',
         paranoid: true,
         classMethods: {
-            createQuestionTx: function ({ text, type, oneOfChoices, choices }, tx) {
+            createQuestionTx: function ({ text, type, selectable, oneOfChoices, choices }, tx) {
                 const nOneOfChoices = (oneOfChoices && oneOfChoices.length) || 0;
                 const nChoices = (choices && choices.length) || 0;
                 if (nOneOfChoices && nChoices) {
@@ -60,7 +64,7 @@ module.exports = function (sequelize, DataTypes) {
                 if ((type !== 'choice') && (type !== 'choices') && (nOneOfChoices || nChoices)) {
                     return RRError.reject('qxCreateChoicesOther');
                 }
-                return Question.create({ text, type }, { transaction: tx })
+                return Question.create({ text, type, selectable }, { transaction: tx })
                     .then(({ id }) => {
                         if (nOneOfChoices || nChoices) {
                             if (nOneOfChoices) {
@@ -122,8 +126,15 @@ module.exports = function (sequelize, DataTypes) {
                             });
                     });
             },
-            updateQuestion: function (id, { text }) {
-                return Question.findById(id).then(qx => qx.update({ text }));
+            updateQuestion: function (id, { text, selectable }) {
+                const updateObj = {};
+                if (text !== undefined) {
+                    updateObj.text = text;
+                }
+                if (selectable !== undefined) {
+                    updateObj.selectable = selectable;
+                }
+                return Question.findById(id).then(qx => qx.update(updateObj));
             },
             deleteQuestion: function (id) {
                 return Question.destroy({ where: { id } });

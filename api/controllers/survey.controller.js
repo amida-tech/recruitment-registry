@@ -28,6 +28,34 @@ exports.createSurvey = function (req, res) {
         .catch(shared.handleError(res));
 };
 
+exports.versionSurvey = function (req, res) {
+    const survey = req.body;
+    Survey.versionSurvey(survey)
+        .then(id => res.status(201).json({ id }))
+        .catch(shared.handleError(res));
+};
+
+exports.updateSurvey = function (req, res) {
+    const id = _.get(req, 'swagger.params.id.value');
+    Survey.updateSurvey(id, req.body)
+        .then((result) => res.status(200).json(result))
+        .catch(shared.handleError(res));
+};
+
+exports.deleteSurvey = function (req, res) {
+    const id = _.get(req, 'swagger.params.id.value');
+    Survey.deleteSurvey(id)
+        .then(() => res.status(204).json({}))
+        .catch(shared.handleError(res));
+};
+
+exports.releaseSurvey = function (req, res) {
+    const id = _.get(req, 'swagger.params.id.value');
+    Survey.releaseSurvey(id)
+        .then((result) => res.status(200).json(result))
+        .catch(shared.handleError(res));
+};
+
 exports.listSurveys = function (req, res) {
     Survey.listSurveys()
         .then(surveys => res.status(200).json(surveys))
