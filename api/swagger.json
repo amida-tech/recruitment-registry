@@ -1215,6 +1215,9 @@
                         "$ref": "#/definitions/choice"
                     }
                 },
+                "actions": {
+                    "$ref": "#/definitions/actions"
+                 },
                 "answer": {
                     "$ref": "#/definitions/answer"
                 }
@@ -1264,6 +1267,9 @@
                             }
                         }
                     }
+                },
+                "actions": {
+                    "$ref": "#/definitions/actions"
                 }
             }
         },
@@ -1380,6 +1386,25 @@
         "emptyObject": {
             "type": "object",
             "maxProperties": 0
+        },
+        "action": {
+            "type": "object",
+            "required": ["text", "type"],
+            "properties": {
+                "text": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false
+        },
+        "actions": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/action"
+            }
         }
     }
 }

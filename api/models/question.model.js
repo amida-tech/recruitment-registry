@@ -43,7 +43,23 @@ module.exports = function (sequelize, DataTypes) {
         deletedAt: 'deletedAt',
         paranoid: true,
         classMethods: {
-            createQuestionTx: function ({ text, type, selectable, oneOfChoices, choices }, tx) {
+            createActionsTx: function (id, actions, tx) {
+                if (actions && actions.length) {
+                    return sequelize.Promise.all(actions.map(function (action, index) {
+                            const record = {
+                                questionId: id,
+                                text: action.text,
+                                type: action.type,
+                                line: index
+                            };
+                            return sequelize.models.question_action.create(record, { transaction: tx });
+                        }))
+                        .then(() => ({ id }));
+                } else {
+                    return sequelize.Promise.resolve({ id });
+                }
+            },
+            createQuestionTx: function ({ text, type, selectable, oneOfChoices, choices, actions }, tx) {
                 const nOneOfChoices = (oneOfChoices && oneOfChoices.length) || 0;
                 const nChoices = (choices && choices.length) || 0;
                 if (nOneOfChoices && nChoices) {
@@ -65,6 +81,7 @@ module.exports = function (sequelize, DataTypes) {
                     return RRError.reject('qxCreateChoicesOther');
                 }
                 return Question.create({ text, type, selectable }, { transaction: tx })
+                    .then(({ id }) => Question.createActionsTx(id, actions, tx))
                     .then(({ id }) => {
                         if (nOneOfChoices || nChoices) {
                             if (nOneOfChoices) {
@@ -97,6 +114,20 @@ module.exports = function (sequelize, DataTypes) {
                             return RRError.reject('qxNotFound');
                         }
                         return question;
+                    })
+                    .then(question => {
+                        return sequelize.models.question_action.findAll({
+                                where: { questionId: question.id },
+                                raw: true,
+                                attributes: ['text', 'type', 'line']
+                            })
+                            .then(actions => {
+                                if (actions.length) {
+                                    const sortedActions = _.sortBy(actions, 'line');
+                                    question.actions = sortedActions.map(({ text, type }) => ({ text, type }));
+                                }
+                                return question;
+                            });
                     })
                     .then(question => {
                         if (QX_TYPES_W_CHOICES.indexOf(question.type) < 0) {
@@ -141,6 +172,30 @@ module.exports = function (sequelize, DataTypes) {
             },
             getQuestionsCommon: function (options, choiceOptions) {
                 return Question.findAll(options)
+                    .then(questions => {
+                        if (!questions.length) {
+                            return questions;
+                        }
+                        return sequelize.models.question_action.findAll(choiceOptions)
+                            .then(actions => {
+                                if (actions.length) {
+                                    const map = _.keyBy(questions, 'id');
+                                    actions.forEach(action => {
+                                        const q = map[action.questionId];
+                                        if (q) {
+                                            delete action.questionId;
+                                            delete action.id;
+                                            if (q.actions) {
+                                                q.actions.push(action);
+                                            } else {
+                                                q.actions = [action];
+                                            }
+                                        }
+                                    });
+                                }
+                                return questions;
+                            });
+                    })
                     .then(questions => {
                         if (!questions.length) {
                             return { questions, map: {} };

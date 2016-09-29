@@ -9,6 +9,11 @@ module.exports = [{
         { text: 'Basketball', type: 'bool' },
         { text: 'Soccer' },
         { text: 'Tennis', type: 'bool' }
+    ],
+    actions: [
+        { text: 'Go there', type: 'yes' },
+        { text: 'Go here', type: 'no' },
+        { text: 'Go everywhere', type: 'yes' }
     ]
 }, {
     text: 'What is your hair color?',
@@ -19,6 +24,10 @@ module.exports = [{
         'Brown',
         'Blonde',
         'Other'
+    ],
+    actions: [
+        { text: 'Yesss', type: 'yes' },
+        { text: 'Huraaa', type: 'no' }
     ]
 }, {
     text: 'Where were you born?',
