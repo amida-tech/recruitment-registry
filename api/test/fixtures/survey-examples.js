@@ -101,19 +101,36 @@ exports.Alzheimer = {
             }
         }, {
             content: {
-                text: 'Are you interested in receiving more information?',
+                text: 'Are you interested in receiving email updates on any of the following?',
                 type: 'choices',
                 selectable: false,
                 choices: [
                     { text: 'Brain Health' },
                     { text: 'Clinical Trials on Brain Health' }
-                ]
+                ],
+                actions: [{
+                    type: 'yes',
+                    text: 'Subscribe'
+                }, {
+                    type: 'no',
+                    text: 'I don\'t want to receive emails'
+                }]
             }
         }, {
             content: {
-                text: 'Are you interested in volunterring in clinical research?',
+                text: 'Are you interested in participating in clinical trials?',
                 type: 'bool',
-                selectable: true
+                selectable: false,
+                actions: [{
+                    type: 'yes',
+                    text: 'Yes, I am interested'
+                }, {
+                    type: 'no',
+                    text: 'I am not sure'
+                }, {
+                    type: 'no',
+                    text: 'No, I just want to see what is out there.'
+                }]
             }
         }]
     },
