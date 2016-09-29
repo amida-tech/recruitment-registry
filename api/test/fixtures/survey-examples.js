@@ -109,10 +109,10 @@ exports.Alzheimer = {
                     { text: 'Clinical Trials on Brain Health' }
                 ],
                 actions: [{
-                    type: 'yes',
+                    type: true,
                     text: 'Subscribe'
                 }, {
-                    type: 'no',
+                    type: false,
                     text: 'I don\'t want to receive emails'
                 }]
             }
@@ -120,17 +120,7 @@ exports.Alzheimer = {
             content: {
                 text: 'Are you interested in participating in clinical trials?',
                 type: 'bool',
-                selectable: false,
-                actions: [{
-                    type: 'yes',
-                    text: 'Yes, I am interested'
-                }, {
-                    type: 'no',
-                    text: 'I am not sure'
-                }, {
-                    type: 'no',
-                    text: 'No, I just want to see what is out there.'
-                }]
+                selectable: false
             }
         }]
     },
