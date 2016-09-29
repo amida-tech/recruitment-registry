@@ -15,6 +15,13 @@ export function updateChoicesAnswer(data) {
   });
 }
 
+export function clearChoices(data) {
+  return dispatch => dispatch({
+    type: "CLEAR_CHOICES_ANSWER",
+    payload: data
+  });
+}
+
 export function getSurvey(surveyName) {
   return dispatch => dispatch({
     type: actionTypes.GET_SURVEY,

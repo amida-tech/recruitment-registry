@@ -1,6 +1,6 @@
 import React, { Component} from 'react';
 import { Draggable, Droppable } from 'react-drag-and-drop'
-
+import './index.scss';
 
 export default class Toolbox extends Component {
   render() {
@@ -14,13 +14,23 @@ export default class Toolbox extends Component {
         <Droppable
             types={['question']}
             onDrop={this.onDrop.bind(this)}>
-          <ul className="Smoothie"></ul>
+          <ul className="question"></ul>
+        </Droppable>
+
+        <Droppable
+          types={['newQuestion']}
+          onDrop={this.onDropNew.bind(this)}>
+          <ul className="newQuestion"></ul>
         </Droppable>
       </div>
     );
   }
 
+  onDropNew(data) {
+    this.props.onDropQuestion(data);
+  }
+
   onDrop(data) {
-    console.log(data)
+    this.props.onDropQuestion(data);
   }
 }

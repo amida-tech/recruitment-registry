@@ -1,4 +1,5 @@
 import * as t from './actionTypes';
+import Immutable from 'immutable'
 
 const initialState = {
   user: {},
@@ -15,7 +16,7 @@ export default (state = initialState, action) => {
         .set('userUpdated', undefined)
         .set('profileSaved', true)
     case t.GET_PROFILE_SUCCESS:
-      return action.payload
+      return Immutable.fromJS(action.payload)
     default:
       return state;
   }

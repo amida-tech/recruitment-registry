@@ -8,7 +8,7 @@ class ProfileContainer extends Component {
   render() {
 
     const survey = this.props.data.get('survey')
-    const user = this.props.data.get('user')
+    const user = this.props.data.get('user').toJS()
 
     return (
       <div>

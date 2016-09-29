@@ -1,14 +1,15 @@
-import App from './app';
-import routes from './routes';
-import Layout from './layout/index';
-import login from './login';
-import register from './register';
-import profile from './profile';
-import { browserHistory } from 'react-router';
+import App from './app'
+import routes from './routes'
+import Layout from './layout/index'
+import login from './login'
+import register from './register'
+import profile from './profile'
+import surveyBuilder from './surveyBuilder'
+import { browserHistory } from 'react-router'
 
 
 export const initialState = {
-  title: "Recruitment Registry",
+  title: "GAP",
   login: {
     formState: {
       hasErrors: false,
@@ -54,6 +55,9 @@ export const initialState = {
     survey: {
       questions: []
     }
+  },
+  surveyBuilder: {
+
   }
 };
 
@@ -61,10 +65,11 @@ export const reducers = {
   [login.constants.NAME]: login.reducer,
   [register.constants.NAME]: register.reducer,
   [profile.constants.NAME]: profile.reducer,
+  [surveyBuilder.constants.NAME]: surveyBuilder.reducer,
   loggedIn: (state = initialState, action) => {
     switch (action.type) {
       case "LOGIN_SUCCESS":
-        browserHistory.push('/home')
+        browserHistory.push('/')
         localStorage.setItem("token", action.data.token)
         return action.data.token
       case "LOGOUT":

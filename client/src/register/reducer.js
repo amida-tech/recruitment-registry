@@ -37,15 +37,36 @@ export default (state = immutableState, action) => {
       return state.merge({
         survey: action.payload
       })
-    case 'UPDATE_CHOICES_ANSWER':
+    case 'CLEAR_CHOICES_ANSWER': {
+      let answersClear = {};
 
-      var answers = {};
+      let qidClear = action.payload.questionId
 
-      var qid = action.payload.questionId
-      var cid = action.payload.choiceId
+      if (state.getIn(['surveyResult', 'answers'])) {
+        answersClear = state.getIn(['surveyResult', 'answers']).toJS();
+      }
 
-      if (state.surveyResult && state.surveyResult.answers) {
-        answers = state.surveyResult.answers;
+      if (answersClear[qidClear]) {
+        Object.keys(answersClear[qidClear]).forEach(function(cid) {
+          answersClear[qidClear][cid] = false
+        })
+      }
+      return state.merge({
+        surveyResult: {
+          surveyId: action.payload.surveyId,
+          answers: answersClear
+        }
+      })
+    }
+    case 'UPDATE_CHOICES_ANSWER': {
+
+      let answers = {};
+
+      let qid = action.payload.questionId
+      let cid = action.payload.choiceId
+
+      if (state.getIn(['surveyResult', 'answers'])) {
+        answers = state.getIn(['surveyResult', 'answers']).toJS();
       }
 
       answers[qid] = answers[qid] ? answers[qid] : {}
@@ -62,8 +83,9 @@ export default (state = immutableState, action) => {
           answers: answers
         }
       });
+    }
     case 'REGISTER_SUCCESS':
-      browserHistory.push('/login');
+
       return state;
     default:
       return state;
