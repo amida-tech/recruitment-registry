@@ -1,10 +1,14 @@
 'use strict';
 
+const chai = require('chai');
 const _ = require('lodash');
 
 const models = require('../models');
 
 const registryExamaples = require('./fixtures/registry-examples');
+const RRError = require('../lib/rr-error');
+
+const expect = chai.expect;
 
 exports.setUpFn = function () {
     return function () {
@@ -36,7 +40,7 @@ exports.createUser = function (store) {
         const inputUser = exports.genNewUser();
         return models.User.create(inputUser)
             .then(function (user) {
-                store.users.push(user.id);
+                store.userIds.push(user.id);
             });
     };
 };
@@ -146,5 +150,17 @@ exports.createRegistry = function (store) {
         const inputRegistry = registryExamaples[0];
         return models.Registry.createRegistry(inputRegistry)
             .then(() => store.registryName = inputRegistry.name);
+    };
+};
+
+exports.throwingHandler = function () {
+    throw new Error('Unexpected no error.');
+};
+
+exports.expectedErrorHandler = function (code) {
+    return function (err) {
+        expect(err).to.be.instanceof(RRError);
+        expect(err.code).to.equal(code);
+        expect(!!err.message).to.equal(true);
     };
 };
