@@ -28,7 +28,7 @@ module.exports = function (sequelize, DataTypes) {
         return r;
     }, {});
 
-    const User = sequelize.define('user', {
+    const User = sequelize.define('registry_user', {
         username: {
             type: DataTypes.TEXT,
             unique: {
