@@ -189,7 +189,8 @@ class Form extends Component {
       slidesToScroll: 1,
       arrows: false,
       draggable: false,
-      accessibility: false
+      accessibility: false,
+      useCSS: false
     }
 
     var slides = this.props.survey.questions.map(question => renderSlide(question))
