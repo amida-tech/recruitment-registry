@@ -22,7 +22,7 @@ class Form extends Component {
       <div key={id}>
         <div className="form-group">
           <label htmlFor={id}>{label}</label>
-          <input required className="form-control" id={id} type={type} onChange={this.props.changeForm} />
+          <input autoComplete="off" required className="form-control" id={id} type={type} onChange={this.props.changeForm} />
         </div>
         <button className="form__submit-btn" onClick={this.next} type="button">Next</button>
       </div>
@@ -181,6 +181,8 @@ class Form extends Component {
       return (<div key={question.id}><div>{content}</div></div>)
     }
 
+    var self = this
+
     var settings = {
       dots: false,
       infinite: false,
@@ -190,13 +192,25 @@ class Form extends Component {
       arrows: false,
       draggable: false,
       accessibility: false,
-      useCSS: false
+      useCSS: false,
+      beforeChange: (currentSlide, nextSlide) => {
+        console.log(currentSlide + " : " + nextSlide)
+        if (nextSlide === (7 + this.props.survey.questions.length)) {
+          this.props.onSubmit()
+          // self.next()
+        }
+      }
     }
 
     var slides = this.props.survey.questions.map(question => renderSlide(question))
 
+    var onSubmit = (evt) => {
+      evt.preventDefault();
+
+    }
+
     return(
-      <form className="" onSubmit={this.props.onSubmit}>
+      <form className="" autoComplete="off">
         <div className="col-sm-6">
           <div className="registry-specific">
             {
@@ -221,9 +235,7 @@ class Form extends Component {
           </div>
         </div>
 
-        <div className="form__submit-btn-wrapper">
-          <button className="form__submit-btn" type="submit">{this.props.btnText}</button>
-        </div>
+
       </form>
     );
 
