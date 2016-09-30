@@ -307,7 +307,7 @@ describe('user unit', function () {
                     email: 'newone@example.com',
                     password: 'newpasword!!',
                     zip: '20888',
-                    ethnicity: 'Caucasion',
+                    ethnicity: 'Caucasian',
                     gender: 'other'
                 };
                 return User.updateUser(id, updateObj).then(function () {
