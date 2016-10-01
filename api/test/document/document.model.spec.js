@@ -7,7 +7,6 @@ const _ = require('lodash');
 
 const shared = require('../shared-spec');
 const models = require('../../models');
-
 const expect = chai.expect;
 
 const User = models.User;
@@ -29,10 +28,10 @@ describe('document unit', function () {
 
     before(shared.setUpFn());
 
-    const createDocumentTypeFn = (function() {
+    const createDocumentTypeFn = (function () {
         let index = -1;
 
-        return function() {
+        return function () {
             ++index;
             const docType = {
                 name: `type_${index}`,
@@ -110,7 +109,7 @@ describe('document unit', function () {
                 })
                 .then(() => {
                     const docs = expectedIndices.map(index => store.activeDocuments[index]);
-                    return models.sequelize.Promise.all(docs.map(({id, content}) => {
+                    return models.sequelize.Promise.all(docs.map(({ id, content }) => {
                         return Document.getDocumentText(id)
                             .then(text => {
                                 expect(text).to.equal(content);
@@ -144,6 +143,23 @@ describe('document unit', function () {
     it('verify documents required for user 1', verifyDocumentsFn(1, []));
     it('verify documents required for user 2', verifyDocumentsFn(2, [1]));
     it('verify documents required for user 3', verifyDocumentsFn(3, [0]));
+
+    it('error: invalid user signs document 0', function () {
+        const documentId = store.activeDocuments[0].id;
+        return DocumentSignature.createSignature(9999, documentId)
+            .then(shared.throwingHandler, err => {
+                expect(err).is.instanceof(models.sequelize.ForeignKeyConstraintError);
+            });
+    });
+
+    it('error: user 0 signs invalid document', function () {
+        const userId = store.userIds[0];
+        return DocumentSignature.createSignature(userId, 9999)
+            .then(shared.throwingHandler, err => {
+                console.log(err);
+                expect(err).is.instanceof(models.sequelize.ForeignKeyConstraintError);
+            });
+    });
 
     it('add a new document type', createDocumentTypeFn);
 
@@ -203,7 +219,14 @@ describe('document unit', function () {
 
     it('delete document type 1', function () {
         const id = store.documentTypes[1].id;
-        return DocumentType.deleteDocumentType(id);
+        return DocumentType.deleteDocumentType(id)
+            .then(() => {
+                return DocumentType.getDocumentTypes()
+                    .then(result => {
+                        const allDocTypes = [0, 2].map(i => store.documentTypes[i]);
+                        expect(result).to.deep.equal(allDocTypes);
+                    });
+            });
     });
 
     it('verify documents required for user 0', verifyDocumentsFn(0, []));

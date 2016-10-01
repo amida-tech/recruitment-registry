@@ -29,23 +29,23 @@ module.exports = function (sequelize, DataTypes) {
         deletedAt: 'deletedAt',
         paranoid: true,
         classMethods: {
-            getDocumentTypes: function() {
+            getDocumentTypes: function () {
                 return DocumentType.findAll({
                     raw: true,
                     attributes: ['id', 'name', 'description'],
                     order: 'id'
                 });
             },
-            createDocumentType: function({name, description}) {
-                return DocumentType.create({name, description})
-                    .then(({id}) => ({id}));
+            createDocumentType: function ({ name, description }) {
+                return DocumentType.create({ name, description })
+                    .then(({ id }) => ({ id }));
             },
-            deleteDocumentType: function(id) {
+            deleteDocumentType: function (id) {
                 return sequelize.transaction(function (tx) {
-                    return DocumentType.destroy({where: {id}, transaction: tx})
+                    return DocumentType.destroy({ where: { id }, transaction: tx })
                         .then(() => sequelize.models.document.destroy({
-                            where: {typeId: id}
-                        }, {transaction: tx}));
+                            where: { typeId: id }
+                        }, { transaction: tx }));
                 });
             }
         }

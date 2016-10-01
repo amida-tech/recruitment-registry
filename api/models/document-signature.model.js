@@ -28,9 +28,9 @@ module.exports = function (sequelize, DataTypes) {
         freezeTableName: true,
         createdAt: 'createdAt',
         classMethods: {
-            createSignature: function(userId, documentId) {
-                return DocumentSignature.create({userId, documentId})
-                    .then(({id}) => ({id}));
+            createSignature: function (userId, documentId) {
+                return DocumentSignature.create({ userId, documentId })
+                    .then(({ id }) => ({ id }));
             }
         }
     });

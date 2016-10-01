@@ -227,15 +227,15 @@ module.exports = function (sequelize, DataTypes) {
                     }
                 });
             },
-            getRequiredDocumentIds: function(userId) {
+            getRequiredDocumentIds: function (userId) {
                 return sequelize.models.document.getActiveDocumentIds()
                     .then(activeDocIds => {
                         return sequelize.models.document_signature.findAll({
-                            where: {userId},
-                            raw: true,
-                            attributes: ['documentId'],
-                            order: 'document_id'
-                        })
+                                where: { userId },
+                                raw: true,
+                                attributes: ['documentId'],
+                                order: 'document_id'
+                            })
                             .then(signedDocs => _.map(signedDocs, 'documentId'))
                             .then(signedDocIds => _.difference(activeDocIds, signedDocIds));
                     });
@@ -244,11 +244,11 @@ module.exports = function (sequelize, DataTypes) {
                 return sequelize.models.document.getActiveDashboard()
                     .then(activeDocs => {
                         return sequelize.models.document_signature.findAll({
-                            where: {userId},
-                            raw: true,
-                            attributes: ['documentId'],
-                            order: 'document_id'
-                        })
+                                where: { userId },
+                                raw: true,
+                                attributes: ['documentId'],
+                                order: 'document_id'
+                            })
                             .then(signedDocs => _.map(signedDocs, 'documentId'))
                             .then(signedDocIds => activeDocs.filter(activeDoc => signedDocIds.indexOf(activeDoc.id) < 0));
                     });
