@@ -1,4 +1,4 @@
-/* global xdescribe,before,it*/
+/* global describe,before,it*/
 'use strict';
 process.env.NODE_ENV = 'test';
 
@@ -15,7 +15,7 @@ const DocumentType = models.DocumentType;
 const Document = models.Document;
 const DocumentSignature = models.DocumentSignature;
 
-xdescribe('document unit', function () {
+describe('document unit', function () {
     const userCount = 4;
 
     const store = {
@@ -24,7 +24,7 @@ xdescribe('document unit', function () {
         clientDocuments: [],
         documents: [],
         activeDocuments: [],
-        signatures: Array(userCount).fill([])
+        signatures: _.range(userCount).map(() => [])
     };
 
     before(shared.setUpFn());
@@ -44,8 +44,8 @@ xdescribe('document unit', function () {
     }
 
     it('error: no documents of existing types', function () {
-        return User.getDocuments(store.userIds[0])
-            .then(shared.throwingHandler, shared.expectedErrorHandler('userNoSystemDocuments'));
+        return User.getRequiredDocumentIds(store.userIds[0])
+            .then(shared.throwingHandler, shared.expectedErrorHandler('documentNoSystemDocuments'));
     });
 
     const createDocumentFn = (function () {
@@ -80,25 +80,28 @@ xdescribe('document unit', function () {
 
     const verifyDocumentsFn = function (userIndex, expectedIndices) {
         return function () {
-            const expected = expectedIndices.map(index => store.activeDocuments[index].id);
-            return User.getDocuments(store.userIds[userIndex])
+            let expected = expectedIndices.map(index => store.activeDocuments[index].id);
+            const sortedExpected = _.sortBy(expected);
+            return User.getRequiredDocumentIds(store.userIds[userIndex])
                 .then(result => {
-                    expect(result).to.deep.equal(expected);
+                    expect(result).to.deep.equal(sortedExpected);
                 })
                 .then(() => {
                     return User.getDocumentDashboard(store.userIds[userIndex])
                         .then(dashboard => {
-                            const expected = expectedIndices.map(index => ({
+                            let expected = expectedIndices.map(index => ({
                                 id: store.activeDocuments[index].id,
                                 description: store.documentTypes[index].description
                             }));
+                            expected = _.sortBy(expected, 'id');
                             expect(dashboard).to.deep.equal(expected);
                         });
                 })
                 .then(() => models.sequelize.Promise.all(expected.map((id, index) => {
                     return Document.getDocumentText(id)
                         .then(text => {
-                            const expectedText = store.activeDocuments[index].content;
+                            const activeDocIndex = expectedIndices[index];
+                            const expectedText = store.activeDocuments[activeDocIndex].content;
                             expect(text).to.equal(expectedText);
                         });
                 })));
@@ -112,9 +115,8 @@ xdescribe('document unit', function () {
 
     const signDocumentTypeFn = function (userIndex, typeIndex) {
         return function () {
-            const documentIndex = store.activeDocuments[typeIndex].id;
+            const documentId = store.activeDocuments[typeIndex].id;
             const userId = store.userIds[userIndex];
-            const documentId = store.documents[documentIndex].id;
             store.signatures[userIndex].push(documentId);
             return DocumentSignature.createSignature(userId, documentId);
         };
@@ -152,8 +154,8 @@ xdescribe('document unit', function () {
     });
 
     it('error: no documents of existing types', function () {
-        return User.getDocuments(store.userIds[2])
-            .then(shared.throwingHandler, shared.expectedErrorHandler('userNoSystemDocuments'));
+        return User.getRequiredDocumentIds(store.userIds[2])
+            .then(shared.throwingHandler, shared.expectedErrorHandler('documentNoSystemDocuments'));
     });
 
     it('create/verify document of type 2', createDocumentFn(2));
@@ -210,7 +212,7 @@ xdescribe('document unit', function () {
         return DocumentType.deleteDocumentType(id);
     });
 
-    it('verify documents required for user 0', verifyDocumentsFn(0, [0, 2]));
+    it('verify documents required for user 0', verifyDocumentsFn(0, []));
     it('verify documents required for user 1', verifyDocumentsFn(1, [0]));
     it('verify documents required for user 2', verifyDocumentsFn(2, [0]));
     it('verify documents required for user 3', verifyDocumentsFn(3, [0, 2]));
@@ -226,7 +228,7 @@ xdescribe('document unit', function () {
                 })
                 .then(result => {
                     const actual = _.map(result, 'documentId');
-                    const expected = store.signatures[userIndex];
+                    const expected = _.sortBy(store.signatures[userIndex]);
                     expect(actual).to.deep.equal(expected);
                     const allExists = _.map(result, 'createdAt').map(r => !!r);
                     expect(allExists).to.deep.equal(Array(expected.length).fill(true));
@@ -240,14 +242,15 @@ xdescribe('document unit', function () {
 
     it('verify all documents still exists', function () {
         const queryParams = { raw: true, attributes: ['id', 'typeId', 'content'], order: ['id'] };
-        return Document.findAll(Object.assign({}, { paranoid: false }, queryParams)
+        const queryParamsAll = Object.assign({}, { paranoid: false }, queryParams);
+        return Document.findAll(queryParamsAll)
             .then(documents => {
                 expect(documents).to.deep.equal(store.documents);
             })
             .then(() => Document.findAll(queryParams))
             .then(documents => {
-                const expected = [store.activeDocuments[0], store.activeDocuments[2]];
+                const expected = _.sortBy([store.activeDocuments[0], store.activeDocuments[2]], 'id');
                 expect(documents).to.deep.equal(expected);
-            }));
+            });
     });
 });

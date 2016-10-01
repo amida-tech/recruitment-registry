@@ -5,6 +5,7 @@ module.exports = function (sequelize, DataTypes) {
         documentId: {
             type: DataTypes.INTEGER,
             allowNull: false,
+            field: 'document_id',
             references: {
                 model: 'document',
                 key: 'id'
@@ -13,6 +14,7 @@ module.exports = function (sequelize, DataTypes) {
         userId: {
             type: DataTypes.INTEGER,
             allowNull: false,
+            field: 'user_id',
             references: {
                 model: 'registry_user',
                 key: 'id'
@@ -25,6 +27,12 @@ module.exports = function (sequelize, DataTypes) {
     }, {
         freezeTableName: true,
         createdAt: 'createdAt',
+        classMethods: {
+            createSignature: function(userId, documentId) {
+                return DocumentSignature.create({userId, documentId})
+                    .then(({id}) => ({id}));
+            }
+        }
     });
 
     return DocumentSignature;
