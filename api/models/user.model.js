@@ -240,7 +240,7 @@ module.exports = function (sequelize, DataTypes) {
                             .then(signedDocIds => _.difference(activeDocIds, signedDocIds));
                     });
             },
-            getDocumentDashboard: function (userId) {
+            getRequiredDocuments: function (userId) {
                 return sequelize.models.document.getActiveDashboard()
                     .then(activeDocs => {
                         return sequelize.models.document_signature.findAll({

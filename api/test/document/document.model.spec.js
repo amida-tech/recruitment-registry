@@ -29,22 +29,40 @@ describe('document unit', function () {
 
     before(shared.setUpFn());
 
-    it('verify there are built in document types', function () {
-        return DocumentType.getDocumentTypes()
-            .then(documentTypes => {
-                expect(documentTypes).to.have.length.above(0);
-                store.documentTypes.push(...documentTypes);
-                const filler = Array(store.documentTypes.length).fill(null);
-                store.activeDocuments.push(...filler);
-            });
-    });
+    const createDocumentTypeFn = (function() {
+        let index = -1;
+
+        return function() {
+            ++index;
+            const docType = {
+                name: `type_${index}`,
+                description: 'description_${index}'
+            };
+            return DocumentType.createDocumentType(docType)
+                .then(({ id }) => {
+                    const newDocType = Object.assign({}, docType, { id });
+                    store.documentTypes.push(newDocType);
+                    store.activeDocuments.push(null);
+                })
+                .then(() => {
+                    return DocumentType.getDocumentTypes()
+                        .then(result => {
+                            expect(result).to.deep.equal(store.documentTypes);
+                        });
+                });
+        };
+    })();
+
+    for (let i = 0; i < 2; ++i) {
+        it(`create document type ${i}`, createDocumentTypeFn);
+    }
 
     for (let i = 0; i < userCount; ++i) {
         it(`create user ${i}`, shared.createUser(store));
     }
 
     it('error: no documents of existing types', function () {
-        return User.getRequiredDocumentIds(store.userIds[0])
+        return User.getRequiredDocuments(store.userIds[0])
             .then(shared.throwingHandler, shared.expectedErrorHandler('documentNoSystemDocuments'));
     });
 
@@ -80,32 +98,25 @@ describe('document unit', function () {
 
     const verifyDocumentsFn = function (userIndex, expectedIndices) {
         return function () {
-            let expected = expectedIndices.map(index => store.activeDocuments[index].id);
-            const sortedExpected = _.sortBy(expected);
-            return User.getRequiredDocumentIds(store.userIds[userIndex])
-                .then(result => {
-                    expect(result).to.deep.equal(sortedExpected);
+            return User.getRequiredDocuments(store.userIds[userIndex])
+                .then(documents => {
+                    const rawExpected = expectedIndices.map(index => ({
+                        id: store.activeDocuments[index].id,
+                        description: store.documentTypes[index].description
+                    }));
+                    const expected = _.sortBy(rawExpected, 'id');
+                    expect(documents).to.deep.equal(expected);
+                    return expected;
                 })
                 .then(() => {
-                    return User.getDocumentDashboard(store.userIds[userIndex])
-                        .then(dashboard => {
-                            let expected = expectedIndices.map(index => ({
-                                id: store.activeDocuments[index].id,
-                                description: store.documentTypes[index].description
-                            }));
-                            expected = _.sortBy(expected, 'id');
-                            expect(dashboard).to.deep.equal(expected);
-                        });
-                })
-                .then(() => models.sequelize.Promise.all(expected.map((id, index) => {
-                    return Document.getDocumentText(id)
-                        .then(text => {
-                            const activeDocIndex = expectedIndices[index];
-                            const expectedText = store.activeDocuments[activeDocIndex].content;
-                            expect(text).to.equal(expectedText);
-                        });
-                })));
-
+                    const docs = expectedIndices.map(index => store.activeDocuments[index]);
+                    return models.sequelize.Promise.all(docs.map(({id, content}) => {
+                        return Document.getDocumentText(id)
+                            .then(text => {
+                                expect(text).to.equal(content);
+                            });
+                    }));
+                });
         };
     };
 
@@ -134,27 +145,10 @@ describe('document unit', function () {
     it('verify documents required for user 2', verifyDocumentsFn(2, [1]));
     it('verify documents required for user 3', verifyDocumentsFn(3, [0]));
 
-    it('add a new document type', function () {
-        const docType = {
-            name: 'new type name',
-            description: 'new type description'
-        };
-        return DocumentType.createDocumentType(docType)
-            .then(({ id }) => {
-                const newDocType = Object.assign({}, docType, { id });
-                store.documentTypes.push(newDocType);
-                store.activeDocuments.push(null);
-            })
-            .then(() => {
-                return DocumentType.getDocumentTypes()
-                    .then(result => {
-                        expect(result).to.deep.equal(store.documentTypes);
-                    });
-            });
-    });
+    it('add a new document type', createDocumentTypeFn);
 
     it('error: no documents of existing types', function () {
-        return User.getRequiredDocumentIds(store.userIds[2])
+        return User.getRequiredDocuments(store.userIds[2])
             .then(shared.throwingHandler, shared.expectedErrorHandler('documentNoSystemDocuments'));
     });
 

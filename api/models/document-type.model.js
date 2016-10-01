@@ -28,21 +28,6 @@ module.exports = function (sequelize, DataTypes) {
         updatedAt: 'updatedAt',
         deletedAt: 'deletedAt',
         paranoid: true,
-        hooks: {
-            afterSync: function (options) {
-                if (options.force) {
-                    const types = [{
-                        name: 'terms-of-use',
-                        description: 'Terms Of Use Form',
-                    }, {
-                        name: 'consent',
-                        description: 'Registrant Consent Form'
-                    }];
-                    const ps = types.map(type => DocumentType.create(type));
-                    return sequelize.Promise.all(ps);
-                }
-            }
-        },
         classMethods: {
             getDocumentTypes: function() {
                 return DocumentType.findAll({
