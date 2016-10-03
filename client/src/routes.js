@@ -10,6 +10,6 @@ export default [
   { path: '/login', title: 'Login', component: Login, requiresAuth: false, newUsers: true },
   { path: '/register', title: 'Register', component: Register, requiresAuth: false, newUsers: true },
   { path: '/profile', title: 'Profile', component: ProfileContainer, requiresAuth: true, newUsers: false },
-  { path: '/survey-builder(/:id)', title: 'Survey Builder', component: SurveyBuilderContainer, requiresAuth: true, newUsers: false },
-  { path: '/surveys', title: 'Surveys', component: SurveysContainer, requiresAuth: true, newUsers: false }
+  { path: '/survey-builder(/:id)', title: 'Survey Builder', component: SurveyBuilderContainer, requiresAuth: true, newUsers: false, isSuper: true },
+  { path: '/surveys', title: 'Surveys', component: SurveysContainer, requiresAuth: true, newUsers: false, isSuper: true }
 ];

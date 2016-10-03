@@ -29,7 +29,7 @@ export default class ChoiceQuestion extends Component {
           <Droppable
             types={['choice']}
             onDrop={this.props.onDropChoice.bind(this, question)}>
-            <ul className="add-choice">
+            <ul className="add-choice"><p className="faded">Drop a choice here</p>
 
             </ul>
           </Droppable>
