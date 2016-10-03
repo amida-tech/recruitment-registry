@@ -16,6 +16,8 @@ class Nav extends Component {
       nav = routesAuthed.map(r => {
         var path = r.path
         if (r.path.indexOf('survey-builder') > -1) { path = '/survey-builder' }
+        if (r.isSuper && role !== 'admin')
+          return <div></div>
         return <Link className="nav-item nav-link" key={r.path} to={path}>{r.title}</Link>
       })
     } else {
