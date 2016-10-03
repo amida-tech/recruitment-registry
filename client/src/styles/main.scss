@@ -11,3 +11,77 @@
 @import 'components/_form';
 @import 'components/_nav';
 @import 'components/_loading-indicator';
+
+.rr-wrapper {
+	margin-top: 80px;
+  margin-bottom: 80px;
+}
+
+.rr-panel {
+  max-width: 380px;
+  border-radius: 3px !important;
+  border: 1px solid;
+  border-color: #DCDCDC;
+}
+
+.rr {
+  font-family: 'Arial';
+  color: #808080;
+  font-weight:bold;
+  font-size:10px;
+  text-transform: uppercase;
+}
+
+.rr-margins {
+  padding: 1.5rem;
+}
+
+
+.rr-topbox {
+  background-color: #DCDCDC;
+  border-top-right-radius: 3px;
+  border-top-left-radius: 3px;
+  text-align:center;
+  height:40px;
+}
+
+.rr-controls {
+  text-align: center;
+  margin: 10px;
+}
+
+.rr-button {
+  font-size: 9px;
+  width: 60%;
+  height: 30px;
+  background-color: #DCDCDC;
+  border-width:0px;
+  text-align: center;
+  border-radius: 50px;
+  box-shadow:2px 2px 5px #888888;
+}
+
+.rr-float{ //Look for utiltiy class
+	display:inline-block;
+}
+
+.rr-group {
+  display: inline-block;
+  text-align:left;
+}
+
+.rr-blankline{
+    width:50%;
+}
+
+.rr-field {
+  border:1px solid #ccc;
+  border-radius:0.25rem;
+  border-top: 0px;
+  border-left: 0px;
+  border-right: 0px;
+}
+
+.no-transform {
+  text-transform:none !important;
+}
