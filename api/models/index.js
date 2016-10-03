@@ -31,6 +31,7 @@ const Registry = sequelize.import('./registry.model');
 const DocumentType = sequelize.import('./document-type.model');
 const Document = sequelize.import('./document.model');
 const DocumentSignature = sequelize.import('./document-signature.model');
+const SurveyDocument = sequelize.import('./survey-document.model');
 
 module.exports = {
     Sequelize,
@@ -48,5 +49,6 @@ module.exports = {
     Registry,
     DocumentType,
     Document,
-    DocumentSignature
+    DocumentSignature,
+    SurveyDocument
 };

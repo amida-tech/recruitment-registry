@@ -28,32 +28,18 @@ describe('document unit', function () {
 
     before(shared.setUpFn());
 
-    const createDocumentTypeFn = (function () {
-        let index = -1;
-
+    const verifyDocumentTypeInListFn = function () {
         return function () {
-            ++index;
-            const docType = {
-                name: `type_${index}`,
-                description: `description_${index}`
-            };
-            return DocumentType.createDocumentType(docType)
-                .then(({ id }) => {
-                    const newDocType = Object.assign({}, docType, { id });
-                    store.documentTypes.push(newDocType);
-                    store.activeDocuments.push(null);
-                })
-                .then(() => {
-                    return DocumentType.listDocumentTypes()
-                        .then(result => {
-                            expect(result).to.deep.equal(store.documentTypes);
-                        });
+            return DocumentType.listDocumentTypes()
+                .then(result => {
+                    expect(result).to.deep.equal(store.documentTypes);
                 });
         };
-    })();
+    };
 
     for (let i = 0; i < 2; ++i) {
-        it(`create document type ${i}`, createDocumentTypeFn);
+        it(`create document type ${i}`, shared.createDocumentTypeFn(store));
+        it(`verify document type ${i} in the list`, verifyDocumentTypeInListFn);
     }
 
     for (let i = 0; i < userCount; ++i) {
@@ -65,34 +51,19 @@ describe('document unit', function () {
             .then(shared.throwingHandler, shared.expectedErrorHandler('documentNoSystemDocuments'));
     });
 
-    const createDocumentFn = (function () {
-        let index = -1;
-
-        return function (typeIndex) {
-            return function () {
-                ++index;
-                const typeId = store.documentTypes[typeIndex].id;
-                const doc = {
-                    typeId,
-                    content: `Sample document content ${index}`
-                };
-                store.clientDocuments.push(doc);
-                return Document.createDocument(doc)
-                    .then(({ id }) => {
-                        return Document.getContent(id)
-                            .then(result => {
-                                expect(result).to.deep.equal({ content: doc.content });
-                                const docToStore = Object.assign({}, doc, { id });
-                                store.documents.push(docToStore);
-                                store.activeDocuments[typeIndex] = docToStore;
-                            });
-                    });
-            };
+    const verifyDocumentContentFn = function (typeIndex) {
+        return function () {
+            const doc = store.activeDocuments[typeIndex];
+            return Document.getContent(doc.id)
+                .then(result => {
+                    expect(result).to.deep.equal({ content: doc.content });
+                });
         };
-    })();
+    };
 
     for (let i = 0; i < 2; ++i) {
-        it(`create/verify document of type ${i}`, createDocumentFn(i));
+        it(`create/verify document of type ${i}`, shared.createDocumentFn(store, i));
+        it(`verify document content of type ${i})`, verifyDocumentContentFn(i));
     }
 
     const verifyDocumentsFn = function (userIndex, expectedIndices) {
@@ -160,14 +131,16 @@ describe('document unit', function () {
             });
     });
 
-    it('add a new document type', createDocumentTypeFn);
+    it('add a new document type', shared.createDocumentTypeFn(store));
+    it(`verify the new document in the list`, verifyDocumentTypeInListFn);
 
     it('error: no documents of existing types', function () {
         return User.listDocuments(store.userIds[2])
             .then(shared.throwingHandler, shared.expectedErrorHandler('documentNoSystemDocuments'));
     });
 
-    it('create/verify document of type 2', createDocumentFn(2));
+    it('create/verify document of type 2', shared.createDocumentFn(store, 2));
+    it(`verify document content of type 2)`, verifyDocumentContentFn(2));
 
     it('verify documents required for user 0', verifyDocumentsFn(0, [2]));
     it('verify documents required for user 1', verifyDocumentsFn(1, [2]));
@@ -177,7 +150,8 @@ describe('document unit', function () {
     it('user 2 signs document 2', signDocumentTypeFn(2, 2));
     it('verify documents required for user 2', verifyDocumentsFn(2, [1]));
 
-    it('create/verify document of type 1', createDocumentFn(1));
+    it('create/verify document of type 1', shared.createDocumentFn(store, 1));
+    it(`verify document content of type 1)`, verifyDocumentContentFn(1));
 
     it('verify documents required for user 0', verifyDocumentsFn(0, [1, 2]));
     it('verify documents required for user 1', verifyDocumentsFn(1, [1, 2]));
@@ -187,7 +161,8 @@ describe('document unit', function () {
     it('user 1 signs document 2', signDocumentTypeFn(1, 2));
     it('verify documents required for user 1', verifyDocumentsFn(1, [1]));
 
-    it('create/verify document of type 0', createDocumentFn(0));
+    it('create/verify document of type 0', shared.createDocumentFn(store, 0));
+    it(`verify document content of type 0)`, verifyDocumentContentFn(0));
 
     it('verify documents required for user 0', verifyDocumentsFn(0, [0, 1, 2]));
     it('verify documents required for user 1', verifyDocumentsFn(1, [0, 1]));
@@ -202,7 +177,8 @@ describe('document unit', function () {
     it('verify documents required for user 2', verifyDocumentsFn(2, [0]));
     it('verify documents required for user 3', verifyDocumentsFn(3, [0, 2]));
 
-    it('create/verify document of type 1', createDocumentFn(1));
+    it('create/verify document of type 1', shared.createDocumentFn(store, 1));
+    it(`verify document content of type 1)`, verifyDocumentContentFn(1));
 
     it('verify documents required for user 0', verifyDocumentsFn(0, [0, 1, 2]));
     it('verify documents required for user 1', verifyDocumentsFn(1, [0, 1]));

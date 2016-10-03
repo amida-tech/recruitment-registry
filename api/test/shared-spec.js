@@ -153,6 +153,48 @@ exports.createRegistry = function (store) {
     };
 };
 
+exports.createDocumentTypeFn = (function () {
+    let index = -1;
+
+    return function (store) {
+        return function () {
+            ++index;
+            const docType = {
+                name: `type_${index}`,
+                description: `description_${index}`
+            };
+            return models.DocumentType.createDocumentType(docType)
+                .then(({ id }) => {
+                    const newDocType = Object.assign({}, docType, { id });
+                    store.documentTypes.push(newDocType);
+                    store.activeDocuments.push(null);
+                });
+        };
+    };
+})();
+
+exports.createDocumentFn = (function () {
+    let index = -1;
+
+    return function (store, typeIndex) {
+        return function () {
+            ++index;
+            const typeId = store.documentTypes[typeIndex].id;
+            const doc = {
+                typeId,
+                content: `Sample document content ${index}`
+            };
+            store.clientDocuments.push(doc);
+            return models.Document.createDocument(doc)
+                .then(({ id }) => {
+                    const docToStore = Object.assign({}, doc, { id });
+                    store.documents.push(docToStore);
+                    store.activeDocuments[typeIndex] = docToStore;
+                });
+        };
+    };
+})();
+
 exports.throwingHandler = function () {
     throw new Error('Unexpected no error.');
 };
