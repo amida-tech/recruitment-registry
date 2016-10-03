@@ -203,9 +203,24 @@ describe('document integration', function () {
         };
     };
 
+    const signDocumentTypeAgainFn = function (typeIndex) {
+        return function (done) {
+            const documentId = store.activeDocuments[typeIndex].id;
+            store.server
+                .post(`/api/v1.0/document-signatures`)
+                .set('Authorization', store.auth)
+                .send({ documentId })
+                .expect(400, done);
+        };
+    };
+
     it(`login as user 0`, shared.loginFn(store, 0));
     it('user 0 signs document 0', signDocumentTypeFn(0));
     it('user 0 signs document 1', signDocumentTypeFn(1));
+    it('logout as user 0', shared.logoutFn(store));
+
+    it(`login as user 0`, shared.loginFn(store, 0));
+    it('user 0 signs document again 0', signDocumentTypeAgainFn(0));
     it('logout as user 0', shared.logoutFn(store));
 
     it(`login as user 1`, shared.loginFn(store, 1));

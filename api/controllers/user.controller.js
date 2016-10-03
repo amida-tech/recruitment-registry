@@ -32,22 +32,14 @@ exports.createNewUser = function (req, res) {
 };
 
 exports.showCurrentUser = function (req, res) {
-    if (req.user) {
-        const currentUser = _.omitBy(req.user, _.isNil);
-        res.status(200).json(currentUser);
-    } else {
-        res.status(401).json({});
-    }
+    const currentUser = _.omitBy(req.user, _.isNil);
+    res.status(200).json(currentUser);
 };
 
 exports.updateCurrentUser = function (req, res) {
-    if (req.user) {
-        User.updateUser(req.user.id, req.body)
-            .then(() => res.status(200).json({}))
-            .catch(shared.handleError(res));
-    } else {
-        res.status(401).json({});
-    }
+    User.updateUser(req.user.id, req.body)
+        .then(() => res.status(200).json({}))
+        .catch(shared.handleError(res));
 };
 
 exports.resetPassword = function (req, res) {

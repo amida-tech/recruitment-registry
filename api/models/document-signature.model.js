@@ -6,6 +6,7 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.INTEGER,
             allowNull: false,
             field: 'document_id',
+            unique: 'signature',
             references: {
                 model: 'document',
                 key: 'id'
@@ -15,6 +16,7 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.INTEGER,
             allowNull: false,
             field: 'user_id',
+            unique: 'signature',
             references: {
                 model: 'registry_user',
                 key: 'id'
