@@ -5,10 +5,6 @@ const Sequelize = require('sequelize');
 const config = require('../config');
 const logger = require('../logger');
 
-const logFn = function (message) {
-    logger.info(message);
-};
-
 const sequelize = new Sequelize(config.db.name, config.db.user, config.db.pass, {
     host: config.db.host,
     dialect: config.db.dialect,
@@ -18,7 +14,7 @@ const sequelize = new Sequelize(config.db.name, config.db.user, config.db.pass, 
         min: 0,
         idle: 10000
     },
-    logging: (!config.logging.disable) && logFn
+    logging: message => logger.info(message)
 });
 
 const Ethnicity = sequelize.import('./ethnicity.model');
