@@ -1,7 +1,7 @@
 'use strict';
 
 const _ethnicities = [
-    'Caucasion',
+    'Caucasian',
     'Hispanic',
     'African',
     'Asian'

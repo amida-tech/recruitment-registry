@@ -27,11 +27,11 @@ export const initialState = {
     formState: {
       username: '',
       password: '',
-      ethnicity: 'Caucasion',
+      ethnicity: 'Caucasian',
       gender: 'male'
     },
     availableEthnicities: [
-      "Caucasion",
+      "Caucasian",
       "Hispanic",
       "African",
       "Asian"
