@@ -35,7 +35,7 @@ describe('document unit', function () {
             ++index;
             const docType = {
                 name: `type_${index}`,
-                description: 'description_${index}'
+                description: `description_${index}`
             };
             return DocumentType.createDocumentType(docType)
                 .then(({ id }) => {
@@ -44,7 +44,7 @@ describe('document unit', function () {
                     store.activeDocuments.push(null);
                 })
                 .then(() => {
-                    return DocumentType.getDocumentTypes()
+                    return DocumentType.listDocumentTypes()
                         .then(result => {
                             expect(result).to.deep.equal(store.documentTypes);
                         });
@@ -61,7 +61,7 @@ describe('document unit', function () {
     }
 
     it('error: no documents of existing types', function () {
-        return User.getRequiredDocuments(store.userIds[0])
+        return User.listDocuments(store.userIds[0])
             .then(shared.throwingHandler, shared.expectedErrorHandler('documentNoSystemDocuments'));
     });
 
@@ -79,9 +79,9 @@ describe('document unit', function () {
                 store.clientDocuments.push(doc);
                 return Document.createDocument(doc)
                     .then(({ id }) => {
-                        return Document.getDocumentText(id)
+                        return Document.getContent(id)
                             .then(result => {
-                                expect(result).to.equal(doc.content);
+                                expect(result).to.deep.equal({ content: doc.content });
                                 const docToStore = Object.assign({}, doc, { id });
                                 store.documents.push(docToStore);
                                 store.activeDocuments[typeIndex] = docToStore;
@@ -97,7 +97,7 @@ describe('document unit', function () {
 
     const verifyDocumentsFn = function (userIndex, expectedIndices) {
         return function () {
-            return User.getRequiredDocuments(store.userIds[userIndex])
+            return User.listDocuments(store.userIds[userIndex])
                 .then(documents => {
                     const rawExpected = expectedIndices.map(index => ({
                         id: store.activeDocuments[index].id,
@@ -110,9 +110,9 @@ describe('document unit', function () {
                 .then(() => {
                     const docs = expectedIndices.map(index => store.activeDocuments[index]);
                     return models.sequelize.Promise.all(docs.map(({ id, content }) => {
-                        return Document.getDocumentText(id)
+                        return Document.getContent(id)
                             .then(text => {
-                                expect(text).to.equal(content);
+                                expect(text).to.deep.equal({ content });
                             });
                     }));
                 });
@@ -156,7 +156,6 @@ describe('document unit', function () {
         const userId = store.userIds[0];
         return DocumentSignature.createSignature(userId, 9999)
             .then(shared.throwingHandler, err => {
-                console.log(err);
                 expect(err).is.instanceof(models.sequelize.ForeignKeyConstraintError);
             });
     });
@@ -164,7 +163,7 @@ describe('document unit', function () {
     it('add a new document type', createDocumentTypeFn);
 
     it('error: no documents of existing types', function () {
-        return User.getRequiredDocuments(store.userIds[2])
+        return User.listDocuments(store.userIds[2])
             .then(shared.throwingHandler, shared.expectedErrorHandler('documentNoSystemDocuments'));
     });
 
@@ -221,7 +220,7 @@ describe('document unit', function () {
         const id = store.documentTypes[1].id;
         return DocumentType.deleteDocumentType(id)
             .then(() => {
-                return DocumentType.getDocumentTypes()
+                return DocumentType.listDocumentTypes()
                     .then(result => {
                         const allDocTypes = [0, 2].map(i => store.documentTypes[i]);
                         expect(result).to.deep.equal(allDocTypes);

@@ -29,7 +29,7 @@ module.exports = function (sequelize, DataTypes) {
         deletedAt: 'deletedAt',
         paranoid: true,
         classMethods: {
-            getDocumentTypes: function () {
+            listDocumentTypes: function () {
                 return DocumentType.findAll({
                     raw: true,
                     attributes: ['id', 'name', 'description'],

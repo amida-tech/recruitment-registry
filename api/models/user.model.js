@@ -125,20 +125,6 @@ module.exports = function (sequelize, DataTypes) {
                     return User.create(user);
                 }
             },
-            beforeBulkCreate: function (users, fields, fn) {
-                let totalUpdated = 0;
-                users.forEach(function (user) {
-                    user.updatePassword(function (err) {
-                        if (err) {
-                            return fn(err);
-                        }
-                        totalUpdated += 1;
-                        if (totalUpdated === users.length) {
-                            return fn();
-                        }
-                    });
-                });
-            },
             beforeCreate: function (user) {
                 return user.updatePassword();
             },
@@ -227,20 +213,7 @@ module.exports = function (sequelize, DataTypes) {
                     }
                 });
             },
-            getRequiredDocumentIds: function (userId) {
-                return sequelize.models.document.getActiveDocumentIds()
-                    .then(activeDocIds => {
-                        return sequelize.models.document_signature.findAll({
-                                where: { userId },
-                                raw: true,
-                                attributes: ['documentId'],
-                                order: 'document_id'
-                            })
-                            .then(signedDocs => _.map(signedDocs, 'documentId'))
-                            .then(signedDocIds => _.difference(activeDocIds, signedDocIds));
-                    });
-            },
-            getRequiredDocuments: function (userId) {
+            listDocuments: function (userId) {
                 return sequelize.models.document.getActiveDashboard()
                     .then(activeDocs => {
                         return sequelize.models.document_signature.findAll({

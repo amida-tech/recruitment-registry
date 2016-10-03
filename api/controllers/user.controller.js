@@ -55,3 +55,9 @@ exports.resetPassword = function (req, res) {
         .then(() => res.status(201).json({}))
         .catch(shared.handleError(res));
 };
+
+exports.listDocuments = function (req, res) {
+    User.listDocuments(req.user.id)
+        .then(documents => res.status(200).json(documents))
+        .catch(shared.handleError(res));
+};

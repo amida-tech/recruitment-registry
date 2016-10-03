@@ -69,9 +69,8 @@ module.exports = function (sequelize, DataTypes) {
                         );
                 });
             },
-            getDocumentText: function (id) {
-                return Document.findById(id, { raw: true, attributes: ['content'] })
-                    .then(({ content }) => content);
+            getContent: function (id) {
+                return Document.findById(id, { raw: true, attributes: ['content'] });
             }
         }
     });
