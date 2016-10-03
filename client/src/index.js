@@ -5,6 +5,7 @@ import login from './login'
 import register from './register'
 import profile from './profile'
 import surveyBuilder from './surveyBuilder'
+import surveys from './surveys'
 import { browserHistory } from 'react-router'
 
 
@@ -57,8 +58,13 @@ export const initialState = {
     }
   },
   surveyBuilder: {
-
-  }
+    survey: {
+      name: '',
+      questions: [],
+      released: true
+    }
+  },
+  surveys: []
 };
 
 export const reducers = {
@@ -66,6 +72,7 @@ export const reducers = {
   [register.constants.NAME]: register.reducer,
   [profile.constants.NAME]: profile.reducer,
   [surveyBuilder.constants.NAME]: surveyBuilder.reducer,
+  [surveys.constants.NAME]: surveys.reducer,
   loggedIn: (state = initialState, action) => {
     switch (action.type) {
       case "LOGIN_SUCCESS":

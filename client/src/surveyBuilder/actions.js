@@ -1,29 +1,46 @@
 import * as actionTypes from './actionTypes';
 
-/*
-export function login(username, password) {
+export function addQuestion(question) {
   return (dispatch) => {
     dispatch({
-      type: actionTypes.LOGIN,
-      payload: {
-        username: username,
-        password: password
-      }
+      type: actionTypes.ADD_QUESTION,
+      payload: question
     })
   }
 }
 
-export function logout() {
+export function updateQuestion(question) {
   return (dispatch) => {
     dispatch({
-      type: actionTypes.LOGOUT
-    });
+      type: actionTypes.UPDATE_QUESTION,
+      payload: question
+    })
   }
 }
 
-export function update(name, value) {
-  return dispatch => dispatch({
-    type: actionTypes.UPDATE_CREDENTIALS,
-    name, value
-  });
-}*/
+export function saveSurvey(survey) {
+  return (dispatch) => {
+    dispatch({
+      type: actionTypes.SAVE_SURVEY,
+      payload: survey
+    })
+  }
+}
+
+export function updateSurveyName(name) {
+  return (dispatch) => {
+    dispatch({
+      type: actionTypes.UPDATE_SURVEY_NAME,
+      payload: name
+    })
+  }
+}
+
+export function getSurvey(id) {
+  return (dispatch) => {
+    dispatch({
+      type: actionTypes.GET_SURVEY_BY_ID,
+      payload: id
+    })
+  }
+}
