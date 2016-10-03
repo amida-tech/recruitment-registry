@@ -235,7 +235,7 @@ class Form extends Component {
           </div>
         </div>
 
-
+      <button className="form__submit-btn back-registration" type="button" onClick={this.previous}>Back</button>
       </form>
     );
 
