@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router';
 import routes from '../routes';
 import { logout } from '../login/actions';
+import { changeLanguage } from '../profile/actions';
 
 class Nav extends Component {
   render() {
@@ -30,12 +31,19 @@ class Nav extends Component {
             </div>
           ) : (<div></div>)}
         </div>
+        <div>
+          <button type="button" className="pull-right nav-item nav-link btn btn-primary" onClick={::this._changeLanguage}>Language</button>
+        </div>
       </nav>
     );
   }
 
   _logout() {
     this.props.dispatch(logout());
+  }
+
+  _changeLanguage() {
+    this.props.dispatch(changeLanguage());
   }
 }
 

@@ -11,6 +11,7 @@ import { browserHistory } from 'react-router'
 
 export const initialState = {
   title: "GAP",
+  language: localStorage.language ? localStorage.language : 'en',
   login: {
     formState: {
       hasErrors: false,
@@ -88,7 +89,16 @@ export const reducers = {
         return state
     }
   },
-  title: (state = initialState) => state
+  title: (state = initialState) => state,
+  language: (state = initialState, action) => {
+    switch (action.type) {
+      case "CHANGE_LANGUAGE":
+        console.log(state);
+        return state = state == 'en' ? 'es' : 'en';
+      default:
+        return state;
+      }
+    }
 };
 
 import './styles/main.scss'
