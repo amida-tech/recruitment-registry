@@ -94,3 +94,7 @@ errors.surveyVersionAlreadyDraft = {
 errors.documentNoSystemDocuments = {
     msg: 'System does not have the required documents uploaded.'
 };
+
+errors.profileSignaturesMissing = {
+    msg: 'Required document signatures are not included.'
+};

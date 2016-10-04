@@ -135,7 +135,7 @@ module.exports = function (sequelize, DataTypes) {
                                         .then(() => {
                                             if (input.signatures && input.signatures.length) {
                                                 return sequelize.Promise.all(input.signatures.map(documentId => {
-                                                    return sequelize.models.document_signature.createSignatureTx(user.id, documentId, tx);
+                                                    return sequelize.models.document_signature.createSignature(user.id, documentId, tx);
                                                 }));
                                             }
                                         })

@@ -105,10 +105,11 @@ exports.genQxAnswer = (function () {
         },
         choice: function (question) {
             ++answerIndex;
+            const choice = question.choices[answerIndex % question.choices.length];
             return {
                 questionId: question.id,
                 answer: {
-                    choice: question.choices[answerIndex % question.choices.length]
+                    choice: choice.id
                 }
             };
         },

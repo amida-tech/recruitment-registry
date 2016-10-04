@@ -50,7 +50,7 @@ exports.createQuestion = function (store) {
                         })
                         .then(function (choices) {
                             if (type === 'choice') {
-                                qx.choices = _.map(choices, 'id');
+                                qx.choices = _.map(choices, choice => ({ id: choice.id }));
                             } else {
                                 qx.choices = _.map(choices, choice => ({ id: choice.id, type: choice.type }));
                             }
