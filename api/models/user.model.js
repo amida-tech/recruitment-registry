@@ -213,15 +213,19 @@ module.exports = function (sequelize, DataTypes) {
                     }
                 });
             },
-            listDocuments: function (userId) {
-                return sequelize.models.document.listDocuments()
+            listDocuments: function (userId, tx) {
+                return sequelize.models.document.listDocuments([], tx)
                     .then(activeDocs => {
-                        return sequelize.models.document_signature.findAll({
-                                where: { userId },
-                                raw: true,
-                                attributes: ['documentId'],
-                                order: 'document_id'
-                            })
+                        const query = {
+                            where: { userId },
+                            raw: true,
+                            attributes: ['documentId'],
+                            order: 'document_id'
+                        };
+                        if (tx) {
+                            query.transaction = tx;
+                        }
+                        return sequelize.models.document_signature.findAll(query)
                             .then(signedDocs => _.map(signedDocs, 'documentId'))
                             .then(signedDocIds => activeDocs.filter(activeDoc => signedDocIds.indexOf(activeDoc.id) < 0));
                     });

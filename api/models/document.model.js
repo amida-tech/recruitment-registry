@@ -34,20 +34,33 @@ module.exports = function (sequelize, DataTypes) {
         deletedAt: 'deletedAt',
         paranoid: true,
         classMethods: {
-            listDocuments: function () {
-                return sequelize.models.document_type.findAll({
-                        raw: true,
-                        attributes: ['id', 'description'],
-                        order: 'id'
-                    })
+            listDocuments: function (typeIds, tx) {
+                const query = {
+                    raw: true,
+                    attributes: ['id', 'description'],
+                    order: 'id'
+                };
+                if (typeIds && typeIds.length) {
+                    query.where = { id: { in: typeIds } };
+                }
+                if (tx) {
+                    query.transaction = tx;
+                }
+                return sequelize.models.document_type.findAll(query)
                     .then(docTypes => {
-                        const typeIds = _.map(docTypes, 'id');
-                        return Document.findAll({
-                                where: { typeId: { in: typeIds } },
-                                raw: true,
-                                attributes: ['id', 'typeId'],
-                                order: 'id'
-                            })
+                        if (!(typeIds && typeIds.length)) {
+                            typeIds = _.map(docTypes, 'id');
+                        }
+                        const query = {
+                            where: { typeId: { in: typeIds } },
+                            raw: true,
+                            attributes: ['id', 'typeId'],
+                            order: 'id'
+                        };
+                        if (tx) {
+                            query.transaction = tx;
+                        }
+                        return Document.findAll(query)
                             .then(docs => {
                                 if (docs.length !== typeIds.length) {
                                     return RRError.reject('documentNoSystemDocuments');

@@ -68,3 +68,83 @@ exports.genNewSurvey = (function () {
         return result;
     };
 })();
+
+exports.genNewRegistry = (function () {
+    let index = -1;
+
+    return function () {
+        ++index;
+        const name = `registry_name_${index}`;
+        const survey = exports.genNewSurvey();
+        return { name, survey };
+    };
+})();
+
+exports.genQxAnswer = (function () {
+    let answerIndex = -1;
+    let choicesCountIndex = 0;
+
+    const genAnswer = {
+        text: function (question) {
+            ++answerIndex;
+            return {
+                questionId: question.id,
+                answer: {
+                    textValue: `text_${answerIndex}`
+                }
+            };
+        },
+        bool: function (question) {
+            ++answerIndex;
+            return {
+                questionId: question.id,
+                answer: {
+                    boolValue: answerIndex % 2 === 0
+                }
+            };
+        },
+        choice: function (question) {
+            ++answerIndex;
+            return {
+                questionId: question.id,
+                answer: {
+                    choice: question.choices[answerIndex % question.choices.length]
+                }
+            };
+        },
+        choices: function (question) {
+            ++answerIndex;
+            choicesCountIndex = (choicesCountIndex + 1) % 3;
+            const choices = _.range(choicesCountIndex + 1).map(function () {
+                ++answerIndex;
+                const choice = question.choices[answerIndex % question.choices.length];
+                const answer = {
+                    id: choice.id
+                };
+                if (choice.type === 'text') {
+                    choice.textValue = `text_${answerIndex}`;
+                }
+                return answer;
+            });
+
+            return {
+                questionId: question.id,
+                answer: {
+                    choices: _.sortBy(choices, 'id')
+                }
+            };
+        }
+    };
+
+    return function (question) {
+        if (question.id < 0) {
+            return { questionId: -question.id };
+        } else {
+            return genAnswer[question.type](question);
+        }
+    };
+})();
+
+exports.genAnswersToQuestions = function (questions) {
+    return questions.map(exports.genQxAnswer);
+};

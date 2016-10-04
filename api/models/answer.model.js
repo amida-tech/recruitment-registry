@@ -134,7 +134,7 @@ module.exports = function (sequelize, DataTypes) {
                         surveyId,
                         questionId,
                         questionChoiceId: value.questionChoiceId || null,
-                        value: value.value,
+                        value: value.hasOwnProperty('value') ? value.value : null,
                         type: value.type
                     }));
                     values.forEach(value => r.push(value));

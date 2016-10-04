@@ -138,5 +138,6 @@ exports.expectedErrorHandler = function (code) {
         expect(err).to.be.instanceof(RRError);
         expect(err.code).to.equal(code);
         expect(!!err.message).to.equal(true);
+        return err;
     };
 };

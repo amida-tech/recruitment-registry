@@ -1,6 +1,9 @@
 'use strict';
 
+const _ = require('lodash');
+
 const tokener = require('../lib/tokener');
+const RRError = require('../lib/rr-error');
 
 module.exports = function (sequelize, DataTypes) {
     const Registry = sequelize.define('registry', {
@@ -86,7 +89,28 @@ module.exports = function (sequelize, DataTypes) {
                             return sequelize.Promise.reject(new Error('No such registry.'));
                         }
                         const { profileSurveyId } = registry;
-                        return sequelize.models.survey.getSurveyById(profileSurveyId);
+                        return sequelize.models.survey.getSurveyById(profileSurveyId)
+                            .then(survey => {
+                                const surveyId = survey.id;
+                                const action = 'write';
+                                return sequelize.models.survey_document.findAll({
+                                        where: { surveyId, action },
+                                        raw: true,
+                                        attributes: ['documentTypeId']
+                                    })
+                                    .then(rawTypeIds => _.map(rawTypeIds, 'documentTypeId'))
+                                    .then(typeIds => {
+                                        if (typeIds.length) {
+                                            return sequelize.models.document.listDocuments(typeIds)
+                                                .then(documents => {
+                                                    survey.documents = documents;
+                                                    return survey;
+                                                });
+                                        } else {
+                                            return survey;
+                                        }
+                                    });
+                            });
                     });
             },
             createProfile: function (input) {
@@ -108,6 +132,23 @@ module.exports = function (sequelize, DataTypes) {
                                     };
                                     const answerModel = sequelize.models.answer;
                                     return answerModel.createAnswersTx(answerInput, tx)
+                                        .then(() => {
+                                            if (input.signatures && input.signatures.length) {
+                                                return sequelize.Promise.all(input.signatures.map(documentId => {
+                                                    return sequelize.models.document_signature.createSignatureTx(user.id, documentId, tx);
+                                                }));
+                                            }
+                                        })
+                                        .then(() => {
+                                            return sequelize.models.registry_user.listDocuments(user.id, tx)
+                                                .then(documents => {
+                                                    if (documents.length > 0) {
+                                                        const err = new RRError('profileSignaturesMissing');
+                                                        err.documents = documents;
+                                                        return sequelize.Promise.reject(err);
+                                                    }
+                                                });
+                                        })
                                         .then(() => ({ token: tokener.createJWT(user) }));
                                 });
                         });

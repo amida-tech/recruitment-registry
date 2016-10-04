@@ -38,18 +38,18 @@ module.exports = function (sequelize, DataTypes) {
         deletedAt: 'deletedAt',
         paranoid: true,
         classMethods: {
-            createSurveyDocumentType: function (surveyId, documentTypeId) {
-                return SurveyDocument.create({ surveyId, documentTypeId })
+            createSurveyDocumentType: function ({ surveyId, documentTypeId, action }) {
+                return SurveyDocument.create({ surveyId, documentTypeId, action })
                     .then(({ id }) => ({ id }));
             },
-            deleteSurveyDocumentType: function (surveyId, documentTypeId) {
-                return SurveyDocument.delete({ where: { surveyId, documentTypeId } });
+            deleteSurveyDocumentType: function (id) {
+                return SurveyDocument.delete({ where: { id } });
             },
             getDocumentTypesBySurvey: function (surveyId) {
                 return SurveyDocument.findAll({
                     where: { surveyId },
                     raw: true,
-                    attributes: ['documentTypeId', 'actionId']
+                    attributes: ['id', 'documentTypeId', 'action']
                 });
             }
         }
