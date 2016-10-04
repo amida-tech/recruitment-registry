@@ -98,7 +98,7 @@ describe('answer unit', function () {
                 surveyId: store.surveys[surveyIndex],
                 answers
             };
-            return models.Answer.updateAnswers(input)
+            return models.Answer.createAnswers(input)
                 .then(function () {
                     return models.Answer.getAnswers({
                             userId: store.userIds[userIndex],

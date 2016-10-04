@@ -60,7 +60,8 @@ exports.genNewSurvey = (function () {
     return function (inputOptions = {}) {
         const options = Object.assign({}, defaultOptions, inputOptions);
         ++index;
-        const result = { name: `name_${index}` };
+        const name = options.name || `name_${index}`;
+        const result = { name };
         result.released = options.released;
         if (options.addQuestions) {
             result.questions = _.range(5).map(() => ({ content: exports.genNewQuestion() }));
@@ -75,7 +76,7 @@ exports.genNewRegistry = (function () {
     return function () {
         ++index;
         const name = `registry_name_${index}`;
-        const survey = exports.genNewSurvey();
+        const survey = exports.genNewSurvey({ name });
         return { name, survey };
     };
 })();

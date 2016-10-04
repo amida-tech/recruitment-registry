@@ -3,7 +3,6 @@
 const _ = require('lodash');
 
 const tokener = require('../lib/tokener');
-const RRError = require('../lib/rr-error');
 
 module.exports = function (sequelize, DataTypes) {
     const Registry = sequelize.define('registry', {
@@ -92,7 +91,7 @@ module.exports = function (sequelize, DataTypes) {
                         return sequelize.models.survey.getSurveyById(profileSurveyId)
                             .then(survey => {
                                 const surveyId = survey.id;
-                                const action = 'write';
+                                const action = 'create';
                                 return sequelize.models.survey_document.findAll({
                                         where: { surveyId, action },
                                         raw: true,
@@ -124,7 +123,16 @@ module.exports = function (sequelize, DataTypes) {
                             input.user.role = 'participant';
                             input.user.registryId = id;
                             return sequelize.models.registry_user.create(input.user, { transaction: tx })
-                                .then(function (user) {
+                                .then(user => {
+                                    if (input.signatures && input.signatures.length) {
+                                        return sequelize.Promise.all(input.signatures.map(documentId => {
+                                                return sequelize.models.document_signature.createSignature(user.id, documentId, tx);
+                                            }))
+                                            .then(() => user);
+                                    }
+                                    return user;
+                                })
+                                .then(user => {
                                     const answerInput = {
                                         userId: user.id,
                                         surveyId: profileSurveyId,
@@ -132,23 +140,6 @@ module.exports = function (sequelize, DataTypes) {
                                     };
                                     const answerModel = sequelize.models.answer;
                                     return answerModel.createAnswersTx(answerInput, tx)
-                                        .then(() => {
-                                            if (input.signatures && input.signatures.length) {
-                                                return sequelize.Promise.all(input.signatures.map(documentId => {
-                                                    return sequelize.models.document_signature.createSignature(user.id, documentId, tx);
-                                                }));
-                                            }
-                                        })
-                                        .then(() => {
-                                            return sequelize.models.registry_user.listDocuments(user.id, tx)
-                                                .then(documents => {
-                                                    if (documents.length > 0) {
-                                                        const err = new RRError('profileSignaturesMissing');
-                                                        err.documents = documents;
-                                                        return sequelize.Promise.reject(err);
-                                                    }
-                                                });
-                                        })
                                         .then(() => ({ token: tokener.createJWT(user) }));
                                 });
                         });
@@ -173,7 +164,7 @@ module.exports = function (sequelize, DataTypes) {
                                 surveyId: profileSurveyId,
                                 answers: input.answers
                             };
-                            return sequelize.models.answer.updateAnswersTx(answerInput, tx);
+                            return sequelize.models.answer.createAnswersTx(answerInput, tx);
                         });
                 });
             },

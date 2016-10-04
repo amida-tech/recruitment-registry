@@ -21,7 +21,7 @@ module.exports = function (sequelize, DataTypes) {
             }
         },
         action: {
-            type: DataTypes.ENUM('read', 'write', 'edit'),
+            type: DataTypes.ENUM('read', 'create', 'edit'),
             allowNull: false
         },
         createdAt: {

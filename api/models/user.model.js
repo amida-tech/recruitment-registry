@@ -213,8 +213,8 @@ module.exports = function (sequelize, DataTypes) {
                     }
                 });
             },
-            listDocuments: function (userId, tx) {
-                return sequelize.models.document.listDocuments([], tx)
+            listDocuments: function (userId, docTypeIds, tx) {
+                return sequelize.models.document.listDocuments(docTypeIds, tx)
                     .then(activeDocs => {
                         const query = {
                             where: { userId },

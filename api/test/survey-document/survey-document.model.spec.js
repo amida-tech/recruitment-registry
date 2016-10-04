@@ -65,7 +65,8 @@ describe('survey-document unit', function () {
     };
 
     for (let i = 0; i < docTypeCount; ++i) {
-        it(`require document type ${i} in survey question`, createProfileSurveyDocumentFn(i, 'write'));
+        it(`require document type ${i} in survey question create`, createProfileSurveyDocumentFn(i, 'create'));
+        it(`require document type ${i} in survey question read`, createProfileSurveyDocumentFn(i, 'read'));
     }
 
     it('error: get profile survey with no documents of existing types', function () {
@@ -116,11 +117,11 @@ describe('survey-document unit', function () {
     };
 
     const createProfileWithoutSignaturesFn = function (index, signIndices, missingDocumentIndices) {
-        return function() {
+        return function () {
             let signObj = {};
             if (signIndices) {
                 const signatures = signIndices.map(signIndex => store.activeDocuments[signIndex].id);
-                signObj = Object.assign({}, store.profileResponses[index], {signatures});
+                signObj = Object.assign({}, store.profileResponses[index], { signatures });
             }
             const response = Object.assign({}, store.profileResponses[index], signObj);
             return Registry.createProfile(response)
@@ -133,9 +134,9 @@ describe('survey-document unit', function () {
     };
 
     const createProfileFn = function (index, signIndices) {
-        return function() {
+        return function () {
             const signatures = signIndices.map(signIndex => store.activeDocuments[signIndex].id);
-            let signObj = Object.assign({}, store.profileResponses[index], {signatures});
+            let signObj = Object.assign({}, store.profileResponses[index], { signatures });
             const response = Object.assign({}, store.profileResponses[index], signObj);
             return Registry.createProfile(response)
                 .then(({ token }) => tokener.verifyJWT(token))
@@ -145,12 +146,61 @@ describe('survey-document unit', function () {
         };
     };
 
+    const readProfileFn = function (index) {
+        return function () {
+            const userId = store.userIds[index];
+            return Registry.getProfile({ userId })
+                .then(function (result) {
+                    const pr = store.profileResponses[index];
+                    const expectedUser = _.cloneDeep(pr.user);
+                    const user = result.user;
+                    expectedUser.id = user.id;
+                    delete expectedUser.password;
+                    delete user.zip;
+                    delete user.ethnicity;
+                    delete user.gender;
+                    expect(user).to.deep.equal(expectedUser);
+                });
+        };
+    };
+
+    const readProfileWithoutSignaturesFn = function (index, missingDocumentIndices) {
+        return function () {
+            const userId = store.userIds[index];
+            return Registry.getProfile({ userId })
+                .then(shared.throwingHandler, shared.expectedErrorHandler('profileSignaturesMissing'))
+                .then(err => {
+                    const expected = expectedDocuments(missingDocumentIndices);
+                    expect(err.documents).to.deep.equal(expected);
+                });
+        };
+    };
+
     for (let i = 0; i < 4; ++i) {
         it(`form profile survey input for user ${i}`, formProfileResponse);
         it(`create user profile ${i} without signatures 0`, createProfileWithoutSignaturesFn(i, null, [0, 1]));
         it(`create user profile ${i} without signatures 1`, createProfileWithoutSignaturesFn(i, [], [0, 1]));
-        it(`create user profile ${i} without signatures 3`, createProfileWithoutSignaturesFn(i, [0], [1]));
-        it(`create user profile ${i} without signatures 4`, createProfileWithoutSignaturesFn(i, [1], [0]));
+        it(`create user profile ${i} without signatures 2`, createProfileWithoutSignaturesFn(i, [0], [1]));
+        it(`create user profile ${i} without signatures 3`, createProfileWithoutSignaturesFn(i, [1], [0]));
         it(`create user profile ${i} with signatures`, createProfileFn(i, [0, 1]));
+        it(`read user profile ${i} with signatures`, readProfileFn(i));
     }
+
+    for (let i = 0; i < docTypeCount; ++i) {
+        it(`create document of type ${i}`, shared.createDocumentFn(store, i));
+    }
+
+    for (let i = 0; i < 4; ++i) {
+        it(`read user profile ${i} without signatures`, readProfileWithoutSignaturesFn(i, [0, 1]));
+    }
+
+    it('user 0 signs document 0', shared.signDocumentTypeFn(store, 0, 0));
+    it('user 0 signs document 1', shared.signDocumentTypeFn(store, 0, 1));
+    it('user 2 signs document 0', shared.signDocumentTypeFn(store, 2, 0));
+    it('user 3 signs document 1', shared.signDocumentTypeFn(store, 3, 1));
+
+    it(`read user profile 0 with signatures`, readProfileFn(0));
+    it('read user profile 1 without signatures', readProfileWithoutSignaturesFn(1, [0, 1]));
+    it('read user profile 2 without signatures', readProfileWithoutSignaturesFn(2, [1]));
+    it('read user profile 3 without signatures', readProfileWithoutSignaturesFn(3, [0]));
 });

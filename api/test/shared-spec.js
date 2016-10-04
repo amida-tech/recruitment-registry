@@ -129,6 +129,15 @@ exports.createDocumentFn = (function () {
     };
 })();
 
+exports.signDocumentTypeFn = function (store, userIndex, typeIndex) {
+    return function () {
+        const documentId = store.activeDocuments[typeIndex].id;
+        const userId = store.userIds[userIndex];
+        store.signatures[userIndex].push(documentId);
+        return models.DocumentSignature.createSignature(userId, documentId);
+    };
+};
+
 exports.throwingHandler = function () {
     throw new Error('Unexpected no error.');
 };
