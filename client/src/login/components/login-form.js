@@ -24,7 +24,7 @@ class Form extends Component {
   }
 }
 
-Form.propTypes = {
+Form.propTypes = { //{this.vocab.get('PASSWORD')}
   onSubmit: React.PropTypes.func.isRequired,
   btnText: React.PropTypes.string.isRequired,
   data: React.PropTypes.object.isRequired,

@@ -8,10 +8,14 @@ import surveyBuilder from './surveyBuilder'
 import surveys from './surveys'
 import { browserHistory } from 'react-router'
 
-
 export const initialState = {
   title: "GAP",
-  language: localStorage.language ? localStorage.language : 'en',
+  settings: {
+    language: {
+      choice: localStorage.choice ? localStorage.choice : 'en',
+      vocabulary: localStorage.vocabulary ? localStorage.vocabulary : require('./i18n/en.json')
+    }
+  },
   login: {
     formState: {
       hasErrors: false,
@@ -90,11 +94,11 @@ export const reducers = {
     }
   },
   title: (state = initialState) => state,
-  language: (state = initialState, action) => {
+  settings: (state = initialState, action) => {
     switch (action.type) {
       case "CHANGE_LANGUAGE":
-        console.log(state);
-        return state = state == 'en' ? 'es' : 'en';
+        var newLang = state.get('language').get('choice') == 'en' ? 'es' : 'en';
+        return {choice:{newLang}, vocabulary: require('./i18n/'+newLang+'.json')};
       default:
         return state;
       }

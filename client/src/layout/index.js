@@ -16,8 +16,11 @@ class Layout extends Component {
 Layout.displayName = 'Layout';
 
 function mapStateToProps(state) {
+  console.log(JSON.stringify(state));
+  console.log(state.get("settings").get('language').get('vocabulary'));
   return {
-    data: state
+    data: state,
+    vocab: state.get('settings').get('language').get('vocabulary')
   };
 }
 
