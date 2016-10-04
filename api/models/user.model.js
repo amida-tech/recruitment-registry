@@ -214,7 +214,7 @@ module.exports = function (sequelize, DataTypes) {
                 });
             },
             listDocuments: function (userId) {
-                return sequelize.models.document.getActiveDashboard()
+                return sequelize.models.document.listDocuments()
                     .then(activeDocs => {
                         return sequelize.models.document_signature.findAll({
                                 where: { userId },

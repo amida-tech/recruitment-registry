@@ -7,6 +7,7 @@ const models = require('../models');
 
 const registryExamaples = require('./fixtures/registry-examples');
 const RRError = require('../lib/rr-error');
+const entityGen = require('./entity-generator');
 
 const expect = chai.expect;
 
@@ -18,26 +19,9 @@ exports.setUpFn = function () {
     };
 };
 
-exports.genNewUser = (function () {
-    let index = -1;
-
-    return function (override) {
-        ++index;
-        let user = {
-            username: 'username_' + index,
-            password: 'password_' + index,
-            email: 'email_' + index + '@example.com'
-        };
-        if (override) {
-            user = _.assign(user, override);
-        }
-        return user;
-    };
-})();
-
 exports.createUser = function (store) {
     return function () {
-        const inputUser = exports.genNewUser();
+        const inputUser = entityGen.genNewUser();
         return models.User.create(inputUser)
             .then(function (user) {
                 store.userIds.push(user.id);
@@ -45,41 +29,9 @@ exports.createUser = function (store) {
     };
 };
 
-exports.genNewQuestion = (function () {
-    const types = ['text', 'choice', 'choices', 'bool'];
-    let index = -1;
-    let choiceIndex = 1;
-    let choicesTextSwitch = false;
-
-    return function () {
-        ++index;
-        const type = types[index % 4];
-        const question = {
-            text: `text_${index}`,
-            type,
-            selectable: (index % 2 === 0)
-        };
-        if ((type === 'choice') || (type === 'choices')) {
-            question.choices = [];
-            ++choiceIndex;
-            if (type === 'choices') {
-                choicesTextSwitch = !choicesTextSwitch;
-            }
-            for (let i = choiceIndex; i < choiceIndex + 5; ++i) {
-                const choice = { text: `choice_${i}` };
-                if ((type === 'choices') && choicesTextSwitch && (i === choiceIndex + 4)) {
-                    choice.type = 'text';
-                }
-                question.choices.push(choice);
-            }
-        }
-        return question;
-    };
-})();
-
 exports.createQuestion = function (store) {
     return function () {
-        const inputQx = exports.genNewQuestion();
+        const inputQx = entityGen.genNewQuestion();
         const type = inputQx.type;
         return models.Question.createQuestion(inputQx)
             .then(function (id) {
@@ -114,27 +66,9 @@ exports.createQuestion = function (store) {
     };
 };
 
-exports.genNewSurvey = (function () {
-    let index = -1;
-    const defaultOptions = {
-        released: true,
-        addQuestions: true
-    };
-    return function (inputOptions = {}) {
-        const options = Object.assign({}, defaultOptions, inputOptions);
-        ++index;
-        const result = { name: `name_${index}` };
-        result.released = options.released;
-        if (options.addQuestions) {
-            result.questions = _.range(5).map(() => ({ content: exports.genNewQuestion() }));
-        }
-        return result;
-    };
-})();
-
 exports.createSurvey = function (store, qxIndices) {
     return function () {
-        const inputSurvey = exports.genNewSurvey({ addQuestions: false });
+        const inputSurvey = entityGen.genNewSurvey({ addQuestions: false });
         inputSurvey.questions = qxIndices.map(index => ({
             id: store.questions[index].id
         }));

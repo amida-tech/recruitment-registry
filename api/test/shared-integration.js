@@ -5,7 +5,7 @@ const chai = require('chai');
 const _ = require('lodash');
 
 const appgen = require('../app-generator');
-const entityGen = require('./shared-spec');
+const entityGen = require('./entity-generator');
 
 const expect = chai.expect;
 

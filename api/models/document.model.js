@@ -34,7 +34,7 @@ module.exports = function (sequelize, DataTypes) {
         deletedAt: 'deletedAt',
         paranoid: true,
         classMethods: {
-            getActiveDashboard: function () {
+            listDocuments: function () {
                 return sequelize.models.document_type.findAll({
                         raw: true,
                         attributes: ['id', 'description'],

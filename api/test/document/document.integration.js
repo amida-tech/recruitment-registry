@@ -6,7 +6,7 @@ const chai = require('chai');
 const _ = require('lodash');
 
 const shared = require('../shared-integration');
-const entityGen = require('../shared-spec');
+const entityGen = require('../entity-generator');
 const config = require('../../config');
 const RRError = require('../../lib/rr-error');
 
