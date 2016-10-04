@@ -7,7 +7,7 @@ const initialState = {
     username: '',
     password: '',
     availableEthnicities: [
-      "Caucasion",
+      "Caucasian",
       "Hispanic",
       "African",
       "Asian"

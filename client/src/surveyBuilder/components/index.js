@@ -2,38 +2,66 @@ import React, { Component} from 'react';
 import { connect } from 'react-redux';
 import surveyBuilder from '../index';
 import Toolbox from './toolbox'
-
+import Guid from 'guid'
 
 export class SurveyBuilderContainer extends Component {
   render() {
-    const formState = this.props.data.get('formState')
+    const survey = this.props.data.get('survey').toJS()
     return (
-      <div className="form-page__wrapper">
-        <div className="form-page__form-wrapper">
-          <label>Survey name:</label>
-          <Toolbox onDropQuestion={::this._onDropQuestion}
-          ></Toolbox>
-          <button type="submit" onClick={::this._saveSurvey}>Save</button>
-        </div>
+      <div className="">
+        <Toolbox questions={survey.questions}
+                 addQuestion={::this._addQuestion}
+                 updateQuestion={::this._updateQuestion}
+                 changeChoice={::this._changeChoice}
+                 updateSurveyName={::this.updateSurveyName} name={survey.name}/>
+        <button type="submit" onClick={::this._saveSurvey}>Save</button>
+        <p>{this.props.data.get('message')}</p>
       </div>
-    );
+    )
   }
-  _changeForm(evt) {
-    // this.props.dispatch(login.actions.update(evt.target.id, evt.target.value))
+
+  componentWillMount() {
+    if (this.props.params.id) {
+      this.props.dispatch(surveyBuilder.actions.getSurvey(this.props.params.id))
+    }
+  }
+
+  _changeChoice(item, evt) {
+    var choices = item.question.choices.map((choice) => {
+      if (choice.id === item.choiceId) {
+        choice.text = evt.target.value
+        return choice
+      }
+      return choice
+    })
+
+    item.question.choices = choices
+    this.props.dispatch(surveyBuilder.actions.updateQuestion(item.question))
+  }
+
+  _addQuestion(question) {
+    question.id = Guid.raw()
+    this.props.dispatch(surveyBuilder.actions.addQuestion(question))
+  }
+
+  _updateQuestion(question) {
+    this.props.dispatch(surveyBuilder.actions.updateQuestion(question))
   }
 
   _saveSurvey(evt) {
-    console.log("lol");
+    this.props.dispatch(surveyBuilder.actions.saveSurvey(this.props.data.get('survey')))
   }
 
-  _onDropQuestion(data) {
-    console.log(data);
+  updateSurveyName(name) {
+    this.props.dispatch(surveyBuilder.actions.updateSurveyName(name))
   }
+
+  // {this.props.params.id}
 }
 
 const mapStateToProps = function(store) {
   return {
-    data: store.get('login')
+    data: store.get('surveyBuilder')
   };
 }
 

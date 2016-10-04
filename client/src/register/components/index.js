@@ -61,7 +61,7 @@ export class RegisterContainer extends Component {
   }
 
   _onSubmit(evt) {
-    evt.preventDefault()
+    if (evt) evt.preventDefault()
 
     var answersParsed = []
 
