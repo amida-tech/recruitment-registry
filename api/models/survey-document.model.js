@@ -1,5 +1,7 @@
 'use strict';
 
+const _ = require('lodash');
+
 module.exports = function (sequelize, DataTypes) {
     const SurveyDocument = sequelize.define('survey_document', {
         surveyId: {
@@ -45,12 +47,22 @@ module.exports = function (sequelize, DataTypes) {
             deleteSurveyDocumentType: function (id) {
                 return SurveyDocument.delete({ where: { id } });
             },
-            getDocumentTypesBySurvey: function (surveyId) {
-                return SurveyDocument.findAll({
-                    where: { surveyId },
+            listSurveyDocumentTypes: function ({ userId, surveyId, action }, tx) {
+                const query = {
+                    where: { surveyId, action },
                     raw: true,
-                    attributes: ['id', 'documentTypeId', 'action']
-                });
+                    attributes: ['documentTypeId']
+                };
+                if (tx) {
+                    query.transaction = tx;
+                }
+                return sequelize.models.survey_document.findAll(query)
+                    .then(result => _.map(result, 'documentTypeId'))
+                    .then(docTypeIds => {
+                        if (docTypeIds.length) {
+                            return sequelize.models.registry_user.listDocuments(userId, docTypeIds, tx);
+                        }
+                    });
             }
         }
     });

@@ -4,6 +4,16 @@ const _ = require('lodash');
 
 const RRError = require('../lib/rr-error');
 
+const missingDocumentHandler = function (sequelize) {
+    return function (documents) {
+        if (documents && documents.length > 0) {
+            const err = new RRError('profileSignaturesMissing');
+            err.documents = documents;
+            return sequelize.Promise.reject(err);
+        }
+    };
+};
+
 module.exports = function (sequelize, DataTypes) {
     const uiToDbAnswer = function (answer) {
         let result = [];
@@ -157,28 +167,12 @@ module.exports = function (sequelize, DataTypes) {
                         },
                         transaction: tx
                     })
-                    .then(() => {
-                        const query = {
-                            where: { surveyId, action: 'create' },
-                            raw: true,
-                            attributes: ['documentTypeId'],
-                            transaction: tx
-                        };
-                        return sequelize.models.survey_document.findAll(query)
-                            .then(result => _.map(result, 'documentTypeId'))
-                            .then(docTypeIds => {
-                                if (docTypeIds.length) {
-                                    return sequelize.models.registry_user.listDocuments(userId, docTypeIds, tx)
-                                        .then(documents => {
-                                            if (documents.length > 0) {
-                                                const err = new RRError('profileSignaturesMissing');
-                                                err.documents = documents;
-                                                return sequelize.Promise.reject(err);
-                                            }
-                                        });
-                                }
-                            });
-                    })
+                    .then(() => sequelize.models.survey_document.listSurveyDocumentTypes({
+                        userId,
+                        surveyId,
+                        action: 'create'
+                    }, tx))
+                    .then(missingDocumentHandler(sequelize))
                     .then(() => {
                         answers = _.filter(answers, answer => answer.answer);
                         if (answers.length) {
@@ -192,25 +186,12 @@ module.exports = function (sequelize, DataTypes) {
                 });
             },
             getAnswers: function ({ userId, surveyId }) {
-                const query = {
-                    where: { surveyId, action: 'read' },
-                    raw: true,
-                    attributes: ['documentTypeId']
-                };
-                return sequelize.models.survey_document.findAll(query)
-                    .then(result => _.map(result, 'documentTypeId'))
-                    .then(docTypeIds => {
-                        if (docTypeIds.length) {
-                            return sequelize.models.registry_user.listDocuments(userId, docTypeIds)
-                                .then(documents => {
-                                    if (documents.length > 0) {
-                                        const err = new RRError('profileSignaturesMissing');
-                                        err.documents = documents;
-                                        return sequelize.Promise.reject(err);
-                                    }
-                                });
-                        }
+                return sequelize.models.survey_document.listSurveyDocumentTypes({
+                        userId,
+                        surveyId,
+                        action: 'read'
                     })
+                    .then(missingDocumentHandler(sequelize))
                     .then(() => {
                         return sequelize.query('select a.question_choice_id as "questionChoiceId", a.value as value, a.answer_type_id as type, q.type as qtype, q.id as qid from answer a, question q where a.deleted_at is null and a.user_id = :userid and a.survey_id = :surveyid and a.question_id = q.id', {
                                 replacements: {
