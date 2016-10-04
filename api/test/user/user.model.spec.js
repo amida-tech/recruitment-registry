@@ -10,6 +10,8 @@ const _ = require('lodash');
 const shared = require('../shared-spec');
 const config = require('../../config');
 const models = require('../../models');
+const entityGen = require('../entity-generator');
+
 const userExamples = require('../fixtures/user-examples');
 
 const expect = chai.expect;
@@ -23,7 +25,7 @@ describe('user unit', function () {
 
     describe('username', function () {
         it('create and update', function () {
-            const inputUser = shared.genNewUser();
+            const inputUser = entityGen.genNewUser();
             return User.create(inputUser).then(function (user) {
                 expect(user.username).to.equal(inputUser.username);
                 return user;
@@ -51,12 +53,12 @@ describe('user unit', function () {
         });
 
         it('reject non unique username', function () {
-            const inputUser = shared.genNewUser();
+            const inputUser = entityGen.genNewUser();
             return User.create(inputUser).then(function (user) {
                 expect(user.username).to.equal(inputUser.username);
                 return user;
             }).then(function () {
-                const nextInputUser = shared.genNewUser();
+                const nextInputUser = entityGen.genNewUser();
                 nextInputUser.username = inputUser.username;
                 return User.create(nextInputUser).then(function () {
                     throw new Error('unique username accepted');
@@ -67,7 +69,7 @@ describe('user unit', function () {
         });
 
         it('reject null/undefined/missing/empty', function () {
-            let p = models.sequelize.Promise.resolve(shared.genNewUser());
+            let p = models.sequelize.Promise.resolve(entityGen.genNewUser());
             [null, undefined, '--', ''].forEach(function (value) {
                 p = p.then(function (inputUser) {
                     if (value === '--') {
@@ -90,7 +92,7 @@ describe('user unit', function () {
 
     describe('password', function () {
         it('create, update and authenticate', function () {
-            const inputUser = shared.genNewUser();
+            const inputUser = entityGen.genNewUser();
             return User.create(inputUser).then(function (user) {
                 return User.findOne({
                     where: {
@@ -121,7 +123,7 @@ describe('user unit', function () {
         });
 
         it('reject null/undefined/missing/empty', function () {
-            let p = models.sequelize.Promise.resolve(shared.genNewUser());
+            let p = models.sequelize.Promise.resolve(entityGen.genNewUser());
             [null, undefined, '--', ''].forEach(function (value) {
                 p = p.then(function (inputUser) {
                     if (value === '--') {
@@ -142,7 +144,7 @@ describe('user unit', function () {
         });
 
         it('reject update with null/undefined/empty', function () {
-            const inputValue = shared.genNewUser();
+            const inputValue = entityGen.genNewUser();
             let p = User.create(inputValue).then(function (user) {
                 return user.id;
             });
@@ -165,7 +167,7 @@ describe('user unit', function () {
 
     describe('e-mail', function () {
         it('normal set/get', function () {
-            const inputUser = shared.genNewUser();
+            const inputUser = entityGen.genNewUser();
             return User.create(inputUser).then(function (user) {
                 expect(user.email).to.equal(inputUser.email);
                 return user;
@@ -183,12 +185,12 @@ describe('user unit', function () {
         });
 
         it('reject non unique e-mail', function () {
-            const inputUser = shared.genNewUser();
+            const inputUser = entityGen.genNewUser();
             return User.create(inputUser).then(function (user) {
                 expect(user.email).to.equal(inputUser.email);
                 return user;
             }).then(function () {
-                const nextInputUser = shared.genNewUser();
+                const nextInputUser = entityGen.genNewUser();
                 nextInputUser.email = inputUser.email;
                 return User.create(nextInputUser).then(function () {
                     throw new Error('unique email accepted');
@@ -199,7 +201,7 @@ describe('user unit', function () {
         });
 
         it('lowercase emails with capital letters', function () {
-            const inputUser = shared.genNewUser({
+            const inputUser = entityGen.genNewUser({
                 email: 'CamelCase@EXAMPLE.COM'
             });
             return User.create(inputUser).then(function (user) {
@@ -219,7 +221,7 @@ describe('user unit', function () {
         });
 
         it('reject create invalid/null/undefined/missing/empty', function () {
-            let p = models.sequelize.Promise.resolve(shared.genNewUser());
+            let p = models.sequelize.Promise.resolve(entityGen.genNewUser());
             ['noatemail', null, undefined, '--', ''].forEach(function (value) {
                 p = p.then(function (inputUser) {
                     if (value === '--') {
@@ -240,7 +242,7 @@ describe('user unit', function () {
         });
 
         it('reject update with invalid/null/undefined/empty', function () {
-            const inputValue = shared.genNewUser();
+            const inputValue = entityGen.genNewUser();
             let p = User.create(inputValue).then(function (user) {
                 return user.id;
             });
@@ -295,7 +297,7 @@ describe('user unit', function () {
 
     describe('update users', function () {
         it('normal flow', function () {
-            const inputUser = shared.genNewUser({
+            const inputUser = entityGen.genNewUser({
                 zip: null,
                 ethnicity: null,
                 gender: null
@@ -356,7 +358,7 @@ describe('user unit', function () {
 
     describe('reset password', function () {
         it('normal flow', function () {
-            const inputUser = shared.genNewUser();
+            const inputUser = entityGen.genNewUser();
             return User.create(inputUser).then(function (user) {
                 let token;
 
@@ -417,7 +419,7 @@ describe('user unit', function () {
                 m.add(250, 'ms');
                 return m.toISOString();
             });
-            const inputUser = shared.genNewUser();
+            const inputUser = entityGen.genNewUser();
             return User.create(inputUser).then(function (user) {
                 return User.resetPasswordToken(user.email);
             }).then(function (token) {

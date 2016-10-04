@@ -180,6 +180,42 @@
                 }
             }
         },
+        "/users/documents": {
+            "x-swagger-router-controller": "user.controller",
+            "get": {
+                "operationId": "listDocuments",
+                "summary": "Lists the required documents",
+                "security": [{
+                    "participant": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successul response",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "required": ["id", "description"],
+                                "properties": {
+                                    "id": {
+                                        "type": "integer",
+                                        "minimum": 1
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "minLength": 1
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
         "/surveys": {
             "x-swagger-router-controller": "survey.controller",
             "post": {
@@ -944,6 +980,215 @@
                     },
                     "500": {
                         "$ref": "#/responses/internal"
+                    }
+                }
+            }
+        },
+        "/document-types": {
+            "x-swagger-router-controller": "document-type.controller",
+            "post": {
+                "summary": "Creates new document type",
+                "description": "Each document type describes a document that users have to accept for various registry functionality such as consent form or terms of use.  There can be multiple documents with the same type but only one of them can be active at one time.",
+                "operationId": "createDocumentType",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "newDocumentType",
+                    "in": "body",
+                    "description": "Name and description of the new document type.",
+                    "required": true,
+                    "schema": {
+                        "type": "object",
+                        "required": ["name", "description"],
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "description": {
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }],
+                "responses": {
+                    "201": {
+                        "$ref": "#/responses/idSuccess"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "get": {
+                "summary": "Lists document types",
+                "operationId": "listDocumentTypes",
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "required": ["id", "name", "description"],
+                                "properties": {
+                                    "id": {
+                                        "type": "integer",
+                                        "minimum": 1
+                                    },
+                                    "name": {
+                                        "type": "string",
+                                        "minLength": 1
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "minLength": 1
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/document-types/{id}": {
+            "x-swagger-router-controller": "document-type.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
+            "delete": {
+                "summary": "Deletes the document type",
+                "operationId": "deleteDocumentType",
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "204": {
+                        "$ref": "#/responses/emptySuccess"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/documents/type/{typeId}": {
+            "x-swagger-router-controller": "document.controller",
+            "parameters": [{
+                "name": "typeId",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
+            "post": {
+                "summary": "Creates a document of type",
+                "operationId": "createDocument",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "content",
+                    "in": "body",
+                    "description": "Content text",
+                    "required": true,
+                    "schema": {
+                        "type": "object",
+                        "required": ["content"],
+                        "properties": {
+                            "content": {
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }],
+                "responses": {
+                    "201": {
+                        "$ref": "#/responses/idSuccess"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/documents/{id}": {
+            "x-swagger-router-controller": "document.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
+            "get": {
+                "summary": "Gets document content",
+                "operationId": "getContent",
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "object",
+                            "required": ["content"],
+                            "properties": {
+                                "content": {
+                                    "type": "string",
+                                    "minLength": 1
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/document-signatures": {
+            "x-swagger-router-controller": "document-signature.controller",
+            "post": {
+                "summary": "Marks a document as signed",
+                "operationId": "createSignature",
+                "security": [{
+                    "participant": []
+                }],
+                "parameters": [{
+                    "name": "document",
+                    "in": "body",
+                    "description": "Document to be signed",
+                    "required": true,
+                    "schema": {
+                        "type": "object",
+                        "required": ["documentId"],
+                        "properties": {
+                            "documentId": {
+                                "type": "integer",
+                                "minimum": 1
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }],
+                "responses": {
+                    "201": {
+                        "$ref": "#/responses/idSuccess"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
                     }
                 }
             }

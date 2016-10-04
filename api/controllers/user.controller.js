@@ -32,26 +32,24 @@ exports.createNewUser = function (req, res) {
 };
 
 exports.showCurrentUser = function (req, res) {
-    if (req.user) {
-        const currentUser = _.omitBy(req.user, _.isNil);
-        res.status(200).json(currentUser);
-    } else {
-        res.status(401).json({});
-    }
+    const currentUser = _.omitBy(req.user, _.isNil);
+    res.status(200).json(currentUser);
 };
 
 exports.updateCurrentUser = function (req, res) {
-    if (req.user) {
-        User.updateUser(req.user.id, req.body)
-            .then(() => res.status(200).json({}))
-            .catch(shared.handleError(res));
-    } else {
-        res.status(401).json({});
-    }
+    User.updateUser(req.user.id, req.body)
+        .then(() => res.status(200).json({}))
+        .catch(shared.handleError(res));
 };
 
 exports.resetPassword = function (req, res) {
     User.resetPassword(req.body.token, req.body.password)
         .then(() => res.status(201).json({}))
+        .catch(shared.handleError(res));
+};
+
+exports.listDocuments = function (req, res) {
+    User.listDocuments(req.user.id)
+        .then(documents => res.status(200).json(documents))
         .catch(shared.handleError(res));
 };

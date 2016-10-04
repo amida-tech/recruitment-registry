@@ -90,3 +90,11 @@ errors.surveyNoQuestions = {
 errors.surveyVersionAlreadyDraft = {
     msg: 'There is already a draft survey based on this survey.'
 };
+
+errors.documentNoSystemDocuments = {
+    msg: 'System does not have the required documents uploaded.'
+};
+
+errors.profileSignaturesMissing = {
+    msg: 'Required document signatures are not included.'
+};

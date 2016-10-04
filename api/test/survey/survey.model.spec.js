@@ -10,7 +10,7 @@ const models = require('../../models');
 
 const userExamples = require('../fixtures/user-examples');
 const surveyExamples = require('../fixtures/survey-examples');
-const shared = require('../shared-spec.js');
+const entityGen = require('../entity-generator');
 const RRError = require('../../lib/rr-error');
 
 const expect = chai.expect;
@@ -51,7 +51,7 @@ describe('survey unit', function () {
 
     const createVerifySurveyFn = function (index) {
         return function () {
-            const inputSurvey = shared.genNewSurvey({ released: index < 4 });
+            const inputSurvey = entityGen.genNewSurvey({ released: index < 4 });
             store.inputSurveys.push(inputSurvey);
             return Survey.createSurvey(inputSurvey)
                 .then(id => Survey.getSurveyById(id))
@@ -146,7 +146,7 @@ describe('survey unit', function () {
     it('error: version a not released survey', function () {
         const survey = store.surveys[5];
         expect(survey.released).to.equal(false);
-        const replacementSurvey = shared.genNewSurvey({ released: false });
+        const replacementSurvey = entityGen.genNewSurvey({ released: false });
         return Survey.versionSurvey({
                 id: survey.id,
                 replacement: replacementSurvey
@@ -162,7 +162,7 @@ describe('survey unit', function () {
     it('error: version with a survey with no questions', function () {
         const survey = store.surveys[1];
         expect(survey.released).to.equal(true);
-        const replacementSurvey = shared.genNewSurvey({ released: false, addQuestions: false });
+        const replacementSurvey = entityGen.genNewSurvey({ released: false, addQuestions: false });
         return Survey.versionSurvey({
                 id: survey.id,
                 replacement: replacementSurvey
@@ -179,7 +179,7 @@ describe('survey unit', function () {
         const index = 1;
         const survey = store.surveys[index];
         expect(survey.released).to.equal(true);
-        const inputSurvey = shared.genNewSurvey({ released: false });
+        const inputSurvey = entityGen.genNewSurvey({ released: false });
         store.inputSurveys.push(inputSurvey);
         return Survey.versionSurvey({
                 id: survey.id,
@@ -223,7 +223,7 @@ describe('survey unit', function () {
             }
             const survey = store.surveys[index];
             expect(survey.released).to.equal(true);
-            const inputSurvey = shared.genNewSurvey({ released: true });
+            const inputSurvey = entityGen.genNewSurvey({ released: true });
             store.inputSurveys.push(inputSurvey);
             store.inputSurveys.splice(index, 1);
             return Survey.versionSurvey({
@@ -277,7 +277,7 @@ describe('survey unit', function () {
     });
 
     it('version a draft survey and delete', function () {
-        const inputSurvey = shared.genNewSurvey({ released: true });
+        const inputSurvey = entityGen.genNewSurvey({ released: true });
         store.inputSurveys.push(inputSurvey);
         return Survey.createSurvey(inputSurvey)
             .then(id => Survey.getSurveyById(id))
@@ -290,7 +290,7 @@ describe('survey unit', function () {
                     });
             })
             .then((id) => {
-                const replacement = shared.genNewSurvey({ released: false });
+                const replacement = entityGen.genNewSurvey({ released: false });
                 return Survey.versionSurvey({ id, replacement });
             })
             .then(id => Survey.deleteSurvey(id))

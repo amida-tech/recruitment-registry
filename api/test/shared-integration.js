@@ -5,7 +5,7 @@ const chai = require('chai');
 const _ = require('lodash');
 
 const appgen = require('../app-generator');
-const entityGen = require('./shared-spec');
+const entityGen = require('./entity-generator');
 
 const expect = chai.expect;
 
@@ -104,7 +104,7 @@ exports.fillQxFn = function (store) {
                 const choices = res.body.choices;
                 if (choices) {
                     if (question.type === 'choice') {
-                        question.choices = _.map(res.body.choices, 'id');
+                        question.choices = _.map(res.body.choices, choice => ({ id: choice.id }));
                     } else {
                         question.choices = _.map(choices, choice => ({ id: choice.id, type: choice.type }));
                     }

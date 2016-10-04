@@ -10,7 +10,7 @@ const helper = require('../helper/survey-helper');
 const config = require('../../config');
 
 const shared = require('../shared-integration');
-const sharedSpec = require('../shared-spec');
+const entityGen = require('../entity-generator');
 const userExamples = require('../fixtures/user-examples');
 const surveyExamples = require('../fixtures/survey-examples');
 const RRError = require('../../lib/rr-error');
@@ -44,7 +44,7 @@ describe('survey integration', function () {
 
     const createSurveyFn = function (index) {
         return function (done) {
-            const inputSurvey = sharedSpec.genNewSurvey({ released: index < 4 });
+            const inputSurvey = entityGen.genNewSurvey({ released: index < 4 });
             store.inputSurveys.push(inputSurvey);
             store.server
                 .post('/api/v1.0/surveys')
@@ -227,7 +227,7 @@ describe('survey integration', function () {
 
     const versionSurveyFn = function (index, released) {
         return function (done) {
-            const replacement = sharedSpec.genNewSurvey({ released });
+            const replacement = entityGen.genNewSurvey({ released });
             store.inputSurveys.push(replacement);
             const id = store.surveys[index].id;
             store.server

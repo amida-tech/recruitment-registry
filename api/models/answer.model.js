@@ -2,6 +2,18 @@
 
 const _ = require('lodash');
 
+const RRError = require('../lib/rr-error');
+
+const missingDocumentHandler = function (sequelize) {
+    return function (documents) {
+        if (documents && documents.length > 0) {
+            const err = new RRError('profileSignaturesMissing');
+            err.documents = documents;
+            return sequelize.Promise.reject(err);
+        }
+    };
+};
+
 module.exports = function (sequelize, DataTypes) {
     const uiToDbAnswer = function (answer) {
         let result = [];
@@ -125,7 +137,7 @@ module.exports = function (sequelize, DataTypes) {
         deletedAt: 'deletedAt',
         paranoid: true,
         classMethods: {
-            createAnswersTx: function ({ userId, surveyId, answers }, tx) {
+            auxCreateAnswersTx: function ({ userId, surveyId, answers }, tx) {
                 // TO DO: Put an assertion here to check the answers match with question type
                 answers = answers.reduce((r, q) => {
                     const questionId = q.questionId;
@@ -134,7 +146,7 @@ module.exports = function (sequelize, DataTypes) {
                         surveyId,
                         questionId,
                         questionChoiceId: value.questionChoiceId || null,
-                        value: value.value,
+                        value: value.hasOwnProperty('value') ? value.value : null,
                         type: value.type
                     }));
                     values.forEach(value => r.push(value));
@@ -145,7 +157,7 @@ module.exports = function (sequelize, DataTypes) {
                     return Answer.create(answer, { transaction: tx });
                 }));
             },
-            updateAnswersTx: function ({ userId, surveyId, answers }, tx) {
+            createAnswersTx: function ({ userId, surveyId, answers }, tx) {
                 const ids = _.map(answers, 'questionId');
                 return Answer.destroy({
                         where: {
@@ -155,14 +167,16 @@ module.exports = function (sequelize, DataTypes) {
                         },
                         transaction: tx
                     })
-                    .then(function () {
+                    .then(() => sequelize.models.survey_document.listSurveyDocumentTypes({
+                        userId,
+                        surveyId,
+                        action: 'create'
+                    }, tx))
+                    .then(missingDocumentHandler(sequelize))
+                    .then(() => {
                         answers = _.filter(answers, answer => answer.answer);
                         if (answers.length) {
-                            return Answer.createAnswersTx({
-                                userId,
-                                surveyId,
-                                answers
-                            }, tx);
+                            return Answer.auxCreateAnswersTx({ userId, surveyId, answers }, tx);
                         }
                     });
             },
@@ -171,29 +185,32 @@ module.exports = function (sequelize, DataTypes) {
                     return Answer.createAnswersTx(input, tx);
                 });
             },
-            updateAnswers: function (input) {
-                return sequelize.transaction(function (tx) {
-                    return Answer.updateAnswersTx(input, tx);
-                });
-            },
             getAnswers: function ({ userId, surveyId }) {
-                return sequelize.query('select a.question_choice_id as "questionChoiceId", a.value as value, a.answer_type_id as type, q.type as qtype, q.id as qid from answer a, question q where a.deleted_at is null and a.user_id = :userid and a.survey_id = :surveyid and a.question_id = q.id', {
-                        replacements: {
-                            userid: { userId, surveyId }.userId,
-                            surveyid: { userId, surveyId }.surveyId
-                        },
-                        type: sequelize.QueryTypes.SELECT
+                return sequelize.models.survey_document.listSurveyDocumentTypes({
+                        userId,
+                        surveyId,
+                        action: 'read'
                     })
-                    .then(function (result) {
-                        const groupedResult = _.groupBy(result, 'qid');
-                        return Object.keys(groupedResult).map(function (key) {
-                            const v = groupedResult[key];
-                            const r = {
-                                questionId: v[0].qid,
-                                answer: generateAnswer[v[0].qtype](v)
-                            };
-                            return r;
-                        });
+                    .then(missingDocumentHandler(sequelize))
+                    .then(() => {
+                        return sequelize.query('select a.question_choice_id as "questionChoiceId", a.value as value, a.answer_type_id as type, q.type as qtype, q.id as qid from answer a, question q where a.deleted_at is null and a.user_id = :userid and a.survey_id = :surveyid and a.question_id = q.id', {
+                                replacements: {
+                                    userid: { userId, surveyId }.userId,
+                                    surveyid: { userId, surveyId }.surveyId
+                                },
+                                type: sequelize.QueryTypes.SELECT
+                            })
+                            .then(function (result) {
+                                const groupedResult = _.groupBy(result, 'qid');
+                                return Object.keys(groupedResult).map(function (key) {
+                                    const v = groupedResult[key];
+                                    const r = {
+                                        questionId: v[0].qid,
+                                        answer: generateAnswer[v[0].qtype](v)
+                                    };
+                                    return r;
+                                });
+                            });
                     });
             },
             getOldAnswers: function ({ userId, surveyId }) {
