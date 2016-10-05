@@ -10,14 +10,15 @@ export class LoginContainer extends Component {
       <div className="form-page__wrapper">
         <div className="form-page__form-wrapper">
           <div className="form-page__form-header">
-            <h2 className="form-page__form-heading">Login</h2>
+            <h2 className="form-page__form-heading">{this.props.vocab.get('LOGIN')}</h2>
           </div>
           <Form data={formState}
                 location={location}
+                vocab={this.props.vocab}
                 history={this.props.history}
                 changeForm={::this._changeForm}
                 onSubmit={::this._login}
-                btnText={"Login"} />
+                btnText={this.props.vocab.get('LOGIN')} />
         </div>
       </div>
     );
@@ -37,9 +38,11 @@ export class LoginContainer extends Component {
   }
 }
 
-const mapStateToProps = function(store) {
+//const mapStateToProps = function(store) {
+function mapStateToProps(store) {
   return {
-    data: store.get('login')
+    data: store.get('login'),
+    vocab: store.getIn(['settings', 'language', 'vocabulary'])
   };
 }
 

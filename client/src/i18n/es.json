@@ -1,0 +1,10 @@
+{
+  "TEST": "HERP",
+  "HOME": "Casa",
+  "SIGN_IN": "Registrarse",
+  "EMAIL": "Correo Electrónico",
+  "USERNAME": "Nombre de Usuario",
+  "PASSWORD": "Contraseña",
+  "FORGOT_USER_PASS": "¿Ha olvidado su nombre de usuario o contraseña?",
+  "LOGIN": "Iniciar Sesión"
+}

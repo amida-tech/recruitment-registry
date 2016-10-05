@@ -7,6 +7,7 @@ import profile from './profile'
 import surveyBuilder from './surveyBuilder'
 import surveys from './surveys'
 import { browserHistory } from 'react-router'
+import Immutable from 'immutable'
 
 export const initialState = {
   title: "GAP",
@@ -97,8 +98,8 @@ export const reducers = {
   settings: (state = initialState, action) => {
     switch (action.type) {
       case "CHANGE_LANGUAGE":
-        var newLang = state.get('language').get('choice') == 'en' ? 'es' : 'en';
-        return {choice:{newLang}, vocabulary: require('./i18n/'+newLang+'.json')};
+        var choice = state.getIn(['language','choice']) == 'en' ? 'es' : 'en';
+        return state.setIn(['language'], Immutable.fromJS({'choice': choice, 'vocabulary': require('./i18n/'+choice+'.json')}));
       default:
         return state;
       }

@@ -1,0 +1,10 @@
+{
+  "TEST": "DERP",
+  "HOME": "Home",
+  "SIGN_IN": "Sign In",
+  "EMAIL": "Email",
+  "USERNAME": "Username",
+  "PASSWORD": "Password",
+  "FORGOT_USER_PASS": "Forgot your username and password?",
+  "LOGIN": "Login"
+}

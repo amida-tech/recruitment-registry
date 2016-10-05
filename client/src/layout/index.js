@@ -3,6 +3,10 @@ import Nav from '../nav/index';
 import { connect } from 'react-redux';
 
 class Layout extends Component {
+  componentWillReceiveProps(nextProps){
+    this.vocab = nextProps.vocab;
+  }
+
   render() {
     return (
       <div>
@@ -16,11 +20,9 @@ class Layout extends Component {
 Layout.displayName = 'Layout';
 
 function mapStateToProps(state) {
-  console.log(JSON.stringify(state));
-  console.log(state.get("settings").get('language').get('vocabulary'));
   return {
     data: state,
-    vocab: state.get('settings').get('language').get('vocabulary')
+    vocab: state.getIn(['settings', 'language', 'vocabulary'])
   };
 }
 
