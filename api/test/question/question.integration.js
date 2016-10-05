@@ -121,7 +121,7 @@ describe('question integration', function () {
         return function (done) {
             store.server
                 .put('/api/v1.0/questions/' + ids[index])
-                .send({ text: examples[index].text, selectable: examples[index].selectable })
+                .send({ text: examples[index].text })
                 .set('Authorization', store.auth)
                 .expect(204, done);
         };
@@ -131,7 +131,6 @@ describe('question integration', function () {
         return function () {
             const example = examples[index];
             example.text = `Updated ${example.text}`;
-            example.selectable = !example.selectable;
         };
     };
 
@@ -139,7 +138,6 @@ describe('question integration', function () {
         return function () {
             const example = examples[index];
             example.text = example.text.slice(8);
-            example.selectable = !example.selectable;
         };
     };
 

@@ -4,7 +4,6 @@ exports.rrErrors = [{
     input: {
         text: 'Example',
         type: 'choice',
-        selectable: false,
         oneOfChoices: ['a', 'b', 'c'],
         choices: [{ text: 'x' }, { text: 'y', type: 'bool' }]
     },
@@ -12,22 +11,19 @@ exports.rrErrors = [{
 }, {
     input: {
         text: 'Example',
-        type: 'choices',
-        selectable: false
+        type: 'choices'
     },
     code: 'qxCreateChoicesNone'
 }, {
     input: {
         text: 'Example',
-        type: 'choice',
-        selectable: false
+        type: 'choice'
     },
     code: 'qxCreateChoiceNone'
 }, {
     input: {
         text: 'Example',
         type: 'choice',
-        selectable: false,
         choices: [{ text: 'x' }, { text: 'y', type: 'text' }]
     },
     code: 'qxCreateChoiceNotBool'
@@ -35,7 +31,6 @@ exports.rrErrors = [{
     input: {
         text: 'Example',
         type: 'text',
-        selectable: false,
         choices: [{ text: 'x' }, { text: 'y', type: 'bool' }, { text: 'z', type: 'text' }]
     },
     code: 'qxCreateChoicesOther'
@@ -43,7 +38,6 @@ exports.rrErrors = [{
     input: {
         text: 'Example',
         type: 'text',
-        selectable: false,
         oneOfChoices: ['a', 'b', 'c'],
     },
     code: 'qxCreateChoicesOther'

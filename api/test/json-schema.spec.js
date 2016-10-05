@@ -25,12 +25,10 @@ describe('custom json schema', function () {
             released: false,
             questions: [{
                 text: 'What is it?',
-                type: 'text',
-                selectable: true
+                type: 'text'
             }, {
                 text: 'What is it?',
-                type: 'text',
-                selectable: true
+                type: 'text'
             }]
         }, {
             name: 'name',
@@ -39,8 +37,7 @@ describe('custom json schema', function () {
                 id: 1
             }, {
                 text: 'What is it?',
-                type: 'text',
-                selectable: true
+                type: 'text'
             }, {
                 id: 2
             }]
@@ -52,12 +49,10 @@ describe('custom json schema', function () {
             questions: [{
                 id: 1,
                 text: 'What is it?',
-                type: 'text',
-                selectable: true
+                type: 'text'
             }, {
                 text: 'What is it?',
-                type: 'text',
-                selectable: true
+                type: 'text'
             }]
         }];
 
