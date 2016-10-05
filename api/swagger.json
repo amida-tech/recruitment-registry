@@ -1493,7 +1493,7 @@
                 "selectable": {
                     "type": "boolean"
                 },
-                "oneOfchoices": {
+                "oneOfChoices": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -1517,7 +1517,8 @@
                 "actions": {
                     "$ref": "#/definitions/actions"
                 }
-            }
+            },
+            "additionalProperties": false
         },
         "linkedAnswer": {
             "type": "object",
