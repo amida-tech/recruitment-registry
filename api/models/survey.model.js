@@ -37,15 +37,15 @@ module.exports = function (sequelize, DataTypes) {
         paranoid: true,
         classMethods: {
             createNewQuestionsTx: function (questions, tx) {
-                const newQuestions = questions.reduce(function (r, { content }, index) {
-                    if (content) {
-                        r.push({ content, index });
+                const newQuestions = questions.reduce(function (r, qx, index) {
+                    if (!qx.id) {
+                        r.push({ qx, index });
                     }
                     return r;
                 }, []);
                 if (newQuestions.length) {
                     return sequelize.Promise.all(newQuestions.map(function (q) {
-                            return sequelize.models.question.createQuestionTx(q.content, tx).then(function (id) {
+                            return sequelize.models.question.createQuestionTx(q.qx, tx).then(function (id) {
                                 questions[q.index] = { id };
                             });
                         }))

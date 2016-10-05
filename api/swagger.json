@@ -227,7 +227,7 @@
                 "parameters": [{
                     "name": "newSurvey",
                     "in": "body",
-                    "description": "Definition of a new survey.  Existing questions have 'id' only and new questions have 'content' only.",
+                    "description": "Definition of a new survey.  Existing questions have 'id' only and new questions have other fields.",
                     "required": true,
                     "schema": {
                         "$ref": "#/definitions/newSurvey"
@@ -1308,12 +1308,38 @@
                             "id": {
                                 "type": "integer"
                             },
-                            "content": {
-                                "$ref": "#/definitions/newQuestion"
+                            "text": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "oneOfChoices": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "choices": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "required": ["text"],
+                                    "properties": {
+                                        "text": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            },
+                            "actions": {
+                                "$ref": "#/definitions/actions"
                             }
                         },
-                        "minProperties": 1,
-                        "maxProperties": 1
+                        "minProperties": 1
                     },
                     "minLength": 1
                 }

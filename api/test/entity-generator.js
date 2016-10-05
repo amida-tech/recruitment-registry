@@ -61,7 +61,7 @@ exports.genNewSurvey = (function () {
         const name = options.name || `name_${index}`;
         const result = { name };
         if (options.addQuestions) {
-            result.questions = _.range(5).map(() => ({ content: exports.genNewQuestion() }));
+            result.questions = _.range(5).map(() => exports.genNewQuestion());
         }
         return result;
     };

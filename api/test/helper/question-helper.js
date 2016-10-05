@@ -16,7 +16,7 @@ exports.buildServerQuestion = function (question, id) {
             return r;
         }, {});
     }).then(function (choiceMap) {
-        const result = _.cloneDeep(question.content || question);
+        const result = _.cloneDeep(question);
         result.id = id;
         if (result.oneOfChoices) {
             result.choices = result.oneOfChoices.map(function (choice) {
