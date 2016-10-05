@@ -8,38 +8,23 @@ const _ = require('lodash');
 const surveyHelper = require('../helper/survey-helper');
 const models = require('../../models');
 
-const userExamples = require('../fixtures/user-examples');
-const surveyExamples = require('../fixtures/survey-examples');
 const entityGen = require('../entity-generator');
-const RRError = require('../../lib/rr-error');
+const shared = require('../shared-spec');
+const answerCommon = require('../answer/answer-common');
 
 const expect = chai.expect;
 
 const Survey = models.Survey;
-const Answer = models.Answer;
-const User = models.User;
 
 describe('survey unit', function () {
-    const example = surveyExamples.Example;
-    const user = userExamples.Example;
+    before(shared.setUpFn());
 
-    let userId;
-
-    before(function () {
-        return models.sequelize.sync({
-            force: true
-        }).then(function () {
-            return User.create(user);
-        }).then(function (result) {
-            userId = result.id;
-        });
-    });
-
-    let serverSurvey;
+    const userCount = 1;
 
     const store = {
         inputSurveys: [],
-        surveys: []
+        surveys: [],
+        userIds: []
     };
 
     it('verify no surveys', function () {
@@ -51,7 +36,7 @@ describe('survey unit', function () {
 
     const createVerifySurveyFn = function (index) {
         return function () {
-            const inputSurvey = entityGen.genNewSurvey({ released: index < 4 });
+            const inputSurvey = entityGen.genNewSurvey();
             store.inputSurveys.push(inputSurvey);
             return Survey.createSurvey(inputSurvey)
                 .then(id => Survey.getSurveyById(id))
@@ -77,153 +62,52 @@ describe('survey unit', function () {
                 .then(() => Survey.listSurveys())
                 .then(surveys => {
                     expect(surveys).to.have.length(index + 1);
-                    const expected = store.surveys.map(({ id, name, released }) => ({ id, name, released }));
+                    const expected = store.surveys.map(({ id, name }) => ({ id, name }));
                     expect(surveys).to.deep.equal(expected);
                 });
         };
     };
 
     it('error: create survey without questions', function () {
-        return Survey.createSurvey({ name: 'name', released: false })
-            .then(() => { throw new Error('unexpected no error'); })
-            .catch(err => {
-                expect(err).to.be.instanceof(RRError);
-                expect(err.code).to.equal('surveyNoQuestions');
-                expect(!!err.message).to.equal(true);
-            });
+        return Survey.createSurvey({ name: 'name' })
+            .then(shared.throwingHandler, shared.expectedErrorHandler('surveyNoQuestions'));
     });
 
     for (let i = 0; i < 8; ++i) {
         it(`create/verify/update survey ${i} and list all`, createVerifySurveyFn(i));
     }
 
-    it('error: show a non existant survey', function () {
+    it('error: show a non existent survey', function () {
         return Survey.getSurveyById(999)
-            .then(() => { throw new Error('unexpected no error'); })
-            .catch(err => {
-                expect(err).to.be.instanceof(RRError);
-                expect(err.code).to.equal('surveyNotFound');
-                expect(!!err.message).to.equal(true);
-            });
-    });
-
-    it('error: release an already released survey', function () {
-        const releasedSurvey = store.surveys[1];
-        expect(releasedSurvey.released).to.equal(true);
-        return Survey.releaseSurvey(releasedSurvey.id)
-            .then(() => { throw new Error('unexpected no error'); })
-            .catch(err => {
-                expect(err).to.be.instanceof(RRError);
-                expect(err.code).to.equal('surveyAlreadyReleased');
-                expect(!!err.message).to.equal(true);
-            });
-    });
-
-    it('error: release a non existant survey', function () {
-        return Survey.releaseSurvey(999)
-            .then(() => { throw new Error('unexpected no error'); })
-            .catch(err => {
-                expect(err).to.be.instanceof(RRError);
-                expect(err.code).to.equal('surveyNotFound');
-                expect(!!err.message).to.equal(true);
-            });
-    });
-
-    it('release a survey', function () {
-        const survey = store.surveys[4];
-        expect(survey.released).to.equal(false);
-        return Survey.releaseSurvey(survey.id)
-            .then((empty) => {
-                expect(empty).to.deep.equal({});
-                return Survey.getSurveyById(survey.id);
-            })
-            .then((actual) => {
-                survey.released = true;
-                expect(actual).to.deep.equal(survey);
-            });
-    });
-
-    it('error: version a not released survey', function () {
-        const survey = store.surveys[5];
-        expect(survey.released).to.equal(false);
-        const replacementSurvey = entityGen.genNewSurvey({ released: false });
-        return Survey.versionSurvey({
-                id: survey.id,
-                replacement: replacementSurvey
-            })
-            .then(() => { throw new Error('unexpected no error'); })
-            .catch(err => {
-                expect(err).to.be.instanceof(RRError);
-                expect(err.code).to.equal('surveyVersionAlreadyDraft');
-                expect(!!err.message).to.equal(true);
-            });
+            .then(shared.throwingHandler, shared.expectedErrorHandler('surveyNotFound'));
     });
 
     it('error: version with a survey with no questions', function () {
         const survey = store.surveys[1];
-        expect(survey.released).to.equal(true);
-        const replacementSurvey = entityGen.genNewSurvey({ released: false, addQuestions: false });
+        const replacementSurvey = entityGen.genNewSurvey({ addQuestions: false });
         return Survey.versionSurvey({
                 id: survey.id,
                 replacement: replacementSurvey
             })
-            .then(() => { throw new Error('unexpected no error'); })
-            .catch(err => {
-                expect(err).to.be.instanceof(RRError);
-                expect(err.code).to.equal('surveyNoQuestions');
-                expect(!!err.message).to.equal(true);
-            });
+            .then(shared.throwingHandler, shared.expectedErrorHandler('surveyNoQuestions'));
     });
 
-    it('version a draft survey and release', function () {
-        const index = 1;
-        const survey = store.surveys[index];
-        expect(survey.released).to.equal(true);
-        const inputSurvey = entityGen.genNewSurvey({ released: false });
-        store.inputSurveys.push(inputSurvey);
+    it('error: version with a nonexistent survey', function () {
+        const replacementSurvey = entityGen.genNewSurvey();
         return Survey.versionSurvey({
-                id: survey.id,
-                replacement: inputSurvey
+                id: 9999,
+                replacement: replacementSurvey
             })
-            .then(id => Survey.getSurveyById(id))
-            .then((serverSurvey) => {
-                return surveyHelper.buildServerSurvey(inputSurvey, serverSurvey)
-                    .then(expected => {
-                        expect(serverSurvey).to.deep.equal(expected);
-                        store.surveys.push(serverSurvey);
-                        return serverSurvey.id;
-                    });
-            })
-            .then(() => Survey.listSurveys())
-            .then(surveys => {
-                expect(surveys).to.have.length(store.surveys.length);
-                const expected = store.surveys.map(({ id, name, released }) => ({ id, name, released }));
-                expect(surveys).to.deep.equal(expected);
-            })
-            .then(() => {
-                const newSurvey = store.surveys[store.surveys.length - 1];
-                return Survey.releaseSurvey(newSurvey.id)
-                    .then(() => newSurvey.released = true);
-            })
-            .then(() => Survey.listSurveys())
-            .then((surveys) => {
-                store.inputSurveys.splice(index, 1);
-                store.surveys.splice(index, 1);
-                expect(surveys).to.have.length(store.surveys.length);
-                const expected = store.surveys.map(({ id, name, released }) => ({ id, name, released }));
-                expect(surveys).to.deep.equal(expected);
-            });
-
+            .then(shared.throwingHandler, shared.expectedErrorHandler('surveyNotFound'));
     });
 
-    const versionReleasedSurveyFn = function (index) {
+    const versionSurveyFn = function (index) {
         return function () {
             if (index === undefined) {
                 index = store.surveys.length - 1;
             }
             const survey = store.surveys[index];
-            expect(survey.released).to.equal(true);
-            const inputSurvey = entityGen.genNewSurvey({ released: true });
+            const inputSurvey = entityGen.genNewSurvey();
             store.inputSurveys.push(inputSurvey);
             store.inputSurveys.splice(index, 1);
             return Survey.versionSurvey({
@@ -243,7 +127,7 @@ describe('survey unit', function () {
                 .then(() => Survey.listSurveys())
                 .then(surveys => {
                     expect(surveys).to.have.length(store.surveys.length);
-                    const expected = store.surveys.map(({ id, name, released }) => ({ id, name, released }));
+                    const expected = store.surveys.map(({ id, name }) => ({ id, name }));
                     expect(surveys).to.deep.equal(expected);
                 });
         };
@@ -268,56 +152,12 @@ describe('survey unit', function () {
             });
     };
 
-    it('version a released survey', function () {
-        return versionReleasedSurveyFn(3)()
-            .then(versionReleasedSurveyFn(0))
-            .then(versionReleasedSurveyFn(store.surveys.length - 1))
+    it('version a survey', function () {
+        return versionSurveyFn(3)()
+            .then(versionSurveyFn(0))
+            .then(versionSurveyFn(store.surveys.length - 1))
             .then(() => dbVersionCompare(store.surveys.length - 1, 3))
             .then(() => dbVersionCompare(store.surveys.length - 2, 2));
-    });
-
-    it('version a draft survey and delete', function () {
-        const inputSurvey = entityGen.genNewSurvey({ released: true });
-        store.inputSurveys.push(inputSurvey);
-        return Survey.createSurvey(inputSurvey)
-            .then(id => Survey.getSurveyById(id))
-            .then((serverSurvey) => {
-                return surveyHelper.buildServerSurvey(inputSurvey, serverSurvey)
-                    .then(expected => {
-                        expect(serverSurvey).to.deep.equal(expected);
-                        store.surveys.push(serverSurvey);
-                        return serverSurvey.id;
-                    });
-            })
-            .then((id) => {
-                const replacement = entityGen.genNewSurvey({ released: false });
-                return Survey.versionSurvey({ id, replacement });
-            })
-            .then(id => Survey.deleteSurvey(id))
-            .then(() => Survey.listSurveys())
-            .then(surveys => {
-                const expected = store.surveys.map(({ id, name, released }) => ({ id, name, released }));
-                expect(surveys).to.deep.equal(expected);
-            })
-            .then(versionReleasedSurveyFn())
-            .then(() => {
-                const survey = store.surveys[store.surveys.length - 1];
-                return Survey.findById(survey.id)
-                    .then(fullSurvey => {
-                        const groupId = fullSurvey.groupId;
-                        return Survey.findAll({
-                                where: { groupId },
-                                paranoid: false,
-                                attributes: ['groupId', 'version'],
-                                raw: true
-                            })
-                            .then(actual => {
-                                actual = _.sortBy(actual, 'version');
-                                const expected = [1, 2, 2].map(version => ({ version, groupId }));
-                                expect(actual).to.deep.equal(expected);
-                            });
-                    });
-            });
     });
 
     it('delete a survey', function () {
@@ -327,47 +167,87 @@ describe('survey unit', function () {
         return Survey.deleteSurvey(survey.id)
             .then(() => Survey.listSurveys())
             .then(surveys => {
-                const expected = store.surveys.map(({ id, name, released }) => ({ id, name, released }));
+                const expected = store.surveys.map(({ id, name }) => ({ id, name }));
                 expect(surveys).to.deep.equal(expected);
             });
     });
 
-    it('post/get survey', function () {
-        return Survey.createSurvey(example.survey).then(function (id) {
-            return Survey.getSurveyById(id).then(function (result) {
-                    return surveyHelper.buildServerSurvey(example.survey, result)
-                        .then(function (expected) {
-                            expect(result).to.deep.equal(expected);
-                            serverSurvey = result;
-                        });
-                })
-                .then(function () {
-                    return Survey.getSurveyByName(example.survey.name)
-                        .then(function (result) {
-                            return surveyHelper.buildServerSurvey(example.survey, result)
-                                .then(function (expected) {
-                                    expect(result).to.deep.equal(expected);
-                                });
-                        });
-                });
-        });
+    it('extract existing questions', function () {
+        store.questions = _.flatten(_.map(store.surveys, 'questions'));
     });
 
-    it('post answers, get survey with answers', function () {
-        const id = serverSurvey.id;
+    it('survey by existing questions only', function () {
+        const survey = entityGen.genNewSurvey({ addQuestions: false });
+        const questions = store.questions.slice(0, 10);
+        survey.questions = questions.map(({ id }) => ({ id }));
+        return Survey.createSurvey(survey)
+            .then(id => Survey.getSurveyById(id))
+            .then((serverSurvey) => {
+                const expected = {
+                    id: serverSurvey.id,
+                    name: survey.name,
+                    questions: questions
+                };
+                expect(serverSurvey).to.deep.equal(expected);
+            });
+    });
 
-        const answers = surveyHelper.formAnswersToPost(serverSurvey, example.answer);
-        return Answer.createAnswers({
-                userId,
-                surveyId: id,
-                answers
-            })
+    it('survey by existing/new questions', function () {
+        const survey = entityGen.genNewSurvey();
+        const additionalIds = [10, 11].map(index => ({ id: store.questions[index].id }));
+        survey.questions.splice(1, 0, ...additionalIds);
+        return Survey.createSurvey(survey)
+            .then(id => Survey.getSurveyById(id))
+            .then((serverSurvey) => {
+                survey.questions[1] = store.questions[10];
+                survey.questions[2] = store.questions[11];
+                return surveyHelper.buildServerSurvey(survey, serverSurvey)
+                    .then(expected => {
+                        expect(serverSurvey).to.deep.equal(expected);
+                    });
+            });
+    });
+
+    for (let i = 0; i < userCount; ++i) {
+        it(`create user ${i}`, shared.createUser(store));
+    }
+
+    const generateQxAnswer = _.partial(answerCommon.generateQxAnswer, store);
+
+    it('get answered survey', function () {
+        const survey = store.surveys[1];
+        const idToIndex = store.questions.reduce((r, { id }, index) => {
+            r[id] = index;
+            return r;
+        }, {});
+        const indices = survey.questions.map(({ id }) => idToIndex[id]);
+        const answers = indices.map(generateQxAnswer);
+        const input = {
+            userId: store.userIds[0],
+            surveyId: store.surveys[1].id,
+            answers
+        };
+        return models.Answer.createAnswers(input)
             .then(function () {
-                return Survey.getAnsweredSurveyById(userId, id);
-            })
-            .then(function (survey) {
-                const expectedSurvey = surveyHelper.formAnsweredSurvey(serverSurvey, answers);
-                expect(survey).to.deep.equal(expectedSurvey);
+                return Survey.getAnsweredSurveyById(input.userId, input.surveyId)
+                    .then(answeredSurvey => {
+                        const expected = _.cloneDeep(survey);
+                        expected.questions.forEach((qx, index) => {
+                            qx.answer = answers[index].answer;
+                            if (qx.type === 'choices' && qx.answer.choices) {
+                                qx.answer.choices.forEach((choice) => {
+                                    if (!choice.textValue && !choice.hasOwnProperty('boolValue')) {
+                                        choice.boolValue = true;
+                                    }
+                                });
+                            }
+                        });
+                        expect(answeredSurvey).to.deep.equal(expected);
+                        return Survey.getAnsweredSurveyByName(input.userId, survey.name)
+                            .then(answeredSurveyByName => {
+                                expect(answeredSurveyByName).to.deep.equal(answeredSurvey);
+                            });
+                    });
             });
     });
 });

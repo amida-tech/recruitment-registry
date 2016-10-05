@@ -21,11 +21,6 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.DATE,
             field: 'created_at',
         },
-        released: {
-            type: DataTypes.BOOLEAN,
-            allowNull: false,
-            defaultValue: false
-        },
         updatedAt: {
             type: DataTypes.DATE,
             field: 'updated_at',
@@ -75,11 +70,11 @@ module.exports = function (sequelize, DataTypes) {
                     });
             },
             createSurveyTx: function (survey, tx) {
-                const { name, released } = survey;
+                const { name } = survey;
                 if (!(survey.questions && survey.questions.length)) {
                     return RRError.reject('surveyNoQuestions');
                 }
-                return Survey.create({ name, released, version: 1 }, { transaction: tx })
+                return Survey.create({ name, version: 1 }, { transaction: tx })
                     .then((created) => {
                         // TODO: Find a way to use postgres sequences instead of update
                         return created.update({ groupId: created.id }, { transaction: tx });
@@ -99,29 +94,12 @@ module.exports = function (sequelize, DataTypes) {
                     .then(survey => survey.update({ name }))
                     .then(() => ({}));
             },
-            releaseSurvey: function (id) {
-                return Survey.findById(id)
-                    .then(survey => {
-                        if (!survey) {
-                            return RRError.reject('surveyNotFound');
-                        }
-                        if (survey.released) {
-                            return RRError.reject('surveyAlreadyReleased');
-                        }
-                        return sequelize.transaction(function (tx) {
-                            return Survey.destroy({ where: { groupId: survey.groupId, released: true } })
-                                .then(() => survey.update({ released: true }, { transaction: tx }));
-                        });
-                    })
-                    .then(() => ({}));
-            },
             createSurveyVersion(survey, replacement) {
                 return sequelize.transaction(function (tx) {
                     replacement.version = survey.version + 1;
                     replacement.groupId = survey.groupId;
                     const newSurvey = {
                         name: replacement.name,
-                        released: replacement.released,
                         version: survey.version + 1,
                         groupId: survey.groupId
                     };
@@ -131,11 +109,8 @@ module.exports = function (sequelize, DataTypes) {
                                 .then(() => id);
                         })
                         .then((id) => {
-                            if (replacement.released) {
-                                return Survey.destroy({ where: { id: survey.id } })
-                                    .then(() => id);
-                            }
-                            return id;
+                            return Survey.destroy({ where: { id: survey.id } })
+                                .then(() => id);
                         });
                 });
             },
@@ -151,24 +126,17 @@ module.exports = function (sequelize, DataTypes) {
                         return survey;
                     })
                     .then(survey => {
-                        return Survey.count({ where: { groupId: survey.groupId, released: false } })
-                            .then(count => {
-                                if (count) {
-                                    return RRError.reject('surveyVersionAlreadyDraft');
-                                } else {
-                                    return Survey.createSurveyVersion(survey, replacement);
-                                }
-                            });
+                        return Survey.createSurveyVersion(survey, replacement);
                     });
             },
             deleteSurvey: function (id) {
                 return Survey.destroy({ where: { id } });
             },
             listSurveys: function () {
-                return Survey.findAll({ raw: true, attributes: ['id', 'name', 'released'], order: 'id' });
+                return Survey.findAll({ raw: true, attributes: ['id', 'name'], order: 'id' });
             },
             getSurvey: function (where) {
-                return Survey.find({ where, raw: true, attributes: ['id', 'name', 'released'] })
+                return Survey.find({ where, raw: true, attributes: ['id', 'name'] })
                     .then(function (survey) {
                         if (!survey) {
                             return RRError.reject('surveyNotFound');

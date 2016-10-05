@@ -256,16 +256,13 @@
                             "type": "array",
                             "items": {
                                 "type": "object",
-                                "required": ["id", "name", "released"],
+                                "required": ["id", "name"],
                                 "properties": {
                                     "id": {
                                         "type": "integer"
                                     },
                                     "name": {
                                         "type": "string"
-                                    },
-                                    "released": {
-                                        "type": "boolean"
                                     }
                                 },
                                 "additionalProperties": false
@@ -379,40 +376,6 @@
                         "additionalProperties": false
                     }
                 }],
-                "responses": {
-                    "200": {
-                        "$ref": "#/responses/emptySuccess"
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
-        "/surveys/released/{id}": {
-            "x-swagger-router-controller": "survey.controller",
-            "parameters": [{
-                "name": "id",
-                "in": "path",
-                "required": true,
-                "type": "integer"
-            }],
-            "put": {
-                "summary": "Releases the survey",
-                "description": "Surveys can only be released once after being created.",
-                "operationId": "releaseSurvey",
-                "security": [{
-                    "admin": []
-                }],
-                "parameters": [{
-                    "name": "emptyObj",
-                    "in": "body",
-                    "description": "Required for application/json.",
-                    "required": true,
-                    "schema": {
-                        "$ref": "#/definitions/emptyObject"
-                    }
-                 }],
                 "responses": {
                     "200": {
                         "$ref": "#/responses/emptySuccess"
@@ -1331,8 +1294,7 @@
             "type": "object",
             "required": [
                 "name",
-                "questions",
-                "released"
+                "questions"
             ],
             "properties": {
                 "name": {
@@ -1354,9 +1316,6 @@
                         "maxProperties": 1
                     },
                     "minLength": 1
-                },
-                "released": {
-                    "type": "boolean"
                 }
             },
             "additionalProperties": false
@@ -1532,7 +1491,6 @@
             "required": [
                 "id",
                 "name",
-                "released",
                 "questions"
             ],
             "properties": {
@@ -1541,9 +1499,6 @@
                 },
                 "name": {
                     "type": "string"
-                },
-                "released": {
-                    "type": "boolean"
                 },
                 "questions": {
                     "type": "array",

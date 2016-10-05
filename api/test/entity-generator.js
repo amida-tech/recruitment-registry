@@ -53,7 +53,6 @@ exports.genNewQuestion = (function () {
 exports.genNewSurvey = (function () {
     let index = -1;
     const defaultOptions = {
-        released: true,
         addQuestions: true
     };
     return function (inputOptions = {}) {
@@ -61,7 +60,6 @@ exports.genNewSurvey = (function () {
         ++index;
         const name = options.name || `name_${index}`;
         const result = { name };
-        result.released = options.released;
         if (options.addQuestions) {
             result.questions = _.range(5).map(() => ({ content: exports.genNewQuestion() }));
         }

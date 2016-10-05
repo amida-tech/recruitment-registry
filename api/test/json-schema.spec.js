@@ -18,11 +18,9 @@ describe('custom json schema', function () {
     it('newSurvey', function () {
         const valids = [{
             name: 'name',
-            released: true,
             questions: [{ id: 1 }, { id: 2 }, { id: 3 }]
         }, {
             name: 'name',
-            released: false,
             questions: [{
                 text: 'What is it?',
                 type: 'text'
@@ -32,7 +30,6 @@ describe('custom json schema', function () {
             }]
         }, {
             name: 'name',
-            released: false,
             questions: [{
                 id: 1
             }, {
@@ -45,7 +42,6 @@ describe('custom json schema', function () {
 
         const invalids = [{
             name: 'name',
-            released: false,
             questions: [{
                 id: 1,
                 text: 'What is it?',

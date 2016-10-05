@@ -79,16 +79,8 @@ errors.surveyNotFound = {
     msg: 'No such survey.'
 };
 
-errors.surveyAlreadyReleased = {
-    msg: 'Survey is already released.'
-};
-
 errors.surveyNoQuestions = {
     msg: 'Surveys without questions are not accepted.'
-};
-
-errors.surveyVersionAlreadyDraft = {
-    msg: 'There is already a draft survey based on this survey.'
 };
 
 errors.documentNoSystemDocuments = {

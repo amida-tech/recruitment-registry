@@ -3,7 +3,6 @@
 exports.Example = {
     survey: {
         name: 'Example',
-        released: true,
         questions: [{
             content: {
                 text: 'Which sports do you like?',
@@ -70,7 +69,6 @@ exports.Example = {
 exports.Alzheimer = {
     survey: {
         name: 'Alzheimer',
-        released: true,
         questions: [{
             content: {
                 text: 'Family history of memory disorders/AD/dementia?',

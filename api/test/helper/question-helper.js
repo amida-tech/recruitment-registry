@@ -45,7 +45,11 @@ exports.buildServerQuestion = function (question, id) {
 
 exports.buildServerQuestions = function (questions, ids) {
     return models.sequelize.Promise.all(_.range(0, questions.length).map(function (index) {
-        return exports.buildServerQuestion(questions[index], ids[index]);
+        if (questions[index].id) {
+            return models.sequelize.Promise.resolve(questions[index]);
+        } else {
+            return exports.buildServerQuestion(questions[index], ids[index]);
+        }
     }));
 };
 
