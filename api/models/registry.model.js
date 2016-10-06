@@ -114,14 +114,12 @@ module.exports = function (sequelize, DataTypes) {
             },
             createProfile: function (input) {
                 return sequelize.transaction(function (tx) {
-                    return Registry.find({
-                            where: { name: input.registryName },
+                    return Registry.findOne({
                             raw: true,
-                            attribues: ['id', 'profileSurveyId']
+                            attribues: ['profileSurveyId']
                         })
                         .then(({ id, profileSurveyId }) => {
                             input.user.role = 'participant';
-                            input.user.registryId = id;
                             return sequelize.models.registry_user.create(input.user, { transaction: tx })
                                 .then(user => {
                                     if (input.signatures && input.signatures.length) {
@@ -150,11 +148,7 @@ module.exports = function (sequelize, DataTypes) {
                     return sequelize.models.registry_user.updateUser(id, input.user, {
                             transaction: tx
                         })
-                        .then(() => sequelize.models.registry_user.findById(id, {
-                            raw: true,
-                            attributes: ['registryId']
-                        }, { transaction: tx }))
-                        .then(({ registryId }) => sequelize.models.registry.findById(registryId, {
+                        .then(() => sequelize.models.registry.findOne({
                             raw: true,
                             attributes: ['profileSurveyId']
                         }, { transaction: tx }))
@@ -171,12 +165,12 @@ module.exports = function (sequelize, DataTypes) {
             getProfile: function (input) {
                 return sequelize.models.registry_user.getUser(input.userId)
                     .then(function (user) {
-                        return sequelize.models.registry.findById(user.registryId, {
+                        return sequelize.models.registry.findOne({
                                 raw: true,
-                                attributes: ['name']
+                                attributes: ['profileSurveyId']
                             })
-                            .then(({ name }) => {
-                                return sequelize.models.survey.getAnsweredSurveyByName(user.id, name)
+                            .then(({ profileSurveyId }) => {
+                                return sequelize.models.survey.getAnsweredSurveyById(user.id, profileSurveyId)
                                     .then(function (survey) {
                                         return {
                                             user,

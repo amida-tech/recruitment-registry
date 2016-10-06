@@ -189,7 +189,6 @@ describe('registry integration', function () {
                 const expectedUser = _.cloneDeep(userExample);
                 const user = result.user;
                 expectedUser.id = user.id;
-                expectedUser.registryId = user.registryId;
                 expectedUser.role = 'participant';
                 delete expectedUser.password;
                 expect(user).to.deep.equal(expectedUser);
@@ -235,7 +234,6 @@ describe('registry integration', function () {
                 const user = result.user;
                 expectedUser.id = user.id;
                 expectedUser.role = 'participant';
-                expectedUser.registryId = user.registryId;
                 delete expectedUser.password;
                 expect(user).to.deep.equal(expectedUser);
 

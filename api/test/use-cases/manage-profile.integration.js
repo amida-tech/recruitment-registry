@@ -110,7 +110,6 @@ describe('user set-up and login use-case', function () {
                 const user = result.user;
                 expectedUser.id = user.id;
                 expectedUser.role = 'participant';
-                expectedUser.registryId = user.registryId;
                 delete expectedUser.password;
                 expect(user).to.deep.equal(expectedUser);
 
@@ -157,7 +156,6 @@ describe('user set-up and login use-case', function () {
                 const user = result.user;
                 expectedUser.id = user.id;
                 expectedUser.role = 'participant';
-                expectedUser.registryId = user.registryId;
                 delete expectedUser.password;
                 expect(user).to.deep.equal(expectedUser);
 

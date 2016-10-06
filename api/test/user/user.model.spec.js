@@ -270,7 +270,6 @@ describe('user unit', function () {
                     const expected = _.cloneDeep(example);
                     expected.id = user.id;
                     delete actual.role;
-                    delete actual.registryId;
                     delete expected.password;
                     expect(actual).to.deep.equal(expected);
                 });
@@ -287,7 +286,6 @@ describe('user unit', function () {
                     const expected = _.cloneDeep(exampleWNull);
                     expected.id = user.id;
                     delete actual.role;
-                    delete actual.registryId;
                     delete expected.password;
                     expect(actual).to.deep.equal(expected);
                 });
