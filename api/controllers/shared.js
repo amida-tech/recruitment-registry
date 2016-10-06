@@ -6,6 +6,7 @@ const models = require('../models');
 
 exports.handleError = function (res) {
     return function (err) {
+        console.log(err);
         const json = jsutil.errToJSON(err);
         if (err instanceof RRError) {
             return res.status(400).json(json);

@@ -3,91 +3,46 @@
 const _ = require('lodash');
 
 const tokener = require('../lib/tokener');
+const RRError = require('../lib/rr-error');
 
 module.exports = function (sequelize, DataTypes) {
     const Registry = sequelize.define('registry', {
-        name: {
-            type: DataTypes.TEXT,
-            allowNull: false,
-            unique: {
-                msg: 'The specified registry name is already in use.'
-            },
-        },
         profileSurveyId: {
             type: DataTypes.INTEGER,
-            allowNull: false,
             field: 'profile_survey_id',
             references: {
                 model: 'survey',
                 key: 'id'
             }
-        },
-        createdAt: {
-            type: DataTypes.DATE,
-            field: 'created_at',
-        },
-        updatedAt: {
-            type: DataTypes.DATE,
-            field: 'updated_at',
-        },
-        deletedAt: {
-            type: DataTypes.DATE,
-            field: 'deleted_at',
         }
     }, {
         freezeTableName: true,
-        createdAt: 'createdAt',
-        updatedAt: 'updatedAt',
-        deleted: 'deletedAt',
-        paranoid: true,
+        hooks: {
+            afterSync: function (options) {
+                if (options.force) {
+                    return Registry.create();
+                }
+            }
+        },
         classMethods: {
-            createRegistry: function ({ name, survey }) {
+            createProfileSurvey: function (survey) {
                 return sequelize.transaction(function (tx) {
                     return sequelize.models.survey.createSurveyTx(survey, tx)
-                        .then(profileSurveyId => Registry.create({ name, profileSurveyId }, { transaction: tx }))
-                        .then(({ id }) => ({ id }));
+                        .then(profileSurveyId => {
+                            return Registry.update({ profileSurveyId }, { where: {}, transaction: tx })
+                                .then(() => ({ id: profileSurveyId }));
+                        });
                 });
             },
-            getRegistry: function (id) {
-                return Registry.findById(id, {
+            getProfileSurvey: function () {
+                return Registry.findOne({
                         raw: true,
-                        attributes: ['id', 'name', 'profileSurveyId']
+                        attributes: ['profileSurveyId']
                     })
-                    .then((registry) => {
-                        if (!registry) {
-                            return sequelize.Promise.reject(new Error('No such registry.'));
+                    .then(({ profileSurveyId }) => {
+                        if (!profileSurveyId) {
+                            return RRError.reject('registryNoProfileSurvey');
                         }
-                        const { name, profileSurveyId } = registry;
-                        return sequelize.models.survey.getSurveyById(profileSurveyId)
-                            .then(survey => ({ name, survey }));
-                    });
-            },
-            getRegistryByName: function (name) {
-                return Registry.find({
-                        where: { name },
-                        raw: true,
-                        attributes: ['id', 'name', 'profileSurveyId']
-                    })
-                    .then((registry) => {
-                        if (!registry) {
-                            return sequelize.Promise.reject(new Error('No such registry.'));
-                        }
-                        const { name, profileSurveyId } = registry;
-                        return sequelize.models.survey.getSurveyById(profileSurveyId)
-                            .then(survey => ({ name, survey }));
-                    });
-            },
-            getRegistryProfileSurvey: function (name) {
-                return Registry.find({
-                        where: { name },
-                        raw: true,
-                        attributes: ['id', 'name', 'profileSurveyId']
-                    })
-                    .then((registry) => {
-                        if (!registry) {
-                            return sequelize.Promise.reject(new Error('No such registry.'));
-                        }
-                        const { profileSurveyId } = registry;
                         return sequelize.models.survey.getSurveyById(profileSurveyId)
                             .then(survey => {
                                 const surveyId = survey.id;
@@ -118,7 +73,7 @@ module.exports = function (sequelize, DataTypes) {
                             raw: true,
                             attribues: ['profileSurveyId']
                         })
-                        .then(({ id, profileSurveyId }) => {
+                        .then(({ profileSurveyId }) => {
                             input.user.role = 'participant';
                             return sequelize.models.registry_user.create(input.user, { transaction: tx })
                                 .then(user => {

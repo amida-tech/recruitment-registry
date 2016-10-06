@@ -106,3 +106,7 @@ errors.profileSignaturesMissing = {
 errors.jsonSchemaFailed = {
     msg: 'JSON schema validation for $0 failed.'
 };
+
+errors.registryNoProfileSurvey = {
+    msg: 'No profile survey has been specified for the registry'
+};

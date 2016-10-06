@@ -57,7 +57,7 @@ describe('user set-up and login use-case', function () {
         userExample.email = config.resetPw.emailFrom; // send to self
 
         store.server
-            .post('/api/v1.0/registries/user-profile')
+            .post('/api/v1.0/profiles')
             .send({
                 user: userExample,
                 surveyId: survey.id,

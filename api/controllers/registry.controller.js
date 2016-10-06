@@ -7,29 +7,15 @@ const shared = require('./shared.js');
 
 const Registry = models.Registry;
 
-exports.createRegistry = function (req, res) {
-    Registry.createRegistry(req.body)
+exports.createProfileSurvey = function (req, res) {
+    Registry.createProfileSurvey(req.body)
         .then(result => res.status(201).json(result))
         .catch(shared.handleError(res));
 };
 
-exports.getRegistry = function (req, res) {
-    const id = _.get(req, 'swagger.params.id.value');
-    Registry.getRegistry(id)
-        .then(result => res.status(200).json(result))
-        .catch(shared.handleError(res));
-};
-
-exports.getRegistryByName = function (req, res) {
+exports.getProfileSurvey = function (req, res) {
     const name = _.get(req, 'swagger.params.name.value');
-    Registry.getRegistryByName(name)
-        .then(result => res.status(200).json(result))
-        .catch(shared.handleError(res));
-};
-
-exports.getRegistryProfileSurvey = function (req, res) {
-    const name = _.get(req, 'swagger.params.name.value');
-    Registry.getRegistryProfileSurvey(name)
+    Registry.getProfileSurvey(name)
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };

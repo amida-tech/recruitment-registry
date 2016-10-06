@@ -553,122 +553,35 @@
                 }
             }
         },
-        "/registries": {
+        "/profile-survey": {
             "x-swagger-router-controller": "registry.controller",
             "post": {
-                "summary": "Creates a registry",
-                "operationId": "createRegistry",
+                "summary": "Creates/replaces the profile survey",
+                "operationId": "createProfileSurvey",
                 "security": [{
                     "admin": []
                 }],
                 "parameters": [{
-                    "name": "newRegistry",
+                    "name": "newSurvey",
                     "in": "body",
-                    "description": "Registry information",
+                    "description": "Profile survey",
                     "required": true,
                     "schema": {
-                        "$ref": "#/definitions/newRegistry"
+                        "$ref": "#/definitions/newSurvey"
                     }
                 }],
                 "responses": {
                     "201" : {
                         "$ref": "#/responses/idSuccess"
                     },
-                    "400": {
-                        "$ref": "#/responses/badRequest"
-                    },
-                    "401": {
-                        "$ref": "#/responses/unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/responses/forbidden"
-                    },
-                    "500": {
-                        "$ref": "#/responses/internal"
+                    "default": {
+                        "$ref": "#/responses/genericError"
                     }
-
                 }
-            }
-        },
-        "/registries/{id}": {
-            "x-swagger-router-controller": "registry.controller",
+            },
             "get": {
-                "summary": "Finds a registry",
-                "operationId": "getRegistry",
-                "security": [{
-                    "admin": []
-                }],
-                "parameters": [{
-                    "name": "id",
-                    "in": "path",
-                    "required": true,
-                    "type": "integer"
-                }],
-                "responses": {
-                    "200" : {
-                        "$ref": "#/responses/idSuccess"
-                    },
-                    "400": {
-                        "$ref": "#/responses/badRequest"
-                    },
-                    "401": {
-                        "$ref": "#/responses/unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/responses/forbidden"
-                    },
-                    "500": {
-                        "$ref": "#/responses/internal"
-                    }
-
-                }
-            }
-        },
-        "/registries/name/{name}": {
-            "x-swagger-router-controller": "registry.controller",
-            "get": {
-                "summary": "Finds a registry",
-                "operationId": "getRegistryByName",
-                "security": [{
-                    "admin": []
-                }],
-                "parameters": [{
-                    "name": "name",
-                    "in": "path",
-                    "required": true,
-                    "type": "string"
-                }],
-                "responses": {
-                    "200" : {
-                        "$ref": "#/responses/idSuccess"
-                    },
-                    "400": {
-                        "$ref": "#/responses/badRequest"
-                    },
-                    "401": {
-                        "$ref": "#/responses/unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/responses/forbidden"
-                    },
-                    "500": {
-                        "$ref": "#/responses/internal"
-                    }
-
-                }
-            }
-        },
-        "/registries/profile-survey/{name}": {
-            "x-swagger-router-controller": "registry.controller",
-            "get": {
-                "summary": "Finds a registry profile survey",
-                "operationId": "getRegistryProfileSurvey",
-                "parameters": [{
-                    "name": "name",
-                    "in": "path",
-                    "required": true,
-                    "type": "string"
-                }],
+                "summary": "Gets the profile survey",
+                "operationId": "getProfileSurvey",
                 "responses": {
                     "200" : {
                         "description": "Successul response",
@@ -676,23 +589,13 @@
                             "$ref": "#/definitions/survey"
                         }
                     },
-                    "400": {
-                        "$ref": "#/responses/badRequest"
-                    },
-                    "401": {
-                        "$ref": "#/responses/unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/responses/forbidden"
-                    },
-                    "500": {
-                        "$ref": "#/responses/internal"
+                    "default": {
+                        "$ref": "#/responses/genericError"
                     }
-
                 }
             }
         },
-        "/registries/user-profile": {
+        "/profiles": {
             "x-swagger-router-controller": "registry.controller",
             "post": {
                 "summary": "Creates a registry user profile",
@@ -1346,24 +1249,6 @@
             },
             "additionalProperties": false
         },
-        "newRegistry": {
-            "type": "object",
-            "required": [
-                "name"
-            ],
-            "properties": {
-                "name": {
-                    "type": "string"
-                },
-                "surveyId": {
-                    "type": "integer"
-                },
-                "survey": {
-                    "$ref": "#/definitions/newSurvey"
-                }
-            },
-            "maxProperties": 2
-        },
         "choice": {
             "type": "object",
             "required": [
@@ -1539,15 +1424,11 @@
         "newUserProfile": {
             "type": "object",
             "required": [
-                "user",
-                "registryName"
+                "user"
             ],
             "properties": {
                 "user": {
                     "$ref": "#/definitions/user"
-                },
-                "registryName": {
-                    "type": "string"
                 },
                 "answers": {
                     "type": "array",

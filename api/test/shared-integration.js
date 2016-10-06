@@ -151,12 +151,12 @@ exports.createSurveyFn = function (store, qxIndices) {
     };
 };
 
-exports.postRegistryFn = function (store, registry) {
+exports.createSurveyProfileFn = function (store, survey) {
     return function (done) {
         store.server
-            .post('/api/v1.0/registries')
+            .post('/api/v1.0/profile-survey')
             .set('Authorization', store.auth)
-            .send(registry)
+            .send(survey)
             .expect(201)
             .expect(function (res) {
                 expect(!!res.body.id).to.equal(true);

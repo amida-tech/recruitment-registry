@@ -5,7 +5,6 @@ const _ = require('lodash');
 
 const models = require('../models');
 
-const registryExamaples = require('./fixtures/registry-examples');
 const RRError = require('../lib/rr-error');
 const entityGen = require('./entity-generator');
 
@@ -76,14 +75,6 @@ exports.createSurvey = function (store, qxIndices) {
             .then(id => {
                 store.surveys.push(id);
             });
-    };
-};
-
-exports.createRegistry = function (store) {
-    return function () {
-        const inputRegistry = registryExamaples[0];
-        return models.Registry.createRegistry(inputRegistry)
-            .then(() => store.registryName = inputRegistry.name);
     };
 };
 

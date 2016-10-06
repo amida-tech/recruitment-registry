@@ -67,17 +67,6 @@ exports.genNewSurvey = (function () {
     };
 })();
 
-exports.genNewRegistry = (function () {
-    let index = -1;
-
-    return function () {
-        ++index;
-        const name = `registry_name_${index}`;
-        const survey = exports.genNewSurvey({ name });
-        return { name, survey };
-    };
-})();
-
 exports.genQxAnswer = (function () {
     let answerIndex = -1;
     let choicesCountIndex = 0;
