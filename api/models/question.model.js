@@ -135,19 +135,17 @@ module.exports = function (sequelize, DataTypes) {
                                 attributes: ['id', 'text', 'type']
                             })
                             .then(choices => {
-                                if (choices.length) {
-                                    if (question.type === 'choice') {
-                                        question.choices = choices.map(({ id, text }) => ({
-                                            id,
-                                            text
-                                        }));
-                                    } else {
-                                        question.choices = choices.map(({ id, text, type }) => ({
-                                            id,
-                                            text,
-                                            type: type
-                                        }));
-                                    }
+                                if (question.type === 'choice') {
+                                    question.choices = choices.map(({ id, text }) => ({
+                                        id,
+                                        text
+                                    }));
+                                } else {
+                                    question.choices = choices.map(({ id, text, type }) => ({
+                                        id,
+                                        text,
+                                        type: type
+                                    }));
                                 }
                                 return question;
                             });
@@ -196,22 +194,20 @@ module.exports = function (sequelize, DataTypes) {
                         return sequelize.models.question_choice.findAll(choiceOptions)
                             .then(choices => {
                                 const map = _.keyBy(questions, 'id');
-                                if (choices.length) {
-                                    choices.forEach(choice => {
-                                        const q = map[choice.questionId];
-                                        if (q) {
-                                            delete choice.questionId;
-                                            if (q.type === 'choice') {
-                                                delete choice.type;
-                                            }
-                                            if (q.choices) {
-                                                q.choices.push(choice);
-                                            } else {
-                                                q.choices = [choice];
-                                            }
+                                choices.forEach(choice => {
+                                    const q = map[choice.questionId];
+                                    if (q) {
+                                        delete choice.questionId;
+                                        if (q.type === 'choice') {
+                                            delete choice.type;
                                         }
-                                    });
-                                }
+                                        if (q.choices) {
+                                            q.choices.push(choice);
+                                        } else {
+                                            q.choices = [choice];
+                                        }
+                                    }
+                                });
                                 return { questions, map };
                             });
                     });

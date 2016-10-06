@@ -26,7 +26,7 @@ module.exports = function (sequelize, DataTypes) {
                     dbAnswer.value = choice.textValue;
                     dbAnswer.type = 'text';
                 } else if (choice.hasOwnProperty('boolValue')) {
-                    dbAnswer.value = (choice.boolValue ? 'true' : 'false');
+                    dbAnswer.value = choice.boolValue.toString();
                     dbAnswer.type = 'bool';
                 } else {
                     dbAnswer.value = 'true';
@@ -65,9 +65,9 @@ module.exports = function (sequelize, DataTypes) {
                 const answer = { id: r.questionChoiceId };
                 if (r.type === 'text') {
                     answer.textValue = r.value;
-                } else if (r.type === 'bool') {
-                    answer.boolValue = (r.value === 'true');
+                    return answer;
                 }
+                answer.boolValue = (r.value === 'true'); // type bool
                 return answer;
             });
             choices = _.sortBy(choices, 'id');
