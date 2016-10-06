@@ -227,7 +227,7 @@
                 "parameters": [{
                     "name": "newSurvey",
                     "in": "body",
-                    "description": "Definition of a new survey.  Existing questions have 'id' only and new questions have 'content' only.",
+                    "description": "Definition of a new survey.  Existing questions have 'id' only and new questions have other fields.",
                     "required": true,
                     "schema": {
                         "$ref": "#/definitions/newSurvey"
@@ -256,16 +256,13 @@
                             "type": "array",
                             "items": {
                                 "type": "object",
-                                "required": ["id", "name", "released"],
+                                "required": ["id", "name"],
                                 "properties": {
                                     "id": {
                                         "type": "integer"
                                     },
                                     "name": {
                                         "type": "string"
-                                    },
-                                    "released": {
-                                        "type": "boolean"
                                     }
                                 },
                                 "additionalProperties": false
@@ -379,40 +376,6 @@
                         "additionalProperties": false
                     }
                 }],
-                "responses": {
-                    "200": {
-                        "$ref": "#/responses/emptySuccess"
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
-        "/surveys/released/{id}": {
-            "x-swagger-router-controller": "survey.controller",
-            "parameters": [{
-                "name": "id",
-                "in": "path",
-                "required": true,
-                "type": "integer"
-            }],
-            "put": {
-                "summary": "Releases the survey",
-                "description": "Surveys can only be released once after being created.",
-                "operationId": "releaseSurvey",
-                "security": [{
-                    "admin": []
-                }],
-                "parameters": [{
-                    "name": "emptyObj",
-                    "in": "body",
-                    "description": "Required for application/json.",
-                    "required": true,
-                    "schema": {
-                        "$ref": "#/definitions/emptyObject"
-                    }
-                 }],
                 "responses": {
                     "200": {
                         "$ref": "#/responses/emptySuccess"
@@ -1331,8 +1294,7 @@
             "type": "object",
             "required": [
                 "name",
-                "questions",
-                "released"
+                "questions"
             ],
             "properties": {
                 "name": {
@@ -1346,17 +1308,40 @@
                             "id": {
                                 "type": "integer"
                             },
-                            "content": {
-                                "$ref": "#/definitions/newQuestion"
+                            "text": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            },
+                            "oneOfChoices": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "choices": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "required": ["text"],
+                                    "properties": {
+                                        "text": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            },
+                            "actions": {
+                                "$ref": "#/definitions/actions"
                             }
                         },
-                        "minProperties": 1,
-                        "maxProperties": 1
+                        "minProperties": 1
                     },
                     "minLength": 1
-                },
-                "released": {
-                    "type": "boolean"
                 }
             },
             "additionalProperties": false
@@ -1439,8 +1424,7 @@
             "required": [
                 "id",
                 "text",
-                "type",
-                "selectable"
+                "type"
             ],
             "properties": {
                 "id": {
@@ -1451,9 +1435,6 @@
                 },
                 "type": {
                     "type": "string"
-                },
-                "selectable": {
-                    "type": "boolean"
                 },
                 "choices": {
                     "type": "array",
@@ -1480,8 +1461,7 @@
             "type": "object",
             "required": [
                 "text",
-                "type",
-                "selectable"
+                "type"
             ],
             "properties": {
                 "text": {
@@ -1490,10 +1470,7 @@
                 "type": {
                     "type": "string"
                 },
-                "selectable": {
-                    "type": "boolean"
-                },
-                "oneOfchoices": {
+                "oneOfChoices": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -1517,7 +1494,8 @@
                 "actions": {
                     "$ref": "#/definitions/actions"
                 }
-            }
+            },
+            "additionalProperties": false
         },
         "linkedAnswer": {
             "type": "object",
@@ -1539,7 +1517,6 @@
             "required": [
                 "id",
                 "name",
-                "released",
                 "questions"
             ],
             "properties": {
@@ -1548,9 +1525,6 @@
                 },
                 "name": {
                     "type": "string"
-                },
-                "released": {
-                    "type": "boolean"
                 },
                 "questions": {
                     "type": "array",

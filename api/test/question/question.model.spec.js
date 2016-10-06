@@ -54,8 +54,7 @@ describe('question unit', function () {
                 })
                 .then(() => {
                     const text = `Updated ${examples[index]}`;
-                    const selectable = !examples[index].selectable;
-                    return Question.updateQuestion(ids[index], { text, selectable });
+                    return Question.updateQuestion(ids[index], { text });
                 })
                 .then(() => {
                     const id = ids[index];
@@ -64,13 +63,11 @@ describe('question unit', function () {
                 .then(actual => {
                     qxHelper.prepareServerQuestion(actual, examples[index]);
                     expected.text = `Updated ${examples[index]}`;
-                    expected.selectable = !examples[index].selectable;
                     expect(actual).to.deep.equal(expected);
                 })
                 .then(() => {
                     const text = examples[index].text;
-                    const selectable = examples[index].selectable;
-                    return Question.updateQuestion(ids[index], { text, selectable });
+                    return Question.updateQuestion(ids[index], { text });
                 });
         };
     };

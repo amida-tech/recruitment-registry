@@ -18,6 +18,7 @@
     },
     "homepage": "https://github.com/amida-tech/recruitment-registry#readme",
     "dependencies": {
+        "ajv": "^4.7.6",
         "bcrypt": "^0.8.7",
         "body-parser": "^1.15.2",
         "cors": "^2.8.0",

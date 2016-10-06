@@ -11,14 +11,7 @@ class RRError extends Error {
             code = 'unknown';
             error = errors.unknown;
         }
-        let msg = error.msg;
-        if (params.length) {
-            params.forEach((param, index) => {
-                const expr = `\\$${index}`;
-                const re = new RegExp(expr, 'g');
-                msg = msg.replace(re, param);
-            });
-        }
+        const msg = RRError.injectParams(error.msg, params);
         super(msg);
         this.code = code;
     }
@@ -28,8 +21,27 @@ class RRError extends Error {
         return Sequelize.Promise.reject(err); // TODO: Change to ES6 Promise with Sequelize 4
     }
 
-    static message(code) {
-        return (errors[code] || errors.unknown).msg;
+    static injectParams(msg, params) {
+        if (params.length) {
+            params.forEach((param, index) => {
+                const expr = `\\$${index}`;
+                const re = new RegExp(expr, 'g');
+                msg = msg.replace(re, param);
+            });
+        }
+        return msg;
+    }
+
+    static message(code, ...params) {
+        const msg = (errors[code] || errors.unknown).msg;
+        return RRError.injectParams(msg, params);
+    }
+
+    toObject() {
+        return {
+            message: this.message,
+            code: this.code
+        };
     }
 }
 
@@ -79,16 +91,8 @@ errors.surveyNotFound = {
     msg: 'No such survey.'
 };
 
-errors.surveyAlreadyReleased = {
-    msg: 'Survey is already released.'
-};
-
 errors.surveyNoQuestions = {
     msg: 'Surveys without questions are not accepted.'
-};
-
-errors.surveyVersionAlreadyDraft = {
-    msg: 'There is already a draft survey based on this survey.'
 };
 
 errors.documentNoSystemDocuments = {
@@ -97,4 +101,8 @@ errors.documentNoSystemDocuments = {
 
 errors.profileSignaturesMissing = {
     msg: 'Required document signatures are not included.'
+};
+
+errors.jsonSchemaFailed = {
+    msg: 'JSON schema validation for $0 failed.'
 };

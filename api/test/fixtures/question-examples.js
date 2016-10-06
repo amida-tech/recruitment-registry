@@ -3,7 +3,6 @@
 module.exports = [{
     text: 'Which sports do you like?',
     type: 'choices',
-    selectable: false,
     choices: [
         { text: 'Football' },
         { text: 'Basketball', type: 'bool' },
@@ -18,7 +17,6 @@ module.exports = [{
 }, {
     text: 'What is your hair color?',
     type: 'choice',
-    selectable: true,
     oneOfChoices: [
         'Black',
         'Brown',
@@ -31,15 +29,12 @@ module.exports = [{
     ]
 }, {
     text: 'Where were you born?',
-    selectable: false,
     type: 'text'
 }, {
     text: 'Do you have pets?',
-    selectable: false,
     type: 'bool'
 }, {
     text: 'How did you hear about us?',
-    selectable: false,
     type: 'choices',
     choices: [
         { text: 'TV' },

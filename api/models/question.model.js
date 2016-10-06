@@ -6,7 +6,7 @@ const RRError = require('../lib/rr-error');
 
 module.exports = function (sequelize, DataTypes) {
     const QX_TYPES_W_CHOICES = ['choice', 'choices'];
-    const QX_FIND_ATTRS = ['id', 'text', 'type', 'selectable'];
+    const QX_FIND_ATTRS = ['id', 'text', 'type'];
 
     const Question = sequelize.define('question', {
         text: {
@@ -19,10 +19,6 @@ module.exports = function (sequelize, DataTypes) {
                 model: 'question_type',
                 key: 'name'
             },
-        },
-        selectable: {
-            type: DataTypes.BOOLEAN,
-            allowNull: false
         },
         createdAt: {
             type: DataTypes.DATE,
@@ -59,7 +55,7 @@ module.exports = function (sequelize, DataTypes) {
                     return sequelize.Promise.resolve({ id });
                 }
             },
-            createQuestionTx: function ({ text, type, selectable, oneOfChoices, choices, actions }, tx) {
+            createQuestionTx: function ({ text, type, oneOfChoices, choices, actions }, tx) {
                 const nOneOfChoices = (oneOfChoices && oneOfChoices.length) || 0;
                 const nChoices = (choices && choices.length) || 0;
                 if (nOneOfChoices && nChoices) {
@@ -80,7 +76,7 @@ module.exports = function (sequelize, DataTypes) {
                 if ((type !== 'choice') && (type !== 'choices') && (nOneOfChoices || nChoices)) {
                     return RRError.reject('qxCreateChoicesOther');
                 }
-                return Question.create({ text, type, selectable }, { transaction: tx })
+                return Question.create({ text, type }, { transaction: tx })
                     .then(({ id }) => Question.createActionsTx(id, actions, tx))
                     .then(({ id }) => {
                         if (nOneOfChoices || nChoices) {
@@ -139,31 +135,26 @@ module.exports = function (sequelize, DataTypes) {
                                 attributes: ['id', 'text', 'type']
                             })
                             .then(choices => {
-                                if (choices.length) {
-                                    if (question.type === 'choice') {
-                                        question.choices = choices.map(({ id, text }) => ({
-                                            id,
-                                            text
-                                        }));
-                                    } else {
-                                        question.choices = choices.map(({ id, text, type }) => ({
-                                            id,
-                                            text,
-                                            type: type
-                                        }));
-                                    }
+                                if (question.type === 'choice') {
+                                    question.choices = choices.map(({ id, text }) => ({
+                                        id,
+                                        text
+                                    }));
+                                } else {
+                                    question.choices = choices.map(({ id, text, type }) => ({
+                                        id,
+                                        text,
+                                        type: type
+                                    }));
                                 }
                                 return question;
                             });
                     });
             },
-            updateQuestion: function (id, { text, selectable }) {
+            updateQuestion: function (id, { text }) {
                 const updateObj = {};
                 if (text !== undefined) {
                     updateObj.text = text;
-                }
-                if (selectable !== undefined) {
-                    updateObj.selectable = selectable;
                 }
                 return Question.findById(id).then(qx => qx.update(updateObj));
             },
@@ -203,22 +194,20 @@ module.exports = function (sequelize, DataTypes) {
                         return sequelize.models.question_choice.findAll(choiceOptions)
                             .then(choices => {
                                 const map = _.keyBy(questions, 'id');
-                                if (choices.length) {
-                                    choices.forEach(choice => {
-                                        const q = map[choice.questionId];
-                                        if (q) {
-                                            delete choice.questionId;
-                                            if (q.type === 'choice') {
-                                                delete choice.type;
-                                            }
-                                            if (q.choices) {
-                                                q.choices.push(choice);
-                                            } else {
-                                                q.choices = [choice];
-                                            }
+                                choices.forEach(choice => {
+                                    const q = map[choice.questionId];
+                                    if (q) {
+                                        delete choice.questionId;
+                                        if (q.type === 'choice') {
+                                            delete choice.type;
                                         }
-                                    });
-                                }
+                                        if (q.choices) {
+                                            q.choices.push(choice);
+                                        } else {
+                                            q.choices = [choice];
+                                        }
+                                    }
+                                });
                                 return { questions, map };
                             });
                     });

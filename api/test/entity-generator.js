@@ -30,8 +30,7 @@ exports.genNewQuestion = (function () {
         const type = types[index % 4];
         const question = {
             text: `text_${index}`,
-            type,
-            selectable: (index % 2 === 0)
+            type
         };
         if ((type === 'choice') || (type === 'choices')) {
             question.choices = [];
@@ -54,7 +53,6 @@ exports.genNewQuestion = (function () {
 exports.genNewSurvey = (function () {
     let index = -1;
     const defaultOptions = {
-        released: true,
         addQuestions: true
     };
     return function (inputOptions = {}) {
@@ -62,9 +60,8 @@ exports.genNewSurvey = (function () {
         ++index;
         const name = options.name || `name_${index}`;
         const result = { name };
-        result.released = options.released;
         if (options.addQuestions) {
-            result.questions = _.range(5).map(() => ({ content: exports.genNewQuestion() }));
+            result.questions = _.range(5).map(() => exports.genNewQuestion());
         }
         return result;
     };
