@@ -18,10 +18,6 @@ const expect = chai.expect;
 
 const Registry = models.Registry;
 
-const Ethnicity = models.Ethnicity;
-const User = models.User;
-const Survey = models.Survey;
-
 describe('registry unit', function () {
     const userExample = userExamples.Alzheimer;
     const surveyExample = surveyExamples.Alzheimer;
@@ -29,7 +25,9 @@ describe('registry unit', function () {
     before(shared.setUpFn());
 
     const store = {
-        profileSurveyId: null
+        profileSurveyId: null,
+        clientSurveys: [],
+        surveys: []
     };
 
     it('error: get profile survey when none created', function () {
@@ -37,18 +35,21 @@ describe('registry unit', function () {
             .then(shared.throwingHandler, shared.expectedErrorHandler('registryNoProfileSurvey'));
     });
 
-    const createProfileSurveyFn = function () {
+    const createProfileSurveyFn = function (survey) {
         return function () {
-            return Registry.createProfileSurvey(surveyExample.survey)
+            store.clientSurveys.push(survey);
+            return Registry.createProfileSurvey(survey)
                 .then(({ id }) => store.profileSurveyId = id);
         };
     };
 
-    const verifyProfileSurveyFn = function () {
+    const verifyProfileSurveyFn = function (index) {
         return function () {
             return Registry.getProfileSurvey()
                 .then(actual => {
-                    return surveyHelper.buildServerSurvey(surveyExample.survey, actual)
+                    store.survey = actual;
+                    store.surveys.push(actual);
+                    return surveyHelper.buildServerSurvey(store.clientSurveys[index], actual)
                         .then(function (expected) {
                             expect(actual).to.deep.equal(expected);
                         });
@@ -56,35 +57,19 @@ describe('registry unit', function () {
         };
     };
 
-    it('create profile survey', createProfileSurveyFn());
-    it('get/verify profile survey', verifyProfileSurveyFn());
+    it('create profile survey', createProfileSurveyFn(surveyExample.survey));
+    it('get/verify profile survey', verifyProfileSurveyFn(0));
 
     it('check soft sync does not reset registry', function () {
         return models.sequelize.sync({ force: false });
     });
-    it('get/verify profile survey', verifyProfileSurveyFn());
-
-    let ethnicities;
-    let genders;
-    let survey;
-
-    it('load selection lists and survey', function () {
-        return Ethnicity.findAll({
-            raw: true
-        }).then(function () {
-            ethnicities = Ethnicity.ethnicities();
-            genders = User.genders();
-            return Survey.getSurveyByName(surveyExample.survey.name);
-        }).then(function (result) {
-            survey = result;
-        });
-    });
+    it('get/verify profile survey', verifyProfileSurveyFn(0));
 
     let userId;
     let answers;
 
     it('setup user with profile', function () {
-        answers = helper.formAnswersToPost(survey, surveyExample.answer);
+        answers = helper.formAnswersToPost(store.survey, surveyExample.answer);
         return Registry.createProfile({
                 user: userExample,
                 answers
@@ -105,13 +90,13 @@ describe('registry unit', function () {
                 expect(user).to.deep.equal(expectedUser);
 
                 const actualSurvey = result.survey;
-                const expectedSurvey = helper.formAnsweredSurvey(survey, answers);
+                const expectedSurvey = helper.formAnsweredSurvey(store.survey, answers);
                 expect(actualSurvey).to.deep.equal(expectedSurvey);
             });
     });
 
     it('update user profile', function () {
-        answers = helper.formAnswersToPost(survey, surveyExample.answerUpdate);
+        answers = helper.formAnswersToPost(store.survey, surveyExample.answerUpdate);
         const userUpdates = {
             zip: '20999',
             gender: 'other'
@@ -137,8 +122,12 @@ describe('registry unit', function () {
                 expect(user).to.deep.equal(expectedUser);
 
                 const actualSurvey = result.survey;
-                const expectedSurvey = helper.formAnsweredSurvey(survey, answers);
+                const expectedSurvey = helper.formAnsweredSurvey(store.survey, answers);
                 expect(actualSurvey).to.deep.equal(expectedSurvey);
             });
     });
+
+    const replacement = _.cloneDeep(surveyExamples.Example.survey);
+    it('create profile survey', createProfileSurveyFn(replacement));
+    it('get/verify profile survey', verifyProfileSurveyFn(1));
 });

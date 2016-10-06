@@ -47,10 +47,22 @@ module.exports = function (sequelize, DataTypes) {
             },
             createProfileSurvey: function (survey) {
                 return sequelize.transaction(function (tx) {
-                    return Survey.createSurveyTx(survey, tx)
-                        .then(profileSurveyId => {
-                            return Registry.update({ profileSurveyId }, { where: {}, transaction: tx })
-                                .then(() => ({ id: profileSurveyId }));
+                    return Registry.findOne()
+                        .then(registry => {
+                            if (registry.profileSurveyId) {
+                                const input = {
+                                    id: registry.profileSurveyId,
+                                    replacement: survey
+                                };
+                                return Survey.replaceSurvey(input, tx);
+                            } else {
+                                return Survey.createSurveyTx(survey, tx)
+                                    .then((id) => {
+                                        registry.profileSurveyId = id;
+                                        return registry.save({ transaction: tx })
+                                            .then(() => ({ id }));
+                                    });
+                            }
                         });
                 });
             },

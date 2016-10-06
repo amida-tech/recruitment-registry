@@ -110,9 +110,13 @@ module.exports = function (sequelize, DataTypes) {
                     .then((id) => {
                         return Survey.destroy({ where: { id: survey.id } }, { transaction: tx })
                             .then(() => id);
+                    })
+                    .then((id) => {
+                        return sequelize.models.registry.update({ profileSurveyId: id }, { where: { profileSurveyId: survey.id }, transaction: tx })
+                            .then(() => id);
                     });
             },
-            replaceSurvey: function ({ id, replacement }) {
+            replaceSurvey: function ({ id, replacement }, tx) {
                 if (!_.get(replacement, 'questions.length')) {
                     return RRError.reject('surveyNoQuestions');
                 }
@@ -124,9 +128,13 @@ module.exports = function (sequelize, DataTypes) {
                         return survey;
                     })
                     .then(survey => {
-                        return sequelize.transaction(function (tx) {
+                        if (tx) {
                             return Survey.replaceSurveyTx(survey, replacement, tx);
-                        });
+                        } else {
+                            return sequelize.transaction(function (tx) {
+                                return Survey.replaceSurveyTx(survey, replacement, tx);
+                            });
+                        }
                     });
             },
             deleteSurvey: function (id) {
