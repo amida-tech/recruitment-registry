@@ -6,6 +6,7 @@ const tokener = require('../lib/tokener');
 const RRError = require('../lib/rr-error');
 
 module.exports = function (sequelize, DataTypes) {
+    const User = sequelize.import('./user.model');
     const Answer = sequelize.import('./answer.model');
     const Survey = sequelize.import('./survey.model');
     const Document = sequelize.import('./document.model');
@@ -31,6 +32,19 @@ module.exports = function (sequelize, DataTypes) {
             }
         },
         classMethods: {
+            getProfileSurveyId: function () {
+                return Registry.findOne({
+                        raw: true,
+                        attributes: ['profileSurveyId']
+                    })
+                    .then(({ profileSurveyId }) => {
+                        if (!profileSurveyId) {
+                            return RRError.reject('registryNoProfileSurvey');
+                        }
+                        return profileSurveyId;
+                    });
+
+            },
             createProfileSurvey: function (survey) {
                 return sequelize.transaction(function (tx) {
                     return Survey.createSurveyTx(survey, tx)
@@ -41,14 +55,8 @@ module.exports = function (sequelize, DataTypes) {
                 });
             },
             getProfileSurvey: function () {
-                return Registry.findOne({
-                        raw: true,
-                        attributes: ['profileSurveyId']
-                    })
-                    .then(({ profileSurveyId }) => {
-                        if (!profileSurveyId) {
-                            return RRError.reject('registryNoProfileSurvey');
-                        }
+                return Registry.getProfileSurveyId()
+                    .then(profileSurveyId => {
                         return Survey.getSurveyById(profileSurveyId)
                             .then(survey => {
                                 const surveyId = survey.id;
@@ -75,13 +83,10 @@ module.exports = function (sequelize, DataTypes) {
             },
             createProfile: function (input) {
                 return sequelize.transaction(function (tx) {
-                    return Registry.findOne({
-                            raw: true,
-                            attribues: ['profileSurveyId']
-                        })
-                        .then(({ profileSurveyId }) => {
+                    return Registry.getProfileSurveyId()
+                        .then(profileSurveyId => {
                             input.user.role = 'participant';
-                            return sequelize.models.registry_user.create(input.user, { transaction: tx })
+                            return User.create(input.user, { transaction: tx })
                                 .then(user => {
                                     if (input.signatures && input.signatures.length) {
                                         return sequelize.Promise.all(input.signatures.map(documentId => {
@@ -104,32 +109,28 @@ module.exports = function (sequelize, DataTypes) {
                 });
             },
             updateProfile: function (id, input) {
-                return sequelize.transaction(function (tx) {
-                    return sequelize.models.registry_user.updateUser(id, input.user, {
-                            transaction: tx
-                        })
-                        .then(() => sequelize.models.registry.findOne({
-                            raw: true,
-                            attributes: ['profileSurveyId']
-                        }, { transaction: tx }))
-                        .then(({ profileSurveyId }) => {
-                            const answerInput = {
-                                userId: id,
-                                surveyId: profileSurveyId,
-                                answers: input.answers
-                            };
-                            return Answer.createAnswersTx(answerInput, tx);
+                return Registry.getProfileSurveyId()
+                    .then(profileSurveyId => {
+                        return sequelize.transaction(function (tx) {
+                            return User.updateUser(id, input.user, {
+                                    transaction: tx
+                                })
+                                .then(() => {
+                                    const answerInput = {
+                                        userId: id,
+                                        surveyId: profileSurveyId,
+                                        answers: input.answers
+                                    };
+                                    return Answer.createAnswersTx(answerInput, tx);
+                                });
                         });
-                });
+                    });
             },
             getProfile: function (input) {
-                return sequelize.models.registry_user.getUser(input.userId)
-                    .then(function (user) {
-                        return sequelize.models.registry.findOne({
-                                raw: true,
-                                attributes: ['profileSurveyId']
-                            })
-                            .then(({ profileSurveyId }) => {
+                return Registry.getProfileSurveyId()
+                    .then(profileSurveyId => {
+                        return User.getUser(input.userId)
+                            .then(function (user) {
                                 return Survey.getAnsweredSurveyById(user.id, profileSurveyId)
                                     .then(function (survey) {
                                         return {
