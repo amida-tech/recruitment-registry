@@ -13,6 +13,8 @@ const shared = require('../shared-integration');
 const entityGen = require('../entity-generator');
 const userExamples = require('../fixtures/user-examples');
 const surveyExamples = require('../fixtures/survey-examples');
+const invalidSurveySamples = require('../fixtures/invalid-new-surveys');
+const RRError = require('../../lib/rr-error');
 
 const expect = chai.expect;
 
@@ -140,6 +142,28 @@ describe('survey integration', function () {
                 });
         };
     };
+
+    const invalidSurveyFn = function (index) {
+        return function (done) {
+            const survey = invalidSurveySamples[index];
+            store.server
+                .post('/api/v1.0/surveys')
+                .set('Authorization', store.auth)
+                .send(survey)
+                .expect(400)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    expect(res.body.message).to.equal(RRError.message('jsonSchemaFailed', 'newSurvey'));
+                    done();
+                });
+        };
+    };
+
+    for (let i = 0; i < invalidSurveySamples.length; ++i) {
+        it(`error: invalid survey input ${i}`, invalidSurveyFn(i));
+    }
 
     for (let i = 0; i < createCount; ++i) {
         it(`create survey ${i}`, createSurveyFn());

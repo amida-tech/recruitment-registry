@@ -10,10 +10,18 @@ const js = require('../lib/json-schema');
 
 describe('custom json schema', function () {
     let lastErr;
+    let lastStatusCode;
     const res = {
-        status: function () { return this; },
+        status: function (statusCode) { lastStatusCode = statusCode; return this; },
         json: function (err) { lastErr = err; }
     };
+
+    it('invalid object key', function () {
+        const r = js('newSurveyXXX', { a: 1 }, res);
+        expect(r).to.equal(false, 'invalid key no error');
+        expect(lastErr).to.have.property('message');
+        expect(lastStatusCode).to.equal(500);
+    });
 
     it('newSurvey', function () {
         const valids = [{
@@ -40,31 +48,19 @@ describe('custom json schema', function () {
             }]
         }];
 
-        const invalids = [{
-            name: 'name',
-            questions: [{
-                id: 1,
-                text: 'What is it?',
-                type: 'text'
-            }, {
-                text: 'What is it?',
-                type: 'text'
-            }]
-        }];
+        const invalids = require('./fixtures/invalid-new-surveys');
 
         valids.forEach(valid => {
             const r = js('newSurvey', valid, res);
-            if (!r) {
-                console.log(JSON.stringify(lastErr, undefined, 4));
-            }
-            expect(r).to.equal(true);
+            expect(r).to.equal(true, lastErr);
         });
 
         invalids.forEach(invalid => {
             const r = js('newSurvey', invalid, res);
-            expect(r).to.equal(false);
+            expect(r).to.equal(false, (invalid && invalid.name) || 'null');
             expect(lastErr).to.have.property('message');
             expect(lastErr).to.have.property('detail');
+            expect(lastStatusCode).to.equal(400);
         });
     });
 });

@@ -4,6 +4,7 @@ const _ = require('lodash');
 
 const models = require('../models');
 const shared = require('./shared.js');
+const jsonSchema = require('../lib/json-schema');
 
 const Survey = models.Survey;
 
@@ -23,6 +24,9 @@ exports.getSurveyByName = function (req, res) {
 
 exports.createSurvey = function (req, res) {
     const survey = req.body;
+    if (!jsonSchema('newSurvey', survey, res)) {
+        return;
+    }
     Survey.createSurvey(survey)
         .then(id => res.status(201).json({ id }))
         .catch(shared.handleError(res));

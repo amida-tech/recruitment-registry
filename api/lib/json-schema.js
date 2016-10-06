@@ -9,6 +9,8 @@ const Ajv = require('ajv');
 
 const ajv = new Ajv();
 
+const RRError = require('./rr-error');
+const jsutil = require('./jsutil');
 const swaggerJson = require('../swagger.json');
 
 const schema = _.cloneDeep(_.pick(swaggerJson, 'definitions'));
@@ -26,21 +28,94 @@ _.set(schema, 'definitions.newSurvey.properties.questions.items', {
     }]
 });
 
+_.set(schema, 'definitions.newQuestion', {
+    oneOf: [{
+        type: 'object',
+        required: ['text', 'type'],
+        properties: {
+            text: { type: 'string' },
+            type: { type: 'string', enum: ['text', 'bool'] },
+            actions: {
+                $ref: '#/definitions/actions'
+            }
+        },
+        additionalProperties: false
+    }, {
+        type: 'object',
+        required: ['text', 'type', 'choices'],
+        properties: {
+            text: { type: 'string' },
+            type: { type: 'string', enum: ['choice'] },
+            choices: {
+                type: 'array',
+                items: {
+                    type: 'object',
+                    required: ['text'],
+                    properties: {
+                        text: { type: 'string' }
+                    },
+                    additionalProperties: false
+                }
+            },
+            actions: {
+                $ref: '#/definitions/actions'
+            }
+        },
+        additionalProperties: false,
+    }, {
+        type: 'object',
+        required: ['text', 'type', 'oneOfChoices'],
+        properties: {
+            text: { type: 'string' },
+            type: { type: 'string', enum: ['choice'] },
+            oneOfChoices: {
+                type: 'array',
+                items: { type: 'string', minLength: 1 }
+            },
+            actions: {
+                $ref: '#/definitions/actions'
+            }
+        },
+        additionalProperties: false,
+    }, {
+        type: 'object',
+        required: ['text', 'type', 'choices'],
+        properties: {
+            text: { type: 'string' },
+            type: { type: 'string', enum: ['choices'] },
+            choices: {
+                type: 'array',
+                items: {
+                    type: 'object',
+                    required: ['text'],
+                    properties: {
+                        text: { type: 'string' },
+                        type: { type: 'string', enum: ['text', 'bool'] }
+                    },
+                    additionalProperties: false
+                }
+            },
+            actions: {
+                $ref: '#/definitions/actions'
+            }
+        },
+        additionalProperties: false
+    }]
+});
+
 ajv.addSchema(schema, 'rr');
 
 module.exports = function (schemaKey, data, res) {
     try {
         const valid = ajv.validate({ $ref: `rr#/definitions/${schemaKey}` }, data);
         if (!valid) {
-            const errObj = {
-                message: 'JSON schema validation for ${schemaKey} failed.',
-                detail: ajv.errors
-            };
-            res.status(400).json(errObj);
+            const err = (new RRError('jsonSchemaFailed', schemaKey)).toObject();
+            err.detail = ajv.errors;
+            res.status(400).json(err);
         }
         return valid;
     } catch (err) {
-        res.status(500).json(err);
+        res.status(500).json(jsutil.errToJSON(err));
         return false;
     }
 };
