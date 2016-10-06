@@ -175,7 +175,7 @@ describe('survey integration', function () {
         it(`list surveys and verify`, listSurveysFn(i));
     }
 
-    const versionSurveyFn = function (index) {
+    const replaceSurveyFn = function (index) {
         return function (done) {
             const replacement = entityGen.genNewSurvey();
             store.inputSurveys.push(replacement);
@@ -199,7 +199,7 @@ describe('survey integration', function () {
         };
     };
 
-    it('version to survey', versionSurveyFn(3));
+    it('version to survey', replaceSurveyFn(3));
     it('verify version survey', showSurveyFn(createCount - 1));
     it(`list surveys and verify`, listSurveysFn(createCount - 1));
 

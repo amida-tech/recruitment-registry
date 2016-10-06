@@ -85,7 +85,7 @@ describe('survey unit', function () {
     it('error: version with a survey with no questions', function () {
         const survey = store.surveys[1];
         const replacementSurvey = entityGen.genNewSurvey({ addQuestions: false });
-        return Survey.versionSurvey({
+        return Survey.replaceSurvey({
                 id: survey.id,
                 replacement: replacementSurvey
             })
@@ -94,14 +94,14 @@ describe('survey unit', function () {
 
     it('error: version with a nonexistent survey', function () {
         const replacementSurvey = entityGen.genNewSurvey();
-        return Survey.versionSurvey({
+        return Survey.replaceSurvey({
                 id: 9999,
                 replacement: replacementSurvey
             })
             .then(shared.throwingHandler, shared.expectedErrorHandler('surveyNotFound'));
     });
 
-    const versionSurveyFn = function (index) {
+    const replaceSurveyFn = function (index) {
         return function () {
             if (index === undefined) {
                 index = store.surveys.length - 1;
@@ -110,7 +110,7 @@ describe('survey unit', function () {
             const inputSurvey = entityGen.genNewSurvey();
             store.inputSurveys.push(inputSurvey);
             store.inputSurveys.splice(index, 1);
-            return Survey.versionSurvey({
+            return Survey.replaceSurvey({
                     id: survey.id,
                     replacement: inputSurvey
                 })
@@ -153,9 +153,9 @@ describe('survey unit', function () {
     };
 
     it('version a survey', function () {
-        return versionSurveyFn(3)()
-            .then(versionSurveyFn(0))
-            .then(versionSurveyFn(store.surveys.length - 1))
+        return replaceSurveyFn(3)()
+            .then(replaceSurveyFn(0))
+            .then(replaceSurveyFn(store.surveys.length - 1))
             .then(() => dbVersionCompare(store.surveys.length - 1, 3))
             .then(() => dbVersionCompare(store.surveys.length - 2, 2));
     });

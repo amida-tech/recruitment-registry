@@ -59,6 +59,11 @@ describe('registry unit', function () {
     it('create profile survey', createProfileSurveyFn());
     it('get/verify profile survey', verifyProfileSurveyFn());
 
+    it('check soft sync does not reset registry', function () {
+        return models.sequelize.sync({ force: false });
+    });
+    it('get/verify profile survey', verifyProfileSurveyFn());
+
     let ethnicities;
     let genders;
     let survey;

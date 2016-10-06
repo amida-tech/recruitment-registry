@@ -32,9 +32,9 @@ exports.createSurvey = function (req, res) {
         .catch(shared.handleError(res));
 };
 
-exports.versionSurvey = function (req, res) {
+exports.replaceSurvey = function (req, res) {
     const survey = req.body;
-    Survey.versionSurvey(survey)
+    Survey.replaceSurvey(survey)
         .then(id => res.status(201).json({ id }))
         .catch(shared.handleError(res));
 };

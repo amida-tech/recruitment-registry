@@ -94,27 +94,25 @@ module.exports = function (sequelize, DataTypes) {
                     .then(survey => survey.update({ name }))
                     .then(() => ({}));
             },
-            createSurveyVersion(survey, replacement) {
-                return sequelize.transaction(function (tx) {
-                    replacement.version = survey.version + 1;
-                    replacement.groupId = survey.groupId;
-                    const newSurvey = {
-                        name: replacement.name,
-                        version: survey.version + 1,
-                        groupId: survey.groupId
-                    };
-                    return Survey.create(newSurvey, { transaction: tx })
-                        .then(function ({ id }) {
-                            return Survey.updateQuestionsTx(replacement.questions, id, tx)
-                                .then(() => id);
-                        })
-                        .then((id) => {
-                            return Survey.destroy({ where: { id: survey.id } })
-                                .then(() => id);
-                        });
-                });
+            replaceSurveyTx(survey, replacement, tx) {
+                replacement.version = survey.version + 1;
+                replacement.groupId = survey.groupId;
+                const newSurvey = {
+                    name: replacement.name,
+                    version: survey.version + 1,
+                    groupId: survey.groupId
+                };
+                return Survey.create(newSurvey, { transaction: tx })
+                    .then(function ({ id }) {
+                        return Survey.updateQuestionsTx(replacement.questions, id, tx)
+                            .then(() => id);
+                    })
+                    .then((id) => {
+                        return Survey.destroy({ where: { id: survey.id } }, { transaction: tx })
+                            .then(() => id);
+                    });
             },
-            versionSurvey: function ({ id, replacement }) {
+            replaceSurvey: function ({ id, replacement }) {
                 if (!_.get(replacement, 'questions.length')) {
                     return RRError.reject('surveyNoQuestions');
                 }
@@ -126,7 +124,9 @@ module.exports = function (sequelize, DataTypes) {
                         return survey;
                     })
                     .then(survey => {
-                        return Survey.createSurveyVersion(survey, replacement);
+                        return sequelize.transaction(function (tx) {
+                            return Survey.replaceSurveyTx(survey, replacement, tx);
+                        });
                     });
             },
             deleteSurvey: function (id) {

@@ -6,6 +6,12 @@ const tokener = require('../lib/tokener');
 const RRError = require('../lib/rr-error');
 
 module.exports = function (sequelize, DataTypes) {
+    const Answer = sequelize.import('./answer.model');
+    const Survey = sequelize.import('./survey.model');
+    const Document = sequelize.import('./document.model');
+    const DocumentSignature = sequelize.import('./document-signature.model');
+    const SurveyDocument = sequelize.import('./survey-document.model');
+
     const Registry = sequelize.define('registry', {
         profileSurveyId: {
             type: DataTypes.INTEGER,
@@ -27,7 +33,7 @@ module.exports = function (sequelize, DataTypes) {
         classMethods: {
             createProfileSurvey: function (survey) {
                 return sequelize.transaction(function (tx) {
-                    return sequelize.models.survey.createSurveyTx(survey, tx)
+                    return Survey.createSurveyTx(survey, tx)
                         .then(profileSurveyId => {
                             return Registry.update({ profileSurveyId }, { where: {}, transaction: tx })
                                 .then(() => ({ id: profileSurveyId }));
@@ -43,11 +49,11 @@ module.exports = function (sequelize, DataTypes) {
                         if (!profileSurveyId) {
                             return RRError.reject('registryNoProfileSurvey');
                         }
-                        return sequelize.models.survey.getSurveyById(profileSurveyId)
+                        return Survey.getSurveyById(profileSurveyId)
                             .then(survey => {
                                 const surveyId = survey.id;
                                 const action = 'create';
-                                return sequelize.models.survey_document.findAll({
+                                return SurveyDocument.findAll({
                                         where: { surveyId, action },
                                         raw: true,
                                         attributes: ['documentTypeId']
@@ -55,7 +61,7 @@ module.exports = function (sequelize, DataTypes) {
                                     .then(rawTypeIds => _.map(rawTypeIds, 'documentTypeId'))
                                     .then(typeIds => {
                                         if (typeIds.length) {
-                                            return sequelize.models.document.listDocuments(typeIds)
+                                            return Document.listDocuments(typeIds)
                                                 .then(documents => {
                                                     survey.documents = documents;
                                                     return survey;
@@ -79,7 +85,7 @@ module.exports = function (sequelize, DataTypes) {
                                 .then(user => {
                                     if (input.signatures && input.signatures.length) {
                                         return sequelize.Promise.all(input.signatures.map(documentId => {
-                                                return sequelize.models.document_signature.createSignature(user.id, documentId, tx);
+                                                return DocumentSignature.createSignature(user.id, documentId, tx);
                                             }))
                                             .then(() => user);
                                     }
@@ -91,8 +97,7 @@ module.exports = function (sequelize, DataTypes) {
                                         surveyId: profileSurveyId,
                                         answers: input.answers
                                     };
-                                    const answerModel = sequelize.models.answer;
-                                    return answerModel.createAnswersTx(answerInput, tx)
+                                    return Answer.createAnswersTx(answerInput, tx)
                                         .then(() => ({ token: tokener.createJWT(user) }));
                                 });
                         });
@@ -113,7 +118,7 @@ module.exports = function (sequelize, DataTypes) {
                                 surveyId: profileSurveyId,
                                 answers: input.answers
                             };
-                            return sequelize.models.answer.createAnswersTx(answerInput, tx);
+                            return Answer.createAnswersTx(answerInput, tx);
                         });
                 });
             },
@@ -125,7 +130,7 @@ module.exports = function (sequelize, DataTypes) {
                                 attributes: ['profileSurveyId']
                             })
                             .then(({ profileSurveyId }) => {
-                                return sequelize.models.survey.getAnsweredSurveyById(user.id, profileSurveyId)
+                                return Survey.getAnsweredSurveyById(user.id, profileSurveyId)
                                     .then(function (survey) {
                                         return {
                                             user,
