@@ -87,6 +87,8 @@ All table and column names are in snake case to follow Postgres convention and f
 
 - `document_signature`: This table is to be renamed `consent_signature` after a recent requirement change.  This table stores each instance (column `created_at`) of a user (column `user_id`) signing a consent section (column `document_id`).  
 
+- `survey_document`: This table is designed to store survey level consent requirements if and when they become parts of the requirements.  Each record represents a consent section (column `document_type_id`) the needs to signed by a user before a survey (column `survey_id`) can be read, submitted or edited (column `action`). 
+
 - `registry`: This table stores registry level settings and includes only one record.  Currenly only data is the survey that is being used in user registration (column `profile_survey_id`).
 
 - `ethnicity`: This stores the choices that should be shown to user for ethnicity demographics field.
