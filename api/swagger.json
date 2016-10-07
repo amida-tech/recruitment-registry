@@ -1193,6 +1193,57 @@
                 }
             }
         },
+        "newSurveyQuestion": {
+            "type": "object",
+            "description": "Describes either a brand new question (no 'id') or an existing question ('id' only with 'required').",
+            "required": ["required"],
+            "properties": {
+                "required": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "text": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "type": {
+                    "type": "string",
+                    "enum": ["text", "bool", "choice", "choices"]
+                },
+                "oneOfChoices": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "minItems": 1
+                },
+                "choices": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": ["text"],
+                        "properties": {
+                            "text": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "type": {
+                                "type": "string",
+                                "enum": ["text", "bool"]
+                            }
+                        }
+                    },
+                    "minItems": 1
+                },
+                "actions": {
+                    "$ref": "#/definitions/actions"
+                }
+            },
+            "minProperties": 2,
+            "additionalProperties": false
+        },
         "newSurvey": {
             "type": "object",
             "required": [
@@ -1201,54 +1252,81 @@
             ],
             "properties": {
                 "name": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 1
                 },
                 "questions": {
                     "type": "array",
                     "items": {
-                        "type": "object",
-                        "required": ["required"],
-                        "properties": {
-                            "id": {
-                                "type": "integer"
-                            },
-                            "required": {
-                                "type": "boolean"
-                            },
-                            "text": {
-                                "type": "string"
-                            },
-                            "type": {
-                                "type": "string"
-                            },
-                            "oneOfChoices": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string"
-                                }
-                            },
-                            "choices": {
-                                "type": "array",
-                                "items": {
-                                    "type": "object",
-                                    "required": ["text"],
-                                    "properties": {
-                                        "text": {
-                                            "type": "string"
-                                        },
-                                        "type": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            },
-                            "actions": {
-                                "$ref": "#/definitions/actions"
-                            }
-                        },
-                        "minProperties": 1
+                        "$ref": "#/definitions/newSurveyQuestion"
                     },
-                    "minLength": 1
+                    "minItems": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "surveyQuestion": {
+            "type": "object",
+            "required": [
+                "id",
+                "text",
+                "type",
+                "required"
+            ],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "text": {
+                    "type": "string",
+                     "minLength": 1
+                },
+                "type": {
+                    "type": "string",
+                    "enum": ["text", "bool", "choice", "choices"]
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "choices": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/choice"
+                    },
+                    "minItems": 1
+                },
+                "actions": {
+                    "$ref": "#/definitions/actions"
+                 },
+                "answer": {
+                    "$ref": "#/definitions/answer"
+                }
+            },
+            "additionalProperties": false
+        },
+        "survey": {
+            "type": "object",
+            "required": [
+                "id",
+                "name",
+                "questions"
+            ],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "name": {
+                    "type": "string",
+                     "minLength": 1
+                },
+                "questions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/surveyQuestion"
+                    },
+                    "minItems": 1
                 }
             },
             "additionalProperties": false
@@ -1296,7 +1374,8 @@
                             }
                         },
                         "maxProperties": 2
-                    }
+                    },
+                    "minItems": 1
                 },
                 "textValue": {
                     "type": "string"
@@ -1307,41 +1386,6 @@
             },
             "minProperties": 1,
             "maxProperties": 1
-        },
-        "surveyQuestion": {
-            "type": "object",
-            "required": [
-                "id",
-                "text",
-                "type",
-                "required"
-            ],
-            "properties": {
-                "id": {
-                    "type": "integer"
-                },
-                "text": {
-                    "type": "string"
-                },
-                "type": {
-                    "type": "string"
-                },
-                "required": {
-                    "type": "boolean"
-                },
-                "choices": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/choice"
-                    }
-                },
-                "actions": {
-                    "$ref": "#/definitions/actions"
-                 },
-                "answer": {
-                    "$ref": "#/definitions/answer"
-                }
-            }
         },
         "question": {
             "type": "object",
@@ -1435,30 +1479,6 @@
                     "$ref": "#/definitions/answer"
                 }
             }
-        },
-        "survey": {
-            "type": "object",
-            "required": [
-                "id",
-                "name",
-                "questions"
-            ],
-            "properties": {
-                "id": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "questions": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/surveyQuestion"
-                    },
-                    "minLength": 1
-                }
-            },
-            "additionalProperties": false
         },
         "newUserProfile": {
             "type": "object",

@@ -90,21 +90,6 @@ module.exports = [{
         oneOfChoices: ['Black', 'Brown']
     }]
 }, {
-    name: 'choices has invalid type',
-    questions: [{
-        text: 'What is this?',
-        required: true,
-        type: 'text'
-    }, {
-        text: 'Choice',
-        required: true,
-        type: 'choices',
-        choices: [
-            { text: 'Black', type: 'what' },
-            { text: 'Brown' }
-        ]
-    }]
-}, {
     name: 'choice has invalid type',
     questions: [{
         text: 'What is this?',

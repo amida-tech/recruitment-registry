@@ -13,7 +13,10 @@ const shared = require('../shared-integration');
 const entityGen = require('../entity-generator');
 const userExamples = require('../fixtures/user-examples');
 const surveyExamples = require('../fixtures/survey-examples');
-const invalidSurveySamples = require('../fixtures/invalid-new-surveys');
+
+const invalidSurveysJSON = require('../fixtures/json-schema-invalid/new-survey');
+const invalidSurveysSwagger = require('../fixtures/swagger-invalid/new-survey');
+
 const RRError = require('../../lib/rr-error');
 
 const expect = chai.expect;
@@ -143,9 +146,9 @@ describe('survey integration', function () {
         };
     };
 
-    const invalidSurveyFn = function (index) {
+    const invalidSurveyJSONFn = function (index) {
         return function (done) {
-            const survey = invalidSurveySamples[index];
+            const survey = invalidSurveysJSON[index];
             store.server
                 .post('/api/v1.0/surveys')
                 .set('Authorization', store.auth)
@@ -161,8 +164,30 @@ describe('survey integration', function () {
         };
     };
 
-    for (let i = 0; i < invalidSurveySamples.length; ++i) {
-        it(`error: invalid survey input ${i}`, invalidSurveyFn(i));
+    for (let i = 0; i < invalidSurveysJSON.length; ++i) {
+        it(`error: invalid (json) survey input ${i}`, invalidSurveyJSONFn(i));
+    }
+
+    const invalidSurveySwaggerFn = function (index) {
+        return function (done) {
+            const survey = invalidSurveysSwagger[index];
+            store.server
+                .post('/api/v1.0/surveys')
+                .set('Authorization', store.auth)
+                .send(survey)
+                .expect(400)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    expect(Boolean(res.body.message)).to.equal(true);
+                    done();
+                });
+        };
+    };
+
+    for (let i = 0; i < invalidSurveysSwagger.length; ++i) {
+        it(`error: invalid (swagger) survey input ${i}`, invalidSurveySwaggerFn(i));
     }
 
     for (let i = 0; i < createCount; ++i) {

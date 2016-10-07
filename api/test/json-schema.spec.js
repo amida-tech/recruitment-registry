@@ -3,13 +3,18 @@
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
+const _ = require('lodash');
 
 const expect = chai.expect;
 
 const js = require('../lib/json-schema');
 
-describe('custom json schema', function () {
-    let lastErr;
+describe('json schema validations', function () {
+    const objectTypes = [
+        'newSurvey'
+    ];
+
+    let lastErr = {};
     let lastStatusCode;
     const res = {
         status: function (statusCode) { lastStatusCode = statusCode; return this; },
@@ -23,49 +28,30 @@ describe('custom json schema', function () {
         expect(lastStatusCode).to.equal(500);
     });
 
-    it('newSurvey', function () {
-        const valids = [{
-            name: 'name',
-            questions: [{ id: 1, required: false }, { id: 2, required: true }, { id: 3, required: false }]
-        }, {
-            name: 'name',
-            questions: [{
-                text: 'What is it?',
-                required: true,
-                type: 'text'
-            }, {
-                text: 'What is it?',
-                required: false,
-                type: 'text'
-            }]
-        }, {
-            name: 'name',
-            questions: [{
-                id: 1,
-                required: false
-            }, {
-                text: 'What is it?',
-                required: true,
-                type: 'text'
-            }, {
-                id: 2,
-                required: false
-            }]
-        }];
+    const testFn = function (objectType) {
+        return function () {
+            const kebabObjectType = _.kebabCase(objectType);
 
-        const invalids = require('./fixtures/invalid-new-surveys');
+            const valids = require(`./fixtures/valids/${kebabObjectType}`);
 
-        valids.forEach(valid => {
-            const r = js('newSurvey', valid, res);
-            expect(r).to.equal(true, lastErr);
-        });
+            valids.forEach(valid => {
+                const r = js(objectType, valid, res);
+                expect(r).to.equal(true, JSON.stringify(lastErr, undefined, 4));
+            });
 
-        invalids.forEach(invalid => {
-            const r = js('newSurvey', invalid, res);
-            expect(r).to.equal(false, (invalid && invalid.name) || 'null');
-            expect(lastErr).to.have.property('message');
-            expect(lastErr).to.have.property('detail');
-            expect(lastStatusCode).to.equal(400);
-        });
-    });
+            const invalids = require(`./fixtures/json-schema-invalid/${kebabObjectType}`);
+
+            invalids.forEach(invalid => {
+                const r = js(objectType, invalid, res);
+                expect(r).to.equal(false, (invalid && invalid.name) || 'null');
+                expect(lastErr).to.have.property('message');
+                expect(lastErr).to.have.property('detail');
+                expect(lastStatusCode).to.equal(400);
+            });
+        };
+    };
+
+    for (let i = 0; i < objectTypes.length; ++i) {
+        it(objectTypes[i], testFn(objectTypes[i]));
+    }
 });
