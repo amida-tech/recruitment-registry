@@ -20,6 +20,14 @@ module.exports = function (sequelize, DataTypes) {
                 key: 'name'
             },
         },
+        version: {
+            type: DataTypes.INTEGER,
+            allowNull: false
+        },
+        groupId: {
+            type: DataTypes.INTEGER,
+            field: 'group_id'
+        },
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',
@@ -55,34 +63,61 @@ module.exports = function (sequelize, DataTypes) {
                     return sequelize.Promise.resolve({ id });
                 }
             },
-            createQuestionTx: function ({ text, type, oneOfChoices, choices, actions }, tx) {
-                const nOneOfChoices = (oneOfChoices && oneOfChoices.length) || 0;
-                const nChoices = (choices && choices.length) || 0;
-                return Question.create({ text, type }, { transaction: tx })
-                    .then(({ id }) => Question.createActionsTx(id, actions, tx))
-                    .then(({ id }) => {
+            auxCreateQuestionTx: function (question, tx) {
+                const qxFields = _.omit(question, ['oneOfChoices', 'choices', 'actions']);
+                return Question.create(qxFields, { transaction: tx })
+                    .then((created) => {
+                        return Question.createActionsTx(created.id, question.actions, tx)
+                            .then(() => created);
+                    })
+                    .then((created) => {
+                        let { oneOfChoices, choices } = question;
+                        const nOneOfChoices = (oneOfChoices && oneOfChoices.length) || 0;
+                        const nChoices = (choices && choices.length) || 0;
                         if (nOneOfChoices || nChoices) {
                             if (nOneOfChoices) {
                                 choices = oneOfChoices.map(text => ({ text, type: 'bool' }));
                             }
                             return sequelize.Promise.all(choices.map(function (c, index) {
                                 const choice = {
-                                    questionId: id,
+                                    questionId: created.id,
                                     text: c.text,
                                     type: c.type || 'bool',
                                     line: index
                                 };
                                 return sequelize.models.question_choice.create(choice, {
                                     transaction: tx
-                                }).then(() => id);
-                            })).then(() => id);
+                                }).then(() => created);
+                            })).then(() => created);
                         }
-                        return id;
+                        return created;
                     });
+            },
+            createQuestionTx: function (question, tx) {
+                const qx = Object.assign({}, question, { version: 1 });
+                return Question.auxCreateQuestionTx(qx, tx)
+                    .then(created => created.update({ groupId: created.id }, { transaction: tx }))
+                    .then(({ id }) => id);
             },
             createQuestion: function (question) {
                 return sequelize.transaction(function (tx) {
                     return Question.createQuestionTx(question, tx);
+                });
+            },
+            replaceQuestion: function (id, replacement) {
+                return sequelize.transaction(tx => {
+                    return Question.findById(id, { transaction: tx })
+                        .then(question => {
+                            if (!question) {
+                                return RRError.reject('qxNotFound');
+                            }
+                            const newQuestion = Object.assign({}, replacement, {
+                                version: question.version + 1,
+                                groupId: question.groupId
+                            });
+                            return Question.createQuestionTx(newQuestion, tx);
+                        })
+                        .then(() => Question.destroy({ where: { id } }, { transaction: tx }));
                 });
             },
             getQuestion: function (id) {
