@@ -12,10 +12,11 @@ class ProfileContainer extends Component {
 
     return (
       <div>
-        <h1>Profile</h1>
+        <h1>{this.props.vocab.get('PROFILE')}</h1>
         <div>
           <UserForm
             user={user}
+            vocab={this.props.vocab}
             changeProfile={::this._changeProfile}
             onSubmit={::this._saveProfile}
             availableEthnicities={this.props.availableEthnicities}
@@ -52,7 +53,8 @@ function mapStateToProps(state) {
   return {
     data: state.get('profile'),
     availableEthnicities: state.getIn(['register', 'availableEthnicities']),
-    availableGenders: state.getIn(['register', 'availableGenders'])
+    availableGenders: state.getIn(['register', 'availableGenders']),
+    vocab: state.getIn(['settings', 'language', 'vocabulary'])
   };
 }
 

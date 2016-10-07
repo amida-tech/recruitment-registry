@@ -22,29 +22,29 @@ class UserForm extends Component {
         <div>
 
           <div className="form-group">
-            <label htmlFor="password">New password</label>
+            <label htmlFor="password">{this.props.vocab.get('NEW_PASSWORD')}</label>
             <input className="form-control" id="password" type="password" onChange={this.props.changeProfile}/>
           </div>
 
           <div className="form-group">
-            <label>Email</label>
+            <label>{this.props.vocab.get('EMAIL')}</label>
             <input className="form-control" type="text" id="email" defaultValue={user.email}
                    onChange={this.props.changeProfile}/>
           </div>
 
           <div className="form-group">
-            <label>ZIP</label>
+            <label>{this.props.vocab.get('ZIP')}</label>
             <input className="form-control" type="text" id="zip" defaultValue={user.zip}
                    onChange={this.props.changeProfile}/>
           </div>
 
-          {renderSelectField("gender", user.gender, "Gender", this.props.availableGenders)}
+          {renderSelectField("gender", user.gender, this.props.vocab.get('GENDER'), this.props.availableGenders)}
 
-          {renderSelectField("ethnicity", user.ethnicity, "Ethnicity", this.props.availableEthnicities)}
+          {renderSelectField("ethnicity", user.ethnicity, this.props.vocab.get('ETHNICITY'), this.props.availableEthnicities)}
 
-          <p>{this.props.profileSaved ? "Profile Saved" : ""}</p>
+          <p>{this.props.profileSaved ? "Save profile" : ""}</p>
 
-          <button disabled={!this.props.hasChanges} className="form__submit-btn" type="submit">Save profile</button>
+          <button disabled={!this.props.hasChanges} className="form__submit-btn" type="submit">{this.props.vocab.get('SAVE_PROFILE')} </button>
         </div>
       </form>) : (<div></div>)
     }
@@ -57,7 +57,7 @@ UserForm.propTypes = {
   user: React.PropTypes.object,
   changeProfile: React.PropTypes.func.isRequired,
   availableGenders: React.PropTypes.object.isRequired,
-  availableEthnicities: React.PropTypes.object.isRequired
+  availableEthnicities: React.PropTypes.object.isRequired,
 }
 
 export default UserForm;

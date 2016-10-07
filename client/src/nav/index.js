@@ -27,12 +27,12 @@ class Nav extends Component {
         <div>
           { loggedIn ? (
             <div>
-              <button type="button" className="pull-right nav-item nav-link btn btn-primary" onClick={::this._logout}>Logout</button>
+              <button type="button" className="pull-right nav-item nav-link btn btn-primary" onClick={::this._logout}>{this.props.vocab.get('LOGOUT')}</button>
             </div>
           ) : (<div></div>)}
         </div>
         <div>
-          <button type="button" className="pull-right nav-item nav-link btn btn-primary" onClick={::this._changeLanguage}>Language</button>
+          <button type="button" className="pull-right nav-item nav-link btn btn-primary" onClick={::this._changeLanguage}>{this.props.vocab.get('LANGUAGE')}</button>
         </div>
       </nav>
     );
@@ -49,7 +49,8 @@ class Nav extends Component {
 
 function select(state) {
   return {
-    data: state
+    data: state,
+    vocab: state.getIn(['settings', 'language', 'vocabulary'])
   };
 }
 

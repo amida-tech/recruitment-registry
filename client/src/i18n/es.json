@@ -6,5 +6,18 @@
   "USERNAME": "Nombre de Usuario",
   "PASSWORD": "Contraseña",
   "FORGOT_USER_PASS": "¿Ha olvidado su nombre de usuario o contraseña?",
-  "LOGIN": "Iniciar Sesión"
+  "LOGIN": "Iniciar Sesión",
+  "LOGOUT":"Cerrar Sesión",
+  "REGISTER": "Registro",
+  "LANGUAGE": "Lengua",
+  "PROFILE": "Perfil",
+  "NEW_PASSWORD": "Nueva Contraseña",
+  "ZIP": "Código Postal",
+  "GENDER": "Género",
+  "ETHNICITY": "Etnicidad",
+  "SAVE_PROFILE":"Guardar Perfil",
+  "FAMILY_HIST_QUESTION": "Antecedentes familiares de trastornos de memoria/AD/demencia?",
+  "HEAR_OF_US": "¿Como supiste de nosotros?",
+  "INTERESTED_EMAIL_UPDATES": "¿Le interesa recibir alertas sobre cualquiera de los siguientes?",
+  "INTERESTED_CLINIC_TRIALS": "¿Está interesado en participar en la clínica ensayos?"
 }
