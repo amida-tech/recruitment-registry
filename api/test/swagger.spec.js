@@ -13,7 +13,7 @@ const spec = st.specs.v2;
 
 describe('swagger validations', function () {
     const objectTypes = [
-        'newSurvey'
+        'newSurvey', 'newQuestion'
     ];
 
     const testValidFn = function (objectType, data) {

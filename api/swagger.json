@@ -1193,6 +1193,11 @@
                 }
             }
         },
+        "questionType": {
+            "type": "string",
+            "enum": ["text", "bool", "choice", "choices"]
+        },
+
         "newSurveyQuestion": {
             "type": "object",
             "description": "Describes either a brand new question (no 'id') or an existing question ('id' only with 'required').",
@@ -1209,8 +1214,7 @@
                     "minLength": 1
                 },
                 "type": {
-                    "type": "string",
-                    "enum": ["text", "bool", "choice", "choices"]
+                    "$ref": "#/definitions/questionType"
                 },
                 "oneOfChoices": {
                     "type": "array",
@@ -1283,8 +1287,7 @@
                      "minLength": 1
                 },
                 "type": {
-                    "type": "string",
-                    "enum": ["text", "bool", "choice", "choices"]
+                    "$ref": "#/definitions/questionType"
                 },
                 "required": {
                     "type": "boolean"
@@ -1331,6 +1334,10 @@
             },
             "additionalProperties": false
         },
+        "choiceType": {
+            "type": "string",
+            "enum": ["bool", "text"]
+        },
         "choice": {
             "type": "object",
             "required": [
@@ -1339,13 +1346,15 @@
             ],
             "properties": {
                 "id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 1
                 },
                 "text": {
-                    "type": "string"
+                    "type": "string",
+                     "minLength": 1
                 },
                 "type": {
-                    "type": "string"
+                    "$ref": "#/definitions/choiceType"
                 }
             }
         },
@@ -1396,13 +1405,15 @@
             ],
             "properties": {
                 "id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 1
                 },
                 "text": {
-                    "type": "string"
+                    "type": "string",
+                     "minLength": 1
                 },
                 "type": {
-                    "type": "string"
+                    "$ref": "#/definitions/questionType"
                 },
                 "choices": {
                     "type": "array",
@@ -1425,6 +1436,20 @@
             },
             "minLength": 1
         },
+        "newChoice": {
+            "type": "object",
+            "required": ["text"],
+            "properties": {
+                "text": {
+                    "type": "string",
+                     "minLength": 1
+                },
+                "type": {
+                    "$ref": "#/definitions/choiceType"
+                }
+            },
+            "additionalProperties": false
+        },
         "newQuestion": {
             "type": "object",
             "required": [
@@ -1433,10 +1458,11 @@
             ],
             "properties": {
                 "text": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 1
                 },
                 "type": {
-                    "type": "string"
+                    "$ref": "#/definitions/questionType"
                 },
                 "oneOfChoices": {
                     "type": "array",
@@ -1447,16 +1473,7 @@
                 "choices": {
                     "type": "array",
                     "items": {
-                        "type": "object",
-                        "required": ["text"],
-                        "properties": {
-                            "text": {
-                                "type": "string"
-                            },
-                            "type": {
-                                "type": "string"
-                            }
-                        }
+                        "$ref": "#/definitions/newChoice"
                     }
                 },
                 "actions": {

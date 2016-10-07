@@ -58,24 +58,6 @@ module.exports = function (sequelize, DataTypes) {
             createQuestionTx: function ({ text, type, oneOfChoices, choices, actions }, tx) {
                 const nOneOfChoices = (oneOfChoices && oneOfChoices.length) || 0;
                 const nChoices = (choices && choices.length) || 0;
-                if (nOneOfChoices && nChoices) {
-                    return RRError.reject('qxCreateChoicesBoth');
-                }
-                if ((type === 'choices') && !nChoices) {
-                    return RRError.reject('qxCreateChoicesNone');
-                }
-                if ((type === 'choice') && !(nOneOfChoices || nChoices)) {
-                    return RRError.reject('qxCreateChoiceNone');
-                }
-                if ((type === 'choice') && nChoices) {
-                    const notBoolChoices = choices.filter((choice) => !(_.isNil(choice.type) || (choice.type === 'bool')));
-                    if (notBoolChoices.length) {
-                        return RRError.reject('qxCreateChoiceNotBool');
-                    }
-                }
-                if ((type !== 'choice') && (type !== 'choices') && (nOneOfChoices || nChoices)) {
-                    return RRError.reject('qxCreateChoicesOther');
-                }
                 return Question.create({ text, type }, { transaction: tx })
                     .then(({ id }) => Question.createActionsTx(id, actions, tx))
                     .then(({ id }) => {

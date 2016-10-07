@@ -4,11 +4,16 @@ const _ = require('lodash');
 
 const models = require('../models');
 const shared = require('./shared.js');
+const jsonSchema = require('../lib/json-schema');
 
 const Question = models.Question;
 
 exports.createQuestion = function (req, res) {
-    Question.createQuestion(req.body)
+    const question = req.body;
+    if (!jsonSchema('newQuestion', question, res)) {
+        return;
+    }
+    Question.createQuestion(question)
         .then(id => res.status(201).json({ id }))
         .catch(shared.handleError(res));
 };

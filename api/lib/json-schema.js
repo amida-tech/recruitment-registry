@@ -108,6 +108,81 @@ _.set(schema, 'definitions.newSurveyQuestion', {
     }]
 });
 
+_.set(schema, 'definitions.newQuestion', {
+    oneOf: [{
+        type: 'object',
+        required: ['text', 'type'],
+        properties: {
+            text: { type: 'string' },
+            type: { type: 'string', enum: ['text', 'bool'] },
+            actions: {
+                $ref: '#/definitions/actions'
+            }
+        },
+        additionalProperties: false
+    }, {
+        type: 'object',
+        required: ['text', 'type', 'choices'],
+        properties: {
+            text: { type: 'string' },
+            type: { type: 'string', enum: ['choice'] },
+            choices: {
+                type: 'array',
+                items: {
+                    type: 'object',
+                    required: ['text'],
+                    properties: {
+                        text: { type: 'string' }
+                    },
+                    additionalProperties: false
+                }
+            },
+            actions: {
+                $ref: '#/definitions/actions'
+            }
+        },
+        additionalProperties: false,
+    }, {
+        type: 'object',
+        required: ['text', 'type', 'oneOfChoices'],
+        properties: {
+            text: { type: 'string' },
+            type: { type: 'string', enum: ['choice'] },
+            oneOfChoices: {
+                type: 'array',
+                items: { type: 'string', minLength: 1 }
+            },
+            actions: {
+                $ref: '#/definitions/actions'
+            }
+        },
+        additionalProperties: false,
+    }, {
+        type: 'object',
+        required: ['text', 'type', 'choices'],
+        properties: {
+            text: { type: 'string' },
+            type: { type: 'string', enum: ['choices'] },
+            choices: {
+                type: 'array',
+                items: {
+                    type: 'object',
+                    required: ['text'],
+                    properties: {
+                        text: { type: 'string' },
+                        type: { type: 'string', enum: ['text', 'bool'] }
+                    },
+                    additionalProperties: false
+                }
+            },
+            actions: {
+                $ref: '#/definitions/actions'
+            }
+        },
+        additionalProperties: false
+    }]
+});
+
 ajv.addSchema(schema, 'rr');
 
 module.exports = function (schemaKey, data, res) {

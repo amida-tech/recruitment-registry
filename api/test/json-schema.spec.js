@@ -11,7 +11,7 @@ const js = require('../lib/json-schema');
 
 describe('json schema validations', function () {
     const objectTypes = [
-        'newSurvey'
+        'newSurvey', 'newQuestion'
     ];
 
     let lastErr = {};
@@ -43,7 +43,7 @@ describe('json schema validations', function () {
 
             invalids.forEach(invalid => {
                 const r = js(objectType, invalid, res);
-                expect(r).to.equal(false, (invalid && invalid.name) || 'null');
+                expect(r).to.equal(false, JSON.stringify(invalid, undefined, 4));
                 expect(lastErr).to.have.property('message');
                 expect(lastErr).to.have.property('detail');
                 expect(lastStatusCode).to.equal(400);

@@ -11,7 +11,10 @@ const shared = require('../shared-integration');
 const userExamples = require('../fixtures/user-examples');
 const qxHelper = require('../helper/question-helper');
 const examples = require('../fixtures/question-examples');
-const qxCommon = require('./question-common');
+const RRError = require('../../lib/rr-error');
+
+const invalidQuestionsJSON = require('../fixtures/json-schema-invalid/new-question');
+const invalidQuestionsSwagger = require('../fixtures/swagger-invalid/new-question');
 
 const expect = chai.expect;
 
@@ -53,24 +56,49 @@ describe('question integration', function () {
 
     it('login as super', shared.loginFn(store, config.superUser));
 
-    qxCommon.rrErrors.forEach(rrError => {
-        it(`error: ${rrError.code}`, function (done) {
+    const invalidQuestionJSONFn = function (index) {
+        return function (done) {
+            const question = invalidQuestionsJSON[index];
             store.server
                 .post('/api/v1.0/questions')
                 .set('Authorization', store.auth)
-                .send(rrError.input)
+                .send(question)
                 .expect(400)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
                     }
-                    const rrErr = res.body;
-                    expect(rrErr.code).to.equal(rrError.code);
-                    expect(!!rrErr.message).to.equal(true);
+                    expect(res.body.message).to.equal(RRError.message('jsonSchemaFailed', 'newQuestion'));
                     done();
                 });
-        });
-    });
+        };
+    };
+
+    for (let i = 0; i < invalidQuestionsJSON.length; ++i) {
+        it(`error: invalid (json) question input ${i}`, invalidQuestionJSONFn(i));
+    }
+
+    const invalidQuestionSwaggerFn = function (index) {
+        return function (done) {
+            const question = invalidQuestionsSwagger[index];
+            store.server
+                .post('/api/v1.0/questions')
+                .set('Authorization', store.auth)
+                .send(question)
+                .expect(400)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    expect(Boolean(res.body.message)).to.equal(true);
+                    done();
+                });
+        };
+    };
+
+    for (let i = 0; i < invalidQuestionsSwagger.length; ++i) {
+        it(`error: invalid (swagger) question input ${i}`, invalidQuestionSwaggerFn(i));
+    }
 
     const ids = [];
 

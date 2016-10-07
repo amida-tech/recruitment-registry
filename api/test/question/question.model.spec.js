@@ -9,7 +9,6 @@ const models = require('../../models');
 const shared = require('../shared-spec.js');
 const qxHelper = require('../helper/question-helper');
 const examples = require('../fixtures/question-examples');
-const qxCommon = require('./question-common');
 const RRError = require('../../lib/rr-error');
 
 const expect = chai.expect;
@@ -18,17 +17,6 @@ const Question = models.Question;
 
 describe('question unit', function () {
     before(shared.setUpFn());
-
-    qxCommon.rrErrors.forEach(rrError => {
-        it(`error: ${rrError.code}`, function () {
-            return Question.createQuestion(rrError.input)
-                .then(() => { throw new Error('unexpected no error'); })
-                .catch(err => {
-                    expect(err).to.be.instanceof(RRError);
-                    expect(err.code).to.equal(rrError.code);
-                });
-        });
-    });
 
     it('get all questions when none', function () {
         return Question.getAllQuestions()
