@@ -9,7 +9,7 @@ export class RegisterContainer extends Component {
     return (
       <div className="container">
           <div className="form-page__form-header">
-            <h2 className="form-page__form-heading">{this.props.vocab.get('REGISTER')}</h2>
+            <h2 className="rr">{this.props.vocab.get('LETS_CREATE')}</h2>
           </div>
           <Form data={formState}
                 vocab={this.props.vocab}

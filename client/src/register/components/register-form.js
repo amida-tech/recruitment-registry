@@ -24,7 +24,7 @@ class Form extends Component {
           <label htmlFor={id}>{label}</label>
           <input autoComplete="off" required className="form-control" id={id} type={type} onChange={this.props.changeForm} />
         </div>
-        <button className="form__submit-btn" onClick={this.next} type="button">{this.props.vocab.get('NEXT')}</button>
+        <button className="btn rr-button" onClick={this.next} type="button">{this.props.vocab.get('NEXT')}</button>
       </div>
     )
 
@@ -211,18 +211,18 @@ class Form extends Component {
 
     return(
       <form className="" autoComplete="off">
-        <div className="col-sm-6">
+        <div className="col--6">
           <div className="registry-specific">
             {
               this.props.survey.questions.length > 0 ? (
                 <Slider ref='slider' {...settings}>
-                  {renderInputField("username", "text", "admin", this.props.vocab.get('USERNAME'))}
-                  {renderInputField("password", "password", "••••••••••", this.props.vocab.get('PASSWORD'))}
-                  {renderInputField("email", "email", "someone@domain.tld", this.props.vocab.get('EMAIL'))}
-                  {renderInputField("zip", "text", "", this.props.vocab.get('ZIP'))}
-                  {renderInputField("dob", "date", "mm/dd/yyyy", this.props.vocab.get('DATE_OF_BIRTH'))}
-                  {renderSelectField("gender", this.props.data.gender, this.props.vocab.get('GENDER'), this.props.availableGenders)}
-                  {renderSelectField("ethnicity", this.props.data.ethnicity, this.props.vocab.get('ETHNICITY'), this.props.availableEthnicities)}
+                  {renderInputField("username", "text", "admin", this.props.vocab.get('MY_USERNAME'))}
+                  {renderInputField("password", "password", "••••••••••", this.props.vocab.get('MY_PASSWORD'))}
+                  {renderInputField("email", "email", "someone@domain.tld", this.props.vocab.get('MY_EMAIL'))}
+                  {renderInputField("zip", "text", "", this.props.vocab.get('MY_ZIP'))}
+                  {renderInputField("dob", "date", "mm/dd/yyyy", this.props.vocab.get('MY_DOB'))}
+                  {renderSelectField("gender", this.props.data.gender, this.props.vocab.get('MY_GENDER'), this.props.availableGenders)}
+                  {renderSelectField("ethnicity", this.props.data.ethnicity, this.props.vocab.get('MY_ETHNIC'), this.props.availableEthnicities)}
                   {slides}
                   <div key="final">
                     <p>{this.props.vocab.get('THANKS')}</p>

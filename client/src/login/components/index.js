@@ -8,9 +8,9 @@ export class LoginContainer extends Component {
     const formState = this.props.data.get('formState')
     return (
       <div className="form-page__wrapper">
-        <div className="form-page__form-wrapper">
-          <div className="form-page__form-header">
-            <h2 className="form-page__form-heading">{this.props.vocab.get('LOGIN')}</h2>
+        <div className="rr-panel">
+          <div className="rr-topbox p-t-1">
+            <h2 className="rr">{this.props.vocab.get('SIGN_IN')}</h2>
           </div>
           <Form data={formState}
                 location={location}
@@ -18,7 +18,7 @@ export class LoginContainer extends Component {
                 history={this.props.history}
                 changeForm={::this._changeForm}
                 onSubmit={::this._login}
-                btnText={this.props.vocab.get('LOGIN')} />
+                btnText={this.props.vocab.get('SIGN_IN')} />
         </div>
       </div>
     );

@@ -19,6 +19,7 @@
 
 .rr-panel {
   max-width: 380px;
+	min-width: 300px;
   border-radius: 3px !important;
   border: 1px solid;
   border-color: #DCDCDC;
@@ -30,6 +31,10 @@
   font-weight:bold;
   font-size:10px;
   text-transform: uppercase;
+}
+
+.rr-hint {
+	font-size:9px;
 }
 
 .rr-margins {
@@ -47,7 +52,8 @@
 
 .rr-controls {
   text-align: center;
-  margin: 10px;
+  margin-top: 20px;
+	margin-bottom: 20px;
 }
 
 .rr-button {
@@ -66,7 +72,7 @@
 }
 
 .rr-group {
-  display: inline-block;
+  display: block;
   text-align:left;
 }
 
@@ -77,6 +83,8 @@
 .rr-field {
   border:1px solid #ccc;
   border-radius:0.25rem;
+	width:100%;
+	height:30px;
   border-top: 0px;
   border-left: 0px;
   border-right: 0px;

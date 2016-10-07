@@ -31,5 +31,14 @@
   "INTERESTED_EMAIL_UPDATES": "Are you interested in receiving email updates on any of the following?",
   "INTERESTED_CLINIC_TRIALS": "Are you interested in participating in clinical trials?",
   "WELCOME": "welcome to the",
-  "LOGGED_IN_AS": "you are logged in as"
+  "LOGGED_IN_AS": "you are logged in as",
+  "LETS_CREATE": "Let's create an account... it only takes a minute",
+  "MY_USERNAME": "My desired username is",
+  "MY_PASSWORD":"My desired password is",
+  "MY_EMAIL": "My email is",
+  "MY_ZIP": "My zip code is",
+  "MY_DOB": "My date of birth is",
+  "MY_GENDER": "My gender is",
+  "MY_ETHNIC": "My ethnicity is",
+  "INVALID_CREDENTIALS": "Invalid credentials!"
 }

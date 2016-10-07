@@ -3,20 +3,23 @@ import React, { Component } from 'react';
 class Form extends Component {
   render() {
     return(
-      <form className="form" onSubmit={this.props.onSubmit}>
+      <form className="rr-form m-x-1" onSubmit={this.props.onSubmit}>
         <div className="">
-          { this.props.data.get('hasErrors') ? (<p>Invalid credentials!</p>) : (<p></p>) }
+          { this.props.data.get('hasErrors') ? (<p>this.props.vocab.get('INVALID_CREDENTIALS')</p>) : (<p></p>) }
         </div>
-        <div className="form__field-wrapper">
-          <input className="form__field-input" type="text" id="username" onChange={ this.props.changeForm } autoCorrect="off" autoCapitalize="off" spellCheck="false" />
-          <label className="form__field-label" htmlFor="username">{this.props.vocab.get('USERNAME')}</label>
+        <div className="rr-group">
+          <label className="rr" htmlFor="username">{this.props.vocab.get('EMAIL')}</label>
+          <input className="rr rr-field rr-hint" type="text" id="username" onChange={ this.props.changeForm } autoCorrect="off" autoCapitalize="off" spellCheck="false" placeholder={this.props.vocab.get('EMAIL')}/>
         </div>
-        <div className="form__field-wrapper">
-          <input className="form__field-input" id="password" type="password" onChange={ this.props.changeForm } />
-          <label className="form__field-label" htmlFor="password">{this.props.vocab.get('PASSWORD')}</label>
+        <div className="rr-group m-t-1">
+          <label className="rr" htmlFor="password">{this.props.vocab.get('PASSWORD')}</label>
+          <input className="rr-field rr-hint" id="password" type="password" onChange={ this.props.changeForm } />
         </div>
-        <div className="form__submit-btn-wrapper">
-          <button className="form__submit-btn" type="submit">{ this.props.btnText }</button>
+        <div className="rr-controls">
+          <button className="rr-button btn" type="submit">{ this.props.btnText }</button>
+        </div>
+        <div className="rr rr-hint no-transform m-b-1">
+          <a href="/">{this.props.vocab.get('FORGOT_USER_PASS')}</a>
         </div>
       </form>
     );

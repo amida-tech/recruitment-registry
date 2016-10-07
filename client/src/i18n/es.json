@@ -31,5 +31,14 @@
   "INTERESTED_EMAIL_UPDATES": "¿Le interesa recibir alertas sobre cualquiera de los siguientes?",
   "INTERESTED_CLINIC_TRIALS": "¿Está interesado en participar en la clínica ensayos?",
   "WELCOME": "bienvenida a la",
-  "LOGGED_IN_AS": "has iniciado sesión como"
+  "LOGGED_IN_AS": "has iniciado sesión como",
+  "LETS_CREATE": "Vamos a crear una cuenta ... sólo toma un minuto",
+  "MY_USERNAME": "Mi nombre de usuario deseado es",
+  "MY_PASSWORD":"Mi contraseña deseada es",
+  "MY_EMAIL": "Mi e-mail es",
+  "MY_ZIP": "Mi código postal es",
+  "MY_DOB": "Mi fecha de nacimiento es",
+  "MY_GENDER": "Mi género es",
+  "MY_ETHNIC": "Mi origen étnico es",
+  "INVALID_CREDENTIALS":"¡Credenciales no válidas!"
 }
