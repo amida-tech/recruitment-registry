@@ -13,7 +13,7 @@ class Home extends Component {
         <h1>{this.props.vocab.get('HOME')}</h1>
         <div>
           { loggedIn ? (
-            <h6> <span style={{color: "#2196F3"}}>{ username }</span>, welcome to the { title }, you are logged in as <span style={{color: "#2196F3"}}>{ role }</span>!</h6>
+            <h6> <span style={{color: "#2196F3"}}>{ username }</span>, {this.props.vocab.get('WELCOME')} { title }, {this.props.vocab.get('LOGGED_IN_AS')} <span style={{color: "#2196F3"}}>{ role }</span>!</h6>
           ) : (<div></div>)
           }
         </div>

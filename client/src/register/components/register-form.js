@@ -24,7 +24,7 @@ class Form extends Component {
           <label htmlFor={id}>{label}</label>
           <input autoComplete="off" required className="form-control" id={id} type={type} onChange={this.props.changeForm} />
         </div>
-        <button className="form__submit-btn" onClick={this.next} type="button">Next</button>
+        <button className="form__submit-btn" onClick={this.next} type="button">{this.props.vocab.get('NEXT')}</button>
       </div>
     )
 
@@ -90,9 +90,9 @@ class Form extends Component {
         buttons = (
           <div>
             <button className="form__submit-btn" onClick={this.next}
-                    type="button">Next</button>
+                    type="button">{this.props.vocab.get('NEXT')}</button>
             <button className="form__submit-btn" onClick={boundItemClick}
-                    type="button">Skip</button>
+                    type="button">{this.props.vocab.get('SKIP')}</button>
           </div>
         )
       }
@@ -150,8 +150,8 @@ class Form extends Component {
           return (<button className="form__submit-btn" onClick={boundItemClick}  key={question.id + "." + index} type="button">{action.text}</button>)
         }) :
         [
-          <button className="form__submit-btn" key={question.id + ".1"} type="button" onClick={boundItemClickDefault}>Yes</button>,
-          <button className="form__submit-btn" key={question.id + ".2"} onClick={this.next} type="button">No</button>
+          <button className="form__submit-btn" key={question.id + ".1"} type="button" onClick={boundItemClickDefault}>{this.props.vocab.get('YES')}</button>,
+          <button className="form__submit-btn" key={question.id + ".2"} onClick={this.next} type="button">{this.props.vocab.get('NO')}</button>
         ]
 
       return (
@@ -216,21 +216,21 @@ class Form extends Component {
             {
               this.props.survey.questions.length > 0 ? (
                 <Slider ref='slider' {...settings}>
-                  {renderInputField("username", "text", "admin", "Username")}
-                  {renderInputField("password", "password", "••••••••••", "Password")}
-                  {renderInputField("email", "email", "someone@domain.tld", "Email")}
-                  {renderInputField("zip", "text", "", "Zip")}
-                  {renderInputField("dob", "date", "mm/dd/yyyy", "Date of birth")}
-                  {renderSelectField("gender", this.props.data.gender, "Gender", this.props.availableGenders)}
-                  {renderSelectField("ethnicity", this.props.data.ethnicity, "Ethnicity", this.props.availableEthnicities)}
+                  {renderInputField("username", "text", "admin", this.props.vocab.get('USERNAME'))}
+                  {renderInputField("password", "password", "••••••••••", this.props.vocab.get('PASSWORD'))}
+                  {renderInputField("email", "email", "someone@domain.tld", this.props.vocab.get('EMAIL'))}
+                  {renderInputField("zip", "text", "", this.props.vocab.get('ZIP'))}
+                  {renderInputField("dob", "date", "mm/dd/yyyy", this.props.vocab.get('DATE_OF_BIRTH'))}
+                  {renderSelectField("gender", this.props.data.gender, this.props.vocab.get('GENDER'), this.props.availableGenders)}
+                  {renderSelectField("ethnicity", this.props.data.ethnicity, this.props.vocab.get('ETHNICITY'), this.props.availableEthnicities)}
                   {slides}
                   <div key="final">
-                    <p>Thanks</p>
-                    <p>Your account is created</p>
-                    <Link to="/profile">Go to My Dashboard</Link>
+                    <p>{this.props.vocab.get('THANKS')}</p>
+                    <p>{this.props.vocab.get('ACCOUNT_CREATED')}</p>
+                    <Link to="/profile">{this.props.vocab.get('GO_DASHBOARD')}</Link>
                   </div>
                 </Slider>
-              ) : (<div>Loading...</div>)
+              ) : (<div>{this.props.vocab.get('LOADING')}...</div>)
             }
           </div>
         </div>

@@ -9,8 +9,11 @@ class Nav extends Component {
   render() {
     const title = this.props.data.get('title');
     const loggedIn = this.props.data.get('loggedIn');
-
     var nav;
+
+    for(var i = 0; i< routes.length; i++){
+      routes[i].title = this.props.vocab.get(routes[i].transTerm);
+    }
 
     if (loggedIn) {
       var routesAuthed = routes.filter(r => r.requiresAuth || !r.newUsers)

@@ -9,16 +9,17 @@ export class RegisterContainer extends Component {
     return (
       <div className="container">
           <div className="form-page__form-header">
-            <h2 className="form-page__form-heading">Register</h2>
+            <h2 className="form-page__form-heading">{this.props.vocab.get('REGISTER')}</h2>
           </div>
           <Form data={formState}
+                vocab={this.props.vocab}
                 location={location}
                 availableEthnicities={availableEthnicities}
                 availableGenders={availableGenders}
                 history={this.props.history}
                 onSubmit={::this._onSubmit}
                 onChoicesClear={::this._onChoicesClick}
-                btnText={"Register"}
+                btnText={this.props.vocab.get('REGISTER')}
                 survey={survey}
                 changeForm={::this._changeForm}
                 changeChoice={::this._changeChoice}
@@ -111,7 +112,8 @@ export class RegisterContainer extends Component {
 
 const mapStateToProps = function(store) {
   return {
-    data: store.get('register')
+    data: store.get('register'),
+    vocab: store.getIn(['settings', 'language', 'vocabulary'])
   }
 }
 
