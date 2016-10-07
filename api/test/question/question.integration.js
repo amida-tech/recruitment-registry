@@ -148,7 +148,7 @@ describe('question integration', function () {
     const updateQxFn = function (index) {
         return function (done) {
             store.server
-                .put('/api/v1.0/questions/' + ids[index])
+                .patch('/api/v1.0/questions/' + ids[index])
                 .send({ text: examples[index].text })
                 .set('Authorization', store.auth)
                 .expect(204, done);

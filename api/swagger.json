@@ -116,7 +116,7 @@
                     }
                 }
             },
-            "put": {
+            "patch": {
                 "operationId": "updateCurrentUser",
                 "summary": "Updates the current user",
                 "security": [{
@@ -354,7 +354,7 @@
                     }
                 }
             },
-            "put": {
+            "patch": {
                 "summary": "Updates the survey",
                 "description": "Only the name of the survey can be updated here. See [POST /surveys/version].",
                 "operationId": "updateSurvey",
@@ -628,7 +628,7 @@
                     }
                 }
             },
-            "put": {
+            "patch": {
                 "summary": "Updates a registry user profile",
                 "operationId": "updateProfile",
                 "security": [{
@@ -801,7 +801,7 @@
                     }
                 }
             },
-            "put": {
+            "patch": {
                 "summary": "Updates the question",
                 "operationId": "updateQuestion",
                 "security": [{

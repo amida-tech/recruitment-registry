@@ -127,7 +127,7 @@ describe('user set-up and login use-case', function () {
             gender: 'other'
         };
         store.server
-            .put('/api/v1.0/profiles')
+            .patch('/api/v1.0/profiles')
             .set('Authorization', store.auth)
             .send({
                 user: userUpdates,

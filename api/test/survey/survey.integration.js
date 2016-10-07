@@ -113,7 +113,7 @@ describe('survey integration', function () {
             const id = store.surveyIds[index];
             name = name || store.inputSurveys[index].name;
             store.server
-                .put(`/api/v1.0/surveys/${id}`)
+                .patch(`/api/v1.0/surveys/${id}`)
                 .set('Authorization', store.auth)
                 .send({ name })
                 .expect(200)
