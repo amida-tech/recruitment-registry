@@ -62,6 +62,7 @@ exports.genNewSurvey = (function () {
         const result = { name };
         if (options.addQuestions) {
             result.questions = _.range(5).map(() => exports.genNewQuestion());
+            result.questions.forEach((qx, index) => (qx.required = Boolean(index % 2)));
         }
         return result;
     };

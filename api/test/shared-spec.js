@@ -69,7 +69,8 @@ exports.createSurvey = function (store, qxIndices) {
     return function () {
         const inputSurvey = entityGen.genNewSurvey({ addQuestions: false });
         inputSurvey.questions = qxIndices.map(index => ({
-            id: store.questions[index].id
+            id: store.questions[index].id,
+            required: false
         }));
         return models.Survey.createSurvey(inputSurvey)
             .then(id => {

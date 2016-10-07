@@ -23,6 +23,9 @@ module.exports = function (sequelize, DataTypes) {
         line: {
             type: DataTypes.INTEGER
         },
+        required: {
+            type: DataTypes.BOOLEAN
+        },
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',

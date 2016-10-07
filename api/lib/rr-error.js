@@ -108,5 +108,13 @@ errors.jsonSchemaFailed = {
 };
 
 errors.registryNoProfileSurvey = {
-    msg: 'No profile survey has been specified for the registry'
+    msg: 'No profile survey has been specified for the registry.'
+};
+
+errors.answerRequiredMissing = {
+    msg: 'Not all required questions are answered.'
+};
+
+errors.answerQxNotInSurvey = {
+    msg: 'Invalid question ids for answers.'
 };
