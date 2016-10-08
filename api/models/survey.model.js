@@ -114,6 +114,10 @@ module.exports = function (sequelize, DataTypes) {
                             .then(() => id);
                     })
                     .then((id) => {
+                        return sequelize.models.survey_question.destroy({ where: { surveyId: id } }, { transaction: tx })
+                            .then(() => id);
+                    })
+                    .then((id) => {
                         return sequelize.models.registry.update({ profileSurveyId: id }, { where: { profileSurveyId: survey.id }, transaction: tx })
                             .then(() => id);
                     });
@@ -140,7 +144,13 @@ module.exports = function (sequelize, DataTypes) {
                     });
             },
             deleteSurvey: function (id) {
-                return Survey.destroy({ where: { id } });
+                return sequelize.transaction(function (tx) {
+                    return Survey.destroy({ where: { id } }, { transaction: tx })
+                        .then(() => {
+                            return sequelize.models.survey_question.destroy({ where: { surveyId: id } }, { transaction: tx })
+                                .then(() => id);
+                        });
+                });
             },
             listSurveys: function () {
                 return Survey.findAll({ raw: true, attributes: ['id', 'name'], order: 'id' });

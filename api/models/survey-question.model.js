@@ -30,14 +30,15 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.DATE,
             field: 'created_at',
         },
-        updatedAt: {
+        deletedAt: {
             type: DataTypes.DATE,
-            field: 'updated_at',
+            field: 'deleted_at',
         },
     }, {
         freezeTableName: true,
         createdAt: 'createdAt',
-        updatedAt: 'updatedAt'
+        deletedAt: 'deletedAt',
+        paranoid: true
     });
 
     return SurveyQuestion;

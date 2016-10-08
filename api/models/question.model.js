@@ -105,20 +105,33 @@ module.exports = function (sequelize, DataTypes) {
                 });
             },
             replaceQuestion: function (id, replacement) {
-                return sequelize.transaction(tx => {
-                    return Question.findById(id, { transaction: tx })
-                        .then(question => {
-                            if (!question) {
-                                return RRError.reject('qxNotFound');
-                            }
-                            const newQuestion = Object.assign({}, replacement, {
-                                version: question.version + 1,
-                                groupId: question.groupId
+                return sequelize.models.survey_questions.count({ where: { questionId: id } })
+                    .then(count => {
+                        if (count) {
+                            return RRError.reject('qxReplaceWhenActiveSurveys');
+                        } else {
+                            return sequelize.transaction(tx => {
+                                return Question.findById(id, { transaction: tx })
+                                    .then(question => {
+                                        if (!question) {
+                                            return RRError.reject('qxNotFound');
+                                        }
+                                        const newQuestion = Object.assign({}, replacement, {
+                                            version: question.version + 1,
+                                            groupId: question.groupId
+                                        });
+                                        return Question.createQuestionTx(newQuestion, tx);
+                                    })
+                                    .then(({ newId }) => {
+                                        return Question.destroy({ where: { id } }, { transaction: tx })
+                                            .then(() => {
+                                                return sequelize.models.survey_questions.destroy({ where: { questionId: id } });
+                                            })
+                                            .then(() => ({ newId }));
+                                    });
                             });
-                            return Question.createQuestionTx(newQuestion, tx);
-                        })
-                        .then(() => Question.destroy({ where: { id } }, { transaction: tx }));
-                });
+                        }
+                    });
             },
             getQuestion: function (id) {
                 return Question.findById(id, { raw: true, attributes: QX_FIND_ATTRS })
@@ -176,7 +189,17 @@ module.exports = function (sequelize, DataTypes) {
                 return Question.findById(id).then(qx => qx.update(updateObj));
             },
             deleteQuestion: function (id) {
-                return Question.destroy({ where: { id } });
+                return sequelize.models.survey_question.count({ where: { questionId: id } })
+                    .then(count => {
+                        if (count) {
+                            return RRError.reject('qxReplaceWhenActiveSurveys');
+                        } else {
+                            return Question.destroy({ where: { id } })
+                                .then(() => {
+                                    return sequelize.models.survey_question.destroy({ where: { questionId: id } });
+                                });
+                        }
+                    });
             },
             getQuestionsCommon: function (options, choiceOptions) {
                 return Question.findAll(options)
