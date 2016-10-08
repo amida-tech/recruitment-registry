@@ -8,7 +8,7 @@ const _ = require('lodash');
 const models = require('../../models');
 const shared = require('../shared-spec.js');
 const qxHelper = require('../helper/question-helper');
-const examples = require('../fixtures/question-examples');
+const examples = require('../fixtures/example/question');
 const RRError = require('../../lib/rr-error');
 
 const expect = chai.expect;

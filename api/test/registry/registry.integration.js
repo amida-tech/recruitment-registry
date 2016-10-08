@@ -11,8 +11,8 @@ const RRError = require('../../lib/rr-error');
 const shared = require('../shared-integration');
 const surveyHelper = require('../helper/survey-helper');
 
-const surveyExamples = require('../fixtures/survey-examples');
-const userExamples = require('../fixtures/user-examples');
+const surveyExamples = require('../fixtures/example/survey');
+const userExamples = require('../fixtures/example/user');
 
 const expect = chai.expect;
 

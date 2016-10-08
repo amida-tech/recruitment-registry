@@ -6,7 +6,7 @@ const chai = require('chai');
 const _ = require('lodash');
 
 const models = require('../../models');
-const userExamples = require('../fixtures/user-examples');
+const userExamples = require('../fixtures/example/user');
 
 const config = require('../../config');
 const shared = require('../shared-integration');

@@ -8,9 +8,9 @@ const _ = require('lodash');
 const config = require('../../config');
 
 const shared = require('../shared-integration');
-const userExamples = require('../fixtures/user-examples');
+const userExamples = require('../fixtures/example/user');
 const qxHelper = require('../helper/question-helper');
-const examples = require('../fixtures/question-examples');
+const examples = require('../fixtures/example/question');
 const RRError = require('../../lib/rr-error');
 
 const invalidQuestionsJSON = require('../fixtures/json-schema-invalid/new-question');

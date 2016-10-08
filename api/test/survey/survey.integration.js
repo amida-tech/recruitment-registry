@@ -11,8 +11,8 @@ const config = require('../../config');
 
 const shared = require('../shared-integration');
 const entityGen = require('../entity-generator');
-const userExamples = require('../fixtures/user-examples');
-const surveyExamples = require('../fixtures/survey-examples');
+const userExamples = require('../fixtures/example/user');
+const surveyExamples = require('../fixtures/example/survey');
 
 const invalidSurveysJSON = require('../fixtures/json-schema-invalid/new-survey');
 const invalidSurveysSwagger = require('../fixtures/swagger-invalid/new-survey');

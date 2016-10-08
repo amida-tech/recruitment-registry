@@ -8,8 +8,8 @@ const chai = require('chai');
 const helper = require('../helper/survey-helper');
 
 const shared = require('../shared-integration');
-const userExamples = require('../fixtures/user-examples');
-const surveyExamples = require('../fixtures/survey-examples');
+const userExamples = require('../fixtures/example/user');
+const surveyExamples = require('../fixtures/example/survey');
 
 const config = require('../../config');
 

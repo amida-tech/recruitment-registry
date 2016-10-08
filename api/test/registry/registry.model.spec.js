@@ -11,8 +11,8 @@ const surveyHelper = require('../helper/survey-helper');
 const tokener = require('../../lib/tokener');
 const helper = require('../helper/survey-helper');
 
-const userExamples = require('../fixtures/user-examples');
-const surveyExamples = require('../fixtures/survey-examples');
+const userExamples = require('../fixtures/example/user');
+const surveyExamples = require('../fixtures/example/survey');
 
 const expect = chai.expect;
 

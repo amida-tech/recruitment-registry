@@ -12,7 +12,7 @@ const config = require('../../config');
 const models = require('../../models');
 const entityGen = require('../entity-generator');
 
-const userExamples = require('../fixtures/user-examples');
+const userExamples = require('../fixtures/example/user');
 
 const expect = chai.expect;
 
