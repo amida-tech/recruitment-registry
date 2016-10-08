@@ -6,9 +6,10 @@ const _ = require('lodash');
 const models = require('../models');
 
 const RRError = require('../lib/rr-error');
-const entityGen = require('./entity-generator');
+const Generator = require('./entity-generator');
 
 const expect = chai.expect;
+const entityGen = new Generator();
 
 exports.setUpFn = function () {
     return function () {
@@ -20,7 +21,7 @@ exports.setUpFn = function () {
 
 exports.createUser = function (store) {
     return function () {
-        const inputUser = entityGen.genNewUser();
+        const inputUser = entityGen.newUser();
         return models.User.create(inputUser)
             .then(function (user) {
                 store.userIds.push(user.id);
@@ -30,7 +31,7 @@ exports.createUser = function (store) {
 
 exports.createQuestion = function (store) {
     return function () {
-        const inputQx = entityGen.genNewQuestion();
+        const inputQx = entityGen.newQuestion();
         const type = inputQx.type;
         return models.Question.createQuestion(inputQx)
             .then(function (id) {
@@ -67,7 +68,7 @@ exports.createQuestion = function (store) {
 
 exports.createSurvey = function (store, qxIndices) {
     return function () {
-        const inputSurvey = entityGen.genNewSurvey({ addQuestions: false });
+        const inputSurvey = entityGen.newSurvey({ addQuestions: false });
         inputSurvey.questions = qxIndices.map(index => ({
             id: store.questions[index].id,
             required: false

@@ -2,138 +2,142 @@
 
 const _ = require('lodash');
 
-exports.genNewUser = (function () {
-    let index = -1;
+class Answerer {
+    constructor() {
+        this.answerIndex = -1;
+        this.answerChoicesCountIndex = 0;
+    }
 
-    return function (override) {
-        ++index;
+    text(question) {
+        const answerIndex = ++this.answerIndex;
+        return {
+            questionId: question.id,
+            answer: {
+                textValue: `text_${answerIndex}`
+            }
+        };
+    }
+
+    bool(question) {
+        const answerIndex = ++this.answerIndex;
+        return {
+            questionId: question.id,
+            answer: {
+                boolValue: answerIndex % 2 === 0
+            }
+        };
+    }
+
+    choice(question) {
+        const answerIndex = ++this.answerIndex;
+        const choice = question.choices[answerIndex % question.choices.length];
+        return {
+            questionId: question.id,
+            answer: {
+                choice: choice.id
+            }
+        };
+    }
+
+    choices(question) {
+        ++this.answerIndex;
+        this.answerChoicesCountIndex = (this.answerChoicesCountIndex + 1) % 3;
+        const choices = _.range(this.answerChoicesCountIndex + 1).map(() => {
+            const answerIndex = ++this.answerIndex;
+            const choice = question.choices[answerIndex % question.choices.length];
+            const answer = {
+                id: choice.id
+            };
+            if (choice.type === 'text') {
+                choice.textValue = `text_${answerIndex}`;
+            }
+            return answer;
+        });
+
+        return {
+            questionId: question.id,
+            answer: {
+                choices: _.sortBy(choices, 'id')
+            }
+        };
+    }
+}
+
+class Generator {
+    constructor() {
+        this.userIndex = -1;
+
+        this.qxTypes = ['text', 'choice', 'choices', 'bool'];
+        this.qxIndex = -1;
+        this.qxChoiceIndex = 1;
+        this.qxChoicesTextSwitch = false;
+
+        this.surveyIndex = -1;
+        this.surveyDefaultOptions = { addQuestions: true };
+
+        this.answerer = new Answerer();
+    }
+
+    newUser(override) {
+        const userIndex = ++this.userIndex;
         let user = {
-            username: 'username_' + index,
-            password: 'password_' + index,
-            email: 'email_' + index + '@example.com'
+            username: 'username_' + userIndex,
+            password: 'password_' + userIndex,
+            email: 'email_' + userIndex + '@example.com'
         };
         if (override) {
             user = _.assign(user, override);
         }
         return user;
-    };
-})();
+    }
 
-exports.genNewQuestion = (function () {
-    const types = ['text', 'choice', 'choices', 'bool'];
-    let index = -1;
-    let choiceIndex = 1;
-    let choicesTextSwitch = false;
-
-    return function () {
-        ++index;
-        const type = types[index % 4];
+    newQuestion() {
+        const qxIndex = ++this.qxIndex;
+        const type = this.qxTypes[qxIndex % 4];
         const question = {
-            text: `text_${index}`,
+            text: `text_${qxIndex}`,
             type
         };
         if ((type === 'choice') || (type === 'choices')) {
             question.choices = [];
-            ++choiceIndex;
+            const qxChoiceIndex = ++this.qxChoiceIndex;
             if (type === 'choices') {
-                choicesTextSwitch = !choicesTextSwitch;
+                this.qxChoicesTextSwitch = !this.qxChoicesTextSwitch;
             }
-            for (let i = choiceIndex; i < choiceIndex + 5; ++i) {
+            for (let i = qxChoiceIndex; i < qxChoiceIndex + 5; ++i) {
                 const choice = { text: `choice_${i}` };
-                if ((type === 'choices') && choicesTextSwitch && (i === choiceIndex + 4)) {
+                if ((type === 'choices') && this.qxChoicesTextSwitch && (i === qxChoiceIndex + 4)) {
                     choice.type = 'text';
                 }
                 question.choices.push(choice);
             }
         }
         return question;
-    };
-})();
+    }
 
-exports.genNewSurvey = (function () {
-    let index = -1;
-    const defaultOptions = {
-        addQuestions: true
-    };
-    return function (inputOptions = {}) {
-        const options = Object.assign({}, defaultOptions, inputOptions);
-        ++index;
-        const name = options.name || `name_${index}`;
+    newSurvey(options) {
+        options = Object.assign({}, this.surveyDefaultOptions, options);
+        const surveyIndex = ++this.surveyIndex;
+        const name = options.name || `name_${surveyIndex}`;
         const result = { name };
         if (options.addQuestions) {
-            result.questions = _.range(5).map(() => exports.genNewQuestion());
-            result.questions.forEach((qx, index) => (qx.required = Boolean(index % 2)));
+            result.questions = _.range(5).map(() => this.newQuestion());
+            result.questions.forEach((qx, surveyIndex) => (qx.required = Boolean(surveyIndex % 2)));
         }
         return result;
-    };
-})();
+    }
 
-exports.genQxAnswer = (function () {
-    let answerIndex = -1;
-    let choicesCountIndex = 0;
-
-    const genAnswer = {
-        text: function (question) {
-            ++answerIndex;
-            return {
-                questionId: question.id,
-                answer: {
-                    textValue: `text_${answerIndex}`
-                }
-            };
-        },
-        bool: function (question) {
-            ++answerIndex;
-            return {
-                questionId: question.id,
-                answer: {
-                    boolValue: answerIndex % 2 === 0
-                }
-            };
-        },
-        choice: function (question) {
-            ++answerIndex;
-            const choice = question.choices[answerIndex % question.choices.length];
-            return {
-                questionId: question.id,
-                answer: {
-                    choice: choice.id
-                }
-            };
-        },
-        choices: function (question) {
-            ++answerIndex;
-            choicesCountIndex = (choicesCountIndex + 1) % 3;
-            const choices = _.range(choicesCountIndex + 1).map(function () {
-                ++answerIndex;
-                const choice = question.choices[answerIndex % question.choices.length];
-                const answer = {
-                    id: choice.id
-                };
-                if (choice.type === 'text') {
-                    choice.textValue = `text_${answerIndex}`;
-                }
-                return answer;
-            });
-
-            return {
-                questionId: question.id,
-                answer: {
-                    choices: _.sortBy(choices, 'id')
-                }
-            };
-        }
-    };
-
-    return function (question) {
+    answerQuestion(question) {
         if (question.id < 0) {
             return { questionId: -question.id };
         } else {
-            return genAnswer[question.type](question);
+            return this.answerer[question.type](question);
         }
-    };
-})();
+    }
 
-exports.genAnswersToQuestions = function (questions) {
-    return questions.map(exports.genQxAnswer);
-};
+    answerQuestions(questions) {
+        return questions.map(qx => this.answerQuestion(qx));
+    }
+}
+
+module.exports = Generator;

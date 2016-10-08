@@ -3,7 +3,9 @@
 const _ = require('lodash');
 
 const jsutil = require('../../lib/jsutil');
-const entityGen = require('../entity-generator');
+const Generator = require('../entity-generator');
+
+const entityGen = new Generator();
 
 exports.testQuestions = [{
     survey: [0, 1, 2, 3, 4],
@@ -65,7 +67,7 @@ exports.generateQxAnswer = function (store, questionIndex) {
         };
     } else {
         const question = store.questions[questionIndex];
-        return entityGen.genQxAnswer(question);
+        return entityGen.answerQuestion(question);
     }
 };
 

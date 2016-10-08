@@ -5,9 +5,10 @@ const chai = require('chai');
 const _ = require('lodash');
 
 const appgen = require('../app-generator');
-const entityGen = require('./entity-generator');
+const Generator = require('./entity-generator');
 
 const expect = chai.expect;
+const entityGen = new Generator();
 
 exports.setUpFn = function (store, options = {}) {
     return function (done) {
@@ -66,14 +67,14 @@ exports.postUserFn = function (store, user) {
 };
 
 exports.createUserFn = function (store) {
-    const user = entityGen.genNewUser();
+    const user = entityGen.newUser();
     store.users.push(user);
     return exports.postUserFn(store, user);
 };
 
 exports.createQxFn = function (store) {
     return function (done) {
-        const inputQx = entityGen.genNewQuestion();
+        const inputQx = entityGen.newQuestion();
         store.server
             .post('/api/v1.0/questions')
             .set('Authorization', store.auth)
@@ -132,7 +133,7 @@ exports.postSurveyFn = function (store, survey) {
 
 exports.createSurveyFn = function (store, qxIndices) {
     return function (done) {
-        const inputSurvey = entityGen.genNewSurvey({ addQuestions: false });
+        const inputSurvey = entityGen.newSurvey({ addQuestions: false });
         inputSurvey.questions = qxIndices.map(index => ({
             id: store.questionIds[index],
             required: false

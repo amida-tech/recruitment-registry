@@ -10,7 +10,7 @@ const helper = require('../helper/survey-helper');
 const config = require('../../config');
 
 const shared = require('../shared-integration');
-const entityGen = require('../entity-generator');
+const Generator = require('../entity-generator');
 const userExamples = require('../fixtures/example/user');
 const surveyExamples = require('../fixtures/example/survey');
 
@@ -20,6 +20,7 @@ const invalidSurveysSwagger = require('../fixtures/swagger-invalid/new-survey');
 const RRError = require('../../lib/rr-error');
 
 const expect = chai.expect;
+const entityGen = new Generator();
 
 describe('survey integration', function () {
     const example = surveyExamples.Example;
@@ -48,7 +49,7 @@ describe('survey integration', function () {
 
     const createSurveyFn = function () {
         return function (done) {
-            const inputSurvey = entityGen.genNewSurvey();
+            const inputSurvey = entityGen.newSurvey();
             store.inputSurveys.push(inputSurvey);
             store.server
                 .post('/api/v1.0/surveys')
@@ -202,7 +203,7 @@ describe('survey integration', function () {
 
     const replaceSurveyFn = function (index) {
         return function (done) {
-            const replacement = entityGen.genNewSurvey();
+            const replacement = entityGen.newSurvey();
             store.inputSurveys.push(replacement);
             const id = store.surveys[index].id;
             store.server

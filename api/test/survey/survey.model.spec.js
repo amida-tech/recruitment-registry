@@ -8,10 +8,11 @@ const _ = require('lodash');
 const surveyHelper = require('../helper/survey-helper');
 const models = require('../../models');
 
-const entityGen = require('../entity-generator');
+const Generator = require('../entity-generator');
 const shared = require('../shared-spec');
 
 const expect = chai.expect;
+const entityGen = new Generator();
 
 const Survey = models.Survey;
 
@@ -35,7 +36,7 @@ describe('survey unit', function () {
 
     const createVerifySurveyFn = function (index) {
         return function () {
-            const inputSurvey = entityGen.genNewSurvey();
+            const inputSurvey = entityGen.newSurvey();
             store.inputSurveys.push(inputSurvey);
             return Survey.createSurvey(inputSurvey)
                 .then(id => Survey.getSurveyById(id))
@@ -83,7 +84,7 @@ describe('survey unit', function () {
 
     it('error: version with a survey with no questions', function () {
         const survey = store.surveys[1];
-        const replacementSurvey = entityGen.genNewSurvey({ addQuestions: false });
+        const replacementSurvey = entityGen.newSurvey({ addQuestions: false });
         return Survey.replaceSurvey({
                 id: survey.id,
                 replacement: replacementSurvey
@@ -92,7 +93,7 @@ describe('survey unit', function () {
     });
 
     it('error: version with a non-existent survey', function () {
-        const replacementSurvey = entityGen.genNewSurvey();
+        const replacementSurvey = entityGen.newSurvey();
         return Survey.replaceSurvey({
                 id: 9999,
                 replacement: replacementSurvey
@@ -106,7 +107,7 @@ describe('survey unit', function () {
                 index = store.surveys.length - 1;
             }
             const survey = store.surveys[index];
-            const inputSurvey = entityGen.genNewSurvey();
+            const inputSurvey = entityGen.newSurvey();
             store.inputSurveys.push(inputSurvey);
             store.inputSurveys.splice(index, 1);
             return Survey.replaceSurvey({
@@ -176,7 +177,7 @@ describe('survey unit', function () {
     });
 
     it('survey by existing questions only', function () {
-        const survey = entityGen.genNewSurvey({ addQuestions: false });
+        const survey = entityGen.newSurvey({ addQuestions: false });
         const questions = store.questions.slice(0, 10);
         survey.questions = questions.map(({ id, required }) => ({ id, required }));
         return Survey.createSurvey(survey)
@@ -192,7 +193,7 @@ describe('survey unit', function () {
     });
 
     it('survey by existing/new questions', function () {
-        const survey = entityGen.genNewSurvey();
+        const survey = entityGen.newSurvey();
         const fn = index => ({ id: store.questions[index].id, required: store.questions[index].required });
         const additionalIds = [10, 11].map(fn);
         survey.questions.splice(1, 0, ...additionalIds);
@@ -215,7 +216,7 @@ describe('survey unit', function () {
     const answerVerifySurveyFn = function (surveyIndex) {
         return function () {
             const survey = store.surveys[surveyIndex];
-            const answers = entityGen.genAnswersToQuestions(survey.questions);
+            const answers = entityGen.answerQuestions(survey.questions);
             const input = {
                 userId: store.userIds[0],
                 surveyId: store.surveys[1].id,
@@ -251,7 +252,7 @@ describe('survey unit', function () {
     it('error: answer without required questions', function () {
         const survey = store.surveys[3];
         const qxs = survey.questions;
-        const answers = entityGen.genAnswersToQuestions(qxs);
+        const answers = entityGen.answerQuestions(qxs);
         const input = {
             userId: store.userIds[0],
             surveyId: store.surveys[3].id,
@@ -278,7 +279,7 @@ describe('survey unit', function () {
     it('error: answer with invalid question id', function () {
         const survey = store.surveys[0];
         const qxs = survey.questions;
-        const answers = entityGen.genAnswersToQuestions(qxs);
+        const answers = entityGen.answerQuestions(qxs);
         const input = {
             userId: store.userIds[0],
             surveyId: store.surveys[3].id,

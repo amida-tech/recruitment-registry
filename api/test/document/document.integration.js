@@ -6,11 +6,12 @@ const chai = require('chai');
 const _ = require('lodash');
 
 const shared = require('../shared-integration');
-const entityGen = require('../entity-generator');
+const Generator = require('../entity-generator');
 const config = require('../../config');
 const RRError = require('../../lib/rr-error');
 
 const expect = chai.expect;
+const entityGen = new Generator();
 
 describe('document integration', function () {
     const userCount = 4;
@@ -74,7 +75,7 @@ describe('document integration', function () {
     }
 
     for (let i = 0; i < userCount; ++i) {
-        it(`create user ${i}`, shared.createUserFn(store, entityGen.genNewUser()));
+        it(`create user ${i}`, shared.createUserFn(store, entityGen.newUser()));
     }
 
     it('logout as super', shared.logoutFn(store));

@@ -7,10 +7,11 @@ const _ = require('lodash');
 
 const shared = require('../shared-spec');
 const models = require('../../models');
-const entityGen = require('../entity-generator');
+const Generator = require('../entity-generator');
 const tokener = require('../../lib/tokener');
 
 const expect = chai.expect;
+const entityGen = new Generator();
 
 const Document = models.Document;
 const Registry = models.Registry;
@@ -37,7 +38,7 @@ describe('survey-document unit', function () {
     before(shared.setUpFn());
 
     it('create registry', function () {
-        const survey = entityGen.genNewSurvey();
+        const survey = entityGen.newSurvey();
         return Registry.createProfileSurvey(survey);
     });
 
@@ -109,8 +110,8 @@ describe('survey-document unit', function () {
     }
 
     const formProfileResponse = function () {
-        const answers = entityGen.genAnswersToQuestions(store.profileSurvey.questions);
-        const user = entityGen.genNewUser();
+        const answers = entityGen.answerQuestions(store.profileSurvey.questions);
+        const user = entityGen.newUser();
         store.profileResponses.push({ user, answers });
     };
 
