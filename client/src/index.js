@@ -7,6 +7,7 @@ import profile from './profile'
 import surveyBuilder from './surveyBuilder'
 import surveys from './surveys'
 import { browserHistory } from 'react-router'
+import { syncHistoryWithStore, routerReducer } from 'react-router-redux'
 
 
 export const initialState = {
@@ -89,7 +90,7 @@ export const reducers = {
     }
   },
   title: (state = initialState) => state
-};
+}
 
 import './styles/main.scss'
 
