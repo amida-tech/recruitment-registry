@@ -6,66 +6,17 @@ import register from './register'
 import profile from './profile'
 import surveyBuilder from './surveyBuilder'
 import surveys from './surveys'
-import { browserHistory } from 'react-router'
-import { syncHistoryWithStore, routerReducer } from 'react-router-redux'
+import { push } from 'react-router-redux'
 
 
 export const initialState = {
   title: "GAP",
-  login: {
-    formState: {
-      hasErrors: false,
-      username: '',
-      password: ''
-    },
-    user: localStorage.user ? JSON.parse(localStorage.user) : {
-      username: "",
-      role: "",
-      id: ""
-    }
-  },
-  register: {
-    formState: {
-      username: '',
-      password: '',
-      ethnicity: 'Caucasian',
-      gender: 'male'
-    },
-    availableEthnicities: [
-      "Caucasian",
-      "Hispanic",
-      "African",
-      "Asian"
-    ],
-    availableGenders: [
-      "male",
-      "female",
-      "other"
-    ],
-    survey: {
-      questions: []
-    },
-    surveyResult: {
-      answers: []
-    }
-  },
+  login: login.reducer.initialState,
+  register: register.reducer.initialState,
   loggedIn: localStorage.token ? localStorage.token : false,
-  profile: {
-    user: {
-      name: ""
-    },
-    survey: {
-      questions: []
-    }
-  },
-  surveyBuilder: {
-    survey: {
-      name: '',
-      questions: [],
-      released: true
-    }
-  },
-  surveys: []
+  profile: profile.reducer.initialState,
+  surveyBuilder: surveyBuilder.reducer.initialState,
+  surveys: surveys.reducer.initialState,
 };
 
 export const reducers = {

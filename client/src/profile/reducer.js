@@ -1,13 +1,18 @@
 import * as t from './actionTypes';
 import Immutable from 'immutable'
 
-const initialState = {
-  user: {},
-  survey: {},
-  userUpdated: undefined
+export const initialState = {
+  user: {
+    name: ""
+  },
+  survey: {
+    questions: []
+  }
 };
 
-export default (state = initialState, action) => {
+var immutableState = Immutable.fromJS(initialState);
+
+export default (state = immutableState, action) => {
   switch (action.type) {
     case t.UPDATE_PROFILE:
       return state.setIn(['userUpdated', action.name], action.value)

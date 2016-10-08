@@ -1,18 +1,17 @@
 import * as actionTypes from './actionTypes'
 import Immutable from 'immutable'
 
-
-const initialState = {
+export const initialState = {
   formState: {
     username: '',
     password: '',
-    user: localStorage.user ? JSON.parse(localStorage.user) : {
-      username: "",
-      role: "",
-      id: ""
-    }
+  },
+  user: localStorage.user ? JSON.parse(localStorage.user) : {
+    username: "",
+    role: "",
+    id: ""
   }
-};
+}
 
 var immutableState = Immutable.fromJS(initialState);
 

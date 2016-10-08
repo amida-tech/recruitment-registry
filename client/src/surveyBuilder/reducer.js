@@ -1,11 +1,11 @@
 import * as actionTypes from './actionTypes'
 import Immutable from 'immutable'
 
-
 const initialState = {
   survey: {
     name: '',
-    questions: []
+    questions: [],
+    released: true
   }
 };
 
