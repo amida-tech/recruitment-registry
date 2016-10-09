@@ -84,7 +84,8 @@ describe('survey unit', function () {
 
     it('error: version with a survey with no questions', function () {
         const survey = store.surveys[1];
-        const replacementSurvey = entityGen.newSurvey({ addQuestions: false });
+        const replacementSurvey = entityGen.newSurvey();
+        delete replacementSurvey.questions;
         return Survey.replaceSurvey({
                 id: survey.id,
                 replacement: replacementSurvey
@@ -177,7 +178,7 @@ describe('survey unit', function () {
     });
 
     it('survey by existing questions only', function () {
-        const survey = entityGen.newSurvey({ addQuestions: false });
+        const survey = entityGen.newSurvey();
         const questions = store.questions.slice(0, 10);
         survey.questions = questions.map(({ id, required }) => ({ id, required }));
         return Survey.createSurvey(survey)

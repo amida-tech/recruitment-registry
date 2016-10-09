@@ -125,9 +125,21 @@ class QuestionGenerator {
         return question;
     }
 
+    newActions(index, count) {
+        return _.range(count).map(i => {
+            const text = `text_${index}_${i}`;
+            const type = `type_${index}_${i}`;
+            return {text, type};
+        });
+    }
+
     newQuestion() {
         const type = this.types[(this.index + 1) % 4];
         const result = this[type]();
+        const actionCount = (this.index % 5) - 1;
+        if (actionCount > 0) {
+            result.actions = this.newActions(this.index, actionCount);
+        }
         return result;
     }
 }
@@ -137,7 +149,6 @@ class Generator {
         this.userIndex = -1;
         this.questionGenerator = new QuestionGenerator();
         this.surveyIndex = -1;
-        this.surveyDefaultOptions = { addQuestions: true };
         this.answerer = new Answerer();
     }
 
@@ -158,15 +169,24 @@ class Generator {
         return this.questionGenerator.newQuestion();
     }
 
-    newSurvey(options) {
-        options = Object.assign({}, this.surveyDefaultOptions, options);
+    newSurvey(override = {}) {
         const surveyIndex = ++this.surveyIndex;
-        const name = options.name || `name_${surveyIndex}`;
+        const name = override.name || `name_${surveyIndex}`;
         const result = { name };
-        if (options.addQuestions) {
+        if (override.questions) {
+            result.questions = override.questions;
+        } else {
             result.questions = _.range(5).map(() => this.newQuestion());
             result.questions.forEach((qx, surveyIndex) => (qx.required = Boolean(surveyIndex % 2)));
         }
+        return result;
+    }
+
+    newSurveyQuestionIds(questionIds) {
+        const surveyIndex = ++this.surveyIndex;
+        const name = `name_${surveyIndex}`;
+        const result = { name };
+        result.questions = questionIds.map(id => ({ id, required: Boolean(surveyIndex % 2) }));
         return result;
     }
 

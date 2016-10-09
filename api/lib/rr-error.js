@@ -98,3 +98,7 @@ errors.answerRequiredMissing = {
 errors.answerQxNotInSurvey = {
     msg: 'Invalid question ids for answers.'
 };
+
+errors.qxReplaceWhenActiveSurveys = {
+    msg: 'Question in active surveys cannot be removed or replaced.'
+};

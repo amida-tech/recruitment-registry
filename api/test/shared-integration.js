@@ -133,7 +133,7 @@ exports.postSurveyFn = function (store, survey) {
 
 exports.createSurveyFn = function (store, qxIndices) {
     return function (done) {
-        const inputSurvey = entityGen.newSurvey({ addQuestions: false });
+        const inputSurvey = entityGen.newSurvey();
         inputSurvey.questions = qxIndices.map(index => ({
             id: store.questionIds[index],
             required: false

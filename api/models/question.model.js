@@ -105,7 +105,7 @@ module.exports = function (sequelize, DataTypes) {
                 });
             },
             replaceQuestion: function (id, replacement) {
-                return sequelize.models.survey_questions.count({ where: { questionId: id } })
+                return sequelize.models.survey_question.count({ where: { questionId: id } })
                     .then(count => {
                         if (count) {
                             return RRError.reject('qxReplaceWhenActiveSurveys');
@@ -120,14 +120,15 @@ module.exports = function (sequelize, DataTypes) {
                                             version: question.version + 1,
                                             groupId: question.groupId
                                         });
-                                        return Question.createQuestionTx(newQuestion, tx);
+                                        return Question.auxCreateQuestionTx(newQuestion, tx)
+                                            .then(({ id }) => id);
                                     })
-                                    .then(({ newId }) => {
+                                    .then((newIdObj) => {
                                         return Question.destroy({ where: { id } }, { transaction: tx })
                                             .then(() => {
-                                                return sequelize.models.survey_questions.destroy({ where: { questionId: id } });
+                                                return sequelize.models.survey_question.destroy({ where: { questionId: id } });
                                             })
-                                            .then(() => ({ newId }));
+                                            .then(() => ({ id: newIdObj }));
                                     });
                             });
                         }
@@ -182,11 +183,8 @@ module.exports = function (sequelize, DataTypes) {
                     });
             },
             updateQuestion: function (id, { text }) {
-                const updateObj = {};
-                if (text !== undefined) {
-                    updateObj.text = text;
-                }
-                return Question.findById(id).then(qx => qx.update(updateObj));
+                const updateObj = {text};
+               return Question.findById(id).then(qx => qx.update(updateObj));
             },
             deleteQuestion: function (id) {
                 return sequelize.models.survey_question.count({ where: { questionId: id } })
