@@ -49,7 +49,7 @@ class Answerer {
                 id: choice.id
             };
             if (choice.type === 'text') {
-                choice.textValue = `text_${answerIndex}`;
+                answer.textValue = `text_${answerIndex}`;
             }
             return answer;
         });
@@ -63,18 +63,81 @@ class Answerer {
     }
 }
 
+class QuestionGenerator {
+    constructor() {
+        this.types = ['text', 'choice', 'choices', 'bool'];
+        this.index = -1;
+
+        this.choiceIndex = 0;
+
+        this.typeChoiceIndex = -1;
+
+        this.typeChoicesIndex = -1;
+    }
+
+    _body(type) {
+        const index = ++this.index;
+        return { text: `text_${index}`, type };
+    }
+
+    _choices() {
+        const startIndex = this.choiceIndex;
+        const endIndex = this.choiceIndex + 5;
+        this.choiceIndex = endIndex;
+        return _.range(startIndex, endIndex).map(i => `choice_${i}`);
+    }
+
+    text() {
+        return this._body('text');
+    }
+
+    bool() {
+        return this._body('bool');
+    }
+
+    choice() {
+        const typeChoiceIndex = ++this.typeChoiceIndex;
+        const question = this._body('choice');
+        const choices = this._choices();
+        if (typeChoiceIndex % 2) {
+            question.oneOfChoices = choices;
+        } else {
+            question.choices = choices.map(choice => ({ text: choice }));
+        }
+        return question;
+    }
+
+    choices() {
+        const question = this._body('choices');
+        const choices = this._choices().map(choice => ({ text: choice }));
+        choices.forEach(choice => {
+            const choiceType = ++this.typeChoicesIndex % 4;
+            switch (choiceType) {
+            case 2:
+                choice.type = 'bool';
+                break;
+            case 3:
+                choice.type = 'text';
+                break;
+            }
+        });
+        question.choices = choices;
+        return question;
+    }
+
+    newQuestion() {
+        const type = this.types[(this.index + 1) % 4];
+        const result = this[type]();
+        return result;
+    }
+}
+
 class Generator {
     constructor() {
         this.userIndex = -1;
-
-        this.qxTypes = ['text', 'choice', 'choices', 'bool'];
-        this.qxIndex = -1;
-        this.qxChoiceIndex = 1;
-        this.qxChoicesTextSwitch = false;
-
+        this.questionGenerator = new QuestionGenerator();
         this.surveyIndex = -1;
         this.surveyDefaultOptions = { addQuestions: true };
-
         this.answerer = new Answerer();
     }
 
@@ -92,27 +155,7 @@ class Generator {
     }
 
     newQuestion() {
-        const qxIndex = ++this.qxIndex;
-        const type = this.qxTypes[qxIndex % 4];
-        const question = {
-            text: `text_${qxIndex}`,
-            type
-        };
-        if ((type === 'choice') || (type === 'choices')) {
-            question.choices = [];
-            const qxChoiceIndex = ++this.qxChoiceIndex;
-            if (type === 'choices') {
-                this.qxChoicesTextSwitch = !this.qxChoicesTextSwitch;
-            }
-            for (let i = qxChoiceIndex; i < qxChoiceIndex + 5; ++i) {
-                const choice = { text: `choice_${i}` };
-                if ((type === 'choices') && this.qxChoicesTextSwitch && (i === qxChoiceIndex + 4)) {
-                    choice.type = 'text';
-                }
-                question.choices.push(choice);
-            }
-        }
-        return question;
+        return this.questionGenerator.newQuestion();
     }
 
     newSurvey(options) {
