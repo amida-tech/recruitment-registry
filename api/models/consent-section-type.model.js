@@ -6,7 +6,11 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.TEXT,
             allowNull: false
         },
-        description: {
+        title: {
+            type: DataTypes.TEXT,
+            allowNull: false
+        },
+        type: {
             type: DataTypes.TEXT,
             allowNull: false
         },
@@ -32,12 +36,12 @@ module.exports = function (sequelize, DataTypes) {
             listConsentSectionTypes: function () {
                 return ConsentSectionType.findAll({
                     raw: true,
-                    attributes: ['id', 'name', 'description'],
-                    order: 'id'
+                    attributes: ['id', 'name', 'title', 'type'],
+                    order: 'name'
                 });
             },
-            createConsentSectionType: function ({ name, description }) {
-                return ConsentSectionType.create({ name, description })
+            createConsentSectionType: function ({ name, title, type }) {
+                return ConsentSectionType.create({ name, title, type })
                     .then(({ id }) => ({ id }));
             },
             deleteConsentSectionType: function (id) {

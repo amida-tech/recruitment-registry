@@ -195,15 +195,22 @@
                             "type": "array",
                             "items": {
                                 "type": "object",
-                                "required": ["id", "description"],
+                                "required": ["id", "name", "title"],
                                 "properties": {
                                     "id": {
                                         "type": "integer",
                                         "minimum": 1
                                     },
-                                    "description": {
+                                    "name": {
                                         "type": "string",
                                         "minLength": 1
+                                    },
+                                    "title": {
+                                        "type": "string",
+                                        "minLength": 1
+                                    },
+                                    "type": {
+                                        "type": "string"
                                     }
                                 },
                                 "additionalProperties": false
@@ -783,7 +790,7 @@
             "x-swagger-router-controller": "consent-section-type.controller",
             "post": {
                 "summary": "Creates new consent section type",
-                "description": "Each consent section type describes a consent section that users have to accept for various registry functionality such as consent form or terms of use.  There can be multiple consent sections with the same type but only one of them can be active at one time.",
+                "description": "Each consent section type describes a consent section that users have to accept for various registry functionality.  There can be multiple consent sections with the same type but only one of them can be active at one time.",
                 "operationId": "createConsentSectionType",
                 "security": [{
                     "admin": []
@@ -791,17 +798,21 @@
                 "parameters": [{
                     "name": "newConsentSectionType",
                     "in": "body",
-                    "description": "Name and description of the new consent section type.",
+                    "description": "New consent section type.",
                     "required": true,
                     "schema": {
                         "type": "object",
-                        "required": ["name", "description"],
+                        "required": ["name", "title", "type"],
                         "properties": {
                             "name": {
                                 "type": "string",
                                 "minLength": 1
                             },
-                            "description": {
+                            "title": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "type": {
                                 "type": "string",
                                 "minLength": 1
                             }
@@ -831,7 +842,7 @@
                             "type": "array",
                             "items": {
                                 "type": "object",
-                                "required": ["id", "name", "description"],
+                                "required": ["id", "name", "title", "type"],
                                 "properties": {
                                     "id": {
                                         "type": "integer",
@@ -841,7 +852,11 @@
                                         "type": "string",
                                         "minLength": 1
                                     },
-                                    "description": {
+                                    "title": {
+                                        "type": "string",
+                                        "minLength": 1
+                                    },
+                                    "type": {
                                         "type": "string",
                                         "minLength": 1
                                     }

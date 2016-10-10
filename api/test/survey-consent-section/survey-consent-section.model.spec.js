@@ -81,7 +81,8 @@ describe('survey consent section unit', function () {
     const expectedConsentSections = function (indices) {
         const rawExpected = indices.map(index => ({
             id: store.activeConsentSections[index].id,
-            description: store.consentSectionTypes[index].description
+            name: store.consentSectionTypes[index].name,
+            title: store.consentSectionTypes[index].title
         }));
         return _.sortBy(rawExpected, 'id');
     };

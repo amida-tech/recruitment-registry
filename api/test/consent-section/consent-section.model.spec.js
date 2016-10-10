@@ -72,7 +72,8 @@ describe('consent section unit', function () {
                 .then(consentSections => {
                     const rawExpected = expectedIndices.map(index => ({
                         id: store.activeConsentSections[index].id,
-                        description: store.consentSectionTypes[index].description
+                        name: store.consentSectionTypes[index].name,
+                        title: store.consentSectionTypes[index].title
                     }));
                     const expected = _.sortBy(rawExpected, 'id');
                     expect(consentSections).to.deep.equal(expected);

@@ -37,7 +37,7 @@ module.exports = function (sequelize, DataTypes) {
             listConsentSections: function (typeIds, tx) {
                 const query = {
                     raw: true,
-                    attributes: ['id', 'description'],
+                    attributes: ['id', 'name', 'title'],
                     order: 'id'
                 };
                 if (typeIds && typeIds.length) {
@@ -67,8 +67,8 @@ module.exports = function (sequelize, DataTypes) {
                                 } else {
                                     const docTypeMap = _.keyBy(docTypes, 'id');
                                     return docs.map(({ id, typeId }) => {
-                                        const { description } = docTypeMap[typeId];
-                                        return { id, description };
+                                        const { name, title } = docTypeMap[typeId];
+                                        return { id, name, title };
                                     });
                                 }
                             });

@@ -29,8 +29,9 @@ describe('consent section integration', function () {
 
     const createConsentSectionTypeFn = function (index) {
         const docType = {
-            name: `type_${index}`,
-            description: `description_${index}`
+            name: `name_${index}`,
+            title: `title_${index}`,
+            type: `type_${index}`
         };
         return function (done) {
             store.server
@@ -160,7 +161,8 @@ describe('consent section integration', function () {
                     }
                     const rawExpected = expectedIndices.map(index => ({
                         id: store.activeConsentSections[index].id,
-                        description: store.consentSectionTypes[index].description
+                        name: store.consentSectionTypes[index].name,
+                        title: store.consentSectionTypes[index].title
                     }));
                     const expected = _.sortBy(rawExpected, 'id');
                     expect(res.body).to.deep.equal(expected);

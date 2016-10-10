@@ -87,8 +87,9 @@ exports.createConsentSectionTypeFn = (function () {
         return function () {
             ++index;
             const docType = {
-                name: `type_${index}`,
-                description: `description_${index}`
+                name: `name_${index}`,
+                title: `title_${index}`,
+                type: `title_${index}`
             };
             return models.ConsentSectionType.createConsentSectionType(docType)
                 .then(({ id }) => {
