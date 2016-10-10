@@ -7,7 +7,7 @@ const sinon = require('sinon');
 
 const helper = require('../helper/survey-helper');
 
-const shared = require('../util/shared-integration');
+const SharedIntegration = require('../util/shared-integration');
 const userExamples = require('../fixtures/example/user');
 const surveyExamples = require('../fixtures/example/survey');
 
@@ -15,6 +15,7 @@ const config = require('../../config');
 const mailer = require('../../lib/mailer');
 
 const expect = chai.expect;
+const shared = new SharedIntegration();
 
 describe('reset password use-case', function () {
     const userExample = userExamples.Alzheimer;

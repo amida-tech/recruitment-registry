@@ -7,13 +7,14 @@ const chai = require('chai');
 
 const helper = require('../helper/survey-helper');
 
-const shared = require('../util/shared-integration');
+const SharedIntegration = require('../util/shared-integration');
 const userExamples = require('../fixtures/example/user');
 const surveyExamples = require('../fixtures/example/survey');
 
 const config = require('../../config');
 
 const expect = chai.expect;
+const shared = new SharedIntegration();
 
 describe('user set-up and login use-case', function () {
     const userExample = userExamples.Alzheimer;

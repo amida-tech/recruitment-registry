@@ -8,13 +8,14 @@ const chai = require('chai');
 const config = require('../../config');
 const RRError = require('../../lib/rr-error');
 
-const shared = require('../util/shared-integration');
+const SharedIntegration = require('../util/shared-integration');
 const surveyHelper = require('../helper/survey-helper');
 
 const surveyExamples = require('../fixtures/example/survey');
 const userExamples = require('../fixtures/example/user');
 
 const expect = chai.expect;
+const shared = new SharedIntegration();
 
 describe('registry integration', function () {
     const userExample = userExamples.Alzheimer;

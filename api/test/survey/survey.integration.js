@@ -9,7 +9,7 @@ const helper = require('../helper/survey-helper');
 
 const config = require('../../config');
 
-const shared = require('../util/shared-integration');
+const SharedIntegration = require('../util/shared-integration');
 const Generator = require('../util/entity-generator');
 const userExamples = require('../fixtures/example/user');
 const surveyExamples = require('../fixtures/example/survey');
@@ -21,6 +21,7 @@ const RRError = require('../../lib/rr-error');
 
 const expect = chai.expect;
 const entityGen = new Generator();
+const shared = new SharedIntegration();
 
 describe('survey integration', function () {
     const example = surveyExamples.Example;

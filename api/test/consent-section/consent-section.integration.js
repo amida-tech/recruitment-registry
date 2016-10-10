@@ -5,13 +5,14 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 const _ = require('lodash');
 
-const shared = require('../util/shared-integration');
+const SharedIntegration = require('../util/shared-integration');
 const Generator = require('../util/entity-generator');
 const config = require('../../config');
 const RRError = require('../../lib/rr-error');
 
 const expect = chai.expect;
 const entityGen = new Generator();
+const shared = new SharedIntegration();
 
 describe('consent section integration', function () {
     const userCount = 4;

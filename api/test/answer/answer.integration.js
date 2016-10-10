@@ -7,10 +7,11 @@ const _ = require('lodash');
 
 const config = require('../../config');
 
-const shared = require('../util/shared-integration');
+const SharedIntegration = require('../util/shared-integration');
 const answerCommon = require('./answer-common');
 
 const expect = chai.expect;
+const shared = new SharedIntegration();
 
 describe('answer integration', function () {
     const store = {
