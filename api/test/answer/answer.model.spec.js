@@ -5,11 +5,12 @@ const chai = require('chai');
 const _ = require('lodash');
 
 const models = require('../../models');
-const shared = require('../util/shared-spec');
+const SharedSpec = require('../util/shared-spec');
 const jsutil = require('../../lib/jsutil');
 const answerCommon = require('./answer-common');
 
 const expect = chai.expect;
+const shared = new SharedSpec();
 
 describe('answer unit', function () {
     const store = {

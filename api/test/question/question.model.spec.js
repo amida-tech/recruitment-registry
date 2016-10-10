@@ -7,13 +7,14 @@ const _ = require('lodash');
 
 const models = require('../../models');
 
-const shared = require('../util/shared-spec.js');
+const SharedSpec = require('../util/shared-spec.js');
 const Generator = require('../util/entity-generator');
 const comparator = require('../util/client-server-comparator');
 const History = require('../util/entity-history');
 
 const expect = chai.expect;
 const generator = new Generator();
+const shared = new SharedSpec();
 
 const Question = models.Question;
 const Survey = models.Survey;

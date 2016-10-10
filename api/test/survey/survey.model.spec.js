@@ -9,10 +9,11 @@ const surveyHelper = require('../helper/survey-helper');
 const models = require('../../models');
 
 const Generator = require('../util/entity-generator');
-const shared = require('../util/shared-spec');
+const SharedSpec = require('../util/shared-spec');
 
 const expect = chai.expect;
 const entityGen = new Generator();
+const shared = new SharedSpec();
 
 const Survey = models.Survey;
 

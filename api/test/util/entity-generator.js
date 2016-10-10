@@ -151,6 +151,7 @@ class Generator {
         this.surveyIndex = -1;
         this.answerer = new Answerer();
         this.consentSectionTypeIndex = -1;
+        this.consentSectionIndex = -1;
     }
 
     newUser(override) {
@@ -210,6 +211,15 @@ class Generator {
             title: `title_${index}`,
             type: `type_${index}`
         };
+    }
+
+    newConsentSection(override) {
+        const index = ++this.consentSectionIndex;
+        const result = {
+            content: `Sample consent section content ${index}`
+        };
+        Object.assign(result, override);
+        return result;
     }
 }
 

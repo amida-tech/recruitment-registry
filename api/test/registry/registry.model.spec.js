@@ -6,7 +6,7 @@ const chai = require('chai');
 const _ = require('lodash');
 
 const models = require('../../models');
-const shared = require('../util/shared-spec.js');
+const SharedSpec = require('../util/shared-spec.js');
 const surveyHelper = require('../helper/survey-helper');
 const tokener = require('../../lib/tokener');
 const helper = require('../helper/survey-helper');
@@ -15,6 +15,7 @@ const userExamples = require('../fixtures/example/user');
 const surveyExamples = require('../fixtures/example/survey');
 
 const expect = chai.expect;
+const shared = new SharedSpec();
 
 const Registry = models.Registry;
 

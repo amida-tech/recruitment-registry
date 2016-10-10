@@ -5,11 +5,12 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 const _ = require('lodash');
 
-const shared = require('../util/shared-spec');
+const SharedSpec = require('../util/shared-spec');
 const models = require('../../models');
 const expect = chai.expect;
 
 const User = models.User;
+const shared = new SharedSpec();
 const ConsentSectionType = models.ConsentSectionType;
 const ConsentSection = models.ConsentSection;
 const ConsentSectionSignature = models.ConsentSectionSignature;
