@@ -207,9 +207,10 @@ describe('survey integration', function () {
             store.inputSurveys.push(replacement);
             const id = store.surveys[index].id;
             store.server
-                .post(`/api/v1.0/surveys/version`)
+                .post(`/api/v1.0/surveys`)
+                .query({ parent: id })
                 .set('Authorization', store.auth)
-                .send({ id, replacement })
+                .send(replacement)
                 .expect(201)
                 .end(function (err, res) {
                     if (err) {

@@ -27,16 +27,16 @@ exports.createSurvey = function (req, res) {
     if (!jsonSchema('newSurvey', survey, res)) {
         return;
     }
-    Survey.createSurvey(survey)
-        .then(id => res.status(201).json({ id }))
-        .catch(shared.handleError(res));
-};
-
-exports.replaceSurvey = function (req, res) {
-    const survey = req.body;
-    Survey.replaceSurvey(survey)
-        .then(id => res.status(201).json({ id }))
-        .catch(shared.handleError(res));
+    const parent = _.get(req, 'swagger.params.parent.value');
+    if (parent) {
+        Survey.replaceSurvey(parent, survey)
+            .then(id => res.status(201).json({ id }))
+            .catch(shared.handleError(res));
+    } else {
+        Survey.createSurvey(survey)
+            .then(id => res.status(201).json({ id }))
+            .catch(shared.handleError(res));
+    }
 };
 
 exports.updateSurvey = function (req, res) {

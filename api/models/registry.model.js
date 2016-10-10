@@ -50,11 +50,8 @@ module.exports = function (sequelize, DataTypes) {
                     return Registry.findOne()
                         .then(registry => {
                             if (registry.profileSurveyId) {
-                                const input = {
-                                    id: registry.profileSurveyId,
-                                    replacement: survey
-                                };
-                                return Survey.replaceSurvey(input, tx);
+                                const id = registry.profileSurveyId;
+                                return Survey.replaceSurvey(id, survey, tx);
                             } else {
                                 return Survey.createSurveyTx(survey, tx)
                                     .then((id) => {

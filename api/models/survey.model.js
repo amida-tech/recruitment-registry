@@ -122,7 +122,7 @@ module.exports = function (sequelize, DataTypes) {
                             .then(() => id);
                     });
             },
-            replaceSurvey: function ({ id, replacement }, tx) {
+            replaceSurvey: function (id, replacement, tx) {
                 if (!_.get(replacement, 'questions.length')) {
                     return RRError.reject('surveyNoQuestions');
                 }

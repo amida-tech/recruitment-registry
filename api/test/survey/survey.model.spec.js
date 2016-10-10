@@ -86,19 +86,13 @@ describe('survey unit', function () {
         const survey = store.surveys[1];
         const replacementSurvey = entityGen.newSurvey();
         delete replacementSurvey.questions;
-        return Survey.replaceSurvey({
-                id: survey.id,
-                replacement: replacementSurvey
-            })
+        return Survey.replaceSurvey(survey.id, replacementSurvey)
             .then(shared.throwingHandler, shared.expectedErrorHandler('surveyNoQuestions'));
     });
 
     it('error: version with a non-existent survey', function () {
         const replacementSurvey = entityGen.newSurvey();
-        return Survey.replaceSurvey({
-                id: 9999,
-                replacement: replacementSurvey
-            })
+        return Survey.replaceSurvey(999, replacementSurvey)
             .then(shared.throwingHandler, shared.expectedErrorHandler('surveyNotFound'));
     });
 
@@ -111,10 +105,7 @@ describe('survey unit', function () {
             const inputSurvey = entityGen.newSurvey();
             store.inputSurveys.push(inputSurvey);
             store.inputSurveys.splice(index, 1);
-            return Survey.replaceSurvey({
-                    id: survey.id,
-                    replacement: inputSurvey
-                })
+            return Survey.replaceSurvey(survey.id, inputSurvey)
                 .then(id => Survey.getSurveyById(id))
                 .then((serverSurvey) => {
                     return surveyHelper.buildServerSurvey(inputSurvey, serverSurvey)
