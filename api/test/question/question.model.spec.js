@@ -10,6 +10,7 @@ const models = require('../../models');
 const shared = require('../shared-spec.js');
 const Generator = require('../entity-generator');
 const comparator = require('../client-server-comparator');
+const History = require('../util/entity-history');
 
 const expect = chai.expect;
 const generator = new Generator();
@@ -20,11 +21,8 @@ const Survey = models.Survey;
 describe('question unit', function () {
     before(shared.setUpFn());
 
-    const store = {
-        clientQuestions: [],
-        questions: [],
-        surveyIds: []
-    };
+    const hxQuestions = new History();
+    const hxSurveys = new History();
 
     it('get all questions when none', function () {
         return Question.getAllQuestions()
@@ -36,12 +34,11 @@ describe('question unit', function () {
     const qxBasicFn = function () {
         return function () {
             const clientQuestion = generator.newQuestion();
-            store.clientQuestions.push(clientQuestion);
             return Question.createQuestion(clientQuestion)
                 .then(id => Question.getQuestion(id))
                 .then(question => {
                     comparator.question(clientQuestion, question);
-                    store.questions.push(question);
+                    hxQuestions.push(clientQuestion, question);
                     return question;
                 })
                 .then(question => {
@@ -69,17 +66,17 @@ describe('question unit', function () {
             .then(shared.throwingHandler, shared.expectedErrorHandler('qxNotFound'));
     });
 
-    it('get multiple questions', function () {
+    it('get multiple questions (2, 4, 7)', function () {
         const indices = [2, 4, 7];
-        const ids = indices.map(i => store.questions[i].id);
-        const clientQuestions = indices.map(i => store.clientQuestions[i]);
+        const ids = indices.map(i => hxQuestions.id(i));
+        const clientQuestions = indices.map(i => hxQuestions.client(i));
         return Question.getQuestions(ids)
             .then(questions => comparator.questions(clientQuestions, questions));
     });
 
     it('get all questions', function () {
         return Question.getAllQuestions()
-            .then(questions => comparator.questions(store.clientQuestions, questions));
+            .then(questions => comparator.questions(hxQuestions.clientList(), questions));
     });
 
     it('error: get multiple with non-existent id', function () {
@@ -89,21 +86,20 @@ describe('question unit', function () {
 
     const qxDeleteFn = function (index) {
         return function () {
-            return Question.deleteQuestion(store.questions[index].id)
+            return Question.deleteQuestion(hxQuestions.id(index))
                 .then(() => {
-                    store.clientQuestions.splice(index, 1);
-                    store.questions.splice(index, 1);
+                    hxQuestions.remove(index);
                 });
         };
     };
 
     _.forEach([1, 4, 6], index => {
-        it(`remove question current index ${index}`, qxDeleteFn(index));
+        it(`delete question ${index}`, qxDeleteFn(index));
     });
 
     it('verify all questions', function () {
         return Question.getAllQuestions()
-            .then(questions => comparator.questions(store.clientQuestions, questions));
+            .then(questions => comparator.questions(hxQuestions.clientList(), questions));
     });
 
     for (let i = 10; i < 20; ++i) {
@@ -112,54 +108,54 @@ describe('question unit', function () {
 
     const createSurveyFn = function (questionIndices) {
         return function () {
-            const questionIds = questionIndices.map(index => store.questions[index].id);
+            const questionIds = questionIndices.map(index => hxQuestions.id(index));
             const clientSurvey = generator.newSurveyQuestionIds(questionIds);
             return Survey.createSurvey(clientSurvey)
-                .then(id => store.surveyIds.push(id));
+                .then(id => hxSurveys.push(clientSurvey, { id }));
         };
     };
 
-    _.forEach([
-        [1, 2, 7],
-        [6, 7, 11],
-        [5, 6, 8, 14, 15]
-    ], questionIndices => {
-        it(`create survey from questions indexed ${questionIndices}`, createSurveyFn(questionIndices));
+    [
+        [2, 7, 9],
+        [7, 11, 13],
+        [5, 8, 11, 14, 15]
+    ].forEach((questionIndices, index) => {
+        it(`create survey ${index} from questions ${questionIndices}`, createSurveyFn(questionIndices));
     });
 
-    _.forEach([1, 6, 7, 14], questionIndex => {
-        it(`error: delete question (${questionIndex}) on an active survey`, function () {
-            return Question.deleteQuestion(store.questions[questionIndex].id)
+    _.forEach([2, 7, 11, 13, 14], questionIndex => {
+        it(`error: delete question ${questionIndex} on an active survey`, function () {
+            return Question.deleteQuestion(hxQuestions.id(questionIndex))
                 .then(shared.throwingHandler, shared.expectedErrorHandler('qxReplaceWhenActiveSurveys'));
         });
     });
 
-    it('delete survey currently indexed 1', function () {
-        return Survey.deleteSurvey(store.surveyIds[1])
-            .then(() => store.surveyIds.splice(1, 1));
+    it('delete survey 1', function () {
+        return Survey.deleteSurvey(hxSurveys.id(1))
+            .then(() => hxSurveys.remove(1));
     });
 
-    _.forEach([1, 6, 7, 14], questionIndex => {
-        it(`error: delete question (${questionIndex}) on an active survey`, function () {
-            return Question.deleteQuestion(store.questions[questionIndex].id)
+    _.forEach([2, 7, 11, 14], questionIndex => {
+        it(`error: delete question ${questionIndex} on an active survey`, function () {
+            return Question.deleteQuestion(hxQuestions.id(questionIndex))
                 .then(shared.throwingHandler, shared.expectedErrorHandler('qxReplaceWhenActiveSurveys'));
         });
     });
 
-    it('delete survey currently indexed 1', function () {
-        return Survey.deleteSurvey(store.surveyIds[1])
-            .then(() => store.surveyIds.splice(1, 1));
+    it('delete survey 2', function () {
+        return Survey.deleteSurvey(hxSurveys.id(2))
+            .then(() => hxSurveys.remove(2));
     });
 
-    _.forEach([1, 7], questionIndex => {
-        it(`error: delete question (${questionIndex}) on an active survey`, function () {
-            return Question.deleteQuestion(store.questions[questionIndex].id)
+    _.forEach([2, 7], questionIndex => {
+        it(`error: delete question ${questionIndex} on an active survey`, function () {
+            return Question.deleteQuestion(hxQuestions.id(questionIndex))
                 .then(shared.throwingHandler, shared.expectedErrorHandler('qxReplaceWhenActiveSurveys'));
         });
     });
 
-    _.forEach([6, 7], index => {
-        it(`remove question current index ${index}`, qxDeleteFn(index));
+    _.forEach([5, 11, 15], index => {
+        it(`delete question ${index}`, qxDeleteFn(index));
     });
 
     it(`error: replace a non-existent question`, function () {
@@ -168,64 +164,57 @@ describe('question unit', function () {
             .then(shared.throwingHandler, shared.expectedErrorHandler('qxNotFound'));
     });
 
-    _.forEach([
-        [6, 10, 11],
-        [3, 5, 8]
-    ], questionIndices => {
-        it(`create survey from questions indexed ${questionIndices}`, createSurveyFn(questionIndices));
+    [
+        [7, 10, 17],
+        [3, 8, 9]
+    ].forEach((questionIndices, index) => {
+        it(`create survey ${index + 3} from questions ${questionIndices}`, createSurveyFn(questionIndices));
     });
 
-    _.forEach([1, 6, 11], questionIndex => {
-        it(`error: delete question (${questionIndex}) on an active survey`, function () {
+    _.forEach([2, 7, 9], questionIndex => {
+        it(`error: replace question ${questionIndex} on an active survey`, function () {
             const replacement = generator.newQuestion();
-            return Question.replaceQuestion(store.questions[questionIndex].id, replacement)
+            return Question.replaceQuestion(hxQuestions.id(questionIndex), replacement)
                 .then(shared.throwingHandler, shared.expectedErrorHandler('qxReplaceWhenActiveSurveys'));
         });
     });
 
-    it('delete survey currently indexed 0', function () {
-        return Survey.deleteSurvey(store.surveyIds[0])
-            .then(() => store.surveyIds.splice(0, 1));
+    it('delete survey 0', function () {
+        return Survey.deleteSurvey(hxSurveys.id(0))
+            .then(() => hxSurveys.remove(0));
     });
 
-    _.forEach([6, 11], questionIndex => {
-        it(`error: delete question (${questionIndex}) on an active survey`, function () {
+    _.forEach([7, 9], questionIndex => {
+        it(`error: replace question ${questionIndex} on an active survey`, function () {
             const replacement = generator.newQuestion();
-            return Question.replaceQuestion(store.questions[questionIndex].id, replacement)
+            return Question.replaceQuestion(hxQuestions.id(questionIndex), replacement)
                 .then(shared.throwingHandler, shared.expectedErrorHandler('qxReplaceWhenActiveSurveys'));
         });
     });
 
-    it('delete survey currently indexed 0', function () {
-        return Survey.deleteSurvey(store.surveyIds[0])
-            .then(() => store.surveyIds.splice(0, 1));
+    it('delete survey 3', function () {
+        return Survey.deleteSurvey(hxSurveys.id(3))
+            .then(() => hxSurveys.remove(3));
     });
 
-    _.forEach([6, 8, 9, -2, -2, -1], questionIndex => {
-        it(`replace question (${questionIndex})`, function () {
+    [7, 10, 14, 21, 22, 24].forEach((questionIndex, index) => {
+        it(`replace question ${questionIndex} with question ${20 + index}`, function () {
             const replacement = generator.newQuestion();
-            store.clientQuestions.push(replacement);
-            const index = questionIndex > 0 ? questionIndex : questionIndex + store.questions.length;
-            return Question.replaceQuestion(store.questions[index].id, replacement)
+            return Question.replaceQuestion(hxQuestions.id(questionIndex), replacement)
                 .then(({ id }) => Question.getQuestion(id))
                 .then(question => {
                     comparator.question(replacement, question);
-                    store.clientQuestions.splice(index, 1);
-                    store.questions.splice(index, 1);
-                    store.questions.push(question);
+                    hxQuestions.replace(questionIndex, replacement, question);
                     return question;
                 })
                 .then(() => Question.getAllQuestions())
-                .then(questions => comparator.questions(store.clientQuestions, questions));
+                .then(questions => comparator.questions(hxQuestions.clientList(), questions));
         });
     });
 
     const verifyVersioningFn = function (index, expectedVersion) {
         return function () {
-            if (index < 0) {
-                index += store.questions.length;
-            }
-            const id = store.questions[index].id;
+            const id = hxQuestions.id(index);
             return Question.findById(id, { attributes: ['groupId', 'version'], raw: true })
                 .then(versionInfo => {
                     expect(versionInfo.version).to.equal(expectedVersion);
@@ -238,7 +227,7 @@ describe('question unit', function () {
         };
     };
 
-    it('verify versioning (-1)', verifyVersioningFn(-1, 4));
-    it('verify versioning (-2)', verifyVersioningFn(-2, 3));
-    it('verify versioning (-3)', verifyVersioningFn(-3, 2));
+    it('verify versioning for question 25', verifyVersioningFn(25, 4));
+    it('verify versioning for question 23', verifyVersioningFn(23, 3));
+    it('verify versioning for question 20', verifyVersioningFn(20, 2));
 });

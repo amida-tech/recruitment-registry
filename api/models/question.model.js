@@ -183,8 +183,8 @@ module.exports = function (sequelize, DataTypes) {
                     });
             },
             updateQuestion: function (id, { text }) {
-                const updateObj = {text};
-               return Question.findById(id).then(qx => qx.update(updateObj));
+                const updateObj = { text };
+                return Question.findById(id).then(qx => qx.update(updateObj));
             },
             deleteQuestion: function (id) {
                 return sequelize.models.survey_question.count({ where: { questionId: id } })

@@ -129,7 +129,7 @@ class QuestionGenerator {
         return _.range(count).map(i => {
             const text = `text_${index}_${i}`;
             const type = `type_${index}_${i}`;
-            return {text, type};
+            return { text, type };
         });
     }
 
