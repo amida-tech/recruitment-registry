@@ -150,6 +150,7 @@ class Generator {
         this.questionGenerator = new QuestionGenerator();
         this.surveyIndex = -1;
         this.answerer = new Answerer();
+        this.consentSectionTypeIndex = -1;
     }
 
     newUser(override) {
@@ -200,6 +201,15 @@ class Generator {
 
     answerQuestions(questions) {
         return questions.map(qx => this.answerQuestion(qx));
+    }
+
+    newConsentSectionType() {
+        const index = ++this.consentSectionTypeIndex;
+        return {
+            name: `name_${index}`,
+            title: `title_${index}`,
+            type: `type_${index}`
+        };
     }
 }
 

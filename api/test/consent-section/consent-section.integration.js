@@ -27,24 +27,20 @@ describe('consent section integration', function () {
 
     before(shared.setUpFn(store));
 
-    const createConsentSectionTypeFn = function (index) {
-        const docType = {
-            name: `name_${index}`,
-            title: `title_${index}`,
-            type: `type_${index}`
-        };
+    const createConsentSectionTypeFn = function () {
+        const cst = entityGen.newConsentSectionType();
         return function (done) {
             store.server
                 .post('/api/v1.0/consent-section-types')
                 .set('Authorization', store.auth)
-                .send(docType)
+                .send(cst)
                 .expect(201)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
                     }
                     const id = res.body.id;
-                    const newDocType = Object.assign({}, docType, { id });
+                    const newDocType = Object.assign({}, cst, { id });
                     store.consentSectionTypes.push(newDocType);
                     store.activeConsentSections.push(null);
                     done();
@@ -71,7 +67,7 @@ describe('consent section integration', function () {
     it('login as super', shared.loginFn(store, config.superUser));
 
     for (let i = 0; i < 2; ++i) {
-        it(`create consent section type ${i}`, createConsentSectionTypeFn(i));
+        it(`create consent section type ${i}`, createConsentSectionTypeFn());
         it('get/verify consent section types', listConsentSectionTypesFn());
     }
 
@@ -258,7 +254,7 @@ describe('consent section integration', function () {
     it('logout as user 3', shared.logoutFn(store));
 
     it('login as super', shared.loginFn(store, config.superUser));
-    it('add a new consent section type', createConsentSectionTypeFn(2));
+    it('add a new consent section type', createConsentSectionTypeFn());
     it('create/verify consent section of type 2', createConsentSectionFn(2));
     it('logout as super', shared.logoutFn(store));
 

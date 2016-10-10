@@ -80,26 +80,17 @@ exports.createSurvey = function (store, qxIndices) {
     };
 };
 
-exports.createConsentSectionTypeFn = (function () {
-    let index = -1;
-
-    return function (store) {
-        return function () {
-            ++index;
-            const docType = {
-                name: `name_${index}`,
-                title: `title_${index}`,
-                type: `title_${index}`
-            };
-            return models.ConsentSectionType.createConsentSectionType(docType)
-                .then(({ id }) => {
-                    const newDocType = Object.assign({}, docType, { id });
-                    store.consentSectionTypes.push(newDocType);
-                    store.activeConsentSections.push(null);
-                });
-        };
+exports.createConsentSectionTypeFn = function (store) {
+    return function () {
+        const cst = entityGen.newConsentSectionType();
+        return models.ConsentSectionType.createConsentSectionType(cst)
+            .then(({ id }) => {
+                const newDocType = Object.assign({}, cst, { id });
+                store.consentSectionTypes.push(newDocType);
+                store.activeConsentSections.push(null);
+            });
     };
-})();
+};
 
 exports.createConsentSectionFn = (function () {
     let index = -1;
