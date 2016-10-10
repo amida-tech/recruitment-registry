@@ -7,7 +7,7 @@ const _ = require('lodash');
 
 const config = require('../../config');
 
-const shared = require('../shared-integration');
+const shared = require('../util/shared-integration');
 const answerCommon = require('./answer-common');
 
 const expect = chai.expect;

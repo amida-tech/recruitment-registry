@@ -8,7 +8,7 @@ const chai = require('chai');
 const config = require('../../config');
 const RRError = require('../../lib/rr-error');
 
-const shared = require('../shared-integration');
+const shared = require('../util/shared-integration');
 const surveyHelper = require('../helper/survey-helper');
 
 const surveyExamples = require('../fixtures/example/survey');

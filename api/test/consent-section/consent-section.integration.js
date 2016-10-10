@@ -5,8 +5,8 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 const _ = require('lodash');
 
-const shared = require('../shared-integration');
-const Generator = require('../entity-generator');
+const shared = require('../util/shared-integration');
+const Generator = require('../util/entity-generator');
 const config = require('../../config');
 const RRError = require('../../lib/rr-error');
 

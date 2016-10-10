@@ -7,10 +7,10 @@ const _ = require('lodash');
 
 const config = require('../../config');
 
-const shared = require('../shared-integration');
+const shared = require('../util/shared-integration');
 const userExamples = require('../fixtures/example/user');
-const Generator = require('../entity-generator');
-const comparator = require('../client-server-comparator');
+const Generator = require('../util/entity-generator');
+const comparator = require('../util/client-server-comparator');
 const History = require('../util/entity-history');
 const RRError = require('../../lib/rr-error');
 

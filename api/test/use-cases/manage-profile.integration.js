@@ -7,7 +7,7 @@ const chai = require('chai');
 
 const helper = require('../helper/survey-helper');
 
-const shared = require('../shared-integration');
+const shared = require('../util/shared-integration');
 const userExamples = require('../fixtures/example/user');
 const surveyExamples = require('../fixtures/example/survey');
 

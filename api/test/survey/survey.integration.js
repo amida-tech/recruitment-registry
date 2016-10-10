@@ -9,8 +9,8 @@ const helper = require('../helper/survey-helper');
 
 const config = require('../../config');
 
-const shared = require('../shared-integration');
-const Generator = require('../entity-generator');
+const shared = require('../util/shared-integration');
+const Generator = require('../util/entity-generator');
 const userExamples = require('../fixtures/example/user');
 const surveyExamples = require('../fixtures/example/survey');
 

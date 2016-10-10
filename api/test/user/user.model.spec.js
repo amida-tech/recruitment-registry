@@ -7,10 +7,10 @@ const sinon = require('sinon');
 const moment = require('moment');
 const _ = require('lodash');
 
-const shared = require('../shared-spec');
+const shared = require('../util/shared-spec');
 const config = require('../../config');
 const models = require('../../models');
-const Generator = require('../entity-generator');
+const Generator = require('../util/entity-generator');
 
 const userExamples = require('../fixtures/example/user');
 

@@ -6,7 +6,7 @@ const chai = require('chai');
 const _ = require('lodash');
 
 const models = require('../../models');
-const shared = require('../shared-spec.js');
+const shared = require('../util/shared-spec.js');
 const surveyHelper = require('../helper/survey-helper');
 const tokener = require('../../lib/tokener');
 const helper = require('../helper/survey-helper');

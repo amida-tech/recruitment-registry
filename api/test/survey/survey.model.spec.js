@@ -8,8 +8,8 @@ const _ = require('lodash');
 const surveyHelper = require('../helper/survey-helper');
 const models = require('../../models');
 
-const Generator = require('../entity-generator');
-const shared = require('../shared-spec');
+const Generator = require('../util/entity-generator');
+const shared = require('../util/shared-spec');
 
 const expect = chai.expect;
 const entityGen = new Generator();

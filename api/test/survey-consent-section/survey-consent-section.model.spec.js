@@ -5,9 +5,9 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 const _ = require('lodash');
 
-const shared = require('../shared-spec');
+const shared = require('../util/shared-spec');
 const models = require('../../models');
-const Generator = require('../entity-generator');
+const Generator = require('../util/entity-generator');
 const tokener = require('../../lib/tokener');
 
 const expect = chai.expect;

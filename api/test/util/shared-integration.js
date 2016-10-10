@@ -4,7 +4,7 @@ const request = require('supertest');
 const chai = require('chai');
 const _ = require('lodash');
 
-const appgen = require('../app-generator');
+const appgen = require('../../app-generator');
 const Generator = require('./entity-generator');
 
 const expect = chai.expect;

@@ -5,7 +5,7 @@ const chai = require('chai');
 const _ = require('lodash');
 
 const models = require('../../models');
-const shared = require('../shared-spec');
+const shared = require('../util/shared-spec');
 const jsutil = require('../../lib/jsutil');
 const answerCommon = require('./answer-common');
 

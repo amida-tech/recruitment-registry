@@ -3,9 +3,9 @@
 const chai = require('chai');
 const _ = require('lodash');
 
-const models = require('../models');
+const models = require('../../models');
 
-const RRError = require('../lib/rr-error');
+const RRError = require('../../lib/rr-error');
 const Generator = require('./entity-generator');
 
 const expect = chai.expect;
