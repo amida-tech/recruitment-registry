@@ -159,14 +159,36 @@ module.exports = function (sequelize, DataTypes) {
             },
             createAnswersTx: function ({ userId, surveyId, answers }, tx) {
                 const ids = _.map(answers, 'questionId');
-                return Answer.destroy({
+                return sequelize.models.survey_question.findAll({
+                        where: { surveyId },
+                        raw: true,
+                        attributes: ['questionId', 'required']
+                    })
+                    .then(surveyQuestions => _.keyBy(surveyQuestions, 'questionId'))
+                    .then(qxMap => {
+                        answers.forEach(answer => {
+                            const qx = qxMap[answer.questionId];
+                            if (!qx) {
+                                throw new RRError('answerQxNotInSurvey');
+                            }
+                            if (answer.answer) {
+                                qx.required = false;
+                            }
+                        });
+                        _.values(qxMap).forEach(qx => {
+                            if (qx.required) {
+                                throw new RRError('answerRequiredMissing');
+                            }
+                        });
+                    })
+                    .then(() => Answer.destroy({
                         where: {
                             questionId: { in: ids },
                             surveyId,
                             userId
                         },
                         transaction: tx
-                    })
+                    }))
                     .then(() => sequelize.models.survey_document.listSurveyDocumentTypes({
                         userId,
                         surveyId,

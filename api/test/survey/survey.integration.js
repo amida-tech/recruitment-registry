@@ -10,13 +10,17 @@ const helper = require('../helper/survey-helper');
 const config = require('../../config');
 
 const shared = require('../shared-integration');
-const entityGen = require('../entity-generator');
-const userExamples = require('../fixtures/user-examples');
-const surveyExamples = require('../fixtures/survey-examples');
-const invalidSurveySamples = require('../fixtures/invalid-new-surveys');
+const Generator = require('../entity-generator');
+const userExamples = require('../fixtures/example/user');
+const surveyExamples = require('../fixtures/example/survey');
+
+const invalidSurveysJSON = require('../fixtures/json-schema-invalid/new-survey');
+const invalidSurveysSwagger = require('../fixtures/swagger-invalid/new-survey');
+
 const RRError = require('../../lib/rr-error');
 
 const expect = chai.expect;
+const entityGen = new Generator();
 
 describe('survey integration', function () {
     const example = surveyExamples.Example;
@@ -45,7 +49,7 @@ describe('survey integration', function () {
 
     const createSurveyFn = function () {
         return function (done) {
-            const inputSurvey = entityGen.genNewSurvey();
+            const inputSurvey = entityGen.newSurvey();
             store.inputSurveys.push(inputSurvey);
             store.server
                 .post('/api/v1.0/surveys')
@@ -110,7 +114,7 @@ describe('survey integration', function () {
             const id = store.surveyIds[index];
             name = name || store.inputSurveys[index].name;
             store.server
-                .put(`/api/v1.0/surveys/${id}`)
+                .patch(`/api/v1.0/surveys/${id}`)
                 .set('Authorization', store.auth)
                 .send({ name })
                 .expect(200)
@@ -143,9 +147,9 @@ describe('survey integration', function () {
         };
     };
 
-    const invalidSurveyFn = function (index) {
+    const invalidSurveyJSONFn = function (index) {
         return function (done) {
-            const survey = invalidSurveySamples[index];
+            const survey = invalidSurveysJSON[index];
             store.server
                 .post('/api/v1.0/surveys')
                 .set('Authorization', store.auth)
@@ -161,8 +165,30 @@ describe('survey integration', function () {
         };
     };
 
-    for (let i = 0; i < invalidSurveySamples.length; ++i) {
-        it(`error: invalid survey input ${i}`, invalidSurveyFn(i));
+    for (let i = 0; i < invalidSurveysJSON.length; ++i) {
+        it(`error: invalid (json) survey input ${i}`, invalidSurveyJSONFn(i));
+    }
+
+    const invalidSurveySwaggerFn = function (index) {
+        return function (done) {
+            const survey = invalidSurveysSwagger[index];
+            store.server
+                .post('/api/v1.0/surveys')
+                .set('Authorization', store.auth)
+                .send(survey)
+                .expect(400)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    expect(Boolean(res.body.message)).to.equal(true);
+                    done();
+                });
+        };
+    };
+
+    for (let i = 0; i < invalidSurveysSwagger.length; ++i) {
+        it(`error: invalid (swagger) survey input ${i}`, invalidSurveySwaggerFn(i));
     }
 
     for (let i = 0; i < createCount; ++i) {
@@ -175,15 +201,16 @@ describe('survey integration', function () {
         it(`list surveys and verify`, listSurveysFn(i));
     }
 
-    const versionSurveyFn = function (index) {
+    const replaceSurveyFn = function (index) {
         return function (done) {
-            const replacement = entityGen.genNewSurvey();
+            const replacement = entityGen.newSurvey();
             store.inputSurveys.push(replacement);
             const id = store.surveys[index].id;
             store.server
-                .post(`/api/v1.0/surveys/version`)
+                .post(`/api/v1.0/surveys`)
+                .query({ parent: id })
                 .set('Authorization', store.auth)
-                .send({ id, replacement })
+                .send(replacement)
                 .expect(201)
                 .end(function (err, res) {
                     if (err) {
@@ -199,7 +226,7 @@ describe('survey integration', function () {
         };
     };
 
-    it('version to survey', versionSurveyFn(3));
+    it('version to survey', replaceSurveyFn(3));
     it('verify version survey', showSurveyFn(createCount - 1));
     it(`list surveys and verify`, listSurveysFn(createCount - 1));
 

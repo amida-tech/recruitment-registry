@@ -6,13 +6,13 @@ const _ = require('lodash');
 const chai = require('chai');
 
 const config = require('../../config');
+const RRError = require('../../lib/rr-error');
 
 const shared = require('../shared-integration');
 const surveyHelper = require('../helper/survey-helper');
 
-const examples = require('../fixtures/registry-examples');
-const surveyExamples = require('../fixtures/survey-examples');
-const userExamples = require('../fixtures/user-examples');
+const surveyExamples = require('../fixtures/example/survey');
+const userExamples = require('../fixtures/example/user');
 
 const expect = chai.expect;
 
@@ -27,142 +27,69 @@ describe('registry integration', function () {
 
     before(shared.setUpFn(store));
 
-    it('error: create registry unauthorized', function (done) {
+    it('error: create profile survey unauthorized', function (done) {
         store.server
-            .post('/api/v1.0/registries')
-            .send(examples[0])
+            .post('/api/v1.0/profile-survey')
+            .send(surveyExample.survey)
             .expect(401)
             .end(done);
     });
 
+    it('error: get profile survey when none created', function (done) {
+        store.server
+            .get('/api/v1.0/profile-survey')
+            .expect(400)
+            .end(function (err, res) {
+                if (err) {
+                    done(err);
+                }
+                const message = RRError.message('registryNoProfileSurvey');
+                expect(res.body.message).to.equal(message);
+                done();
+            });
+
+    });
+
     it('login as super', shared.loginFn(store, config.superUser));
 
-    const ids = [];
-
-    const createRegistryFn = function (index) {
-        return function (done) {
-            store.server
-                .post('/api/v1.0/registries')
-                .set('Authorization', store.auth)
-                .send(examples[index])
-                .expect(201)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    ids.push(res.body.id);
-                    done();
-                });
-        };
-    };
-
-    for (let i = 0; i < examples.length; ++i) {
-        it(`create registry ${i}`, createRegistryFn(i));
-    }
-
-    const getAndVerifyRegistryFn = function (index) {
-        return function (done) {
-            store.server
-                .get(`/api/v1.0/registries/${ids[index]}`)
-                .set('Authorization', store.auth)
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    const { name, survey } = res.body;
-                    expect(name).to.equal(examples[index].name);
-                    return surveyHelper.buildServerSurvey(examples[index].survey, survey)
-                        .then(function (expected) {
-                            expect(survey).to.deep.equal(expected);
-                        })
-                        .then(() => done())
-                        .catch((err) => done(err));
-                });
-        };
-    };
-
-    for (let i = 0; i < examples.length; ++i) {
-        it(`get registry ${i}`, getAndVerifyRegistryFn(i));
-    }
-
-    const getByNameAndVerifyRegistryFn = function (index) {
-        return function (done) {
-            store.server
-                .get(`/api/v1.0/registries/name/${examples[index].name}`)
-                .set('Authorization', store.auth)
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    const { name, survey } = res.body;
-                    expect(name).to.equal(examples[index].name);
-                    return surveyHelper.buildServerSurvey(examples[index].survey, survey)
-                        .then(function (expected) {
-                            expect(survey).to.deep.equal(expected);
-                        })
-                        .then(() => done())
-                        .catch((err) => done(err));
-                });
-        };
-    };
-
-    for (let i = 0; i < examples.length; ++i) {
-        it(`get registry ${i} by name`, getByNameAndVerifyRegistryFn(i));
-    }
+    it('create profile survey', function (done) {
+        store.server
+            .post('/api/v1.0/profile-survey')
+            .set('Authorization', store.auth)
+            .send(surveyExample.survey)
+            .expect(201)
+            .end(done);
+    });
 
     it('logout as super', shared.logoutFn(store));
 
-    const getProfileSurveyAndVerifyFn = function (index) {
-        return function (done) {
-            store.server
-                .get(`/api/v1.0/registries/profile-survey/${examples[index].name}`)
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    const survey = res.body;
-                    return surveyHelper.buildServerSurvey(examples[index].survey, survey)
-                        .then(function (expected) {
-                            expect(survey).to.deep.equal(expected);
-                        })
-                        .then(() => done())
-                        .catch((err) => done(err));
-                });
-        };
-    };
-
-    for (let i = 0; i < examples.length; ++i) {
-        it(`get registry profile survey ${i} by name`, getProfileSurveyAndVerifyFn(i));
-    }
-
-    let survey;
-
-    it('get user profile survey', function (done) {
+    it(`get profile survey`, function (done) {
         store.server
-            .get('/api/v1.0/registries/profile-survey/Alzheimer')
+            .get('/api/v1.0/profile-survey')
             .expect(200)
             .end(function (err, res) {
                 if (err) {
                     return done(err);
                 }
-                survey = res.body;
-                done();
+                return surveyHelper.buildServerSurvey(surveyExample.survey, res.body)
+                    .then(function (expected) {
+                        expect(res.body).to.deep.equal(expected);
+                        store.survey = res.body;
+                    })
+                    .then(() => done())
+                    .catch((err) => done(err));
             });
     });
 
     let answers;
 
     it('fill user profile and submit', function (done) {
-        answers = surveyHelper.formAnswersToPost(survey, surveyExample.answer);
+        answers = surveyHelper.formAnswersToPost(store.survey, surveyExample.answer);
 
         store.server
-            .post('/api/v1.0/registries/user-profile')
+            .post('/api/v1.0/profiles')
             .send({
                 user: userExample,
-                registryName: survey.name,
                 answers
             })
             .expect(201)
@@ -177,7 +104,7 @@ describe('registry integration', function () {
 
     it('verify user profile', function (done) {
         store.server
-            .get('/api/v1.0/registries/user-profile')
+            .get('/api/v1.0/profiles')
             .set('Authorization', store.auth)
             .expect(200)
             .end(function (err, res) {
@@ -189,13 +116,12 @@ describe('registry integration', function () {
                 const expectedUser = _.cloneDeep(userExample);
                 const user = result.user;
                 expectedUser.id = user.id;
-                expectedUser.registryId = user.registryId;
                 expectedUser.role = 'participant';
                 delete expectedUser.password;
                 expect(user).to.deep.equal(expectedUser);
 
                 const actualSurvey = result.survey;
-                const expectedSurvey = surveyHelper.formAnsweredSurvey(survey, answers);
+                const expectedSurvey = surveyHelper.formAnsweredSurvey(store.survey, answers);
                 expect(actualSurvey).to.deep.equal(expectedSurvey);
 
                 done();
@@ -203,13 +129,13 @@ describe('registry integration', function () {
     });
 
     it('update user profile', function (done) {
-        answers = surveyHelper.formAnswersToPost(survey, surveyExample.answerUpdate);
+        answers = surveyHelper.formAnswersToPost(store.survey, surveyExample.answerUpdate);
         const userUpdates = {
             zip: '20999',
             gender: 'other'
         };
         store.server
-            .put('/api/v1.0/registries/user-profile')
+            .patch('/api/v1.0/profiles')
             .set('Authorization', store.auth)
             .send({
                 user: userUpdates,
@@ -220,7 +146,7 @@ describe('registry integration', function () {
 
     it('verify user profile', function (done) {
         store.server
-            .get('/api/v1.0/registries/user-profile')
+            .get('/api/v1.0/profiles')
             .set('Authorization', store.auth)
             .expect(200)
             .end(function (err, res) {
@@ -235,12 +161,11 @@ describe('registry integration', function () {
                 const user = result.user;
                 expectedUser.id = user.id;
                 expectedUser.role = 'participant';
-                expectedUser.registryId = user.registryId;
                 delete expectedUser.password;
                 expect(user).to.deep.equal(expectedUser);
 
                 const actualSurvey = result.survey;
-                const expectedSurvey = surveyHelper.formAnsweredSurvey(survey, answers);
+                const expectedSurvey = surveyHelper.formAnsweredSurvey(store.survey, answers);
                 expect(actualSurvey).to.deep.equal(expectedSurvey);
 
                 done();

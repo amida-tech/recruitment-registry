@@ -63,26 +63,6 @@ errors.testParams2 = {
     msg: 'Testing $1 and $0 and $1.'
 };
 
-errors.qxCreateChoicesBoth = {
-    msg: '\'oneOfChoices\' and \'choices\' cannot be specified simultaneously.'
-};
-
-errors.qxCreateChoicesNone = {
-    msg: '\'choices\' was not specified for \'choices\' type question.'
-};
-
-errors.qxCreateChoiceNone = {
-    msg: '\'oneOfChoices\' or \'choices\' was not specified for \'choice\' type question.'
-};
-
-errors.qxCreateChoiceNotBool = {
-    msg: '\'choices\' can only be \'bool\' type for \'choice\' type question.'
-};
-
-errors.qxCreateChoicesOther = {
-    msg: '\'choices\' or \'oneOfChoices\' cannot be specified for \'$0\' type question.'
-};
-
 errors.qxNotFound = {
     msg: 'No such question.'
 };
@@ -105,4 +85,20 @@ errors.profileSignaturesMissing = {
 
 errors.jsonSchemaFailed = {
     msg: 'JSON schema validation for $0 failed.'
+};
+
+errors.registryNoProfileSurvey = {
+    msg: 'No profile survey has been specified for the registry.'
+};
+
+errors.answerRequiredMissing = {
+    msg: 'Not all required questions are answered.'
+};
+
+errors.answerQxNotInSurvey = {
+    msg: 'Invalid question ids for answers.'
+};
+
+errors.qxReplaceWhenActiveSurveys = {
+    msg: 'Question in active surveys cannot be removed or replaced.'
 };

@@ -7,15 +7,14 @@ const chai = require('chai');
 const helper = require('../helper/survey-helper');
 
 const shared = require('../shared-integration');
-const registryExamples = require('../fixtures/registry-examples');
-const surveyExamples = require('../fixtures/survey-examples');
+const surveyExamples = require('../fixtures/example/survey');
 
 const config = require('../../config');
 
 const expect = chai.expect;
 
 describe('create-show-survey use case', function () {
-    const registryExample = registryExamples[0];
+    const surveyExample = surveyExamples.Alzheimer.survey;
 
     // -------- set up system (syncAndLoadAlzheimer)
 
@@ -28,7 +27,7 @@ describe('create-show-survey use case', function () {
 
     it('login as super user', shared.loginFn(store, config.superUser));
 
-    it('create registry', shared.postRegistryFn(store, registryExample));
+    it('create registry', shared.createSurveyProfileFn(store, surveyExample));
 
     it('logout as super user', shared.logoutFn(store));
 
@@ -49,7 +48,7 @@ describe('create-show-survey use case', function () {
                 }
                 const surveys = res.body;
                 expect(surveys).to.have.length(1);
-                expect(surveys[0].name).to.equal(registryExample.survey.name);
+                expect(surveys[0].name).to.equal(surveyExample.name);
                 done();
             });
     });
@@ -77,7 +76,7 @@ describe('create-show-survey use case', function () {
                 }
                 const surveys = res.body;
                 expect(surveys).to.have.length(2);
-                expect(surveys[0].name).to.equal(registryExample.survey.name);
+                expect(surveys[0].name).to.equal(surveyExample.name);
                 expect(surveys[1].name).to.equal(surveyExamples.Example.survey.name);
                 store.lastId = surveys[1].id;
                 done();

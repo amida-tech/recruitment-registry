@@ -18,13 +18,93 @@ const schema = _.cloneDeep(_.pick(swaggerJson, 'definitions'));
 _.set(schema, 'definitions.newSurvey.properties.questions.items', {
     oneOf: [{
         type: 'object',
-        required: ['id'],
+        required: ['id', 'required'],
         properties: {
-            'id': { type: 'integer' }
+            'id': { type: 'integer' },
+            'required': { type: 'boolean' }
         },
         additionalProperties: false
     }, {
-        $ref: '#/definitions/newQuestion'
+        $ref: '#/definitions/newSurveyQuestion'
+    }]
+});
+
+_.set(schema, 'definitions.newSurveyQuestion', {
+    oneOf: [{
+        type: 'object',
+        required: ['text', 'type', 'required'],
+        properties: {
+            text: { type: 'string' },
+            type: { type: 'string', enum: ['text', 'bool'] },
+            required: { type: 'boolean' },
+            actions: {
+                $ref: '#/definitions/actions'
+            }
+        },
+        additionalProperties: false
+    }, {
+        type: 'object',
+        required: ['text', 'type', 'required', 'choices'],
+        properties: {
+            text: { type: 'string' },
+            required: { type: 'boolean' },
+            type: { type: 'string', enum: ['choice'] },
+            choices: {
+                type: 'array',
+                items: {
+                    type: 'object',
+                    required: ['text'],
+                    properties: {
+                        text: { type: 'string' }
+                    },
+                    additionalProperties: false
+                }
+            },
+            actions: {
+                $ref: '#/definitions/actions'
+            }
+        },
+        additionalProperties: false,
+    }, {
+        type: 'object',
+        required: ['text', 'type', 'required', 'oneOfChoices'],
+        properties: {
+            text: { type: 'string' },
+            required: { type: 'boolean' },
+            type: { type: 'string', enum: ['choice'] },
+            oneOfChoices: {
+                type: 'array',
+                items: { type: 'string', minLength: 1 }
+            },
+            actions: {
+                $ref: '#/definitions/actions'
+            }
+        },
+        additionalProperties: false,
+    }, {
+        type: 'object',
+        required: ['text', 'type', 'required', 'choices'],
+        properties: {
+            text: { type: 'string' },
+            required: { type: 'boolean' },
+            type: { type: 'string', enum: ['choices'] },
+            choices: {
+                type: 'array',
+                items: {
+                    type: 'object',
+                    required: ['text'],
+                    properties: {
+                        text: { type: 'string' },
+                        type: { type: 'string', enum: ['text', 'bool'] }
+                    },
+                    additionalProperties: false
+                }
+            },
+            actions: {
+                $ref: '#/definitions/actions'
+            }
+        },
+        additionalProperties: false
     }]
 });
 

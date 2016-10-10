@@ -5,11 +5,11 @@ const _ = require('lodash');
 
 const models = require('../models');
 
-const registryExamaples = require('./fixtures/registry-examples');
 const RRError = require('../lib/rr-error');
-const entityGen = require('./entity-generator');
+const Generator = require('./entity-generator');
 
 const expect = chai.expect;
+const entityGen = new Generator();
 
 exports.setUpFn = function () {
     return function () {
@@ -21,7 +21,7 @@ exports.setUpFn = function () {
 
 exports.createUser = function (store) {
     return function () {
-        const inputUser = entityGen.genNewUser();
+        const inputUser = entityGen.newUser();
         return models.User.create(inputUser)
             .then(function (user) {
                 store.userIds.push(user.id);
@@ -31,7 +31,7 @@ exports.createUser = function (store) {
 
 exports.createQuestion = function (store) {
     return function () {
-        const inputQx = entityGen.genNewQuestion();
+        const inputQx = entityGen.newQuestion();
         const type = inputQx.type;
         return models.Question.createQuestion(inputQx)
             .then(function (id) {
@@ -68,22 +68,15 @@ exports.createQuestion = function (store) {
 
 exports.createSurvey = function (store, qxIndices) {
     return function () {
-        const inputSurvey = entityGen.genNewSurvey({ addQuestions: false });
+        const inputSurvey = entityGen.newSurvey();
         inputSurvey.questions = qxIndices.map(index => ({
-            id: store.questions[index].id
+            id: store.questions[index].id,
+            required: false
         }));
         return models.Survey.createSurvey(inputSurvey)
             .then(id => {
                 store.surveys.push(id);
             });
-    };
-};
-
-exports.createRegistry = function (store) {
-    return function () {
-        const inputRegistry = registryExamaples[0];
-        return models.Registry.createRegistry(inputRegistry)
-            .then(() => store.registryName = inputRegistry.name);
     };
 };
 

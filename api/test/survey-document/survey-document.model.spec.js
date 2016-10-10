@@ -7,10 +7,11 @@ const _ = require('lodash');
 
 const shared = require('../shared-spec');
 const models = require('../../models');
-const entityGen = require('../entity-generator');
+const Generator = require('../entity-generator');
 const tokener = require('../../lib/tokener');
 
 const expect = chai.expect;
+const entityGen = new Generator();
 
 const Document = models.Document;
 const Registry = models.Registry;
@@ -37,13 +38,12 @@ describe('survey-document unit', function () {
     before(shared.setUpFn());
 
     it('create registry', function () {
-        const newRegistry = entityGen.genNewRegistry();
-        store.clientRegistry = newRegistry;
-        return Registry.createRegistry(newRegistry);
+        const survey = entityGen.newSurvey();
+        return Registry.createProfileSurvey(survey);
     });
 
     it('get registry profile survey, verify no required documents', function () {
-        return Registry.getRegistryProfileSurvey(store.clientRegistry.name)
+        return Registry.getProfileSurvey()
             .then(survey => {
                 expect(survey.id).to.be.above(0);
                 expect(survey.documents).to.equal(undefined);
@@ -70,7 +70,7 @@ describe('survey-document unit', function () {
     }
 
     it('error: get profile survey with no documents of existing types', function () {
-        return Registry.getRegistryProfileSurvey(store.clientRegistry.name)
+        return Registry.getProfileSurvey()
             .then(shared.throwingHandler, shared.expectedErrorHandler('documentNoSystemDocuments'));
     });
 
@@ -87,7 +87,7 @@ describe('survey-document unit', function () {
     };
 
     it('get registry profile survey with required documents', function () {
-        return Registry.getRegistryProfileSurvey(store.clientRegistry.name)
+        return Registry.getProfileSurvey()
             .then(actual => {
                 expect(actual.id).to.equal(store.profileSurvey.id);
                 const expected = expectedDocuments([0, 1]);
@@ -110,10 +110,9 @@ describe('survey-document unit', function () {
     }
 
     const formProfileResponse = function () {
-        const registryName = store.clientRegistry.name;
-        const answers = entityGen.genAnswersToQuestions(store.profileSurvey.questions);
-        const user = entityGen.genNewUser();
-        store.profileResponses.push({ registryName, user, answers });
+        const answers = entityGen.answerQuestions(store.profileSurvey.questions);
+        const user = entityGen.newUser();
+        store.profileResponses.push({ user, answers });
     };
 
     const createProfileWithoutSignaturesFn = function (index, signIndices, missingDocumentIndices) {

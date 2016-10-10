@@ -46,7 +46,8 @@ module.exports = function (sequelize, DataTypes) {
                 if (newQuestions.length) {
                     return sequelize.Promise.all(newQuestions.map(function (q) {
                             return sequelize.models.question.createQuestionTx(q.qx, tx).then(function (id) {
-                                questions[q.index] = { id };
+                                const oldQx = questions[q.index];
+                                questions[q.index] = { id, required: oldQx.required };
                             });
                         }))
                         .then(() => questions);
@@ -58,11 +59,12 @@ module.exports = function (sequelize, DataTypes) {
                 const questions = inputQxs.slice();
                 return Survey.createNewQuestionsTx(questions, tx)
                     .then((questions) => {
-                        return sequelize.Promise.all(questions.map(function ({ id: questionId }, line) {
+                        return sequelize.Promise.all(questions.map((qx, line) => {
                             return sequelize.models.survey_question.create({
-                                questionId,
+                                questionId: qx.id,
                                 surveyId,
-                                line
+                                line,
+                                required: Boolean(qx.required)
                             }, {
                                 transaction: tx
                             });
@@ -94,27 +96,33 @@ module.exports = function (sequelize, DataTypes) {
                     .then(survey => survey.update({ name }))
                     .then(() => ({}));
             },
-            createSurveyVersion(survey, replacement) {
-                return sequelize.transaction(function (tx) {
-                    replacement.version = survey.version + 1;
-                    replacement.groupId = survey.groupId;
-                    const newSurvey = {
-                        name: replacement.name,
-                        version: survey.version + 1,
-                        groupId: survey.groupId
-                    };
-                    return Survey.create(newSurvey, { transaction: tx })
-                        .then(function ({ id }) {
-                            return Survey.updateQuestionsTx(replacement.questions, id, tx)
-                                .then(() => id);
-                        })
-                        .then((id) => {
-                            return Survey.destroy({ where: { id: survey.id } })
-                                .then(() => id);
-                        });
-                });
+            replaceSurveyTx(survey, replacement, tx) {
+                replacement.version = survey.version + 1;
+                replacement.groupId = survey.groupId;
+                const newSurvey = {
+                    name: replacement.name,
+                    version: survey.version + 1,
+                    groupId: survey.groupId
+                };
+                return Survey.create(newSurvey, { transaction: tx })
+                    .then(function ({ id }) {
+                        return Survey.updateQuestionsTx(replacement.questions, id, tx)
+                            .then(() => id);
+                    })
+                    .then((id) => {
+                        return Survey.destroy({ where: { id: survey.id } }, { transaction: tx })
+                            .then(() => id);
+                    })
+                    .then((id) => {
+                        return sequelize.models.survey_question.destroy({ where: { surveyId: id } }, { transaction: tx })
+                            .then(() => id);
+                    })
+                    .then((id) => {
+                        return sequelize.models.registry.update({ profileSurveyId: id }, { where: { profileSurveyId: survey.id }, transaction: tx })
+                            .then(() => id);
+                    });
             },
-            versionSurvey: function ({ id, replacement }) {
+            replaceSurvey: function (id, replacement, tx) {
                 if (!_.get(replacement, 'questions.length')) {
                     return RRError.reject('surveyNoQuestions');
                 }
@@ -126,11 +134,23 @@ module.exports = function (sequelize, DataTypes) {
                         return survey;
                     })
                     .then(survey => {
-                        return Survey.createSurveyVersion(survey, replacement);
+                        if (tx) {
+                            return Survey.replaceSurveyTx(survey, replacement, tx);
+                        } else {
+                            return sequelize.transaction(function (tx) {
+                                return Survey.replaceSurveyTx(survey, replacement, tx);
+                            });
+                        }
                     });
             },
             deleteSurvey: function (id) {
-                return Survey.destroy({ where: { id } });
+                return sequelize.transaction(function (tx) {
+                    return Survey.destroy({ where: { id } }, { transaction: tx })
+                        .then(() => {
+                            return sequelize.models.survey_question.destroy({ where: { surveyId: id } }, { transaction: tx })
+                                .then(() => id);
+                        });
+                });
             },
             listSurveys: function () {
                 return Survey.findAll({ raw: true, attributes: ['id', 'name'], order: 'id' });
@@ -144,14 +164,18 @@ module.exports = function (sequelize, DataTypes) {
                         return sequelize.models.survey_question.findAll({
                                 where: { surveyId: survey.id },
                                 raw: true,
-                                attributes: ['questionId']
+                                attributes: ['questionId', 'required']
                             })
-                            .then(result => {
-                                const questionIds = _.map(result, 'questionId');
-                                return sequelize.models.question.getQuestions(questionIds);
+                            .then(surveyQuestions => {
+                                const questionIds = _.map(surveyQuestions, 'questionId');
+                                return sequelize.models.question.getQuestions(questionIds)
+                                    .then(questions => ({ questions, surveyQuestions }));
                             })
-                            .then(questions => {
-                                survey.questions = questions;
+                            .then(({ questions, surveyQuestions }) => {
+                                const qxMap = _.keyBy(questions, 'id');
+                                const fn = qx => Object.assign(qxMap[qx.questionId], { required: qx.required });
+                                const qxs = surveyQuestions.map(fn);
+                                survey.questions = qxs;
                                 return survey;
                             });
                     });

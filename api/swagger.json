@@ -116,7 +116,7 @@
                     }
                 }
             },
-            "put": {
+            "patch": {
                 "operationId": "updateCurrentUser",
                 "summary": "Updates the current user",
                 "security": [{
@@ -232,6 +232,12 @@
                     "schema": {
                         "$ref": "#/definitions/newSurvey"
                     }
+                }, {
+                    "name": "parent",
+                    "in": "query",
+                    "description": "Parent id",
+                    "required": false,
+                    "type": "integer"
                 }],
                 "responses": {
                     "201": {
@@ -268,44 +274,6 @@
                                 "additionalProperties": false
                             }
                         }
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
-        "/surveys/version": {
-            "x-swagger-router-controller": "survey.controller",
-            "post": {
-                "summary": "Creates a new version of the survey",
-                "operationId": "versionSurvey",
-                "security": [{
-                    "admin": []
-                }],
-                "parameters": [{
-                    "name": "newSurveyVersion",
-                    "in": "body",
-                    "description": "Id of the parent survey and all the fields of the new version.",
-                    "required": true,
-                    "schema": {
-                        "type": "object",
-                        "required": ["id", "replacement"],
-                        "properties": {
-                            "id": {
-                                "type": "integer",
-                                "minimum": 1
-                            },
-                            "replacement": {
-                                "$ref": "#/definitions/newSurvey"
-                            }
-                        },
-                        "additionalProperties": false
-                    }
-                }],
-                "responses": {
-                    "201": {
-                        "$ref": "#/responses/idSuccess"
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -354,9 +322,9 @@
                     }
                 }
             },
-            "put": {
+            "patch": {
                 "summary": "Updates the survey",
-                "description": "Only the name of the survey can be updated here. See [POST /surveys/version].",
+                "description": "Only the name of the survey can be updated here.",
                 "operationId": "updateSurvey",
                 "security": [{
                     "admin": []
@@ -553,122 +521,35 @@
                 }
             }
         },
-        "/registries": {
+        "/profile-survey": {
             "x-swagger-router-controller": "registry.controller",
             "post": {
-                "summary": "Creates a registry",
-                "operationId": "createRegistry",
+                "summary": "Creates/replaces the profile survey",
+                "operationId": "createProfileSurvey",
                 "security": [{
                     "admin": []
                 }],
                 "parameters": [{
-                    "name": "newRegistry",
+                    "name": "newSurvey",
                     "in": "body",
-                    "description": "Registry information",
+                    "description": "Profile survey",
                     "required": true,
                     "schema": {
-                        "$ref": "#/definitions/newRegistry"
+                        "$ref": "#/definitions/newSurvey"
                     }
                 }],
                 "responses": {
                     "201" : {
                         "$ref": "#/responses/idSuccess"
                     },
-                    "400": {
-                        "$ref": "#/responses/badRequest"
-                    },
-                    "401": {
-                        "$ref": "#/responses/unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/responses/forbidden"
-                    },
-                    "500": {
-                        "$ref": "#/responses/internal"
+                    "default": {
+                        "$ref": "#/responses/genericError"
                     }
-
                 }
-            }
-        },
-        "/registries/{id}": {
-            "x-swagger-router-controller": "registry.controller",
+            },
             "get": {
-                "summary": "Finds a registry",
-                "operationId": "getRegistry",
-                "security": [{
-                    "admin": []
-                }],
-                "parameters": [{
-                    "name": "id",
-                    "in": "path",
-                    "required": true,
-                    "type": "integer"
-                }],
-                "responses": {
-                    "200" : {
-                        "$ref": "#/responses/idSuccess"
-                    },
-                    "400": {
-                        "$ref": "#/responses/badRequest"
-                    },
-                    "401": {
-                        "$ref": "#/responses/unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/responses/forbidden"
-                    },
-                    "500": {
-                        "$ref": "#/responses/internal"
-                    }
-
-                }
-            }
-        },
-        "/registries/name/{name}": {
-            "x-swagger-router-controller": "registry.controller",
-            "get": {
-                "summary": "Finds a registry",
-                "operationId": "getRegistryByName",
-                "security": [{
-                    "admin": []
-                }],
-                "parameters": [{
-                    "name": "name",
-                    "in": "path",
-                    "required": true,
-                    "type": "string"
-                }],
-                "responses": {
-                    "200" : {
-                        "$ref": "#/responses/idSuccess"
-                    },
-                    "400": {
-                        "$ref": "#/responses/badRequest"
-                    },
-                    "401": {
-                        "$ref": "#/responses/unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/responses/forbidden"
-                    },
-                    "500": {
-                        "$ref": "#/responses/internal"
-                    }
-
-                }
-            }
-        },
-        "/registries/profile-survey/{name}": {
-            "x-swagger-router-controller": "registry.controller",
-            "get": {
-                "summary": "Finds a registry profile survey",
-                "operationId": "getRegistryProfileSurvey",
-                "parameters": [{
-                    "name": "name",
-                    "in": "path",
-                    "required": true,
-                    "type": "string"
-                }],
+                "summary": "Gets the profile survey",
+                "operationId": "getProfileSurvey",
                 "responses": {
                     "200" : {
                         "description": "Successul response",
@@ -676,23 +557,13 @@
                             "$ref": "#/definitions/survey"
                         }
                     },
-                    "400": {
-                        "$ref": "#/responses/badRequest"
-                    },
-                    "401": {
-                        "$ref": "#/responses/unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/responses/forbidden"
-                    },
-                    "500": {
-                        "$ref": "#/responses/internal"
+                    "default": {
+                        "$ref": "#/responses/genericError"
                     }
-
                 }
             }
         },
-        "/registries/user-profile": {
+        "/profiles": {
             "x-swagger-router-controller": "registry.controller",
             "post": {
                 "summary": "Creates a registry user profile",
@@ -725,7 +596,7 @@
                     }
                 }
             },
-            "put": {
+            "patch": {
                 "summary": "Updates a registry user profile",
                 "operationId": "updateProfile",
                 "security": [{
@@ -816,22 +687,19 @@
                     "schema": {
                         "$ref": "#/definitions/newQuestion"
                     }
+                }, {
+                    "name": "parent",
+                    "in": "query",
+                    "description": "Parent id",
+                    "required": false,
+                    "type": "integer"
                 }],
                 "responses": {
                     "201": {
                         "$ref": "#/responses/idSuccess"
                     },
-                    "400": {
-                        "$ref": "#/responses/badRequest"
-                    },
-                    "401": {
-                        "$ref": "#/responses/unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/responses/forbidden"
-                    },
-                    "500": {
-                        "$ref": "#/responses/internal"
+                    "default": {
+                        "$ref": "#/responses/genericError"
                     }
                 }
             },
@@ -848,17 +716,8 @@
                             "$ref": "#/definitions/questions"
                         }
                     },
-                    "400": {
-                        "$ref": "#/responses/badRequest"
-                    },
-                    "401": {
-                        "$ref": "#/responses/unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/responses/forbidden"
-                    },
-                    "500": {
-                        "$ref": "#/responses/internal"
+                    "default": {
+                        "$ref": "#/responses/genericError"
                     }
                 }
             }
@@ -884,21 +743,12 @@
                             "$ref": "#/definitions/question"
                         }
                     },
-                    "400": {
-                        "$ref": "#/responses/badRequest"
-                    },
-                    "401": {
-                        "$ref": "#/responses/unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/responses/forbidden"
-                    },
-                    "500": {
-                        "$ref": "#/responses/internal"
+                    "default": {
+                        "$ref": "#/responses/genericError"
                     }
                 }
             },
-            "put": {
+            "patch": {
                 "summary": "Updates the question",
                 "operationId": "updateQuestion",
                 "security": [{
@@ -908,17 +758,8 @@
                     "204": {
                         "$ref": "#/responses/emptySuccess"
                     },
-                    "400": {
-                        "$ref": "#/responses/badRequest"
-                    },
-                    "401": {
-                        "$ref": "#/responses/unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/responses/forbidden"
-                    },
-                    "500": {
-                        "$ref": "#/responses/internal"
+                    "default": {
+                        "$ref": "#/responses/genericError"
                     }
                 }
             },
@@ -932,17 +773,8 @@
                     "204": {
                         "$ref": "#/responses/emptySuccess"
                     },
-                    "400": {
-                        "$ref": "#/responses/badRequest"
-                    },
-                    "401": {
-                        "$ref": "#/responses/unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/responses/forbidden"
-                    },
-                    "500": {
-                        "$ref": "#/responses/internal"
+                    "default": {
+                        "$ref": "#/responses/genericError"
                     }
                 }
             }
@@ -1290,6 +1122,61 @@
                 }
             }
         },
+        "questionType": {
+            "type": "string",
+            "enum": ["text", "bool", "choice", "choices"]
+        },
+
+        "newSurveyQuestion": {
+            "type": "object",
+            "description": "Describes either a brand new question (no 'id') or an existing question ('id' only with 'required').",
+            "required": ["required"],
+            "properties": {
+                "required": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "text": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "type": {
+                    "$ref": "#/definitions/questionType"
+                },
+                "oneOfChoices": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "minItems": 1
+                },
+                "choices": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": ["text"],
+                        "properties": {
+                            "text": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "type": {
+                                "type": "string",
+                                "enum": ["text", "bool"]
+                            }
+                        }
+                    },
+                    "minItems": 1
+                },
+                "actions": {
+                    "$ref": "#/definitions/actions"
+                }
+            },
+            "minProperties": 2,
+            "additionalProperties": false
+        },
         "newSurvey": {
             "type": "object",
             "required": [
@@ -1298,71 +1185,87 @@
             ],
             "properties": {
                 "name": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 1
                 },
                 "questions": {
                     "type": "array",
                     "items": {
-                        "type": "object",
-                        "properties": {
-                            "id": {
-                                "type": "integer"
-                            },
-                            "text": {
-                                "type": "string"
-                            },
-                            "type": {
-                                "type": "string"
-                            },
-                            "oneOfChoices": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string"
-                                }
-                            },
-                            "choices": {
-                                "type": "array",
-                                "items": {
-                                    "type": "object",
-                                    "required": ["text"],
-                                    "properties": {
-                                        "text": {
-                                            "type": "string"
-                                        },
-                                        "type": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            },
-                            "actions": {
-                                "$ref": "#/definitions/actions"
-                            }
-                        },
-                        "minProperties": 1
+                        "$ref": "#/definitions/newSurveyQuestion"
                     },
-                    "minLength": 1
+                    "minItems": 1
                 }
             },
             "additionalProperties": false
         },
-        "newRegistry": {
+        "surveyQuestion": {
             "type": "object",
             "required": [
-                "name"
+                "id",
+                "text",
+                "type",
+                "required"
             ],
             "properties": {
-                "name": {
-                    "type": "string"
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
                 },
-                "surveyId": {
-                    "type": "integer"
+                "text": {
+                    "type": "string",
+                     "minLength": 1
                 },
-                "survey": {
-                    "$ref": "#/definitions/newSurvey"
+                "type": {
+                    "$ref": "#/definitions/questionType"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "choices": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/choice"
+                    },
+                    "minItems": 1
+                },
+                "actions": {
+                    "$ref": "#/definitions/actions"
+                 },
+                "answer": {
+                    "$ref": "#/definitions/answer"
                 }
             },
-            "maxProperties": 2
+            "additionalProperties": false
+        },
+        "survey": {
+            "type": "object",
+            "required": [
+                "id",
+                "name",
+                "questions"
+            ],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "name": {
+                    "type": "string",
+                     "minLength": 1
+                },
+                "questions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/surveyQuestion"
+                    },
+                    "minItems": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "choiceType": {
+            "type": "string",
+            "enum": ["bool", "text"]
         },
         "choice": {
             "type": "object",
@@ -1372,13 +1275,15 @@
             ],
             "properties": {
                 "id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 1
                 },
                 "text": {
-                    "type": "string"
+                    "type": "string",
+                     "minLength": 1
                 },
                 "type": {
-                    "type": "string"
+                    "$ref": "#/definitions/choiceType"
                 }
             }
         },
@@ -1407,7 +1312,8 @@
                             }
                         },
                         "maxProperties": 2
-                    }
+                    },
+                    "minItems": 1
                 },
                 "textValue": {
                     "type": "string"
@@ -1428,13 +1334,15 @@
             ],
             "properties": {
                 "id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 1
                 },
                 "text": {
-                    "type": "string"
+                    "type": "string",
+                     "minLength": 1
                 },
                 "type": {
-                    "type": "string"
+                    "$ref": "#/definitions/questionType"
                 },
                 "choices": {
                     "type": "array",
@@ -1457,6 +1365,20 @@
             },
             "minLength": 1
         },
+        "newChoice": {
+            "type": "object",
+            "required": ["text"],
+            "properties": {
+                "text": {
+                    "type": "string",
+                     "minLength": 1
+                },
+                "type": {
+                    "$ref": "#/definitions/choiceType"
+                }
+            },
+            "additionalProperties": false
+        },
         "newQuestion": {
             "type": "object",
             "required": [
@@ -1465,10 +1387,11 @@
             ],
             "properties": {
                 "text": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 1
                 },
                 "type": {
-                    "type": "string"
+                    "$ref": "#/definitions/questionType"
                 },
                 "oneOfChoices": {
                     "type": "array",
@@ -1479,16 +1402,7 @@
                 "choices": {
                     "type": "array",
                     "items": {
-                        "type": "object",
-                        "required": ["text"],
-                        "properties": {
-                            "text": {
-                                "type": "string"
-                            },
-                            "type": {
-                                "type": "string"
-                            }
-                        }
+                        "$ref": "#/definitions/newChoice"
                     }
                 },
                 "actions": {
@@ -1512,42 +1426,14 @@
                 }
             }
         },
-        "survey": {
-            "type": "object",
-            "required": [
-                "id",
-                "name",
-                "questions"
-            ],
-            "properties": {
-                "id": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "questions": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/question"
-                    },
-                    "minLength": 1
-                }
-            },
-            "additionalProperties": false
-        },
         "newUserProfile": {
             "type": "object",
             "required": [
-                "user",
-                "registryName"
+                "user"
             ],
             "properties": {
                 "user": {
                     "$ref": "#/definitions/user"
-                },
-                "registryName": {
-                    "type": "string"
                 },
                 "answers": {
                     "type": "array",

@@ -8,11 +8,11 @@ const _ = require('lodash');
 const surveyHelper = require('../helper/survey-helper');
 const models = require('../../models');
 
-const entityGen = require('../entity-generator');
+const Generator = require('../entity-generator');
 const shared = require('../shared-spec');
-const answerCommon = require('../answer/answer-common');
 
 const expect = chai.expect;
+const entityGen = new Generator();
 
 const Survey = models.Survey;
 
@@ -36,7 +36,7 @@ describe('survey unit', function () {
 
     const createVerifySurveyFn = function (index) {
         return function () {
-            const inputSurvey = entityGen.genNewSurvey();
+            const inputSurvey = entityGen.newSurvey();
             store.inputSurveys.push(inputSurvey);
             return Survey.createSurvey(inputSurvey)
                 .then(id => Survey.getSurveyById(id))
@@ -77,43 +77,35 @@ describe('survey unit', function () {
         it(`create/verify/update survey ${i} and list all`, createVerifySurveyFn(i));
     }
 
-    it('error: show a non existent survey', function () {
+    it('error: show a non-existent survey', function () {
         return Survey.getSurveyById(999)
             .then(shared.throwingHandler, shared.expectedErrorHandler('surveyNotFound'));
     });
 
     it('error: version with a survey with no questions', function () {
         const survey = store.surveys[1];
-        const replacementSurvey = entityGen.genNewSurvey({ addQuestions: false });
-        return Survey.versionSurvey({
-                id: survey.id,
-                replacement: replacementSurvey
-            })
+        const replacementSurvey = entityGen.newSurvey();
+        delete replacementSurvey.questions;
+        return Survey.replaceSurvey(survey.id, replacementSurvey)
             .then(shared.throwingHandler, shared.expectedErrorHandler('surveyNoQuestions'));
     });
 
-    it('error: version with a nonexistent survey', function () {
-        const replacementSurvey = entityGen.genNewSurvey();
-        return Survey.versionSurvey({
-                id: 9999,
-                replacement: replacementSurvey
-            })
+    it('error: version with a non-existent survey', function () {
+        const replacementSurvey = entityGen.newSurvey();
+        return Survey.replaceSurvey(999, replacementSurvey)
             .then(shared.throwingHandler, shared.expectedErrorHandler('surveyNotFound'));
     });
 
-    const versionSurveyFn = function (index) {
+    const replaceSurveyFn = function (index) {
         return function () {
             if (index === undefined) {
                 index = store.surveys.length - 1;
             }
             const survey = store.surveys[index];
-            const inputSurvey = entityGen.genNewSurvey();
+            const inputSurvey = entityGen.newSurvey();
             store.inputSurveys.push(inputSurvey);
             store.inputSurveys.splice(index, 1);
-            return Survey.versionSurvey({
-                    id: survey.id,
-                    replacement: inputSurvey
-                })
+            return Survey.replaceSurvey(survey.id, inputSurvey)
                 .then(id => Survey.getSurveyById(id))
                 .then((serverSurvey) => {
                     return surveyHelper.buildServerSurvey(inputSurvey, serverSurvey)
@@ -152,10 +144,10 @@ describe('survey unit', function () {
             });
     };
 
-    it('version a survey', function () {
-        return versionSurveyFn(3)()
-            .then(versionSurveyFn(0))
-            .then(versionSurveyFn(store.surveys.length - 1))
+    it('replace surveys', function () {
+        return replaceSurveyFn(3)()
+            .then(replaceSurveyFn(0))
+            .then(replaceSurveyFn(store.surveys.length - 1))
             .then(() => dbVersionCompare(store.surveys.length - 1, 3))
             .then(() => dbVersionCompare(store.surveys.length - 2, 2));
     });
@@ -177,9 +169,9 @@ describe('survey unit', function () {
     });
 
     it('survey by existing questions only', function () {
-        const survey = entityGen.genNewSurvey({ addQuestions: false });
+        const survey = entityGen.newSurvey();
         const questions = store.questions.slice(0, 10);
-        survey.questions = questions.map(({ id }) => ({ id }));
+        survey.questions = questions.map(({ id, required }) => ({ id, required }));
         return Survey.createSurvey(survey)
             .then(id => Survey.getSurveyById(id))
             .then((serverSurvey) => {
@@ -193,8 +185,9 @@ describe('survey unit', function () {
     });
 
     it('survey by existing/new questions', function () {
-        const survey = entityGen.genNewSurvey();
-        const additionalIds = [10, 11].map(index => ({ id: store.questions[index].id }));
+        const survey = entityGen.newSurvey();
+        const fn = index => ({ id: store.questions[index].id, required: store.questions[index].required });
+        const additionalIds = [10, 11].map(fn);
         survey.questions.splice(1, 0, ...additionalIds);
         return Survey.createSurvey(survey)
             .then(id => Survey.getSurveyById(id))
@@ -212,42 +205,80 @@ describe('survey unit', function () {
         it(`create user ${i}`, shared.createUser(store));
     }
 
-    const generateQxAnswer = _.partial(answerCommon.generateQxAnswer, store);
+    const answerVerifySurveyFn = function (surveyIndex) {
+        return function () {
+            const survey = store.surveys[surveyIndex];
+            const answers = entityGen.answerQuestions(survey.questions);
+            const input = {
+                userId: store.userIds[0],
+                surveyId: store.surveys[1].id,
+                answers
+            };
+            return models.Answer.createAnswers(input)
+                .then(function () {
+                    return Survey.getAnsweredSurveyById(input.userId, input.surveyId)
+                        .then(answeredSurvey => {
+                            const expected = _.cloneDeep(survey);
+                            expected.questions.forEach((qx, index) => {
+                                qx.answer = answers[index].answer;
+                                if (qx.type === 'choices' && qx.answer.choices) {
+                                    qx.answer.choices.forEach((choice) => {
+                                        if (!choice.textValue && !choice.hasOwnProperty('boolValue')) {
+                                            choice.boolValue = true;
+                                        }
+                                    });
+                                }
+                            });
+                            expect(answeredSurvey).to.deep.equal(expected);
+                            return Survey.getAnsweredSurveyByName(input.userId, survey.name)
+                                .then(answeredSurveyByName => {
+                                    expect(answeredSurveyByName).to.deep.equal(answeredSurvey);
+                                });
+                        });
+                });
+        };
+    };
 
-    it('get answered survey', function () {
-        const survey = store.surveys[1];
-        const idToIndex = store.questions.reduce((r, { id }, index) => {
-            r[id] = index;
-            return r;
-        }, {});
-        const indices = survey.questions.map(({ id }) => idToIndex[id]);
-        const answers = indices.map(generateQxAnswer);
+    it('get/verify answered survey', answerVerifySurveyFn(1));
+
+    it('error: answer without required questions', function () {
+        const survey = store.surveys[3];
+        const qxs = survey.questions;
+        const answers = entityGen.answerQuestions(qxs);
         const input = {
             userId: store.userIds[0],
-            surveyId: store.surveys[1].id,
+            surveyId: store.surveys[3].id,
             answers
         };
+        const requiredIndices = _.range(qxs.length).filter(index => qxs[index].required);
+        expect(requiredIndices).to.have.length.above(0);
+        const removedAnswers = _.pullAt(answers, requiredIndices);
+        let px = models.Answer.createAnswers(input)
+            .then(shared.throwingHandler, shared.expectedErrorHandler('answerRequiredMissing'));
+        _.range(1, removedAnswers.length).forEach(index => {
+            px = px
+                .then(() => answers.push(removedAnswers[index]))
+                .then(() => models.Answer.createAnswers(input))
+                .then(shared.throwingHandler, shared.expectedErrorHandler('answerRequiredMissing'));
+        });
+        px = px.then(() => {
+            answers.push(removedAnswers[0]);
+            return models.Answer.createAnswers(input);
+        });
+        return px;
+    });
+
+    it('error: answer with invalid question id', function () {
+        const survey = store.surveys[0];
+        const qxs = survey.questions;
+        const answers = entityGen.answerQuestions(qxs);
+        const input = {
+            userId: store.userIds[0],
+            surveyId: store.surveys[3].id,
+            answers
+        };
+        answers[0].questionId = 9999;
         return models.Answer.createAnswers(input)
-            .then(function () {
-                return Survey.getAnsweredSurveyById(input.userId, input.surveyId)
-                    .then(answeredSurvey => {
-                        const expected = _.cloneDeep(survey);
-                        expected.questions.forEach((qx, index) => {
-                            qx.answer = answers[index].answer;
-                            if (qx.type === 'choices' && qx.answer.choices) {
-                                qx.answer.choices.forEach((choice) => {
-                                    if (!choice.textValue && !choice.hasOwnProperty('boolValue')) {
-                                        choice.boolValue = true;
-                                    }
-                                });
-                            }
-                        });
-                        expect(answeredSurvey).to.deep.equal(expected);
-                        return Survey.getAnsweredSurveyByName(input.userId, survey.name)
-                            .then(answeredSurveyByName => {
-                                expect(answeredSurveyByName).to.deep.equal(answeredSurvey);
-                            });
-                    });
-            });
+            .then(shared.throwingHandler, shared.expectedErrorHandler('answerQxNotInSurvey'));
     });
 });
