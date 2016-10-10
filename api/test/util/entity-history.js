@@ -59,6 +59,16 @@ class History {
     serverList() {
         return this.servers;
     }
+
+    reloadServer(server) {
+        const id = server.id;
+        [this.history, this.servers, this.removed].forEach(collection => {
+            const index = _.findLastIndex(collection, { id });
+            if (index >= 0) {
+                collection[index] = server;
+            }
+        });
+    }
 }
 
 module.exports = History;

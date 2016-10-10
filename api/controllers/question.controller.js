@@ -13,9 +13,16 @@ exports.createQuestion = function (req, res) {
     if (!jsonSchema('newQuestion', question, res)) {
         return;
     }
-    Question.createQuestion(question)
-        .then(id => res.status(201).json({ id }))
-        .catch(shared.handleError(res));
+    const parent = _.get(req, 'swagger.params.parent.value');
+    if (parent) {
+        Question.replaceQuestion(parent, question)
+            .then(result => res.status(201).json(result))
+            .catch(shared.handleError(res));
+    } else {
+        Question.createQuestion(question)
+            .then(id => res.status(201).json({ id }))
+            .catch(shared.handleError(res));
+    }
 };
 
 exports.updateQuestion = function (req, res) {
