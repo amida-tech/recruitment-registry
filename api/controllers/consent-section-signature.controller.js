@@ -5,11 +5,11 @@ const _ = require('lodash');
 const models = require('../models');
 const shared = require('./shared.js');
 
-const DocumentSignature = models.DocumentSignature;
+const ConsentSectionSignature = models.ConsentSectionSignature;
 
 exports.createSignature = function (req, res) {
-    const { documentId } = _.get(req, 'swagger.params.document.value');
-    DocumentSignature.createSignature(req.user.id, documentId)
+    const { consentSectionId } = _.get(req, 'swagger.params.consent_section.value');
+    ConsentSectionSignature.createSignature(req.user.id, consentSectionId)
         .then(({ id }) => res.status(201).json({ id }))
         .catch(shared.handleError(res));
 };

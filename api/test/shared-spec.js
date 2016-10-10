@@ -80,7 +80,7 @@ exports.createSurvey = function (store, qxIndices) {
     };
 };
 
-exports.createDocumentTypeFn = (function () {
+exports.createConsentSectionTypeFn = (function () {
     let index = -1;
 
     return function (store) {
@@ -90,44 +90,44 @@ exports.createDocumentTypeFn = (function () {
                 name: `type_${index}`,
                 description: `description_${index}`
             };
-            return models.DocumentType.createDocumentType(docType)
+            return models.ConsentSectionType.createConsentSectionType(docType)
                 .then(({ id }) => {
                     const newDocType = Object.assign({}, docType, { id });
-                    store.documentTypes.push(newDocType);
-                    store.activeDocuments.push(null);
+                    store.consentSectionTypes.push(newDocType);
+                    store.activeConsentSections.push(null);
                 });
         };
     };
 })();
 
-exports.createDocumentFn = (function () {
+exports.createConsentSectionFn = (function () {
     let index = -1;
 
     return function (store, typeIndex) {
         return function () {
             ++index;
-            const typeId = store.documentTypes[typeIndex].id;
+            const typeId = store.consentSectionTypes[typeIndex].id;
             const doc = {
                 typeId,
-                content: `Sample document content ${index}`
+                content: `Sample consent section content ${index}`
             };
-            store.clientDocuments.push(doc);
-            return models.Document.createDocument(doc)
+            store.clientConsentSections.push(doc);
+            return models.ConsentSection.createConsentSection(doc)
                 .then(({ id }) => {
                     const docToStore = Object.assign({}, doc, { id });
-                    store.documents.push(docToStore);
-                    store.activeDocuments[typeIndex] = docToStore;
+                    store.consentSections.push(docToStore);
+                    store.activeConsentSections[typeIndex] = docToStore;
                 });
         };
     };
 })();
 
-exports.signDocumentTypeFn = function (store, userIndex, typeIndex) {
+exports.signConsentSectionTypeFn = function (store, userIndex, typeIndex) {
     return function () {
-        const documentId = store.activeDocuments[typeIndex].id;
+        const consentSectionId = store.activeConsentSections[typeIndex].id;
         const userId = store.userIds[userIndex];
-        store.signatures[userIndex].push(documentId);
-        return models.DocumentSignature.createSignature(userId, documentId);
+        store.signatures[userIndex].push(consentSectionId);
+        return models.ConsentSectionSignature.createSignature(userId, consentSectionId);
     };
 };
 

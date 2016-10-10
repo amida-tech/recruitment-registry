@@ -5,13 +5,13 @@ const _ = require('lodash');
 const RRError = require('../lib/rr-error');
 
 module.exports = function (sequelize, DataTypes) {
-    const Document = sequelize.define('document', {
+    const ConsentSection = sequelize.define('consent_section', {
         typeId: {
             type: DataTypes.INTEGER,
             allowNull: false,
             field: 'type_id',
             references: {
-                model: 'document_type',
+                model: 'consent_section_type',
                 key: 'id'
             }
         },
@@ -34,7 +34,7 @@ module.exports = function (sequelize, DataTypes) {
         deletedAt: 'deletedAt',
         paranoid: true,
         classMethods: {
-            listDocuments: function (typeIds, tx) {
+            listConsentSections: function (typeIds, tx) {
                 const query = {
                     raw: true,
                     attributes: ['id', 'description'],
@@ -46,7 +46,7 @@ module.exports = function (sequelize, DataTypes) {
                 if (tx) {
                     query.transaction = tx;
                 }
-                return sequelize.models.document_type.findAll(query)
+                return sequelize.models.consent_section_type.findAll(query)
                     .then(docTypes => {
                         if (!(typeIds && typeIds.length)) {
                             typeIds = _.map(docTypes, 'id');
@@ -60,10 +60,10 @@ module.exports = function (sequelize, DataTypes) {
                         if (tx) {
                             query.transaction = tx;
                         }
-                        return Document.findAll(query)
+                        return ConsentSection.findAll(query)
                             .then(docs => {
                                 if (docs.length !== typeIds.length) {
-                                    return RRError.reject('documentNoSystemDocuments');
+                                    return RRError.reject('noSystemConsentSections');
                                 } else {
                                     const docTypeMap = _.keyBy(docTypes, 'id');
                                     return docs.map(({ id, typeId }) => {
@@ -74,19 +74,19 @@ module.exports = function (sequelize, DataTypes) {
                             });
                     });
             },
-            createDocument: function ({ typeId, content }) {
+            createConsentSection: function ({ typeId, content }) {
                 return sequelize.transaction(function (tx) {
-                    return Document.destroy({ where: { typeId } }, { transaction: tx })
-                        .then(() => Document.create({ typeId, content }, { transaction: tx })
+                    return ConsentSection.destroy({ where: { typeId } }, { transaction: tx })
+                        .then(() => ConsentSection.create({ typeId, content }, { transaction: tx })
                             .then(({ id }) => ({ id }))
                         );
                 });
             },
             getContent: function (id) {
-                return Document.findById(id, { raw: true, attributes: ['content'] });
+                return ConsentSection.findById(id, { raw: true, attributes: ['content'] });
             }
         }
     });
 
-    return Document;
+    return ConsentSection;
 };

@@ -4,11 +4,11 @@ const _ = require('lodash');
 
 const RRError = require('../lib/rr-error');
 
-const missingDocumentHandler = function (sequelize) {
-    return function (documents) {
-        if (documents && documents.length > 0) {
+const missingConsentSectionHandler = function (sequelize) {
+    return function (consentSections) {
+        if (consentSections && consentSections.length > 0) {
             const err = new RRError('profileSignaturesMissing');
-            err.documents = documents;
+            err.consentSection = consentSections;
             return sequelize.Promise.reject(err);
         }
     };
@@ -189,12 +189,12 @@ module.exports = function (sequelize, DataTypes) {
                         },
                         transaction: tx
                     }))
-                    .then(() => sequelize.models.survey_document.listSurveyDocumentTypes({
+                    .then(() => sequelize.models.survey_consent_section.listSurveyConsentSectionTypes({
                         userId,
                         surveyId,
                         action: 'create'
                     }, tx))
-                    .then(missingDocumentHandler(sequelize))
+                    .then(missingConsentSectionHandler(sequelize))
                     .then(() => {
                         answers = _.filter(answers, answer => answer.answer);
                         if (answers.length) {
@@ -208,12 +208,12 @@ module.exports = function (sequelize, DataTypes) {
                 });
             },
             getAnswers: function ({ userId, surveyId }) {
-                return sequelize.models.survey_document.listSurveyDocumentTypes({
+                return sequelize.models.survey_consent_section.listSurveyConsentSectionTypes({
                         userId,
                         surveyId,
                         action: 'read'
                     })
-                    .then(missingDocumentHandler(sequelize))
+                    .then(missingConsentSectionHandler(sequelize))
                     .then(() => {
                         return sequelize.query('select a.question_choice_id as "questionChoiceId", a.value as value, a.answer_type_id as type, q.type as qtype, q.id as qid from answer a, question q where a.deleted_at is null and a.user_id = :userid and a.survey_id = :surveyid and a.question_id = q.id', {
                                 replacements: {

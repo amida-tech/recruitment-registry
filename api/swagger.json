@@ -180,11 +180,11 @@
                 }
             }
         },
-        "/users/documents": {
+        "/users/consent-sections": {
             "x-swagger-router-controller": "user.controller",
             "get": {
-                "operationId": "listDocuments",
-                "summary": "Lists the required documents",
+                "operationId": "listConsentSections",
+                "summary": "Lists the required consent sections",
                 "security": [{
                     "participant": []
                 }],
@@ -779,19 +779,19 @@
                 }
             }
         },
-        "/document-types": {
-            "x-swagger-router-controller": "document-type.controller",
+        "/consent-section-types": {
+            "x-swagger-router-controller": "consent-section-type.controller",
             "post": {
-                "summary": "Creates new document type",
-                "description": "Each document type describes a document that users have to accept for various registry functionality such as consent form or terms of use.  There can be multiple documents with the same type but only one of them can be active at one time.",
-                "operationId": "createDocumentType",
+                "summary": "Creates new consent section type",
+                "description": "Each consent section type describes a consent section that users have to accept for various registry functionality such as consent form or terms of use.  There can be multiple consent sections with the same type but only one of them can be active at one time.",
+                "operationId": "createConsentSectionType",
                 "security": [{
                     "admin": []
                 }],
                 "parameters": [{
-                    "name": "newDocumentType",
+                    "name": "newConsentSectionType",
                     "in": "body",
-                    "description": "Name and description of the new document type.",
+                    "description": "Name and description of the new consent section type.",
                     "required": true,
                     "schema": {
                         "type": "object",
@@ -819,8 +819,8 @@
                 }
             },
             "get": {
-                "summary": "Lists document types",
-                "operationId": "listDocumentTypes",
+                "summary": "Lists consent section types",
+                "operationId": "listConsentSectionTypes",
                 "security": [{
                     "admin": []
                 }],
@@ -856,8 +856,8 @@
                 }
             }
         },
-        "/document-types/{id}": {
-            "x-swagger-router-controller": "document-type.controller",
+        "/consent-section-types/{id}": {
+            "x-swagger-router-controller": "consent-section-type.controller",
             "parameters": [{
                 "name": "id",
                 "in": "path",
@@ -865,8 +865,8 @@
                 "type": "integer"
             }],
             "delete": {
-                "summary": "Deletes the document type",
-                "operationId": "deleteDocumentType",
+                "summary": "Deletes the consent section type",
+                "operationId": "deleteConsentSectionType",
                 "security": [{
                     "admin": []
                 }],
@@ -880,8 +880,8 @@
                 }
             }
         },
-        "/documents/type/{typeId}": {
-            "x-swagger-router-controller": "document.controller",
+        "/consent-sections/type/{typeId}": {
+            "x-swagger-router-controller": "consent-section.controller",
             "parameters": [{
                 "name": "typeId",
                 "in": "path",
@@ -889,8 +889,8 @@
                 "type": "integer"
             }],
             "post": {
-                "summary": "Creates a document of type",
-                "operationId": "createDocument",
+                "summary": "Creates a consent section of type",
+                "operationId": "createConsentSection",
                 "security": [{
                     "admin": []
                 }],
@@ -921,8 +921,8 @@
                 }
             }
         },
-        "/documents/{id}": {
-            "x-swagger-router-controller": "document.controller",
+        "/consent-sections/{id}": {
+            "x-swagger-router-controller": "consent-section.controller",
             "parameters": [{
                 "name": "id",
                 "in": "path",
@@ -930,7 +930,7 @@
                 "type": "integer"
             }],
             "get": {
-                "summary": "Gets document content",
+                "summary": "Gets consent section content",
                 "operationId": "getContent",
                 "responses": {
                     "200": {
@@ -953,24 +953,24 @@
                 }
             }
         },
-        "/document-signatures": {
-            "x-swagger-router-controller": "document-signature.controller",
+        "/consent-section-signatures": {
+            "x-swagger-router-controller": "consent-section-signature.controller",
             "post": {
-                "summary": "Marks a document as signed",
+                "summary": "Marks a consent section as signed",
                 "operationId": "createSignature",
                 "security": [{
                     "participant": []
                 }],
                 "parameters": [{
-                    "name": "document",
+                    "name": "consent_section",
                     "in": "body",
-                    "description": "Document to be signed",
+                    "description": "ConsentSection to be signed",
                     "required": true,
                     "schema": {
                         "type": "object",
-                        "required": ["documentId"],
+                        "required": ["consentSectionId"],
                         "properties": {
-                            "documentId": {
+                            "consentSectionId": {
                                 "type": "integer",
                                 "minimum": 1
                             }

@@ -5,23 +5,23 @@ const _ = require('lodash');
 const models = require('../models');
 const shared = require('./shared.js');
 
-const DocumentType = models.DocumentType;
+const ConsentSectionType = models.ConsentSectionType;
 
-exports.createDocumentType = function (req, res) {
-    DocumentType.createDocumentType(req.body)
+exports.createConsentSectionType = function (req, res) {
+    ConsentSectionType.createConsentSectionType(req.body)
         .then(({ id }) => res.status(201).json({ id }))
         .catch(shared.handleError(res));
 };
 
-exports.listDocumentTypes = function (req, res) {
-    DocumentType.listDocumentTypes()
+exports.listConsentSectionTypes = function (req, res) {
+    ConsentSectionType.listConsentSectionTypes()
         .then(docTypes => res.status(200).json(docTypes))
         .catch(shared.handleError(res));
 };
 
-exports.deleteDocumentType = function (req, res) {
+exports.deleteConsentSectionType = function (req, res) {
     const id = _.get(req, 'swagger.params.id.value');
-    DocumentType.deleteDocumentType(id)
+    ConsentSectionType.deleteConsentSectionType(id)
         .then(() => res.status(204).json({}))
         .catch(shared.handleError(res));
 };

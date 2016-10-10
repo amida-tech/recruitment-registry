@@ -13,25 +13,25 @@ const tokener = require('../../lib/tokener');
 const expect = chai.expect;
 const entityGen = new Generator();
 
-const Document = models.Document;
+const ConsentSection = models.ConsentSection;
 const Registry = models.Registry;
-const SurveyDocument = models.SurveyDocument;
+const SurveyConsentSection = models.SurveyConsentSection;
 const User = models.User;
 
-describe('survey-document unit', function () {
+describe('survey consent section unit', function () {
     const docTypeCount = 2;
     const userCount = 4;
 
     const store = {
         clientRegistry: null,
         profileSurvey: null,
-        profileSurveyDocuments: [],
+        profileSurveyConsentSections: [],
         userIds: [],
         profileResponses: [],
-        documentTypes: [],
-        clientDocuments: [],
-        documents: [],
-        activeDocuments: [],
+        consentSectionTypes: [],
+        clientConsentSections: [],
+        consentSections: [],
+        activeConsentSections: [],
         signatures: _.range(userCount).map(() => [])
     };
 
@@ -42,63 +42,63 @@ describe('survey-document unit', function () {
         return Registry.createProfileSurvey(survey);
     });
 
-    it('get registry profile survey, verify no required documents', function () {
+    it('get registry profile survey, verify no required consentSections', function () {
         return Registry.getProfileSurvey()
             .then(survey => {
                 expect(survey.id).to.be.above(0);
-                expect(survey.documents).to.equal(undefined);
+                expect(survey.consentSection).to.equal(undefined);
                 store.profileSurvey = survey;
             });
     });
 
     for (let i = 0; i < docTypeCount; ++i) {
-        it(`create document type ${i}`, shared.createDocumentTypeFn(store));
+        it(`create consent section type ${i}`, shared.createConsentSectionTypeFn(store));
     }
 
-    const createProfileSurveyDocumentFn = function (typeIndex, action) {
+    const createProfileSurveyConsentSectionFn = function (typeIndex, action) {
         return function () {
-            const documentTypeId = store.documentTypes[typeIndex].id;
+            const consentSectionTypeId = store.consentSectionTypes[typeIndex].id;
             const surveyId = store.profileSurvey.id;
-            return SurveyDocument.createSurveyDocumentType({ surveyId, documentTypeId, action })
-                .then(({ id }) => store.profileSurveyDocuments.push({ id, documentTypeId, action }));
+            return SurveyConsentSection.createSurveyConsentSectionType({ surveyId, consentSectionTypeId, action })
+                .then(({ id }) => store.profileSurveyConsentSections.push({ id, consentSectionTypeId, action }));
         };
     };
 
     for (let i = 0; i < docTypeCount; ++i) {
-        it(`require document type ${i} in survey question create`, createProfileSurveyDocumentFn(i, 'create'));
-        it(`require document type ${i} in survey question read`, createProfileSurveyDocumentFn(i, 'read'));
+        it(`require consent section type ${i} in survey question create`, createProfileSurveyConsentSectionFn(i, 'create'));
+        it(`require consent section type ${i} in survey question read`, createProfileSurveyConsentSectionFn(i, 'read'));
     }
 
-    it('error: get profile survey with no documents of existing types', function () {
+    it('error: get profile survey with no consentSections of existing types', function () {
         return Registry.getProfileSurvey()
-            .then(shared.throwingHandler, shared.expectedErrorHandler('documentNoSystemDocuments'));
+            .then(shared.throwingHandler, shared.expectedErrorHandler('noSystemConsentSections'));
     });
 
     for (let i = 0; i < docTypeCount; ++i) {
-        it(`create document of type ${i}`, shared.createDocumentFn(store, i));
+        it(`create consent section of type ${i}`, shared.createConsentSectionFn(store, i));
     }
 
-    const expectedDocuments = function (indices) {
+    const expectedConsentSections = function (indices) {
         const rawExpected = indices.map(index => ({
-            id: store.activeDocuments[index].id,
-            description: store.documentTypes[index].description
+            id: store.activeConsentSections[index].id,
+            description: store.consentSectionTypes[index].description
         }));
         return _.sortBy(rawExpected, 'id');
     };
 
-    it('get registry profile survey with required documents', function () {
+    it('get registry profile survey with required consentSections', function () {
         return Registry.getProfileSurvey()
             .then(actual => {
                 expect(actual.id).to.equal(store.profileSurvey.id);
-                const expected = expectedDocuments([0, 1]);
-                expect(actual.documents).to.deep.equal(expected);
+                const expected = expectedConsentSections([0, 1]);
+                expect(actual.consentSection).to.deep.equal(expected);
             });
     });
 
-    const verifyDocumentContentFn = function (typeIndex) {
+    const verifyConsentSectionContentFn = function (typeIndex) {
         return function () {
-            const doc = store.activeDocuments[typeIndex];
-            return Document.getContent(doc.id)
+            const doc = store.activeConsentSections[typeIndex];
+            return ConsentSection.getContent(doc.id)
                 .then(result => {
                     expect(result).to.deep.equal({ content: doc.content });
                 });
@@ -106,7 +106,7 @@ describe('survey-document unit', function () {
     };
 
     for (let i = 0; i < 2; ++i) {
-        it(`get/verify document content of type ${i}`, verifyDocumentContentFn(i));
+        it(`get/verify consent section content of type ${i}`, verifyConsentSectionContentFn(i));
     }
 
     const formProfileResponse = function () {
@@ -115,33 +115,33 @@ describe('survey-document unit', function () {
         store.profileResponses.push({ user, answers });
     };
 
-    const createProfileWithoutSignaturesFn = function (index, signIndices, missingDocumentIndices) {
+    const createProfileWithoutSignaturesFn = function (index, signIndices, missingConsentSectionIndices) {
         return function () {
             let signObj = {};
             if (signIndices) {
-                const signatures = signIndices.map(signIndex => store.activeDocuments[signIndex].id);
+                const signatures = signIndices.map(signIndex => store.activeConsentSections[signIndex].id);
                 signObj = Object.assign({}, store.profileResponses[index], { signatures });
             }
             const response = Object.assign({}, store.profileResponses[index], signObj);
             return Registry.createProfile(response)
                 .then(shared.throwingHandler, shared.expectedErrorHandler('profileSignaturesMissing'))
                 .then(err => {
-                    const expected = expectedDocuments(missingDocumentIndices);
-                    expect(err.documents).to.deep.equal(expected);
+                    const expected = expectedConsentSections(missingConsentSectionIndices);
+                    expect(err.consentSection).to.deep.equal(expected);
                 });
         };
     };
 
     const createProfileFn = function (index, signIndices) {
         return function () {
-            const signatures = signIndices.map(signIndex => store.activeDocuments[signIndex].id);
+            const signatures = signIndices.map(signIndex => store.activeConsentSections[signIndex].id);
             let signObj = Object.assign({}, store.profileResponses[index], { signatures });
             const response = Object.assign({}, store.profileResponses[index], signObj);
             return Registry.createProfile(response)
                 .then(({ token }) => tokener.verifyJWT(token))
                 .then(({ id }) => store.userIds.push(id))
-                .then(() => User.listDocuments(store.userIds[index]))
-                .then(documents => expect(documents).to.have.length(0));
+                .then(() => User.listConsentSections(store.userIds[index]))
+                .then(consentSections => expect(consentSections).to.have.length(0));
         };
     };
 
@@ -163,14 +163,14 @@ describe('survey-document unit', function () {
         };
     };
 
-    const readProfileWithoutSignaturesFn = function (index, missingDocumentIndices) {
+    const readProfileWithoutSignaturesFn = function (index, missingConsentSectionIndices) {
         return function () {
             const userId = store.userIds[index];
             return Registry.getProfile({ userId })
                 .then(shared.throwingHandler, shared.expectedErrorHandler('profileSignaturesMissing'))
                 .then(err => {
-                    const expected = expectedDocuments(missingDocumentIndices);
-                    expect(err.documents).to.deep.equal(expected);
+                    const expected = expectedConsentSections(missingConsentSectionIndices);
+                    expect(err.consentSection).to.deep.equal(expected);
                 });
         };
     };
@@ -186,17 +186,17 @@ describe('survey-document unit', function () {
     }
 
     for (let i = 0; i < docTypeCount; ++i) {
-        it(`create document of type ${i}`, shared.createDocumentFn(store, i));
+        it(`create consent section of type ${i}`, shared.createConsentSectionFn(store, i));
     }
 
     for (let i = 0; i < 4; ++i) {
         it(`read user profile ${i} without signatures`, readProfileWithoutSignaturesFn(i, [0, 1]));
     }
 
-    it('user 0 signs document 0', shared.signDocumentTypeFn(store, 0, 0));
-    it('user 0 signs document 1', shared.signDocumentTypeFn(store, 0, 1));
-    it('user 2 signs document 0', shared.signDocumentTypeFn(store, 2, 0));
-    it('user 3 signs document 1', shared.signDocumentTypeFn(store, 3, 1));
+    it('user 0 signs consent section 0', shared.signConsentSectionTypeFn(store, 0, 0));
+    it('user 0 signs consent section 1', shared.signConsentSectionTypeFn(store, 0, 1));
+    it('user 2 signs consent section 0', shared.signConsentSectionTypeFn(store, 2, 0));
+    it('user 3 signs consent section 1', shared.signConsentSectionTypeFn(store, 3, 1));
 
     it(`read user profile 0 with signatures`, readProfileFn(0));
     it('read user profile 1 without signatures', readProfileWithoutSignaturesFn(1, [0, 1]));

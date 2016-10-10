@@ -75,12 +75,12 @@ errors.surveyNoQuestions = {
     msg: 'Surveys without questions are not accepted.'
 };
 
-errors.documentNoSystemDocuments = {
-    msg: 'System does not have the required documents uploaded.'
+errors.noSystemConsentSections = {
+    msg: 'System does not have the required consent sections uploaded.'
 };
 
 errors.profileSignaturesMissing = {
-    msg: 'Required document signatures are not included.'
+    msg: 'Required consent section signatures are not included.'
 };
 
 errors.jsonSchemaFailed = {

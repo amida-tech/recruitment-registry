@@ -206,20 +206,20 @@ module.exports = function (sequelize, DataTypes) {
                     }
                 });
             },
-            listDocuments: function (userId, docTypeIds, tx) {
-                return sequelize.models.document.listDocuments(docTypeIds, tx)
+            listConsentSections: function (userId, docTypeIds, tx) {
+                return sequelize.models.consent_section.listConsentSections(docTypeIds, tx)
                     .then(activeDocs => {
                         const query = {
                             where: { userId },
                             raw: true,
-                            attributes: ['documentId'],
-                            order: 'document_id'
+                            attributes: ['consentSectionId'],
+                            order: 'consent_section_id'
                         };
                         if (tx) {
                             query.transaction = tx;
                         }
-                        return sequelize.models.document_signature.findAll(query)
-                            .then(signedDocs => _.map(signedDocs, 'documentId'))
+                        return sequelize.models.consent_section_signature.findAll(query)
+                            .then(signedDocs => _.map(signedDocs, 'consentSectionId'))
                             .then(signedDocIds => activeDocs.filter(activeDoc => signedDocIds.indexOf(activeDoc.id) < 0));
                     });
             }
