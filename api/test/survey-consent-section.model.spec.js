@@ -11,8 +11,8 @@ const Generator = require('./util/entity-generator');
 const tokener = require('../lib/tokener');
 
 const expect = chai.expect;
-const entityGen = new Generator();
-const shared = new SharedSpec();
+const generator = new Generator();
+const shared = new SharedSpec(generator);
 
 const ConsentSection = models.ConsentSection;
 const Registry = models.Registry;
@@ -25,15 +25,15 @@ describe('survey consent section unit', function () {
     const userCount = 4;
 
     const history = new ConsentSectionHistory(userCount);
-    history.clientRegistry = null;
-    history.profileSurvey = null;
-    history.profileSurveyConsentSections = [];
-    history.profileResponses = [];
+
+    let profileSurvey = null;
+    const profileSurveyConsentSections = [];
+    const profileResponses = [];
 
     before(shared.setUpFn());
 
     it('create registry', function () {
-        const survey = entityGen.newSurvey();
+        const survey = generator.newSurvey();
         return Registry.createProfileSurvey(survey);
     });
 
@@ -42,7 +42,7 @@ describe('survey consent section unit', function () {
             .then(survey => {
                 expect(survey.id).to.be.above(0);
                 expect(survey.consentSection).to.equal(undefined);
-                history.profileSurvey = survey;
+                profileSurvey = survey;
             });
     });
 
@@ -52,10 +52,10 @@ describe('survey consent section unit', function () {
 
     const createProfileSurveyConsentSectionFn = function (typeIndex, action) {
         return function () {
-            const consentSectionTypeId = history.consentSectionTypes[typeIndex].id;
-            const surveyId = history.profileSurvey.id;
+            const consentSectionTypeId = history.typeId(typeIndex);
+            const surveyId = profileSurvey.id;
             return SurveyConsentSection.createSurveyConsentSectionType({ surveyId, consentSectionTypeId, action })
-                .then(({ id }) => history.profileSurveyConsentSections.push({ id, consentSectionTypeId, action }));
+                .then(({ id }) => profileSurveyConsentSections.push({ id, consentSectionTypeId, action }));
         };
     };
 
@@ -76,7 +76,7 @@ describe('survey consent section unit', function () {
     it('get registry profile survey with required consentSections', function () {
         return Registry.getProfileSurvey()
             .then(actual => {
-                expect(actual.id).to.equal(history.profileSurvey.id);
+                expect(actual.id).to.equal(profileSurvey.id);
                 const expected = history.serversInList([0, 1]);
                 expect(actual.consentSection).to.deep.equal(expected);
             });
@@ -97,9 +97,9 @@ describe('survey consent section unit', function () {
     }
 
     const formProfileResponse = function () {
-        const answers = entityGen.answerQuestions(history.profileSurvey.questions);
-        const user = entityGen.newUser();
-        history.profileResponses.push({ user, answers });
+        const answers = generator.answerQuestions(profileSurvey.questions);
+        const user = generator.newUser();
+        profileResponses.push({ user, answers });
     };
 
     const createProfileWithoutSignaturesFn = function (index, signIndices, missingConsentSectionIndices) {
@@ -107,9 +107,9 @@ describe('survey consent section unit', function () {
             let signObj = {};
             if (signIndices) {
                 const signatures = signIndices.map(signIndex => history.id(signIndex));
-                signObj = Object.assign({}, history.profileResponses[index], { signatures });
+                signObj = Object.assign({}, profileResponses[index], { signatures });
             }
-            const response = Object.assign({}, history.profileResponses[index], signObj);
+            const response = Object.assign({}, profileResponses[index], signObj);
             return Registry.createProfile(response)
                 .then(shared.throwingHandler, shared.expectedErrorHandler('profileSignaturesMissing'))
                 .then(err => {
@@ -121,9 +121,9 @@ describe('survey consent section unit', function () {
 
     const createProfileFn = function (index, signIndices) {
         return function () {
-            const signatures = signIndices.map(signIndex => history.activeConsentSections[signIndex].id);
-            let signObj = Object.assign({}, history.profileResponses[index], { signatures });
-            const response = Object.assign({}, history.profileResponses[index], signObj);
+            const signatures = signIndices.map(signIndex => history.id(signIndex));
+            let signObj = Object.assign({}, profileResponses[index], { signatures });
+            const response = Object.assign({}, profileResponses[index], signObj);
             return Registry.createProfile(response)
                 .then(({ token }) => tokener.verifyJWT(token))
                 .then(({ id }) => history.hxUser.push(response.user, { id }))
@@ -137,7 +137,7 @@ describe('survey consent section unit', function () {
             const userId = history.userId(index);
             return Registry.getProfile({ userId })
                 .then(function (result) {
-                    const pr = history.profileResponses[index];
+                    const pr = profileResponses[index];
                     const expectedUser = _.cloneDeep(pr.user);
                     const user = result.user;
                     expectedUser.id = user.id;
