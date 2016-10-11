@@ -20,7 +20,7 @@ class History {
     }
 
     pushWithId(client, id) {
-        const server = Object.assign({}, client, {id});
+        const server = Object.assign({}, client, { id });
         this.push(client, server);
     }
 

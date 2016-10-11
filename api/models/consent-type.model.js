@@ -1,5 +1,7 @@
 'use strict';
 
+const RRError = require('../lib/rr-error');
+
 module.exports = function (sequelize, DataTypes) {
     const ConsentType = sequelize.define('consent_type', {
         name: {
@@ -45,12 +47,20 @@ module.exports = function (sequelize, DataTypes) {
                     .then(({ id }) => ({ id }));
             },
             deleteConsentType: function (id) {
-                return sequelize.transaction(function (tx) {
-                    return ConsentType.destroy({ where: { id }, transaction: tx })
-                        .then(() => sequelize.models.consent_document.destroy({
-                            where: { typeId: id }
-                        }, { transaction: tx }));
-                });
+                const ConsentSection = sequelize.models.consent_section;
+                return ConsentSection.count({ where: { typeId: id } })
+                    .then(count => {
+                        if (count) {
+                            return RRError.reject('consentTypeDeleteOnConsent');
+                        } else {
+                            return sequelize.transaction(function (tx) {
+                                return ConsentType.destroy({ where: { id }, transaction: tx })
+                                    .then(() => sequelize.models.consent_document.destroy({
+                                        where: { typeId: id }
+                                    }, { transaction: tx }));
+                            });
+                        }
+                    });
             }
         }
     });

@@ -6,12 +6,16 @@ const chai = require('chai');
 const _ = require('lodash');
 
 const SharedSpec = require('./util/shared-spec');
+const Generator = require('./util/entity-generator');
+const History = require('./util/entity-history');
 const ConsentDocumentHistory = require('./util/consent-document-history');
 const models = require('../models');
 const expect = chai.expect;
 
 const User = models.User;
-const shared = new SharedSpec();
+const generator = new Generator();
+const shared = new SharedSpec(generator);
+const Consent = models.Consent;
 const ConsentType = models.ConsentType;
 const ConsentDocument = models.ConsentDocument;
 const ConsentSignature = models.ConsentSignature;
@@ -20,6 +24,7 @@ describe('consent document/type/signature unit', function () {
     const userCount = 4;
 
     const history = new ConsentDocumentHistory(userCount);
+    const hxConsent = new History();
 
     before(shared.setUpFn());
 
@@ -183,6 +188,23 @@ describe('consent document/type/signature unit', function () {
     it('verify consent sections required for user 0', verifyConsentDocumentsFn(0, [0]));
     it('user 0 signs consent document 0', signConsentTypeFn(0, 0));
     it('verify consent sections required for user 0', verifyConsentDocumentsFn(0, []));
+
+    it(`create consent from types 0, 1, 2`, function () {
+        const typeIds = [0, 1, 2].map(typeIndex => history.typeId(typeIndex));
+        const clientConsent = generator.newConsent({ typeIds });
+        return Consent.createConsent(clientConsent)
+            .then(result => hxConsent.pushWithId(clientConsent, result.id));
+    });
+
+    it('error: delete consent type when on a consent', function () {
+        const id = history.typeId(1);
+        return ConsentType.deleteConsentType(id)
+            .then(shared.throwingHandler, shared.expectedErrorHandler('consentTypeDeleteOnConsent'))
+            .then(() => {
+                const consentId = hxConsent.id(0);
+                return Consent.deleteConsent(consentId);
+            });
+    });
 
     it('delete consent type 1', function () {
         const id = history.typeId(1);

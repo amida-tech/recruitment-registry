@@ -35,7 +35,7 @@ module.exports = function (sequelize, DataTypes) {
                 return ConsentSignature.create({ userId, consentDocumentId }, options)
                     .then(({ id }) => ({ id }));
             },
-            bulkCreateSignatures: function(userId, consentDocumentsIds) {
+            bulkCreateSignatures: function (userId, consentDocumentsIds) {
                 const pxs = consentDocumentsIds.map(consentDocumentId => {
                     return ConsentSignature.create({ userId, consentDocumentId });
                 });

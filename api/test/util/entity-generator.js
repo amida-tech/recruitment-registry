@@ -242,7 +242,7 @@ class Generator {
         };
         Object.assign(result, override);
         return result;
-     }
+    }
 }
 
 module.exports = Generator;
