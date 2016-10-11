@@ -38,6 +38,10 @@ class ConsentDocumentHistory {
         return this.consentTypes;
     }
 
+    type(typeIndex) {
+        return this.consentTypes(typeIndex);
+    }
+
     push(typeIndex, client, server) {
         const fullServer = Object.assign({}, client, server);
         if (!fullServer.updateComment) {

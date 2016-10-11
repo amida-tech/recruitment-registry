@@ -16,7 +16,7 @@ const ConsentType = models.ConsentType;
 const ConsentDocument = models.ConsentDocument;
 const ConsentSignature = models.ConsentSignature;
 
-describe('consent section unit', function () {
+describe('consent document/type/signature unit', function () {
     const userCount = 4;
 
     const history = new ConsentDocumentHistory(userCount);
