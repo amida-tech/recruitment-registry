@@ -153,6 +153,7 @@ class Generator {
         this.consentTypeIndex = -1;
         this.consentDocumentIndex = -1;
         this.consentTypeAdded = {};
+        this.consentIndex = -1;
     }
 
     newUser(override) {
@@ -230,6 +231,18 @@ class Generator {
         Object.assign(result, override);
         return result;
     }
+
+    newConsent(override) {
+        if (!override.typeIds) {
+            throw new Error('typeIds is required.');
+        }
+        const index = ++this.consentIndex;
+        const result = {
+            name: `name_${index}`
+        };
+        Object.assign(result, override);
+        return result;
+     }
 }
 
 module.exports = Generator;

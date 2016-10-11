@@ -1,4 +1,4 @@
-/* global xdescribe,before,it*/
+/* global describe,before,it*/
 'use strict';
 process.env.NODE_ENV = 'test';
 
@@ -18,7 +18,7 @@ const shared = new SharedSpec(generator);
 const Consent = models.Consent;
 const ConsentSignature = models.ConsentSignature;
 
-xdescribe('consent unit', function () {
+describe('consent unit', function () {
     const userCount = 4;
     const typeCount = 12;
 
@@ -51,12 +51,12 @@ xdescribe('consent unit', function () {
             const typeIds = typeIndices.map(typeIndex => history.typeId(typeIndex));
             const clientConsent = generator.newConsent({ typeIds });
             return Consent.createConsent(clientConsent)
-                .then(result => hxConsent.push(clientConsent, result));
+                .then(result => hxConsent.pushWithId(clientConsent, result.id));
         });
     });
 
     _.range(consentSpecs.length).forEach(index => {
-        it(`get/verify consent ${index})`, function () {
+        it(`get/verify consent ${index}`, function () {
             const id = hxConsent.id(index);
             return Consent.getConsent(id)
                 .then(consent => {
@@ -67,7 +67,7 @@ xdescribe('consent unit', function () {
     });
 
     _.range(consentSpecs.length).forEach(index => {
-        it(`get/verify consent by name ${index})`, function () {
+        it(`get/verify consent by name ${index}`, function () {
             const name = hxConsent.client(index).name;
             return Consent.getConsentByName(name)
                 .then(consent => {
@@ -80,7 +80,7 @@ xdescribe('consent unit', function () {
     const listConsentsFn = function () {
         return Consent.listConsents()
             .then(consents => {
-                const expected = hxConsent.serversInList();
+                const expected = hxConsent.serverList();
                 expect(consents).to.deep.equal(expected);
             });
     };
@@ -98,15 +98,16 @@ xdescribe('consent unit', function () {
     it('list/verify consents', listConsentsFn);
 
     const formExpectedConsent = function (index, typeIndices, signatures) {
-        const serverConsent = hxConsent.serverConsent(index);
+        const serverConsent = hxConsent.server(index);
         const expectedSections = typeIndices.map(typeIndex => {
             const consentDocument = history.server(typeIndex);
             const typeDetail = history.type(typeIndex);
+            delete consentDocument.typeId;
             const section = Object.assign({}, typeDetail, consentDocument);
             if (signatures) {
                 section.signature = Boolean(signatures[typeIndex]);
             }
-            return signatures;
+            return section;
         });
         let result = _.omit(serverConsent, 'typeIds');
         result.sections = expectedSections;
@@ -153,9 +154,9 @@ xdescribe('consent unit', function () {
     };
 
     it('user 0 signs consent 0 (1, 2, 3)', signDocumentsFn(0, 0, [1, 2, 3], [1, 2, 3]));
-    it('user 1 signs consent 1 (5, 10, 11)', signDocumentsFn(0, 0, [5, 10, 11], [5, 10, 11]));
-    it('user 2 signs consent 3 (8, 9, 10)', signDocumentsFn(0, 0, [8, 9, 10], [8, 9, 10]));
-    it('user 3 signs consent 0 (0, 2, 3, 4)', signDocumentsFn(0, 0, [0, 2, 3, 4], [0, 2, 3, 4]));
+    it('user 1 signs consent 1 (5, 10, 11)', signDocumentsFn(1, 1, [5, 10, 11], [5, 10, 11]));
+    it('user 2 signs consent 3 (8, 9, 10)', signDocumentsFn(2, 3, [8, 9, 10], [8, 9, 10]));
+    it('user 3 signs consent 0 (0, 2, 3, 4)', signDocumentsFn(3, 0, [0, 2, 3, 4], [0, 2, 3, 4]));
 
     [2, 10, 8, 4].forEach(typeIndex => {
         it(`create/verify consent document of type ${typeIndex}`, shared.createConsentDocumentFn(history, typeIndex));
@@ -175,7 +176,7 @@ xdescribe('consent unit', function () {
     });
 
     it('user 0 signs consent 0 (0, 2)', signDocumentsFn(0, 0, [0, 2], [0, 1, 2, 3]));
-    it('user 1 signs consent 1 (8, 10)', signDocumentsFn(0, 0, [8, 10, 11], [5, 8, 10, 11]));
-    it('user 2 signs consent 3 (8, 11)', signDocumentsFn(0, 0, [8, 11], [8, 9, 11]));
-    it('user 3 signs consent 0 (2, 4)', signDocumentsFn(0, 0, [2, 4], [0, 2, 3, 4]));
+    it('user 1 signs consent 1 (8, 10)', signDocumentsFn(1, 1, [8, 10], [5, 8, 10, 11]));
+    it('user 2 signs consent 3 (8, 11)', signDocumentsFn(2, 3, [8, 11], [8, 9, 11]));
+    it('user 3 signs consent 0 (2, 4)', signDocumentsFn(3, 0, [2, 4], [0, 2, 3, 4]));
 });

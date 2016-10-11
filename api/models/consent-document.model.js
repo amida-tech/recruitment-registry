@@ -78,6 +78,32 @@ module.exports = function (sequelize, DataTypes) {
                             });
                     });
             },
+            getConsentDocumentsOfTypes: function(typeIds) {
+                return ConsentDocument.findAll({
+                    raw: true,
+                    attributes: ['id', 'typeId', 'content', 'updateComment'],
+                    where: { typeId: { in: typeIds } }
+                })
+                    .then(documents => _.keyBy(documents, 'typeId'))
+                    .then(documents => {
+                        const ConsentType = sequelize.models.consent_type;
+                        return ConsentType.findAll({
+                            raw: true,
+                            attributes: ['id', 'name', 'title', 'type'],
+                            where: { id: { in: typeIds } }
+                        })
+                            .then(types => _.keyBy(types, 'id'))
+                            .then(types => {
+                                return typeIds.map(typeId => {
+                                    const d = documents[typeId];
+                                    if (! d) {
+                                        return null;
+                                    }
+                                    return Object.assign(types[typeId], _.omit(d, 'typeId'));
+                                });
+                            });
+                    });
+            },
             createConsentDocument: function (input) {
                 return sequelize.transaction(function (tx) {
                     const typeId = input.typeId;

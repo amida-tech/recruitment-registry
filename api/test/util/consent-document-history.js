@@ -39,7 +39,7 @@ class ConsentDocumentHistory {
     }
 
     type(typeIndex) {
-        return this.consentTypes(typeIndex);
+        return this.consentTypes[typeIndex];
     }
 
     push(typeIndex, client, server) {
