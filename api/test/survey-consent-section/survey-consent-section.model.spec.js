@@ -17,24 +17,18 @@ const shared = new SharedSpec();
 const ConsentSection = models.ConsentSection;
 const Registry = models.Registry;
 const SurveyConsentSection = models.SurveyConsentSection;
+const ConsentSectionHistory = require('../util/consent-section-history');
 const User = models.User;
 
 describe('survey consent section unit', function () {
     const docTypeCount = 2;
     const userCount = 4;
 
-    const store = {
-        clientRegistry: null,
-        profileSurvey: null,
-        profileSurveyConsentSections: [],
-        userIds: [],
-        profileResponses: [],
-        consentSectionTypes: [],
-        clientConsentSections: [],
-        consentSections: [],
-        activeConsentSections: [],
-        signatures: _.range(userCount).map(() => [])
-    };
+    const store = new ConsentSectionHistory(userCount);
+    store.clientRegistry = null;
+    store.profileSurvey = null;
+    store.profileSurveyConsentSections = [];
+    store.profileResponses = [];
 
     before(shared.setUpFn());
 
@@ -141,15 +135,15 @@ describe('survey consent section unit', function () {
             const response = Object.assign({}, store.profileResponses[index], signObj);
             return Registry.createProfile(response)
                 .then(({ token }) => tokener.verifyJWT(token))
-                .then(({ id }) => store.userIds.push(id))
-                .then(() => User.listConsentSections(store.userIds[index]))
+                .then(({ id }) => store.users.push(id))
+                .then(() => User.listConsentSections(store.users[index]))
                 .then(consentSections => expect(consentSections).to.have.length(0));
         };
     };
 
     const readProfileFn = function (index) {
         return function () {
-            const userId = store.userIds[index];
+            const userId = store.users[index];
             return Registry.getProfile({ userId })
                 .then(function (result) {
                     const pr = store.profileResponses[index];
@@ -167,7 +161,7 @@ describe('survey consent section unit', function () {
 
     const readProfileWithoutSignaturesFn = function (index, missingConsentSectionIndices) {
         return function () {
-            const userId = store.userIds[index];
+            const userId = store.users[index];
             return Registry.getProfile({ userId })
                 .then(shared.throwingHandler, shared.expectedErrorHandler('profileSignaturesMissing'))
                 .then(err => {

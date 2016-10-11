@@ -3,10 +3,10 @@
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
-const _ = require('lodash');
 
 const SharedIntegration = require('../util/shared-integration');
 const Generator = require('../util/entity-generator');
+const ConsentSectionHistory = require('../util/consent-section-history');
 const config = require('../../config');
 const RRError = require('../../lib/rr-error');
 
@@ -17,14 +17,8 @@ const shared = new SharedIntegration();
 describe('consent section integration', function () {
     const userCount = 4;
 
-    const store = {
-        users: [],
-        consentSectionTypes: [],
-        clientConsentSections: [],
-        consentSections: [],
-        activeConsentSections: [],
-        signatures: _.range(userCount).map(() => [])
-    };
+    const store = new ConsentSectionHistory(userCount);
+    const history = store;
 
     before(shared.setUpFn(store));
 
@@ -40,10 +34,7 @@ describe('consent section integration', function () {
                     if (err) {
                         return done(err);
                     }
-                    const id = res.body.id;
-                    const newDocType = Object.assign({}, cst, { id });
-                    store.consentSectionTypes.push(newDocType);
-                    store.activeConsentSections.push(null);
+                    history.pushType(cst, res.body);
                     done();
                 });
         };
@@ -59,7 +50,8 @@ describe('consent section integration', function () {
                     if (err) {
                         return done(err);
                     }
-                    expect(res.body).to.deep.equal(store.consentSectionTypes);
+                    const types = history.listTypes();
+                    expect(res.body).to.deep.equal(types);
                     done();
                 });
         };
@@ -102,9 +94,8 @@ describe('consent section integration', function () {
         return function (typeIndex) {
             return function (done) {
                 ++index;
-                const typeId = store.consentSectionTypes[typeIndex].id;
+                const typeId = history.typeId(typeIndex);
                 const content = `Sample consent section content ${index}`;
-                store.clientConsentSections.push(content);
                 store.server
                     .post(`/api/v1.0/consent-sections/type/${typeId}`)
                     .set('Authorization', store.auth)
@@ -114,10 +105,7 @@ describe('consent section integration', function () {
                         if (err) {
                             return done(err);
                         }
-                        const id = res.body.id;
-                        const docToStore = { id, typeId, content };
-                        store.consentSections.push(docToStore);
-                        store.activeConsentSections[typeIndex] = docToStore;
+                        history.push(typeIndex, { content }, res.body);
                         done();
                     });
             };
@@ -156,12 +144,7 @@ describe('consent section integration', function () {
                     if (err) {
                         return done(err);
                     }
-                    const rawExpected = expectedIndices.map(index => ({
-                        id: store.activeConsentSections[index].id,
-                        name: store.consentSectionTypes[index].name,
-                        title: store.consentSectionTypes[index].title
-                    }));
-                    const expected = _.sortBy(rawExpected, 'id');
+                    const expected = history.serversInList(expectedIndices);
                     expect(res.body).to.deep.equal(expected);
                     done();
                 });
@@ -170,7 +153,7 @@ describe('consent section integration', function () {
 
     const getContentFn = function (expectedIndex) {
         return function (done) {
-            const doc = store.activeConsentSections[expectedIndex];
+            const doc = history.activeConsentSections[expectedIndex];
             store.server
                 .get(`/api/v1.0/consent-sections/${doc.id}`)
                 .expect(200)

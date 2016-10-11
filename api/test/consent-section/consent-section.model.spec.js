@@ -6,6 +6,7 @@ const chai = require('chai');
 const _ = require('lodash');
 
 const SharedSpec = require('../util/shared-spec');
+const ConsentSectionHistory = require('../util/consent-section-history');
 const models = require('../../models');
 const expect = chai.expect;
 
@@ -18,14 +19,7 @@ const ConsentSectionSignature = models.ConsentSectionSignature;
 describe('consent section unit', function () {
     const userCount = 4;
 
-    const store = {
-        userIds: [],
-        consentSectionTypes: [],
-        clientConsentSections: [],
-        consentSections: [],
-        activeConsentSections: [],
-        signatures: _.range(userCount).map(() => [])
-    };
+    const history = new ConsentSectionHistory(userCount);
 
     before(shared.setUpFn());
 
@@ -33,56 +27,52 @@ describe('consent section unit', function () {
         return function () {
             return ConsentSectionType.listConsentSectionTypes()
                 .then(result => {
-                    expect(result).to.deep.equal(store.consentSectionTypes);
+                    const types = history.listTypes();
+                    expect(result).to.deep.equal(types);
                 });
         };
     };
 
     for (let i = 0; i < 2; ++i) {
-        it(`create consent section type ${i}`, shared.createConsentSectionTypeFn(store));
+        it(`create consent section type ${i}`, shared.createConsentSectionTypeFn(history));
         it(`verify consent section type ${i} in the list`, verifyConsentSectionTypeInListFn);
     }
 
     for (let i = 0; i < userCount; ++i) {
-        it(`create user ${i}`, shared.createUser(store));
+        it(`create user ${i}`, shared.createUser(history));
     }
 
     it('error: no consent sections of existing types', function () {
-        return User.listConsentSections(store.userIds[0])
+        return User.listConsentSections(history.userId(0))
             .then(shared.throwingHandler, shared.expectedErrorHandler('noSystemConsentSections'));
     });
 
     const verifyConsentSectionContentFn = function (typeIndex) {
         return function () {
-            const doc = store.activeConsentSections[typeIndex];
-            return ConsentSection.getContent(doc.id)
+            const cs = history.server(typeIndex);
+            return ConsentSection.getContent(cs.id)
                 .then(result => {
-                    expect(result).to.deep.equal({ content: doc.content });
+                    expect(result).to.deep.equal({ content: cs.content });
                 });
         };
     };
 
     for (let i = 0; i < 2; ++i) {
-        it(`create/verify consent section of type ${i}`, shared.createConsentSectionFn(store, i));
+        it(`create/verify consent section of type ${i}`, shared.createConsentSectionFn(history, i));
         it(`verify consent section content of type ${i})`, verifyConsentSectionContentFn(i));
     }
 
     const verifyConsentSectionsFn = function (userIndex, expectedIndices) {
         return function () {
-            return User.listConsentSections(store.userIds[userIndex])
+            return User.listConsentSections(history.userId(userIndex))
                 .then(consentSections => {
-                    const rawExpected = expectedIndices.map(index => ({
-                        id: store.activeConsentSections[index].id,
-                        name: store.consentSectionTypes[index].name,
-                        title: store.consentSectionTypes[index].title
-                    }));
-                    const expected = _.sortBy(rawExpected, 'id');
+                    const expected = history.serversInList(expectedIndices);
                     expect(consentSections).to.deep.equal(expected);
                     return expected;
                 })
                 .then(() => {
-                    const docs = expectedIndices.map(index => store.activeConsentSections[index]);
-                    return models.sequelize.Promise.all(docs.map(({ id, content }) => {
+                    const css = expectedIndices.map(index => history.server(index));
+                    return models.sequelize.Promise.all(css.map(({ id, content }) => {
                         return ConsentSection.getContent(id)
                             .then(text => {
                                 expect(text).to.deep.equal({ content });
@@ -98,9 +88,9 @@ describe('consent section unit', function () {
 
     const signConsentSectionTypeFn = function (userIndex, typeIndex) {
         return function () {
-            const consentSectionId = store.activeConsentSections[typeIndex].id;
-            const userId = store.userIds[userIndex];
-            store.signatures[userIndex].push(consentSectionId);
+            const consentSectionId = history.id(typeIndex);
+            const userId = history.users[userIndex];
+            history.sign(typeIndex, userIndex);
             return ConsentSectionSignature.createSignature(userId, consentSectionId);
         };
     };
@@ -118,7 +108,7 @@ describe('consent section unit', function () {
     it('verify consent sections required for user 3', verifyConsentSectionsFn(3, [0]));
 
     it('error: invalid user signs consent section 0', function () {
-        const consentSectionId = store.activeConsentSections[0].id;
+        const consentSectionId = history.activeConsentSections[0].id;
         return ConsentSectionSignature.createSignature(9999, consentSectionId)
             .then(shared.throwingHandler, err => {
                 expect(err).is.instanceof(models.sequelize.ForeignKeyConstraintError);
@@ -126,22 +116,22 @@ describe('consent section unit', function () {
     });
 
     it('error: user 0 signs invalid consent section', function () {
-        const userId = store.userIds[0];
+        const userId = history.users[0];
         return ConsentSectionSignature.createSignature(userId, 9999)
             .then(shared.throwingHandler, err => {
                 expect(err).is.instanceof(models.sequelize.ForeignKeyConstraintError);
             });
     });
 
-    it('add a new consent section type', shared.createConsentSectionTypeFn(store));
+    it('add a new consent section type', shared.createConsentSectionTypeFn(history));
     it(`verify the new consent section in the list`, verifyConsentSectionTypeInListFn);
 
     it('error: no consent sections of existing types', function () {
-        return User.listConsentSections(store.userIds[2])
+        return User.listConsentSections(history.users[2])
             .then(shared.throwingHandler, shared.expectedErrorHandler('noSystemConsentSections'));
     });
 
-    it('create/verify consent section of type 2', shared.createConsentSectionFn(store, 2));
+    it('create/verify consent section of type 2', shared.createConsentSectionFn(history, 2));
     it(`verify consent section content of type 2)`, verifyConsentSectionContentFn(2));
 
     it('verify consent sections required for user 0', verifyConsentSectionsFn(0, [2]));
@@ -152,7 +142,7 @@ describe('consent section unit', function () {
     it('user 2 signs consent section 2', signConsentSectionTypeFn(2, 2));
     it('verify consent sections required for user 2', verifyConsentSectionsFn(2, [1]));
 
-    it('create/verify consent section of type 1', shared.createConsentSectionFn(store, 1));
+    it('create/verify consent section of type 1', shared.createConsentSectionFn(history, 1));
     it(`verify consent section content of type 1)`, verifyConsentSectionContentFn(1));
 
     it('verify consent sections required for user 0', verifyConsentSectionsFn(0, [1, 2]));
@@ -163,7 +153,7 @@ describe('consent section unit', function () {
     it('user 1 signs consent section 2', signConsentSectionTypeFn(1, 2));
     it('verify consent sections required for user 1', verifyConsentSectionsFn(1, [1]));
 
-    it('create/verify consent section of type 0', shared.createConsentSectionFn(store, 0));
+    it('create/verify consent section of type 0', shared.createConsentSectionFn(history, 0));
     it(`verify consent section content of type 0)`, verifyConsentSectionContentFn(0));
 
     it('verify consent sections required for user 0', verifyConsentSectionsFn(0, [0, 1, 2]));
@@ -179,7 +169,7 @@ describe('consent section unit', function () {
     it('verify consent sections required for user 2', verifyConsentSectionsFn(2, [0]));
     it('verify consent sections required for user 3', verifyConsentSectionsFn(3, [0, 2]));
 
-    it('create/verify consent section of type 1', shared.createConsentSectionFn(store, 1));
+    it('create/verify consent section of type 1', shared.createConsentSectionFn(history, 1));
     it(`verify consent section content of type 1)`, verifyConsentSectionContentFn(1));
 
     it('verify consent sections required for user 0', verifyConsentSectionsFn(0, [0, 1, 2]));
@@ -195,12 +185,12 @@ describe('consent section unit', function () {
     it('verify consent sections required for user 0', verifyConsentSectionsFn(0, []));
 
     it('delete consent section type 1', function () {
-        const id = store.consentSectionTypes[1].id;
+        const id = history.consentSectionTypes[1].id;
         return ConsentSectionType.deleteConsentSectionType(id)
             .then(() => {
                 return ConsentSectionType.listConsentSectionTypes()
                     .then(result => {
-                        const allDocTypes = [0, 2].map(i => store.consentSectionTypes[i]);
+                        const allDocTypes = [0, 2].map(i => history.consentSectionTypes[i]);
                         expect(result).to.deep.equal(allDocTypes);
                     });
             });
@@ -213,7 +203,7 @@ describe('consent section unit', function () {
 
     const verifySignatureExistenceFn = function (userIndex) {
         return function () {
-            const userId = store.userIds[userIndex];
+            const userId = history.users[userIndex];
             return ConsentSectionSignature.findAll({
                     where: { userId },
                     raw: true,
@@ -222,7 +212,7 @@ describe('consent section unit', function () {
                 })
                 .then(result => {
                     const actual = _.map(result, 'consentSectionId');
-                    const expected = _.sortBy(store.signatures[userIndex]);
+                    const expected = _.sortBy(history.signatures[userIndex]);
                     expect(actual).to.deep.equal(expected);
                     const allExists = _.map(result, 'createdAt').map(r => !!r);
                     expect(allExists).to.deep.equal(Array(expected.length).fill(true));
@@ -239,11 +229,11 @@ describe('consent section unit', function () {
         const queryParamsAll = Object.assign({}, { paranoid: false }, queryParams);
         return ConsentSection.findAll(queryParamsAll)
             .then(consentSections => {
-                expect(consentSections).to.deep.equal(store.consentSections);
+                expect(consentSections).to.deep.equal(history.consentSections);
             })
             .then(() => ConsentSection.findAll(queryParams))
             .then(consentSections => {
-                const expected = _.sortBy([store.activeConsentSections[0], store.activeConsentSections[2]], 'id');
+                const expected = _.sortBy([history.activeConsentSections[0], history.activeConsentSections[2]], 'id');
                 expect(consentSections).to.deep.equal(expected);
             });
     });

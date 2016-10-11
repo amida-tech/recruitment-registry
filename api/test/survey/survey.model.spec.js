@@ -25,7 +25,7 @@ describe('survey unit', function () {
     const store = {
         inputSurveys: [],
         surveys: [],
-        userIds: []
+        users: []
     };
 
     it('verify no surveys', function () {
@@ -211,7 +211,7 @@ describe('survey unit', function () {
             const survey = store.surveys[surveyIndex];
             const answers = entityGen.answerQuestions(survey.questions);
             const input = {
-                userId: store.userIds[0],
+                userId: store.users[0],
                 surveyId: store.surveys[1].id,
                 answers
             };
@@ -247,7 +247,7 @@ describe('survey unit', function () {
         const qxs = survey.questions;
         const answers = entityGen.answerQuestions(qxs);
         const input = {
-            userId: store.userIds[0],
+            userId: store.users[0],
             surveyId: store.surveys[3].id,
             answers
         };
@@ -274,7 +274,7 @@ describe('survey unit', function () {
         const qxs = survey.questions;
         const answers = entityGen.answerQuestions(qxs);
         const input = {
-            userId: store.userIds[0],
+            userId: store.users[0],
             surveyId: store.surveys[3].id,
             answers
         };

@@ -29,7 +29,7 @@ class SharedSpec {
             const inputUser = generator.newUser();
             return models.User.create(inputUser)
                 .then(function (user) {
-                    store.userIds.push(user.id);
+                    store.users.push(user.id);
                 });
         };
     }
@@ -87,40 +87,30 @@ class SharedSpec {
         };
     }
 
-    createConsentSectionTypeFn(store) {
+    createConsentSectionTypeFn(history) {
         const generator = this.generator;
         return function () {
             const cst = generator.newConsentSectionType();
             return models.ConsentSectionType.createConsentSectionType(cst)
-                .then(({ id }) => {
-                    const newDocType = Object.assign({}, cst, { id });
-                    store.consentSectionTypes.push(newDocType);
-                    store.activeConsentSections.push(null);
-                });
+                .then(server => history.pushType(cst, server));
         };
     }
 
-    createConsentSectionFn(store, typeIndex) {
+    createConsentSectionFn(history, typeIndex) {
         const generator = this.generator;
         return function () {
-            const typeId = store.consentSectionTypes[typeIndex].id;
-            const doc = generator.newConsentSection({ typeId });
-
-            store.clientConsentSections.push(doc);
-            return models.ConsentSection.createConsentSection(doc)
-                .then(({ id }) => {
-                    const docToStore = Object.assign({}, doc, { id });
-                    store.consentSections.push(docToStore);
-                    store.activeConsentSections[typeIndex] = docToStore;
-                });
+            const typeId = history.typeId(typeIndex);
+            const cs = generator.newConsentSection({ typeId });
+            return models.ConsentSection.createConsentSection(cs)
+                .then(server => history.push(typeIndex, cs, server));
         };
     }
 
     signConsentSectionTypeFn(store, userIndex, typeIndex) {
         return function () {
-            const consentSectionId = store.activeConsentSections[typeIndex].id;
-            const userId = store.userIds[userIndex];
-            store.signatures[userIndex].push(consentSectionId);
+            const consentSectionId = store.id(typeIndex);
+            const userId = store.users[userIndex];
+            store.sign(typeIndex, userIndex);
             return models.ConsentSectionSignature.createSignature(userId, consentSectionId);
         };
     }
