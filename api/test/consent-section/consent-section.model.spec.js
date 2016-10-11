@@ -47,19 +47,19 @@ describe('consent section unit', function () {
             .then(shared.throwingHandler, shared.expectedErrorHandler('noSystemConsentSections'));
     });
 
-    const verifyConsentSectionContentFn = function (typeIndex) {
+    const verifyConsentSectionFn = function (typeIndex) {
         return function () {
             const cs = history.server(typeIndex);
-            return ConsentSection.getContent(cs.id)
+            return ConsentSection.getConsentSection(cs.id)
                 .then(result => {
-                    expect(result).to.deep.equal({ content: cs.content });
+                    expect(result).to.deep.equal(cs);
                 });
         };
     };
 
     for (let i = 0; i < 2; ++i) {
         it(`create/verify consent section of type ${i}`, shared.createConsentSectionFn(history, i));
-        it(`verify consent section content of type ${i})`, verifyConsentSectionContentFn(i));
+        it(`verify consent section content of type ${i}`, verifyConsentSectionFn(i));
     }
 
     const verifyConsentSectionsFn = function (userIndex, expectedIndices) {
@@ -72,10 +72,10 @@ describe('consent section unit', function () {
                 })
                 .then(() => {
                     const css = expectedIndices.map(index => history.server(index));
-                    return models.sequelize.Promise.all(css.map(({ id, content }) => {
-                        return ConsentSection.getContent(id)
-                            .then(text => {
-                                expect(text).to.deep.equal({ content });
+                    return models.sequelize.Promise.all(css.map(cs => {
+                        return ConsentSection.getConsentSection(cs.id)
+                            .then(result => {
+                                expect(result).to.deep.equal(cs);
                             });
                     }));
                 });
@@ -132,7 +132,7 @@ describe('consent section unit', function () {
     });
 
     it('create/verify consent section of type 2', shared.createConsentSectionFn(history, 2));
-    it(`verify consent section content of type 2)`, verifyConsentSectionContentFn(2));
+    it(`verify consent section content of type 2)`, verifyConsentSectionFn(2));
 
     it('verify consent sections required for user 0', verifyConsentSectionsFn(0, [2]));
     it('verify consent sections required for user 1', verifyConsentSectionsFn(1, [2]));
@@ -143,7 +143,7 @@ describe('consent section unit', function () {
     it('verify consent sections required for user 2', verifyConsentSectionsFn(2, [1]));
 
     it('create/verify consent section of type 1', shared.createConsentSectionFn(history, 1));
-    it(`verify consent section content of type 1)`, verifyConsentSectionContentFn(1));
+    it(`verify consent section content of type 1)`, verifyConsentSectionFn(1));
 
     it('verify consent sections required for user 0', verifyConsentSectionsFn(0, [1, 2]));
     it('verify consent sections required for user 1', verifyConsentSectionsFn(1, [1, 2]));
@@ -154,7 +154,7 @@ describe('consent section unit', function () {
     it('verify consent sections required for user 1', verifyConsentSectionsFn(1, [1]));
 
     it('create/verify consent section of type 0', shared.createConsentSectionFn(history, 0));
-    it(`verify consent section content of type 0)`, verifyConsentSectionContentFn(0));
+    it(`verify consent section content of type 0)`, verifyConsentSectionFn(0));
 
     it('verify consent sections required for user 0', verifyConsentSectionsFn(0, [0, 1, 2]));
     it('verify consent sections required for user 1', verifyConsentSectionsFn(1, [0, 1]));
@@ -170,7 +170,7 @@ describe('consent section unit', function () {
     it('verify consent sections required for user 3', verifyConsentSectionsFn(3, [0, 2]));
 
     it('create/verify consent section of type 1', shared.createConsentSectionFn(history, 1));
-    it(`verify consent section content of type 1)`, verifyConsentSectionContentFn(1));
+    it(`verify consent section content of type 1)`, verifyConsentSectionFn(1));
 
     it('verify consent sections required for user 0', verifyConsentSectionsFn(0, [0, 1, 2]));
     it('verify consent sections required for user 1', verifyConsentSectionsFn(1, [0, 1]));
@@ -226,7 +226,7 @@ describe('consent section unit', function () {
     }
 
     it('verify all consent sections still exists', function () {
-        const queryParams = { raw: true, attributes: ['id', 'typeId', 'content'], order: ['id'] };
+        const queryParams = { raw: true, attributes: ['id', 'typeId', 'content', 'updateComment'], order: ['id'] };
         const queryParamsAll = Object.assign({}, { paranoid: false }, queryParams);
         return ConsentSection.findAll(queryParamsAll)
             .then(consentSections => {

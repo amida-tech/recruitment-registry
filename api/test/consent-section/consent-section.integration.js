@@ -11,8 +11,8 @@ const config = require('../../config');
 const RRError = require('../../lib/rr-error');
 
 const expect = chai.expect;
-const entityGen = new Generator();
-const shared = new SharedIntegration();
+const generator = new Generator();
+const shared = new SharedIntegration(generator);
 
 describe('consent section integration', function () {
     const userCount = 4;
@@ -26,7 +26,7 @@ describe('consent section integration', function () {
     before(shared.setUpFn(store));
 
     const createConsentSectionTypeFn = function () {
-        const cst = entityGen.newConsentSectionType();
+        const cst = generator.newConsentSectionType();
         return function (done) {
             store.server
                 .post('/api/v1.0/consent-section-types')
@@ -68,7 +68,7 @@ describe('consent section integration', function () {
     }
 
     for (let i = 0; i < userCount; ++i) {
-        const user = entityGen.newUser();
+        const user = generator.newUser();
         it(`create user ${i}`, shared.createUserFn(store, history.hxUser, user));
     }
 
@@ -92,29 +92,24 @@ describe('consent section integration', function () {
 
     it('login as super', shared.loginFn(store, config.superUser));
 
-    const createConsentSectionFn = (function () {
-        let index = -1;
-
-        return function (typeIndex) {
-            return function (done) {
-                ++index;
-                const typeId = history.typeId(typeIndex);
-                const content = `Sample consent section content ${index}`;
-                store.server
-                    .post(`/api/v1.0/consent-sections/type/${typeId}`)
-                    .set('Authorization', store.auth)
-                    .send({ content })
-                    .expect(201)
-                    .end(function (err, res) {
-                        if (err) {
-                            return done(err);
-                        }
-                        history.push(typeIndex, { content }, res.body);
-                        done();
-                    });
-            };
+    const createConsentSectionFn = function (typeIndex) {
+        return function (done) {
+            const typeId = history.typeId(typeIndex);
+            const cs = generator.newConsentSection({ typeId });
+            store.server
+                .post(`/api/v1.0/consent-sections`)
+                .set('Authorization', store.auth)
+                .send(cs)
+                .expect(201)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    history.push(typeIndex, cs, res.body);
+                    done();
+                });
         };
-    })();
+    };
 
     const getConsentSectionFn = function (typeIndex) {
         return function (done) {
@@ -126,8 +121,8 @@ describe('consent section integration', function () {
                     if (err) {
                         return done(err);
                     }
-                    const expected = history.server(typeIndex).content;
-                    expect(res.body.content).to.equal(expected);
+                    const expected = history.server(typeIndex);
+                    expect(res.body).to.deep.equal(expected);
                     done();
                 });
         };
@@ -155,27 +150,11 @@ describe('consent section integration', function () {
         };
     };
 
-    const getContentFn = function (expectedIndex) {
-        return function (done) {
-            const cs = history.server(expectedIndex);
-            store.server
-                .get(`/api/v1.0/consent-sections/${cs.id}`)
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    expect(res.body).to.deep.equal({ content: cs.content });
-                    done();
-                });
-        };
-    };
-
     for (let i = 0; i < 4; ++i) {
         it(`login as user ${i}`, shared.loginIndexFn(store, history.hxUser, i));
         it(`verify consent sections required for user ${i}`, getUserConsentSectionsFn([0, 1]));
-        it(`user ${i} get consent section 0`, getContentFn(0));
-        it(`user ${i} get consent section 1`, getContentFn(1));
+        it(`user ${i} get consent section 0`, getConsentSectionFn(0));
+        it(`user ${i} get consent section 1`, getConsentSectionFn(1));
         it(`logout as user ${i}`, shared.logoutFn(store));
     }
 
@@ -233,12 +212,12 @@ describe('consent section integration', function () {
 
     it(`login as user 2`, shared.loginIndexFn(store, history.hxUser, 2));
     it(`verify consent sections required for user 2`, getUserConsentSectionsFn([1]));
-    it(`user 2 get consent section 1`, getContentFn(1));
+    it(`user 2 get consent section 1`, getConsentSectionFn(1));
     it('logout as user 2', shared.logoutFn(store));
 
     it(`login as user 3`, shared.loginIndexFn(store, history.hxUser, 3));
     it(`verify consent sections required for user 3`, getUserConsentSectionsFn([0]));
-    it(`user 3 get consent section 0`, getContentFn(0));
+    it(`user 3 get consent section 0`, getConsentSectionFn(0));
     it('logout as user 3', shared.logoutFn(store));
 
     it('login as super', shared.loginFn(store, config.superUser));
@@ -256,7 +235,7 @@ describe('consent section integration', function () {
         it(`login as user ${userIndex}`, shared.loginIndexFn(store, history.hxUser, userIndex));
         it(`verify consent sections required for user ${userIndex}`, getUserConsentSectionsFn(consentSectionIndices));
         for (let i = 0; i < consentSectionIndices.length; ++i) {
-            it(`user ${userIndex} get consent section ${i}`, getContentFn(i));
+            it(`user ${userIndex} get consent section ${i}`, getConsentSectionFn(i));
         }
         it(`logout as user ${userIndex}`, shared.logoutFn(store));
     });

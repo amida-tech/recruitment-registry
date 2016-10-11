@@ -19,6 +19,10 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.TEXT,
             allowNull: false
         },
+        updateComment: {
+            type: DataTypes.TEXT,
+            field: 'update_comment'
+        },
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',
@@ -74,16 +78,17 @@ module.exports = function (sequelize, DataTypes) {
                             });
                     });
             },
-            createConsentSection: function ({ typeId, content }) {
+            createConsentSection: function (input) {
                 return sequelize.transaction(function (tx) {
+                    const typeId = input.typeId;
                     return ConsentSection.destroy({ where: { typeId } }, { transaction: tx })
-                        .then(() => ConsentSection.create({ typeId, content }, { transaction: tx })
+                        .then(() => ConsentSection.create(input, { transaction: tx })
                             .then(({ id }) => ({ id }))
                         );
                 });
             },
-            getContent: function (id) {
-                return ConsentSection.findById(id, { raw: true, attributes: ['content'] });
+            getConsentSection: function (id) {
+                return ConsentSection.findById(id, { raw: true, attributes: ['id', 'typeId', 'content', 'updateComment'] });
             }
         }
     });

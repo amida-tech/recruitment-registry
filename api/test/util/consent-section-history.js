@@ -40,6 +40,9 @@ class ConsentSectionHistory {
 
     push(typeIndex, client, server) {
         const fullServer = Object.assign({}, client, server);
+        if (!fullServer.updateComment) {
+            fullServer.updateComment = null;
+        }
         this.consentSections.push(fullServer);
         this.activeConsentSections[typeIndex] = fullServer;
     }

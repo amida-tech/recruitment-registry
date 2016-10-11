@@ -895,30 +895,31 @@
                 }
             }
         },
-        "/consent-sections/type/{typeId}": {
+        "/consent-sections": {
             "x-swagger-router-controller": "consent-section.controller",
-            "parameters": [{
-                "name": "typeId",
-                "in": "path",
-                "required": true,
-                "type": "integer"
-            }],
             "post": {
-                "summary": "Creates a consent section of type",
+                "summary": "Creates a consent section",
                 "operationId": "createConsentSection",
                 "security": [{
                     "admin": []
                 }],
                 "parameters": [{
-                    "name": "content",
+                    "name": "newConsentSection",
                     "in": "body",
                     "description": "Content text",
                     "required": true,
                     "schema": {
                         "type": "object",
-                        "required": ["content"],
+                        "required": ["typeId", "content"],
                         "properties": {
+                            "typeId": {
+                                "type": "integer"
+                            },
                             "content": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "updateComment": {
                                 "type": "string",
                                 "minLength": 1
                             }
@@ -946,17 +947,26 @@
             }],
             "get": {
                 "summary": "Gets consent section content",
-                "operationId": "getContent",
+                "operationId": "getConsentSection",
                 "responses": {
                     "200": {
                         "description": "Successful response",
                         "schema": {
                             "type": "object",
-                            "required": ["content"],
+                            "required": ["id", "typeId", "content"],
                             "properties": {
+                                "id": {
+                                    "type": "integer"
+                                },
+                                "typeId": {
+                                    "type": "integer"
+                                },
                                 "content": {
                                     "type": "string",
                                     "minLength": 1
+                                },
+                                "updateComment": {
+                                    "type": ["string", "null"]
                                 }
                             },
                             "additionalProperties": false

@@ -152,6 +152,7 @@ class Generator {
         this.answerer = new Answerer();
         this.consentSectionTypeIndex = -1;
         this.consentSectionIndex = -1;
+        this.consentSectionTypeAdded = {};
     }
 
     newUser(override) {
@@ -214,10 +215,18 @@ class Generator {
     }
 
     newConsentSection(override) {
+        if (!override.typeId) {
+            throw new Error('typeId is required');
+        }
         const index = ++this.consentSectionIndex;
         const result = {
             content: `Sample consent section content ${index}`
         };
+        const count = this.consentSectionTypeAdded[override.typeId] || 0;
+        if (count) {
+            result.updateComment = `Update comment ${count}`;
+        }
+        this.consentSectionTypeAdded[override.typeId] = count + 1;
         Object.assign(result, override);
         return result;
     }

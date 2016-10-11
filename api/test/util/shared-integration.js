@@ -10,8 +10,8 @@ const Generator = require('./entity-generator');
 const expect = chai.expect;
 
 class SharedIntegration {
-    constructor() {
-        this.generator = new Generator();
+    constructor(generator) {
+        this.generator = generator || new Generator();
     }
 
     setUpFn(store, options = {}) {
