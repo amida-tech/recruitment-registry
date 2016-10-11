@@ -19,24 +19,30 @@ class Form extends Component {
   render() {
 
     const renderInputField = (id, type, placeholder, label) => (
-      <div key={id}>
-        <div className="form-group">
+      <div className="rr-question" key={id}>
+        <div>
           <label htmlFor={id}>{label}</label>
-          <input autoComplete="off" required className="form-control" id={id} type={type} onChange={this.props.changeForm} />
+          <input autoComplete="off" required className="rr-blankline rr-field" id={id} type={type} onChange={this.props.changeForm} />
         </div>
-        <button className="btn rr-button" onClick={this.next} type="button">{this.props.vocab.get('NEXT')}</button>
+        <div className="rr-controls">
+          <button className="btn rr-button m-r-2" onClick={this.previous} type="button">{this.props.vocab.get('BACK')}</button>
+          <button className="btn rr-button" onClick={this.next} type="button">{this.props.vocab.get('NEXT')}</button>
+        </div>
       </div>
     )
 
     const renderSelectField = (id, defaultValue, label, options) => (
-      <div key={id}>
-        <div className="form-group">
+      <div className="rr-question" key={id}>
+        <div>
           <label htmlFor="gender">{label}</label>
-          <select required onChange={this.props.changeForm} value={defaultValue} className="form-control" id={id}>
+          <select required onChange={this.props.changeForm} value={defaultValue} className="rr-blankline rr-field" id={id}>
             {options.map(option => <option key={option} value={option}>{option}</option>)}
           </select>
         </div>
-        <button className="form__submit-btn" onClick={this.next} type="button">Next</button>
+        <div className="rr-controls">
+          <button className="btn rr-button m-r-2" onClick={this.previous} type="button">{this.props.vocab.get('BACK')}</button>
+          <button className="btn rr-button" onClick={this.next} type="button">{this.props.vocab.get('NEXT')}</button>
+        </div>
       </div>
     )
 
@@ -211,7 +217,7 @@ class Form extends Component {
 
     return(
       <form className="" autoComplete="off">
-        <div className="col--6">
+        <div className="col-lg-6">
           <div className="registry-specific">
             {
               this.props.survey.questions.length > 0 ? (
@@ -235,7 +241,6 @@ class Form extends Component {
           </div>
         </div>
 
-      <button className="form__submit-btn back-registration" type="button" onClick={this.previous}>Back</button>
       </form>
     );
 

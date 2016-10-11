@@ -7,9 +7,9 @@ export class RegisterContainer extends Component {
   render() {
     const { formState, survey, availableEthnicities, availableGenders } = this.props.data.toJS()
     return (
-      <div className="container">
-          <div className="form-page__form-header">
-            <h2 className="rr">{this.props.vocab.get('LETS_CREATE')}</h2>
+      <div>
+          <div className="rr-wrapper m-b-2">
+            <h1 className="rr no-transform">{this.props.vocab.get('LETS_CREATE')}</h1>
           </div>
           <Form data={formState}
                 vocab={this.props.vocab}

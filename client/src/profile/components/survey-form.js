@@ -19,7 +19,7 @@ class SurveyForm extends Component {
                   return [
                     <label className="rr">{question.text}</label>,
                     question.answer.choices.map(choice => {
-                      return <p>{choicesTmp[choice]}</p>;
+                      return <p className="rr-hint m-l-1">{choicesTmp[choice]}</p>;
                     })
                   ]
                 } else {
@@ -31,7 +31,7 @@ class SurveyForm extends Component {
               case 'bool':
                 var ansTmp = question.answer && question.answer.boolValue ? this.props.vocab.get('YES') : this.props.vocab.get('NO');
                 return [
-                  <div><label className="rr">{question.text}</label><p>{ansTmp}</p></div>
+                  <div><label className="rr">{question.text}</label><p className="rr-hint m-l-1">{ansTmp}</p></div>
                   ]
             }
           })) : (<div></div>) }</div>

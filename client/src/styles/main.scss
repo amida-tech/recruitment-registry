@@ -72,7 +72,8 @@ h2 {
   font-size: 9px;
 	font-weight: bold;
 	color: #808080;
-  width: 60%;
+  max-width: 200px;
+	min-width: 150px;
   height: 30px;
   background-color: #DCDCDC;
   border-width:0px;
@@ -90,8 +91,18 @@ h2 {
   text-align:left;
 }
 
+.rr-question {
+		font-family: 'Arial';
+  	color: #808080;
+  	font-weight:bold;
+	  display: block;
+	  text-align:center;
+		font-size:14px;
+}
+
 .rr-blankline{
-    width:50%;
+		padding-left:5px;
+    max-width:50% !important;
 }
 
 .rr-field {
