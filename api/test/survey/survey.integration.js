@@ -11,6 +11,7 @@ const config = require('../../config');
 
 const SharedIntegration = require('../util/shared-integration');
 const Generator = require('../util/entity-generator');
+const History = require('../util/entity-history');
 const userExamples = require('../fixtures/example/user');
 const surveyExamples = require('../fixtures/example/survey');
 
@@ -26,6 +27,7 @@ const shared = new SharedIntegration();
 describe('survey integration', function () {
     const example = surveyExamples.Example;
     const user = userExamples.Example;
+    const hxUser = new History();
     const createCount = 8;
 
     const store = {
@@ -249,7 +251,7 @@ describe('survey integration', function () {
     });
     it(`list surveys and verify`, listSurveysFn(createCount - 2));
 
-    it('create a new user', shared.createUserFn(store, user));
+    it('create a new user', shared.createUserFn(store, hxUser, user));
 
     it('login as user', shared.loginFn(store, user));
 

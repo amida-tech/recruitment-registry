@@ -35,11 +35,11 @@ describe('consent section unit', function () {
 
     for (let i = 0; i < 2; ++i) {
         it(`create consent section type ${i}`, shared.createConsentSectionTypeFn(history));
-        it(`verify consent section type ${i} in the list`, verifyConsentSectionTypeInListFn);
+        it(`verify consent section type list`, verifyConsentSectionTypeInListFn);
     }
 
     for (let i = 0; i < userCount; ++i) {
-        it(`create user ${i}`, shared.createUser(history));
+        it(`create user ${i}`, shared.createUser(history.hxUser));
     }
 
     it('error: no consent sections of existing types', function () {
@@ -89,7 +89,7 @@ describe('consent section unit', function () {
     const signConsentSectionTypeFn = function (userIndex, typeIndex) {
         return function () {
             const consentSectionId = history.id(typeIndex);
-            const userId = history.users[userIndex];
+            const userId = history.userId(userIndex);
             history.sign(typeIndex, userIndex);
             return ConsentSectionSignature.createSignature(userId, consentSectionId);
         };
@@ -116,7 +116,7 @@ describe('consent section unit', function () {
     });
 
     it('error: user 0 signs invalid consent section', function () {
-        const userId = history.users[0];
+        const userId = history.userId(0);
         return ConsentSectionSignature.createSignature(userId, 9999)
             .then(shared.throwingHandler, err => {
                 expect(err).is.instanceof(models.sequelize.ForeignKeyConstraintError);
@@ -127,7 +127,7 @@ describe('consent section unit', function () {
     it(`verify the new consent section in the list`, verifyConsentSectionTypeInListFn);
 
     it('error: no consent sections of existing types', function () {
-        return User.listConsentSections(history.users[2])
+        return User.listConsentSections(history.userId(2))
             .then(shared.throwingHandler, shared.expectedErrorHandler('noSystemConsentSections'));
     });
 
@@ -204,7 +204,7 @@ describe('consent section unit', function () {
 
     const verifySignatureExistenceFn = function (userIndex) {
         return function () {
-            const userId = history.users[userIndex];
+            const userId = history.userId(userIndex);
             return ConsentSectionSignature.findAll({
                     where: { userId },
                     raw: true,

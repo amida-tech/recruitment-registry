@@ -6,6 +6,7 @@ const _ = require('lodash');
 
 const models = require('../../models');
 const SharedSpec = require('../util/shared-spec');
+const History = require('../util/entity-history');
 const jsutil = require('../../lib/jsutil');
 const answerCommon = require('./answer-common');
 
@@ -14,19 +15,20 @@ const shared = new SharedSpec();
 
 describe('answer unit', function () {
     const store = {
-        users: [],
         questions: [],
         qxChoices: [],
         surveys: [],
         hxAnswers: {}
     };
 
+    const hxUser = new History();
+
     const generateQxAnswer = _.partial(answerCommon.generateQxAnswer, store);
 
     before(shared.setUpFn());
 
     for (let i = 0; i < 4; ++i) {
-        it(`create user ${i}`, shared.createUser(store));
+        it(`create user ${i}`, shared.createUser(hxUser));
     }
 
     for (let i = 0; i < 20; ++i) {
@@ -48,14 +50,14 @@ describe('answer unit', function () {
             const answers = qxIndices.map(generateQxAnswer);
             updateHxAnswers(store, key, qxIndices, answers);
             const input = {
-                userId: store.users[userIndex],
+                userId: hxUser.id(userIndex),
                 surveyId: store.surveys[surveyIndex],
                 answers
             };
             return models.Answer.createAnswers(input)
                 .then(function () {
                     return models.Answer.getAnswers({
-                            userId: store.users[userIndex],
+                            userId: hxUser.id(userIndex),
                             surveyId: store.surveys[surveyIndex]
                         })
                         .then(function (result) {
@@ -95,14 +97,14 @@ describe('answer unit', function () {
             const answers = qxIndices.map(generateQxAnswer);
             updateHxAnswers(store, key, qxIndices, answers);
             const input = {
-                userId: store.users[userIndex],
+                userId: hxUser.id(userIndex),
                 surveyId: store.surveys[surveyIndex],
                 answers
             };
             return models.Answer.createAnswers(input)
                 .then(function () {
                     return models.Answer.getAnswers({
-                            userId: store.users[userIndex],
+                            userId: hxUser.id(userIndex),
                             surveyId: store.surveys[surveyIndex]
                         })
                         .then(function (result) {
@@ -113,7 +115,7 @@ describe('answer unit', function () {
                             expect(actual).to.deep.equal(expected);
                         })
                         .then(() => models.Answer.getOldAnswers({
-                            userId: store.users[userIndex],
+                            userId: hxUser.id(userIndex),
                             surveyId: store.surveys[surveyIndex]
                         }))
                         .then((actual) => {

@@ -28,9 +28,6 @@ class SharedIntegration {
 
     loginFn(store, login) {
         return function (done) {
-            if (typeof login !== 'object') {
-                login = store.users[login];
-            }
             store.server
                 .get('/api/v1.0/auth/basic')
                 .auth(login.username, login.password)
@@ -42,6 +39,14 @@ class SharedIntegration {
                     store.auth = 'Bearer ' + res.body.token;
                     done();
                 });
+        };
+    }
+
+    loginIndexFn(store, history, index) {
+        const shared = this;
+        return function (done) {
+            const login = history.client(index);
+            shared.loginFn(store, login)(done);
         };
     }
 
@@ -60,13 +65,20 @@ class SharedIntegration {
         };
     }
 
-    createUserFn(store, user) {
+    createUserFn(store, history, user) {
         return function (done) {
             store.server
                 .post('/api/v1.0/users')
                 .set('Authorization', store.auth)
                 .send(user)
-                .expect(201, done);
+                .expect(201)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    history.push(user, res.body);
+                    done();
+                });
         };
     }
 

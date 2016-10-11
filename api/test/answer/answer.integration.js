@@ -9,6 +9,7 @@ const config = require('../../config');
 
 const SharedIntegration = require('../util/shared-integration');
 const Generator = require('../util/entity-generator');
+const History = require('../util/entity-history');
 const answerCommon = require('./answer-common');
 
 const expect = chai.expect;
@@ -18,7 +19,6 @@ describe('answer integration', function () {
     const generator = new Generator();
 
     const store = {
-        users: [],
         questions: [],
         questionIds: [],
         qxChoices: [],
@@ -26,6 +26,8 @@ describe('answer integration', function () {
         surveyIds: [],
         hxAnswers: {}
     };
+
+    const hxUser = new History();
 
     const generateQxAnswer = _.partial(answerCommon.generateQxAnswer, store);
 
@@ -35,8 +37,7 @@ describe('answer integration', function () {
 
     for (let i = 0; i < 4; ++i) {
         const user = generator.newUser();
-        store.users.push(user);
-        it(`create user ${i}`, shared.createUserFn(store, user));
+        it(`create user ${i}`, shared.createUserFn(store, hxUser, user));
     }
 
     for (let i = 0; i < 20; ++i) {
@@ -108,7 +109,7 @@ describe('answer integration', function () {
     for (let j = 0; j < 3; ++j) {
         for (let i = 0; i < cases.length; ++i) {
             const { userIndex, surveyIndex, seqIndex } = cases[i];
-            it(`login as user ${userIndex}`, shared.loginFn(store, userIndex));
+            it(`login as user ${userIndex}`, shared.loginIndexFn(store, hxUser, userIndex));
 
             const msgPost = `answers survey ${surveyIndex}-${seqIndex} step ${j}`;
             it(msgPost, postAnswersFn(userIndex, surveyIndex, seqIndex, j));

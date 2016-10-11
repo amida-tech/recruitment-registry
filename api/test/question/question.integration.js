@@ -23,6 +23,7 @@ const shared = new SharedIntegration();
 
 describe('question integration', function () {
     const user = userExamples.Example;
+    const hxUser = new History();
 
     const store = {
         server: null,
@@ -42,7 +43,7 @@ describe('question integration', function () {
 
     it('login as super', shared.loginFn(store, config.superUser));
 
-    it('create a new user', shared.createUserFn(store, user));
+    it('create a new user', shared.createUserFn(store, hxUser, user));
 
     it('logout as super', shared.logoutFn(store));
 

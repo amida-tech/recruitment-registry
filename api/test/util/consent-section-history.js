@@ -2,9 +2,11 @@
 
 const _ = require('lodash');
 
+const History = require('./entity-history');
+
 class ConsentSectionHistory {
     constructor(userCount) {
-        this.users = [];
+        this.hxUser = new History();
         this.consentSectionTypes = [];
         this.clientConsentSections = [];
         this.consentSections = [];
@@ -29,7 +31,7 @@ class ConsentSectionHistory {
     }
 
     userId(userIndex) {
-        return this.users[userIndex];
+        return this.hxUser.id(userIndex);
     }
 
     listTypes() {

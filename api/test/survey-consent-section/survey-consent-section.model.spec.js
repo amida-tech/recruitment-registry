@@ -135,15 +135,15 @@ describe('survey consent section unit', function () {
             const response = Object.assign({}, store.profileResponses[index], signObj);
             return Registry.createProfile(response)
                 .then(({ token }) => tokener.verifyJWT(token))
-                .then(({ id }) => store.users.push(id))
-                .then(() => User.listConsentSections(store.users[index]))
+                .then(({ id }) => store.hxUser.push(response.user, { id }))
+                .then(() => User.listConsentSections(store.userId(index)))
                 .then(consentSections => expect(consentSections).to.have.length(0));
         };
     };
 
     const readProfileFn = function (index) {
         return function () {
-            const userId = store.users[index];
+            const userId = store.userId(index);
             return Registry.getProfile({ userId })
                 .then(function (result) {
                     const pr = store.profileResponses[index];
@@ -161,7 +161,7 @@ describe('survey consent section unit', function () {
 
     const readProfileWithoutSignaturesFn = function (index, missingConsentSectionIndices) {
         return function () {
-            const userId = store.users[index];
+            const userId = store.userId(index);
             return Registry.getProfile({ userId })
                 .then(shared.throwingHandler, shared.expectedErrorHandler('profileSignaturesMissing'))
                 .then(err => {

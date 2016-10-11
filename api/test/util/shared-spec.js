@@ -11,8 +11,8 @@ const Generator = require('./entity-generator');
 const expect = chai.expect;
 
 class SharedSpec {
-    constructor() {
-        this.generator = new Generator();
+    constructor(generator) {
+        this.generator = generator || new Generator();
     }
 
     setUpFn() {
@@ -23,13 +23,13 @@ class SharedSpec {
         };
     }
 
-    createUser(store) {
+    createUser(hxUser) {
         const generator = this.generator;
         return function () {
-            const inputUser = generator.newUser();
-            return models.User.create(inputUser)
+            const clientUser = generator.newUser();
+            return models.User.create(clientUser)
                 .then(function (user) {
-                    store.users.push(user.id);
+                    hxUser.push(clientUser, user);
                 });
         };
     }
@@ -106,11 +106,11 @@ class SharedSpec {
         };
     }
 
-    signConsentSectionTypeFn(store, userIndex, typeIndex) {
+    signConsentSectionTypeFn(history, userIndex, typeIndex) {
         return function () {
-            const consentSectionId = store.id(typeIndex);
-            const userId = store.users[userIndex];
-            store.sign(typeIndex, userIndex);
+            const consentSectionId = history.id(typeIndex);
+            const userId = history.userId(userIndex);
+            history.sign(typeIndex, userIndex);
             return models.ConsentSectionSignature.createSignature(userId, consentSectionId);
         };
     }

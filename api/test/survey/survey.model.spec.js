@@ -9,11 +9,12 @@ const surveyHelper = require('../helper/survey-helper');
 const models = require('../../models');
 
 const Generator = require('../util/entity-generator');
+const History = require('../util/entity-history');
 const SharedSpec = require('../util/shared-spec');
 
 const expect = chai.expect;
-const entityGen = new Generator();
-const shared = new SharedSpec();
+const generator = new Generator();
+const shared = new SharedSpec(generator);
 
 const Survey = models.Survey;
 
@@ -24,9 +25,10 @@ describe('survey unit', function () {
 
     const store = {
         inputSurveys: [],
-        surveys: [],
-        users: []
+        surveys: []
     };
+
+    const hxUser = new History();
 
     it('verify no surveys', function () {
         return Survey.listSurveys()
@@ -37,7 +39,7 @@ describe('survey unit', function () {
 
     const createVerifySurveyFn = function (index) {
         return function () {
-            const inputSurvey = entityGen.newSurvey();
+            const inputSurvey = generator.newSurvey();
             store.inputSurveys.push(inputSurvey);
             return Survey.createSurvey(inputSurvey)
                 .then(id => Survey.getSurveyById(id))
@@ -85,14 +87,14 @@ describe('survey unit', function () {
 
     it('error: version with a survey with no questions', function () {
         const survey = store.surveys[1];
-        const replacementSurvey = entityGen.newSurvey();
+        const replacementSurvey = generator.newSurvey();
         delete replacementSurvey.questions;
         return Survey.replaceSurvey(survey.id, replacementSurvey)
             .then(shared.throwingHandler, shared.expectedErrorHandler('surveyNoQuestions'));
     });
 
     it('error: version with a non-existent survey', function () {
-        const replacementSurvey = entityGen.newSurvey();
+        const replacementSurvey = generator.newSurvey();
         return Survey.replaceSurvey(999, replacementSurvey)
             .then(shared.throwingHandler, shared.expectedErrorHandler('surveyNotFound'));
     });
@@ -103,7 +105,7 @@ describe('survey unit', function () {
                 index = store.surveys.length - 1;
             }
             const survey = store.surveys[index];
-            const inputSurvey = entityGen.newSurvey();
+            const inputSurvey = generator.newSurvey();
             store.inputSurveys.push(inputSurvey);
             store.inputSurveys.splice(index, 1);
             return Survey.replaceSurvey(survey.id, inputSurvey)
@@ -170,7 +172,7 @@ describe('survey unit', function () {
     });
 
     it('survey by existing questions only', function () {
-        const survey = entityGen.newSurvey();
+        const survey = generator.newSurvey();
         const questions = store.questions.slice(0, 10);
         survey.questions = questions.map(({ id, required }) => ({ id, required }));
         return Survey.createSurvey(survey)
@@ -186,7 +188,7 @@ describe('survey unit', function () {
     });
 
     it('survey by existing/new questions', function () {
-        const survey = entityGen.newSurvey();
+        const survey = generator.newSurvey();
         const fn = index => ({ id: store.questions[index].id, required: store.questions[index].required });
         const additionalIds = [10, 11].map(fn);
         survey.questions.splice(1, 0, ...additionalIds);
@@ -203,15 +205,15 @@ describe('survey unit', function () {
     });
 
     for (let i = 0; i < userCount; ++i) {
-        it(`create user ${i}`, shared.createUser(store));
+        it(`create user ${i}`, shared.createUser(hxUser));
     }
 
     const answerVerifySurveyFn = function (surveyIndex) {
         return function () {
             const survey = store.surveys[surveyIndex];
-            const answers = entityGen.answerQuestions(survey.questions);
+            const answers = generator.answerQuestions(survey.questions);
             const input = {
-                userId: store.users[0],
+                userId: hxUser.id(0),
                 surveyId: store.surveys[1].id,
                 answers
             };
@@ -245,9 +247,9 @@ describe('survey unit', function () {
     it('error: answer without required questions', function () {
         const survey = store.surveys[3];
         const qxs = survey.questions;
-        const answers = entityGen.answerQuestions(qxs);
+        const answers = generator.answerQuestions(qxs);
         const input = {
-            userId: store.users[0],
+            userId: hxUser.id(0),
             surveyId: store.surveys[3].id,
             answers
         };
@@ -272,9 +274,9 @@ describe('survey unit', function () {
     it('error: answer with invalid question id', function () {
         const survey = store.surveys[0];
         const qxs = survey.questions;
-        const answers = entityGen.answerQuestions(qxs);
+        const answers = generator.answerQuestions(qxs);
         const input = {
-            userId: store.users[0],
+            userId: hxUser.id(0),
             surveyId: store.surveys[3].id,
             answers
         };
