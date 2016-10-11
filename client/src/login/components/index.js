@@ -7,10 +7,10 @@ export class LoginContainer extends Component {
   render() {
     const formState = this.props.data.get('formState')
     return (
-      <div className="form-page__wrapper">
+      <div className="rr-wrapper">
         <div className="rr-panel">
-          <div className="rr-topbox p-t-1">
-            <h2 className="rr">{this.props.vocab.get('SIGN_IN')}</h2>
+          <div className="rr-topbox">
+            <h1 className="rr m-t-0">{this.props.vocab.get('SIGN_IN')}</h1>
           </div>
           <Form data={formState}
                 location={location}

@@ -6,7 +6,7 @@ class SurveyForm extends Component {
     const survey = this.props.survey.toJS()
 
     return(
-      <form>
+      <form className="m-x-1">
 
           <div>{ survey ? (survey.questions.map(question => {
             switch (question.type) {
@@ -17,7 +17,7 @@ class SurveyForm extends Component {
                 }
                 if (question.answer) {
                   return [
-                    <label>{question.text}</label>,
+                    <label className="rr">{question.text}</label>,
                     question.answer.choices.map(choice => {
                       return <p>{choicesTmp[choice]}</p>;
                     })
@@ -29,13 +29,12 @@ class SurveyForm extends Component {
                 }
 
               case 'bool':
-                var ansTmp = "no";
-                if (question.answer && question.answer.boolValue) {
-                  ansTmp = "yes"
-                }
+                var ansTmp = question.answer && question.answer.boolValue ? this.props.vocab.get('YES') : this.props.vocab.get('NO');
                 return [
-                  <div><label>{question.text}</label><p>{ansTmp}</p></div>
-                ]
+                  <div><label className="rr">{question.text}</label><p>{ansTmp}</p></div>
+                  ]
+                     // <input type="radio" value={this.props.vocab.get('YES')}>{this.props.vocab.get('YES')}</input>,
+                    // <input type="radio" value={this.props.vocab.get('NO')}>{this.props.vocab.get('NO')}</input>
             }
           })) : (<div></div>) }</div>
       </form>

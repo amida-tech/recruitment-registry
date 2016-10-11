@@ -12,17 +12,15 @@
 @import 'components/_nav';
 @import 'components/_loading-indicator';
 
-.rr-wrapper {
-	margin-top: 80px;
-  margin-bottom: 80px;
+h1 {
+	font-size:12px !important;
+	font-weight:bold;
+	padding-top: 15px;
 }
 
-.rr-panel {
-  max-width: 380px;
-	min-width: 300px;
-  border-radius: 3px !important;
-  border: 1px solid;
-  border-color: #DCDCDC;
+h2 {
+	font-size:11px !important;
+	font-weight:bold;
 }
 
 .rr {
@@ -37,10 +35,24 @@
 	font-size:9px;
 }
 
+.rr-wrapper {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding-top:100px;
+}
+
+.rr-panel {
+  max-width: 380px;
+	min-width: 300px;
+  border-radius: 3px !important;
+  border: 1px solid;
+  border-color: #DCDCDC;
+}
+
 .rr-margins {
   padding: 1.5rem;
 }
-
 
 .rr-topbox {
   background-color: #DCDCDC;
@@ -58,6 +70,8 @@
 
 .rr-button {
   font-size: 9px;
+	font-weight: bold;
+	color: #808080;
   width: 60%;
   height: 30px;
   background-color: #DCDCDC;
@@ -88,8 +102,5 @@
   border-top: 0px;
   border-left: 0px;
   border-right: 0px;
-}
-
-.no-transform {
-  text-transform:none !important;
+	text-transform:none !important;
 }

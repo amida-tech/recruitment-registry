@@ -11,22 +11,28 @@ class ProfileContainer extends Component {
     const user = this.props.data.get('user').toJS()
 
     return (
-      <div>
-        <h1>{this.props.vocab.get('PROFILE')}</h1>
-        <div>
-          <UserForm
-            user={user}
-            vocab={this.props.vocab}
-            changeProfile={::this._changeProfile}
-            onSubmit={::this._saveProfile}
-            availableEthnicities={this.props.availableEthnicities}
-            availableGenders={this.props.availableGenders}
-            hasChanges={!!this.props.data.get('userUpdated')}
-            profileSaved={this.props.data.get('profileSaved')}
-          />
+      <div className="rr-wrapper">
+        <div className="rr-panel">
+          <div className="rr-topbox">
+            <h1 className="rr m-t-0">{this.props.vocab.get('PROFILE')}</h1>
+          </div>
+          <div>
+            <UserForm
+              user={user}
+              vocab={this.props.vocab}
+              changeProfile={::this._changeProfile}
+              onSubmit={::this._saveProfile}
+              availableEthnicities={this.props.availableEthnicities}
+              availableGenders={this.props.availableGenders}
+              hasChanges={!!this.props.data.get('userUpdated')}
+              profileSaved={this.props.data.get('profileSaved')}
+            />
 
-          <SurveyForm
-            survey={survey}/>
+            <SurveyForm
+              survey={survey}
+              vocab={this.props.vocab}
+            />
+          </div>
         </div>
       </div>
     );

@@ -5,7 +5,7 @@ class Form extends Component {
     return(
       <form className="rr-form m-x-1" onSubmit={this.props.onSubmit}>
         <div className="">
-          { this.props.data.get('hasErrors') ? (<p>this.props.vocab.get('INVALID_CREDENTIALS')</p>) : (<p></p>) }
+          { this.props.data.get('hasErrors') ? (<p>{this.props.vocab.get('INVALID_CREDENTIALS')}</p>) : (<p></p>) }
         </div>
         <div className="rr-group">
           <label className="rr" htmlFor="username">{this.props.vocab.get('EMAIL')}</label>
