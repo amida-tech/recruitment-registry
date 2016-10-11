@@ -75,7 +75,7 @@ errors.surveyNoQuestions = {
     msg: 'Surveys without questions are not accepted.'
 };
 
-errors.noSystemConsentSections = {
+errors.noSystemConsentDocuments = {
     msg: 'System does not have the required consent sections uploaded.'
 };
 

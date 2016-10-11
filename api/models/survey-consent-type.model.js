@@ -3,7 +3,7 @@
 const _ = require('lodash');
 
 module.exports = function (sequelize, DataTypes) {
-    const SurveyConsentSection = sequelize.define('survey_consent_section', {
+    const SurveyConsentType = sequelize.define('survey_consent_type', {
         surveyId: {
             type: DataTypes.INTEGER,
             allowNull: false,
@@ -13,12 +13,12 @@ module.exports = function (sequelize, DataTypes) {
                 key: 'id'
             }
         },
-        consentSectionTypeId: {
+        consentTypeId: {
             type: DataTypes.INTEGER,
             allowNull: false,
-            field: 'consent_section_type_id',
+            field: 'consent_type_id',
             references: {
-                model: 'consent_section_type',
+                model: 'consent_type',
                 key: 'id'
             }
         },
@@ -40,32 +40,32 @@ module.exports = function (sequelize, DataTypes) {
         deletedAt: 'deletedAt',
         paranoid: true,
         classMethods: {
-            createSurveyConsentSectionType: function ({ surveyId, consentSectionTypeId, action }) {
-                return SurveyConsentSection.create({ surveyId, consentSectionTypeId, action })
+            createSurveyConsentType: function ({ surveyId, consentTypeId, action }) {
+                return SurveyConsentType.create({ surveyId, consentTypeId, action })
                     .then(({ id }) => ({ id }));
             },
-            deleteSurveyConsentSectionType: function (id) {
-                return SurveyConsentSection.delete({ where: { id } });
+            deleteSurveyConsentType: function (id) {
+                return SurveyConsentType.delete({ where: { id } });
             },
-            listSurveyConsentSectionTypes: function ({ userId, surveyId, action }, tx) {
+            listSurveyConsentTypes: function ({ userId, surveyId, action }, tx) {
                 const query = {
                     where: { surveyId, action },
                     raw: true,
-                    attributes: ['consentSectionTypeId']
+                    attributes: ['consentTypeId']
                 };
                 if (tx) {
                     query.transaction = tx;
                 }
-                return sequelize.models.survey_consent_section.findAll(query)
-                    .then(result => _.map(result, 'consentSectionTypeId'))
+                return sequelize.models.survey_consent_type.findAll(query)
+                    .then(result => _.map(result, 'consentTypeId'))
                     .then(docTypeIds => {
                         if (docTypeIds.length) {
-                            return sequelize.models.registry_user.listConsentSections(userId, docTypeIds, tx);
+                            return sequelize.models.registry_user.listConsentDocuments(userId, docTypeIds, tx);
                         }
                     });
             }
         }
     });
 
-    return SurveyConsentSection;
+    return SurveyConsentType;
 };

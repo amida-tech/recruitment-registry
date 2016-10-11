@@ -4,30 +4,30 @@ const _ = require('lodash');
 
 const History = require('./entity-history');
 
-class ConsentSectionHistory {
+class ConsentDocumentHistory {
     constructor(userCount) {
         this.hxUser = new History();
-        this.consentSectionTypes = [];
-        this.clientConsentSections = [];
-        this.consentSections = [];
-        this.activeConsentSections = [];
+        this.consentTypes = [];
+        this.clientConsentDocuments = [];
+        this.consentDocuments = [];
+        this.activeConsentDocuments = [];
         this.signatures = _.range(userCount).map(() => []);
     }
 
     pushType(client, server) {
         const fullServer = Object.assign({}, client, server);
-        this.consentSectionTypes.push(fullServer);
-        _.sortBy(this.consentSectionTypes, 'id');
-        this.activeConsentSections.push(null);
+        this.consentTypes.push(fullServer);
+        _.sortBy(this.consentTypes, 'id');
+        this.activeConsentDocuments.push(null);
     }
 
     deleteType(typeIndex) {
-        this.consentSectionTypes.splice(typeIndex, 1);
-        this.activeConsentSections.splice(typeIndex, 1);
+        this.consentTypes.splice(typeIndex, 1);
+        this.activeConsentDocuments.splice(typeIndex, 1);
     }
 
     typeId(typeIndex) {
-        return this.consentSectionTypes[typeIndex].id;
+        return this.consentTypes[typeIndex].id;
     }
 
     userId(userIndex) {
@@ -35,7 +35,7 @@ class ConsentSectionHistory {
     }
 
     listTypes() {
-        return this.consentSectionTypes;
+        return this.consentTypes;
     }
 
     push(typeIndex, client, server) {
@@ -43,23 +43,23 @@ class ConsentSectionHistory {
         if (!fullServer.updateComment) {
             fullServer.updateComment = null;
         }
-        this.consentSections.push(fullServer);
-        this.activeConsentSections[typeIndex] = fullServer;
+        this.consentDocuments.push(fullServer);
+        this.activeConsentDocuments[typeIndex] = fullServer;
     }
 
     id(typeIndex) {
-        return this.activeConsentSections[typeIndex].id;
+        return this.activeConsentDocuments[typeIndex].id;
     }
 
     server(typeIndex) {
-        return this.activeConsentSections[typeIndex];
+        return this.activeConsentDocuments[typeIndex];
     }
 
     serversInList(typeIndices) {
         const result = typeIndices.map(index => ({
-            id: this.activeConsentSections[index].id,
-            name: this.consentSectionTypes[index].name,
-            title: this.consentSectionTypes[index].title
+            id: this.activeConsentDocuments[index].id,
+            name: this.consentTypes[index].name,
+            title: this.consentTypes[index].title
         }));
         return _.sortBy(result, 'id');
     }
@@ -70,4 +70,4 @@ class ConsentSectionHistory {
     }
 }
 
-module.exports = ConsentSectionHistory;
+module.exports = ConsentDocumentHistory;

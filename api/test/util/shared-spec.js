@@ -87,31 +87,31 @@ class SharedSpec {
         };
     }
 
-    createConsentSectionTypeFn(history) {
+    createConsentTypeFn(history) {
         const generator = this.generator;
         return function () {
-            const cst = generator.newConsentSectionType();
-            return models.ConsentSectionType.createConsentSectionType(cst)
+            const cst = generator.newConsentType();
+            return models.ConsentType.createConsentType(cst)
                 .then(server => history.pushType(cst, server));
         };
     }
 
-    createConsentSectionFn(history, typeIndex) {
+    createConsentDocumentFn(history, typeIndex) {
         const generator = this.generator;
         return function () {
             const typeId = history.typeId(typeIndex);
-            const cs = generator.newConsentSection({ typeId });
-            return models.ConsentSection.createConsentSection(cs)
+            const cs = generator.newConsentDocument({ typeId });
+            return models.ConsentDocument.createConsentDocument(cs)
                 .then(server => history.push(typeIndex, cs, server));
         };
     }
 
-    signConsentSectionTypeFn(history, userIndex, typeIndex) {
+    signConsentTypeFn(history, userIndex, typeIndex) {
         return function () {
-            const consentSectionId = history.id(typeIndex);
+            const consentDocumentId = history.id(typeIndex);
             const userId = history.userId(userIndex);
             history.sign(typeIndex, userIndex);
-            return models.ConsentSectionSignature.createSignature(userId, consentSectionId);
+            return models.ConsentSignature.createSignature(userId, consentDocumentId);
         };
     }
 

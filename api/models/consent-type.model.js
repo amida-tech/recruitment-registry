@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    const ConsentSectionType = sequelize.define('consent_section_type', {
+    const ConsentType = sequelize.define('consent_type', {
         name: {
             type: DataTypes.TEXT,
             allowNull: false
@@ -33,21 +33,21 @@ module.exports = function (sequelize, DataTypes) {
         deletedAt: 'deletedAt',
         paranoid: true,
         classMethods: {
-            listConsentSectionTypes: function () {
-                return ConsentSectionType.findAll({
+            listConsentTypes: function () {
+                return ConsentType.findAll({
                     raw: true,
                     attributes: ['id', 'name', 'title', 'type'],
                     order: 'name'
                 });
             },
-            createConsentSectionType: function ({ name, title, type }) {
-                return ConsentSectionType.create({ name, title, type })
+            createConsentType: function ({ name, title, type }) {
+                return ConsentType.create({ name, title, type })
                     .then(({ id }) => ({ id }));
             },
-            deleteConsentSectionType: function (id) {
+            deleteConsentType: function (id) {
                 return sequelize.transaction(function (tx) {
-                    return ConsentSectionType.destroy({ where: { id }, transaction: tx })
-                        .then(() => sequelize.models.consent_section.destroy({
+                    return ConsentType.destroy({ where: { id }, transaction: tx })
+                        .then(() => sequelize.models.consent_document.destroy({
                             where: { typeId: id }
                         }, { transaction: tx }));
                 });
@@ -55,5 +55,5 @@ module.exports = function (sequelize, DataTypes) {
         }
     });
 
-    return ConsentSectionType;
+    return ConsentType;
 };

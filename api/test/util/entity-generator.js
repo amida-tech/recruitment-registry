@@ -150,9 +150,9 @@ class Generator {
         this.questionGenerator = new QuestionGenerator();
         this.surveyIndex = -1;
         this.answerer = new Answerer();
-        this.consentSectionTypeIndex = -1;
-        this.consentSectionIndex = -1;
-        this.consentSectionTypeAdded = {};
+        this.consentTypeIndex = -1;
+        this.consentDocumentIndex = -1;
+        this.consentTypeAdded = {};
     }
 
     newUser(override) {
@@ -205,8 +205,8 @@ class Generator {
         return questions.map(qx => this.answerQuestion(qx));
     }
 
-    newConsentSectionType() {
-        const index = ++this.consentSectionTypeIndex;
+    newConsentType() {
+        const index = ++this.consentTypeIndex;
         return {
             name: `name_${index}`,
             title: `title_${index}`,
@@ -214,19 +214,19 @@ class Generator {
         };
     }
 
-    newConsentSection(override) {
+    newConsentDocument(override) {
         if (!override.typeId) {
             throw new Error('typeId is required');
         }
-        const index = ++this.consentSectionIndex;
+        const index = ++this.consentDocumentIndex;
         const result = {
             content: `Sample consent section content ${index}`
         };
-        const count = this.consentSectionTypeAdded[override.typeId] || 0;
+        const count = this.consentTypeAdded[override.typeId] || 0;
         if (count) {
             result.updateComment = `Update comment ${count}`;
         }
-        this.consentSectionTypeAdded[override.typeId] = count + 1;
+        this.consentTypeAdded[override.typeId] = count + 1;
         Object.assign(result, override);
         return result;
     }

@@ -14,20 +14,20 @@ const expect = chai.expect;
 const generator = new Generator();
 const shared = new SharedSpec(generator);
 
-const ConsentSection = models.ConsentSection;
+const ConsentDocument = models.ConsentDocument;
 const Registry = models.Registry;
-const SurveyConsentSection = models.SurveyConsentSection;
-const ConsentSectionHistory = require('./util/consent-section-history');
+const SurveyConsentType = models.SurveyConsentType;
+const ConsentDocumentHistory = require('./util/consent-document-history');
 const User = models.User;
 
 describe('survey consent section unit', function () {
-    const consentSectionTypeCount = 2;
+    const consentTypeCount = 2;
     const userCount = 4;
 
-    const history = new ConsentSectionHistory(userCount);
+    const history = new ConsentDocumentHistory(userCount);
 
     let profileSurvey = null;
-    const profileSurveyConsentSections = [];
+    const profileSurveyConsentTypes = [];
     const profileResponses = [];
 
     before(shared.setUpFn());
@@ -37,55 +37,55 @@ describe('survey consent section unit', function () {
         return Registry.createProfileSurvey(survey);
     });
 
-    it('get registry profile survey, verify no required consentSections', function () {
+    it('get registry profile survey, verify no required consentDocuments', function () {
         return Registry.getProfileSurvey()
             .then(survey => {
                 expect(survey.id).to.be.above(0);
-                expect(survey.consentSection).to.equal(undefined);
+                expect(survey.consentDocument).to.equal(undefined);
                 profileSurvey = survey;
             });
     });
 
-    for (let i = 0; i < consentSectionTypeCount; ++i) {
-        it(`create consent section type ${i}`, shared.createConsentSectionTypeFn(history));
+    for (let i = 0; i < consentTypeCount; ++i) {
+        it(`create consent type ${i}`, shared.createConsentTypeFn(history));
     }
 
-    const createProfileSurveyConsentSectionFn = function (typeIndex, action) {
+    const createProfileSurveyConsentTypeFn = function (typeIndex, action) {
         return function () {
-            const consentSectionTypeId = history.typeId(typeIndex);
+            const consentTypeId = history.typeId(typeIndex);
             const surveyId = profileSurvey.id;
-            return SurveyConsentSection.createSurveyConsentSectionType({ surveyId, consentSectionTypeId, action })
-                .then(({ id }) => profileSurveyConsentSections.push({ id, consentSectionTypeId, action }));
+            return SurveyConsentType.createSurveyConsentType({ surveyId, consentTypeId, action })
+                .then(({ id }) => profileSurveyConsentTypes.push({ id, consentTypeId, action }));
         };
     };
 
-    for (let i = 0; i < consentSectionTypeCount; ++i) {
-        it(`require consent section type ${i} in survey question create`, createProfileSurveyConsentSectionFn(i, 'create'));
-        it(`require consent section type ${i} in survey question read`, createProfileSurveyConsentSectionFn(i, 'read'));
+    for (let i = 0; i < consentTypeCount; ++i) {
+        it(`require consent type ${i} in survey question create`, createProfileSurveyConsentTypeFn(i, 'create'));
+        it(`require consent type ${i} in survey question read`, createProfileSurveyConsentTypeFn(i, 'read'));
     }
 
-    it('error: get profile survey with no consentSections of existing types', function () {
+    it('error: get profile survey with no consentDocuments of existing types', function () {
         return Registry.getProfileSurvey()
-            .then(shared.throwingHandler, shared.expectedErrorHandler('noSystemConsentSections'));
+            .then(shared.throwingHandler, shared.expectedErrorHandler('noSystemConsentDocuments'));
     });
 
-    for (let i = 0; i < consentSectionTypeCount; ++i) {
-        it(`create consent section of type ${i}`, shared.createConsentSectionFn(history, i));
+    for (let i = 0; i < consentTypeCount; ++i) {
+        it(`create consent section of type ${i}`, shared.createConsentDocumentFn(history, i));
     }
 
-    it('get registry profile survey with required consentSections', function () {
+    it('get registry profile survey with required consentDocuments', function () {
         return Registry.getProfileSurvey()
             .then(actual => {
                 expect(actual.id).to.equal(profileSurvey.id);
                 const expected = history.serversInList([0, 1]);
-                expect(actual.consentSection).to.deep.equal(expected);
+                expect(actual.consentDocument).to.deep.equal(expected);
             });
     });
 
-    const verifyConsentSectionContentFn = function (typeIndex) {
+    const verifyConsentDocumentContentFn = function (typeIndex) {
         return function () {
             const cs = history.server(typeIndex);
-            return ConsentSection.getConsentSection(cs.id)
+            return ConsentDocument.getConsentDocument(cs.id)
                 .then(result => {
                     expect(result).to.deep.equal(cs);
                 });
@@ -93,7 +93,7 @@ describe('survey consent section unit', function () {
     };
 
     for (let i = 0; i < 2; ++i) {
-        it(`get/verify consent section of type ${i}`, verifyConsentSectionContentFn(i));
+        it(`get/verify consent section of type ${i}`, verifyConsentDocumentContentFn(i));
     }
 
     const formProfileResponse = function () {
@@ -102,7 +102,7 @@ describe('survey consent section unit', function () {
         profileResponses.push({ user, answers });
     };
 
-    const createProfileWithoutSignaturesFn = function (index, signIndices, missingConsentSectionIndices) {
+    const createProfileWithoutSignaturesFn = function (index, signIndices, missingConsentDocumentIndices) {
         return function () {
             let signObj = {};
             if (signIndices) {
@@ -113,8 +113,8 @@ describe('survey consent section unit', function () {
             return Registry.createProfile(response)
                 .then(shared.throwingHandler, shared.expectedErrorHandler('profileSignaturesMissing'))
                 .then(err => {
-                    const expected = history.serversInList(missingConsentSectionIndices);
-                    expect(err.consentSection).to.deep.equal(expected);
+                    const expected = history.serversInList(missingConsentDocumentIndices);
+                    expect(err.consentDocument).to.deep.equal(expected);
                 });
         };
     };
@@ -127,8 +127,8 @@ describe('survey consent section unit', function () {
             return Registry.createProfile(response)
                 .then(({ token }) => tokener.verifyJWT(token))
                 .then(({ id }) => history.hxUser.push(response.user, { id }))
-                .then(() => User.listConsentSections(history.userId(index)))
-                .then(consentSections => expect(consentSections).to.have.length(0));
+                .then(() => User.listConsentDocuments(history.userId(index)))
+                .then(consentDocuments => expect(consentDocuments).to.have.length(0));
         };
     };
 
@@ -150,14 +150,14 @@ describe('survey consent section unit', function () {
         };
     };
 
-    const readProfileWithoutSignaturesFn = function (index, missingConsentSectionIndices) {
+    const readProfileWithoutSignaturesFn = function (index, missingConsentDocumentIndices) {
         return function () {
             const userId = history.userId(index);
             return Registry.getProfile({ userId })
                 .then(shared.throwingHandler, shared.expectedErrorHandler('profileSignaturesMissing'))
                 .then(err => {
-                    const expected = history.serversInList(missingConsentSectionIndices);
-                    expect(err.consentSection).to.deep.equal(expected);
+                    const expected = history.serversInList(missingConsentDocumentIndices);
+                    expect(err.consentDocument).to.deep.equal(expected);
                 });
         };
     };
@@ -172,18 +172,18 @@ describe('survey consent section unit', function () {
         it(`read user profile ${i} with signatures`, readProfileFn(i));
     }
 
-    for (let i = 0; i < consentSectionTypeCount; ++i) {
-        it(`create consent section of type ${i}`, shared.createConsentSectionFn(history, i));
+    for (let i = 0; i < consentTypeCount; ++i) {
+        it(`create consent section of type ${i}`, shared.createConsentDocumentFn(history, i));
     }
 
     for (let i = 0; i < 4; ++i) {
         it(`read user profile ${i} without signatures`, readProfileWithoutSignaturesFn(i, [0, 1]));
     }
 
-    it('user 0 signs consent section 0', shared.signConsentSectionTypeFn(history, 0, 0));
-    it('user 0 signs consent section 1', shared.signConsentSectionTypeFn(history, 0, 1));
-    it('user 2 signs consent section 0', shared.signConsentSectionTypeFn(history, 2, 0));
-    it('user 3 signs consent section 1', shared.signConsentSectionTypeFn(history, 3, 1));
+    it('user 0 signs consent document 0', shared.signConsentTypeFn(history, 0, 0));
+    it('user 0 signs consent document 1', shared.signConsentTypeFn(history, 0, 1));
+    it('user 2 signs consent document 0', shared.signConsentTypeFn(history, 2, 0));
+    it('user 3 signs consent document 1', shared.signConsentTypeFn(history, 3, 1));
 
     it(`read user profile 0 with signatures`, readProfileFn(0));
     it('read user profile 1 without signatures', readProfileWithoutSignaturesFn(1, [0, 1]));

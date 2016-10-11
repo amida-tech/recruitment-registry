@@ -1,14 +1,14 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    const ConsentSectionSignature = sequelize.define('consent_section_signature', {
-        consentSectionId: {
+    const ConsentSignature = sequelize.define('consent_signature', {
+        consentDocumentId: {
             type: DataTypes.INTEGER,
             allowNull: false,
-            field: 'consent_section_id',
+            field: 'consent_document_id',
             unique: 'signature',
             references: {
-                model: 'consent_section',
+                model: 'consent_document',
                 key: 'id'
             }
         },
@@ -30,13 +30,13 @@ module.exports = function (sequelize, DataTypes) {
         freezeTableName: true,
         createdAt: 'createdAt',
         classMethods: {
-            createSignature: function (userId, consentSectionId, tx) {
+            createSignature: function (userId, consentDocumentId, tx) {
                 const options = tx ? { transaction: tx } : {};
-                return ConsentSectionSignature.create({ userId, consentSectionId }, options)
+                return ConsentSignature.create({ userId, consentDocumentId }, options)
                     .then(({ id }) => ({ id }));
             }
         }
     });
 
-    return ConsentSectionSignature;
+    return ConsentSignature;
 };
