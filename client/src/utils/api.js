@@ -76,7 +76,7 @@ const apiProvider = store => next => action => {
       break
     case 'GET_SURVEY':
       request
-        .get(apiUrl + '/registries/profile-survey/' + action.surveyName)
+        .get(apiUrl + '/profile-survey/')// + action.surveyName)
         .end((error, response) => {
           if (!error) {
             next({
@@ -90,7 +90,7 @@ const apiProvider = store => next => action => {
       break
     case 'GET_PROFILE':
       request
-        .get(apiUrl + '/registries/user-profile')
+        .get(apiUrl + '/profiles')
         .set("Authorization", "Bearer " + store.getState().get('loggedIn'))
         .end((error, response) => {
           if (!error) {
@@ -120,7 +120,7 @@ const apiProvider = store => next => action => {
       break
     case 'REGISTER':
       request
-        .post(apiUrl + '/registries/user-profile')
+        .post(apiUrl + '/registries/profiles')
         .send(action.payload)
         .end((error, response) => {
           if (!error) {
