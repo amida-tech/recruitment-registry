@@ -33,8 +33,6 @@ class SurveyForm extends Component {
                 return [
                   <div><label className="rr">{question.text}</label><p>{ansTmp}</p></div>
                   ]
-                     // <input type="radio" value={this.props.vocab.get('YES')}>{this.props.vocab.get('YES')}</input>,
-                    // <input type="radio" value={this.props.vocab.get('NO')}>{this.props.vocab.get('NO')}</input>
             }
           })) : (<div></div>) }</div>
       </form>

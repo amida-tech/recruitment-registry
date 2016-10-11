@@ -19,10 +19,11 @@ class Nav extends Component {
     if (loggedIn) {
       var routesAuthed = routes.filter(r => r.requiresAuth || !r.newUsers)
       nav = routesAuthed.map(r => {
-        var path = r.path
+        var path = r.path;
         if (r.path.indexOf('survey-builder') > -1) { path = '/survey-builder' }
-        if (r.isSuper && role !== 'admin')
-          return <div></div>
+        if (r.isSuper && role !== 'admin') {
+          return <div key={r.path}></div>
+          }
         return <Link className="nav-item nav-link" key={r.path} to={path}>{r.title}</Link>
       })
     } else {
@@ -35,14 +36,11 @@ class Nav extends Component {
         <a className="navbar-brand" href="/">{ title }</a>
         <div className="nav navbar-nav">{nav}</div>
         <div>
-          { loggedIn ? (
-            <div>
-              <button type="button" className="pull-right nav-item nav-link btn btn-primary" onClick={::this._logout}>{this.props.vocab.get('LOGOUT')}</button>
-            </div>
-          ) : (<div></div>)}
-        </div>
-        <div>
-          <button type="button" className="pull-right nav-item nav-link btn btn-primary" onClick={::this._changeLanguage}>{this.props.vocab.get('LANGUAGE')}</button>
+          <div>
+            { loggedIn ? (<button type="button" className="pull-right nav-item nav-link btn btn-primary" onClick={::this._logout}>{this.props.vocab.get('LOGOUT')}</button>
+          ) : ""}
+            <button type="button" className="pull-right nav-item nav-link btn btn-primary" onClick={::this._changeLanguage}>{this.props.vocab.get('LANGUAGE')}</button>
+          </div>
         </div>
       </nav>
     );
