@@ -249,7 +249,7 @@ describe('survey integration', function () {
     });
     it(`list surveys and verify`, listSurveysFn(createCount - 2));
 
-    it('create a new user', shared.postUserFn(store, user));
+    it('create a new user', shared.createUserFn(store, user));
 
     it('login as user', shared.loginFn(store, user));
 

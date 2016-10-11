@@ -15,7 +15,13 @@ class ConsentSectionHistory {
     pushType(client, server) {
         const fullServer = Object.assign({}, client, server);
         this.consentSectionTypes.push(fullServer);
+        _.sortBy(this.consentSectionTypes, 'id');
         this.activeConsentSections.push(null);
+    }
+
+    deleteType(typeIndex) {
+        this.consentSectionTypes.splice(typeIndex, 1);
+        this.activeConsentSections.splice(typeIndex, 1);
     }
 
     typeId(typeIndex) {

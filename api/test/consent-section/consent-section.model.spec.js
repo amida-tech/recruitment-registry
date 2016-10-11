@@ -185,13 +185,14 @@ describe('consent section unit', function () {
     it('verify consent sections required for user 0', verifyConsentSectionsFn(0, []));
 
     it('delete consent section type 1', function () {
-        const id = history.consentSectionTypes[1].id;
+        const id = history.typeId(1);
         return ConsentSectionType.deleteConsentSectionType(id)
             .then(() => {
+                history.deleteType(1);
                 return ConsentSectionType.listConsentSectionTypes()
                     .then(result => {
-                        const allDocTypes = [0, 2].map(i => history.consentSectionTypes[i]);
-                        expect(result).to.deep.equal(allDocTypes);
+                        const types = history.listTypes();
+                        expect(result).to.deep.equal(types);
                     });
             });
     });
@@ -199,7 +200,7 @@ describe('consent section unit', function () {
     it('verify consent sections required for user 0', verifyConsentSectionsFn(0, []));
     it('verify consent sections required for user 1', verifyConsentSectionsFn(1, [0]));
     it('verify consent sections required for user 2', verifyConsentSectionsFn(2, [0]));
-    it('verify consent sections required for user 3', verifyConsentSectionsFn(3, [0, 2]));
+    it('verify consent sections required for user 3', verifyConsentSectionsFn(3, [0, 1]));
 
     const verifySignatureExistenceFn = function (userIndex) {
         return function () {
@@ -233,7 +234,7 @@ describe('consent section unit', function () {
             })
             .then(() => ConsentSection.findAll(queryParams))
             .then(consentSections => {
-                const expected = _.sortBy([history.activeConsentSections[0], history.activeConsentSections[2]], 'id');
+                const expected = _.sortBy([history.server(0), history.server(1)], 'id');
                 expect(consentSections).to.deep.equal(expected);
             });
     });

@@ -42,7 +42,7 @@ describe('question integration', function () {
 
     it('login as super', shared.loginFn(store, config.superUser));
 
-    it('create a new user', shared.postUserFn(store, user));
+    it('create a new user', shared.createUserFn(store, user));
 
     it('logout as super', shared.logoutFn(store));
 

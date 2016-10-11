@@ -8,12 +8,15 @@ const _ = require('lodash');
 const config = require('../../config');
 
 const SharedIntegration = require('../util/shared-integration');
+const Generator = require('../util/entity-generator');
 const answerCommon = require('./answer-common');
 
 const expect = chai.expect;
 const shared = new SharedIntegration();
 
 describe('answer integration', function () {
+    const generator = new Generator();
+
     const store = {
         users: [],
         questions: [],
@@ -31,7 +34,9 @@ describe('answer integration', function () {
     it('login as super', shared.loginFn(store, config.superUser));
 
     for (let i = 0; i < 4; ++i) {
-        it(`create user ${i}`, shared.createUserFn(store));
+        const user = generator.newUser();
+        store.users.push(user);
+        it(`create user ${i}`, shared.createUserFn(store, user));
     }
 
     for (let i = 0; i < 20; ++i) {

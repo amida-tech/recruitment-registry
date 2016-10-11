@@ -60,7 +60,7 @@ class SharedIntegration {
         };
     }
 
-    postUserFn(store, user) {
+    createUserFn(store, user) {
         return function (done) {
             store.server
                 .post('/api/v1.0/users')
@@ -68,12 +68,6 @@ class SharedIntegration {
                 .send(user)
                 .expect(201, done);
         };
-    }
-
-    createUserFn(store) {
-        const user = this.generator.newUser();
-        store.users.push(user);
-        return this.postUserFn(store, user);
     }
 
     createQxFn(store) {
