@@ -13,11 +13,11 @@ export default class ChoicesQuestion extends Component {
 
           {question.choices.map(choice => {
             if (choice.type === 'text') {
-              return <label key={choice.id}>{choice.text}<input onChange={this.props.changeChoice}
+              return <label key={choice.id}>Choice text: <input onChange={this.props.changeChoice}
                                                                 defaultValue={choice.text}
                                                                 type="text"/></label>
             } else {
-              return <label key={choice.id}><input
+              return <label key={choice.id}>Choice bool: <input
                 type="text"
                 onChange={this.props.changeChoice.bind(this, {
                   question: question,
@@ -29,8 +29,7 @@ export default class ChoicesQuestion extends Component {
           <Droppable
             types={['choice']}
             onDrop={this.props.onDropChoice.bind(this, question)}>
-            <ul className="add-choice">
-
+            <ul className="add-choice"><p className="faded">Drop a choice here</p>
             </ul>
           </Droppable>
         </div>

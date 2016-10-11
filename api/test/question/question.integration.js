@@ -8,12 +8,17 @@ const _ = require('lodash');
 const config = require('../../config');
 
 const shared = require('../shared-integration');
-const userExamples = require('../fixtures/user-examples');
-const qxHelper = require('../helper/question-helper');
-const examples = require('../fixtures/question-examples');
-const qxCommon = require('./question-common');
+const userExamples = require('../fixtures/example/user');
+const Generator = require('../entity-generator');
+const comparator = require('../client-server-comparator');
+const History = require('../util/entity-history');
+const RRError = require('../../lib/rr-error');
+
+const invalidQuestionsJSON = require('../fixtures/json-schema-invalid/new-question');
+const invalidQuestionsSwagger = require('../fixtures/swagger-invalid/new-question');
 
 const expect = chai.expect;
+const generator = new Generator();
 
 describe('question integration', function () {
     const user = userExamples.Example;
@@ -26,9 +31,10 @@ describe('question integration', function () {
     before(shared.setUpFn(store));
 
     it('error: create question unauthorized', function (done) {
+        const question = generator.newQuestion();
         store.server
             .post('/api/v1.0/questions')
-            .send(examples[0])
+            .send(question)
             .expect(401)
             .end(done);
     });
@@ -42,10 +48,11 @@ describe('question integration', function () {
     it('login as user', shared.loginFn(store, user));
 
     it('error: create question as non admin', function (done) {
+        const question = generator.newQuestion();
         store.server
             .post('/api/v1.0/questions')
             .set('Authorization', store.auth)
-            .send(examples[0])
+            .send(question)
             .expect(403, done);
     });
 
@@ -53,105 +60,150 @@ describe('question integration', function () {
 
     it('login as super', shared.loginFn(store, config.superUser));
 
-    qxCommon.rrErrors.forEach(rrError => {
-        it(`error: ${rrError.code}`, function (done) {
+    const invalidQuestionJSONFn = function (index) {
+        return function (done) {
+            const question = invalidQuestionsJSON[index];
             store.server
                 .post('/api/v1.0/questions')
                 .set('Authorization', store.auth)
-                .send(rrError.input)
+                .send(question)
                 .expect(400)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
                     }
-                    const rrErr = res.body;
-                    expect(rrErr.code).to.equal(rrError.code);
-                    expect(!!rrErr.message).to.equal(true);
-                    done();
-                });
-        });
-    });
-
-    const ids = [];
-
-    const createQxFn = function (index) {
-        return function (done) {
-            store.server
-                .post('/api/v1.0/questions')
-                .set('Authorization', store.auth)
-                .send(examples[index])
-                .expect(201)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    ids.push(res.body.id);
+                    expect(res.body.message).to.equal(RRError.message('jsonSchemaFailed', 'newQuestion'));
                     done();
                 });
         };
     };
 
-    for (let i = 0; i < examples.length; ++i) {
-        it(`create question ${i} type ${examples[i].type}`, createQxFn(i));
+    for (let i = 0; i < invalidQuestionsJSON.length; ++i) {
+        it(`error: invalid (json) question input ${i}`, invalidQuestionJSONFn(i));
+    }
+
+    const invalidQuestionSwaggerFn = function (index) {
+        return function (done) {
+            const question = invalidQuestionsSwagger[index];
+            store.server
+                .post('/api/v1.0/questions')
+                .set('Authorization', store.auth)
+                .send(question)
+                .expect(400)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    expect(Boolean(res.body.message)).to.equal(true);
+                    done();
+                });
+        };
+    };
+
+    for (let i = 0; i < invalidQuestionsSwagger.length; ++i) {
+        it(`error: invalid (swagger) question input ${i}`, invalidQuestionSwaggerFn(i));
+    }
+
+    const hxQuestions = new History();
+    const hxSurveys = new History();
+
+    const createQxFn = function () {
+        return function (done) {
+            const clientQuestion = generator.newQuestion();
+            store.server
+                .post('/api/v1.0/questions')
+                .set('Authorization', store.auth)
+                .send(clientQuestion)
+                .expect(201)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    hxQuestions.push(clientQuestion, res.body);
+                    done();
+                });
+        };
+    };
+
+    for (let i = 0; i < 10; ++i) {
+        it(`create question ${i}`, createQxFn());
     }
 
     const getAndVerifyQxFn = function (index) {
         return function (done) {
+            const id = hxQuestions.id(index);
             store.server
-                .get('/api/v1.0/questions/' + ids[index])
+                .get(`/api/v1.0/questions/${id}`)
                 .set('Authorization', store.auth)
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
                     }
-                    const actual = qxHelper.prepareServerQuestion(res.body, examples[index]);
-                    const expected = qxHelper.prepareClientQuestion(_.cloneDeep(examples[index]));
-                    expect(actual).to.deep.equal(expected);
+                    hxQuestions.reloadServer(res.body);
+                    comparator.question(hxQuestions.client(index), res.body);
                     done();
                 });
         };
     };
 
-    for (let i = 0; i < examples.length; ++i) {
+    for (let i = 0; i < 10; ++i) {
         it(`get and verify question ${i}`, getAndVerifyQxFn(i));
     }
 
     const updateQxFn = function (index) {
         return function (done) {
+            const id = hxQuestions.id(index);
+            const clientQuestion = hxQuestions.client(index);
+            const text = `Updated ${clientQuestion.text}`;
             store.server
-                .put('/api/v1.0/questions/' + ids[index])
-                .send({ text: examples[index].text, selectable: examples[index].selectable })
+                .patch(`/api/v1.0/questions/${id}`)
+                .send({ text })
                 .set('Authorization', store.auth)
                 .expect(204, done);
         };
     };
 
-    const updateQxTextFn = function (index) {
-        return function () {
-            const example = examples[index];
-            example.text = `Updated ${example.text}`;
-            example.selectable = !example.selectable;
+    const verifyUpdatedQxFn = function (index) {
+        return function (done) {
+            const id = hxQuestions.id(index);
+            const clientQuestion = hxQuestions.client(index);
+            const text = `Updated ${clientQuestion.text}`;
+            const updatedQuestion = Object.assign({}, clientQuestion, { text });
+            store.server
+                .get(`/api/v1.0/questions/${id}`)
+                .set('Authorization', store.auth)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    comparator.question(updatedQuestion, res.body);
+                    done();
+                });
         };
     };
 
-    const restoreQxTextFn = function (index) {
-        return function () {
-            const example = examples[index];
-            example.text = example.text.slice(8);
-            example.selectable = !example.selectable;
+    const restoreUpdatedQxFn = function (index) {
+        return function (done) {
+            const id = hxQuestions.id(index);
+            const clientQuestion = hxQuestions.client(index);
+            const text = clientQuestion.text;
+            store.server
+                .patch(`/api/v1.0/questions/${id}`)
+                .send({ text })
+                .set('Authorization', store.auth)
+                .expect(204, done);
         };
     };
 
-    for (let i = 0; i < examples.length; ++i) {
-        it(`update question sample ${i} texts`, updateQxTextFn(i));
-        it(`update question ${i}`, updateQxFn(i));
-        it(`get and verify question ${i}`, getAndVerifyQxFn(i));
-        it(`restore question sample ${i} texts`, restoreQxTextFn(i));
-        it(`update question ${i}`, updateQxFn(i));
+    for (let i = 0; i < 10; ++i) {
+        it(`update question ${i} text`, updateQxFn(i));
+        it(`verify updated question ${i}`, verifyUpdatedQxFn(i));
+        it(`restore question ${i} text`, restoreUpdatedQxFn(i));
     }
 
-    it('get all and verify', function (done) {
+    const getAllAndVerify = function (done) {
         store.server
             .get('/api/v1.0/questions')
             .set('Authorization', store.auth)
@@ -160,42 +212,208 @@ describe('question integration', function () {
                 if (err) {
                     return done(err);
                 }
-                qxHelper.prepareClientQuestions(examples, ids, _.range(examples.length))
-                    .then(expected => {
-                        expect(res.body).to.deep.equal(expected);
-                        done();
-                    })
-                    .catch(err => done(err));
+                const clientQuestions = hxQuestions.clientList();
+                comparator.questions(clientQuestions, res.body);
+                done();
             });
-    });
+    };
+
+    it('get all and verify', getAllAndVerify);
 
     const deleteQxFn = function (index) {
         return function (done) {
+            const id = hxQuestions.id(index);
             store.server
-                .delete('/api/v1.0/questions/' + ids[index])
+                .delete(`/api/v1.0/questions/${id}`)
                 .set('Authorization', store.auth)
-                .expect(204, done);
+                .expect(204)
+                .end(function (err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    hxQuestions.remove(index);
+                    done();
+                });
         };
     };
 
-    it(`delete question 0`, deleteQxFn(0));
-    it(`delete question 2`, deleteQxFn(2));
+    it(`delete question 1`, deleteQxFn(1));
+    it(`delete question 4`, deleteQxFn(4));
+    it(`delete question 6`, deleteQxFn(6));
 
-    it('get all and verify', function (done) {
+    it('get all and verify', getAllAndVerify);
+
+    for (let i = 10; i < 20; ++i) {
+        it(`create question ${i}`, createQxFn());
+        it(`get and verify question ${i}`, getAndVerifyQxFn(i));
+        it(`update question ${i} text`, updateQxFn(i));
+        it(`verify updated question ${i}`, verifyUpdatedQxFn(i));
+        it(`restore question ${i} text`, restoreUpdatedQxFn(i));
+    }
+
+    const createSurveyFn = function (questionIndices) {
+        return function (done) {
+            const questionIds = questionIndices.map(index => hxQuestions.id(index));
+            const clientSurvey = generator.newSurveyQuestionIds(questionIds);
+            store.server
+                .post('/api/v1.0/surveys')
+                .set('Authorization', store.auth)
+                .send(clientSurvey)
+                .expect(201)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    hxSurveys.push(clientSurvey, res.body);
+                    done();
+                });
+        };
+    };
+
+    [
+        [2, 7, 9],
+        [7, 11, 13],
+        [5, 8, 11, 14, 15]
+    ].forEach((questionIndices, index) => {
+        it(`create survey ${index} from questions ${questionIndices}`, createSurveyFn(questionIndices));
+    });
+
+    const deleteQuestionWhenOnSurveyFn = function (index) {
+        return function (done) {
+            const id = hxQuestions.id(index);
+            store.server
+                .delete(`/api/v1.0/questions/${id}`)
+                .set('Authorization', store.auth)
+                .expect(400)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    const message = RRError.message('qxReplaceWhenActiveSurveys');
+                    expect(res.body.message).to.equal(message);
+                    done();
+                });
+        };
+    };
+
+    _.forEach([2, 7, 11, 13, 14], questionIndex => {
+        it(`error: delete question ${questionIndex} on an active survey`, deleteQuestionWhenOnSurveyFn(questionIndex));
+    });
+
+    const deleteSurveyFn = function (index) {
+        return function (done) {
+            const id = hxSurveys.id(index);
+            store.server
+                .delete(`/api/v1.0/surveys/${id}`)
+                .set('Authorization', store.auth)
+                .expect(204)
+                .end(function (err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    hxSurveys.remove(index);
+                    done();
+                });
+        };
+    };
+
+    it('delete survey 1', deleteSurveyFn(1));
+
+    _.forEach([2, 7, 11, 14], questionIndex => {
+        it(`error: delete question ${questionIndex} on an active survey`, deleteQuestionWhenOnSurveyFn(questionIndex));
+    });
+
+    it('delete survey 2', deleteSurveyFn(2));
+
+    _.forEach([2, 7], questionIndex => {
+        it(`error: delete question ${questionIndex} on an active survey`, deleteQuestionWhenOnSurveyFn(questionIndex));
+    });
+
+    _.forEach([5, 11, 15], index => {
+        it(`delete question ${index}`, deleteQxFn(index));
+    });
+
+    it(`error: replace a non-existent question`, function (done) {
+        const replacement = generator.newQuestion();
         store.server
-            .get('/api/v1.0/questions')
+            .post('/api/v1.0/questions')
+            .query({ parent: 999 })
             .set('Authorization', store.auth)
-            .expect(200)
+            .send(replacement)
+            .expect(400)
             .end(function (err, res) {
                 if (err) {
                     return done(err);
                 }
-                qxHelper.prepareClientQuestions(examples, ids, [1, 3, 4])
-                    .then(expected => {
-                        expect(res.body).to.deep.equal(expected);
-                        done();
-                    })
-                    .catch(err => done(err));
+                const message = RRError.message('qxNotFound');
+                expect(res.body.message).to.equal(message);
+                done();
             });
+    });
+
+    [
+        [7, 10, 17],
+        [3, 8, 9]
+    ].forEach((questionIndices, index) => {
+        it(`create survey ${index + 3} from questions ${questionIndices}`, createSurveyFn(questionIndices));
+    });
+
+    const replaceQxOnSurvey = function (questionIndex) {
+        return function (done) {
+            const replacement = generator.newQuestion();
+            const parent = hxQuestions.id(questionIndex);
+            store.server
+                .post('/api/v1.0/questions')
+                .query({ parent })
+                .set('Authorization', store.auth)
+                .send(replacement)
+                .expect(400)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    const message = RRError.message('qxReplaceWhenActiveSurveys');
+                    expect(res.body.message).to.equal(message);
+                    done();
+                });
+        };
+    };
+
+    _.forEach([2, 7, 9], questionIndex => {
+        it(`error: replace question ${questionIndex} on an active survey`, replaceQxOnSurvey(questionIndex));
+    });
+
+    it('delete survey 0', deleteSurveyFn(0));
+
+    _.forEach([7, 9], questionIndex => {
+        it(`error: replace question ${questionIndex} on an active survey`, replaceQxOnSurvey(questionIndex));
+    });
+
+    it('delete survey 3', deleteSurveyFn(3));
+
+    const replaceQxFn = function (questionIndex) {
+        return function (done) {
+            const replacement = generator.newQuestion();
+            const parent = hxQuestions.id(questionIndex);
+            store.server
+                .post('/api/v1.0/questions')
+                .query({ parent })
+                .set('Authorization', store.auth)
+                .send(replacement)
+                .expect(201)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    hxQuestions.replace(questionIndex, replacement, res.body);
+                    done();
+                });
+        };
+    };
+
+    [7, 10, 14, 21, 22, 24].forEach((questionIndex, index) => {
+        it(`replace question ${questionIndex} with question ${20 + index}`, replaceQxFn(questionIndex));
+        it(`get and verify question ${20 + index}`, getAndVerifyQxFn(20 + index));
+        it('get all and verify', getAllAndVerify);
     });
 });

@@ -5,9 +5,10 @@ const chai = require('chai');
 const _ = require('lodash');
 
 const appgen = require('../app-generator');
-const entityGen = require('./shared-spec');
+const Generator = require('./entity-generator');
 
 const expect = chai.expect;
+const entityGen = new Generator();
 
 exports.setUpFn = function (store, options = {}) {
     return function (done) {
@@ -66,14 +67,14 @@ exports.postUserFn = function (store, user) {
 };
 
 exports.createUserFn = function (store) {
-    const user = entityGen.genNewUser();
+    const user = entityGen.newUser();
     store.users.push(user);
     return exports.postUserFn(store, user);
 };
 
 exports.createQxFn = function (store) {
     return function (done) {
-        const inputQx = entityGen.genNewQuestion();
+        const inputQx = entityGen.newQuestion();
         store.server
             .post('/api/v1.0/questions')
             .set('Authorization', store.auth)
@@ -104,7 +105,7 @@ exports.fillQxFn = function (store) {
                 const choices = res.body.choices;
                 if (choices) {
                     if (question.type === 'choice') {
-                        question.choices = _.map(res.body.choices, 'id');
+                        question.choices = _.map(res.body.choices, choice => ({ id: choice.id }));
                     } else {
                         question.choices = _.map(choices, choice => ({ id: choice.id, type: choice.type }));
                     }
@@ -132,9 +133,10 @@ exports.postSurveyFn = function (store, survey) {
 
 exports.createSurveyFn = function (store, qxIndices) {
     return function (done) {
-        const inputSurvey = entityGen.genNewSurvey({ addQuestions: false });
+        const inputSurvey = entityGen.newSurvey();
         inputSurvey.questions = qxIndices.map(index => ({
-            id: store.questionIds[index]
+            id: store.questionIds[index],
+            required: false
         }));
         store.server
             .post('/api/v1.0/surveys')
@@ -151,12 +153,12 @@ exports.createSurveyFn = function (store, qxIndices) {
     };
 };
 
-exports.postRegistryFn = function (store, registry) {
+exports.createSurveyProfileFn = function (store, survey) {
     return function (done) {
         store.server
-            .post('/api/v1.0/registries')
+            .post('/api/v1.0/profile-survey')
             .set('Authorization', store.auth)
-            .send(registry)
+            .send(survey)
             .expect(201)
             .expect(function (res) {
                 expect(!!res.body.id).to.equal(true);

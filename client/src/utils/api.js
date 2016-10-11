@@ -9,6 +9,7 @@ const apiProvider = store => next => action => {
       request
         .get(apiUrl + '/users/me')
         .set("Authorization", "Bearer " + store.getState().get('loggedIn'))
+        .send({})
         .end((error, response) => {
           if (error) {
             return next({

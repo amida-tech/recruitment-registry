@@ -13,7 +13,7 @@ const expect = chai.expect;
 
 describe('answer unit', function () {
     const store = {
-        users: [],
+        userIds: [],
         questions: [],
         qxChoices: [],
         surveys: [],
@@ -47,14 +47,14 @@ describe('answer unit', function () {
             const answers = qxIndices.map(generateQxAnswer);
             updateHxAnswers(store, key, qxIndices, answers);
             const input = {
-                userId: store.users[userIndex],
+                userId: store.userIds[userIndex],
                 surveyId: store.surveys[surveyIndex],
                 answers
             };
             return models.Answer.createAnswers(input)
                 .then(function () {
                     return models.Answer.getAnswers({
-                            userId: store.users[userIndex],
+                            userId: store.userIds[userIndex],
                             surveyId: store.surveys[surveyIndex]
                         })
                         .then(function (result) {
@@ -94,14 +94,14 @@ describe('answer unit', function () {
             const answers = qxIndices.map(generateQxAnswer);
             updateHxAnswers(store, key, qxIndices, answers);
             const input = {
-                userId: store.users[userIndex],
+                userId: store.userIds[userIndex],
                 surveyId: store.surveys[surveyIndex],
                 answers
             };
-            return models.Answer.updateAnswers(input)
+            return models.Answer.createAnswers(input)
                 .then(function () {
                     return models.Answer.getAnswers({
-                            userId: store.users[userIndex],
+                            userId: store.userIds[userIndex],
                             surveyId: store.surveys[surveyIndex]
                         })
                         .then(function (result) {
@@ -112,7 +112,7 @@ describe('answer unit', function () {
                             expect(actual).to.deep.equal(expected);
                         })
                         .then(() => models.Answer.getOldAnswers({
-                            userId: store.users[userIndex],
+                            userId: store.userIds[userIndex],
                             surveyId: store.surveys[surveyIndex]
                         }))
                         .then((actual) => {

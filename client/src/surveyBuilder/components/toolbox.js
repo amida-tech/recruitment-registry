@@ -128,7 +128,7 @@ export default class Toolbox extends Component {
               </ul>
 
               <Draggable type="question" data={choiceQuestion}>
-                <li>Choices</li>
+                <li>Choice</li>
               </Draggable>
               <ul>
                 <li><Draggable type="choice" data={textChoice}><p>Text choice</p></Draggable></li>

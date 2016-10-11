@@ -3,6 +3,9 @@
 const _ = require('lodash');
 
 const jsutil = require('../../lib/jsutil');
+const Generator = require('../entity-generator');
+
+const entityGen = new Generator();
 
 exports.testQuestions = [{
     survey: [0, 1, 2, 3, 4],
@@ -56,74 +59,17 @@ exports.testQuestions = [{
     ]
 }];
 
-exports.generateQxAnswer = (function () {
-    let answerIndex = -1;
-    let choicesCountIndex = 0;
-
-    const genAnswer = {
-        text: function (question) {
-            ++answerIndex;
-            return {
-                questionId: question.id,
-                answer: {
-                    textValue: `text_${answerIndex}`
-                }
-            };
-        },
-        bool: function (question) {
-            ++answerIndex;
-            return {
-                questionId: question.id,
-                answer: {
-                    boolValue: answerIndex % 2 === 0
-                }
-            };
-        },
-        choice: function (question) {
-            ++answerIndex;
-            return {
-                questionId: question.id,
-                answer: {
-                    choice: question.choices[answerIndex % question.choices.length]
-                }
-            };
-        },
-        choices: function (question) {
-            ++answerIndex;
-            choicesCountIndex = (choicesCountIndex + 1) % 3;
-            const choices = _.range(choicesCountIndex + 1).map(function () {
-                ++answerIndex;
-                const choice = question.choices[answerIndex % question.choices.length];
-                const answer = {
-                    id: choice.id
-                };
-                if (choice.type === 'text') {
-                    choice.textValue = `text_${answerIndex}`;
-                }
-                return answer;
-            });
-
-            return {
-                questionId: question.id,
-                answer: {
-                    choices: _.sortBy(choices, 'id')
-                }
-            };
-        }
-    };
-
-    return function (store, questionIndex) {
-        if (questionIndex < 0) {
-            const question = store.questions[-questionIndex];
-            return {
-                questionId: question.id
-            };
-        } else {
-            const question = store.questions[questionIndex];
-            return genAnswer[question.type](question);
-        }
-    };
-})();
+exports.generateQxAnswer = function (store, questionIndex) {
+    if (questionIndex < 0) {
+        const question = store.questions[-questionIndex];
+        return {
+            questionId: question.id
+        };
+    } else {
+        const question = store.questions[questionIndex];
+        return entityGen.answerQuestion(question);
+    }
+};
 
 exports.updateHxAnswers = function (store, key, qxIndices, answers) {
     const hx = store.hxAnswers[key] || (store.hxAnswers[key] = []);

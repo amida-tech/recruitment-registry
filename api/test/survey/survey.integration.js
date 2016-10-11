@@ -10,12 +10,17 @@ const helper = require('../helper/survey-helper');
 const config = require('../../config');
 
 const shared = require('../shared-integration');
-const sharedSpec = require('../shared-spec');
-const userExamples = require('../fixtures/user-examples');
-const surveyExamples = require('../fixtures/survey-examples');
+const Generator = require('../entity-generator');
+const userExamples = require('../fixtures/example/user');
+const surveyExamples = require('../fixtures/example/survey');
+
+const invalidSurveysJSON = require('../fixtures/json-schema-invalid/new-survey');
+const invalidSurveysSwagger = require('../fixtures/swagger-invalid/new-survey');
+
 const RRError = require('../../lib/rr-error');
 
 const expect = chai.expect;
+const entityGen = new Generator();
 
 describe('survey integration', function () {
     const example = surveyExamples.Example;
@@ -42,9 +47,9 @@ describe('survey integration', function () {
 
     it('login as super', shared.loginFn(store, config.superUser));
 
-    const createSurveyFn = function (index) {
+    const createSurveyFn = function () {
         return function (done) {
-            const inputSurvey = sharedSpec.genNewSurvey({ released: index < 4 });
+            const inputSurvey = entityGen.newSurvey();
             store.inputSurveys.push(inputSurvey);
             store.server
                 .post('/api/v1.0/surveys')
@@ -87,29 +92,29 @@ describe('survey integration', function () {
         };
     };
 
-    const compareSurveyFn = function (index) {
-        return function (done) {
-            const survey = store.surveys[index];
-            store.server
-                .get(`/api/v1.0/surveys/${survey.id}`)
-                .set('Authorization', store.auth)
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    expect(res.body).to.deep.equal(survey);
-                    done();
-                });
-        };
-    };
+    //const compareSurveyFn = function (index) {
+    //    return function (done) {
+    //        const survey = store.surveys[index];
+    //        store.server
+    //            .get(`/api/v1.0/surveys/${survey.id}`)
+    //            .set('Authorization', store.auth)
+    //            .expect(200)
+    //            .end(function (err, res) {
+    //                if (err) {
+    //                    return done(err);
+    //                }
+    //                expect(res.body).to.deep.equal(survey);
+    //                done();
+    //            });
+    //    };
+    //};
 
     const updateSurveyFn = function (index, name) {
         return function (done) {
             const id = store.surveyIds[index];
             name = name || store.inputSurveys[index].name;
             store.server
-                .put(`/api/v1.0/surveys/${id}`)
+                .patch(`/api/v1.0/surveys/${id}`)
                 .set('Authorization', store.auth)
                 .send({ name })
                 .expect(200)
@@ -135,15 +140,59 @@ describe('survey integration', function () {
                     }
                     const surveys = res.body;
                     expect(surveys).to.have.length(index + 1);
-                    const expected = store.surveys.map(({ id, name, released }) => ({ id, name, released }));
+                    const expected = store.surveys.map(({ id, name }) => ({ id, name }));
                     expect(surveys).to.deep.equal(expected);
                     done();
                 });
         };
     };
 
+    const invalidSurveyJSONFn = function (index) {
+        return function (done) {
+            const survey = invalidSurveysJSON[index];
+            store.server
+                .post('/api/v1.0/surveys')
+                .set('Authorization', store.auth)
+                .send(survey)
+                .expect(400)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    expect(res.body.message).to.equal(RRError.message('jsonSchemaFailed', 'newSurvey'));
+                    done();
+                });
+        };
+    };
+
+    for (let i = 0; i < invalidSurveysJSON.length; ++i) {
+        it(`error: invalid (json) survey input ${i}`, invalidSurveyJSONFn(i));
+    }
+
+    const invalidSurveySwaggerFn = function (index) {
+        return function (done) {
+            const survey = invalidSurveysSwagger[index];
+            store.server
+                .post('/api/v1.0/surveys')
+                .set('Authorization', store.auth)
+                .send(survey)
+                .expect(400)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    expect(Boolean(res.body.message)).to.equal(true);
+                    done();
+                });
+        };
+    };
+
+    for (let i = 0; i < invalidSurveysSwagger.length; ++i) {
+        it(`error: invalid (swagger) survey input ${i}`, invalidSurveySwaggerFn(i));
+    }
+
     for (let i = 0; i < createCount; ++i) {
-        it(`create survey ${i}`, createSurveyFn(i));
+        it(`create survey ${i}`, createSurveyFn());
         it(`verify survey ${i}`, showSurveyFn(i));
         const name = `updated_name_${i}`;
         it(`update survey ${i}`, updateSurveyFn(i, name));
@@ -152,117 +201,32 @@ describe('survey integration', function () {
         it(`list surveys and verify`, listSurveysFn(i));
     }
 
-    it('error: update name and release', function (done) {
-        const id = store.surveyIds[2];
-        store.server
-            .put(`/api/v1.0/surveys/${id}`)
-            .set('Authorization', store.auth)
-            .send({ name: 'any_name', released: true })
-            .expect(400)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-                expect(!!res.body.message).to.equal(true);
-                done();
-            });
-    });
-
-    it('error: release an already released survey', function (done) {
-        const releasedSurvey = store.surveys[1];
-        expect(releasedSurvey.released).to.equal(true);
-        const id = releasedSurvey.id;
-        store.server
-            .put(`/api/v1.0/surveys/released/${id}`)
-            .set('Authorization', store.auth)
-            .send({})
-            .expect(400)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-                expect(res.body.message).to.equal(RRError.message('surveyAlreadyReleased'));
-                done();
-            });
-    });
-
-    it('error: release a non existant survey', function (done) {
-        store.server
-            .put(`/api/v1.0/surveys/released/999`)
-            .set('Authorization', store.auth)
-            .send({})
-            .expect(400)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-                expect(res.body.message).to.equal(RRError.message('surveyNotFound'));
-                done();
-            });
-    });
-
-    const releaseSurveyFn = function (index) {
+    const replaceSurveyFn = function (index) {
         return function (done) {
-            const survey = store.surveys[index];
-            const id = survey.id;
-            expect(survey.released).to.equal(false);
-            store.server
-                .put(`/api/v1.0/surveys/released/${id}`)
-                .set('Authorization', store.auth)
-                .send({})
-                .expect(200)
-                .end(function (err) {
-                    if (err) {
-                        return done(err);
-                    }
-                    survey.released = true;
-                    done();
-                });
-        };
-    };
-
-    it('release a survey', releaseSurveyFn(4));
-
-    it('verify released survey', compareSurveyFn(4));
-
-    const versionSurveyFn = function (index, released) {
-        return function (done) {
-            const replacement = sharedSpec.genNewSurvey({ released });
+            const replacement = entityGen.newSurvey();
             store.inputSurveys.push(replacement);
             const id = store.surveys[index].id;
             store.server
-                .post(`/api/v1.0/surveys/version`)
+                .post(`/api/v1.0/surveys`)
+                .query({ parent: id })
                 .set('Authorization', store.auth)
-                .send({ id, replacement })
+                .send(replacement)
                 .expect(201)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
                     }
                     store.surveyIds.push(res.body.id);
+                    store.inputSurveys.splice(3, 1);
+                    store.surveys.splice(3, 1);
+                    store.surveyIds.splice(3, 1);
                     done();
                 });
 
         };
     };
 
-    it('version to draft survey', versionSurveyFn(1, false));
-    it('verify draft survey', showSurveyFn(createCount));
-    it(`list surveys and verify`, listSurveysFn(createCount));
-    it('release draft survey', releaseSurveyFn(createCount));
-    it('remove versioned survey locally', function () {
-        store.inputSurveys.splice(1, 1);
-        store.surveys.splice(1, 1);
-        store.surveyIds.splice(1, 1);
-    });
-    it(`list surveys and verify`, listSurveysFn(createCount - 1));
-
-    it('version to a released survey', versionSurveyFn(3, true));
-    it('remove versioned survey locally', function () {
-        store.inputSurveys.splice(3, 1);
-        store.surveys.splice(3, 1);
-        store.surveyIds.splice(3, 1);
-    });
+    it('version to survey', replaceSurveyFn(3));
     it('verify version survey', showSurveyFn(createCount - 1));
     it(`list surveys and verify`, listSurveysFn(createCount - 1));
 

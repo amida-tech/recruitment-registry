@@ -97,13 +97,6 @@ module.exports = function (sequelize, DataTypes) {
         resetPasswordExpires: {
             type: DataTypes.DATE,
         },
-        registryId: {
-            type: DataTypes.INTEGER,
-            references: {
-                model: 'registry',
-                key: 'id'
-            }
-        },
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',
@@ -124,20 +117,6 @@ module.exports = function (sequelize, DataTypes) {
                     });
                     return User.create(user);
                 }
-            },
-            beforeBulkCreate: function (users, fields, fn) {
-                let totalUpdated = 0;
-                users.forEach(function (user) {
-                    user.updatePassword(function (err) {
-                        if (err) {
-                            return fn(err);
-                        }
-                        totalUpdated += 1;
-                        if (totalUpdated === users.length) {
-                            return fn();
-                        }
-                    });
-                });
             },
             beforeCreate: function (user) {
                 return user.updatePassword();
@@ -226,6 +205,23 @@ module.exports = function (sequelize, DataTypes) {
                         }
                     }
                 });
+            },
+            listDocuments: function (userId, docTypeIds, tx) {
+                return sequelize.models.document.listDocuments(docTypeIds, tx)
+                    .then(activeDocs => {
+                        const query = {
+                            where: { userId },
+                            raw: true,
+                            attributes: ['documentId'],
+                            order: 'document_id'
+                        };
+                        if (tx) {
+                            query.transaction = tx;
+                        }
+                        return sequelize.models.document_signature.findAll(query)
+                            .then(signedDocs => _.map(signedDocs, 'documentId'))
+                            .then(signedDocIds => activeDocs.filter(activeDoc => signedDocIds.indexOf(activeDoc.id) < 0));
+                    });
             }
         },
         instanceMethods: {

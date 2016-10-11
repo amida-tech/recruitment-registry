@@ -9,6 +9,7 @@ class Nav extends Component {
   render() {
     const title = this.props.data.get('title');
     const loggedIn = this.props.data.get('loggedIn');
+    const role = this.props.user.get('role');
     var nav;
 
     for(var i = 0; i< routes.length; i++){
@@ -17,7 +18,13 @@ class Nav extends Component {
 
     if (loggedIn) {
       var routesAuthed = routes.filter(r => r.requiresAuth || !r.newUsers)
-      nav = routesAuthed.map(r => <Link className="nav-item nav-link" key={r.path} to={r.path}>{r.title}</Link>)
+      nav = routesAuthed.map(r => {
+        var path = r.path
+        if (r.path.indexOf('survey-builder') > -1) { path = '/survey-builder' }
+        if (r.isSuper && role !== 'admin')
+          return <div></div>
+        return <Link className="nav-item nav-link" key={r.path} to={path}>{r.title}</Link>
+      })
     } else {
       var routesNewUsers = routes.filter(r => !r.requiresAuth || r.newUsers)
       nav = routesNewUsers.map(r => <Link className="nav-item nav-link" key={r.path} to={r.path}>{r.title}</Link>)
@@ -53,7 +60,8 @@ class Nav extends Component {
 function select(state) {
   return {
     data: state,
-    vocab: state.getIn(['settings', 'language', 'vocabulary'])
+    vocab: state.getIn(['settings', 'language', 'vocabulary']),
+    user: state.getIn(['login', 'user'])
   };
 }
 

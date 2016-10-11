@@ -5,10 +5,6 @@ const Sequelize = require('sequelize');
 const config = require('../config');
 const logger = require('../logger');
 
-const logFn = function (message) {
-    logger.info(message);
-};
-
 const sequelize = new Sequelize(config.db.name, config.db.user, config.db.pass, {
     host: config.db.host,
     dialect: config.db.dialect,
@@ -18,7 +14,7 @@ const sequelize = new Sequelize(config.db.name, config.db.user, config.db.pass, 
         min: 0,
         idle: 10000
     },
-    logging: (!config.logging.disable) && logFn
+    logging: message => logger.info(message)
 });
 
 const Ethnicity = sequelize.import('./ethnicity.model');
@@ -31,6 +27,10 @@ const SurveyQuestion = sequelize.import('./survey-question.model');
 const AnswerType = sequelize.import('./answer-type.model');
 const Answer = sequelize.import('./answer.model');
 const Survey = sequelize.import('./survey.model');
+const DocumentType = sequelize.import('./document-type.model');
+const Document = sequelize.import('./document.model');
+const DocumentSignature = sequelize.import('./document-signature.model');
+const SurveyDocument = sequelize.import('./survey-document.model');
 const Registry = sequelize.import('./registry.model');
 
 module.exports = {
@@ -46,5 +46,9 @@ module.exports = {
     AnswerType,
     Answer,
     Survey,
+    DocumentType,
+    Document,
+    DocumentSignature,
+    SurveyDocument,
     Registry
 };

@@ -1,10 +1,15 @@
 'use strict';
 
+const chai = require('chai');
 const _ = require('lodash');
 
 const models = require('../models');
 
-const registryExamaples = require('./fixtures/registry-examples');
+const RRError = require('../lib/rr-error');
+const Generator = require('./entity-generator');
+
+const expect = chai.expect;
+const entityGen = new Generator();
 
 exports.setUpFn = function () {
     return function () {
@@ -14,68 +19,19 @@ exports.setUpFn = function () {
     };
 };
 
-exports.genNewUser = (function () {
-    let index = -1;
-
-    return function (override) {
-        ++index;
-        let user = {
-            username: 'username_' + index,
-            password: 'password_' + index,
-            email: 'email_' + index + '@example.com'
-        };
-        if (override) {
-            user = _.assign(user, override);
-        }
-        return user;
-    };
-})();
-
 exports.createUser = function (store) {
     return function () {
-        const inputUser = exports.genNewUser();
+        const inputUser = entityGen.newUser();
         return models.User.create(inputUser)
             .then(function (user) {
-                store.users.push(user.id);
+                store.userIds.push(user.id);
             });
     };
 };
 
-exports.genNewQuestion = (function () {
-    const types = ['text', 'choice', 'choices', 'bool'];
-    let index = -1;
-    let choiceIndex = 1;
-    let choicesTextSwitch = false;
-
-    return function () {
-        ++index;
-        const type = types[index % 4];
-        const question = {
-            text: `text_${index}`,
-            type,
-            selectable: (index % 2 === 0)
-        };
-        if ((type === 'choice') || (type === 'choices')) {
-            question.choices = [];
-            ++choiceIndex;
-            if (type === 'choices') {
-                choicesTextSwitch = !choicesTextSwitch;
-            }
-            for (let i = choiceIndex; i < choiceIndex + 5; ++i) {
-                const choice = { text: `choice_${i}` };
-                if ((type === 'choices') && choicesTextSwitch && (i === choiceIndex + 4)) {
-                    choice.type = 'text';
-                }
-                question.choices.push(choice);
-            }
-        }
-        return question;
-    };
-})();
-
 exports.createQuestion = function (store) {
     return function () {
-        const inputQx = exports.genNewQuestion();
+        const inputQx = entityGen.newQuestion();
         const type = inputQx.type;
         return models.Question.createQuestion(inputQx)
             .then(function (id) {
@@ -94,7 +50,7 @@ exports.createQuestion = function (store) {
                         })
                         .then(function (choices) {
                             if (type === 'choice') {
-                                qx.choices = _.map(choices, 'id');
+                                qx.choices = _.map(choices, choice => ({ id: choice.id }));
                             } else {
                                 qx.choices = _.map(choices, choice => ({ id: choice.id, type: choice.type }));
                             }
@@ -110,29 +66,12 @@ exports.createQuestion = function (store) {
     };
 };
 
-exports.genNewSurvey = (function () {
-    let index = -1;
-    const defaultOptions = {
-        released: true,
-        addQuestions: true
-    };
-    return function (inputOptions = {}) {
-        const options = Object.assign({}, defaultOptions, inputOptions);
-        ++index;
-        const result = { name: `name_${index}` };
-        result.released = options.released;
-        if (options.addQuestions) {
-            result.questions = _.range(5).map(() => ({ content: exports.genNewQuestion() }));
-        }
-        return result;
-    };
-})();
-
 exports.createSurvey = function (store, qxIndices) {
     return function () {
-        const inputSurvey = exports.genNewSurvey({ addQuestions: false });
+        const inputSurvey = entityGen.newSurvey();
         inputSurvey.questions = qxIndices.map(index => ({
-            id: store.questions[index].id
+            id: store.questions[index].id,
+            required: false
         }));
         return models.Survey.createSurvey(inputSurvey)
             .then(id => {
@@ -141,10 +80,66 @@ exports.createSurvey = function (store, qxIndices) {
     };
 };
 
-exports.createRegistry = function (store) {
+exports.createDocumentTypeFn = (function () {
+    let index = -1;
+
+    return function (store) {
+        return function () {
+            ++index;
+            const docType = {
+                name: `type_${index}`,
+                description: `description_${index}`
+            };
+            return models.DocumentType.createDocumentType(docType)
+                .then(({ id }) => {
+                    const newDocType = Object.assign({}, docType, { id });
+                    store.documentTypes.push(newDocType);
+                    store.activeDocuments.push(null);
+                });
+        };
+    };
+})();
+
+exports.createDocumentFn = (function () {
+    let index = -1;
+
+    return function (store, typeIndex) {
+        return function () {
+            ++index;
+            const typeId = store.documentTypes[typeIndex].id;
+            const doc = {
+                typeId,
+                content: `Sample document content ${index}`
+            };
+            store.clientDocuments.push(doc);
+            return models.Document.createDocument(doc)
+                .then(({ id }) => {
+                    const docToStore = Object.assign({}, doc, { id });
+                    store.documents.push(docToStore);
+                    store.activeDocuments[typeIndex] = docToStore;
+                });
+        };
+    };
+})();
+
+exports.signDocumentTypeFn = function (store, userIndex, typeIndex) {
     return function () {
-        const inputRegistry = registryExamaples[0];
-        return models.Registry.createRegistry(inputRegistry)
-            .then(() => store.registryName = inputRegistry.name);
+        const documentId = store.activeDocuments[typeIndex].id;
+        const userId = store.userIds[userIndex];
+        store.signatures[userIndex].push(documentId);
+        return models.DocumentSignature.createSignature(userId, documentId);
+    };
+};
+
+exports.throwingHandler = function () {
+    throw new Error('Unexpected no error.');
+};
+
+exports.expectedErrorHandler = function (code) {
+    return function (err) {
+        expect(err).to.be.instanceof(RRError);
+        expect(err.code).to.equal(code);
+        expect(!!err.message).to.equal(true);
+        return err;
     };
 };

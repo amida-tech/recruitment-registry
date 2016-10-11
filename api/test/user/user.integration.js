@@ -6,7 +6,7 @@ const chai = require('chai');
 const _ = require('lodash');
 
 const models = require('../../models');
-const userExamples = require('../fixtures/user-examples');
+const userExamples = require('../fixtures/example/user');
 
 const config = require('../../config');
 const shared = require('../shared-integration');
@@ -168,7 +168,7 @@ describe('user integration', function () {
         userUpdate.ethnicity = ethnicities[1];
         userUpdate.gender = genders[1];
         store.server
-            .put('/api/v1.0/users/me')
+            .patch('/api/v1.0/users/me')
             .set('Authorization', store.auth)
             .send(userUpdate)
             .expect(200, done);
@@ -205,7 +205,7 @@ describe('user integration', function () {
         userUpdate.gender = genders[0];
         userUpdate.zip = '20817';
         store.server
-            .put('/api/v1.0/users/me')
+            .patch('/api/v1.0/users/me')
             .set('Authorization', store.auth)
             .send(_.pick(userUpdate, ['ethnicity', 'gender', 'zip']))
             .expect(200, done);

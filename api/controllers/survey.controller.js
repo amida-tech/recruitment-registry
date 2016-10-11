@@ -4,6 +4,7 @@ const _ = require('lodash');
 
 const models = require('../models');
 const shared = require('./shared.js');
+const jsonSchema = require('../lib/json-schema');
 
 const Survey = models.Survey;
 
@@ -23,16 +24,19 @@ exports.getSurveyByName = function (req, res) {
 
 exports.createSurvey = function (req, res) {
     const survey = req.body;
-    Survey.createSurvey(survey)
-        .then(id => res.status(201).json({ id }))
-        .catch(shared.handleError(res));
-};
-
-exports.versionSurvey = function (req, res) {
-    const survey = req.body;
-    Survey.versionSurvey(survey)
-        .then(id => res.status(201).json({ id }))
-        .catch(shared.handleError(res));
+    if (!jsonSchema('newSurvey', survey, res)) {
+        return;
+    }
+    const parent = _.get(req, 'swagger.params.parent.value');
+    if (parent) {
+        Survey.replaceSurvey(parent, survey)
+            .then(id => res.status(201).json({ id }))
+            .catch(shared.handleError(res));
+    } else {
+        Survey.createSurvey(survey)
+            .then(id => res.status(201).json({ id }))
+            .catch(shared.handleError(res));
+    }
 };
 
 exports.updateSurvey = function (req, res) {

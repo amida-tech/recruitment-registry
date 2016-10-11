@@ -11,67 +11,45 @@ const surveyHelper = require('../helper/survey-helper');
 const tokener = require('../../lib/tokener');
 const helper = require('../helper/survey-helper');
 
-const userExamples = require('../fixtures/user-examples');
-const surveyExamples = require('../fixtures/survey-examples');
-const examples = require('../fixtures/registry-examples');
+const userExamples = require('../fixtures/example/user');
+const surveyExamples = require('../fixtures/example/survey');
 
 const expect = chai.expect;
 
 const Registry = models.Registry;
 
-const Ethnicity = models.Ethnicity;
-const User = models.User;
-const Survey = models.Survey;
-
 describe('registry unit', function () {
     const userExample = userExamples.Alzheimer;
     const surveyExample = surveyExamples.Alzheimer;
-    const registryExample = examples[0];
 
     before(shared.setUpFn());
 
-    const ids = [];
-
-    const registryBasicFn = function (index) {
-        return function () {
-            return Registry.createRegistry(examples[index])
-                .then(({ id }) => {
-                    ids.push(id);
-                });
-        };
+    const store = {
+        profileSurveyId: null,
+        clientSurveys: [],
+        surveys: []
     };
 
-    const verifyFn = function (index) {
-        return function () {
-            return Registry.getRegistry(ids[index])
-                .then(actual => {
-                    expect(actual.name).to.equal(examples[index].name);
-                    return surveyHelper.buildServerSurvey(examples[index].survey, actual.survey)
-                        .then(function (expected) {
-                            expect(actual.survey).to.deep.equal(expected);
-                        });
-                });
-        };
-    };
+    it('error: get profile survey when none created', function () {
+        return Registry.getProfileSurvey()
+            .then(shared.throwingHandler, shared.expectedErrorHandler('registryNoProfileSurvey'));
+    });
 
-    const verifyByNameFn = function (index) {
+    const createProfileSurveyFn = function (survey) {
         return function () {
-            return Registry.getRegistryByName(examples[index].name)
-                .then(actual => {
-                    expect(actual.name).to.equal(examples[index].name);
-                    return surveyHelper.buildServerSurvey(examples[index].survey, actual.survey)
-                        .then(function (expected) {
-                            expect(actual.survey).to.deep.equal(expected);
-                        });
-                });
+            store.clientSurveys.push(survey);
+            return Registry.createProfileSurvey(survey)
+                .then(({ id }) => store.profileSurveyId = id);
         };
     };
 
     const verifyProfileSurveyFn = function (index) {
         return function () {
-            return Registry.getRegistryProfileSurvey(examples[index].name)
+            return Registry.getProfileSurvey()
                 .then(actual => {
-                    return surveyHelper.buildServerSurvey(examples[index].survey, actual)
+                    store.survey = actual;
+                    store.surveys.push(actual);
+                    return surveyHelper.buildServerSurvey(store.clientSurveys[index], actual)
                         .then(function (expected) {
                             expect(actual).to.deep.equal(expected);
                         });
@@ -79,36 +57,20 @@ describe('registry unit', function () {
         };
     };
 
-    for (let i = 0; i < examples.length; ++i) {
-        it(`create registry ${i}`, registryBasicFn(i));
-        it(`get registry ${i} and verify`, verifyFn(i));
-        it(`get registry by name ${i} and verify`, verifyByNameFn(i));
-        it(`get registry ${i} survey and verify`, verifyProfileSurveyFn(i));
-    }
+    it('create profile survey', createProfileSurveyFn(surveyExample.survey));
+    it('get/verify profile survey', verifyProfileSurveyFn(0));
 
-    let ethnicities;
-    let genders;
-    let survey;
-
-    it('load selection lists and survey', function () {
-        return Ethnicity.findAll({
-            raw: true
-        }).then(function () {
-            ethnicities = Ethnicity.ethnicities();
-            genders = User.genders();
-            return Survey.getSurveyByName(surveyExample.survey.name);
-        }).then(function (result) {
-            survey = result;
-        });
+    it('check soft sync does not reset registry', function () {
+        return models.sequelize.sync({ force: false });
     });
+    it('get/verify profile survey', verifyProfileSurveyFn(0));
 
     let userId;
     let answers;
 
     it('setup user with profile', function () {
-        answers = helper.formAnswersToPost(survey, surveyExample.answer);
+        answers = helper.formAnswersToPost(store.survey, surveyExample.answer);
         return Registry.createProfile({
-                registryName: registryExample.name,
                 user: userExample,
                 answers
             })
@@ -128,13 +90,13 @@ describe('registry unit', function () {
                 expect(user).to.deep.equal(expectedUser);
 
                 const actualSurvey = result.survey;
-                const expectedSurvey = helper.formAnsweredSurvey(survey, answers);
+                const expectedSurvey = helper.formAnsweredSurvey(store.survey, answers);
                 expect(actualSurvey).to.deep.equal(expectedSurvey);
             });
     });
 
     it('update user profile', function () {
-        answers = helper.formAnswersToPost(survey, surveyExample.answerUpdate);
+        answers = helper.formAnswersToPost(store.survey, surveyExample.answerUpdate);
         const userUpdates = {
             zip: '20999',
             gender: 'other'
@@ -160,8 +122,12 @@ describe('registry unit', function () {
                 expect(user).to.deep.equal(expectedUser);
 
                 const actualSurvey = result.survey;
-                const expectedSurvey = helper.formAnsweredSurvey(survey, answers);
+                const expectedSurvey = helper.formAnsweredSurvey(store.survey, answers);
                 expect(actualSurvey).to.deep.equal(expectedSurvey);
             });
     });
+
+    const replacement = _.cloneDeep(surveyExamples.Example.survey);
+    it('create profile survey', createProfileSurveyFn(replacement));
+    it('get/verify profile survey', verifyProfileSurveyFn(1));
 });
