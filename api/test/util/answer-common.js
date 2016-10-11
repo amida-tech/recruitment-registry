@@ -3,7 +3,7 @@
 const _ = require('lodash');
 
 const jsutil = require('../../lib/jsutil');
-const Generator = require('../util/entity-generator');
+const Generator = require('./entity-generator');
 
 const entityGen = new Generator();
 

@@ -4,11 +4,11 @@ process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
 
-const SharedIntegration = require('../util/shared-integration');
-const Generator = require('../util/entity-generator');
-const ConsentSectionHistory = require('../util/consent-section-history');
-const config = require('../../config');
-const RRError = require('../../lib/rr-error');
+const SharedIntegration = require('./util/shared-integration');
+const Generator = require('./util/entity-generator');
+const ConsentSectionHistory = require('./util/consent-section-history');
+const config = require('../config');
+const RRError = require('../lib/rr-error');
 
 const expect = chai.expect;
 const generator = new Generator();

@@ -5,11 +5,11 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 const _ = require('lodash');
 
-const models = require('../../models');
-const userExamples = require('../fixtures/example/user');
+const models = require('../models');
+const userExamples = require('./fixtures/example/user');
 
-const config = require('../../config');
-const SharedIntegration = require('../util/shared-integration');
+const config = require('../config');
+const SharedIntegration = require('./util/shared-integration');
 
 const expect = chai.expect;
 const shared = new SharedIntegration();

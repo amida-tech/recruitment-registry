@@ -5,12 +5,12 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 const _ = require('lodash');
 
-const config = require('../../config');
+const config = require('../config');
 
-const SharedIntegration = require('../util/shared-integration');
-const Generator = require('../util/entity-generator');
-const History = require('../util/entity-history');
-const answerCommon = require('./answer-common');
+const SharedIntegration = require('./util/shared-integration');
+const Generator = require('./util/entity-generator');
+const History = require('./util/entity-history');
+const answerCommon = require('./util/answer-common');
 
 const expect = chai.expect;
 const shared = new SharedIntegration();

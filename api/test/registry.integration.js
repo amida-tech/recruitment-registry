@@ -5,14 +5,14 @@ process.env.NODE_ENV = 'test';
 const _ = require('lodash');
 const chai = require('chai');
 
-const config = require('../../config');
-const RRError = require('../../lib/rr-error');
+const config = require('../config');
+const RRError = require('../lib/rr-error');
 
-const SharedIntegration = require('../util/shared-integration');
-const surveyHelper = require('../helper/survey-helper');
+const SharedIntegration = require('./util/shared-integration');
+const surveyHelper = require('./helper/survey-helper');
 
-const surveyExamples = require('../fixtures/example/survey');
-const userExamples = require('../fixtures/example/user');
+const surveyExamples = require('./fixtures/example/survey');
+const userExamples = require('./fixtures/example/user');
 
 const expect = chai.expect;
 const shared = new SharedIntegration();

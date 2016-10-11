@@ -5,9 +5,9 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 const _ = require('lodash');
 
-const SharedSpec = require('../util/shared-spec');
-const ConsentSectionHistory = require('../util/consent-section-history');
-const models = require('../../models');
+const SharedSpec = require('./util/shared-spec');
+const ConsentSectionHistory = require('./util/consent-section-history');
+const models = require('../models');
 const expect = chai.expect;
 
 const User = models.User;

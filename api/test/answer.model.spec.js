@@ -4,11 +4,11 @@
 const chai = require('chai');
 const _ = require('lodash');
 
-const models = require('../../models');
-const SharedSpec = require('../util/shared-spec');
-const History = require('../util/entity-history');
-const jsutil = require('../../lib/jsutil');
-const answerCommon = require('./answer-common');
+const models = require('../models');
+const SharedSpec = require('./util/shared-spec');
+const History = require('./util/entity-history');
+const jsutil = require('../lib/jsutil');
+const answerCommon = require('./util/answer-common');
 
 const expect = chai.expect;
 const shared = new SharedSpec();

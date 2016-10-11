@@ -5,14 +5,14 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 const _ = require('lodash');
 
-const models = require('../../models');
-const SharedSpec = require('../util/shared-spec.js');
-const surveyHelper = require('../helper/survey-helper');
-const tokener = require('../../lib/tokener');
-const helper = require('../helper/survey-helper');
+const models = require('../models');
+const SharedSpec = require('./util/shared-spec.js');
+const surveyHelper = require('./helper/survey-helper');
+const tokener = require('../lib/tokener');
+const helper = require('./helper/survey-helper');
 
-const userExamples = require('../fixtures/example/user');
-const surveyExamples = require('../fixtures/example/survey');
+const userExamples = require('./fixtures/example/user');
+const surveyExamples = require('./fixtures/example/survey');
 
 const expect = chai.expect;
 const shared = new SharedSpec();

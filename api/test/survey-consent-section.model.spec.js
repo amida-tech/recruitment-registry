@@ -5,10 +5,10 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 const _ = require('lodash');
 
-const SharedSpec = require('../util/shared-spec');
-const models = require('../../models');
-const Generator = require('../util/entity-generator');
-const tokener = require('../../lib/tokener');
+const SharedSpec = require('./util/shared-spec');
+const models = require('../models');
+const Generator = require('./util/entity-generator');
+const tokener = require('../lib/tokener');
 
 const expect = chai.expect;
 const entityGen = new Generator();
@@ -17,7 +17,7 @@ const shared = new SharedSpec();
 const ConsentSection = models.ConsentSection;
 const Registry = models.Registry;
 const SurveyConsentSection = models.SurveyConsentSection;
-const ConsentSectionHistory = require('../util/consent-section-history');
+const ConsentSectionHistory = require('./util/consent-section-history');
 const User = models.User;
 
 describe('survey consent section unit', function () {

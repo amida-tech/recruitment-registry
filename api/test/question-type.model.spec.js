@@ -5,7 +5,7 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 const _ = require('lodash');
 
-const models = require('../../models');
+const models = require('../models');
 
 const expect = chai.expect;
 

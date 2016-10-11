@@ -7,12 +7,12 @@ const sinon = require('sinon');
 const moment = require('moment');
 const _ = require('lodash');
 
-const SharedSpec = require('../util/shared-spec');
-const config = require('../../config');
-const models = require('../../models');
-const Generator = require('../util/entity-generator');
+const SharedSpec = require('./util/shared-spec');
+const config = require('../config');
+const models = require('../models');
+const Generator = require('./util/entity-generator');
 
-const userExamples = require('../fixtures/example/user');
+const userExamples = require('./fixtures/example/user');
 
 const expect = chai.expect;
 const entityGen = new Generator();

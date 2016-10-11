@@ -5,12 +5,12 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 const _ = require('lodash');
 
-const surveyHelper = require('../helper/survey-helper');
-const models = require('../../models');
+const surveyHelper = require('./helper/survey-helper');
+const models = require('../models');
 
-const Generator = require('../util/entity-generator');
-const History = require('../util/entity-history');
-const SharedSpec = require('../util/shared-spec');
+const Generator = require('./util/entity-generator');
+const History = require('./util/entity-history');
+const SharedSpec = require('./util/shared-spec');
 
 const expect = chai.expect;
 const generator = new Generator();

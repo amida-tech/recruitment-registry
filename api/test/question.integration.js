@@ -5,17 +5,17 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 const _ = require('lodash');
 
-const config = require('../../config');
+const config = require('../config');
 
-const SharedIntegration = require('../util/shared-integration');
-const userExamples = require('../fixtures/example/user');
-const Generator = require('../util/entity-generator');
-const comparator = require('../util/client-server-comparator');
-const History = require('../util/entity-history');
-const RRError = require('../../lib/rr-error');
+const SharedIntegration = require('./util/shared-integration');
+const userExamples = require('./fixtures/example/user');
+const Generator = require('./util/entity-generator');
+const comparator = require('./util/client-server-comparator');
+const History = require('./util/entity-history');
+const RRError = require('../lib/rr-error');
 
-const invalidQuestionsJSON = require('../fixtures/json-schema-invalid/new-question');
-const invalidQuestionsSwagger = require('../fixtures/swagger-invalid/new-question');
+const invalidQuestionsJSON = require('./fixtures/json-schema-invalid/new-question');
+const invalidQuestionsSwagger = require('./fixtures/swagger-invalid/new-question');
 
 const expect = chai.expect;
 const generator = new Generator();

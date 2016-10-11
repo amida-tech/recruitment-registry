@@ -5,20 +5,20 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 const _ = require('lodash');
 
-const helper = require('../helper/survey-helper');
+const helper = require('./helper/survey-helper');
 
-const config = require('../../config');
+const config = require('../config');
 
-const SharedIntegration = require('../util/shared-integration');
-const Generator = require('../util/entity-generator');
-const History = require('../util/entity-history');
-const userExamples = require('../fixtures/example/user');
-const surveyExamples = require('../fixtures/example/survey');
+const SharedIntegration = require('./util/shared-integration');
+const Generator = require('./util/entity-generator');
+const History = require('./util/entity-history');
+const userExamples = require('./fixtures/example/user');
+const surveyExamples = require('./fixtures/example/survey');
 
-const invalidSurveysJSON = require('../fixtures/json-schema-invalid/new-survey');
-const invalidSurveysSwagger = require('../fixtures/swagger-invalid/new-survey');
+const invalidSurveysJSON = require('./fixtures/json-schema-invalid/new-survey');
+const invalidSurveysSwagger = require('./fixtures/swagger-invalid/new-survey');
 
-const RRError = require('../../lib/rr-error');
+const RRError = require('../lib/rr-error');
 
 const expect = chai.expect;
 const entityGen = new Generator();
