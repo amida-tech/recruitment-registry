@@ -5,22 +5,21 @@ process.env.NODE_ENV = 'test';
 const _ = require('lodash');
 const chai = require('chai');
 
-const helper = require('../helper/survey-helper');
+const config = require('../config');
+const RRError = require('../lib/rr-error');
 
-const SharedIntegration = require('../util/shared-integration');
-const userExamples = require('../fixtures/example/user');
-const surveyExamples = require('../fixtures/example/survey');
+const SharedIntegration = require('./util/shared-integration');
+const surveyHelper = require('./helper/survey-helper');
 
-const config = require('../../config');
+const surveyExamples = require('./fixtures/example/survey');
+const userExamples = require('./fixtures/example/user');
 
 const expect = chai.expect;
 const shared = new SharedIntegration();
 
-describe('user set-up and login use-case', function () {
+describe('registry integration', function () {
     const userExample = userExamples.Alzheimer;
     const surveyExample = surveyExamples.Alzheimer;
-
-    // -------- set up system (syncAndLoadAlzheimer)
 
     const store = {
         server: null,
@@ -29,33 +28,43 @@ describe('user set-up and login use-case', function () {
 
     before(shared.setUpFn(store));
 
-    it('login as super user', shared.loginFn(store, config.superUser));
-
-    it('create registry', shared.createSurveyProfileFn(store, surveyExample.survey));
-
-    it('logout as super user', shared.logoutFn(store));
-
-    // --------
-
-    // -------- client initialization
-
-    let survey;
-
-    it('get available ethnicities', function (done) {
+    it('error: create profile survey unauthorized', function (done) {
         store.server
-            .get('/api/v1.0/ethnicities')
-            .expect(200)
+            .post('/api/v1.0/profile-survey')
+            .send(surveyExample.survey)
+            .expect(401)
             .end(done);
     });
 
-    it('get available genders', function (done) {
+    it('error: get profile survey when none created', function (done) {
         store.server
-            .get('/api/v1.0/genders')
-            .expect(200)
+            .get('/api/v1.0/profile-survey')
+            .expect(400)
+            .end(function (err, res) {
+                if (err) {
+                    done(err);
+                }
+                const message = RRError.message('registryNoProfileSurvey');
+                expect(res.body.message).to.equal(message);
+                done();
+            });
+
+    });
+
+    it('login as super', shared.loginFn(store, config.superUser));
+
+    it('create profile survey', function (done) {
+        store.server
+            .post('/api/v1.0/profile-survey')
+            .set('Authorization', store.auth)
+            .send(surveyExample.survey)
+            .expect(201)
             .end(done);
     });
 
-    it('get profile survey', function (done) {
+    it('logout as super', shared.logoutFn(store));
+
+    it(`get profile survey`, function (done) {
         store.server
             .get('/api/v1.0/profile-survey')
             .expect(200)
@@ -63,17 +72,20 @@ describe('user set-up and login use-case', function () {
                 if (err) {
                     return done(err);
                 }
-                survey = res.body;
-                done();
+                return surveyHelper.buildServerSurvey(surveyExample.survey, res.body)
+                    .then(function (expected) {
+                        expect(res.body).to.deep.equal(expected);
+                        store.survey = res.body;
+                    })
+                    .then(() => done())
+                    .catch((err) => done(err));
             });
     });
-
-    // --------- set up account
 
     let answers;
 
     it('fill user profile and submit', function (done) {
-        answers = helper.formAnswersToPost(survey, surveyExample.answer);
+        answers = surveyHelper.formAnswersToPost(store.survey, surveyExample.answer);
 
         store.server
             .post('/api/v1.0/profiles')
@@ -90,8 +102,6 @@ describe('user set-up and login use-case', function () {
                 done();
             });
     });
-
-    // -------- verification
 
     it('verify user profile', function (done) {
         store.server
@@ -112,17 +122,15 @@ describe('user set-up and login use-case', function () {
                 expect(user).to.deep.equal(expectedUser);
 
                 const actualSurvey = result.survey;
-                const expectedSurvey = helper.formAnsweredSurvey(survey, answers);
+                const expectedSurvey = surveyHelper.formAnsweredSurvey(store.survey, answers);
                 expect(actualSurvey).to.deep.equal(expectedSurvey);
 
                 done();
             });
     });
 
-    // --------
-
     it('update user profile', function (done) {
-        answers = helper.formAnswersToPost(survey, surveyExample.answerUpdate);
+        answers = surveyHelper.formAnswersToPost(store.survey, surveyExample.answerUpdate);
         const userUpdates = {
             zip: '20999',
             gender: 'other'
@@ -158,7 +166,7 @@ describe('user set-up and login use-case', function () {
                 expect(user).to.deep.equal(expectedUser);
 
                 const actualSurvey = result.survey;
-                const expectedSurvey = helper.formAnsweredSurvey(survey, answers);
+                const expectedSurvey = surveyHelper.formAnsweredSurvey(store.survey, answers);
                 expect(actualSurvey).to.deep.equal(expectedSurvey);
 
                 done();

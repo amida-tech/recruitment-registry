@@ -81,13 +81,13 @@ All table and column names are in snake case to follow Postgres convention and f
 
 - `registry_user`: This table store patient demographics (name, email, ethnicity, gender, and zip), role, and login information (username, password, password reset through email token and its expiration date).
 
-- `document_type`: This table is to be renamed `consent_section_type` after a recent requirement change.  It stores all the consent section types.  Actual data are name (column `name`) for programmatic purposes and description (column `description`) for user interface purposes.
+- `consent_type`: It stores all the consent types.  Actual data are name (column `name`) for programmatic purposes and description (column `description`) for user interface purposes.
 
-- `document`: This table is to be renamed `consent_section` after a recent requirement change.  Currently the only actual data is consent section text content (column `content`).  Each record is of some document section type (column `type_id`).  This table is designed to have at most one active record for each type at any point in time.  All other records of the same types will be in soft deleted state.
+- `consent-document`: Currently the only actual data is consent section text content (column `content`).  Each record is of some consent section section type (column `type_id`).  This table is designed to have at most one active record for each type at any point in time.  All other records of the same types will be in soft deleted state.
 
-- `document_signature`: This table is to be renamed `consent_signature` after a recent requirement change.  This table stores each instance (column `created_at`) of a user (column `user_id`) signing a consent section (column `document_id`).
+- `consent_signature`: This table stores each instance (column `created_at`) of a user (column `user_id`) signing a consent section (column `consent_document_id`).
 
-- `survey_document`: This table is designed to store survey level consent requirements if and when they become part of the requirements.  Each record represents a consent section (column `document_type_id`) that needs to signed by a user before a survey (column `survey_id`) can be read, submitted or edited (column `action`).
+- `survey_consent_type`: Each record represents a consent section (column `consent_type_id`) that needs to signed by a user before a survey (column `survey_id`) can be read, submitted or edited (column `action`).
 
 - `registry`: This table stores registry level settings and includes only one record.  Currenly only data is the survey that is being used in user registration (column `profile_survey_id`).
 

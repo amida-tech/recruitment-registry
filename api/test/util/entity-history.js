@@ -19,6 +19,11 @@ class History {
         this.currentIndex.push(index);
     }
 
+    pushWithId(client, id) {
+        const server = Object.assign({}, client, { id });
+        this.push(client, server);
+    }
+
     remove(index) {
         const currentIndex = this.currentIndex[index];
         if (currentIndex >= 0) {

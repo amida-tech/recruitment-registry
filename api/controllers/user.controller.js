@@ -48,8 +48,8 @@ exports.resetPassword = function (req, res) {
         .catch(shared.handleError(res));
 };
 
-exports.listDocuments = function (req, res) {
-    User.listDocuments(req.user.id)
-        .then(documents => res.status(200).json(documents))
+exports.listConsentDocuments = function (req, res) {
+    User.listConsentDocuments(req.user.id)
+        .then(consentDocuments => res.status(200).json(consentDocuments))
         .catch(shared.handleError(res));
 };

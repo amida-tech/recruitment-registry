@@ -180,11 +180,11 @@
                 }
             }
         },
-        "/users/documents": {
+        "/users/consent-documents": {
             "x-swagger-router-controller": "user.controller",
             "get": {
-                "operationId": "listDocuments",
-                "summary": "Lists the required documents",
+                "operationId": "listConsentDocuments",
+                "summary": "Lists the required consent sections",
                 "security": [{
                     "participant": []
                 }],
@@ -195,15 +195,22 @@
                             "type": "array",
                             "items": {
                                 "type": "object",
-                                "required": ["id", "description"],
+                                "required": ["id", "name", "title"],
                                 "properties": {
                                     "id": {
                                         "type": "integer",
                                         "minimum": 1
                                     },
-                                    "description": {
+                                    "name": {
                                         "type": "string",
                                         "minLength": 1
+                                    },
+                                    "title": {
+                                        "type": "string",
+                                        "minLength": 1
+                                    },
+                                    "type": {
+                                        "type": "string"
                                     }
                                 },
                                 "additionalProperties": false
@@ -779,29 +786,33 @@
                 }
             }
         },
-        "/document-types": {
-            "x-swagger-router-controller": "document-type.controller",
+        "/consent-types": {
+            "x-swagger-router-controller": "consent-type.controller",
             "post": {
-                "summary": "Creates new document type",
-                "description": "Each document type describes a document that users have to accept for various registry functionality such as consent form or terms of use.  There can be multiple documents with the same type but only one of them can be active at one time.",
-                "operationId": "createDocumentType",
+                "summary": "Creates new consent type",
+                "description": "Each consent type describes a consent section that users have to accept for various registry functionality.  There can be multiple consent sections with the same type but only one of them can be active at one time.",
+                "operationId": "createConsentType",
                 "security": [{
                     "admin": []
                 }],
                 "parameters": [{
-                    "name": "newDocumentType",
+                    "name": "newConsentType",
                     "in": "body",
-                    "description": "Name and description of the new document type.",
+                    "description": "New consent type.",
                     "required": true,
                     "schema": {
                         "type": "object",
-                        "required": ["name", "description"],
+                        "required": ["name", "title", "type"],
                         "properties": {
                             "name": {
                                 "type": "string",
                                 "minLength": 1
                             },
-                            "description": {
+                            "title": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "type": {
                                 "type": "string",
                                 "minLength": 1
                             }
@@ -819,8 +830,8 @@
                 }
             },
             "get": {
-                "summary": "Lists document types",
-                "operationId": "listDocumentTypes",
+                "summary": "Lists consent types",
+                "operationId": "listConsentTypes",
                 "security": [{
                     "admin": []
                 }],
@@ -831,7 +842,7 @@
                             "type": "array",
                             "items": {
                                 "type": "object",
-                                "required": ["id", "name", "description"],
+                                "required": ["id", "name", "title", "type"],
                                 "properties": {
                                     "id": {
                                         "type": "integer",
@@ -841,7 +852,11 @@
                                         "type": "string",
                                         "minLength": 1
                                     },
-                                    "description": {
+                                    "title": {
+                                        "type": "string",
+                                        "minLength": 1
+                                    },
+                                    "type": {
                                         "type": "string",
                                         "minLength": 1
                                     }
@@ -856,8 +871,8 @@
                 }
             }
         },
-        "/document-types/{id}": {
-            "x-swagger-router-controller": "document-type.controller",
+        "/consent-types/{id}": {
+            "x-swagger-router-controller": "consent-type.controller",
             "parameters": [{
                 "name": "id",
                 "in": "path",
@@ -865,8 +880,8 @@
                 "type": "integer"
             }],
             "delete": {
-                "summary": "Deletes the document type",
-                "operationId": "deleteDocumentType",
+                "summary": "Deletes the consent type",
+                "operationId": "deleteConsentType",
                 "security": [{
                     "admin": []
                 }],
@@ -880,30 +895,31 @@
                 }
             }
         },
-        "/documents/type/{typeId}": {
-            "x-swagger-router-controller": "document.controller",
-            "parameters": [{
-                "name": "typeId",
-                "in": "path",
-                "required": true,
-                "type": "integer"
-            }],
+        "/consent-documents": {
+            "x-swagger-router-controller": "consent-document.controller",
             "post": {
-                "summary": "Creates a document of type",
-                "operationId": "createDocument",
+                "summary": "Creates a consent section",
+                "operationId": "createConsentDocument",
                 "security": [{
                     "admin": []
                 }],
                 "parameters": [{
-                    "name": "content",
+                    "name": "newConsentDocument",
                     "in": "body",
                     "description": "Content text",
                     "required": true,
                     "schema": {
                         "type": "object",
-                        "required": ["content"],
+                        "required": ["typeId", "content"],
                         "properties": {
+                            "typeId": {
+                                "type": "integer"
+                            },
                             "content": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "updateComment": {
                                 "type": "string",
                                 "minLength": 1
                             }
@@ -921,8 +937,8 @@
                 }
             }
         },
-        "/documents/{id}": {
-            "x-swagger-router-controller": "document.controller",
+        "/consent-documents/{id}": {
+            "x-swagger-router-controller": "consent-document.controller",
             "parameters": [{
                 "name": "id",
                 "in": "path",
@@ -930,18 +946,27 @@
                 "type": "integer"
             }],
             "get": {
-                "summary": "Gets document content",
-                "operationId": "getContent",
+                "summary": "Gets consent section content",
+                "operationId": "getConsentDocument",
                 "responses": {
                     "200": {
                         "description": "Successful response",
                         "schema": {
                             "type": "object",
-                            "required": ["content"],
+                            "required": ["id", "typeId", "content"],
                             "properties": {
+                                "id": {
+                                    "type": "integer"
+                                },
+                                "typeId": {
+                                    "type": "integer"
+                                },
                                 "content": {
                                     "type": "string",
                                     "minLength": 1
+                                },
+                                "updateComment": {
+                                    "type": ["string", "null"]
                                 }
                             },
                             "additionalProperties": false
@@ -953,24 +978,51 @@
                 }
             }
         },
-        "/document-signatures": {
-            "x-swagger-router-controller": "document-signature.controller",
+        "/consent-documents/update-comments/{typeId}": {
+            "x-swagger-router-controller": "consent-document.controller",
+            "parameters": [{
+                "name": "typeId",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
+            "get": {
+                "summary": "Gets update comments for consent document",
+                "operationId": "getUpdateCommentHistory",
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": ["string", "null"]
+                            }
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/consent-signatures": {
+            "x-swagger-router-controller": "consent-signature.controller",
             "post": {
-                "summary": "Marks a document as signed",
+                "summary": "Marks a consent section as signed",
                 "operationId": "createSignature",
                 "security": [{
                     "participant": []
                 }],
                 "parameters": [{
-                    "name": "document",
+                    "name": "consent_document",
                     "in": "body",
-                    "description": "Document to be signed",
+                    "description": "ConsentDocument to be signed",
                     "required": true,
                     "schema": {
                         "type": "object",
-                        "required": ["documentId"],
+                        "required": ["consentDocumentId"],
                         "properties": {
-                            "documentId": {
+                            "consentDocumentId": {
                                 "type": "integer",
                                 "minimum": 1
                             }
@@ -981,6 +1033,253 @@
                 "responses": {
                     "201": {
                         "$ref": "#/responses/idSuccess"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/consent-signatures/bulk": {
+            "x-swagger-router-controller": "consent-signature.controller",
+            "post": {
+                "summary": "Marks multiple consent sections as signed",
+                "operationId": "bulkCreateSignatures",
+                "security": [{
+                    "participant": []
+                }],
+                "parameters": [{
+                    "name": "consent_documents",
+                    "in": "body",
+                    "description": "Id of consent documents to be signed",
+                    "required": true,
+                    "schema": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    }
+                }],
+                "responses": {
+                    "201": {
+                        "$ref": "#/responses/anyArray"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/consents": {
+            "x-swagger-router-controller": "consent.controller",
+            "post": {
+                "summary": "Creates a new consent",
+                "operationId": "createConsent",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "newConsent",
+                    "in": "body",
+                    "description": "Consent object",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/newConsent"
+                    }
+                }],
+                "responses": {
+                    "201": {
+                        "$ref": "#/responses/idSuccess"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "get": {
+                "summary": "Gets all consents",
+                "operationId": "listConsents",
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/consents"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/consents/{id}": {
+            "x-swagger-router-controller": "consent.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
+            "get": {
+                "summary": "Gets the consent",
+                "operationId": "getConsent",
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/consent"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Deletes the consent",
+                "operationId": "deleteConsent",
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "204": {
+                        "$ref": "#/responses/emptySuccess"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/consents/name/{name}": {
+            "x-swagger-router-controller": "consent.controller",
+            "parameters": [{
+                "name": "name",
+                "in": "path",
+                "required": true,
+                "type": "string"
+            }],
+            "get": {
+                "summary": "Gets the consent by name",
+                "operationId": "getConsentByName",
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/consent"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/consents/{id}/documents": {
+            "x-swagger-router-controller": "consent.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
+            "get": {
+                "summary": "Gets the documents",
+                "operationId": "getConsentDocuments",
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/consent-with-documents"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/consents/name/{name}/documents": {
+            "x-swagger-router-controller": "consent.controller",
+            "parameters": [{
+                "name": "name",
+                "in": "path",
+                "required": true,
+                "type": "string"
+            }],
+            "get": {
+                "summary": "Gets the documents by name",
+                "operationId": "getConsentDocumentsByName",
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/consent-with-documents"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/consents/{id}/user-documents": {
+            "x-swagger-router-controller": "consent.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
+            "get": {
+                "summary": "Gets the user documents",
+                "operationId": "getUserConsentDocuments",
+                "security": [{
+                    "participant": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/consent-with-documents"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/consents/name/{name}/user-documents": {
+            "x-swagger-router-controller": "consent.controller",
+            "parameters": [{
+                "name": "name",
+                "in": "path",
+                "required": true,
+                "type": "string"
+            }],
+            "get": {
+                "summary": "Gets the user documents by name",
+                "operationId": "getUserConsentDocumentsByName",
+                "security": [{
+                    "participant": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/consent-with-documents"
+                        }
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -1059,6 +1358,15 @@
             "description": "Unexpected error.",
             "schema": {
                 "$ref": "#/definitions/error"
+            }
+        },
+        "anyArray": {
+            "description": "Unrestricted object.",
+            "schema": {
+                "type": "array",
+                "items": {
+                    "type": "object"
+                }
             }
         }
     },
@@ -1511,6 +1819,125 @@
             "items": {
                 "$ref": "#/definitions/action"
             }
+        },
+        "newConsent": {
+            "type": "object",
+            "required": [
+                "name",
+                "sections"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "sections": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "minItems": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "consent": {
+            "type": "object",
+            "required": [
+                "id",
+                "name",
+                "sections"
+            ],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "sections": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "minItems": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "consents": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/consent"
+            }
+        },
+        "consent-with-documents": {
+            "type": "object",
+            "required": [
+                "id",
+                "name",
+                "sections"
+            ],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "sections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/consent-section-document"
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+        "consent-section-document": {
+            "type": ["object", "null"],
+            "required": [
+                "id",
+                "name",
+                "title",
+                "type",
+                "content"
+            ],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "title": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "type": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "content": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "updateComment": {
+                    "type": ["string", "null"]
+                },
+                "signature": {
+                    "type": "boolean"
+                }
+            },
+            "additionalProperties": false
         }
     }
 }

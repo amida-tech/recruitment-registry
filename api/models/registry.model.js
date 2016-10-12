@@ -9,9 +9,9 @@ module.exports = function (sequelize, DataTypes) {
     const User = sequelize.import('./user.model');
     const Answer = sequelize.import('./answer.model');
     const Survey = sequelize.import('./survey.model');
-    const Document = sequelize.import('./document.model');
-    const DocumentSignature = sequelize.import('./document-signature.model');
-    const SurveyDocument = sequelize.import('./survey-document.model');
+    const ConsentDocument = sequelize.import('./consent-document.model');
+    const ConsentSignature = sequelize.import('./consent-signature.model');
+    const SurveyConsentType = sequelize.import('./survey-consent-type.model');
 
     const Registry = sequelize.define('registry', {
         profileSurveyId: {
@@ -70,17 +70,17 @@ module.exports = function (sequelize, DataTypes) {
                             .then(survey => {
                                 const surveyId = survey.id;
                                 const action = 'create';
-                                return SurveyDocument.findAll({
+                                return SurveyConsentType.findAll({
                                         where: { surveyId, action },
                                         raw: true,
-                                        attributes: ['documentTypeId']
+                                        attributes: ['consentTypeId']
                                     })
-                                    .then(rawTypeIds => _.map(rawTypeIds, 'documentTypeId'))
+                                    .then(rawTypeIds => _.map(rawTypeIds, 'consentTypeId'))
                                     .then(typeIds => {
                                         if (typeIds.length) {
-                                            return Document.listDocuments(typeIds)
-                                                .then(documents => {
-                                                    survey.documents = documents;
+                                            return ConsentDocument.listConsentDocuments(typeIds)
+                                                .then(consentDocuments => {
+                                                    survey.consentDocument = consentDocuments;
                                                     return survey;
                                                 });
                                         } else {
@@ -98,8 +98,8 @@ module.exports = function (sequelize, DataTypes) {
                             return User.create(input.user, { transaction: tx })
                                 .then(user => {
                                     if (input.signatures && input.signatures.length) {
-                                        return sequelize.Promise.all(input.signatures.map(documentId => {
-                                                return DocumentSignature.createSignature(user.id, documentId, tx);
+                                        return sequelize.Promise.all(input.signatures.map(consentDocumentId => {
+                                                return ConsentSignature.createSignature(user.id, consentDocumentId, tx);
                                             }))
                                             .then(() => user);
                                     }
