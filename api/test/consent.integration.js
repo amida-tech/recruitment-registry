@@ -1,4 +1,4 @@
-/* global xdescribe,before,it*/
+/* global describe,before,it*/
 'use strict';
 process.env.NODE_ENV = 'test';
 
@@ -9,13 +9,14 @@ const SharedSpec = require('./util/shared-integration');
 const Generator = require('./util/entity-generator');
 const History = require('./util/entity-history');
 const ConsentDocumentHistory = require('./util/consent-document-history');
+const ConsentCommon = require('./util/consent-common');
 const config = require('../config');
 
 const expect = chai.expect;
 const generator = new Generator();
 const shared = new SharedSpec(generator);
 
-xdescribe('consent integration', function () {
+describe('consent integration', function () {
     const userCount = 4;
     const typeCount = 12;
 
@@ -25,6 +26,7 @@ xdescribe('consent integration', function () {
     };
     const history = new ConsentDocumentHistory(userCount);
     const hxConsent = new History();
+    const consentCommon = new ConsentCommon(hxConsent, history);
 
     before(shared.setUpFn(store));
 
@@ -123,7 +125,7 @@ xdescribe('consent integration', function () {
         store.server
             .delete(`/api/v1.0/consents/${id}`)
             .set('Authorization', store.auth)
-            .expect(200)
+            .expect(204)
             .end(function (err) {
                 if (err) {
                     return done(err);
@@ -136,26 +138,6 @@ xdescribe('consent integration', function () {
     it('list/verify consents', listConsentsFn);
 
     it('logout as super', shared.logoutFn(store));
-
-    const formExpectedConsent = function (index, typeIndices, signatures) {
-        const serverConsent = hxConsent.server(index);
-        const expectedSections = typeIndices.map(typeIndex => {
-            const consentDocument = _.cloneDeep(history.server(typeIndex));
-            if (consentDocument === null) {
-                return null;
-            }
-            const typeDetail = history.type(typeIndex);
-            delete consentDocument.typeId;
-            const section = Object.assign({}, typeDetail, consentDocument);
-            if (signatures) {
-                section.signature = Boolean(signatures[typeIndex]);
-            }
-            return section;
-        });
-        let result = _.omit(serverConsent, 'typeIds');
-        result.sections = expectedSections;
-        return result;
-    };
 
     const getUserConsentDocumentsFn = function (userIndex, index, signatureIndices) {
         return function (done) {
@@ -170,7 +152,7 @@ xdescribe('consent integration', function () {
                     }
                     const typeIndices = consentSpecs[index];
                     const signatures = signatureIndices.reduce((r, i) => (r[i] = true, r), {});
-                    const expected = formExpectedConsent(index, typeIndices, signatures);
+                    const expected = consentCommon.formExpectedConsent(index, typeIndices, signatures);
                     expect(res.body).to.deep.equal(expected);
                     done();
                 });
@@ -196,16 +178,16 @@ xdescribe('consent integration', function () {
                             return done(err);
                         }
                         const typeIndices = consentSpecs[consentIndex];
-                        const expected = formExpectedConsent(consentIndex, typeIndices);
+                        const expected = consentCommon.formExpectedConsent(consentIndex, typeIndices);
                         expect(res.body).to.deep.equal(expected);
                         done();
                     });
             });
 
             _.range(userCount).forEach(userIndex => {
-                it(`login as user 0`, shared.loginIndexFn(store, history.hxUser, 0));
+                it(`login as user ${userIndex}`, shared.loginIndexFn(store, history.hxUser, 0));
                 it(`get/verify user consent ${consentIndex} documents`, getUserConsentDocumentsFn(userIndex, consentIndex, []));
-                it('logout as user 0', shared.logoutFn(store));
+                it(`logout as user ${userIndex}`, shared.logoutFn(store));
             });
         });
     });
@@ -263,9 +245,11 @@ xdescribe('consent integration', function () {
     it(`get/verify user 3 consent 0 documents`, getUserConsentDocumentsFn(3, 0, [0, 2, 3, 4]));
     it('logout as user 3', shared.logoutFn(store));
 
+    it('login as super', shared.loginFn(store, config.superUser));
     [2, 10, 8, 4].forEach(typeIndex => {
-        it(`create/verify consent document of type ${typeIndex}`, shared.createConsentDocumentFn(history, typeIndex));
+        it(`create/verify consent document of type ${typeIndex}`, shared.createConsentDocumentFn(store, history, typeIndex));
     });
+    it('logout as super', shared.logoutFn(store));
 
     it(`login as user 0`, shared.loginIndexFn(store, history.hxUser, 0));
     it(`get/verify user 0 consent 0 documents`, getUserConsentDocumentsFn(0, 0, [1, 3]));
@@ -315,16 +299,17 @@ xdescribe('consent integration', function () {
     it(`get/verify user 3 consent 0 documents`, getUserConsentDocumentsFn(3, 0, [0, 2, 3, 4]));
     it('logout as user 3', shared.logoutFn(store));
 
+    it('login as super', shared.loginFn(store, config.superUser));
     [2, 10].forEach(typeIndex => {
-        it(`create/verify consent document of type ${typeIndex}`, shared.createConsentDocumentFn(history, typeIndex));
+        it(`create/verify consent document of type ${typeIndex}`, shared.createConsentDocumentFn(store, history, typeIndex));
     });
+    it('logout as super', shared.logoutFn(store));
 
     it('update history for type 2', function (done) {
         const typeId = history.typeId(2);
         store.server
-            .get(`/api/v1.0/consents/update-comments/${typeId}`)
-            .set('Authorization', store.auth)
-            .expect(201)
+            .get(`/api/v1.0/consent-documents/update-comments/${typeId}`)
+            .expect(200)
             .end(function (err, res) {
                 if (err) {
                     return done(err);
@@ -332,6 +317,7 @@ xdescribe('consent integration', function () {
                 const servers = history.serversHistory().filter(h => (h.typeId === typeId));
                 const comments = _.map(servers, 'updateComment');
                 expect(res.body).to.deep.equal(comments);
+                done();
             });
     });
 });

@@ -19,3 +19,10 @@ exports.getConsentDocument = function (req, res) {
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };
+
+exports.getUpdateCommentHistory = function (req, res) {
+    const typeId = _.get(req, 'swagger.params.typeId.value');
+    ConsentDocument.getUpdateCommentHistory(typeId)
+        .then(result => res.status(200).json(result))
+        .catch(shared.handleError(res));
+};
