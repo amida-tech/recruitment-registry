@@ -77,11 +77,12 @@ class Form extends Component {
           } : this.next
 
           return (
-            <button className="form__submit-btn" onClick={boundItemClick}
+            <button className="btn rr-button m-r-2" onClick={boundItemClick}
                     key={question.id + "." + index}
                     type="button">{action.text}</button>
           )
         })
+        buttons = <div className="rr-controls">{buttons}</div>;
       } else {
         var self = this
         let boundItemClick = () => {
@@ -94,18 +95,16 @@ class Form extends Component {
         }
 
         buttons = (
-          <div>
-            <button className="form__submit-btn" onClick={this.next}
-                    type="button">{this.props.vocab.get('NEXT')}</button>
-            <button className="form__submit-btn" onClick={boundItemClick}
-                    type="button">{this.props.vocab.get('SKIP')}</button>
+          <div className="rr-controls">
+            <button className="btn rr-button m-r-2" onClick={this.next} type="button">{this.props.vocab.get('NEXT')}</button>
+            <button className="btn rr-button" onClick={boundItemClick} type="button">{this.props.vocab.get('SKIP')}</button>
           </div>
         )
       }
 
       return (
-        <div>
-          <label>{question.text}</label>
+        <div className="rr">
+          <label className="rr-question">{question.text}</label>
           {checkboxes}
           {buttons}
         </div>
@@ -152,17 +151,19 @@ class Form extends Component {
               this.next()
             }
           }
-
-          return (<button className="form__submit-btn" onClick={boundItemClick}  key={question.id + "." + index} type="button">{action.text}</button>)
+          console.log("JAMES: " +JSON.stringify(question));
+          return (<button className="btn rr-button" onClick={boundItemClick}  key={question.id + "." + index} type="button">{action.text}</button>)
         }) :
         [
-          <button className="form__submit-btn" key={question.id + ".1"} type="button" onClick={boundItemClickDefault}>{this.props.vocab.get('YES')}</button>,
-          <button className="form__submit-btn" key={question.id + ".2"} onClick={this.next} type="button">{this.props.vocab.get('NO')}</button>
+          <div key={question.id + ".div"} className="rr-controls">
+          <button className="btn rr-button m-r-2" key={question.id + ".1"} type="button" onClick={boundItemClickDefault}>{this.props.vocab.get('YES')}</button>
+          <button className="btn rr-button" key={question.id + ".2"} onClick={this.next} type="button">{this.props.vocab.get('NO')}</button>
+          </div>
         ]
 
       return (
         <div>
-          <label>{question.text}</label>
+          <label className="rr-question">{question.text}</label>
           {buttons}
         </div>
       )
@@ -216,7 +217,7 @@ class Form extends Component {
     }
 
     return(
-      <form className="" autoComplete="off">
+      <form autoComplete="off">
         <div className="col-lg-6">
           <div className="registry-specific">
             {
@@ -230,10 +231,10 @@ class Form extends Component {
                   {renderSelectField("gender", this.props.data.gender, this.props.vocab.get('MY_GENDER'), this.props.availableGenders)}
                   {renderSelectField("ethnicity", this.props.data.ethnicity, this.props.vocab.get('MY_ETHNIC'), this.props.availableEthnicities)}
                   {slides}
-                  <div key="final">
-                    <p>{this.props.vocab.get('THANKS')}</p>
+                  <div key="final" className="rr-question">
+                    <p className="rr no-transform">{this.props.vocab.get('THANKS')}</p>
                     <p>{this.props.vocab.get('ACCOUNT_CREATED')}</p>
-                    <Link to="/profile">{this.props.vocab.get('GO_DASHBOARD')}</Link>
+                    <a href="/profile" className="btn rr-button" type="button">{this.props.vocab.get('GO_DASHBOARD')}</a>
                   </div>
                 </Slider>
               ) : (<div>{this.props.vocab.get('LOADING')}...</div>)

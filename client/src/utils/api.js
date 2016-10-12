@@ -120,7 +120,7 @@ const apiProvider = store => next => action => {
       break
     case 'REGISTER':
       request
-        .post(apiUrl + '/registries/profiles')
+        .post(apiUrl + '/profiles')
         .send(action.payload)
         .end((error, response) => {
           if (!error) {
