@@ -189,4 +189,15 @@ describe('survey consent section unit', function () {
     it('read user profile 1 without signatures', readProfileWithoutSignaturesFn(1, [0, 1]));
     it('read user profile 2 without signatures', readProfileWithoutSignaturesFn(2, [1]));
     it('read user profile 3 without signatures', readProfileWithoutSignaturesFn(3, [0]));
+
+    const fnDelete = function(index) {
+        return function () {
+            const id = profileSurveyConsentTypes[index].id;
+            return SurveyConsentType.deleteSurveyConsentType(id);
+        };
+    };
+
+    for (let i=0; i<4; ++i) {
+        it(`delete survey consent type ${i}`, fnDelete(i));
+    }
 });

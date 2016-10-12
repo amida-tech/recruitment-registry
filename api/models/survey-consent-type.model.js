@@ -45,7 +45,7 @@ module.exports = function (sequelize, DataTypes) {
                     .then(({ id }) => ({ id }));
             },
             deleteSurveyConsentType: function (id) {
-                return SurveyConsentType.delete({ where: { id } });
+                return SurveyConsentType.destroy({ where: { id } });
             },
             listSurveyConsentTypes: function ({ userId, surveyId, action }, tx) {
                 const query = {

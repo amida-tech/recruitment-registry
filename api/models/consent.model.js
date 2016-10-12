@@ -108,7 +108,9 @@ module.exports = function (sequelize, DataTypes) {
                             .then(signatures => _.keyBy(signatures, 'consentDocumentId'))
                             .then(signatures => {
                                 result.sections.forEach(section => {
-                                    section.signature = Boolean(signatures[section.id]);
+                                    if (section) {
+                                        section.signature = Boolean(signatures[section.id]);
+                                    }
                                 });
                                 return result;
                             });
