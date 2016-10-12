@@ -16,24 +16,32 @@ class Form extends Component {
   previous() {
     this.refs.slider.slickPrev()
   }
+
   render() {
+    var header = (
+      <div className="rr-wrapper m-b-2">
+        <h1 className="rr no-transform">{this.props.vocab.get('LETS_CREATE')}</h1>
+      </div>
+    )
 
     const renderInputField = (id, type, placeholder, label) => (
-      <div className="rr-question" key={id}>
-        <div>
+      <div key={id}>
+        {header}
+        <div className="rr-question" >
           <label htmlFor={id}>{label}</label>
           <input autoComplete="off" required className="rr-blankline rr-field" id={id} type={type} onChange={this.props.changeForm} />
         </div>
         <div className="rr-controls">
-          <button className="btn rr-button m-r-2" onClick={this.previous} type="button">{this.props.vocab.get('BACK')}</button>
+          <button className= {id == 'username' ? "invisible rr-button m-r-2": "btn rr-button m-r-2"} onClick={this.previous} type="button">{this.props.vocab.get('BACK')}</button>
           <button className="btn rr-button" onClick={this.next} type="button">{this.props.vocab.get('NEXT')}</button>
         </div>
       </div>
     )
 
     const renderSelectField = (id, defaultValue, label, options) => (
-      <div className="rr-question" key={id}>
-        <div>
+      <div key={id}>
+        {header}
+        <div className="rr-question" >
           <label htmlFor="gender">{label}</label>
           <select required onChange={this.props.changeForm} value={defaultValue} className="rr-blankline rr-field" id={id}>
             {options.map(option => <option key={option} value={option}>{option}</option>)}
@@ -90,7 +98,7 @@ class Form extends Component {
             questionId: question.id,
             surveyId: this.props.survey.id
           })()
-
+          console.log(self);
           self.next()
         }
 
@@ -104,6 +112,7 @@ class Form extends Component {
 
       return (
         <div className="rr">
+          {header}
           <label className="rr-question">{question.text}</label>
           {checkboxes}
           {buttons}
@@ -151,7 +160,7 @@ class Form extends Component {
               this.next()
             }
           }
-          console.log("JAMES: " +JSON.stringify(question));
+
           return (<button className="btn rr-button" onClick={boundItemClick}  key={question.id + "." + index} type="button">{action.text}</button>)
         }) :
         [
@@ -163,6 +172,7 @@ class Form extends Component {
 
       return (
         <div>
+          {header}
           <label className="rr-question">{question.text}</label>
           {buttons}
         </div>
@@ -232,7 +242,9 @@ class Form extends Component {
                   {renderSelectField("ethnicity", this.props.data.ethnicity, this.props.vocab.get('MY_ETHNIC'), this.props.availableEthnicities)}
                   {slides}
                   <div key="final" className="rr-question">
-                    <p className="rr no-transform">{this.props.vocab.get('THANKS')}</p>
+                    <div className="rr-wrapper m-b-2">
+                      <h1 className="rr no-transform">{this.props.vocab.get('THANKS')}</h1>
+                    </div>
                     <p>{this.props.vocab.get('ACCOUNT_CREATED')}</p>
                     <a href="/profile" className="btn rr-button" type="button">{this.props.vocab.get('GO_DASHBOARD')}</a>
                   </div>

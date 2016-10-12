@@ -8,22 +8,19 @@ export class RegisterContainer extends Component {
     const { formState, survey, availableEthnicities, availableGenders } = this.props.data.toJS()
     return (
       <div>
-          <div className="rr-wrapper m-b-2">
-            <h1 className="rr no-transform">{this.props.vocab.get('LETS_CREATE')}</h1>
-          </div>
-          <Form data={formState}
-                vocab={this.props.vocab}
-                location={location}
-                availableEthnicities={availableEthnicities}
-                availableGenders={availableGenders}
-                history={this.props.history}
-                onSubmit={::this._onSubmit}
-                onChoicesClear={::this._onChoicesClick}
-                btnText={this.props.vocab.get('REGISTER')}
-                survey={survey}
-                changeForm={::this._changeForm}
-                changeChoice={::this._changeChoice}
-                changeBoolQuestion={::this._changeBoolQuestion}/>
+        <Form data={formState}
+              vocab={this.props.vocab}
+              location={location}
+              availableEthnicities={availableEthnicities}
+              availableGenders={availableGenders}
+              history={this.props.history}
+              onSubmit={::this._onSubmit}
+              onChoicesClear={::this._onChoicesClick}
+              btnText={this.props.vocab.get('REGISTER')}
+              survey={survey}
+              changeForm={::this._changeForm}
+              changeChoice={::this._changeChoice}
+              changeBoolQuestion={::this._changeBoolQuestion}/>
       </div>)
   }
 
