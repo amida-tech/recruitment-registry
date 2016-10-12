@@ -16,6 +16,7 @@ const generator = new Generator();
 
 const shared = new SharedSpec(generator);
 const Consent = models.Consent;
+const ConsentDocument = models.ConsentDocument;
 const ConsentSignature = models.ConsentSignature;
 
 describe('consent unit', function () {
@@ -100,7 +101,7 @@ describe('consent unit', function () {
     const formExpectedConsent = function (index, typeIndices, signatures) {
         const serverConsent = hxConsent.server(index);
         const expectedSections = typeIndices.map(typeIndex => {
-            const consentDocument = history.server(typeIndex);
+            const consentDocument = _.cloneDeep(history.server(typeIndex));
             const typeDetail = history.type(typeIndex);
             delete consentDocument.typeId;
             const section = Object.assign({}, typeDetail, consentDocument);
@@ -179,4 +180,18 @@ describe('consent unit', function () {
     it('user 1 signs consent 1 (8, 10)', signDocumentsFn(1, 1, [8, 10], [5, 8, 10, 11]));
     it('user 2 signs consent 3 (8, 11)', signDocumentsFn(2, 3, [8, 11], [8, 9, 11]));
     it('user 3 signs consent 0 (2, 4)', signDocumentsFn(3, 0, [2, 4], [0, 2, 3, 4]));
+
+    [2, 10].forEach(typeIndex => {
+        it(`create/verify consent document of type ${typeIndex}`, shared.createConsentDocumentFn(history, typeIndex));
+    });
+
+    it('update history for type 2', function() {
+        const typeId = history.typeId(2);
+        return ConsentDocument.getUpdateCommentHistory(typeId)
+            .then(result => {
+                const servers = history.serversHistory().filter(h => (h.typeId === typeId));
+                const comments = _.map(servers, 'updateComment');
+                expect(result).to.deep.equal(comments);
+            });
+    });
 });

@@ -68,6 +68,10 @@ class ConsentDocumentHistory {
         return _.sortBy(result, 'id');
     }
 
+    serversHistory() {
+        return this.consentDocuments;
+    }
+
     sign(typeIndex, userIndex) {
         const id = this.id(typeIndex);
         this.signatures[userIndex].push(id);

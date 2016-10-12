@@ -115,6 +115,16 @@ module.exports = function (sequelize, DataTypes) {
             },
             getConsentDocument: function (id) {
                 return ConsentDocument.findById(id, { raw: true, attributes: ['id', 'typeId', 'content', 'updateComment'] });
+            },
+            getUpdateCommentHistory: function (typeId) {
+                return ConsentDocument.findAll({
+                    raw: true,
+                    attributes: ['updateComment'],
+                    where: {typeId},
+                    order: 'id',
+                    paranoid: false
+                })
+                    .then(documents => _.map(documents, 'updateComment'));
             }
         }
     });
