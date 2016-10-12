@@ -8,6 +8,7 @@ const _ = require('lodash');
 const SharedSpec = require('./util/shared-spec');
 const Generator = require('./util/entity-generator');
 const History = require('./util/entity-history');
+const ConsentCommon = require('./util/consent-common');
 const ConsentDocumentHistory = require('./util/consent-document-history');
 const models = require('../models');
 
@@ -25,6 +26,7 @@ describe('consent unit', function () {
 
     const history = new ConsentDocumentHistory(userCount);
     const hxConsent = new History();
+    const consentCommon = new ConsentCommon(hxConsent, history);
 
     before(shared.setUpFn());
 
@@ -94,26 +96,6 @@ describe('consent unit', function () {
 
     it('list/verify consents', listConsentsFn);
 
-    const formExpectedConsent = function (index, typeIndices, signatures) {
-        const serverConsent = hxConsent.server(index);
-        const expectedSections = typeIndices.map(typeIndex => {
-            const consentDocument = _.cloneDeep(history.server(typeIndex));
-            if (consentDocument === null) {
-                return null;
-            }
-            const typeDetail = history.type(typeIndex);
-            delete consentDocument.typeId;
-            const section = Object.assign({}, typeDetail, consentDocument);
-            if (signatures) {
-                section.signature = Boolean(signatures[typeIndex]);
-            }
-            return section;
-        });
-        let result = _.omit(serverConsent, 'typeIds');
-        result.sections = expectedSections;
-        return result;
-    };
-
     const getUserConsentDocuments = function (userIndex, index, signatureIndices) {
         const id = hxConsent.id(index);
         const userId = history.userId(userIndex);
@@ -121,7 +103,7 @@ describe('consent unit', function () {
             .then(consent => {
                 const typeIndices = consentSpecs[index];
                 const signatures = signatureIndices.reduce((r, i) => (r[i] = true, r), {});
-                const expected = formExpectedConsent(index, typeIndices, signatures);
+                const expected = consentCommon.formExpectedConsent(index, typeIndices, signatures);
                 expect(consent).to.deep.equal(expected);
             });
     };
@@ -137,7 +119,7 @@ describe('consent unit', function () {
                 return Consent.getConsentDocuments(id)
                     .then(consent => {
                         const typeIndices = consentSpecs[consentIndex];
-                        const expected = formExpectedConsent(consentIndex, typeIndices);
+                        const expected = consentCommon.formExpectedConsent(consentIndex, typeIndices);
                         expect(consent).to.deep.equal(expected);
                     });
             });
@@ -198,7 +180,7 @@ describe('consent unit', function () {
         it(`create/verify consent document of type ${typeIndex}`, shared.createConsentDocumentFn(history, typeIndex));
     });
 
-    it('update history for type 2', function() {
+    it('update history for type 2', function () {
         const typeId = history.typeId(2);
         return ConsentDocument.getUpdateCommentHistory(typeId)
             .then(result => {

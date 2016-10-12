@@ -25,24 +25,6 @@ describe('consent section integration', function () {
 
     before(shared.setUpFn(store));
 
-    const createConsentTypeFn = function () {
-        const cst = generator.newConsentType();
-        return function (done) {
-            store.server
-                .post('/api/v1.0/consent-types')
-                .set('Authorization', store.auth)
-                .send(cst)
-                .expect(201)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    history.pushType(cst, res.body);
-                    done();
-                });
-        };
-    };
-
     const listConsentTypesFn = function () {
         return function (done) {
             store.server
@@ -63,7 +45,7 @@ describe('consent section integration', function () {
     it('login as super', shared.loginFn(store, config.superUser));
 
     for (let i = 0; i < 2; ++i) {
-        it(`create consent type ${i}`, createConsentTypeFn());
+        it(`create consent type ${i}`, shared.createConsentTypeFn(store, history));
         it('get/verify consent types', listConsentTypesFn());
     }
 
@@ -92,25 +74,6 @@ describe('consent section integration', function () {
 
     it('login as super', shared.loginFn(store, config.superUser));
 
-    const createConsentDocumentFn = function (typeIndex) {
-        return function (done) {
-            const typeId = history.typeId(typeIndex);
-            const cs = generator.newConsentDocument({ typeId });
-            store.server
-                .post(`/api/v1.0/consent-documents`)
-                .set('Authorization', store.auth)
-                .send(cs)
-                .expect(201)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    history.push(typeIndex, cs, res.body);
-                    done();
-                });
-        };
-    };
-
     const getConsentDocumentFn = function (typeIndex) {
         return function (done) {
             const id = history.id(typeIndex);
@@ -129,7 +92,7 @@ describe('consent section integration', function () {
     };
 
     for (let i = 0; i < 2; ++i) {
-        it(`create consent section of type ${i}`, createConsentDocumentFn(i));
+        it(`create consent section of type ${i}`, shared.createConsentDocumentFn(store, history, i));
         it(`get/verify consent section content of type ${i}`, getConsentDocumentFn(i));
     }
 
@@ -221,8 +184,8 @@ describe('consent section integration', function () {
     it('logout as user 3', shared.logoutFn(store));
 
     it('login as super', shared.loginFn(store, config.superUser));
-    it('add a new consent type', createConsentTypeFn());
-    it('create/verify consent section of type 2', createConsentDocumentFn(2));
+    it('add a new consent type', shared.createConsentTypeFn(store, history));
+    it('create/verify consent section of type 2', shared.createConsentDocumentFn(store, history, 2));
     it('logout as super', shared.logoutFn(store));
 
     const signConsentType = ((userIndex, consentDocumentIndex) => {
@@ -250,7 +213,7 @@ describe('consent section integration', function () {
     verifyConsentDocuments(2, [1]);
 
     it('login as super', shared.loginFn(store, config.superUser));
-    it('create/verify consent section of type 1', createConsentDocumentFn(1));
+    it('create/verify consent section of type 1', shared.createConsentDocumentFn(store, history, 1));
     it('logout as super', shared.logoutFn(store));
 
     verifyConsentDocuments(0, [1, 2]);
@@ -262,7 +225,7 @@ describe('consent section integration', function () {
     verifyConsentDocuments(1, [1]);
 
     it('login as super', shared.loginFn(store, config.superUser));
-    it('create/verify consent section of type 0', createConsentDocumentFn(0));
+    it('create/verify consent section of type 0', shared.createConsentDocumentFn(store, history, 0));
     it('logout as super', shared.logoutFn(store));
 
     verifyConsentDocuments(0, [0, 1, 2]);
@@ -279,7 +242,7 @@ describe('consent section integration', function () {
     verifyConsentDocuments(3, [0, 2]);
 
     it('login as super', shared.loginFn(store, config.superUser));
-    it('create/verify consent section of type 1', createConsentDocumentFn(1));
+    it('create/verify consent section of type 1', shared.createConsentDocumentFn(store, history, 1));
     it('logout as super', shared.logoutFn(store));
 
     verifyConsentDocuments(0, [0, 1, 2]);

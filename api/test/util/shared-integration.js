@@ -177,6 +177,45 @@ class SharedIntegration {
                 .end(done);
         };
     }
+
+    createConsentTypeFn(store, history) {
+        const generator = this.generator;
+        return function (done) {
+            const cst = generator.newConsentType();
+            store.server
+                .post('/api/v1.0/consent-types')
+                .set('Authorization', store.auth)
+                .send(cst)
+                .expect(201)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    history.pushType(cst, res.body);
+                    done();
+                });
+        };
+    }
+
+    createConsentDocumentFn(store, history, typeIndex) {
+        const generator = this.generator;
+        return function (done) {
+            const typeId = history.typeId(typeIndex);
+            const cs = generator.newConsentDocument({ typeId });
+            store.server
+                .post(`/api/v1.0/consent-documents`)
+                .set('Authorization', store.auth)
+                .send(cs)
+                .expect(201)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    history.push(typeIndex, cs, res.body);
+                    done();
+                });
+        };
+    }
 }
 
 module.exports = SharedIntegration;
