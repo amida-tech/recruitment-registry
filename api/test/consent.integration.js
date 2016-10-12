@@ -50,8 +50,8 @@ describe('consent integration', function () {
 
     consentSpecs.forEach((typeIndices, index) => {
         it(`create consent ${index}`, function (done) {
-            const typeIds = typeIndices.map(typeIndex => history.typeId(typeIndex));
-            const clientConsent = generator.newConsent({ typeIds });
+            const sections = typeIndices.map(typeIndex => history.typeId(typeIndex));
+            const clientConsent = generator.newConsent({ sections });
             store.server
                 .post('/api/v1.0/consents')
                 .set('Authorization', store.auth)

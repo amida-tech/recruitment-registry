@@ -13,7 +13,7 @@ module.exports = function (sequelize, DataTypes) {
             })
             .then(rawTypeIds => _.map(rawTypeIds, 'typeId'))
             .then(typeIds => {
-                result.typeIds = typeIds;
+                result.sections = typeIds;
                 return result;
             });
     };
@@ -37,12 +37,12 @@ module.exports = function (sequelize, DataTypes) {
         deletedAt: 'deletedAt',
         paranoid: true,
         classMethods: {
-            createConsent: function ({ name, typeIds }) {
+            createConsent: function ({ name, sections }) {
                 return sequelize.transaction(function (tx) {
                     return Consent.create({ name })
                         .then(({ id }) => {
                             const consentId = id;
-                            const records = typeIds.map((typeId, line) => ({ consentId, typeId, line }));
+                            const records = sections.map((typeId, line) => ({ consentId, typeId, line }));
                             const ConsentSection = sequelize.models.consent_section;
                             const pxs = records.map(record => ConsentSection.create(record)); // TODO: replace with bulkCreate when sequelize 4
                             return sequelize.Promise.all(pxs, { transaction: tx })
@@ -67,7 +67,7 @@ module.exports = function (sequelize, DataTypes) {
                             .then(allSections => {
                                 return consents.map(consent => {
                                     const sections = _.sortBy(allSections[consent.id], 'line');
-                                    consent.typeIds = _.map(sections, 'typeId');
+                                    consent.sections = _.map(sections, 'typeId');
                                     return consent;
                                 });
                             });

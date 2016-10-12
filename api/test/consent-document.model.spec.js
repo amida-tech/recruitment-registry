@@ -190,8 +190,8 @@ describe('consent document/type/signature unit', function () {
     it('verify consent sections required for user 0', verifyConsentDocumentsFn(0, []));
 
     it(`create consent from types 0, 1, 2`, function () {
-        const typeIds = [0, 1, 2].map(typeIndex => history.typeId(typeIndex));
-        const clientConsent = generator.newConsent({ typeIds });
+        const sections = [0, 1, 2].map(typeIndex => history.typeId(typeIndex));
+        const clientConsent = generator.newConsent({ sections });
         return Consent.createConsent(clientConsent)
             .then(result => hxConsent.pushWithId(clientConsent, result.id));
     });

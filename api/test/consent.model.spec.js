@@ -47,8 +47,8 @@ describe('consent unit', function () {
 
     consentSpecs.forEach((typeIndices, index) => {
         it(`create consent ${index}`, function () {
-            const typeIds = typeIndices.map(typeIndex => history.typeId(typeIndex));
-            const clientConsent = generator.newConsent({ typeIds });
+            const sections = typeIndices.map(typeIndex => history.typeId(typeIndex));
+            const clientConsent = generator.newConsent({ sections });
             return Consent.createConsent(clientConsent)
                 .then(result => hxConsent.pushWithId(clientConsent, result.id));
         });

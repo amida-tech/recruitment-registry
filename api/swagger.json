@@ -1824,14 +1824,14 @@
             "type": "object",
             "required": [
                 "name",
-                "typeIds"
+                "sections"
             ],
             "properties": {
                 "name": {
                     "type": "string",
                     "minLength": 1
                 },
-                "typeIds": {
+                "sections": {
                     "type": "array",
                     "items": {
                         "type": "integer",
@@ -1847,7 +1847,7 @@
             "required": [
                 "id",
                 "name",
-                "typeIds"
+                "sections"
             ],
             "properties": {
                 "id": {
@@ -1858,7 +1858,7 @@
                     "type": "string",
                     "minLength": 1
                 },
-                "typeIds": {
+                "sections": {
                     "type": "array",
                     "items": {
                         "type": "integer",

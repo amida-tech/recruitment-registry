@@ -233,8 +233,8 @@ class Generator {
     }
 
     newConsent(override) {
-        if (!override.typeIds) {
-            throw new Error('typeIds is required.');
+        if (!override.sections) {
+            throw new Error('sections is required.');
         }
         const index = ++this.consentIndex;
         const result = {
