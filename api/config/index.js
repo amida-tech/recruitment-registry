@@ -29,7 +29,6 @@ const all = {
         email: process.env.RECREG_SUPER_USER_EMAIL || 'rr_demo@amida.com'
     },
     logging: {
-        disable: (process.env.RECREG_LOGGING_DISABLE) === 'true',
         level: process.env.RECREG_LOGGING_LEVEL
     },
     crypt: {
