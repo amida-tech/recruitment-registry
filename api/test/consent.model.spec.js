@@ -108,6 +108,18 @@ describe('consent unit', function () {
             });
     };
 
+    const getUserConsentDocumentsByName = function (userIndex, index, signatureIndices) {
+        const name = hxConsent.server(index).name;
+        const userId = history.userId(userIndex);
+        return Consent.getUserConsentDocumentsByName(userId, name)
+            .then(consent => {
+                const typeIndices = consentSpecs[index];
+                const signatures = signatureIndices.reduce((r, i) => (r[i] = true, r), {});
+                const expected = consentCommon.formExpectedConsent(index, typeIndices, signatures);
+                expect(consent).to.deep.equal(expected);
+            });
+    };
+
     for (let i = 0; i < 3; ++i) {
         it(`create/verify consent document of type ${i}`, shared.createConsentDocumentFn(history, i));
     }
@@ -124,9 +136,22 @@ describe('consent unit', function () {
                     });
             });
 
+            it(`get/verify consent ${consentIndex} documents by name`, function () {
+                const name = hxConsent.server(consentIndex).name;
+                return Consent.getConsentDocumentsByName(name)
+                    .then(consent => {
+                        const typeIndices = consentSpecs[consentIndex];
+                        const expected = consentCommon.formExpectedConsent(consentIndex, typeIndices);
+                        expect(consent).to.deep.equal(expected);
+                    });
+            });
+
             _.range(userCount).forEach(userIndex => {
                 it(`get/verify user consent ${consentIndex} documents`, function () {
                     return getUserConsentDocuments(userIndex, consentIndex, []);
+                });
+                it(`get/verify user consent ${consentIndex} documents by name`, function () {
+                    return getUserConsentDocumentsByName(userIndex, consentIndex, []);
                 });
             });
         });
@@ -160,6 +185,9 @@ describe('consent unit', function () {
 
     it(`get/verify user 0 consent 0 documents`, function () {
         return getUserConsentDocuments(0, 0, [1, 3]);
+    });
+    it(`get/verify user 0 consent 0 documents by name`, function () {
+        return getUserConsentDocumentsByName(0, 0, [1, 3]);
     });
     it(`get/verify user 1 consent 1 documents`, function () {
         return getUserConsentDocuments(1, 1, [5, 11]);

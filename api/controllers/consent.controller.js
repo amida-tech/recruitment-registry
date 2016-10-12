@@ -48,9 +48,23 @@ exports.getConsentDocuments = function (req, res) {
         .catch(shared.handleError(res));
 };
 
+exports.getConsentDocumentsByName = function (req, res) {
+    const name = _.get(req, 'swagger.params.name.value');
+    Consent.getConsentDocumentsByName(name)
+        .then((consent) => res.status(200).json(consent))
+        .catch(shared.handleError(res));
+};
+
 exports.getUserConsentDocuments = function (req, res) {
     const id = _.get(req, 'swagger.params.id.value');
     Consent.getUserConsentDocuments(req.user.id, id)
+        .then((consent) => res.status(200).json(consent))
+        .catch(shared.handleError(res));
+};
+
+exports.getUserConsentDocumentsByName = function (req, res) {
+    const name = _.get(req, 'swagger.params.name.value');
+    Consent.getUserConsentDocumentsByName(req.user.id, name)
         .then((consent) => res.status(200).json(consent))
         .catch(shared.handleError(res));
 };

@@ -1209,6 +1209,30 @@
                 }
             }
         },
+        "/consents/name/{name}/documents": {
+            "x-swagger-router-controller": "consent.controller",
+            "parameters": [{
+                "name": "name",
+                "in": "path",
+                "required": true,
+                "type": "string"
+            }],
+            "get": {
+                "summary": "Gets the documents by name",
+                "operationId": "getConsentDocumentsByName",
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/consent-with-documents"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
         "/consents/{id}/user-documents": {
             "x-swagger-router-controller": "consent.controller",
             "parameters": [{
@@ -1220,6 +1244,33 @@
             "get": {
                 "summary": "Gets the user documents",
                 "operationId": "getUserConsentDocuments",
+                "security": [{
+                    "participant": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/consent-with-documents"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/consents/name/{name}/user-documents": {
+            "x-swagger-router-controller": "consent.controller",
+            "parameters": [{
+                "name": "name",
+                "in": "path",
+                "required": true,
+                "type": "string"
+            }],
+            "get": {
+                "summary": "Gets the user documents by name",
+                "operationId": "getUserConsentDocumentsByName",
                 "security": [{
                     "participant": []
                 }],

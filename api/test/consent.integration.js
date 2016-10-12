@@ -159,6 +159,26 @@ describe('consent integration', function () {
         };
     };
 
+    const getUserConsentDocumentsByNameFn = function (userIndex, index, signatureIndices) {
+        return function (done) {
+            const name = hxConsent.server(index).name;
+            store.server
+                .get(`/api/v1.0/consents/name/${name}/user-documents`)
+                .set('Authorization', store.auth)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    const typeIndices = consentSpecs[index];
+                    const signatures = signatureIndices.reduce((r, i) => (r[i] = true, r), {});
+                    const expected = consentCommon.formExpectedConsent(index, typeIndices, signatures);
+                    expect(res.body).to.deep.equal(expected);
+                    done();
+                });
+        };
+    };
+
     it('login as super', shared.loginFn(store, config.superUser));
     for (let i = 0; i < 3; ++i) {
         it(`create/verify consent document of type ${i}`, shared.createConsentDocumentFn(store, history, i));
@@ -184,9 +204,27 @@ describe('consent integration', function () {
                     });
             });
 
+            it(`get/verify consent ${consentIndex} documents by name`, function (done) {
+                const name = hxConsent.server(consentIndex).name;
+                store.server
+                    .get(`/api/v1.0/consents/name/${name}/documents`)
+                    .set('Authorization', store.auth)
+                    .expect(200)
+                    .end(function (err, res) {
+                        if (err) {
+                            return done(err);
+                        }
+                        const typeIndices = consentSpecs[consentIndex];
+                        const expected = consentCommon.formExpectedConsent(consentIndex, typeIndices);
+                        expect(res.body).to.deep.equal(expected);
+                        done();
+                    });
+            });
+
             _.range(userCount).forEach(userIndex => {
                 it(`login as user ${userIndex}`, shared.loginIndexFn(store, history.hxUser, 0));
                 it(`get/verify user consent ${consentIndex} documents`, getUserConsentDocumentsFn(userIndex, consentIndex, []));
+                it(`get/verify user consent ${consentIndex} documents by name`, getUserConsentDocumentsByNameFn(userIndex, consentIndex, []));
                 it(`logout as user ${userIndex}`, shared.logoutFn(store));
             });
         });
@@ -231,6 +269,7 @@ describe('consent integration', function () {
 
     it(`login as user 0`, shared.loginIndexFn(store, history.hxUser, 0));
     it(`get/verify user 0 consent 0 documents`, getUserConsentDocumentsFn(0, 0, [1, 2, 3]));
+    it(`get/verify user 0 consent 0 documents by name`, getUserConsentDocumentsByNameFn(0, 0, [1, 2, 3]));
     it('logout as user 0', shared.logoutFn(store));
 
     it(`login as user 1`, shared.loginIndexFn(store, history.hxUser, 1));

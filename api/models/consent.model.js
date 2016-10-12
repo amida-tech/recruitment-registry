@@ -80,41 +80,58 @@ module.exports = function (sequelize, DataTypes) {
                         .then(() => ConsentSection.destroy({ where: { consentId: id } }, { transaction: tx }));
                 });
             },
+            fillConsentDocuments: function (id) {
+                return function (result) {
+                    const ConsentSection = sequelize.models.consent_section;
+                    const ConsentDocument = sequelize.models.consent_document;
+                    return ConsentSection.findAll({ where: { consentId: id }, raw: true, attributes: ['typeId', 'line'], order: 'line' })
+                        .then(sections => {
+                            const typeIds = _.map(sections, 'typeId');
+                            return ConsentDocument.getConsentDocumentsOfTypes(typeIds);
+                        })
+                        .then(sections => {
+                            result.sections = sections;
+                            return result;
+                        });
+                };
+            },
             getConsentDocuments: function (id) {
-                const ConsentSection = sequelize.models.consent_section;
-                const ConsentDocument = sequelize.models.consent_document;
                 return Consent.findById(id, { raw: true, attributes: ['id', 'name'] })
+                    .then(Consent.fillConsentDocuments(id));
+            },
+            getConsentDocumentsByName: function (name) {
+                return Consent.findOne({ where: { name }, raw: true, attributes: ['id', 'name'] })
                     .then(result => {
-                        return ConsentSection.findAll({ where: { consentId: id }, raw: true, attributes: ['typeId', 'line'], order: 'line' })
-                            .then(sections => {
-                                const typeIds = _.map(sections, 'typeId');
-                                return ConsentDocument.getConsentDocumentsOfTypes(typeIds);
-                            })
-                            .then(sections => {
-                                result.sections = sections;
-                                return result;
-                            });
+                        const id = result.id;
+                        return Consent.fillConsentDocuments(id)(result);
                     });
+            },
+            fillUserConsentDocuments: function (userId) {
+                return function (result) {
+                    const ConsentSignature = sequelize.models.consent_signature;
+                    return ConsentSignature.findAll({
+                            where: { userId },
+                            raw: true,
+                            attributes: ['consentDocumentId']
+                        })
+                        .then(signatures => _.keyBy(signatures, 'consentDocumentId'))
+                        .then(signatures => {
+                            result.sections.forEach(section => {
+                                if (section) {
+                                    section.signature = Boolean(signatures[section.id]);
+                                }
+                            });
+                            return result;
+                        });
+                };
             },
             getUserConsentDocuments: function (userId, id) {
                 return Consent.getConsentDocuments(id)
-                    .then(result => {
-                        const ConsentSignature = sequelize.models.consent_signature;
-                        return ConsentSignature.findAll({
-                                where: { userId },
-                                raw: true,
-                                attributes: ['consentDocumentId']
-                            })
-                            .then(signatures => _.keyBy(signatures, 'consentDocumentId'))
-                            .then(signatures => {
-                                result.sections.forEach(section => {
-                                    if (section) {
-                                        section.signature = Boolean(signatures[section.id]);
-                                    }
-                                });
-                                return result;
-                            });
-                    });
+                    .then(Consent.fillUserConsentDocuments(userId));
+            },
+            getUserConsentDocumentsByName: function (userId, name) {
+                return Consent.getConsentDocumentsByName(name)
+                    .then(Consent.fillUserConsentDocuments(userId));
             }
         }
     });
