@@ -41,14 +41,12 @@ describe('answer unit', function () {
         return it(`create survey ${index}`, shared.createSurvey(store, surveyQuestion));
     });
 
-    const updateHxAnswers = answerCommon.updateHxAnswers;
-
     const createTestFn = function (userIndex, surveyIndex, seqIndex, stepIndex) {
         return function () {
             const qxIndices = testQuestions[surveyIndex].answerSequences[seqIndex][stepIndex];
             const key = `${userIndex}_${surveyIndex}_${seqIndex}`;
             const answers = qxIndices.map(generateQxAnswer);
-            updateHxAnswers(store, key, qxIndices, answers);
+            answerCommon.updateHxAnswers(store, key, qxIndices, answers);
             const input = {
                 userId: hxUser.id(userIndex),
                 surveyId: store.surveys[surveyIndex],
@@ -95,7 +93,7 @@ describe('answer unit', function () {
             const qxIndices = testQuestions[surveyIndex].answerSequences[seqIndex][stepIndex];
             const key = `${userIndex}_${surveyIndex}_${seqIndex}`;
             const answers = qxIndices.map(generateQxAnswer);
-            updateHxAnswers(store, key, qxIndices, answers);
+            answerCommon.updateHxAnswers(store, key, qxIndices, answers);
             const input = {
                 userId: hxUser.id(userIndex),
                 surveyId: store.surveys[surveyIndex],

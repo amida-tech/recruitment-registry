@@ -13,10 +13,10 @@ const History = require('./util/entity-history');
 const answerCommon = require('./util/answer-common');
 
 const expect = chai.expect;
-const shared = new SharedIntegration();
 
 describe('answer integration', function () {
     const generator = new Generator();
+    const shared = new SharedIntegration(generator);
 
     const store = {
         questions: [],
@@ -62,14 +62,12 @@ describe('answer integration', function () {
         { userIndex: 0, surveyIndex: 3, seqIndex: 1 },
     ];
 
-    const updateHxAnswers = answerCommon.updateHxAnswers;
-
     const postAnswersFn = function (userIndex, surveyIndex, seqIndex, stepIndex) {
         return function (done) {
             const qxIndices = testQuestions[surveyIndex].answerSequences[seqIndex][stepIndex];
             const key = `${userIndex}_${surveyIndex}_${seqIndex}`;
             const answers = qxIndices.map(generateQxAnswer);
-            updateHxAnswers(store, key, qxIndices, answers);
+            answerCommon.updateHxAnswers(store, key, qxIndices, answers);
             const input = {
                 surveyId: store.surveyIds[surveyIndex],
                 answers
