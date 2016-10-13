@@ -1,12 +1,5 @@
 'use strict';
 
-const _ = require('lodash');
-
-const jsutil = require('../../lib/jsutil');
-const Generator = require('./entity-generator');
-
-const entityGen = new Generator();
-
 exports.testQuestions = [{
     survey: [0, 1, 2, 3, 4],
     answerSequences: [
@@ -58,53 +51,3 @@ exports.testQuestions = [{
         ]
     ]
 }];
-
-exports.generateQxAnswer = function (hxQuestions, questionIndex) {
-    if (questionIndex < 0) {
-        const question = hxQuestions.server(-questionIndex);
-        return {
-            questionId: question.id
-        };
-    } else {
-        const question = hxQuestions.server(questionIndex);
-        return entityGen.answerQuestion(question);
-    }
-};
-
-exports.updateHxAnswers = function (hxAnswers, key, qxIndices, answers) {
-    const hx = hxAnswers[key] || (hxAnswers[key] = []);
-    const qxAnswers = answers.reduce((r, answer, index) => {
-        const qxIndex = qxIndices[index];
-        if (qxIndex >= 0) {
-            r[qxIndex] = answer;
-        }
-        return r;
-    }, {});
-    hx.push({ qxIndices, qxAnswers });
-};
-
-exports.pullExpectedAnswers = function (hxAnswers, key) {
-    const answersSpec = hxAnswers[key];
-    const standing = jsutil.findStanding(_.map(answersSpec, 'qxIndices'));
-    return standing.reduce((r, answerIndices, index) => {
-        answerIndices.forEach((answerIndex) => {
-            const answer = answersSpec[index].qxAnswers[answerIndex];
-            r.push(answer);
-        });
-        return r;
-    }, []);
-};
-
-exports.prepareClientAnswers = function (clientAnswers) {
-    const result = _.cloneDeep(clientAnswers);
-    result.forEach(({ answer }) => {
-        if (answer.choices) {
-            answer.choices.forEach((choice) => {
-                if (!(choice.hasOwnProperty('textValue') || choice.hasOwnProperty('boolValue'))) {
-                    choice.boolValue = true;
-                }
-            });
-        }
-    });
-    return result;
-};

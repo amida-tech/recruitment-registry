@@ -6,20 +6,19 @@ const _ = require('lodash');
 
 const models = require('../models');
 const SharedSpec = require('./util/shared-spec');
-const History = require('./util/entity-history');
-const jsutil = require('../lib/jsutil');
+const AnswerHistory = require('./util/answer-history');
 const answerCommon = require('./util/answer-common');
 
 const expect = chai.expect;
 const shared = new SharedSpec();
 
 describe('answer unit', function () {
-    const hxAnswers = {};
-    const hxUser = new History();
-    const hxQuestion = new History();
-    const hxSurvey = new History();
+    const testQuestions = answerCommon.testQuestions;
+    const hxAnswer = new AnswerHistory(testQuestions);
 
-    const generateQxAnswer = _.partial(answerCommon.generateQxAnswer, hxQuestion);
+    const hxUser = hxAnswer.hxUser;
+    const hxQuestion = hxAnswer.hxQuestion;
+    const hxSurvey = hxAnswer.hxSurvey;
 
     before(shared.setUpFn());
 
@@ -31,18 +30,13 @@ describe('answer unit', function () {
         it(`create question ${i}`, shared.createQuestion(hxQuestion));
     }
 
-    const testQuestions = answerCommon.testQuestions;
-
     _.map(testQuestions, 'survey').forEach((surveyQuestion, index) => {
         return it(`create survey ${index}`, shared.createSurvey(hxSurvey, hxQuestion, surveyQuestion));
     });
 
     const createTestFn = function (userIndex, surveyIndex, seqIndex, stepIndex) {
         return function () {
-            const qxIndices = testQuestions[surveyIndex].answerSequences[seqIndex][stepIndex];
-            const key = `${userIndex}_${surveyIndex}_${seqIndex}`;
-            const answers = qxIndices.map(generateQxAnswer);
-            answerCommon.updateHxAnswers(hxAnswers, key, qxIndices, answers);
+            const answers = hxAnswer.generateAnswers(userIndex, surveyIndex, seqIndex, stepIndex);
             const input = {
                 userId: hxUser.id(userIndex),
                 surveyId: hxSurvey.id(surveyIndex),
@@ -55,8 +49,7 @@ describe('answer unit', function () {
                             surveyId: hxSurvey.id(surveyIndex)
                         })
                         .then(function (result) {
-                            const modifiedAnswers = answerCommon.prepareClientAnswers(answers);
-                            const expected = _.sortBy(modifiedAnswers, 'questionId');
+                            const expected = hxAnswer.expectedAnswers(userIndex, surveyIndex, seqIndex);
                             const actual = _.sortBy(result, 'questionId');
                             expect(actual).to.deep.equal(expected);
                         });
@@ -64,32 +57,9 @@ describe('answer unit', function () {
         };
     };
 
-    const pullExpectedAnswers = answerCommon.pullExpectedAnswers;
-
-    const pullExpectedRemovedAnswers = function (key) {
-        const answersSpec = hxAnswers[key];
-        const removed = jsutil.findRemoved(_.map(answersSpec, 'qxIndices'));
-        const result = removed.reduce((r, answerIndices, index) => {
-            answerIndices.forEach((answerIndex) => {
-                if (answerIndex.removed.length) {
-                    const timeIndex = answerIndex.timeIndex;
-                    const arr = r[timeIndex] || (r[timeIndex] = []);
-                    const answers = answerIndex.removed.map(r => answersSpec[index].qxAnswers[r]);
-                    arr.push(...answers);
-                    arr.sort((a, b) => a.questionId - b.questionId);
-                }
-            });
-            return r;
-        }, {});
-        return result;
-    };
-
     const updateTestFn = function (userIndex, surveyIndex, seqIndex, stepIndex) {
         return function () {
-            const qxIndices = testQuestions[surveyIndex].answerSequences[seqIndex][stepIndex];
-            const key = `${userIndex}_${surveyIndex}_${seqIndex}`;
-            const answers = qxIndices.map(generateQxAnswer);
-            answerCommon.updateHxAnswers(hxAnswers, key, qxIndices, answers);
+            const answers = hxAnswer.generateAnswers(userIndex, surveyIndex, seqIndex, stepIndex);
             const input = {
                 userId: hxUser.id(userIndex),
                 surveyId: hxSurvey.id(surveyIndex),
@@ -102,9 +72,7 @@ describe('answer unit', function () {
                             surveyId: hxSurvey.id(surveyIndex)
                         })
                         .then(function (result) {
-                            const expectedAnswers = pullExpectedAnswers(hxAnswers, key);
-                            const modifiedAnswers = answerCommon.prepareClientAnswers(expectedAnswers);
-                            const expected = _.sortBy(modifiedAnswers, 'questionId');
+                            const expected = hxAnswer.expectedAnswers(userIndex, surveyIndex, seqIndex);
                             const actual = _.sortBy(result, 'questionId');
                             expect(actual).to.deep.equal(expected);
                         })
@@ -113,7 +81,7 @@ describe('answer unit', function () {
                             surveyId: hxSurvey.id(surveyIndex)
                         }))
                         .then((actual) => {
-                            const expectedAnswers = pullExpectedRemovedAnswers(key);
+                            const expectedAnswers = hxAnswer.expectedRemovedAnswers(userIndex, surveyIndex, seqIndex);
                             const keys = Object.keys(expectedAnswers).sort();
                             const expected = {};
                             keys.forEach(key => {
@@ -126,7 +94,7 @@ describe('answer unit', function () {
                             const actualKeys = _.sortBy(Object.keys(actual), r => Number(r));
                             expect(actualKeys.length).to.equal(expectedKeys.length);
                             for (let i = 0; i < expectedKeys.length; ++i) {
-                                const modifiedAnswers = answerCommon.prepareClientAnswers(expectedAnswers[expectedKeys[i]]);
+                                const modifiedAnswers = AnswerHistory.prepareClientAnswers(expectedAnswers[expectedKeys[i]]);
                                 expect(actual[actualKeys[i]]).to.deep.equal(modifiedAnswers);
                             }
                         });
