@@ -59,20 +59,20 @@ exports.testQuestions = [{
     ]
 }];
 
-exports.generateQxAnswer = function (store, questionIndex) {
+exports.generateQxAnswer = function (hxQuestions, questionIndex) {
     if (questionIndex < 0) {
-        const question = store.questions[-questionIndex];
+        const question = hxQuestions.server(-questionIndex);
         return {
             questionId: question.id
         };
     } else {
-        const question = store.questions[questionIndex];
+        const question = hxQuestions.server(questionIndex);
         return entityGen.answerQuestion(question);
     }
 };
 
-exports.updateHxAnswers = function (store, key, qxIndices, answers) {
-    const hx = store.hxAnswers[key] || (store.hxAnswers[key] = []);
+exports.updateHxAnswers = function (hxAnswers, key, qxIndices, answers) {
+    const hx = hxAnswers[key] || (hxAnswers[key] = []);
     const qxAnswers = answers.reduce((r, answer, index) => {
         const qxIndex = qxIndices[index];
         if (qxIndex >= 0) {
@@ -83,8 +83,8 @@ exports.updateHxAnswers = function (store, key, qxIndices, answers) {
     hx.push({ qxIndices, qxAnswers });
 };
 
-exports.pullExpectedAnswers = function (store, key) {
-    const answersSpec = store.hxAnswers[key];
+exports.pullExpectedAnswers = function (hxAnswers, key) {
+    const answersSpec = hxAnswers[key];
     const standing = jsutil.findStanding(_.map(answersSpec, 'qxIndices'));
     return standing.reduce((r, answerIndices, index) => {
         answerIndices.forEach((answerIndex) => {

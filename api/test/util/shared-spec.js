@@ -34,7 +34,7 @@ class SharedSpec {
         };
     }
 
-    createQuestion(store) {
+    createQuestion(hxQuestion) {
         const generator = this.generator;
         return function () {
             const inputQx = generator.newQuestion();
@@ -67,22 +67,22 @@ class SharedSpec {
                     }
                 })
                 .then(function (qx) {
-                    store.questions.push(qx);
+                    hxQuestion.push(inputQx, qx);
                 });
         };
     }
 
-    createSurvey(store, qxIndices) {
+    createSurvey(hxSurvey, hxQuestion, qxIndices) {
         const generator = this.generator;
         return function () {
             const inputSurvey = generator.newSurvey();
             inputSurvey.questions = qxIndices.map(index => ({
-                id: store.questions[index].id,
+                id: hxQuestion.server(index).id,
                 required: false
             }));
             return models.Survey.createSurvey(inputSurvey)
                 .then(id => {
-                    store.surveys.push(id);
+                    hxSurvey.push(inputSurvey, { id });
                 });
         };
     }

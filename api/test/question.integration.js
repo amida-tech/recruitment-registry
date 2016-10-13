@@ -109,26 +109,8 @@ describe('question integration', function () {
     const hxQuestions = new History();
     const hxSurveys = new History();
 
-    const createQxFn = function () {
-        return function (done) {
-            const clientQuestion = generator.newQuestion();
-            store.server
-                .post('/api/v1.0/questions')
-                .set('Authorization', store.auth)
-                .send(clientQuestion)
-                .expect(201)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    hxQuestions.push(clientQuestion, res.body);
-                    done();
-                });
-        };
-    };
-
     for (let i = 0; i < 10; ++i) {
-        it(`create question ${i}`, createQxFn());
+        it(`create question ${i}`, shared.createQxFn(store, hxQuestions));
     }
 
     const getAndVerifyQxFn = function (index) {
@@ -246,7 +228,7 @@ describe('question integration', function () {
     it('get all and verify', getAllAndVerify);
 
     for (let i = 10; i < 20; ++i) {
-        it(`create question ${i}`, createQxFn());
+        it(`create question ${i}`, shared.createQxFn(store, hxQuestions));
         it(`get and verify question ${i}`, getAndVerifyQxFn(i));
         it(`update question ${i} text`, updateQxFn(i));
         it(`verify updated question ${i}`, verifyUpdatedQxFn(i));

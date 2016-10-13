@@ -14,16 +14,12 @@ const expect = chai.expect;
 const shared = new SharedSpec();
 
 describe('answer unit', function () {
-    const store = {
-        questions: [],
-        qxChoices: [],
-        surveys: [],
-        hxAnswers: {}
-    };
-
+    const hxAnswers = {};
     const hxUser = new History();
+    const hxQuestion = new History();
+    const hxSurvey = new History();
 
-    const generateQxAnswer = _.partial(answerCommon.generateQxAnswer, store);
+    const generateQxAnswer = _.partial(answerCommon.generateQxAnswer, hxQuestion);
 
     before(shared.setUpFn());
 
@@ -32,13 +28,13 @@ describe('answer unit', function () {
     }
 
     for (let i = 0; i < 20; ++i) {
-        it(`create question ${i}`, shared.createQuestion(store));
+        it(`create question ${i}`, shared.createQuestion(hxQuestion));
     }
 
     const testQuestions = answerCommon.testQuestions;
 
     _.map(testQuestions, 'survey').forEach((surveyQuestion, index) => {
-        return it(`create survey ${index}`, shared.createSurvey(store, surveyQuestion));
+        return it(`create survey ${index}`, shared.createSurvey(hxSurvey, hxQuestion, surveyQuestion));
     });
 
     const createTestFn = function (userIndex, surveyIndex, seqIndex, stepIndex) {
@@ -46,17 +42,17 @@ describe('answer unit', function () {
             const qxIndices = testQuestions[surveyIndex].answerSequences[seqIndex][stepIndex];
             const key = `${userIndex}_${surveyIndex}_${seqIndex}`;
             const answers = qxIndices.map(generateQxAnswer);
-            answerCommon.updateHxAnswers(store, key, qxIndices, answers);
+            answerCommon.updateHxAnswers(hxAnswers, key, qxIndices, answers);
             const input = {
                 userId: hxUser.id(userIndex),
-                surveyId: store.surveys[surveyIndex],
+                surveyId: hxSurvey.id(surveyIndex),
                 answers
             };
             return models.Answer.createAnswers(input)
                 .then(function () {
                     return models.Answer.getAnswers({
                             userId: hxUser.id(userIndex),
-                            surveyId: store.surveys[surveyIndex]
+                            surveyId: hxSurvey.id(surveyIndex)
                         })
                         .then(function (result) {
                             const modifiedAnswers = answerCommon.prepareClientAnswers(answers);
@@ -71,7 +67,7 @@ describe('answer unit', function () {
     const pullExpectedAnswers = answerCommon.pullExpectedAnswers;
 
     const pullExpectedRemovedAnswers = function (key) {
-        const answersSpec = store.hxAnswers[key];
+        const answersSpec = hxAnswers[key];
         const removed = jsutil.findRemoved(_.map(answersSpec, 'qxIndices'));
         const result = removed.reduce((r, answerIndices, index) => {
             answerIndices.forEach((answerIndex) => {
@@ -93,20 +89,20 @@ describe('answer unit', function () {
             const qxIndices = testQuestions[surveyIndex].answerSequences[seqIndex][stepIndex];
             const key = `${userIndex}_${surveyIndex}_${seqIndex}`;
             const answers = qxIndices.map(generateQxAnswer);
-            answerCommon.updateHxAnswers(store, key, qxIndices, answers);
+            answerCommon.updateHxAnswers(hxAnswers, key, qxIndices, answers);
             const input = {
                 userId: hxUser.id(userIndex),
-                surveyId: store.surveys[surveyIndex],
+                surveyId: hxSurvey.id(surveyIndex),
                 answers
             };
             return models.Answer.createAnswers(input)
                 .then(function () {
                     return models.Answer.getAnswers({
                             userId: hxUser.id(userIndex),
-                            surveyId: store.surveys[surveyIndex]
+                            surveyId: hxSurvey.id(surveyIndex)
                         })
                         .then(function (result) {
-                            const expectedAnswers = pullExpectedAnswers(store, key);
+                            const expectedAnswers = pullExpectedAnswers(hxAnswers, key);
                             const modifiedAnswers = answerCommon.prepareClientAnswers(expectedAnswers);
                             const expected = _.sortBy(modifiedAnswers, 'questionId');
                             const actual = _.sortBy(result, 'questionId');
@@ -114,7 +110,7 @@ describe('answer unit', function () {
                         })
                         .then(() => models.Answer.getOldAnswers({
                             userId: hxUser.id(userIndex),
-                            surveyId: store.surveys[surveyIndex]
+                            surveyId: hxSurvey.id(surveyIndex)
                         }))
                         .then((actual) => {
                             const expectedAnswers = pullExpectedRemovedAnswers(key);

@@ -82,28 +82,28 @@ class SharedIntegration {
         };
     }
 
-    createQxFn(store) {
+    createQxFn(store, hxQuestions) {
         const generator = this.generator;
         return function (done) {
-            const inputQx = generator.newQuestion();
+            const clientQuestion = generator.newQuestion();
             store.server
                 .post('/api/v1.0/questions')
                 .set('Authorization', store.auth)
-                .send(inputQx)
+                .send(clientQuestion)
                 .expect(201)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
                     }
-                    store.questionIds.push(res.body.id);
+                    hxQuestions.push(clientQuestion, res.body);
                     done();
                 });
         };
     }
 
-    fillQxFn(store) {
+    fillQxFn(store, hxQuestions) {
         return function (done) {
-            const id = store.questionIds[store.questionIds.length - 1];
+            const id = hxQuestions.lastId();
             store.server
                 .get(`/api/v1.0/questions/${id}`)
                 .set('Authorization', store.auth)
@@ -121,7 +121,7 @@ class SharedIntegration {
                             question.choices = _.map(choices, choice => ({ id: choice.id, type: choice.type }));
                         }
                     }
-                    store.questions.push(question);
+                    hxQuestions.reloadServer(question);
                     done();
                 });
         };
@@ -141,12 +141,12 @@ class SharedIntegration {
         };
     }
 
-    createSurveyFn(store, qxIndices) {
+    createSurveyFn(store, hxSurvey, hxQuestion, qxIndices) {
         const generator = this.generator;
         return function (done) {
             const inputSurvey = generator.newSurvey();
             inputSurvey.questions = qxIndices.map(index => ({
-                id: store.questionIds[index],
+                id: hxQuestion.server(index).id,
                 required: false
             }));
             store.server
@@ -158,7 +158,7 @@ class SharedIntegration {
                     if (err) {
                         return done(err);
                     }
-                    store.surveyIds.push(res.body.id);
+                    hxSurvey.push(inputSurvey, res.body);
                     done();
                 });
         };

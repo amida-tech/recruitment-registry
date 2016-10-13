@@ -19,17 +19,16 @@ describe('answer integration', function () {
     const shared = new SharedIntegration(generator);
 
     const store = {
-        questions: [],
-        questionIds: [],
-        qxChoices: [],
-        surveys: [],
-        surveyIds: [],
-        hxAnswers: {}
+        server: null,
+        auth: null
     };
 
     const hxUser = new History();
+    const hxQuestion = new History();
+    const hxSurvey = new History();
+    const hxAnswers = {};
 
-    const generateQxAnswer = _.partial(answerCommon.generateQxAnswer, store);
+    const generateQxAnswer = _.partial(answerCommon.generateQxAnswer, hxQuestion);
 
     before(shared.setUpFn(store));
 
@@ -41,14 +40,14 @@ describe('answer integration', function () {
     }
 
     for (let i = 0; i < 20; ++i) {
-        it(`create question ${i}`, shared.createQxFn(store));
-        it(`fill choices ids in question ${i}`, shared.fillQxFn(store));
+        it(`create question ${i}`, shared.createQxFn(store, hxQuestion));
+        it(`fill choices ids in question ${i}`, shared.fillQxFn(store, hxQuestion));
     }
 
     const testQuestions = answerCommon.testQuestions;
 
     _.map(testQuestions, 'survey').forEach((surveyQuestion, index) => {
-        return it(`create survey ${index}`, shared.createSurveyFn(store, surveyQuestion));
+        return it(`create survey ${index}`, shared.createSurveyFn(store, hxSurvey, hxQuestion, surveyQuestion));
     });
 
     it('logout as super', shared.logoutFn(store));
@@ -67,9 +66,9 @@ describe('answer integration', function () {
             const qxIndices = testQuestions[surveyIndex].answerSequences[seqIndex][stepIndex];
             const key = `${userIndex}_${surveyIndex}_${seqIndex}`;
             const answers = qxIndices.map(generateQxAnswer);
-            answerCommon.updateHxAnswers(store, key, qxIndices, answers);
+            answerCommon.updateHxAnswers(hxAnswers, key, qxIndices, answers);
             const input = {
-                surveyId: store.surveyIds[surveyIndex],
+                surveyId: hxSurvey.id(surveyIndex),
                 answers
             };
             store.server
@@ -85,7 +84,7 @@ describe('answer integration', function () {
     const getAndVerifyFn = function (userIndex, surveyIndex, seqIndex) {
         return function (done) {
             const key = `${userIndex}_${surveyIndex}_${seqIndex}`;
-            const surveyId = store.surveyIds[surveyIndex];
+            const surveyId = hxSurvey.id(surveyIndex);
             store.server
                 .get('/api/v1.0/answers')
                 .query({ surveyId })
@@ -95,7 +94,7 @@ describe('answer integration', function () {
                     if (err) {
                         return done(err);
                     }
-                    const preExpected = _.sortBy(pullExpectedAnswers(store, key), 'questionId');
+                    const preExpected = _.sortBy(pullExpectedAnswers(hxAnswers, key), 'questionId');
                     const expected = answerCommon.prepareClientAnswers(preExpected);
                     const actual = _.sortBy(res.body, 'questionId');
                     expect(actual).to.deep.equal(expected);

@@ -48,6 +48,10 @@ class History {
         return this.history[index].id;
     }
 
+    lastId() {
+        return this.history[this.history.length - 1].id;
+    }
+
     client(index) {
         const currentIndex = this.currentIndex[index];
         return this.clients[currentIndex];
