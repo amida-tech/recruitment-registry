@@ -154,6 +154,7 @@ class Generator {
         this.consentDocumentIndex = -1;
         this.consentTypeAdded = {};
         this.consentIndex = -1;
+        this.languageIndex = -1;
     }
 
     newUser(override) {
@@ -242,6 +243,19 @@ class Generator {
         };
         Object.assign(result, override);
         return result;
+    }
+
+    nextLanguage() {
+        const index = ++this.languageIndex;
+        const i4 = index % 4;
+        switch (i4) {
+        case 2:
+            return 'sp';
+        case 3:
+            return 'en';
+        default:
+            return null;
+        }
     }
 }
 

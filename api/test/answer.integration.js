@@ -61,14 +61,19 @@ describe('answer integration', function () {
 
     const postAnswersFn = function (userIndex, surveyIndex, seqIndex, stepIndex) {
         return function (done) {
-            const answers = hxAnswer.generateAnswers(userIndex, surveyIndex, seqIndex, stepIndex);
+            const { answers, language } = hxAnswer.generateAnswers(userIndex, surveyIndex, seqIndex, stepIndex);
             const input = {
                 surveyId: hxSurvey.id(surveyIndex),
                 answers
             };
+            const query = {};
+            if (language) {
+                query.language = language;
+            }
             store.server
                 .post('/api/v1.0/answers')
                 .set('Authorization', store.auth)
+                .query(query)
                 .send(input)
                 .expect(201, done);
         };

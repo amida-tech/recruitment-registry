@@ -424,11 +424,18 @@
                 "parameters": [{
                     "name": "surveyAnswers",
                     "in": "body",
-                    "description": "Array of answers",
+                    "description": "Answers to the survey",
                     "required": true,
                     "schema": {
                         "$ref": "#/definitions/surveyAnswers"
                     }
+                }, {
+                    "name": "language",
+                    "in": "query",
+                    "description": "Language code",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 1
                 }],
                 "responses": {
                     "201": {

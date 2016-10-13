@@ -28,12 +28,14 @@ class AnswerHistory {
         }
     }
 
-    _updateHxAnswers(key, qxIndices, answers) {
+    _updateHxAnswers(key, qxIndices, answers, language) {
         const hx = this.hxAnswers[key] || (this.hxAnswers[key] = []);
         const qxAnswers = answers.reduce((r, answer, index) => {
             const qxIndex = qxIndices[index];
             if (qxIndex >= 0) {
-                r[qxIndex] = answer;
+                const result = _.cloneDeep(answer);
+                result.language = language || 'en';
+                r[qxIndex] = result;
             }
             return r;
         }, {});
@@ -74,8 +76,9 @@ class AnswerHistory {
         const key = this._key(userIndex, surveyIndex, seqIndex);
         const qxIndices = this.testQuestions[surveyIndex].answerSequences[seqIndex][stepIndex];
         const answers = qxIndices.map(qxIndex => this._generateQxAnswer(qxIndex));
-        this._updateHxAnswers(key, qxIndices, answers);
-        return answers;
+        const language = this.generator.nextLanguage();
+        this._updateHxAnswers(key, qxIndices, answers, language);
+        return { answers, language };
     }
 
     expectedAnswers(userIndex, surveyIndex, seqIndex) {

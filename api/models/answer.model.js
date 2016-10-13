@@ -94,6 +94,15 @@ module.exports = function (sequelize, DataTypes) {
                 key: 'id'
             }
         },
+        language: {
+            type: DataTypes.TEXT,
+            allowNull: false,
+            field: 'language_code',
+            reference: {
+                model: 'language',
+                key: 'code'
+            }
+        },
         questionId: {
             type: DataTypes.INTEGER,
             allowNull: false,
@@ -137,13 +146,14 @@ module.exports = function (sequelize, DataTypes) {
         deletedAt: 'deletedAt',
         paranoid: true,
         classMethods: {
-            auxCreateAnswersTx: function ({ userId, surveyId, answers }, tx) {
+            auxCreateAnswersTx: function ({ userId, surveyId, language, answers }, tx) {
                 // TO DO: Put an assertion here to check the answers match with question type
                 answers = answers.reduce((r, q) => {
                     const questionId = q.questionId;
                     const values = uiToDbAnswer(q.answer).map(value => ({
                         userId,
                         surveyId,
+                        language,
                         questionId,
                         questionChoiceId: value.questionChoiceId || null,
                         value: value.hasOwnProperty('value') ? value.value : null,
@@ -157,7 +167,7 @@ module.exports = function (sequelize, DataTypes) {
                     return Answer.create(answer, { transaction: tx });
                 }));
             },
-            createAnswersTx: function ({ userId, surveyId, answers }, tx) {
+            createAnswersTx: function ({ userId, surveyId, language = 'en', answers }, tx) {
                 const ids = _.map(answers, 'questionId');
                 return sequelize.models.survey_question.findAll({
                         where: { surveyId },
@@ -198,7 +208,7 @@ module.exports = function (sequelize, DataTypes) {
                     .then(() => {
                         answers = _.filter(answers, answer => answer.answer);
                         if (answers.length) {
-                            return Answer.auxCreateAnswersTx({ userId, surveyId, answers }, tx);
+                            return Answer.auxCreateAnswersTx({ userId, surveyId, language, answers }, tx);
                         }
                     });
             },
@@ -215,7 +225,7 @@ module.exports = function (sequelize, DataTypes) {
                     })
                     .then(missingConsentDocumentHandler(sequelize))
                     .then(() => {
-                        return sequelize.query('select a.question_choice_id as "questionChoiceId", a.value as value, a.answer_type_id as type, q.type as qtype, q.id as qid from answer a, question q where a.deleted_at is null and a.user_id = :userid and a.survey_id = :surveyid and a.question_id = q.id', {
+                        return sequelize.query('select a.question_choice_id as "questionChoiceId", a.language_code as language, a.value as value, a.answer_type_id as type, q.type as qtype, q.id as qid from answer a, question q where a.deleted_at is null and a.user_id = :userid and a.survey_id = :surveyid and a.question_id = q.id', {
                                 replacements: {
                                     userid: { userId, surveyId }.userId,
                                     surveyid: { userId, surveyId }.surveyId
@@ -228,6 +238,7 @@ module.exports = function (sequelize, DataTypes) {
                                     const v = groupedResult[key];
                                     const r = {
                                         questionId: v[0].qid,
+                                        language: v[0].language,
                                         answer: generateAnswer[v[0].qtype](v)
                                     };
                                     return r;
@@ -242,6 +253,7 @@ module.exports = function (sequelize, DataTypes) {
                         raw: true,
                         order: 'deleted_at',
                         attributes: [
+                            'language',
                             'questionChoiceId',
                             'value',
                             'type',
@@ -266,6 +278,7 @@ module.exports = function (sequelize, DataTypes) {
                                         const qxGroup = qxGrouped[qid];
                                         return {
                                             questionId: parseInt(qid),
+                                            language: qxGroup[0].language,
                                             answer: generateAnswer[qxMap[qid].type](qxGroup)
                                         };
                                     });

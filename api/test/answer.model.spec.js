@@ -36,12 +36,15 @@ describe('answer unit', function () {
 
     const createTestFn = function (userIndex, surveyIndex, seqIndex, stepIndex) {
         return function () {
-            const answers = hxAnswer.generateAnswers(userIndex, surveyIndex, seqIndex, stepIndex);
+            const { answers, language } = hxAnswer.generateAnswers(userIndex, surveyIndex, seqIndex, stepIndex);
             const input = {
                 userId: hxUser.id(userIndex),
                 surveyId: hxSurvey.id(surveyIndex),
                 answers
             };
+            if (language) {
+                input.language = language;
+            }
             return models.Answer.createAnswers(input)
                 .then(function () {
                     return models.Answer.getAnswers({
@@ -59,12 +62,15 @@ describe('answer unit', function () {
 
     const updateTestFn = function (userIndex, surveyIndex, seqIndex, stepIndex) {
         return function () {
-            const answers = hxAnswer.generateAnswers(userIndex, surveyIndex, seqIndex, stepIndex);
+            const { answers, language } = hxAnswer.generateAnswers(userIndex, surveyIndex, seqIndex, stepIndex);
             const input = {
                 userId: hxUser.id(userIndex),
                 surveyId: hxSurvey.id(surveyIndex),
                 answers
             };
+            if (language) {
+                input.language = language;
+            }
             return models.Answer.createAnswers(input)
                 .then(function () {
                     return models.Answer.getAnswers({
