@@ -34,13 +34,10 @@ class Nav extends Component {
     return (
       <nav className="navbar navbar-full navbar-dark bg-inverse">
         <a className="navbar-brand" href="/">{ title }</a>
-        <div className="nav navbar-nav">{nav}</div>
-        <div>
-          <div>
-            { loggedIn ? (<button type="button" className="pull-right nav-item nav-link btn btn-primary" onClick={::this._logout}>{this.props.vocab.get('LOGOUT')}</button>
-          ) : ""}
-            <button type="button" className="pull-right nav-item nav-link btn btn-primary" onClick={::this._changeLanguage}>{this.props.vocab.get('LANGUAGE')}</button>
-          </div>
+        <div className="nav navbar-nav">{nav}
+          { loggedIn ? (<a className="nav-item nav-link m-l-1" onClick={::this._logout}>{this.props.vocab.get('LOGOUT')}</a>
+        ) : ""}
+          <a className="nav-item nav-link" onClick={::this._changeLanguage}>{this.props.vocab.get('LANGUAGE')}</a>
         </div>
       </nav>
     );
