@@ -22,9 +22,9 @@ class Nav extends Component {
         var path = r.path;
         if (r.path.indexOf('survey-builder') > -1) { path = '/survey-builder' }
         if (r.isSuper && role !== 'admin') {
-          return <div key={r.path}></div>
+          return <div className="nav-item invisible" key={r.path}></div>
           }
-        return <Link className="nav-item nav-link" key={r.path} to={path}>{r.title}</Link>
+        return <Link className={"nav-item nav-link"}  key={r.path} to={path}>{r.title}</Link>
       })
     } else {
       var routesNewUsers = routes.filter(r => !r.requiresAuth || r.newUsers)
