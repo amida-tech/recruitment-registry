@@ -1286,6 +1286,120 @@
                     }
                 }
             }
+        },
+        "/languages": {
+            "x-swagger-router-controller": "language.controller",
+            "post": {
+                "summary": "Creates a ew language",
+                "operationId": "createLanguage",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "language",
+                    "in": "body",
+                    "description": "New language object",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/language"
+                    }
+                }],
+                "responses": {
+                    "201": {
+                        "$ref": "#/responses/emptySuccess"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "get": {
+                "summary": "Gets all languages",
+                "operationId": "listLanguages",
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/language"
+                            }
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/languages/{code}": {
+            "x-swagger-router-controller": "language.controller",
+            "parameters": [{
+                "name": "code",
+                "in": "path",
+                "required": true,
+                "type": "string"
+            }],
+            "get": {
+                "summary": "Gets the language",
+                "operationId": "getLanguage",
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/language"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "patch": {
+                "summary": "Paths the language",
+                "operationId": "patchLanguage",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "languageUpdate",
+                    "in": "body",
+                    "description": "Language fields to be updated",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/languageUpdate"
+                    }
+                }],
+                "responses": {
+                    "200": {
+                        "$ref": "#/responses/emptySuccess"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Deletes the language",
+                "operationId": "deleteLanguage",
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "204": {
+                        "$ref": "#/responses/emptySuccess"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
         }
     },
     "securityDefinitions": {
@@ -1938,6 +2052,39 @@
                 }
             },
             "additionalProperties": false
-        }
+        },
+        "language": {
+            "type": "object",
+            "required": ["code", "name", "nativeName"],
+            "properties": {
+                "code": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "nativeName": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "languageUpdate": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "nativeName": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "additionalProperties": false
+       }
     }
 }
