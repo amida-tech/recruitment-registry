@@ -14,7 +14,7 @@ module.exports = function (sequelize, tableName, parentIdField) {
                     const record = _.cloneDeep(input);
                     record.language = language;
                     return Table.create(record, { transaction: tx })
-                        .then(() => {});
+                        .then(() => input[parentIdField]);
                 });
         },
         createText(input) {
