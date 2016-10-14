@@ -42,7 +42,7 @@ module.exports = function (sequelize, DataTypes) {
                     .then(({ id }) => {
                         const QuestionChoiceText = sequelize.models.question_choice_text;
                         const input = { questionChoiceId: id, text: choice.text };
-                        return QuestionChoiceText.createQuestionChoiceTextTx(input, tx)
+                        return QuestionChoiceText.createTextTx(input, tx)
                             .then(() => ({ id }));
                     });
             },
@@ -55,12 +55,11 @@ module.exports = function (sequelize, DataTypes) {
                     .then(choices => {
                         const ids = _.map(choices, 'id');
                         const QuestionChoiceText = sequelize.models.question_choice_text;
-                        return QuestionChoiceText.getAllQuestionChoiceTexts(ids)
-                            .then(records => {
-                                const map = _.keyBy(records, 'questionChoiceId');
+                        return QuestionChoiceText.getAllTexts(ids)
+                            .then(map => {
                                 choices.forEach(choice => {
                                     const r = map[choice.id];
-                                    choice.text = (r && r.text) || '';
+                                    choice.text = r.text;
                                 });
                                 return choices;
                             });
@@ -79,12 +78,11 @@ module.exports = function (sequelize, DataTypes) {
                     .then(choices => {
                         const ids = _.map(choices, 'id');
                         const QuestionChoiceText = sequelize.models.question_choice_text;
-                        return QuestionChoiceText.getAllQuestionChoiceTexts(ids)
-                            .then(records => {
-                                const map = _.keyBy(records, 'questionChoiceId');
+                        return QuestionChoiceText.getAllTexts(ids)
+                            .then(map => {
                                 choices.forEach(choice => {
                                     const r = map[choice.id];
-                                    choice.text = (r && r.text) || '';
+                                    choice.text = r.text;
                                 });
                                 return choices;
                             });
