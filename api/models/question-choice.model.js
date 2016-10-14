@@ -1,8 +1,10 @@
 'use strict';
 
-const _ = require('lodash');
+const textTableMethods = require('./text-table-methods');
 
 module.exports = function (sequelize, DataTypes) {
+    const textHandler = textTableMethods(sequelize, 'question_choice_text', 'questionChoiceId');
+
     const QuestionChoice = sequelize.define('question_choice', {
         questionId: {
             type: DataTypes.INTEGER,
@@ -40,9 +42,8 @@ module.exports = function (sequelize, DataTypes) {
             createQuestionChoiceTx(choice, tx) {
                 return QuestionChoice.create(choice, { transaction: tx })
                     .then(({ id }) => {
-                        const QuestionChoiceText = sequelize.models.question_choice_text;
                         const input = { questionChoiceId: id, text: choice.text };
-                        return QuestionChoiceText.createTextTx(input, tx)
+                        return textHandler.createTextTx(input, tx)
                             .then(() => ({ id }));
                     });
             },
@@ -52,18 +53,7 @@ module.exports = function (sequelize, DataTypes) {
                         where: { questionId },
                         attributes: ['id', 'type']
                     })
-                    .then(choices => {
-                        const ids = _.map(choices, 'id');
-                        const QuestionChoiceText = sequelize.models.question_choice_text;
-                        return QuestionChoiceText.getAllTexts(ids)
-                            .then(map => {
-                                choices.forEach(choice => {
-                                    const r = map[choice.id];
-                                    choice.text = r.text;
-                                });
-                                return choices;
-                            });
-                    });
+                    .then(choices => textHandler.updateAllTexts(choices));
             },
             getAllQuestionChoices(questionIds) {
                 const options = {
@@ -72,21 +62,10 @@ module.exports = function (sequelize, DataTypes) {
                     order: 'line'
                 };
                 if (questionIds) {
-                    options.where = { questionId: { in: questionIds } };
+                    options.where = { questionId: { $in: questionIds } };
                 }
                 return QuestionChoice.findAll(options)
-                    .then(choices => {
-                        const ids = _.map(choices, 'id');
-                        const QuestionChoiceText = sequelize.models.question_choice_text;
-                        return QuestionChoiceText.getAllTexts(ids)
-                            .then(map => {
-                                choices.forEach(choice => {
-                                    const r = map[choice.id];
-                                    choice.text = r.text;
-                                });
-                                return choices;
-                            });
-                    });
+                    .then(choices => textHandler.updateAllTexts(choices));
             }
         }
     });

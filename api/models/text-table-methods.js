@@ -18,9 +18,8 @@ module.exports = function (sequelize, tableName, parentIdField) {
                 });
         },
         createText(input) {
-            const Table = sequelize.models[tableName];
-            return sequelize.transaction(function (tx) {
-                return Table.createTextTx(input, tx);
+            return sequelize.transaction(tx => {
+                return this.createTextTx(input, tx);
             });
         },
         getText(parentId, language = 'en') {
@@ -36,6 +35,13 @@ module.exports = function (sequelize, tableName, parentIdField) {
                     query.where.language = 'en';
                     return Table.findOne(query)
                         .then(result => result.text);
+                });
+        },
+        updateText(parent, language) {
+            return this.getText(parent.id, language)
+                .then(text => {
+                    parent.text = text;
+                    return parent;
                 });
         },
         getAllTexts(ids, language = 'en') {
@@ -65,6 +71,17 @@ module.exports = function (sequelize, tableName, parentIdField) {
                         }
                     });
                     return map;
+                });
+        },
+        updateAllTexts(parents, language) {
+            const ids = _.map(parents, 'id');
+            return this.getAllTexts(ids, language)
+                .then(map => {
+                    parents.forEach(parent => {
+                        const r = map[parent.id];
+                        parent.text = r.text;
+                    });
+                    return parents;
                 });
         }
     };

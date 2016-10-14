@@ -3,8 +3,11 @@
 const _ = require('lodash');
 
 const RRError = require('../lib/rr-error');
+const textTableMethods = require('./text-table-methods');
 
 module.exports = function (sequelize, DataTypes) {
+    const textHandler = textTableMethods(sequelize, 'question_text', 'questionId');
+
     const Question = sequelize.define('question', {
         type: {
             type: DataTypes.TEXT,
@@ -63,7 +66,7 @@ module.exports = function (sequelize, DataTypes) {
                     .then(created => {
                         const text = question.text;
                         const questionId = created.id;
-                        return sequelize.models.question_text.createTextTx({ text, questionId }, tx)
+                        return textHandler.createTextTx({ text, questionId }, tx)
                             .then(() => created);
                     })
                     .then(created => {
@@ -141,13 +144,7 @@ module.exports = function (sequelize, DataTypes) {
                         }
                         return question;
                     })
-                    .then(question => {
-                        return sequelize.models.question_text.getText(id, language)
-                            .then(text => {
-                                question.text = text || '';
-                                return question;
-                            });
-                    })
+                    .then(question => textHandler.updateText(question, language))
                     .then(question => {
                         return sequelize.models.question_action.findAll({
                                 where: { questionId: question.id },
@@ -185,7 +182,7 @@ module.exports = function (sequelize, DataTypes) {
                     });
             },
             updateQuestion: function (id, { text }) {
-                return sequelize.models.question_text.createText({ questionId: id, text });
+                return textHandler.createText({ questionId: id, text });
             },
             deleteQuestion: function (id) {
                 return sequelize.models.survey_question.count({ where: { questionId: id } })
@@ -200,7 +197,15 @@ module.exports = function (sequelize, DataTypes) {
                         }
                     });
             },
-            getQuestionsCommon: function (options, ids, language) {
+            getQuestionsCommon: function (ids, language) {
+                const options = {
+                    raw: true,
+                    attributes: ['id', 'type'],
+                    order: 'id'
+                };
+                if (ids) {
+                    options.where = { id: { $in: ids } };
+                }
                 return Question.findAll(options)
                     .then(questions => {
                         if (!questions.length) {
@@ -213,9 +218,9 @@ module.exports = function (sequelize, DataTypes) {
                             attributes: ['questionId', 'text']
                         };
                         if (ids) {
-                            qtOptions.where = { questionId: { in: ids } };
+                            qtOptions.where = { questionId: { $in: ids } };
                         }
-                        return sequelize.models.question_text.getAllTexts(ids, language)
+                        return textHandler.getAllTexts(ids, language)
                             .then(map => {
                                 questions.forEach(question => {
                                     const r = map[question.id];
@@ -229,7 +234,7 @@ module.exports = function (sequelize, DataTypes) {
                                     order: 'line'
                                 };
                                 if (ids) {
-                                    options.where = { questionId: { in: ids } };
+                                    options.where = { questionId: { $in: ids } };
                                 }
                                 return sequelize.models.question_action.findAll(options)
                                     .then(actions => {
@@ -273,13 +278,7 @@ module.exports = function (sequelize, DataTypes) {
                     });
             },
             getQuestions: function (ids, language = 'en') {
-                const options = {
-                    where: { id: { in: ids } },
-                    raw: true,
-                    attributes: ['id', 'type'],
-                    order: 'id'
-                };
-                return Question.getQuestionsCommon(options, ids, language)
+                return Question.getQuestionsCommon(ids, language)
                     .then(({ questions, map }) => {
                         if (questions.length !== ids.length) {
                             return RRError.reject('qxNotFound');
@@ -289,12 +288,7 @@ module.exports = function (sequelize, DataTypes) {
                     .then(({ map }) => ids.map(id => map[id]));
             },
             getAllQuestions: function (language = 'en') {
-                const options = {
-                    raw: true,
-                    attributes: ['id', 'type'],
-                    order: 'id'
-                };
-                return Question.getQuestionsCommon(options, null, language)
+                return Question.getQuestionsCommon(null, language)
                     .then(({ questions }) => questions);
             }
         }

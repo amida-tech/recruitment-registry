@@ -45,7 +45,7 @@ module.exports = function (sequelize, DataTypes) {
                     order: 'id'
                 };
                 if (typeIds && typeIds.length) {
-                    query.where = { id: { in: typeIds } };
+                    query.where = { id: { $in: typeIds } };
                 }
                 if (tx) {
                     query.transaction = tx;
@@ -56,7 +56,7 @@ module.exports = function (sequelize, DataTypes) {
                             typeIds = _.map(docTypes, 'id');
                         }
                         const query = {
-                            where: { typeId: { in: typeIds } },
+                            where: { typeId: { $in: typeIds } },
                             raw: true,
                             attributes: ['id', 'typeId'],
                             order: 'id'
@@ -82,7 +82,7 @@ module.exports = function (sequelize, DataTypes) {
                 return ConsentDocument.findAll({
                         raw: true,
                         attributes: ['id', 'typeId', 'content', 'updateComment'],
-                        where: { typeId: { in: typeIds } }
+                        where: { typeId: { $in: typeIds } }
                     })
                     .then(documents => _.keyBy(documents, 'typeId'))
                     .then(documents => {
@@ -90,7 +90,7 @@ module.exports = function (sequelize, DataTypes) {
                         return ConsentType.findAll({
                                 raw: true,
                                 attributes: ['id', 'name', 'title', 'type'],
-                                where: { id: { in: typeIds } }
+                                where: { id: { $in: typeIds } }
                             })
                             .then(types => _.keyBy(types, 'id'))
                             .then(types => {

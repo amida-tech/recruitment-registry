@@ -1,7 +1,5 @@
 'use strict';
 
-const textTableMethodsFn = require('./text-table-methods');
-
 module.exports = function (sequelize, DataTypes) {
     const QuestionText = sequelize.define('question_text', {
         questionId: {
@@ -38,8 +36,7 @@ module.exports = function (sequelize, DataTypes) {
         freezeTableName: true,
         createdAt: 'createdAt',
         deletedAt: 'deletedAt',
-        paranoid: true,
-        classMethods: textTableMethodsFn(sequelize, 'question_text', 'questionId')
+        paranoid: true
     });
 
     return QuestionText;

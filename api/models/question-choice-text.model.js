@@ -1,9 +1,6 @@
 'use strict';
 
-const textTableMethodsFn = require('./text-table-methods');
-
 module.exports = function (sequelize, DataTypes) {
-
     const QuestionChoiceText = sequelize.define('question_choice_text', {
         questionChoiceId: {
             type: DataTypes.INTEGER,
@@ -39,7 +36,6 @@ module.exports = function (sequelize, DataTypes) {
         freezeTableName: true,
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
-        classMethods: textTableMethodsFn(sequelize, 'question_choice_text', 'questionChoiceId')
     });
 
     return QuestionChoiceText;

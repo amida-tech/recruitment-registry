@@ -193,7 +193,7 @@ module.exports = function (sequelize, DataTypes) {
                     })
                     .then(() => Answer.destroy({
                         where: {
-                            questionId: { in: ids },
+                            questionId: { $in: ids },
                             surveyId,
                             userId
                         },
