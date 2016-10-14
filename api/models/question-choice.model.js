@@ -1,5 +1,7 @@
 'use strict';
 
+const _ = require('lodash');
+
 module.exports = function (sequelize, DataTypes) {
     const QuestionChoice = sequelize.define('question_choice', {
         questionId: {
@@ -10,9 +12,6 @@ module.exports = function (sequelize, DataTypes) {
                 model: 'question',
                 key: 'id'
             }
-        },
-        text: {
-            type: DataTypes.TEXT
         },
         type: {
             type: DataTypes.TEXT,
@@ -40,25 +39,56 @@ module.exports = function (sequelize, DataTypes) {
         classMethods: {
             createQuestionChoiceTx(choice, tx) {
                 return QuestionChoice.create(choice, { transaction: tx })
-                    .then(({ id }) => ({ id }));
+                    .then(({ id }) => {
+                        const QuestionChoiceText = sequelize.models.question_choice_text;
+                        const input = { questionChoiceId: id, text: choice.text };
+                        return QuestionChoiceText.createQuestionChoiceTextTx(input, tx)
+                            .then(() => ({ id }));
+                    });
             },
             findChoicesPerQuestion(questionId) {
                 return QuestionChoice.findAll({
-                    raw: true,
-                    where: { questionId },
-                    attributes: ['id', 'text', 'type']
-                });
+                        raw: true,
+                        where: { questionId },
+                        attributes: ['id', 'type']
+                    })
+                    .then(choices => {
+                        const ids = _.map(choices, 'id');
+                        const QuestionChoiceText = sequelize.models.question_choice_text;
+                        return QuestionChoiceText.getAllQuestionChoiceTexts(ids)
+                            .then(records => {
+                                const map = _.keyBy(records, 'questionChoiceId');
+                                choices.forEach(choice => {
+                                    const r = map[choice.id];
+                                    choice.text = (r && r.text) || '';
+                                });
+                                return choices;
+                            });
+                    });
             },
             getAllQuestionChoices(questionIds) {
                 const options = {
                     raw: true,
-                    attributes: ['id', 'text', 'type', 'questionId'],
+                    attributes: ['id', 'type', 'questionId'],
                     order: 'line'
                 };
                 if (questionIds) {
                     options.where = { questionId: { in: questionIds } };
                 }
-                return QuestionChoice.findAll(options);
+                return QuestionChoice.findAll(options)
+                    .then(choices => {
+                        const ids = _.map(choices, 'id');
+                        const QuestionChoiceText = sequelize.models.question_choice_text;
+                        return QuestionChoiceText.getAllQuestionChoiceTexts(ids)
+                            .then(records => {
+                                const map = _.keyBy(records, 'questionChoiceId');
+                                choices.forEach(choice => {
+                                    const r = map[choice.id];
+                                    choice.text = (r && r.text) || '';
+                                });
+                                return choices;
+                            });
+                    });
             }
         }
     });

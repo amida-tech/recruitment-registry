@@ -5,7 +5,7 @@ module.exports = function (sequelize, DataTypes) {
         questionId: {
             type: DataTypes.INTEGER,
             allowNull: false,
-            fieldName: 'questionId',
+            fieldName: 'question_id',
             references: {
                 model: 'question',
                 key: 'id'
