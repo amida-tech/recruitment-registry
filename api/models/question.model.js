@@ -208,13 +208,7 @@ module.exports = function (sequelize, DataTypes) {
                         if (ids) {
                             qtOptions.where = { questionId: { $in: ids } };
                         }
-                        return textHandler.getAllTexts(ids, language)
-                            .then(map => {
-                                questions.forEach(question => {
-                                    const r = map[question.id];
-                                    question.text = r.text;
-                                });
-                            })
+                        return textHandler.updateAllTexts(questions, language)
                             .then(() => {
                                 return sequelize.models.question_action.findActionsPerQuestions(ids)
                                     .then(actions => {
