@@ -4,11 +4,13 @@ process.env.NODE_ENV = 'test';
 
 const helper = require('../helper/survey-helper');
 
-const shared = require('../shared-integration');
-const userExamples = require('../fixtures/user-examples');
-const surveyExamples = require('../fixtures/survey-examples');
+const SharedIntegration = require('../util/shared-integration');
+const userExamples = require('../fixtures/example/user');
+const surveyExamples = require('../fixtures/example/survey');
 
 const config = require('../../config');
+
+const shared = new SharedIntegration();
 
 describe('user set-up and login use-case', function () {
     const userExample = userExamples.Alzheimer;
@@ -57,7 +59,7 @@ describe('user set-up and login use-case', function () {
         userExample.email = config.resetPw.emailFrom; // send to self
 
         store.server
-            .post('/api/v1.0/registries/user-profile')
+            .post('/api/v1.0/profiles')
             .send({
                 user: userExample,
                 surveyId: survey.id,

@@ -10,7 +10,6 @@ exports.buildServerSurvey = function (clientSurvey, serverSurvey) {
         const result = {
             id: serverSurvey.id,
             name: clientSurvey.name,
-            released: clientSurvey.released,
             questions: expectedQuestions
         };
         return result;

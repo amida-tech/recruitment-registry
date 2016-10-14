@@ -2,25 +2,24 @@
 
 const models = require('./models');
 
-const registryExamples = require('./test/fixtures/registry-examples');
-const surveyExamples = require('./test/fixtures/survey-examples');
-const userExamples = require('./test/fixtures/user-examples');
+const surveyExamples = require('./test/fixtures/example/survey');
+const userExamples = require('./test/fixtures/example/user');
 
 const userExample = userExamples.Alzheimer;
+const sample = surveyExamples.Alzheimer;
 
 const helper = require('./test/helper/survey-helper');
 
 models.sequelize.sync({
     force: true
 }).then(function () {
-    return models.Registry.createRegistry(registryExamples[0]);
+    return models.Registry.createProfileSurvey(sample.survey);
 }).then(function () {
-    return models.Registry.getRegistryProfileSurvey('Alzheimer');
+    return models.Registry.getProfileSurvey();
 }).then(function (survey) {
-    const answers = helper.formAnswersToPost(survey, surveyExamples.Alzheimer.answer);
+    const answers = helper.formAnswersToPost(survey, sample.answer);
     return models.Registry.createProfile({
         user: userExample,
-        registryName: registryExamples[0].name,
         answers
     });
 }).then(function () {

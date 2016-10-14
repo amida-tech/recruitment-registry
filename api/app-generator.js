@@ -20,13 +20,6 @@ const errHandler = function (err, req, res, next) {
         res.statusCode = 500;
     }
 
-    // assume all sequelize errors are invalid input
-    if (err.name && (typeof err.name === 'string')) {
-        if ((err.name.toLowerCase().slice(0, 9) === 'sequelize')) {
-            res.statusCode = 400;
-        }
-    }
-
     res.json(err);
 };
 

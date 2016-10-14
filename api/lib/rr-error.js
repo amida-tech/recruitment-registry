@@ -11,14 +11,7 @@ class RRError extends Error {
             code = 'unknown';
             error = errors.unknown;
         }
-        let msg = error.msg;
-        if (params.length) {
-            params.forEach((param, index) => {
-                const expr = `\\$${index}`;
-                const re = new RegExp(expr, 'g');
-                msg = msg.replace(re, param);
-            });
-        }
+        const msg = RRError.injectParams(error.msg, params);
         super(msg);
         this.code = code;
     }
@@ -28,8 +21,27 @@ class RRError extends Error {
         return Sequelize.Promise.reject(err); // TODO: Change to ES6 Promise with Sequelize 4
     }
 
-    static message(code) {
-        return (errors[code] || errors.unknown).msg;
+    static injectParams(msg, params) {
+        if (params.length) {
+            params.forEach((param, index) => {
+                const expr = `\\$${index}`;
+                const re = new RegExp(expr, 'g');
+                msg = msg.replace(re, param);
+            });
+        }
+        return msg;
+    }
+
+    static message(code, ...params) {
+        const msg = (errors[code] || errors.unknown).msg;
+        return RRError.injectParams(msg, params);
+    }
+
+    toObject() {
+        return {
+            message: this.message,
+            code: this.code
+        };
     }
 }
 
@@ -51,26 +63,6 @@ errors.testParams2 = {
     msg: 'Testing $1 and $0 and $1.'
 };
 
-errors.qxCreateChoicesBoth = {
-    msg: '\'oneOfChoices\' and \'choices\' cannot be specified simultaneously.'
-};
-
-errors.qxCreateChoicesNone = {
-    msg: '\'choices\' was not specified for \'choices\' type question.'
-};
-
-errors.qxCreateChoiceNone = {
-    msg: '\'oneOfChoices\' or \'choices\' was not specified for \'choice\' type question.'
-};
-
-errors.qxCreateChoiceNotBool = {
-    msg: '\'choices\' can only be \'bool\' type for \'choice\' type question.'
-};
-
-errors.qxCreateChoicesOther = {
-    msg: '\'choices\' or \'oneOfChoices\' cannot be specified for \'$0\' type question.'
-};
-
 errors.qxNotFound = {
     msg: 'No such question.'
 };
@@ -79,14 +71,38 @@ errors.surveyNotFound = {
     msg: 'No such survey.'
 };
 
-errors.surveyAlreadyReleased = {
-    msg: 'Survey is already released.'
-};
-
 errors.surveyNoQuestions = {
     msg: 'Surveys without questions are not accepted.'
 };
 
-errors.surveyVersionAlreadyDraft = {
-    msg: 'There is already a draft survey based on this survey.'
+errors.noSystemConsentDocuments = {
+    msg: 'System does not have the required consent sections uploaded.'
+};
+
+errors.profileSignaturesMissing = {
+    msg: 'Required consent section signatures are not included.'
+};
+
+errors.jsonSchemaFailed = {
+    msg: 'JSON schema validation for $0 failed.'
+};
+
+errors.registryNoProfileSurvey = {
+    msg: 'No profile survey has been specified for the registry.'
+};
+
+errors.answerRequiredMissing = {
+    msg: 'Not all required questions are answered.'
+};
+
+errors.answerQxNotInSurvey = {
+    msg: 'Invalid question ids for answers.'
+};
+
+errors.qxReplaceWhenActiveSurveys = {
+    msg: 'Question in active surveys cannot be removed or replaced.'
+};
+
+errors.consentTypeDeleteOnConsent = {
+    msg: 'Consent type cannot be removed because it is used by one or more consents.'
 };
