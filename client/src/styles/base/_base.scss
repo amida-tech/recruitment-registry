@@ -25,11 +25,19 @@ body {
   height: 100%;
 }
 
-body {
-	font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
-    color: black;
+#root {
+  max-width: $max-width;
+  width: 90%;
+  position: relative;
+  margin: 0 auto;
 }
 
-body.js-open-sans-loaded {
-	font-family: 'Open Sans', Helvetica Neue, Helvetica, Arial, sans-serif;
-}
+
+
+
+
+
+
+
+
+

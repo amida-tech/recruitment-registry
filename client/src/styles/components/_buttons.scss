@@ -1,7 +1,33 @@
-/*This file contains all styles related to the button component.*/
+// /*This file contains all styles related to the button component.*/
 
 
-.btn--loading {
-  color: white;
-  background-color: $brand-color;
+// .btn--loading {
+//   color: white;
+//   background-color: $brand-color;
+// }
+
+
+.btn {
+	padding: 8px 18px 0;
+	height: 36px;
+	border-radius: 1000px;
+	min-width: 145px;
+	cursor: pointer;
+	display: inline-block;
+	margin-top: -11px;
+	text-align: center;
+	background-color: #fbad36;
+}
+
+.buttonPrimary {
+	@extend .btn;
+	border: 2px solid $gap-medium-blue;
+	background-color: $gap-medium-blue;
+	color: $gap-white;
+}
+
+.buttonSecondary {
+	@extend .btn;
+	border: 2px solid $gap-medium-blue;
+	color: $gap-medium-blue;
 }
