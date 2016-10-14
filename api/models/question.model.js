@@ -63,7 +63,7 @@ module.exports = function (sequelize, DataTypes) {
                     .then(created => {
                         const text = question.text;
                         const questionId = created.id;
-                        return sequelize.models.question_text.createQuestionTextTx({ text, questionId }, tx)
+                        return sequelize.models.question_text.createTextTx({ text, questionId }, tx)
                             .then(() => created);
                     })
                     .then(created => {
@@ -142,7 +142,7 @@ module.exports = function (sequelize, DataTypes) {
                         return question;
                     })
                     .then(question => {
-                        return sequelize.models.question_text.getQuestionText(id, language)
+                        return sequelize.models.question_text.getText(id, language)
                             .then(text => {
                                 question.text = text || '';
                                 return question;
@@ -185,7 +185,7 @@ module.exports = function (sequelize, DataTypes) {
                     });
             },
             updateQuestion: function (id, { text }) {
-                return sequelize.models.question_text.createQuestionText({ questionId: id, text });
+                return sequelize.models.question_text.createText({ questionId: id, text });
             },
             deleteQuestion: function (id) {
                 return sequelize.models.survey_question.count({ where: { questionId: id } })
@@ -215,40 +215,11 @@ module.exports = function (sequelize, DataTypes) {
                         if (ids) {
                             qtOptions.where = { questionId: { in: ids } };
                         }
-                        return sequelize.models.question_text.findAll(qtOptions)
-                            .then(qxTexts => {
-                                if (language === 'en') {
-                                    return qxTexts;
-                                } else {
-                                    const nullOnes = qxTexts.filter(qxText => !qxText.text);
-                                    if (nullOnes.length) {
-                                        const ids = nullOnes.map(nullOne => nullOne.questionId);
-                                        const qtOptions = {
-                                            raw: true,
-                                            language: 'en',
-                                            attributes: ['questionId', 'text'],
-                                            where: { questionId: { in: ids } }
-                                        };
-                                        return sequelize.models.question_text.findAll(qtOptions)
-                                            .then(addlQxTexts => {
-                                                const map = _.keyBy(addlQxTexts, 'questionId');
-                                                nullOnes.forEach(nullOne => {
-                                                    const qxText = map[nullOne.questionId];
-                                                    const text = (qxText && qxText.text) || '';
-                                                    nullOne.text = text;
-                                                });
-                                            });
-                                    } else {
-                                        return qxTexts;
-                                    }
-                                }
-                            })
-                            .then(qxTexts => {
-                                qxTexts.forEach(qxText => {
-                                    const q = map[qxText.questionId];
-                                    if (q) {
-                                        q.text = qxText.text;
-                                    }
+                        return sequelize.models.question_text.getAllTexts(ids, language)
+                            .then(map => {
+                                questions.forEach(question => {
+                                    const r = map[question.id];
+                                    question.text = r.text;
                                 });
                             })
                             .then(() => {
