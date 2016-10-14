@@ -1,4 +1,5 @@
 import request from 'superagent'
+import { push } from 'react-router-redux'
 
 var apiUrl = 'http://localhost:9005/api/v1.0';
 
@@ -36,6 +37,7 @@ const apiProvider = store => next => action => {
             next({
               type: 'GET_USER'
             })
+            store.dispatch(push('/'))
           } else {
             return next({
               type: 'LOGIN_ERROR',
@@ -92,7 +94,7 @@ const apiProvider = store => next => action => {
       break
     case 'GET_PROFILE':
       request
-        .get(apiUrl + '/registries/user-profile')
+        .get(apiUrl + '/profiles')
         .set("Authorization", "Bearer " + store.getState().get('loggedIn'))
         .end((error, response) => {
           if (!error) {
@@ -107,7 +109,7 @@ const apiProvider = store => next => action => {
       break
     case 'SAVE_PROFILE':
       request
-        .put(apiUrl + '/users/me')
+        .patch(apiUrl + '/users/me')
         .send(store.getState().getIn(['profile', 'userUpdated']))
         .set("Authorization", "Bearer " + store.getState().get('loggedIn'))
         .end((error) => {

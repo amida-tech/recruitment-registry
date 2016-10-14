@@ -8,7 +8,6 @@ import surveyBuilder from './surveyBuilder'
 import surveys from './surveys'
 import { push } from 'react-router-redux'
 
-
 export const initialState = {
   title: "GAP",
   login: login.reducer.initialState,
@@ -28,11 +27,10 @@ export const reducers = {
   loggedIn: (state = initialState, action) => {
     switch (action.type) {
       case "LOGIN_SUCCESS":
-        browserHistory.push('/')
         localStorage.setItem("token", action.data.token)
         return action.data.token
       case "LOGOUT":
-        browserHistory.push('/login')
+
         localStorage.removeItem("token")
         localStorage.removeItem("user")
         return false
