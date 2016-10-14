@@ -36,7 +36,31 @@ module.exports = function (sequelize, DataTypes) {
     }, {
         freezeTableName: true,
         createdAt: 'createdAt',
-        updatedAt: 'updatedAt'
+        updatedAt: 'updatedAt',
+        classMethods: {
+            createQuestionChoiceTx(choice, tx) {
+                return QuestionChoice.create(choice, { transaction: tx })
+                    .then(({ id }) => ({ id }));
+            },
+            findChoicesPerQuestion(questionId) {
+                return QuestionChoice.findAll({
+                    raw: true,
+                    where: { questionId },
+                    attributes: ['id', 'text', 'type']
+                });
+            },
+            getAllQuestionChoices(questionIds) {
+                const options = {
+                    raw: true,
+                    attributes: ['id', 'text', 'type', 'questionId'],
+                    order: 'line'
+                };
+                if (questionIds) {
+                    options.where = { questionId: { in: questionIds } };
+                }
+                return QuestionChoice.findAll(options);
+            }
+        }
     });
 
     return QuestionChoice;

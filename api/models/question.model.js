@@ -85,9 +85,8 @@ module.exports = function (sequelize, DataTypes) {
                                     type: c.type || 'bool',
                                     line: index
                                 };
-                                return sequelize.models.question_choice.create(choice, {
-                                    transaction: tx
-                                }).then(() => created);
+                                return sequelize.models.question_choice.createQuestionChoiceTx(choice, tx)
+                                    .then(() => created);
                             })).then(() => created);
                         }
                         return created;
@@ -167,11 +166,7 @@ module.exports = function (sequelize, DataTypes) {
                         if (['choice', 'choices'].indexOf(question.type) < 0) {
                             return question;
                         }
-                        return sequelize.models.question_choice.findAll({
-                                where: { questionId: question.id },
-                                raw: true,
-                                attributes: ['id', 'text', 'type']
-                            })
+                        return sequelize.models.question_choice.findChoicesPerQuestion(question.id)
                             .then(choices => {
                                 if (question.type === 'choice') {
                                     question.choices = choices.map(({ id, text }) => ({
@@ -205,7 +200,7 @@ module.exports = function (sequelize, DataTypes) {
                         }
                     });
             },
-            getQuestionsCommon: function (options, choiceOptions, language) {
+            getQuestionsCommon: function (options, ids, language) {
                 return Question.findAll(options)
                     .then(questions => {
                         if (!questions.length) {
@@ -217,8 +212,8 @@ module.exports = function (sequelize, DataTypes) {
                             language,
                             attributes: ['questionId', 'text']
                         };
-                        if (choiceOptions.where) {
-                            qtOptions.where = choiceOptions.where;
+                        if (ids) {
+                            qtOptions.where = { questionId: { in: ids } };
                         }
                         return sequelize.models.question_text.findAll(qtOptions)
                             .then(qxTexts => {
@@ -257,7 +252,15 @@ module.exports = function (sequelize, DataTypes) {
                                 });
                             })
                             .then(() => {
-                                return sequelize.models.question_action.findAll(choiceOptions)
+                                const options = {
+                                    raw: true,
+                                    attributes: ['id', 'text', 'type', 'questionId'],
+                                    order: 'line'
+                                };
+                                if (ids) {
+                                    options.where = { questionId: { in: ids } };
+                                }
+                                return sequelize.models.question_action.findAll(options)
                                     .then(actions => {
                                         if (actions.length) {
                                             actions.forEach(action => {
@@ -276,7 +279,7 @@ module.exports = function (sequelize, DataTypes) {
                                     });
                             })
                             .then(() => {
-                                return sequelize.models.question_choice.findAll(choiceOptions)
+                                return sequelize.models.question_choice.getAllQuestionChoices(ids)
                                     .then(choices => {
                                         const map = _.keyBy(questions, 'id');
                                         choices.forEach(choice => {
@@ -305,13 +308,7 @@ module.exports = function (sequelize, DataTypes) {
                     attributes: ['id', 'type'],
                     order: 'id'
                 };
-                const choicesOptions = {
-                    where: { questionId: { in: ids } },
-                    raw: true,
-                    attributes: ['id', 'text', 'type', 'questionId'],
-                    order: 'line'
-                };
-                return Question.getQuestionsCommon(options, choicesOptions, language)
+                return Question.getQuestionsCommon(options, ids, language)
                     .then(({ questions, map }) => {
                         if (questions.length !== ids.length) {
                             return RRError.reject('qxNotFound');
@@ -326,12 +323,7 @@ module.exports = function (sequelize, DataTypes) {
                     attributes: ['id', 'type'],
                     order: 'id'
                 };
-                const choicesOptions = {
-                    raw: true,
-                    attributes: ['id', 'text', 'type', 'questionId'],
-                    order: 'line'
-                };
-                return Question.getQuestionsCommon(options, choicesOptions, language)
+                return Question.getQuestionsCommon(options, null, language)
                     .then(({ questions }) => questions);
             }
         }
