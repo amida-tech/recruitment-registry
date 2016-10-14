@@ -4,11 +4,12 @@ const _ = require('lodash');
 
 const RRError = require('../lib/rr-error');
 
+const textTableMethods = require('./text-table-methods');
+
 module.exports = function (sequelize, DataTypes) {
+    const textHandler = textTableMethods(sequelize, 'survey_text', 'surveyId', ['name']);
+
     const Survey = sequelize.define('survey', {
-        name: {
-            type: DataTypes.TEXT
-        },
         version: {
             type: DataTypes.INTEGER,
             allowNull: false
@@ -72,16 +73,19 @@ module.exports = function (sequelize, DataTypes) {
                     });
             },
             createSurveyTx: function (survey, tx) {
-                const { name } = survey;
                 if (!(survey.questions && survey.questions.length)) {
                     return RRError.reject('surveyNoQuestions');
                 }
-                return Survey.create({ name, version: 1 }, { transaction: tx })
-                    .then((created) => {
+                return Survey.create({ version: 1 }, { transaction: tx })
+                    .then(created => {
                         // TODO: Find a way to use postgres sequences instead of update
                         return created.update({ groupId: created.id }, { transaction: tx });
                     })
-                    .then(function ({ id }) {
+                    .then(({ id }) => textHandler.createTextTx({
+                        surveyId: id,
+                        name: survey.name
+                    }, tx))
+                    .then(function (id) {
                         return Survey.updateQuestionsTx(survey.questions, id, tx)
                             .then(() => id);
                     });
@@ -92,20 +96,23 @@ module.exports = function (sequelize, DataTypes) {
                 });
             },
             updateSurvey: function (id, { name }) {
-                return Survey.findById(id)
-                    .then(survey => survey.update({ name }))
+                const input = { surveyId: id, name };
+                return textHandler.createText(input)
                     .then(() => ({}));
             },
             replaceSurveyTx(survey, replacement, tx) {
                 replacement.version = survey.version + 1;
                 replacement.groupId = survey.groupId;
                 const newSurvey = {
-                    name: replacement.name,
                     version: survey.version + 1,
                     groupId: survey.groupId
                 };
                 return Survey.create(newSurvey, { transaction: tx })
-                    .then(function ({ id }) {
+                    .then(({ id }) => textHandler.createTextTx({
+                        surveyId: id,
+                        name: replacement.name
+                    }, tx))
+                    .then(function (id) {
                         return Survey.updateQuestionsTx(replacement.questions, id, tx)
                             .then(() => id);
                     })
@@ -153,30 +160,34 @@ module.exports = function (sequelize, DataTypes) {
                 });
             },
             listSurveys: function () {
-                return Survey.findAll({ raw: true, attributes: ['id', 'name'], order: 'id' });
+                return Survey.findAll({ raw: true, attributes: ['id'], order: 'id' })
+                    .then(surveys => textHandler.updateAllTexts(surveys));
             },
             getSurvey: function (where) {
-                return Survey.find({ where, raw: true, attributes: ['id', 'name'] })
+                return Survey.find({ where, raw: true, attributes: ['id'] })
                     .then(function (survey) {
                         if (!survey) {
                             return RRError.reject('surveyNotFound');
                         }
-                        return sequelize.models.survey_question.findAll({
-                                where: { surveyId: survey.id },
-                                raw: true,
-                                attributes: ['questionId', 'required']
-                            })
-                            .then(surveyQuestions => {
-                                const questionIds = _.map(surveyQuestions, 'questionId');
-                                return sequelize.models.question.getQuestions(questionIds)
-                                    .then(questions => ({ questions, surveyQuestions }));
-                            })
-                            .then(({ questions, surveyQuestions }) => {
-                                const qxMap = _.keyBy(questions, 'id');
-                                const fn = qx => Object.assign(qxMap[qx.questionId], { required: qx.required });
-                                const qxs = surveyQuestions.map(fn);
-                                survey.questions = qxs;
-                                return survey;
+                        return textHandler.updateText(survey)
+                            .then(() => {
+                                return sequelize.models.survey_question.findAll({
+                                        where: { surveyId: survey.id },
+                                        raw: true,
+                                        attributes: ['questionId', 'required']
+                                    })
+                                    .then(surveyQuestions => {
+                                        const questionIds = _.map(surveyQuestions, 'questionId');
+                                        return sequelize.models.question.getQuestions(questionIds)
+                                            .then(questions => ({ questions, surveyQuestions }));
+                                    })
+                                    .then(({ questions, surveyQuestions }) => {
+                                        const qxMap = _.keyBy(questions, 'id');
+                                        const fn = qx => Object.assign(qxMap[qx.questionId], { required: qx.required });
+                                        const qxs = surveyQuestions.map(fn);
+                                        survey.questions = qxs;
+                                        return survey;
+                                    });
                             });
                     });
             },
@@ -184,7 +195,18 @@ module.exports = function (sequelize, DataTypes) {
                 return Survey.getSurvey({ id });
             },
             getSurveyByName: function (name) {
-                return Survey.getSurvey({ name });
+                return sequelize.models.survey_text.findOne({
+                        where: { name },
+                        raw: true,
+                        attributes: ['surveyId']
+                    })
+                    .then(result => {
+                        if (result) {
+                            return Survey.getSurvey({ id: result.surveyId });
+                        } else {
+                            return RRError.reject('surveyNotFound');
+                        }
+                    });
             },
             getAnsweredSurvey: function (surveyPromise, userId) {
                 return surveyPromise
