@@ -2,7 +2,7 @@
 
 const _ = require('lodash');
 
-module.exports = function (sequelize, tableName, parentIdField) {
+module.exports = function (sequelize, tableName, parentIdField, textFields = ['text']) {
     return {
         createTextTx(input, tx) {
             const Table = sequelize.models[tableName];
@@ -26,27 +26,26 @@ module.exports = function (sequelize, tableName, parentIdField) {
             const Table = sequelize.models[tableName];
             const where = { language };
             where[parentIdField] = parentId;
-            let query = { where, raw: true, attributes: ['text'] };
+            let query = { where, raw: true, attributes: textFields };
             return Table.findOne(query)
                 .then(result => {
                     if ((language === 'en') || (!result)) {
-                        return result.text;
+                        return result;
                     }
                     query.where.language = 'en';
-                    return Table.findOne(query)
-                        .then(result => result.text);
+                    return Table.findOne(query);
                 });
         },
         updateText(parent, language) {
             return this.getText(parent.id, language)
-                .then(text => {
-                    parent.text = text;
+                .then(result => {
+                    textFields.forEach(field => (parent[field] = result[field]));
                     return parent;
                 });
         },
         getAllTexts(ids, language = 'en') {
             const Table = sequelize.models[tableName];
-            const options = { raw: true, attributes: [parentIdField, 'text'] };
+            const options = { raw: true, attributes: [parentIdField, ...textFields] };
             if (language === 'en') {
                 options.language = 'en';
             } else {
@@ -79,7 +78,7 @@ module.exports = function (sequelize, tableName, parentIdField) {
                 .then(map => {
                     parents.forEach(parent => {
                         const r = map[parent.id];
-                        parent.text = r.text;
+                        textFields.forEach(field => (parent[field] = r[field]));
                     });
                     return parents;
                 });
