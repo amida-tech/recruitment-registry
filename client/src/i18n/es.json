@@ -41,5 +41,6 @@
   "MY_DOB": "Mi fecha de nacimiento es",
   "MY_GENDER": "Mi género es",
   "MY_ETHNIC": "Mi origen étnico es",
-  "INVALID_CREDENTIALS":"¡Credenciales no válidas!"
+  "INVALID_CREDENTIALS":"¡Credenciales no válidas!",
+  "AVAIL_SURVEYS": "Encuestas disponibles en la actualidad:"
 }

@@ -41,5 +41,6 @@
   "MY_DOB": "My date of birth is",
   "MY_GENDER": "My gender is",
   "MY_ETHNIC": "My ethnicity is",
-  "INVALID_CREDENTIALS": "Invalid credentials!"
+  "INVALID_CREDENTIALS": "Invalid credentials!",
+  "AVAIL_SURVEYS": "Currently available surveys:"
 }

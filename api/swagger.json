@@ -254,6 +254,9 @@
                 "operationId": "listSurveys",
                 "security": [{
                     "admin": []
+                },{
+
+                    "participant": []
                 }],
                 "responses": {
                     "200": {
