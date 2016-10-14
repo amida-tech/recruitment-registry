@@ -30,12 +30,33 @@ module.exports = function (sequelize, DataTypes) {
         freezeTableName: true,
         createdAt: 'createdAt',
         classMethods: {
+            createActionPerQuestionTx(questionId, { text, type }, line, tx) {
+                const r = { questionId, text, type, line };
+                return QuestionAction.create(r, { transaction: tx });
+            },
+            createActionsPerQuestionTx(questionId, actions, tx) {
+                return sequelize.Promise.all(actions.map((action, index) => {
+                    return QuestionAction.createActionPerQuestionTx(questionId, action, index, tx);
+                }));
+            },
             findActionsPerQuestion(questionId) {
                 return QuestionAction.findAll({
                     raw: true,
                     where: { questionId },
-                    attributes: ['id', 'text', 'type']
+                    attributes: ['id', 'text', 'type'],
+                    order: 'line'
                 });
+            },
+            findActionsPerQuestions(ids) {
+                const options = {
+                    raw: true,
+                    attributes: ['id', 'text', 'type', 'questionId'],
+                    order: 'line'
+                };
+                if (ids) {
+                    options.where = { questionId: { $in: ids } };
+                }
+                return QuestionAction.findAll(options);
             }
         }
     });

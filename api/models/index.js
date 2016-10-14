@@ -23,6 +23,7 @@ const QuestionType = sequelize.import('./question-type.model');
 const QuestionChoice = sequelize.import('./question-choice.model');
 const QuestionChoiceText = sequelize.import('./question-choice-text.model');
 const QuestionAction = sequelize.import('./question-action.model');
+const QuestionActionText = sequelize.import('./question-action-text.model');
 const QuestionText = sequelize.import('./question-text.model');
 const Question = sequelize.import('./question.model');
 const SurveyQuestion = sequelize.import('./survey-question.model');
@@ -47,6 +48,7 @@ module.exports = {
     QuestionChoice,
     QuestionChoiceText,
     QuestionAction,
+    QuestionActionText,
     Question,
     QuestionText,
     SurveyQuestion,

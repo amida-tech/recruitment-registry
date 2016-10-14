@@ -46,15 +46,7 @@ module.exports = function (sequelize, DataTypes) {
         classMethods: {
             createActionsTx: function (id, actions, tx) {
                 if (actions && actions.length) {
-                    return sequelize.Promise.all(actions.map(function (action, index) {
-                            const record = {
-                                questionId: id,
-                                text: action.text,
-                                type: action.type,
-                                line: index
-                            };
-                            return sequelize.models.question_action.create(record, { transaction: tx });
-                        }))
+                    return sequelize.models.question_action.createActionsPerQuestionTx(id, actions, tx)
                         .then(() => ({ id }));
                 } else {
                     return sequelize.Promise.resolve({ id });
@@ -146,15 +138,10 @@ module.exports = function (sequelize, DataTypes) {
                     })
                     .then(question => textHandler.updateText(question, language))
                     .then(question => {
-                        return sequelize.models.question_action.findAll({
-                                where: { questionId: question.id },
-                                raw: true,
-                                attributes: ['id', 'text', 'type', 'line']
-                            })
+                        return sequelize.models.question_action.findActionsPerQuestion(question.id)
                             .then(actions => {
                                 if (actions.length) {
-                                    const sortedActions = _.sortBy(actions, 'line');
-                                    question.actions = sortedActions.map(({ id, text, type }) => ({ id, text, type }));
+                                    question.actions = actions;
 
                                 }
                                 return question;
@@ -229,15 +216,7 @@ module.exports = function (sequelize, DataTypes) {
                                 });
                             })
                             .then(() => {
-                                const options = {
-                                    raw: true,
-                                    attributes: ['id', 'text', 'type', 'questionId'],
-                                    order: 'line'
-                                };
-                                if (ids) {
-                                    options.where = { questionId: { $in: ids } };
-                                }
-                                return sequelize.models.question_action.findAll(options)
+                                return sequelize.models.question_action.findActionsPerQuestions(ids)
                                     .then(actions => {
                                         if (actions.length) {
                                             actions.forEach(action => {
