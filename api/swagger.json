@@ -297,6 +297,9 @@
                 "operationId": "getSurveyById",
                 "security": [{
                     "admin": []
+                },{
+
+                    "participant": []
                 }],
                 "responses": {
                     "200": {

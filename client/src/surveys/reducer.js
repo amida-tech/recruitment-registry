@@ -12,9 +12,9 @@ export default (state = immutableState, action) => {
   switch (action.type) {
     case 'GET_ALL_SURVEYS_SUCCESS':
       return Immutable.fromJS(action.payload)
-    case 'GET_SURVEY':
-      console.log("We should get survey " + JSON.stringify(action.pavload));
-      return null;
+    case 'GET_SURVEY_BY_ID_SUCCESS':
+      console.log(JSON.stringify(action.payload));
+      return action.payload;
     default:
       return state;
   }

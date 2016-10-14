@@ -4,6 +4,12 @@ import { Link } from 'react-router';
 import surveys from '../index'
 
 export class SurveysContainer extends Component {
+
+  componentWillReceiveProps(nextProps){
+    // console.log(JSON.stringify(nextProps));
+    // this.vocab = nextProps.vocab;
+  }
+
   render() {
     if (!this.props.params.id) {
       const surveysTmp = this.props.data.toJS()
@@ -18,6 +24,10 @@ export class SurveysContainer extends Component {
     return (
       <div>I don't even...</div>
     )
+  }
+
+  shouldComponentUpdate() {
+    return true;
   }
 
   componentWillMount() {
