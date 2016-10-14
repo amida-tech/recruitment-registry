@@ -1,1 +1,1 @@
-/*export const ADD_QUESTION = 'ADD_QUESTION'*/
+export const GET_SURVEY = 'GET_SURVEY';

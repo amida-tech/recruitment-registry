@@ -5,25 +5,29 @@ import surveys from '../index'
 
 export class SurveysContainer extends Component {
   render() {
-    const surveysTmp = this.props.data.toJS()
+    if (!this.props.params.id) {
+      const surveysTmp = this.props.data.toJS()
+      return (
+        <div className="">
+          {this.props.vocab.get('AVAIL_SURVEYS')}
+          <ul>
+          {surveysTmp.map(survey => (<li key={survey.id}><Link to={'/surveys/' + survey.id}>{survey.name}</Link></li>)) }
+          </ul>
+        </div>
+      )}
     return (
-      <div className="">
-        {this.props.vocab.get('AVAIL_SURVEYS')}
-        <ul>
-        {surveysTmp.map(survey => (<li key={survey.id}><Link to={'/survey-builder/' + survey.id}>{survey.name}</Link></li>)) }
-        </ul>
-      </div>
+      <div>I don't even...</div>
     )
   }
 
   componentWillMount() {
-    this.props.dispatch({type: 'GET_ALL_SURVEYS'})
+    if (this.props.params.id) {
+      this.props.dispatch(surveys.actions.getSurvey(this.props.params.id))
+    } else {
+      this.props.dispatch({type: 'GET_ALL_SURVEYS'})
+    }
   }
 
-  /*_changeChoice(item, evt) {
-    var choices = item.question.choices.map((choice) => {
-    this.props.dispatch(surveyBuilder.actions.updateQuestion(item.question))
-  }*/
 }
 
 const mapStateToProps = function(store) {

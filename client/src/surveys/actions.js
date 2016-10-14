@@ -1,10 +1,10 @@
 import * as actionTypes from './actionTypes';
 
-/*export function addQuestion(question) {
+export function getSurvey(id) {
   return (dispatch) => {
     dispatch({
-      type: actionTypes.ADD_QUESTION,
-      payload: question
+      type: actionTypes.GET_SURVEY,
+      payload: id
     })
   }
-}*/
+}
