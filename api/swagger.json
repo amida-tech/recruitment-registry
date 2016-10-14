@@ -1600,7 +1600,7 @@
                     "minItems": 1
                 },
                 "actions": {
-                    "$ref": "#/definitions/actions"
+                    "$ref": "#/definitions/newActions"
                 }
             },
             "minProperties": 2,
@@ -1835,7 +1835,7 @@
                     }
                 },
                 "actions": {
-                    "$ref": "#/definitions/actions"
+                    "$ref": "#/definitions/newActions"
                 }
             },
             "additionalProperties": false
@@ -1922,7 +1922,7 @@
             "type": "object",
             "maxProperties": 0
         },
-        "action": {
+        "newAction": {
             "type": "object",
             "required": ["text", "type"],
             "properties": {
@@ -1934,6 +1934,29 @@
                 }
             },
             "additionalProperties": false
+        },
+        "action": {
+            "type": "object",
+            "required": ["id", "text", "type"],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "text": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false
+        },
+        "newActions": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/newAction"
+            }
         },
         "actions": {
             "type": "array",

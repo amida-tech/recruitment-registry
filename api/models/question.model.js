@@ -149,12 +149,13 @@ module.exports = function (sequelize, DataTypes) {
                         return sequelize.models.question_action.findAll({
                                 where: { questionId: question.id },
                                 raw: true,
-                                attributes: ['text', 'type', 'line']
+                                attributes: ['id', 'text', 'type', 'line']
                             })
                             .then(actions => {
                                 if (actions.length) {
                                     const sortedActions = _.sortBy(actions, 'line');
-                                    question.actions = sortedActions.map(({ text, type }) => ({ text, type }));
+                                    question.actions = sortedActions.map(({ id, text, type }) => ({ id, text, type }));
+
                                 }
                                 return question;
                             });
@@ -243,7 +244,6 @@ module.exports = function (sequelize, DataTypes) {
                                                 const q = map[action.questionId];
                                                 if (q) {
                                                     delete action.questionId;
-                                                    delete action.id;
                                                     if (q.actions) {
                                                         q.actions.push(action);
                                                     } else {

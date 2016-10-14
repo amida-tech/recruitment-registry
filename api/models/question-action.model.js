@@ -28,7 +28,16 @@ module.exports = function (sequelize, DataTypes) {
         }
     }, {
         freezeTableName: true,
-        createdAt: 'createdAt'
+        createdAt: 'createdAt',
+        classMethods: {
+            findActionsPerQuestion(questionId) {
+                return QuestionAction.findAll({
+                    raw: true,
+                    where: { questionId },
+                    attributes: ['id', 'text', 'type']
+                });
+            }
+        }
     });
 
     return QuestionAction;

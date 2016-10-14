@@ -5,6 +5,7 @@ const _ = require('lodash');
 const models = require('../../models');
 
 const QuestionChoice = models.QuestionChoice;
+const QuestionAction = models.QuestionAction;
 
 exports.buildServerQuestion = function (question, id) {
     return QuestionChoice.findChoicesPerQuestion(id)
@@ -39,6 +40,25 @@ exports.buildServerQuestion = function (question, id) {
                 });
             }
             return result;
+        })
+        .then((result) => {
+            if (result.actions) {
+                return QuestionAction.findActionsPerQuestion(id)
+                    .then((result) => {
+                        return result.reduce(function (r, action) {
+                            r[action.text] = action.id;
+                            return r;
+                        }, {});
+                    })
+                    .then(function (map) {
+                        if (result.actions) {
+                            result.actions.forEach(action => (action.id = map[action.text]));
+                        }
+                        return result;
+                    });
+            } else {
+                return result;
+            }
         });
 };
 

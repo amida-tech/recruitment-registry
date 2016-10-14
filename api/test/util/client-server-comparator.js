@@ -20,6 +20,9 @@ const comparator = {
         if (actual.choices) {
             actual.choices.forEach(choice => delete choice.id);
         }
+        if (actual.actions) {
+            actual.actions.forEach(action => delete action.id);
+        }
         expect(actual).to.deep.equal(expected);
     },
     questions(client, server) {
