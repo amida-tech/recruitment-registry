@@ -33,10 +33,7 @@ module.exports = function (sequelize, DataTypes) {
             createActionPerQuestionTx(questionId, { text, type }, line, tx) {
                 const r = { questionId, type, line };
                 return QuestionAction.create(r, { transaction: tx })
-                    .then(({ id }) => textHandler.createTextTx({
-                        questionActionId: id,
-                        text
-                    }, tx));
+                    .then(({ id }) => textHandler.createTextTx({ id, text }, tx));
             },
             createActionsPerQuestionTx(questionId, actions, tx) {
                 return sequelize.Promise.all(actions.map((action, index) => {

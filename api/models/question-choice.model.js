@@ -42,7 +42,7 @@ module.exports = function (sequelize, DataTypes) {
             createQuestionChoiceTx(choice, tx) {
                 return QuestionChoice.create(choice, { transaction: tx })
                     .then(({ id }) => {
-                        const input = { questionChoiceId: id, text: choice.text };
+                        const input = { id, text: choice.text };
                         return textHandler.createTextTx(input, tx)
                             .then(() => ({ id }));
                     });

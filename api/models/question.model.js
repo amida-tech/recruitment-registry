@@ -57,8 +57,8 @@ module.exports = function (sequelize, DataTypes) {
                 return Question.create(qxFields, { transaction: tx })
                     .then(created => {
                         const text = question.text;
-                        const questionId = created.id;
-                        return textHandler.createTextTx({ text, questionId }, tx)
+                        const id = created.id;
+                        return textHandler.createTextTx({ text, id }, tx)
                             .then(() => created);
                     })
                     .then(created => {
@@ -170,7 +170,7 @@ module.exports = function (sequelize, DataTypes) {
                     });
             },
             updateQuestion: function (id, { text }) {
-                return textHandler.createText({ questionId: id, text });
+                return textHandler.createText({ id, text });
             },
             deleteQuestion: function (id) {
                 return sequelize.models.survey_question.count({ where: { questionId: id } })

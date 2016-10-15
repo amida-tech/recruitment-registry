@@ -81,11 +81,8 @@ module.exports = function (sequelize, DataTypes) {
                         // TODO: Find a way to use postgres sequences instead of update
                         return created.update({ groupId: created.id }, { transaction: tx });
                     })
-                    .then(({ id }) => textHandler.createTextTx({
-                        surveyId: id,
-                        name: survey.name
-                    }, tx))
-                    .then(function (id) {
+                    .then(({ id }) => textHandler.createTextTx({ id, name: survey.name }, tx))
+                    .then(({ id }) => {
                         return Survey.updateQuestionsTx(survey.questions, id, tx)
                             .then(() => id);
                     });
@@ -96,8 +93,7 @@ module.exports = function (sequelize, DataTypes) {
                 });
             },
             updateSurvey: function (id, { name }) {
-                const input = { surveyId: id, name };
-                return textHandler.createText(input)
+                return textHandler.createText({ id, name })
                     .then(() => ({}));
             },
             replaceSurveyTx(survey, replacement, tx) {
@@ -109,10 +105,10 @@ module.exports = function (sequelize, DataTypes) {
                 };
                 return Survey.create(newSurvey, { transaction: tx })
                     .then(({ id }) => textHandler.createTextTx({
-                        surveyId: id,
+                        id,
                         name: replacement.name
                     }, tx))
-                    .then(function (id) {
+                    .then(({ id }) => {
                         return Survey.updateQuestionsTx(replacement.questions, id, tx)
                             .then(() => id);
                     })

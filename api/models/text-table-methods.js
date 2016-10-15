@@ -8,13 +8,14 @@ module.exports = function (sequelize, tableName, parentIdField, textFields = ['t
             const Table = sequelize.models[tableName];
             const language = input.language || 'en';
             const where = { language };
-            where[parentIdField] = input[parentIdField];
+            where[parentIdField] = input.id;
             return Table.destroy({ where }, { transaction: tx })
                 .then(() => {
-                    const record = _.cloneDeep(input);
-                    record.language = language;
+                    const record = { language };
+                    record[parentIdField] = input.id;
+                    textFields.forEach(field => (record[field] = input[field]));
                     return Table.create(record, { transaction: tx })
-                        .then(() => input[parentIdField]);
+                        .then(() => input);
                 });
         },
         createText(input) {
