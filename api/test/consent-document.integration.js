@@ -3,6 +3,7 @@
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
+const _ = require('lodash');
 
 const SharedIntegration = require('./util/shared-integration');
 const Generator = require('./util/entity-generator');
@@ -121,14 +122,26 @@ describe('consent section integration', function () {
         it(`logout as user ${i}`, shared.logoutFn(store));
     }
 
-    const signConsentTypeFn = function (typeIndex) {
+    const signConsentTypeFn = function (userIndex, typeIndex, language) {
         return function (done) {
             const consentDocumentId = history.id(typeIndex);
+            const query = {};
+            if (language) {
+                query.language = language;
+            }
             store.server
                 .post(`/api/v1.0/consent-signatures`)
                 .set('Authorization', store.auth)
+                .query(query)
                 .send({ consentDocumentId })
-                .expect(201, done);
+                .expect(201)
+                .end(function (err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    history.sign(typeIndex, userIndex, language);
+                    done();
+                });
         };
     };
 
@@ -144,8 +157,8 @@ describe('consent section integration', function () {
     };
 
     it(`login as user 0`, shared.loginIndexFn(store, history.hxUser, 0));
-    it('user 0 signs consent document 0', signConsentTypeFn(0));
-    it('user 0 signs consent document 1', signConsentTypeFn(1));
+    it('user 0 signs consent document 0', signConsentTypeFn(0, 0));
+    it('user 0 signs consent document 1', signConsentTypeFn(0, 1));
     it('logout as user 0', shared.logoutFn(store));
 
     it(`login as user 0`, shared.loginIndexFn(store, history.hxUser, 0));
@@ -153,16 +166,16 @@ describe('consent section integration', function () {
     it('logout as user 0', shared.logoutFn(store));
 
     it(`login as user 1`, shared.loginIndexFn(store, history.hxUser, 1));
-    it('user 1 signs consent document 0', signConsentTypeFn(0));
-    it('user 1 signs consent document 1', signConsentTypeFn(1));
+    it('user 1 signs consent document 0', signConsentTypeFn(1, 0, 'en'));
+    it('user 1 signs consent document 1', signConsentTypeFn(1, 1, 'sp'));
     it('logout as user 1', shared.logoutFn(store));
 
     it(`login as user 2`, shared.loginIndexFn(store, history.hxUser, 2));
-    it('user 2 signs consent document 1', signConsentTypeFn(0));
+    it('user 2 signs consent document 1', signConsentTypeFn(2, 0));
     it('logout as user 2', shared.logoutFn(store));
 
     it(`login as user 3`, shared.loginIndexFn(store, history.hxUser, 3));
-    it('user 3 signs consent document 0', signConsentTypeFn(1));
+    it('user 3 signs consent document 0', signConsentTypeFn(3, 1));
     it('logout as user 3', shared.logoutFn(store));
 
     it(`login as user 0`, shared.loginIndexFn(store, history.hxUser, 0));
@@ -188,9 +201,9 @@ describe('consent section integration', function () {
     it('create/verify consent section of type 2', shared.createConsentDocumentFn(store, history, 2));
     it('logout as super', shared.logoutFn(store));
 
-    const signConsentType = ((userIndex, consentDocumentIndex) => {
+    const signConsentType = ((userIndex, consentDocumentIndex, language) => {
         it(`login as user ${userIndex}`, shared.loginIndexFn(store, history.hxUser, userIndex));
-        it(`user ${userIndex} signs consent document ${consentDocumentIndex}`, signConsentTypeFn(consentDocumentIndex));
+        it(`user ${userIndex} signs consent document ${consentDocumentIndex}`, signConsentTypeFn(userIndex, consentDocumentIndex, language));
         it(`logout as user ${userIndex}`, shared.logoutFn(store));
     });
 
@@ -208,7 +221,7 @@ describe('consent section integration', function () {
     verifyConsentDocuments(2, [1, 2]);
     verifyConsentDocuments(3, [0, 2]);
 
-    signConsentType(2, 2);
+    signConsentType(2, 2, 'en');
 
     verifyConsentDocuments(2, [1]);
 
@@ -221,7 +234,7 @@ describe('consent section integration', function () {
     verifyConsentDocuments(2, [1]);
     verifyConsentDocuments(3, [0, 1, 2]);
 
-    signConsentType(1, 2);
+    signConsentType(1, 2, 'sp');
     verifyConsentDocuments(1, [1]);
 
     it('login as super', shared.loginFn(store, config.superUser));
@@ -250,9 +263,9 @@ describe('consent section integration', function () {
     verifyConsentDocuments(2, [0, 1]);
     verifyConsentDocuments(3, [0, 1, 2]);
 
-    signConsentType(0, 1);
+    signConsentType(0, 1, 'en');
     verifyConsentDocuments(0, [0, 2]);
-    signConsentType(0, 2);
+    signConsentType(0, 2, 'sp');
     verifyConsentDocuments(0, [0]);
     signConsentType(0, 0);
     verifyConsentDocuments(0, []);
@@ -283,4 +296,28 @@ describe('consent section integration', function () {
     verifyConsentDocuments(1, [0]);
     verifyConsentDocuments(2, [0]);
     verifyConsentDocuments(3, [0, 1]);
+
+    const verifySignaturesFn = function (userIndex) {
+        return function (done) {
+            const userId = history.userId(userIndex);
+            store.server
+                .get(`/api/v1.0/consent-signatures/users/${userId}/history`)
+                .set('Authorization', store.auth)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    const expected = _.sortBy(history.signatures[userIndex], 'id');
+                    expect(res.body).to.deep.equal(expected);
+                    done();
+                });
+        };
+    };
+
+    it('login as super', shared.loginFn(store, config.superUser));
+    for (let i = 0; i < userCount; ++i) {
+        it('verify signatures', verifySignaturesFn(i));
+    }
+    it('logout as super', shared.logoutFn(store));
 });

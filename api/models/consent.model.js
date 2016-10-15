@@ -112,13 +112,16 @@ module.exports = function (sequelize, DataTypes) {
                     return ConsentSignature.findAll({
                             where: { userId },
                             raw: true,
-                            attributes: ['consentDocumentId']
+                            attributes: ['consentDocumentId', 'language']
                         })
                         .then(signatures => _.keyBy(signatures, 'consentDocumentId'))
                         .then(signatures => {
                             result.sections.forEach(section => {
                                 if (section) {
                                     section.signature = Boolean(signatures[section.id]);
+                                    if (section.signature) {
+                                        section.language = signatures[section.id].language;
+                                    }
                                 }
                             });
                             return result;

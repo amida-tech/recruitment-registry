@@ -90,7 +90,7 @@ module.exports = function (sequelize, DataTypes) {
                             });
                     });
             },
-            createProfile: function (input) {
+            createProfile: function (input, language) {
                 return sequelize.transaction(function (tx) {
                     return Registry.getProfileSurveyId()
                         .then(profileSurveyId => {
@@ -99,7 +99,7 @@ module.exports = function (sequelize, DataTypes) {
                                 .then(user => {
                                     if (input.signatures && input.signatures.length) {
                                         return sequelize.Promise.all(input.signatures.map(consentDocumentId => {
-                                                return ConsentSignature.createSignature(user.id, consentDocumentId, tx);
+                                                return ConsentSignature.createSignature(user.id, consentDocumentId, language, tx);
                                             }))
                                             .then(() => user);
                                     }

@@ -91,19 +91,23 @@ describe('consent document/type/signature unit', function () {
         it(`verify consent sections required for user ${i}`, verifyConsentDocumentsFn(i, [0, 1]));
     }
 
-    const signConsentTypeFn = function (userIndex, typeIndex) {
+    const signConsentTypeFn = function (userIndex, typeIndex, language) {
         return function () {
             const consentDocumentId = history.id(typeIndex);
             const userId = history.userId(userIndex);
-            history.sign(typeIndex, userIndex);
-            return ConsentSignature.createSignature(userId, consentDocumentId);
+            history.sign(typeIndex, userIndex, language);
+            if (language) {
+                return ConsentSignature.createSignature(userId, consentDocumentId, language);
+            } else {
+                return ConsentSignature.createSignature(userId, consentDocumentId);
+            }
         };
     };
 
     it('user 0 signs consent document 0', signConsentTypeFn(0, 0));
     it('user 0 signs consent document 1', signConsentTypeFn(0, 1));
-    it('user 1 signs consent document 0', signConsentTypeFn(1, 0));
-    it('user 1 signs consent document 1', signConsentTypeFn(1, 1));
+    it('user 1 signs consent document 0', signConsentTypeFn(1, 0, 'en'));
+    it('user 1 signs consent document 1', signConsentTypeFn(1, 1, 'sp'));
     it('user 2 signs consent document 0', signConsentTypeFn(2, 0));
     it('user 3 signs consent document 1', signConsentTypeFn(3, 1));
 
@@ -144,7 +148,7 @@ describe('consent document/type/signature unit', function () {
     it('verify consent sections required for user 2', verifyConsentDocumentsFn(2, [1, 2]));
     it('verify consent sections required for user 3', verifyConsentDocumentsFn(3, [0, 2]));
 
-    it('user 2 signs consent document 2', signConsentTypeFn(2, 2));
+    it('user 2 signs consent document 2', signConsentTypeFn(2, 2, 'en'));
     it('verify consent sections required for user 2', verifyConsentDocumentsFn(2, [1]));
 
     it('create/verify consent section of type 1', shared.createConsentDocumentFn(history, 1));
@@ -155,7 +159,7 @@ describe('consent document/type/signature unit', function () {
     it('verify consent sections required for user 2', verifyConsentDocumentsFn(2, [1]));
     it('verify consent sections required for user 3', verifyConsentDocumentsFn(3, [0, 1, 2]));
 
-    it('user 1 signs consent document 2', signConsentTypeFn(1, 2));
+    it('user 1 signs consent document 2', signConsentTypeFn(1, 2, 'sp'));
     it('verify consent sections required for user 1', verifyConsentDocumentsFn(1, [1]));
 
     it('create/verify consent section of type 0', shared.createConsentDocumentFn(history, 0));
@@ -184,9 +188,9 @@ describe('consent document/type/signature unit', function () {
 
     it('user 0 signs consent document 1', signConsentTypeFn(0, 1));
     it('verify consent sections required for user 0', verifyConsentDocumentsFn(0, [0, 2]));
-    it('user 0 signs consent document 2', signConsentTypeFn(0, 2));
+    it('user 0 signs consent document 2', signConsentTypeFn(0, 2, 'en'));
     it('verify consent sections required for user 0', verifyConsentDocumentsFn(0, [0]));
-    it('user 0 signs consent document 0', signConsentTypeFn(0, 0));
+    it('user 0 signs consent document 0', signConsentTypeFn(0, 0, 'sp'));
     it('verify consent sections required for user 0', verifyConsentDocumentsFn(0, []));
 
     it(`create consent from types 0, 1, 2`, function () {
@@ -227,18 +231,10 @@ describe('consent document/type/signature unit', function () {
     const verifySignatureExistenceFn = function (userIndex) {
         return function () {
             const userId = history.userId(userIndex);
-            return ConsentSignature.findAll({
-                    where: { userId },
-                    raw: true,
-                    attributes: ['consentDocumentId', 'createdAt'],
-                    order: 'consent_document_id'
-                })
+            return ConsentSignature.getSignatureHistory(userId)
                 .then(result => {
-                    const actual = _.map(result, 'consentDocumentId');
-                    const expected = _.sortBy(history.signatures[userIndex]);
-                    expect(actual).to.deep.equal(expected);
-                    const allExists = _.map(result, 'createdAt').map(r => !!r);
-                    expect(allExists).to.deep.equal(Array(expected.length).fill(true));
+                    const expected = _.sortBy(history.signatures[userIndex], 'id');
+                    expect(result).to.deep.equal(expected);
                 });
         };
     };

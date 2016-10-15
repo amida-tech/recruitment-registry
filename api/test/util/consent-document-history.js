@@ -72,9 +72,10 @@ class ConsentDocumentHistory {
         return this.consentDocuments;
     }
 
-    sign(typeIndex, userIndex) {
+    sign(typeIndex, userIndex, language) {
         const id = this.id(typeIndex);
-        this.signatures[userIndex].push(id);
+        language = language || 'en';
+        this.signatures[userIndex].push({ id, language });
     }
 }
 

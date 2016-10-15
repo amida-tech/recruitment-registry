@@ -151,7 +151,14 @@ describe('consent integration', function () {
                         return done(err);
                     }
                     const typeIndices = consentSpecs[index];
-                    const signatures = signatureIndices.reduce((r, i) => (r[i] = true, r), {});
+                    const signatures = signatureIndices.reduce((r, i) => {
+                        if (Array.isArray(i)) {
+                            r[i[0]] = i[1];
+                        } else {
+                            r[i] = 'en';
+                        }
+                        return r;
+                    }, {});
                     const expected = consentCommon.formExpectedConsent(index, typeIndices, signatures);
                     expect(res.body).to.deep.equal(expected);
                     done();
@@ -171,7 +178,14 @@ describe('consent integration', function () {
                         return done(err);
                     }
                     const typeIndices = consentSpecs[index];
-                    const signatures = signatureIndices.reduce((r, i) => (r[i] = true, r), {});
+                    const signatures = signatureIndices.reduce((r, i) => {
+                        if (Array.isArray(i)) {
+                            r[i[0]] = i[1];
+                        } else {
+                            r[i] = 'en';
+                        }
+                        return r;
+                    }, {});
                     const expected = consentCommon.formExpectedConsent(index, typeIndices, signatures);
                     expect(res.body).to.deep.equal(expected);
                     done();
@@ -240,23 +254,29 @@ describe('consent integration', function () {
 
     fn();
 
-    const signDocumentsFn = function (userIndex, index, newSignatureIndices) {
+    const signDocumentsFn = function (userIndex, index, newSignatureIndices, language) {
         return function (done) {
+            language = language || 'en';
+            const query = {};
+            if (language) {
+                query.language = language;
+            }
             const documentIds = newSignatureIndices.map(i => history.id(i));
             store.server
                 .post(`/api/v1.0/consent-signatures/bulk`)
                 .set('Authorization', store.auth)
+                .query(query)
                 .send(documentIds)
                 .expect(201, done);
         };
     };
 
     it(`login as user 0`, shared.loginIndexFn(store, history.hxUser, 0));
-    it('user 0 signs consent 0 (1, 2, 3)', signDocumentsFn(0, 0, [1, 2, 3]));
+    it('user 0 signs consent 0 (1, 2, 3)', signDocumentsFn(0, 0, [1, 2, 3], 'sp'));
     it('logout as user 0', shared.logoutFn(store));
 
     it(`login as user 1`, shared.loginIndexFn(store, history.hxUser, 1));
-    it('user 1 signs consent 1 (5, 10, 11)', signDocumentsFn(1, 1, [5, 10, 11]));
+    it('user 1 signs consent 1 (5, 10, 11)', signDocumentsFn(1, 1, [5, 10, 11], 'en'));
     it('logout as user 1', shared.logoutFn(store));
 
     it(`login as user 2`, shared.loginIndexFn(store, history.hxUser, 2));
@@ -268,8 +288,16 @@ describe('consent integration', function () {
     it('logout as user 3', shared.logoutFn(store));
 
     it(`login as user 0`, shared.loginIndexFn(store, history.hxUser, 0));
-    it(`get/verify user 0 consent 0 documents`, getUserConsentDocumentsFn(0, 0, [1, 2, 3]));
-    it(`get/verify user 0 consent 0 documents by name`, getUserConsentDocumentsByNameFn(0, 0, [1, 2, 3]));
+    it(`get/verify user 0 consent 0 documents`, getUserConsentDocumentsFn(0, 0, [
+        [1, 'sp'],
+        [2, 'sp'],
+        [3, 'sp']
+    ]));
+    it(`get/verify user 0 consent 0 documents by name`, getUserConsentDocumentsByNameFn(0, 0, [
+        [1, 'sp'],
+        [2, 'sp'],
+        [3, 'sp']
+    ]));
     it('logout as user 0', shared.logoutFn(store));
 
     it(`login as user 1`, shared.loginIndexFn(store, history.hxUser, 1));
@@ -291,7 +319,10 @@ describe('consent integration', function () {
     it('logout as super', shared.logoutFn(store));
 
     it(`login as user 0`, shared.loginIndexFn(store, history.hxUser, 0));
-    it(`get/verify user 0 consent 0 documents`, getUserConsentDocumentsFn(0, 0, [1, 3]));
+    it(`get/verify user 0 consent 0 documents`, getUserConsentDocumentsFn(0, 0, [
+        [1, 'sp'],
+        [3, 'sp']
+    ]));
     it('logout as user 0', shared.logoutFn(store));
 
     it(`login as user 1`, shared.loginIndexFn(store, history.hxUser, 1));
@@ -307,11 +338,11 @@ describe('consent integration', function () {
     it('logout as user 3', shared.logoutFn(store));
 
     it(`login as user 0`, shared.loginIndexFn(store, history.hxUser, 0));
-    it('user 0 signs consent 0 (0, 2)', signDocumentsFn(0, 0, [0, 2]));
+    it('user 0 signs consent 0 (0, 2)', signDocumentsFn(0, 0, [0, 2], 'en'));
     it('logout as user 0', shared.logoutFn(store));
 
     it(`login as user 1`, shared.loginIndexFn(store, history.hxUser, 1));
-    it('user 1 signs consent 1 (8, 10)', signDocumentsFn(1, 1, [8, 10]));
+    it('user 1 signs consent 1 (8, 10)', signDocumentsFn(1, 1, [8, 10], 'sp'));
     it('logout as user 1', shared.logoutFn(store));
 
     it(`login as user 2`, shared.loginIndexFn(store, history.hxUser, 2));
@@ -323,11 +354,13 @@ describe('consent integration', function () {
     it('logout as user 3', shared.logoutFn(store));
 
     it(`login as user 0`, shared.loginIndexFn(store, history.hxUser, 0));
-    it(`get/verify user 0 consent 0 documents`, getUserConsentDocumentsFn(0, 0, [0, 1, 2, 3]));
+    it(`get/verify user 0 consent 0 documents`, getUserConsentDocumentsFn(0, 0, [0, [1, 'sp'], 2, [3, 'sp']]));
     it('logout as user 0', shared.logoutFn(store));
 
     it(`login as user 1`, shared.loginIndexFn(store, history.hxUser, 1));
-    it(`get/verify user 1 consent 1 documents`, getUserConsentDocumentsFn(1, 1, [5, 8, 10, 11]));
+    it(`get/verify user 1 consent 1 documents`, getUserConsentDocumentsFn(1, 1, [5, [8, 'sp'],
+        [10, 'sp'], 11
+    ]));
     it('logout as user 1', shared.logoutFn(store));
 
     it(`login as user 2`, shared.loginIndexFn(store, history.hxUser, 2));

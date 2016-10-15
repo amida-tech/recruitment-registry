@@ -1036,6 +1036,13 @@
                         },
                         "additionalProperties": false
                     }
+                }, {
+                    "name": "language",
+                    "in": "query",
+                    "description": "Language when document signed",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 1
                 }],
                 "responses": {
                     "201": {
@@ -1067,10 +1074,61 @@
                             "minimum": 1
                         }
                     }
+                }, {
+                    "name": "language",
+                    "in": "query",
+                    "description": "Language when documents signed",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 1
                 }],
                 "responses": {
                     "201": {
                         "$ref": "#/responses/anyArray"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/consent-signatures/users/{id}/history": {
+            "x-swagger-router-controller": "consent-signature.controller",
+            "get": {
+                "summary": "History of user signatures",
+                "operationId": "getSignatureHistory",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "id",
+                    "in": "path",
+                    "description": "User id",
+                    "required": true,
+                    "type": "integer",
+                    "minimum": 1
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "required": ["id", "language"],
+                                "properties": {
+                                    "id": {
+                                        "type": "integer",
+                                        "minimum": 1
+                                    },
+                                    "language": {
+                                        "type": "string",
+                                        "minLength": 2
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        }
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -2079,6 +2137,10 @@
                 },
                 "signature": {
                     "type": "boolean"
+                },
+                "language": {
+                    "type": "string",
+                    "minLength": 2
                 }
             },
             "additionalProperties": false

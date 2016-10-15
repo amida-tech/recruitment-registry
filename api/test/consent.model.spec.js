@@ -102,7 +102,14 @@ describe('consent unit', function () {
         return Consent.getUserConsentDocuments(userId, id)
             .then(consent => {
                 const typeIndices = consentSpecs[index];
-                const signatures = signatureIndices.reduce((r, i) => (r[i] = true, r), {});
+                const signatures = signatureIndices.reduce((r, i) => {
+                    if (Array.isArray(i)) {
+                        r[i[0]] = i[1];
+                    } else {
+                        r[i] = 'en';
+                    }
+                    return r;
+                }, {});
                 const expected = consentCommon.formExpectedConsent(index, typeIndices, signatures);
                 expect(consent).to.deep.equal(expected);
             });
@@ -114,7 +121,14 @@ describe('consent unit', function () {
         return Consent.getUserConsentDocumentsByName(userId, name)
             .then(consent => {
                 const typeIndices = consentSpecs[index];
-                const signatures = signatureIndices.reduce((r, i) => (r[i] = true, r), {});
+                const signatures = signatureIndices.reduce((r, i) => {
+                    if (Array.isArray(i)) {
+                        r[i[0]] = i[1];
+                    } else {
+                        r[i] = 'en';
+                    }
+                    return r;
+                }, {});
                 const expected = consentCommon.formExpectedConsent(index, typeIndices, signatures);
                 expect(consent).to.deep.equal(expected);
             });
@@ -165,17 +179,21 @@ describe('consent unit', function () {
 
     fn();
 
-    const signDocumentsFn = function (userIndex, index, newSignatureIndices, expectedSignatureIndices) {
+    const signDocumentsFn = function (userIndex, index, newSignatureIndices, expectedSignatureIndices, language) {
         return function () {
             const userId = history.userId(userIndex);
             const documentIds = newSignatureIndices.map(i => history.id(i));
-            return ConsentSignature.bulkCreateSignatures(userId, documentIds)
+            return ConsentSignature.bulkCreateSignatures(userId, documentIds, language)
                 .then(() => getUserConsentDocuments(userIndex, index, expectedSignatureIndices));
         };
     };
 
-    it('user 0 signs consent 0 (1, 2, 3)', signDocumentsFn(0, 0, [1, 2, 3], [1, 2, 3]));
-    it('user 1 signs consent 1 (5, 10, 11)', signDocumentsFn(1, 1, [5, 10, 11], [5, 10, 11]));
+    it('user 0 signs consent 0 (1, 2, 3)', signDocumentsFn(0, 0, [1, 2, 3], [
+        [1, 'sp'],
+        [2, 'sp'],
+        [3, 'sp']
+    ], 'sp'));
+    it('user 1 signs consent 1 (5, 10, 11)', signDocumentsFn(1, 1, [5, 10, 11], [5, 10, 11], 'en'));
     it('user 2 signs consent 3 (8, 9, 10)', signDocumentsFn(2, 3, [8, 9, 10], [8, 9, 10]));
     it('user 3 signs consent 0 (0, 2, 3, 4)', signDocumentsFn(3, 0, [0, 2, 3, 4], [0, 2, 3, 4]));
 
@@ -184,10 +202,16 @@ describe('consent unit', function () {
     });
 
     it(`get/verify user 0 consent 0 documents`, function () {
-        return getUserConsentDocuments(0, 0, [1, 3]);
+        return getUserConsentDocuments(0, 0, [
+            [1, 'sp'],
+            [3, 'sp']
+        ]);
     });
     it(`get/verify user 0 consent 0 documents by name`, function () {
-        return getUserConsentDocumentsByName(0, 0, [1, 3]);
+        return getUserConsentDocumentsByName(0, 0, [
+            [1, 'sp'],
+            [3, 'sp']
+        ]);
     });
     it(`get/verify user 1 consent 1 documents`, function () {
         return getUserConsentDocuments(1, 1, [5, 11]);
@@ -199,8 +223,10 @@ describe('consent unit', function () {
         return getUserConsentDocuments(3, 0, [0, 3]);
     });
 
-    it('user 0 signs consent 0 (0, 2)', signDocumentsFn(0, 0, [0, 2], [0, 1, 2, 3]));
-    it('user 1 signs consent 1 (8, 10)', signDocumentsFn(1, 1, [8, 10], [5, 8, 10, 11]));
+    it('user 0 signs consent 0 (0, 2)', signDocumentsFn(0, 0, [0, 2], [0, [1, 'sp'], 2, [3, 'sp']], 'en'));
+    it('user 1 signs consent 1 (8, 10)', signDocumentsFn(1, 1, [8, 10], [5, [8, 'sp'],
+        [10, 'sp'], 11
+    ], 'sp'));
     it('user 2 signs consent 3 (8, 11)', signDocumentsFn(2, 3, [8, 11], [8, 9, 11]));
     it('user 3 signs consent 0 (2, 4)', signDocumentsFn(3, 0, [2, 4], [0, 2, 3, 4]));
 

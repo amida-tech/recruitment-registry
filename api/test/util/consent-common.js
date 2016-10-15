@@ -19,7 +19,11 @@ class ConsentCommon {
             delete consentDocument.typeId;
             const section = Object.assign({}, typeDetail, consentDocument);
             if (signatures) {
-                section.signature = Boolean(signatures[typeIndex]);
+                const sign = signatures[typeIndex];
+                section.signature = Boolean(sign);
+                if (sign) {
+                    section.language = sign;
+                }
             }
             return section;
         });
