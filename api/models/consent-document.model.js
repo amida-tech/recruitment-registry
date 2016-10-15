@@ -4,7 +4,11 @@ const _ = require('lodash');
 
 const RRError = require('../lib/rr-error');
 
+const textTableMethods = require('./text-table-methods');
+
 module.exports = function (sequelize, DataTypes) {
+    const textHandler = textTableMethods(sequelize, 'consent_document_text', 'consentDocumentId', ['content', 'updateComment']);
+
     const ConsentDocument = sequelize.define('consent_document', {
         typeId: {
             type: DataTypes.INTEGER,
@@ -14,14 +18,6 @@ module.exports = function (sequelize, DataTypes) {
                 model: 'consent_type',
                 key: 'id'
             }
-        },
-        content: {
-            type: DataTypes.TEXT,
-            allowNull: false
-        },
-        updateComment: {
-            type: DataTypes.TEXT,
-            field: 'update_comment'
         },
         createdAt: {
             type: DataTypes.DATE,
@@ -81,9 +77,10 @@ module.exports = function (sequelize, DataTypes) {
             getConsentDocumentsOfTypes: function (typeIds) {
                 return ConsentDocument.findAll({
                         raw: true,
-                        attributes: ['id', 'typeId', 'content', 'updateComment'],
+                        attributes: ['id', 'typeId'],
                         where: { typeId: { $in: typeIds } }
                     })
+                    .then(documents => textHandler.updateAllTexts(documents))
                     .then(documents => _.keyBy(documents, 'typeId'))
                     .then(documents => {
                         const ConsentType = sequelize.models.consent_type;
@@ -108,22 +105,31 @@ module.exports = function (sequelize, DataTypes) {
                 return sequelize.transaction(function (tx) {
                     const typeId = input.typeId;
                     return ConsentDocument.destroy({ where: { typeId } }, { transaction: tx })
-                        .then(() => ConsentDocument.create(input, { transaction: tx })
-                            .then(({ id }) => ({ id }))
-                        );
+                        .then(() => ConsentDocument.create(input, { transaction: tx }))
+                        .then(result => {
+                            const textInput = { id: result.id };
+                            textInput.content = input.content;
+                            if (input.updateComment) {
+                                textInput.updateComment = input.updateComment;
+                            }
+                            return textHandler.createTextTx(textInput, tx)
+                                .then(({ id }) => ({ id }));
+                        });
                 });
             },
             getConsentDocument: function (id) {
-                return ConsentDocument.findById(id, { raw: true, attributes: ['id', 'typeId', 'content', 'updateComment'] });
+                return ConsentDocument.findById(id, { raw: true, attributes: ['id', 'typeId'] })
+                    .then(result => textHandler.updateText(result));
             },
             getUpdateCommentHistory: function (typeId) {
                 return ConsentDocument.findAll({
                         raw: true,
-                        attributes: ['updateComment'],
+                        attributes: ['id'],
                         where: { typeId },
                         order: 'id',
                         paranoid: false
                     })
+                    .then(documents => textHandler.updateAllTexts(documents))
                     .then(documents => _.map(documents, 'updateComment'));
             }
         }

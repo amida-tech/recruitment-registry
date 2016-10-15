@@ -13,7 +13,13 @@ module.exports = function (sequelize, tableName, parentIdField, textFields = ['t
                 .then(() => {
                     const record = { language };
                     record[parentIdField] = input.id;
-                    textFields.forEach(field => (record[field] = input[field]));
+                    textFields.forEach(field => {
+                        let value = input[field];
+                        if (value === undefined) {
+                            value = null;
+                        }
+                        record[field] = value;
+                    });
                     return Table.create(record, { transaction: tx })
                         .then(() => input);
                 });
@@ -48,13 +54,12 @@ module.exports = function (sequelize, tableName, parentIdField, textFields = ['t
             const Table = sequelize.models[tableName];
             const options = { raw: true, attributes: [parentIdField, ...textFields] };
             if (language === 'en') {
-                options.language = 'en';
+                _.set(options, `where.language`, 'en');
             } else {
-                _.set(`language.$in`, ['en', language]);
-
+                _.set(options, `where.language.$in`, ['en', language]);
             }
             if (ids) {
-                _.set(`where.${parentIdField}.$in`, ids);
+                _.set(options, `where.${parentIdField}.$in`, ids);
             }
             return Table.findAll(options)
                 .then(records => {

@@ -10,6 +10,8 @@ const Generator = require('./util/entity-generator');
 const History = require('./util/entity-history');
 const ConsentDocumentHistory = require('./util/consent-document-history');
 const models = require('../models');
+const textTableMethods = require('../models/text-table-methods');
+
 const expect = chai.expect;
 
 const User = models.User;
@@ -19,6 +21,8 @@ const Consent = models.Consent;
 const ConsentType = models.ConsentType;
 const ConsentDocument = models.ConsentDocument;
 const ConsentSignature = models.ConsentSignature;
+
+const textHandler = textTableMethods(models.sequelize, 'consent_document_text', 'consentDocumentId', ['content', 'updateComment']);
 
 describe('consent document/type/signature unit', function () {
     const userCount = 4;
@@ -244,13 +248,17 @@ describe('consent document/type/signature unit', function () {
     }
 
     it('verify all consent sections still exists', function () {
-        const queryParams = { raw: true, attributes: ['id', 'typeId', 'content', 'updateComment'], order: ['id'] };
+        const queryParams = { raw: true, attributes: ['id', 'typeId'], order: ['id'] };
         const queryParamsAll = Object.assign({}, { paranoid: false }, queryParams);
         return ConsentDocument.findAll(queryParamsAll)
+            .then(consentDocuments => textHandler.updateAllTexts(consentDocuments))
             .then(consentDocuments => {
                 expect(consentDocuments).to.deep.equal(history.consentDocuments);
             })
-            .then(() => ConsentDocument.findAll(queryParams))
+            .then(() => {
+                return ConsentDocument.findAll(queryParams)
+                    .then((consentDocuments => textHandler.updateAllTexts(consentDocuments)));
+            })
             .then(consentDocuments => {
                 const expected = _.sortBy([history.server(0), history.server(1)], 'id');
                 expect(consentDocuments).to.deep.equal(expected);
