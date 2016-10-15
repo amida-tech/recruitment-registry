@@ -35,18 +35,14 @@ module.exports = function (sequelize, DataTypes) {
         paranoid: true,
         classMethods: {
             listConsentDocuments: function (typeIds, tx) {
-                const query = {
-                    raw: true,
-                    attributes: ['id', 'name', 'title'],
-                    order: 'id'
-                };
+                const options = {};
                 if (typeIds && typeIds.length) {
-                    query.where = { id: { $in: typeIds } };
+                    options.ids = typeIds;
                 }
                 if (tx) {
-                    query.transaction = tx;
+                    options.transaction = tx;
                 }
-                return sequelize.models.consent_type.findAll(query)
+                return sequelize.models.consent_type.listConsentTypes(options)
                     .then(docTypes => {
                         if (!(typeIds && typeIds.length)) {
                             typeIds = _.map(docTypes, 'id');
@@ -84,10 +80,8 @@ module.exports = function (sequelize, DataTypes) {
                     .then(documents => _.keyBy(documents, 'typeId'))
                     .then(documents => {
                         const ConsentType = sequelize.models.consent_type;
-                        return ConsentType.findAll({
-                                raw: true,
-                                attributes: ['id', 'name', 'title', 'type'],
-                                where: { id: { $in: typeIds } }
+                        return ConsentType.listConsentTypes({
+                                ids: typeIds
                             })
                             .then(types => _.keyBy(types, 'id'))
                             .then(types => {
