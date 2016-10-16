@@ -28,18 +28,14 @@ describe('survey integration', function () {
     const example = surveyExamples.Example;
     const user = userExamples.Example;
     const hxUser = new History();
-    const createCount = 8;
+    const surveyCount = 8;
 
     const store = {
         server: null,
         auth: null
     };
 
-    const history = {
-        inputSurveys: [],
-        surveyIds: [],
-        surveys: []
-    };
+    const history = new History(['id', 'name']);
 
     before(shared.setUpFn(store));
 
@@ -55,18 +51,17 @@ describe('survey integration', function () {
 
     const createSurveyFn = function () {
         return function (done) {
-            const inputSurvey = entityGen.newSurvey();
-            history.inputSurveys.push(inputSurvey);
+            const clientSurvey = entityGen.newSurvey();
             store.server
                 .post('/api/v1.0/surveys')
                 .set('Authorization', store.auth)
-                .send(inputSurvey)
+                .send(clientSurvey)
                 .expect(201)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
                     }
-                    history.surveyIds.push(res.body.id);
+                    history.push(clientSurvey, res.body);
                     done();
                 });
         };
@@ -74,8 +69,7 @@ describe('survey integration', function () {
 
     const showSurveyFn = function (index, update = {}) {
         return function (done) {
-            const inputSurvey = history.inputSurveys[index];
-            const id = history.surveyIds[index];
+            const id = history.id(index);
             store.server
                 .get(`/api/v1.0/surveys/${id}`)
                 .set('Authorization', store.auth)
@@ -85,9 +79,10 @@ describe('survey integration', function () {
                         return done(err);
                     }
                     if (_.isEmpty(update)) {
-                        history.surveys.push(res.body);
+                        history.completeLastServer(res.body);
                     }
-                    const expected = Object.assign({}, inputSurvey, update);
+                    const clientSurvey = history.client(index);
+                    const expected = Object.assign({}, clientSurvey, update);
                     helper.buildServerSurvey(expected, res.body)
                         .then(function (expected) {
                             expect(res.body).to.deep.equal(expected);
@@ -100,8 +95,8 @@ describe('survey integration', function () {
 
     const updateSurveyFn = function (index, name) {
         return function (done) {
-            const id = history.surveyIds[index];
-            name = name || history.inputSurveys[index].name;
+            const id = history.id(index);
+            name = name || history.client(index).name;
             store.server
                 .patch(`/api/v1.0/surveys/${id}`)
                 .set('Authorization', store.auth)
@@ -117,7 +112,7 @@ describe('survey integration', function () {
         };
     };
 
-    const listSurveysFn = function (index) {
+    const listSurveysFn = function () {
         return function (done) {
             store.server
                 .get('/api/v1.0/surveys')
@@ -128,8 +123,7 @@ describe('survey integration', function () {
                         return done(err);
                     }
                     const surveys = res.body;
-                    expect(surveys).to.have.length(index + 1);
-                    const expected = history.surveys.map(({ id, name }) => ({ id, name }));
+                    const expected = history.listServers();
                     expect(surveys).to.deep.equal(expected);
                     done();
                 });
@@ -180,21 +174,20 @@ describe('survey integration', function () {
         it(`error: invalid (swagger) survey input ${i}`, invalidSurveySwaggerFn(i));
     }
 
-    for (let i = 0; i < createCount; ++i) {
+    for (let i = 0; i < surveyCount; ++i) {
         it(`create survey ${i}`, createSurveyFn());
         it(`verify survey ${i}`, showSurveyFn(i));
         const name = `updated_name_${i}`;
         it(`update survey ${i}`, updateSurveyFn(i, name));
         it(`verify survey ${i}`, showSurveyFn(i, { name }));
         it(`update survey ${i}`, updateSurveyFn(i));
-        it(`list surveys and verify`, listSurveysFn(i));
+        it(`list surveys and verify`, listSurveysFn());
     }
 
     const replaceSurveyFn = function (index) {
         return function (done) {
             const replacement = entityGen.newSurvey();
-            history.inputSurveys.push(replacement);
-            const id = history.surveys[index].id;
+            const id = history.id(index);
             store.server
                 .post(`/api/v1.0/surveys`)
                 .query({ parent: id })
@@ -205,37 +198,32 @@ describe('survey integration', function () {
                     if (err) {
                         return done(err);
                     }
-                    history.surveyIds.push(res.body.id);
-                    history.inputSurveys.splice(3, 1);
-                    history.surveys.splice(3, 1);
-                    history.surveyIds.splice(3, 1);
+                    history.replace(index, replacement, res.body);
                     done();
                 });
 
         };
     };
 
-    it('version to survey', replaceSurveyFn(3));
-    it('verify version survey', showSurveyFn(createCount - 1));
-    it(`list surveys and verify`, listSurveysFn(createCount - 1));
+    it('replace survey 3', replaceSurveyFn(3));
+    it('verify survey 3 replacement', showSurveyFn(surveyCount));
+    it(`list surveys and verify`, listSurveysFn());
 
     const deleteSurveyFn = function (index) {
         return function (done) {
-            const survey = history.surveys[index];
+            const id = history.id(index);
             store.server
-                .delete(`/api/v1.0/surveys/${survey.id}`)
+                .delete(`/api/v1.0/surveys/${id}`)
                 .set('Authorization', store.auth)
                 .expect(204, done);
         };
     };
 
-    it('delete survey', deleteSurveyFn(5));
+    it('delete survey 5', deleteSurveyFn(5));
     it('remove deleted survey locally', function () {
-        history.inputSurveys.splice(5, 1);
-        history.surveys.splice(5, 1);
-        history.surveyIds.splice(5, 1);
+        history.remove(5);
     });
-    it(`list surveys and verify`, listSurveysFn(createCount - 2));
+    it(`list surveys and verify`, listSurveysFn());
 
     it('create a new user', shared.createUserFn(store, hxUser, user));
 

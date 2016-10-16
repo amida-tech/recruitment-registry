@@ -140,7 +140,7 @@ module.exports = function (sequelize, DataTypes) {
                     .then(profileSurveyId => {
                         return User.getUser(input.userId)
                             .then(function (user) {
-                                return Survey.getAnsweredSurveyById(user.id, profileSurveyId)
+                                return Survey.getAnsweredSurvey(user.id, profileSurveyId)
                                     .then(function (survey) {
                                         return {
                                             user,

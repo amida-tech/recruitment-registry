@@ -155,40 +155,51 @@ module.exports = function (sequelize, DataTypes) {
                         });
                 });
             },
-            listSurveys() {
-                return Survey.findAll({ raw: true, attributes: ['id'], order: 'id' })
-                    .then(surveys => textHandler.updateAllTexts(surveys));
+            listSurveys(options = {}) {
+                let _options = {
+                    raw: true,
+                    attributes: ['id'],
+                    order: 'id'
+                };
+                if (options.override) {
+                    _options = _.assign({}, _options, options.override);
+                    if (_options.attributes.indexOf('name') < 0) {
+                        return Survey.findAll(_options);
+                    }
+                }
+                return Survey.findAll(_options)
+                    .then(surveys => textHandler.updateAllTexts(surveys, options.language));
             },
-            _getSurvey(where) {
-                return Survey.find({ where, raw: true, attributes: ['id'] })
+            getSurvey(id, options = {}) {
+                let _options = { where: { id }, raw: true, attributes: ['id'] };
+                if (options.override) {
+                    _options = _.assign({}, _options, options.override);
+                }
+                return Survey.findOne(_options)
                     .then(function (survey) {
                         if (!survey) {
                             return RRError.reject('surveyNotFound');
                         }
-                        return textHandler.updateText(survey)
-                            .then(() => {
-                                return sequelize.models.survey_question.findAll({
-                                        where: { surveyId: survey.id },
-                                        raw: true,
-                                        attributes: ['questionId', 'required']
-                                    })
-                                    .then(surveyQuestions => {
-                                        const questionIds = _.map(surveyQuestions, 'questionId');
-                                        return sequelize.models.question.getQuestions(questionIds)
-                                            .then(questions => ({ questions, surveyQuestions }));
-                                    })
-                                    .then(({ questions, surveyQuestions }) => {
-                                        const qxMap = _.keyBy(questions, 'id');
-                                        const fn = qx => Object.assign(qxMap[qx.questionId], { required: qx.required });
-                                        const qxs = surveyQuestions.map(fn);
-                                        survey.questions = qxs;
-                                        return survey;
-                                    });
-                            });
+                        return textHandler.updateText(survey, options.language)
+                            .then(() => sequelize.models.survey_question.findAll({
+                                    where: { surveyId: id },
+                                    raw: true,
+                                    attributes: ['questionId', 'required']
+                                })
+                                .then(surveyQuestions => {
+                                    const questionIds = _.map(surveyQuestions, 'questionId');
+                                    return sequelize.models.question.getQuestions(questionIds)
+                                        .then(questions => ({ questions, surveyQuestions }));
+                                })
+                                .then(({ questions, surveyQuestions }) => {
+                                    const qxMap = _.keyBy(questions, 'id');
+                                    const fn = qx => Object.assign(qxMap[qx.questionId], { required: qx.required });
+                                    const qxs = surveyQuestions.map(fn);
+                                    survey.questions = qxs;
+                                    return survey;
+                                })
+                            );
                     });
-            },
-            getSurvey(id) {
-                return Survey._getSurvey({ id });
             },
             getSurveyByName(name) {
                 return sequelize.models.survey_text.findOne({
@@ -198,13 +209,13 @@ module.exports = function (sequelize, DataTypes) {
                     })
                     .then(result => {
                         if (result) {
-                            return Survey._getSurvey({ id: result.surveyId });
+                            return Survey.getSurvey(result.surveyId);
                         } else {
                             return RRError.reject('surveyNotFound');
                         }
                     });
             },
-            getAnsweredSurvey(surveyPromise, userId) {
+            _getAnsweredSurvey(surveyPromise, userId) {
                 return surveyPromise
                     .then(function (survey) {
                         return sequelize.models.answer.getAnswers({
@@ -222,13 +233,13 @@ module.exports = function (sequelize, DataTypes) {
                             });
                     });
             },
-            getAnsweredSurveyById(userId, id) {
+            getAnsweredSurvey(userId, id) {
                 const p = Survey.getSurvey(id);
-                return Survey.getAnsweredSurvey(p, userId);
+                return Survey._getAnsweredSurvey(p, userId);
             },
             getAnsweredSurveyByName(userId, name) {
                 const p = Survey.getSurveyByName(name);
-                return Survey.getAnsweredSurvey(p, userId);
+                return Survey._getAnsweredSurvey(p, userId);
             }
         }
     });

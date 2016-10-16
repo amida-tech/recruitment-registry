@@ -22,6 +22,7 @@ describe('survey unit', function () {
     before(shared.setUpFn());
 
     const userCount = 1;
+    const surveyCount = 8;
 
     const history = new History(['id', 'name']);
     const hxUser = new History();
@@ -72,7 +73,7 @@ describe('survey unit', function () {
             .then(shared.throwingHandler, shared.expectedErrorHandler('surveyNoQuestions'));
     });
 
-    for (let i = 0; i < 8; ++i) {
+    for (let i = 0; i < surveyCount; ++i) {
         it(`create/verify/update survey ${i} and list all`, createVerifySurveyFn(i));
     }
 
@@ -120,17 +121,18 @@ describe('survey unit', function () {
     const dbVersionCompareFn = function (index, count) {
         return function () {
             const id = history.id(index);
-            return Survey.findById(id)
-                .then(fullSurvey => {
-                    const groupId = fullSurvey.groupId;
-                    return Survey.findAll({
-                            where: { groupId },
-                            paranoid: false,
-                            attributes: ['groupId', 'version'],
-                            raw: true
+            return Survey.getSurvey(id, { override: { attributes: ['id', 'groupId'] } })
+                .then(surveyWithGroupId => {
+                    const groupId = surveyWithGroupId.groupId;
+                    return Survey.listSurveys({
+                            override: {
+                                where: { groupId },
+                                paranoid: false,
+                                attributes: ['groupId', 'version'],
+                                order: 'version'
+                            }
                         })
                         .then(actual => {
-                            actual = _.sortBy(actual, 'version');
                             const expected = _.range(1, count + 1).map(version => ({ version, groupId }));
                             expect(actual).to.deep.equal(expected);
                         });
@@ -139,7 +141,7 @@ describe('survey unit', function () {
     };
 
     [3, 0, 9].forEach(index => {
-        it(`replace survey ${index} with survey ${8+index}`, replaceSurveyFn(index));
+        it(`replace survey ${index} with survey ${surveyCount+index}`, replaceSurveyFn(index));
     });
 
     it('survey 1 is version 1', dbVersionCompareFn(1, 1));
@@ -209,7 +211,7 @@ describe('survey unit', function () {
             };
             return models.Answer.createAnswers(input)
                 .then(function () {
-                    return Survey.getAnsweredSurveyById(input.userId, input.surveyId)
+                    return Survey.getAnsweredSurvey(input.userId, input.surveyId)
                         .then(answeredSurvey => {
                             const expected = _.cloneDeep(survey);
                             expected.questions.forEach((qx, index) => {
@@ -232,7 +234,7 @@ describe('survey unit', function () {
         };
     };
 
-    it('naswer survey 1 and get/verify answered survey 1', answerVerifySurveyFn(1));
+    it('answer survey 1 and get/verify answered survey 1', answerVerifySurveyFn(1));
 
     it('error: answer without required questions', function () {
         const survey = history.server(4);
