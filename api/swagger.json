@@ -321,8 +321,8 @@
                     "admin": []
                 }],
                 "responses": {
-                    "200": {
-                        "$ref": "#/responses/emptySuccess"
+                    "204": {
+                        "description": "Successful response."
                     },
                    "default": {
                         "$ref": "#/responses/genericError"
@@ -785,7 +785,7 @@
                 }],
                 "responses": {
                     "204": {
-                        "$ref": "#/responses/emptySuccess"
+                        "description": "Successful response."
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -894,7 +894,7 @@
                 }],
                 "responses": {
                     "204": {
-                        "$ref": "#/responses/emptySuccess"
+                        "description": "Successful response."
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -1215,7 +1215,7 @@
                 }],
                 "responses": {
                     "204": {
-                        "$ref": "#/responses/emptySuccess"
+                        "description": "Successful response."
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -1458,7 +1458,7 @@
                 }],
                 "responses": {
                     "204": {
-                        "$ref": "#/responses/emptySuccess"
+                        "description": "Successful response."
                     },
                     "default": {
                         "$ref": "#/responses/genericError"

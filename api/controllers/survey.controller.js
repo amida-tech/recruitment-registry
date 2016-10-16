@@ -49,7 +49,7 @@ exports.updateSurvey = function (req, res) {
 exports.deleteSurvey = function (req, res) {
     const id = _.get(req, 'swagger.params.id.value');
     Survey.deleteSurvey(id)
-        .then(() => res.status(204).json({}))
+        .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };
 

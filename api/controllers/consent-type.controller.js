@@ -22,6 +22,6 @@ exports.listConsentTypes = function (req, res) {
 exports.deleteConsentType = function (req, res) {
     const id = _.get(req, 'swagger.params.id.value');
     ConsentType.deleteConsentType(id)
-        .then(() => res.status(204).json({}))
+        .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };

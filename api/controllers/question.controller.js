@@ -35,7 +35,7 @@ exports.updateQuestion = function (req, res) {
 exports.deleteQuestion = function (req, res) {
     const id = _.get(req, 'swagger.params.id.value');
     Question.deleteQuestion(id)
-        .then(() => res.status(204).json({}))
+        .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };
 
