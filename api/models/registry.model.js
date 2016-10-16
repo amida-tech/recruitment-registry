@@ -66,7 +66,7 @@ module.exports = function (sequelize, DataTypes) {
             getProfileSurvey: function () {
                 return Registry.getProfileSurveyId()
                     .then(profileSurveyId => {
-                        return Survey.getSurveyById(profileSurveyId)
+                        return Survey.getSurvey(profileSurveyId)
                             .then(survey => {
                                 const surveyId = survey.id;
                                 const action = 'create';

@@ -23,10 +23,7 @@ describe('survey unit', function () {
 
     const userCount = 1;
 
-    const store = {
-        inputSurveys: [],
-        surveys: []
-    };
+    const history = new History();
 
     const hxUser = new History();
 
@@ -40,14 +37,14 @@ describe('survey unit', function () {
     const createVerifySurveyFn = function (index) {
         return function () {
             const inputSurvey = generator.newSurvey();
-            store.inputSurveys.push(inputSurvey);
+            history.clients.push(inputSurvey);
             return Survey.createSurvey(inputSurvey)
-                .then(id => Survey.getSurveyById(id))
+                .then(id => Survey.getSurvey(id))
                 .then((serverSurvey) => {
                     return surveyHelper.buildServerSurvey(inputSurvey, serverSurvey)
                         .then(expected => {
                             expect(serverSurvey).to.deep.equal(expected);
-                            store.surveys.push(serverSurvey);
+                            history.servers.push(serverSurvey);
                             return serverSurvey.id;
                         });
                 })
@@ -65,7 +62,7 @@ describe('survey unit', function () {
                 .then(() => Survey.listSurveys())
                 .then(surveys => {
                     expect(surveys).to.have.length(index + 1);
-                    const expected = store.surveys.map(({ id, name }) => ({ id, name }));
+                    const expected = history.servers.map(({ id, name }) => ({ id, name }));
                     expect(surveys).to.deep.equal(expected);
                 });
         };
@@ -81,12 +78,12 @@ describe('survey unit', function () {
     }
 
     it('error: show a non-existent survey', function () {
-        return Survey.getSurveyById(999)
+        return Survey.getSurvey(999)
             .then(shared.throwingHandler, shared.expectedErrorHandler('surveyNotFound'));
     });
 
     it('error: version with a survey with no questions', function () {
-        const survey = store.surveys[1];
+        const survey = history.servers[1];
         const replacementSurvey = generator.newSurvey();
         delete replacementSurvey.questions;
         return Survey.replaceSurvey(survey.id, replacementSurvey)
@@ -102,34 +99,34 @@ describe('survey unit', function () {
     const replaceSurveyFn = function (index) {
         return function () {
             if (index === undefined) {
-                index = store.surveys.length - 1;
+                index = history.servers.length - 1;
             }
-            const survey = store.surveys[index];
+            const survey = history.servers[index];
             const inputSurvey = generator.newSurvey();
-            store.inputSurveys.push(inputSurvey);
-            store.inputSurveys.splice(index, 1);
+            history.clients.push(inputSurvey);
+            history.clients.splice(index, 1);
             return Survey.replaceSurvey(survey.id, inputSurvey)
-                .then(id => Survey.getSurveyById(id))
+                .then(id => Survey.getSurvey(id))
                 .then((serverSurvey) => {
                     return surveyHelper.buildServerSurvey(inputSurvey, serverSurvey)
                         .then(expected => {
                             expect(serverSurvey).to.deep.equal(expected);
-                            store.surveys.push(serverSurvey);
-                            store.surveys.splice(index, 1);
+                            history.servers.push(serverSurvey);
+                            history.servers.splice(index, 1);
                             return serverSurvey.id;
                         });
                 })
                 .then(() => Survey.listSurveys())
                 .then(surveys => {
-                    expect(surveys).to.have.length(store.surveys.length);
-                    const expected = store.surveys.map(({ id, name }) => ({ id, name }));
+                    expect(surveys).to.have.length(history.servers.length);
+                    const expected = history.servers.map(({ id, name }) => ({ id, name }));
                     expect(surveys).to.deep.equal(expected);
                 });
         };
     };
 
     const dbVersionCompare = function (index, count) {
-        const survey = store.surveys[index];
+        const survey = history.servers[index];
         return Survey.findById(survey.id)
             .then(fullSurvey => {
                 const groupId = fullSurvey.groupId;
@@ -150,33 +147,33 @@ describe('survey unit', function () {
     it('replace surveys', function () {
         return replaceSurveyFn(3)()
             .then(replaceSurveyFn(0))
-            .then(replaceSurveyFn(store.surveys.length - 1))
-            .then(() => dbVersionCompare(store.surveys.length - 1, 3))
-            .then(() => dbVersionCompare(store.surveys.length - 2, 2));
+            .then(replaceSurveyFn(history.servers.length - 1))
+            .then(() => dbVersionCompare(history.servers.length - 1, 3))
+            .then(() => dbVersionCompare(history.servers.length - 2, 2));
     });
 
     it('delete a survey', function () {
-        const survey = store.surveys[5];
-        store.surveys.splice(5, 1);
-        store.inputSurveys.splice(5, 1);
+        const survey = history.servers[5];
+        history.servers.splice(5, 1);
+        history.clients.splice(5, 1);
         return Survey.deleteSurvey(survey.id)
             .then(() => Survey.listSurveys())
             .then(surveys => {
-                const expected = store.surveys.map(({ id, name }) => ({ id, name }));
+                const expected = history.servers.map(({ id, name }) => ({ id, name }));
                 expect(surveys).to.deep.equal(expected);
             });
     });
 
     it('extract existing questions', function () {
-        store.questions = _.flatten(_.map(store.surveys, 'questions'));
+        history.questions = _.flatten(_.map(history.servers, 'questions'));
     });
 
     it('survey by existing questions only', function () {
         const survey = generator.newSurvey();
-        const questions = store.questions.slice(0, 10);
+        const questions = history.questions.slice(0, 10);
         survey.questions = questions.map(({ id, required }) => ({ id, required }));
         return Survey.createSurvey(survey)
-            .then(id => Survey.getSurveyById(id))
+            .then(id => Survey.getSurvey(id))
             .then((serverSurvey) => {
                 const expected = {
                     id: serverSurvey.id,
@@ -189,14 +186,14 @@ describe('survey unit', function () {
 
     it('survey by existing/new questions', function () {
         const survey = generator.newSurvey();
-        const fn = index => ({ id: store.questions[index].id, required: store.questions[index].required });
+        const fn = index => ({ id: history.questions[index].id, required: history.questions[index].required });
         const additionalIds = [10, 11].map(fn);
         survey.questions.splice(1, 0, ...additionalIds);
         return Survey.createSurvey(survey)
-            .then(id => Survey.getSurveyById(id))
+            .then(id => Survey.getSurvey(id))
             .then((serverSurvey) => {
-                survey.questions[1] = store.questions[10];
-                survey.questions[2] = store.questions[11];
+                survey.questions[1] = history.questions[10];
+                survey.questions[2] = history.questions[11];
                 return surveyHelper.buildServerSurvey(survey, serverSurvey)
                     .then(expected => {
                         expect(serverSurvey).to.deep.equal(expected);
@@ -210,11 +207,11 @@ describe('survey unit', function () {
 
     const answerVerifySurveyFn = function (surveyIndex) {
         return function () {
-            const survey = store.surveys[surveyIndex];
+            const survey = history.servers[surveyIndex];
             const answers = generator.answerQuestions(survey.questions);
             const input = {
                 userId: hxUser.id(0),
-                surveyId: store.surveys[1].id,
+                surveyId: history.servers[1].id,
                 answers
             };
             return models.Answer.createAnswers(input)
@@ -245,12 +242,12 @@ describe('survey unit', function () {
     it('get/verify answered survey', answerVerifySurveyFn(1));
 
     it('error: answer without required questions', function () {
-        const survey = store.surveys[3];
+        const survey = history.servers[3];
         const qxs = survey.questions;
         const answers = generator.answerQuestions(qxs);
         const input = {
             userId: hxUser.id(0),
-            surveyId: store.surveys[3].id,
+            surveyId: history.servers[3].id,
             answers
         };
         const requiredIndices = _.range(qxs.length).filter(index => qxs[index].required);
@@ -272,12 +269,12 @@ describe('survey unit', function () {
     });
 
     it('error: answer with invalid question id', function () {
-        const survey = store.surveys[0];
+        const survey = history.servers[0];
         const qxs = survey.questions;
         const answers = generator.answerQuestions(qxs);
         const input = {
             userId: hxUser.id(0),
-            surveyId: store.surveys[3].id,
+            surveyId: history.servers[3].id,
             answers
         };
         answers[0].questionId = 9999;

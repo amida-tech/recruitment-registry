@@ -8,9 +8,9 @@ const jsonSchema = require('../lib/json-schema');
 
 const Survey = models.Survey;
 
-exports.getSurveyById = function (req, res) {
+exports.getSurvey = function (req, res) {
     const id = _.get(req, 'swagger.params.id.value');
-    Survey.getSurveyById(id)
+    Survey.getSurvey(id)
         .then(survey => res.status(200).json(survey))
         .catch(shared.handleError(res));
 };

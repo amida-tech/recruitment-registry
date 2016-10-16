@@ -37,7 +37,7 @@ module.exports = function (sequelize, DataTypes) {
         deletedAt: 'deletedAt',
         paranoid: true,
         classMethods: {
-            createNewQuestionsTx: function (questions, tx) {
+            createNewQuestionsTx(questions, tx) {
                 const newQuestions = questions.reduce(function (r, qx, index) {
                     if (!qx.id) {
                         r.push({ qx, index });
@@ -56,7 +56,7 @@ module.exports = function (sequelize, DataTypes) {
                     return sequelize.Promise.resolve(questions);
                 }
             },
-            updateQuestionsTx: function (inputQxs, surveyId, tx) {
+            updateQuestionsTx(inputQxs, surveyId, tx) {
                 const questions = inputQxs.slice();
                 return Survey.createNewQuestionsTx(questions, tx)
                     .then((questions) => {
@@ -72,7 +72,7 @@ module.exports = function (sequelize, DataTypes) {
                         }));
                     });
             },
-            createSurveyTx: function (survey, tx) {
+            createSurveyTx(survey, tx) {
                 if (!(survey.questions && survey.questions.length)) {
                     return RRError.reject('surveyNoQuestions');
                 }
@@ -87,12 +87,12 @@ module.exports = function (sequelize, DataTypes) {
                             .then(() => id);
                     });
             },
-            createSurvey: function (survey) {
+            createSurvey(survey) {
                 return sequelize.transaction(function (tx) {
                     return Survey.createSurveyTx(survey, tx);
                 });
             },
-            updateSurvey: function (id, { name }) {
+            updateSurvey(id, { name }) {
                 return textHandler.createText({ id, name })
                     .then(() => ({}));
             },
@@ -125,7 +125,7 @@ module.exports = function (sequelize, DataTypes) {
                             .then(() => id);
                     });
             },
-            replaceSurvey: function (id, replacement, tx) {
+            replaceSurvey(id, replacement, tx) {
                 if (!_.get(replacement, 'questions.length')) {
                     return RRError.reject('surveyNoQuestions');
                 }
@@ -146,7 +146,7 @@ module.exports = function (sequelize, DataTypes) {
                         }
                     });
             },
-            deleteSurvey: function (id) {
+            deleteSurvey(id) {
                 return sequelize.transaction(function (tx) {
                     return Survey.destroy({ where: { id } }, { transaction: tx })
                         .then(() => {
@@ -155,11 +155,11 @@ module.exports = function (sequelize, DataTypes) {
                         });
                 });
             },
-            listSurveys: function () {
+            listSurveys() {
                 return Survey.findAll({ raw: true, attributes: ['id'], order: 'id' })
                     .then(surveys => textHandler.updateAllTexts(surveys));
             },
-            getSurvey: function (where) {
+            _getSurvey(where) {
                 return Survey.find({ where, raw: true, attributes: ['id'] })
                     .then(function (survey) {
                         if (!survey) {
@@ -187,10 +187,10 @@ module.exports = function (sequelize, DataTypes) {
                             });
                     });
             },
-            getSurveyById: function (id) {
-                return Survey.getSurvey({ id });
+            getSurvey(id) {
+                return Survey._getSurvey({ id });
             },
-            getSurveyByName: function (name) {
+            getSurveyByName(name) {
                 return sequelize.models.survey_text.findOne({
                         where: { name },
                         raw: true,
@@ -198,13 +198,13 @@ module.exports = function (sequelize, DataTypes) {
                     })
                     .then(result => {
                         if (result) {
-                            return Survey.getSurvey({ id: result.surveyId });
+                            return Survey._getSurvey({ id: result.surveyId });
                         } else {
                             return RRError.reject('surveyNotFound');
                         }
                     });
             },
-            getAnsweredSurvey: function (surveyPromise, userId) {
+            getAnsweredSurvey(surveyPromise, userId) {
                 return surveyPromise
                     .then(function (survey) {
                         return sequelize.models.answer.getAnswers({
@@ -222,11 +222,11 @@ module.exports = function (sequelize, DataTypes) {
                             });
                     });
             },
-            getAnsweredSurveyById: function (userId, id) {
-                const p = Survey.getSurveyById(id);
+            getAnsweredSurveyById(userId, id) {
+                const p = Survey.getSurvey(id);
                 return Survey.getAnsweredSurvey(p, userId);
             },
-            getAnsweredSurveyByName: function (userId, name) {
+            getAnsweredSurveyByName(userId, name) {
                 const p = Survey.getSurveyByName(name);
                 return Survey.getAnsweredSurvey(p, userId);
             }

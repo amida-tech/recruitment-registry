@@ -298,7 +298,7 @@
             }],
             "get": {
                 "summary": "Gets the survey",
-                "operationId": "getSurveyById",
+                "operationId": "getSurvey",
                 "security": [{
                     "admin": []
                 }],
