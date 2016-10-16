@@ -77,7 +77,7 @@ describe('question unit', function () {
 
     it('get all questions', function () {
         return Question.getAllQuestions()
-            .then(questions => comparator.questions(hxQuestions.clientList(), questions));
+            .then(questions => comparator.questions(hxQuestions.listClients(), questions));
     });
 
     it('error: get multiple with non-existent id', function () {
@@ -100,7 +100,7 @@ describe('question unit', function () {
 
     it('verify all questions', function () {
         return Question.getAllQuestions()
-            .then(questions => comparator.questions(hxQuestions.clientList(), questions));
+            .then(questions => comparator.questions(hxQuestions.listClients(), questions));
     });
 
     for (let i = 10; i < 20; ++i) {
@@ -209,7 +209,7 @@ describe('question unit', function () {
                     return question;
                 })
                 .then(() => Question.getAllQuestions())
-                .then(questions => comparator.questions(hxQuestions.clientList(), questions));
+                .then(questions => comparator.questions(hxQuestions.listClients(), questions));
         });
     });
 

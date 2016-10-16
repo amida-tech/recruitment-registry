@@ -3,12 +3,13 @@
 const _ = require('lodash');
 
 class History {
-    constructor() {
+    constructor(listFields) {
         this.clients = [];
         this.servers = [];
         this.history = [];
         this.currentIndex = [];
         this.removed = [];
+        this.listFields = listFields;
     }
 
     push(client, server) {
@@ -61,12 +62,17 @@ class History {
         return this.history[index];
     }
 
-    clientList() {
+    listClients() {
         return this.clients;
     }
 
-    serverList() {
-        return this.servers;
+    listServers(fields) {
+        let result = this.servers;
+        fields = fields || this.listFields;
+        if (fields) {
+            result = result.map(element => _.pick(element, fields));
+        }
+        return result;
     }
 
     reloadServer(server) {

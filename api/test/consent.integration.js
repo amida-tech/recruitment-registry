@@ -112,7 +112,7 @@ describe('consent integration', function () {
                 if (err) {
                     return done(err);
                 }
-                const expected = hxConsent.serverList();
+                const expected = hxConsent.listServers();
                 expect(res.body).to.deep.equal(expected);
                 done();
             });

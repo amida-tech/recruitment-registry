@@ -196,7 +196,7 @@ describe('question integration', function () {
                 if (err) {
                     return done(err);
                 }
-                const clientQuestions = hxQuestions.clientList();
+                const clientQuestions = hxQuestions.listClients();
                 comparator.questions(clientQuestions, res.body);
                 done();
             });

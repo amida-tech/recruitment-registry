@@ -79,7 +79,7 @@ describe('consent unit', function () {
     const listConsentsFn = function () {
         return Consent.listConsents()
             .then(consents => {
-                const expected = hxConsent.serverList();
+                const expected = hxConsent.listServers();
                 expect(consents).to.deep.equal(expected);
             });
     };
