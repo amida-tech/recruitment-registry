@@ -935,33 +935,21 @@
                 "security": [{
                     "admin": []
                 }],
+                "parameters": [{
+                    "name": "language",
+                    "in": "query",
+                    "description": "Language code",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 2
+                }],
                 "responses": {
                     "200": {
                         "description": "Successful response",
                         "schema": {
                             "type": "array",
                             "items": {
-                                "type": "object",
-                                "required": ["id", "name", "title", "type"],
-                                "properties": {
-                                    "id": {
-                                        "type": "integer",
-                                        "minimum": 1
-                                    },
-                                    "name": {
-                                        "type": "string",
-                                        "minLength": 1
-                                    },
-                                    "title": {
-                                        "type": "string",
-                                        "minLength": 1
-                                    },
-                                    "type": {
-                                        "type": "string",
-                                        "minLength": 1
-                                    }
-                                },
-                                "additionalProperties": false
+                                "$ref": "#/definitions/consentType"
                             }
                         }
                     },
@@ -979,6 +967,32 @@
                 "required": true,
                 "type": "integer"
             }],
+            "get": {
+                "summary": "Gets the consent type",
+                "operationId": "getConsentType",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "language",
+                    "in": "query",
+                    "description": "Language code",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 2
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response.",
+                        "schema": {
+                            "$ref": "#/definitions/consentType"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
             "delete": {
                 "summary": "Deletes the consent type",
                 "operationId": "deleteConsentType",
@@ -988,6 +1002,39 @@
                 "responses": {
                     "204": {
                         "description": "Successful response."
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/consent-types/text/{language}": {
+            "x-swagger-router-controller": "consent-type.controller",
+            "patch": {
+                "summary": "Updates or translates consent type title",
+                "operationId": "updateConsentTypeText",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "language",
+                    "in": "path",
+                    "description": "Language code",
+                    "required": true,
+                    "type": "string",
+                    "minLength": 2
+                }, {
+                    "name": "textUpdate",
+                    "in": "body",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/consentTypeTextUpdate"
+                    }
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successul response"
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -2298,6 +2345,44 @@
                 "language": {
                     "type": "string",
                     "minLength": 2
+                }
+            },
+            "additionalProperties": false
+        },
+        "consentType": {
+            "type": "object",
+            "required": ["id", "name", "title", "type"],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "title": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "type": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "consentTypeTextUpdate": {
+            "type": "object",
+            "required": ["id", "title"],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "title": {
+                    "type": "string",
+                    "minLength": 1
                 }
             },
             "additionalProperties": false
