@@ -230,7 +230,7 @@ describe('consent document/type/signature unit', function () {
     it('verify consent sections required for user 0', verifyConsentDocumentsFn(0, []));
     it('verify consent sections required for user 1', verifyConsentDocumentsFn(1, [0]));
     it('verify consent sections required for user 2', verifyConsentDocumentsFn(2, [0]));
-    it('verify consent sections required for user 3', verifyConsentDocumentsFn(3, [0, 1]));
+    it('verify consent sections required for user 3', verifyConsentDocumentsFn(3, [0, 2]));
 
     const verifySignatureExistenceFn = function (userIndex) {
         return function () {
@@ -260,7 +260,7 @@ describe('consent document/type/signature unit', function () {
                     .then((consentDocuments => textHandler.updateAllTexts(consentDocuments)));
             })
             .then(consentDocuments => {
-                const expected = _.sortBy([history.server(0), history.server(1)], 'id');
+                const expected = _.sortBy([history.server(0), history.server(2)], 'id');
                 expect(consentDocuments).to.deep.equal(expected);
             });
     });

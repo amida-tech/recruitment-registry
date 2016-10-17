@@ -49,7 +49,7 @@ exports.deleteQuestion = function (req, res) {
 exports.getQuestion = function (req, res) {
     const id = _.get(req, 'swagger.params.id.value');
     const language = _.get(req, 'swagger.params.language.value');
-    const options = language ? {language} : {};
+    const options = language ? { language } : {};
     Question.getQuestion(id, options)
         .then((question) => res.status(200).json(question))
         .catch(shared.handleError(res));
@@ -57,7 +57,7 @@ exports.getQuestion = function (req, res) {
 
 exports.listQuestions = function (req, res) {
     const language = _.get(req, 'swagger.params.language.value');
-    const options = language ? {language} : {};
+    const options = language ? { language } : {};
     Question.listQuestions(options)
         .then((questions) => res.status(200).json(questions))
         .catch(shared.handleError(res));

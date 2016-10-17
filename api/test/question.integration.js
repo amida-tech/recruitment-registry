@@ -229,7 +229,7 @@ describe('question integration', function () {
             const id = hxQuestion.id(index);
             store.server
                 .get(`/api/v1.0/questions/${id}`)
-                .query({language})
+                .query({ language })
                 .set('Authorization', store.auth)
                 .expect(200)
                 .end(function (err, res) {
@@ -248,7 +248,7 @@ describe('question integration', function () {
             store.server
                 .get('/api/v1.0/questions')
                 .set('Authorization', store.auth)
-                .query({language})
+                .query({ language })
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {

@@ -7,7 +7,7 @@ const History = require('./entity-history');
 class ConsentDocumentHistory {
     constructor(userCount) {
         this.hxUser = new History();
-        this.consentTypes = [];
+        this.hxType = new History();
         this.clientConsentDocuments = [];
         this.consentDocuments = [];
         this.activeConsentDocuments = [];
@@ -15,19 +15,16 @@ class ConsentDocumentHistory {
     }
 
     pushType(client, server) {
-        const fullServer = Object.assign({}, client, server);
-        this.consentTypes.push(fullServer);
-        _.sortBy(this.consentTypes, 'id');
+        this.hxType.pushWithId(client, server.id);
         this.activeConsentDocuments.push(null);
     }
 
     deleteType(typeIndex) {
-        this.consentTypes.splice(typeIndex, 1);
-        this.activeConsentDocuments.splice(typeIndex, 1);
+        this.hxType.remove(typeIndex);
     }
 
     typeId(typeIndex) {
-        return this.consentTypes[typeIndex].id;
+        return this.hxType.id(typeIndex);
     }
 
     userId(userIndex) {
@@ -35,11 +32,11 @@ class ConsentDocumentHistory {
     }
 
     listTypes() {
-        return this.consentTypes;
+        return this.hxType.listServers();
     }
 
     type(typeIndex) {
-        return this.consentTypes[typeIndex];
+        return this.hxType.server(typeIndex);
     }
 
     push(typeIndex, client, server) {
@@ -60,11 +57,14 @@ class ConsentDocumentHistory {
     }
 
     serversInList(typeIndices) {
-        const result = typeIndices.map(index => ({
-            id: this.activeConsentDocuments[index].id,
-            name: this.consentTypes[index].name,
-            title: this.consentTypes[index].title
-        }));
+        const result = typeIndices.map(index => {
+            const type = this.hxType.server(index);
+            return {
+                id: this.activeConsentDocuments[index].id,
+                name: type.name,
+                title: type.title
+            };
+        });
         return _.sortBy(result, 'id');
     }
 

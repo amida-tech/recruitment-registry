@@ -211,7 +211,7 @@ describe('consent section integration', function () {
         it(`login as user ${userIndex}`, shared.loginIndexFn(store, history.hxUser, userIndex));
         it(`verify consent sections required for user ${userIndex}`, getUserConsentDocumentsFn(consentDocumentIndices));
         for (let i = 0; i < consentDocumentIndices.length; ++i) {
-            it(`user ${userIndex} get consent section ${i}`, getConsentDocumentFn(i));
+            it(`user ${userIndex} get consent section ${i}`, getConsentDocumentFn(consentDocumentIndices[i]));
         }
         it(`logout as user ${userIndex}`, shared.logoutFn(store));
     });
@@ -295,7 +295,7 @@ describe('consent section integration', function () {
     verifyConsentDocuments(0, []);
     verifyConsentDocuments(1, [0]);
     verifyConsentDocuments(2, [0]);
-    verifyConsentDocuments(3, [0, 1]);
+    verifyConsentDocuments(3, [0, 2]);
 
     const verifySignaturesFn = function (userIndex) {
         return function (done) {
