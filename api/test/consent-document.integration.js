@@ -15,7 +15,7 @@ const expect = chai.expect;
 const generator = new Generator();
 const shared = new SharedIntegration(generator);
 
-describe('consent section integration', function () {
+describe('consent document integration', function () {
     const userCount = 4;
 
     const store = {
@@ -47,7 +47,7 @@ describe('consent section integration', function () {
 
     for (let i = 0; i < 2; ++i) {
         it(`create consent type ${i}`, shared.createConsentTypeFn(store, history));
-        it('get/verify consent types', listConsentTypesFn());
+        it('verify consent type list', listConsentTypesFn());
     }
 
     for (let i = 0; i < userCount; ++i) {
@@ -58,7 +58,7 @@ describe('consent section integration', function () {
     it('logout as super', shared.logoutFn(store));
 
     it('login as user 0', shared.loginIndexFn(store, history.hxUser, 0));
-    it('error: no consent sections of existing types', function (done) {
+    it('error: no consent documents of existing types', function (done) {
         store.server
             .get(`/api/v1.0/users/consent-documents`)
             .set('Authorization', store.auth)
@@ -93,8 +93,8 @@ describe('consent section integration', function () {
     };
 
     for (let i = 0; i < 2; ++i) {
-        it(`create consent section of type ${i}`, shared.createConsentDocumentFn(store, history, i));
-        it(`get/verify consent section content of type ${i}`, getConsentDocumentFn(i));
+        it(`create consent document of type ${i}`, shared.createConsentDocumentFn(store, history, i));
+        it(`get/verify consent document content of type ${i}`, getConsentDocumentFn(i));
     }
 
     const getUserConsentDocumentsFn = function (expectedIndices) {
@@ -116,9 +116,9 @@ describe('consent section integration', function () {
 
     for (let i = 0; i < 4; ++i) {
         it(`login as user ${i}`, shared.loginIndexFn(store, history.hxUser, i));
-        it(`verify consent sections required for user ${i}`, getUserConsentDocumentsFn([0, 1]));
-        it(`user ${i} get consent section 0`, getConsentDocumentFn(0));
-        it(`user ${i} get consent section 1`, getConsentDocumentFn(1));
+        it(`verify consent documents required for user ${i}`, getUserConsentDocumentsFn([0, 1]));
+        it(`user ${i} get consent document of type 0`, getConsentDocumentFn(0));
+        it(`user ${i} get consent document of type 1`, getConsentDocumentFn(1));
         it(`logout as user ${i}`, shared.logoutFn(store));
     }
 
@@ -157,61 +157,61 @@ describe('consent section integration', function () {
     };
 
     it(`login as user 0`, shared.loginIndexFn(store, history.hxUser, 0));
-    it('user 0 signs consent document 0', signConsentTypeFn(0, 0));
-    it('user 0 signs consent document 1', signConsentTypeFn(0, 1));
+    it('user 0 signs consent document of type 0', signConsentTypeFn(0, 0));
+    it('user 0 signs consent document of type 1', signConsentTypeFn(0, 1));
     it('logout as user 0', shared.logoutFn(store));
 
     it(`login as user 0`, shared.loginIndexFn(store, history.hxUser, 0));
-    it('user 0 signs consent document again 0', signConsentTypeAgainFn(0));
+    it('user 0 signs consent document of type again 0', signConsentTypeAgainFn(0));
     it('logout as user 0', shared.logoutFn(store));
 
     it(`login as user 1`, shared.loginIndexFn(store, history.hxUser, 1));
-    it('user 1 signs consent document 0', signConsentTypeFn(1, 0, 'en'));
-    it('user 1 signs consent document 1', signConsentTypeFn(1, 1, 'sp'));
+    it('user 1 signs consent document of type 0', signConsentTypeFn(1, 0, 'en'));
+    it('user 1 signs consent document of type 1', signConsentTypeFn(1, 1, 'sp'));
     it('logout as user 1', shared.logoutFn(store));
 
     it(`login as user 2`, shared.loginIndexFn(store, history.hxUser, 2));
-    it('user 2 signs consent document 1', signConsentTypeFn(2, 0));
+    it('user 2 signs consent document of type 1', signConsentTypeFn(2, 0));
     it('logout as user 2', shared.logoutFn(store));
 
     it(`login as user 3`, shared.loginIndexFn(store, history.hxUser, 3));
-    it('user 3 signs consent document 0', signConsentTypeFn(3, 1));
+    it('user 3 signs consent document of type 0', signConsentTypeFn(3, 1));
     it('logout as user 3', shared.logoutFn(store));
 
     it(`login as user 0`, shared.loginIndexFn(store, history.hxUser, 0));
-    it(`verify consent sections required for user 0`, getUserConsentDocumentsFn([]));
+    it(`verify consent documents required for user 0`, getUserConsentDocumentsFn([]));
     it('logout as user 0', shared.logoutFn(store));
 
     it(`login as user 1`, shared.loginIndexFn(store, history.hxUser, 1));
-    it(`verify consent sections required for user 1`, getUserConsentDocumentsFn([]));
+    it(`verify consent documents required for user 1`, getUserConsentDocumentsFn([]));
     it('logout as user 1', shared.logoutFn(store));
 
     it(`login as user 2`, shared.loginIndexFn(store, history.hxUser, 2));
-    it(`verify consent sections required for user 2`, getUserConsentDocumentsFn([1]));
-    it(`user 2 get consent section 1`, getConsentDocumentFn(1));
+    it(`verify consent documents required for user 2`, getUserConsentDocumentsFn([1]));
+    it(`user 2 get consent document of 1`, getConsentDocumentFn(1));
     it('logout as user 2', shared.logoutFn(store));
 
     it(`login as user 3`, shared.loginIndexFn(store, history.hxUser, 3));
-    it(`verify consent sections required for user 3`, getUserConsentDocumentsFn([0]));
-    it(`user 3 get consent section 0`, getConsentDocumentFn(0));
+    it(`verify consent documents required for user 3`, getUserConsentDocumentsFn([0]));
+    it(`user 3 get consent document of 0`, getConsentDocumentFn(0));
     it('logout as user 3', shared.logoutFn(store));
 
     it('login as super', shared.loginFn(store, config.superUser));
     it('add a new consent type', shared.createConsentTypeFn(store, history));
-    it('create/verify consent section of type 2', shared.createConsentDocumentFn(store, history, 2));
+    it('create/verify consent document of type 2', shared.createConsentDocumentFn(store, history, 2));
     it('logout as super', shared.logoutFn(store));
 
     const signConsentType = ((userIndex, consentDocumentIndex, language) => {
         it(`login as user ${userIndex}`, shared.loginIndexFn(store, history.hxUser, userIndex));
-        it(`user ${userIndex} signs consent document ${consentDocumentIndex}`, signConsentTypeFn(userIndex, consentDocumentIndex, language));
+        it(`user ${userIndex} signs consent document of type ${consentDocumentIndex}`, signConsentTypeFn(userIndex, consentDocumentIndex, language));
         it(`logout as user ${userIndex}`, shared.logoutFn(store));
     });
 
     const verifyConsentDocuments = ((userIndex, consentDocumentIndices) => {
         it(`login as user ${userIndex}`, shared.loginIndexFn(store, history.hxUser, userIndex));
-        it(`verify consent sections required for user ${userIndex}`, getUserConsentDocumentsFn(consentDocumentIndices));
+        it(`verify consent documents required for user ${userIndex}`, getUserConsentDocumentsFn(consentDocumentIndices));
         for (let i = 0; i < consentDocumentIndices.length; ++i) {
-            it(`user ${userIndex} get consent section ${i}`, getConsentDocumentFn(consentDocumentIndices[i]));
+            it(`user ${userIndex} get consent document of ${i}`, getConsentDocumentFn(consentDocumentIndices[i]));
         }
         it(`logout as user ${userIndex}`, shared.logoutFn(store));
     });
@@ -226,7 +226,7 @@ describe('consent section integration', function () {
     verifyConsentDocuments(2, [1]);
 
     it('login as super', shared.loginFn(store, config.superUser));
-    it('create/verify consent section of type 1', shared.createConsentDocumentFn(store, history, 1));
+    it('create consent document of type 1', shared.createConsentDocumentFn(store, history, 1));
     it('logout as super', shared.logoutFn(store));
 
     verifyConsentDocuments(0, [1, 2]);
@@ -238,7 +238,7 @@ describe('consent section integration', function () {
     verifyConsentDocuments(1, [1]);
 
     it('login as super', shared.loginFn(store, config.superUser));
-    it('create/verify consent section of type 0', shared.createConsentDocumentFn(store, history, 0));
+    it('create consent document of type 0', shared.createConsentDocumentFn(store, history, 0));
     it('logout as super', shared.logoutFn(store));
 
     verifyConsentDocuments(0, [0, 1, 2]);
@@ -255,7 +255,7 @@ describe('consent section integration', function () {
     verifyConsentDocuments(3, [0, 2]);
 
     it('login as super', shared.loginFn(store, config.superUser));
-    it('create/verify consent section of type 1', shared.createConsentDocumentFn(store, history, 1));
+    it('create consent document of type 1', shared.createConsentDocumentFn(store, history, 1));
     it('logout as super', shared.logoutFn(store));
 
     verifyConsentDocuments(0, [0, 1, 2]);
@@ -289,7 +289,7 @@ describe('consent section integration', function () {
 
     it('login as super', shared.loginFn(store, config.superUser));
     it('delete consent type 1', deleteConsentTypeFn(1));
-    it('get/verify consent types', listConsentTypesFn());
+    it('verify consent list', listConsentTypesFn());
     it('logout as super', shared.logoutFn(store));
 
     verifyConsentDocuments(0, []);
