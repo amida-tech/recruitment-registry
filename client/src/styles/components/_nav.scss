@@ -1,4 +1,7 @@
 nav {
+	position: relative;
+	top: 0;
+	z-index: 999999;
 	border-bottom: 4px solid $gap-navy;
 	a {
 		color: $gap-navy;
@@ -20,7 +23,7 @@ nav {
 		li {
 			display: inline-block;
 			position: relative;
-			top: 32px;
+			top: 27px;
 			margin-right: 20px;
 			font-size: 14px;
 			#nav--userSettings {
@@ -31,9 +34,11 @@ nav {
 			}
 			#nav--login {
 				@extend .buttonSecondary;
+				padding-top: 7px;
 			}
 			#nav--register {
 				@extend .buttonPrimary;
+				padding-top: 7px;
 			}
 		}
 	}

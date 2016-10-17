@@ -3,7 +3,8 @@
 $text-font-stack: 'Raleway', sans-serif;
 $code-font-stack: 'Courier New', 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', 'Monaco', monospace;
 $serif-font-stack: 'Raleway', sans-serif;
-
+@import url('https://fonts.googleapis.com/css?family=Lato:300,400,700');
+$ui-text-font-stack: 'Lato', sans-serif;
 
 $gap-black: #333333;
 $gap-dark-grey: #6B6E88;

@@ -8,21 +8,30 @@
 
 
 .btn {
-	padding: 8px 18px 0;
+	padding: auto 18px;
 	height: 36px;
 	border-radius: 1000px;
 	min-width: 145px;
 	cursor: pointer;
 	display: inline-block;
-	margin-top: -11px;
+	// margin-top: -11px;
 	text-align: center;
-	background-color: #fbad36;
+	font-size: 14px;
+	font-weight: 700;
+	letter-spacing: .5px;
 }
 
 .buttonPrimary {
 	@extend .btn;
 	border: 2px solid $gap-medium-blue;
 	background-color: $gap-medium-blue;
+	color: $gap-white;
+}
+
+.buttonConfirm {
+	@extend .btn;
+	border: 2px solid $gap-light-green;
+	background-color: $gap-light-green;
 	color: $gap-white;
 }
 

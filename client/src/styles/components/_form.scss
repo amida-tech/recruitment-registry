@@ -1,3 +1,25 @@
+.form__field-input {
+  position: relative;
+  width: 100%;
+  color: $gap-dark-grey;
+  border: none;
+  outline: 0;
+  letter-spacing: 0.05em;
+  @extend h2;
+  margin: 0;
+  background: transparent;
+  padding: 0 4px;
+  font-weight: 300;
+  border-bottom: 1px solid $gap-dark-grey;
+}
+.form__footer {
+	margin-top: 50px;
+}
+
+
+
+
+
 // .form__field-wrapper {
 //   width: 100%;
 //   position: relative;
