@@ -96,8 +96,8 @@ module.exports = function (sequelize, DataTypes) {
                 return textHandler.createText({ id, name })
                     .then(() => ({}));
             },
-            updateSurveyText(id, {name}, language) {
-                return textHandler.createText({ id, name, language});
+            updateSurveyText(id, { name }, language) {
+                return textHandler.createText({ id, name, language });
             },
             replaceSurveyTx(survey, replacement, tx) {
                 replacement.version = survey.version + 1;
@@ -204,7 +204,7 @@ module.exports = function (sequelize, DataTypes) {
                             );
                     });
             },
-            getSurveyByName(name) {
+            getSurveyByName(name, options) {
                 return sequelize.models.survey_text.findOne({
                         where: { name },
                         raw: true,
@@ -212,7 +212,7 @@ module.exports = function (sequelize, DataTypes) {
                     })
                     .then(result => {
                         if (result) {
-                            return Survey.getSurvey(result.surveyId);
+                            return Survey.getSurvey(result.surveyId, options);
                         } else {
                             return RRError.reject('surveyNotFound');
                         }
@@ -236,12 +236,12 @@ module.exports = function (sequelize, DataTypes) {
                             });
                     });
             },
-            getAnsweredSurvey(userId, id) {
-                const p = Survey.getSurvey(id);
+            getAnsweredSurvey(userId, id, options) {
+                const p = Survey.getSurvey(id, options);
                 return Survey._getAnsweredSurvey(p, userId);
             },
-            getAnsweredSurveyByName(userId, name) {
-                const p = Survey.getSurveyByName(name);
+            getAnsweredSurveyByName(userId, name, options) {
+                const p = Survey.getSurveyByName(name, options);
                 return Survey._getAnsweredSurvey(p, userId);
             }
         }

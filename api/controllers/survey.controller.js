@@ -10,14 +10,18 @@ const Survey = models.Survey;
 
 exports.getSurvey = function (req, res) {
     const id = _.get(req, 'swagger.params.id.value');
-    Survey.getSurvey(id)
+    const language = _.get(req, 'swagger.params.language.value');
+    const options = language ? { language } : {};
+    Survey.getSurvey(id, options)
         .then(survey => res.status(200).json(survey))
         .catch(shared.handleError(res));
 };
 
 exports.getSurveyByName = function (req, res) {
     const name = _.get(req, 'swagger.params.name.value');
-    Survey.getSurveyByName(name)
+    const language = _.get(req, 'swagger.params.language.value');
+    const options = language ? { language } : {};
+    Survey.getSurveyByName(name, options)
         .then(survey => res.status(200).json(survey))
         .catch(shared.handleError(res));
 };
@@ -46,6 +50,14 @@ exports.updateSurvey = function (req, res) {
         .catch(shared.handleError(res));
 };
 
+exports.updateSurveyText = function (req, res) {
+    const id = _.get(req, 'swagger.params.id.value');
+    const language = _.get(req, 'swagger.params.language.value');
+    Survey.updateSurveyText(id, req.body, language)
+        .then(() => res.status(204).end())
+        .catch(shared.handleError(res));
+};
+
 exports.deleteSurvey = function (req, res) {
     const id = _.get(req, 'swagger.params.id.value');
     Survey.deleteSurvey(id)
@@ -54,7 +66,9 @@ exports.deleteSurvey = function (req, res) {
 };
 
 exports.listSurveys = function (req, res) {
-    Survey.listSurveys()
+    const language = _.get(req, 'swagger.params.language.value');
+    const options = language ? { language } : {};
+    Survey.listSurveys(options)
         .then(surveys => res.status(200).json(surveys))
         .catch(shared.handleError(res));
 };
@@ -62,7 +76,9 @@ exports.listSurveys = function (req, res) {
 exports.getAnsweredSurveyByName = function (req, res) {
     const userId = req.user.id;
     const name = _.get(req, 'swagger.params.name.value');
-    Survey.getAnsweredSurveyByName(userId, name)
+    const language = _.get(req, 'swagger.params.language.value');
+    const options = language ? { language } : {};
+    Survey.getAnsweredSurveyByName(userId, name, options)
         .then(survey => res.status(200).json(survey))
         .catch(shared.handleError(res));
 };

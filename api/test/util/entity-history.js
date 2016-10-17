@@ -21,14 +21,6 @@ class History {
         this.currentIndex.push(index);
     }
 
-    completeLastServer(server) {
-        const index = this.servers.length - 1;
-        if (server.id !== this.servers[index].id) {
-            throw new Error('Id\'s should be identical');
-        }
-        this.servers[index] = server;
-    }
-
     pushWithId(client, id) {
         const server = Object.assign({}, client, { id });
         this.push(client, server);

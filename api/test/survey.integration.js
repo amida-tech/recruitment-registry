@@ -21,7 +21,7 @@ const invalidSurveysSwagger = require('./fixtures/swagger-invalid/new-survey');
 const RRError = require('../lib/rr-error');
 
 const expect = chai.expect;
-const entityGen = new Generator();
+const generator = new Generator();
 const shared = new SharedIntegration();
 
 describe('survey integration', function () {
@@ -51,7 +51,7 @@ describe('survey integration', function () {
 
     const createSurveyFn = function () {
         return function (done) {
-            const clientSurvey = entityGen.newSurvey();
+            const clientSurvey = generator.newSurvey();
             store.server
                 .post('/api/v1.0/surveys')
                 .set('Authorization', store.auth)
@@ -79,7 +79,7 @@ describe('survey integration', function () {
                         return done(err);
                     }
                     if (_.isEmpty(update)) {
-                        history.completeLastServer(res.body);
+                        history.reloadServer(res.body);
                     }
                     const clientSurvey = history.client(index);
                     const expected = Object.assign({}, clientSurvey, update);
@@ -89,6 +89,23 @@ describe('survey integration', function () {
                         })
                         .then(() => done())
                         .catch(err => done(err));
+                });
+        };
+    };
+
+    const verifySurveyFn = function (index) {
+        return function (done) {
+            const server = history.server(index);
+            store.server
+                .get(`/api/v1.0/surveys/${server.id}`)
+                .set('Authorization', store.auth)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    expect(res.body).to.deep.equal(server);
+                    done();
                 });
         };
     };
@@ -184,9 +201,78 @@ describe('survey integration', function () {
         it(`list surveys and verify`, listSurveysFn());
     }
 
+    it('get survey 3 in spanish when no name translation', verifySurveyFn(3));
+
+    it('list surveys in spanish when no translation', listSurveysFn());
+
+    const translateTextFn = function (index, language) {
+        return function (done) {
+            const { name } = generator.newSurvey();
+            const id = history.id(index);
+            store.server
+                .patch(`/api/v1.0/surveys/${id}/text/${language}`)
+                .set('Authorization', store.auth)
+                .send({ name })
+                .expect(204)
+                .end(function (err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    history.translate(index, language, { name });
+                    done();
+                });
+        };
+    };
+
+    const verifyTranslatedSurveyFn = function (index, language) {
+        return function (done) {
+            const id = history.id(index);
+            store.server
+                .get(`/api/v1.0/surveys/${id}`)
+                .set('Authorization', store.auth)
+                .query({ language })
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    const expected = history.translatedServer(index, language);
+                    expect(res.body).to.deep.equal(expected);
+                    done();
+                });
+        };
+    };
+
+    const listTranslatedSurveysFn = function (language) {
+        return function (done) {
+            store.server
+                .get('/api/v1.0/surveys')
+                .set('Authorization', store.auth)
+                .query({ language })
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    const expected = history.listTranslatedServers(language);
+                    expect(res.body).to.deep.equal(expected);
+                    done();
+                });
+        };
+    };
+
+    for (let i = 0; i < surveyCount; i += 2) {
+        it(`add translated name to survey ${i}`, translateTextFn(i, 'es'));
+        it(`get and verify tanslated  survey ${i}`, verifyTranslatedSurveyFn(i, 'es'));
+    }
+
+    it('list and verify translated surveys', listTranslatedSurveysFn('es'));
+
+    it('list surveys in english (original)', listTranslatedSurveysFn('en'));
+
     const replaceSurveyFn = function (index) {
         return function (done) {
-            const replacement = entityGen.newSurvey();
+            const replacement = generator.newSurvey();
             const id = history.id(index);
             store.server
                 .post(`/api/v1.0/surveys`)
