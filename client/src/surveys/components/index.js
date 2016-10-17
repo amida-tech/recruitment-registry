@@ -5,12 +5,13 @@ import surveys from '../index'
 
 export class SurveysContainer extends Component {
 
-  componentWillReceiveProps(nextProps){
+  // componentWillReceiveProps(nextProps){
     // console.log(JSON.stringify(nextProps));
     // this.vocab = nextProps.vocab;
-  }
+  // }
 
   render() {
+    console.log("render");
     if (!this.props.params.id) {
       const surveysTmp = this.props.data.toJS()
       return (
@@ -22,15 +23,17 @@ export class SurveysContainer extends Component {
         </div>
       )}
     return (
-      <div>I don't even...</div>
+      <div>I don't even...{this.props.params.id}</div>
     )
   }
-
-  shouldComponentUpdate() {
-    return true;
-  }
+  //
+  // shouldComponentUpdate() {
+  //   console.log("shouldComponentUpdate");
+  //   return true;
+  // }
 
   componentWillMount() {
+    console.log("componentWillMount");
     if (this.props.params.id) {
       this.props.dispatch(surveys.actions.getSurvey(this.props.params.id))
     } else {
