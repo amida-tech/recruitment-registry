@@ -74,7 +74,7 @@ describe('survey unit', function () {
     });
 
     for (let i = 0; i < surveyCount; ++i) {
-        it(`create/verify/update survey ${i} and list all`, createVerifySurveyFn(i));
+        it(`create/get/verify/update survey ${i} and list all`, createVerifySurveyFn(i));
     }
 
     it('error: show a non-existent survey', function () {
@@ -94,6 +94,69 @@ describe('survey unit', function () {
         const replacementSurvey = generator.newSurvey();
         return Survey.replaceSurvey(999, replacementSurvey)
             .then(shared.throwingHandler, shared.expectedErrorHandler('surveyNotFound'));
+    });
+
+    it('get survey 3 in spanish when no name translation', function() {
+        const survey = history.server(3);
+        return Survey.getSurvey(survey.id, {language: 'es'})
+            .then(result => {
+                expect(result).to.deep.equal(survey);
+            });
+    });
+
+    it('list surveys in spanish when no translation', function() {
+        return Survey.listSurveys({language: 'es'})
+            .then(result => {
+                const list = history.listServers();
+                expect(result).to.deep.equal(list);
+            });
+    });
+
+    const translateTextFn = function(index, language) {
+        return function() {
+            const {name} = generator.newSurvey();
+            const id = history.id(index);
+            return Survey.updateSurveyText(id, {name}, language)
+                .then(() => {
+                    history.translate(index, language, {name});
+                });
+        };
+    };
+
+    const getTranslatedFn = function(index, language) {
+        return function() {
+            const id = history.id(index);
+            return Survey.getSurvey(id, {language: 'es'})
+                .then(result => {
+                    const expected = history.translatedServer(index, language);
+                    expect(result).to.deep.equal(expected);
+                });
+        };
+    };
+
+    const listTranslatedFn = function(language) {
+        return function() {
+            return Survey.listSurveys({language: 'es'})
+                .then(result => {
+                    const expected = history.listTranslatedServers(language);
+                    expect(result).to.deep.equal(expected);
+                });
+        };
+    };
+
+    for (let i = 0; i < surveyCount; i+=2) {
+        it(`add translated name to survey ${i}`, translateTextFn(i, 'es'));
+        it(`get and verify tanslated  survey ${i}`, getTranslatedFn(i, 'es'));
+    }
+
+    it('list and verify translated surveys', listTranslatedFn('es'));
+
+    it('list surveys in english (original)', function() {
+        return Survey.listSurveys({language: 'en'})
+            .then(result => {
+                const list = history.listServers();
+                expect(result).to.deep.equal(list);
+            });
     });
 
     const replaceSurveyFn = function (index) {

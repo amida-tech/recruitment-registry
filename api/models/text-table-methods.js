@@ -36,7 +36,7 @@ module.exports = function (sequelize, tableName, parentIdField, textFields = ['t
             let query = { where, raw: true, attributes: textFields };
             return Table.findOne(query)
                 .then(result => {
-                    if ((language === 'en') || (!result)) {
+                    if ((language === 'en') || result) {
                         return result;
                     }
                     query.where.language = 'en';

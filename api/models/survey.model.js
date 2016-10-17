@@ -96,6 +96,9 @@ module.exports = function (sequelize, DataTypes) {
                 return textHandler.createText({ id, name })
                     .then(() => ({}));
             },
+            updateSurveyText(id, {name}, language) {
+                return textHandler.createText({ id, name, language});
+            },
             replaceSurveyTx(survey, replacement, tx) {
                 replacement.version = survey.version + 1;
                 replacement.groupId = survey.groupId;

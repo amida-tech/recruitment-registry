@@ -10,6 +10,7 @@ class History {
         this.currentIndex = [];
         this.removed = [];
         this.listFields = listFields;
+        this.translations = {};
     }
 
     push(client, server) {
@@ -91,6 +92,33 @@ class History {
                 collection[index] = server;
             }
         });
+    }
+
+    translate(index, language, translation) {
+        const server = this.history[index];
+        const id = server.id;
+        const r = _.merge({}, server, translation);
+        _.set(this.translations, `${id}.${language}`, r);
+    }
+
+    translatedServer(index, language) {
+        const server = this.history[index];
+        const id = server.id;
+        const tr = _.get(this.translations, `${id}.${language}`);
+        return tr ? tr : server;
+    }
+
+    listTranslatedServers(language) {
+        let result = this.servers;
+        result = result.map(server => {
+            const id = server.id;
+            const tr = _.get(this.translations, `${id}.${language}`);
+            return tr ? tr : server;
+        });
+        if (this.listFields) {
+            result = result.map(element => _.pick(element, this.listFields));
+        }
+        return result;
     }
 }
 
