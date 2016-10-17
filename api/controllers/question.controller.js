@@ -46,8 +46,8 @@ exports.getQuestion = function (req, res) {
         .catch(shared.handleError(res));
 };
 
-exports.getAllQuestions = function (req, res) {
-    Question.getAllQuestions()
+exports.listQuestions = function (req, res) {
+    Question.listQuestions()
         .then((questions) => res.status(200).json(questions))
         .catch(shared.handleError(res));
 };

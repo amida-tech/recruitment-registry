@@ -763,7 +763,7 @@
             },
             "get": {
                 "summary": "Gets all questions",
-                "operationId": "getAllQuestions",
+                "operationId": "listQuestions",
                 "security": [{
                     "admin": []
                 }],

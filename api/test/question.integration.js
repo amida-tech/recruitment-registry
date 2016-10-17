@@ -106,16 +106,16 @@ describe('question integration', function () {
         it(`error: invalid (swagger) question input ${i}`, invalidQuestionSwaggerFn(i));
     }
 
-    const hxQuestions = new History();
-    const hxSurveys = new History();
+    const hxQuestion = new History();
+    const hxSurvey = new History();
 
     for (let i = 0; i < 10; ++i) {
-        it(`create question ${i}`, shared.createQxFn(store, hxQuestions));
+        it(`create question ${i}`, shared.createQxFn(store, hxQuestion));
     }
 
     const getAndVerifyQxFn = function (index) {
         return function (done) {
-            const id = hxQuestions.id(index);
+            const id = hxQuestion.id(index);
             store.server
                 .get(`/api/v1.0/questions/${id}`)
                 .set('Authorization', store.auth)
@@ -124,8 +124,8 @@ describe('question integration', function () {
                     if (err) {
                         return done(err);
                     }
-                    hxQuestions.reloadServer(res.body);
-                    comparator.question(hxQuestions.client(index), res.body);
+                    hxQuestion.reloadServer(res.body);
+                    comparator.question(hxQuestion.client(index), res.body);
                     done();
                 });
         };
@@ -137,8 +137,8 @@ describe('question integration', function () {
 
     const updateQxFn = function (index) {
         return function (done) {
-            const id = hxQuestions.id(index);
-            const clientQuestion = hxQuestions.client(index);
+            const id = hxQuestion.id(index);
+            const clientQuestion = hxQuestion.client(index);
             const text = `Updated ${clientQuestion.text}`;
             store.server
                 .patch(`/api/v1.0/questions/${id}`)
@@ -150,8 +150,8 @@ describe('question integration', function () {
 
     const verifyUpdatedQxFn = function (index) {
         return function (done) {
-            const id = hxQuestions.id(index);
-            const clientQuestion = hxQuestions.client(index);
+            const id = hxQuestion.id(index);
+            const clientQuestion = hxQuestion.client(index);
             const text = `Updated ${clientQuestion.text}`;
             const updatedQuestion = Object.assign({}, clientQuestion, { text });
             store.server
@@ -170,8 +170,8 @@ describe('question integration', function () {
 
     const restoreUpdatedQxFn = function (index) {
         return function (done) {
-            const id = hxQuestions.id(index);
-            const clientQuestion = hxQuestions.client(index);
+            const id = hxQuestion.id(index);
+            const clientQuestion = hxQuestion.client(index);
             const text = clientQuestion.text;
             store.server
                 .patch(`/api/v1.0/questions/${id}`)
@@ -196,7 +196,7 @@ describe('question integration', function () {
                 if (err) {
                     return done(err);
                 }
-                const clientQuestions = hxQuestions.listClients();
+                const clientQuestions = hxQuestion.listClients();
                 comparator.questions(clientQuestions, res.body);
                 done();
             });
@@ -206,7 +206,7 @@ describe('question integration', function () {
 
     const deleteQxFn = function (index) {
         return function (done) {
-            const id = hxQuestions.id(index);
+            const id = hxQuestion.id(index);
             store.server
                 .delete(`/api/v1.0/questions/${id}`)
                 .set('Authorization', store.auth)
@@ -215,7 +215,7 @@ describe('question integration', function () {
                     if (err) {
                         return done(err);
                     }
-                    hxQuestions.remove(index);
+                    hxQuestion.remove(index);
                     done();
                 });
         };
@@ -228,7 +228,7 @@ describe('question integration', function () {
     it('get all and verify', getAllAndVerify);
 
     for (let i = 10; i < 20; ++i) {
-        it(`create question ${i}`, shared.createQxFn(store, hxQuestions));
+        it(`create question ${i}`, shared.createQxFn(store, hxQuestion));
         it(`get and verify question ${i}`, getAndVerifyQxFn(i));
         it(`update question ${i} text`, updateQxFn(i));
         it(`verify updated question ${i}`, verifyUpdatedQxFn(i));
@@ -237,7 +237,7 @@ describe('question integration', function () {
 
     const createSurveyFn = function (questionIndices) {
         return function (done) {
-            const questionIds = questionIndices.map(index => hxQuestions.id(index));
+            const questionIds = questionIndices.map(index => hxQuestion.id(index));
             const clientSurvey = generator.newSurveyQuestionIds(questionIds);
             store.server
                 .post('/api/v1.0/surveys')
@@ -248,7 +248,7 @@ describe('question integration', function () {
                     if (err) {
                         return done(err);
                     }
-                    hxSurveys.push(clientSurvey, res.body);
+                    hxSurvey.push(clientSurvey, res.body);
                     done();
                 });
         };
@@ -264,7 +264,7 @@ describe('question integration', function () {
 
     const deleteQuestionWhenOnSurveyFn = function (index) {
         return function (done) {
-            const id = hxQuestions.id(index);
+            const id = hxQuestion.id(index);
             store.server
                 .delete(`/api/v1.0/questions/${id}`)
                 .set('Authorization', store.auth)
@@ -286,7 +286,7 @@ describe('question integration', function () {
 
     const deleteSurveyFn = function (index) {
         return function (done) {
-            const id = hxSurveys.id(index);
+            const id = hxSurvey.id(index);
             store.server
                 .delete(`/api/v1.0/surveys/${id}`)
                 .set('Authorization', store.auth)
@@ -295,7 +295,7 @@ describe('question integration', function () {
                     if (err) {
                         return done(err);
                     }
-                    hxSurveys.remove(index);
+                    hxSurvey.remove(index);
                     done();
                 });
         };
@@ -345,7 +345,7 @@ describe('question integration', function () {
     const replaceQxOnSurvey = function (questionIndex) {
         return function (done) {
             const replacement = generator.newQuestion();
-            const parent = hxQuestions.id(questionIndex);
+            const parent = hxQuestion.id(questionIndex);
             store.server
                 .post('/api/v1.0/questions')
                 .query({ parent })
@@ -378,7 +378,7 @@ describe('question integration', function () {
     const replaceQxFn = function (questionIndex) {
         return function (done) {
             const replacement = generator.newQuestion();
-            const parent = hxQuestions.id(questionIndex);
+            const parent = hxQuestion.id(questionIndex);
             store.server
                 .post('/api/v1.0/questions')
                 .query({ parent })
@@ -389,7 +389,7 @@ describe('question integration', function () {
                     if (err) {
                         return done(err);
                     }
-                    hxQuestions.replace(questionIndex, replacement, res.body);
+                    hxQuestion.replace(questionIndex, replacement, res.body);
                     done();
                 });
         };

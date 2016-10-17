@@ -128,7 +128,8 @@ module.exports = function (sequelize, DataTypes) {
                         }
                     });
             },
-            getQuestion: function (id, language = 'en') {
+            getQuestion: function (id, options = {}) {
+                const language = options.language;
                 return Question.findById(id, { raw: true, attributes: ['id', 'type'] })
                     .then(question => {
                         if (!question) {
@@ -185,16 +186,18 @@ module.exports = function (sequelize, DataTypes) {
                         }
                     });
             },
-            getQuestionsCommon: function (ids, language) {
-                const options = {
+            _listQuestions: function (options = {}) {
+                const _options = {
                     raw: true,
                     attributes: ['id', 'type'],
                     order: 'id'
                 };
+                const ids = options.ids;
+                const language = options.language;
                 if (ids) {
-                    options.where = { id: { $in: ids } };
+                    _options.where = { id: { $in: ids } };
                 }
-                return Question.findAll(options)
+                return Question.findAll(_options)
                     .then(questions => {
                         if (!questions.length) {
                             return { questions, map: {} };
@@ -250,19 +253,19 @@ module.exports = function (sequelize, DataTypes) {
                             });
                     });
             },
-            getQuestions: function (ids, language = 'en') {
-                return Question.getQuestionsCommon(ids, language)
+            listQuestions: function (options = {}) {
+                return Question._listQuestions(options)
                     .then(({ questions, map }) => {
-                        if (questions.length !== ids.length) {
-                            return RRError.reject('qxNotFound');
+                        const ids = options.ids;
+                        if (ids) {
+                            if (questions.length !== ids.length) {
+                                return RRError.reject('qxNotFound');
+                            }
+                            return ids.map(id => map[id]);
+                        } else {
+                            return questions;
                         }
-                        return { questions, map };
-                    })
-                    .then(({ map }) => ids.map(id => map[id]));
-            },
-            getAllQuestions: function (language = 'en') {
-                return Question.getQuestionsCommon(null, language)
-                    .then(({ questions }) => questions);
+                    });
             }
         }
     });

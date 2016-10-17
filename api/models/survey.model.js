@@ -187,7 +187,7 @@ module.exports = function (sequelize, DataTypes) {
                                 })
                                 .then(surveyQuestions => {
                                     const questionIds = _.map(surveyQuestions, 'questionId');
-                                    return sequelize.models.question.getQuestions(questionIds)
+                                    return sequelize.models.question.listQuestions({ ids: questionIds })
                                         .then(questions => ({ questions, surveyQuestions }));
                                 })
                                 .then(({ questions, surveyQuestions }) => {

@@ -22,11 +22,11 @@ const Survey = models.Survey;
 describe('question unit', function () {
     before(shared.setUpFn());
 
-    const hxQuestions = new History();
-    const hxSurveys = new History();
+    const hxQuestion = new History();
+    const hxSurvey = new History();
 
     it('get all questions when none', function () {
-        return Question.getAllQuestions()
+        return Question.listQuestions()
             .then(questions => {
                 expect(questions).to.have.length(0);
             });
@@ -39,7 +39,7 @@ describe('question unit', function () {
                 .then(id => Question.getQuestion(id))
                 .then(question => {
                     comparator.question(clientQuestion, question);
-                    hxQuestions.push(clientQuestion, question);
+                    hxQuestion.push(clientQuestion, question);
                     return question;
                 })
                 .then(question => {
@@ -69,27 +69,27 @@ describe('question unit', function () {
 
     it('get multiple questions (2, 4, 7)', function () {
         const indices = [2, 4, 7];
-        const ids = indices.map(i => hxQuestions.id(i));
-        const clientQuestions = indices.map(i => hxQuestions.client(i));
-        return Question.getQuestions(ids)
+        const ids = indices.map(i => hxQuestion.id(i));
+        const clientQuestions = indices.map(i => hxQuestion.client(i));
+        return Question.listQuestions({ ids })
             .then(questions => comparator.questions(clientQuestions, questions));
     });
 
     it('get all questions', function () {
-        return Question.getAllQuestions()
-            .then(questions => comparator.questions(hxQuestions.listClients(), questions));
+        return Question.listQuestions()
+            .then(questions => comparator.questions(hxQuestion.listClients(), questions));
     });
 
     it('error: get multiple with non-existent id', function () {
-        return Question.getQuestions([1, 99999])
+        return Question.listQuestions({ ids: [1, 99999] })
             .then(shared.throwingHandler, shared.expectedErrorHandler('qxNotFound'));
     });
 
     const qxDeleteFn = function (index) {
         return function () {
-            return Question.deleteQuestion(hxQuestions.id(index))
+            return Question.deleteQuestion(hxQuestion.id(index))
                 .then(() => {
-                    hxQuestions.remove(index);
+                    hxQuestion.remove(index);
                 });
         };
     };
@@ -99,8 +99,8 @@ describe('question unit', function () {
     });
 
     it('verify all questions', function () {
-        return Question.getAllQuestions()
-            .then(questions => comparator.questions(hxQuestions.listClients(), questions));
+        return Question.listQuestions()
+            .then(questions => comparator.questions(hxQuestion.listClients(), questions));
     });
 
     for (let i = 10; i < 20; ++i) {
@@ -109,10 +109,10 @@ describe('question unit', function () {
 
     const createSurveyFn = function (questionIndices) {
         return function () {
-            const questionIds = questionIndices.map(index => hxQuestions.id(index));
+            const questionIds = questionIndices.map(index => hxQuestion.id(index));
             const clientSurvey = generator.newSurveyQuestionIds(questionIds);
             return Survey.createSurvey(clientSurvey)
-                .then(id => hxSurveys.push(clientSurvey, { id }));
+                .then(id => hxSurvey.push(clientSurvey, { id }));
         };
     };
 
@@ -126,31 +126,31 @@ describe('question unit', function () {
 
     _.forEach([2, 7, 11, 13, 14], questionIndex => {
         it(`error: delete question ${questionIndex} on an active survey`, function () {
-            return Question.deleteQuestion(hxQuestions.id(questionIndex))
+            return Question.deleteQuestion(hxQuestion.id(questionIndex))
                 .then(shared.throwingHandler, shared.expectedErrorHandler('qxReplaceWhenActiveSurveys'));
         });
     });
 
     it('delete survey 1', function () {
-        return Survey.deleteSurvey(hxSurveys.id(1))
-            .then(() => hxSurveys.remove(1));
+        return Survey.deleteSurvey(hxSurvey.id(1))
+            .then(() => hxSurvey.remove(1));
     });
 
     _.forEach([2, 7, 11, 14], questionIndex => {
         it(`error: delete question ${questionIndex} on an active survey`, function () {
-            return Question.deleteQuestion(hxQuestions.id(questionIndex))
+            return Question.deleteQuestion(hxQuestion.id(questionIndex))
                 .then(shared.throwingHandler, shared.expectedErrorHandler('qxReplaceWhenActiveSurveys'));
         });
     });
 
     it('delete survey 2', function () {
-        return Survey.deleteSurvey(hxSurveys.id(2))
-            .then(() => hxSurveys.remove(2));
+        return Survey.deleteSurvey(hxSurvey.id(2))
+            .then(() => hxSurvey.remove(2));
     });
 
     _.forEach([2, 7], questionIndex => {
         it(`error: delete question ${questionIndex} on an active survey`, function () {
-            return Question.deleteQuestion(hxQuestions.id(questionIndex))
+            return Question.deleteQuestion(hxQuestion.id(questionIndex))
                 .then(shared.throwingHandler, shared.expectedErrorHandler('qxReplaceWhenActiveSurveys'));
         });
     });
@@ -175,47 +175,47 @@ describe('question unit', function () {
     _.forEach([2, 7, 9], questionIndex => {
         it(`error: replace question ${questionIndex} on an active survey`, function () {
             const replacement = generator.newQuestion();
-            return Question.replaceQuestion(hxQuestions.id(questionIndex), replacement)
+            return Question.replaceQuestion(hxQuestion.id(questionIndex), replacement)
                 .then(shared.throwingHandler, shared.expectedErrorHandler('qxReplaceWhenActiveSurveys'));
         });
     });
 
     it('delete survey 0', function () {
-        return Survey.deleteSurvey(hxSurveys.id(0))
-            .then(() => hxSurveys.remove(0));
+        return Survey.deleteSurvey(hxSurvey.id(0))
+            .then(() => hxSurvey.remove(0));
     });
 
     _.forEach([7, 9], questionIndex => {
         it(`error: replace question ${questionIndex} on an active survey`, function () {
             const replacement = generator.newQuestion();
-            return Question.replaceQuestion(hxQuestions.id(questionIndex), replacement)
+            return Question.replaceQuestion(hxQuestion.id(questionIndex), replacement)
                 .then(shared.throwingHandler, shared.expectedErrorHandler('qxReplaceWhenActiveSurveys'));
         });
     });
 
     it('delete survey 3', function () {
-        return Survey.deleteSurvey(hxSurveys.id(3))
-            .then(() => hxSurveys.remove(3));
+        return Survey.deleteSurvey(hxSurvey.id(3))
+            .then(() => hxSurvey.remove(3));
     });
 
     [7, 10, 14, 21, 22, 24].forEach((questionIndex, index) => {
         it(`replace question ${questionIndex} with question ${20 + index}`, function () {
             const replacement = generator.newQuestion();
-            return Question.replaceQuestion(hxQuestions.id(questionIndex), replacement)
+            return Question.replaceQuestion(hxQuestion.id(questionIndex), replacement)
                 .then(({ id }) => Question.getQuestion(id))
                 .then(question => {
                     comparator.question(replacement, question);
-                    hxQuestions.replace(questionIndex, replacement, question);
+                    hxQuestion.replace(questionIndex, replacement, question);
                     return question;
                 })
-                .then(() => Question.getAllQuestions())
-                .then(questions => comparator.questions(hxQuestions.listClients(), questions));
+                .then(() => Question.listQuestions())
+                .then(questions => comparator.questions(hxQuestion.listClients(), questions));
         });
     });
 
     const verifyVersioningFn = function (index, expectedVersion) {
         return function () {
-            const id = hxQuestions.id(index);
+            const id = hxQuestion.id(index);
             return Question.findById(id, { attributes: ['groupId', 'version'], raw: true })
                 .then(versionInfo => {
                     expect(versionInfo.version).to.equal(expectedVersion);
