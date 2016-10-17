@@ -92,10 +92,6 @@ module.exports = function (sequelize, DataTypes) {
                     return Survey.createSurveyTx(survey, tx);
                 });
             },
-            updateSurvey(id, { name }) {
-                return textHandler.createText({ id, name })
-                    .then(() => ({}));
-            },
             updateSurveyText(id, { name }, language) {
                 return textHandler.createText({ id, name, language });
             },

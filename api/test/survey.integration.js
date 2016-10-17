@@ -115,17 +115,10 @@ describe('survey integration', function () {
             const id = history.id(index);
             name = name || history.client(index).name;
             store.server
-                .patch(`/api/v1.0/surveys/${id}`)
+                .patch(`/api/v1.0/surveys/${id}/text/en`)
                 .set('Authorization', store.auth)
                 .send({ name })
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    expect(res.body).to.deep.equal({});
-                    done();
-                });
+                .expect(204, done);
         };
     };
 

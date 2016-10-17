@@ -344,37 +344,6 @@
                         "$ref": "#/responses/genericError"
                     }
                 }
-            },
-            "patch": {
-                "summary": "Updates the survey",
-                "description": "Only the name of the survey can be updated here.",
-                "operationId": "updateSurvey",
-                "security": [{
-                    "admin": []
-                }],
-                "parameters": [{
-                    "name": "updateObj",
-                    "in": "body",
-                    "required": true,
-                    "schema": {
-                        "type": "object",
-                        "required": ["name"],
-                        "properties": {
-                            "name": {
-                                "type": "string"
-                            }
-                        },
-                        "additionalProperties": false
-                    }
-                }],
-                "responses": {
-                    "200": {
-                        "$ref": "#/responses/emptySuccess"
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
             }
         },
         "/surveys/{id}/text/{language}": {
