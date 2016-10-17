@@ -2,12 +2,14 @@ import React, { Component} from 'react';
 import { connect } from 'react-redux';
 import Form from './login-form';
 import login from '../index';
+import Background from '../../background'
 
 export class LoginContainer extends Component {
   render() {
     const formState = this.props.data.get('formState')
     return (
       <div className="login">
+      <Background/>
         <div className="login--inputContainer">
         <Form data={formState}
                 location={location}
