@@ -40,16 +40,16 @@ module.exports = function (sequelize, DataTypes) {
                     return QuestionAction.createActionPerQuestionTx(questionId, action, index, tx);
                 }));
             },
-            findActionsPerQuestion(questionId) {
+            findActionsPerQuestion(questionId, language) {
                 return QuestionAction.findAll({
                         raw: true,
                         where: { questionId },
                         attributes: ['id', 'type'],
                         order: 'line'
                     })
-                    .then(actions => textHandler.updateAllTexts(actions));
+                    .then(actions => textHandler.updateAllTexts(actions, language));
             },
-            findActionsPerQuestions(ids) {
+            findActionsPerQuestions(ids, language) {
                 const options = {
                     raw: true,
                     attributes: ['id', 'type', 'questionId'],
@@ -59,7 +59,11 @@ module.exports = function (sequelize, DataTypes) {
                     options.where = { questionId: { $in: ids } };
                 }
                 return QuestionAction.findAll(options)
-                    .then(actions => textHandler.updateAllTexts(actions));
+                    .then(actions => textHandler.updateAllTexts(actions, language));
+            },
+            updateMultipleActionTextsTx(actions, language, tx) {
+                const inputs = actions.map(({ id, text }) => ({ id, text, language }));
+                return textHandler.createMultipleTextsTx(inputs, tx);
             }
         }
     });

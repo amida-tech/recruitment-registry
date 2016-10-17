@@ -24,6 +24,10 @@ module.exports = function (sequelize, tableName, parentIdField, textFields = ['t
                         .then(() => input);
                 });
         },
+        createMultipleTextsTx(inputs, tx) {
+            const pxs = inputs.map(input => this.createTextTx(input, tx));
+            return sequelize.Promise.all(pxs);
+        },
         createText(input) {
             return sequelize.transaction(tx => {
                 return this.createTextTx(input, tx);

@@ -11,6 +11,7 @@ const SharedSpec = require('./util/shared-spec.js');
 const Generator = require('./util/entity-generator');
 const comparator = require('./util/client-server-comparator');
 const History = require('./util/entity-history');
+const translator = require('./util/translator');
 
 const expect = chai.expect;
 const generator = new Generator();
@@ -84,6 +85,58 @@ describe('question unit', function () {
         return Question.listQuestions({ ids: [1, 99999] })
             .then(shared.throwingHandler, shared.expectedErrorHandler('qxNotFound'));
     });
+
+    const translateQuestionFn = function (index, language) {
+        return function () {
+            const server = hxQuestion.server(index);
+            const translation = translator.translateQuestion(server, language);
+            return Question.updateQuestionText(translation, language)
+                .then(() => {
+                    hxQuestion.translate(index, language, translation);
+                });
+        };
+    };
+
+    const getTranslatedQuestionFn = function (index, language) {
+        return function () {
+            const id = hxQuestion.id(index);
+            return Question.getQuestion(id, { language })
+                .then(result => {
+                    const expected = hxQuestion.translatedServer(index, language);
+                    expect(result).to.deep.equal(expected);
+                });
+        };
+    };
+
+    const listTranslatedQuestionsFn = function (language) {
+        return function () {
+            return Question.listQuestions({ language })
+                .then(result => {
+                    const expected = hxQuestion.listTranslatedServers(language);
+                    expect(result).to.deep.equal(expected);
+                });
+        };
+    };
+
+    it('get question 3 in spanish when no name translation', getTranslatedQuestionFn(3, 'es'));
+
+    it('list questions in spanish when no translation', listTranslatedQuestionsFn('es'));
+
+    for (let i = 0; i < 10; ++i) {
+        it(`add translated (es) question ${i}`, translateQuestionFn(i, 'es'));
+        it(`get and verify tanslated question ${i}`, getTranslatedQuestionFn(i, 'es'));
+    }
+
+    it('list and verify translated (es) questions', listTranslatedQuestionsFn('es'));
+
+    for (let i = 0; i < 10; i += 2) {
+        it(`add translated (fr) question ${i}`, translateQuestionFn(i, 'fr'));
+        it(`get and verify tanslated (fr) question ${i}`, getTranslatedQuestionFn(i, 'fr'));
+    }
+
+    it('list and verify translated (fr) questions', listTranslatedQuestionsFn('fr'));
+
+    it('list questions in english (original)', listTranslatedQuestionsFn('en'));
 
     const qxDeleteFn = function (index) {
         return function () {

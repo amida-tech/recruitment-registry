@@ -139,7 +139,7 @@ module.exports = function (sequelize, DataTypes) {
                     })
                     .then(question => textHandler.updateText(question, language))
                     .then(question => {
-                        return sequelize.models.question_action.findActionsPerQuestion(question.id)
+                        return sequelize.models.question_action.findActionsPerQuestion(question.id, language)
                             .then(actions => {
                                 if (actions.length) {
                                     question.actions = actions;
@@ -152,7 +152,7 @@ module.exports = function (sequelize, DataTypes) {
                         if (['choice', 'choices'].indexOf(question.type) < 0) {
                             return question;
                         }
-                        return sequelize.models.question_choice.findChoicesPerQuestion(question.id)
+                        return sequelize.models.question_choice.findChoicesPerQuestion(question.id, options.language)
                             .then(choices => {
                                 if (question.type === 'choice') {
                                     question.choices = choices.map(({ id, text }) => ({
@@ -172,6 +172,33 @@ module.exports = function (sequelize, DataTypes) {
             },
             updateQuestion: function (id, { text }) {
                 return textHandler.createText({ id, text });
+            },
+            _updateQuestionTextTx: function ({ id, text }, language, tx) {
+                if (text) {
+                    return textHandler.createTextTx({ id, text, language }, tx);
+                } else {
+                    return sequelize.Promise.resolve();
+                }
+            },
+            updateQuestionTextTx: function (translation, language, tx) {
+                return Question._updateQuestionTextTx(translation, language, tx)
+                    .then(() => {
+                        const choices = translation.choices;
+                        if (choices) {
+                            return sequelize.models.question_choice.updateMultipleChoiceTextsTx(choices, language, tx);
+                        }
+                    })
+                    .then(() => {
+                        const actions = translation.actions;
+                        if (actions) {
+                            return sequelize.models.question_action.updateMultipleActionTextsTx(actions, language, tx);
+                        }
+                    });
+            },
+            updateQuestionText: function (translation, language) {
+                return sequelize.transaction(function (tx) {
+                    return Question.updateQuestionTextTx(translation, language, tx);
+                });
             },
             deleteQuestion: function (id) {
                 return sequelize.models.survey_question.count({ where: { questionId: id } })
@@ -213,7 +240,7 @@ module.exports = function (sequelize, DataTypes) {
                         }
                         return textHandler.updateAllTexts(questions, language)
                             .then(() => {
-                                return sequelize.models.question_action.findActionsPerQuestions(ids)
+                                return sequelize.models.question_action.findActionsPerQuestions(ids, language)
                                     .then(actions => {
                                         if (actions.length) {
                                             actions.forEach(action => {
@@ -231,7 +258,7 @@ module.exports = function (sequelize, DataTypes) {
                                     });
                             })
                             .then(() => {
-                                return sequelize.models.question_choice.getAllQuestionChoices(ids)
+                                return sequelize.models.question_choice.getAllQuestionChoices(ids, language)
                                     .then(choices => {
                                         const map = _.keyBy(questions, 'id');
                                         choices.forEach(choice => {

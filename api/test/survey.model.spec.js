@@ -126,7 +126,7 @@ describe('survey unit', function () {
     const getTranslatedFn = function (index, language) {
         return function () {
             const id = history.id(index);
-            return Survey.getSurvey(id, { language: 'es' })
+            return Survey.getSurvey(id, { language })
                 .then(result => {
                     const expected = history.translatedServer(index, language);
                     expect(result).to.deep.equal(expected);
@@ -136,7 +136,7 @@ describe('survey unit', function () {
 
     const listTranslatedFn = function (language) {
         return function () {
-            return Survey.listSurveys({ language: 'es' })
+            return Survey.listSurveys({ language })
                 .then(result => {
                     const expected = history.listTranslatedServers(language);
                     expect(result).to.deep.equal(expected);
