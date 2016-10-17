@@ -7,20 +7,34 @@ export class LoginContainer extends Component {
   render() {
     const formState = this.props.data.get('formState')
     return (
-      <div className="rr-wrapper">
-        <div className="rr-panel">
-          <div className="rr-topbox">
-            <h1 className="rr m-t-0">{this.props.vocab.get('SIGN_IN')}</h1>
-          </div>
-          <Form data={formState}
+      <div className="login">
+        <div className="login--inputContainer">
+        <Form data={formState}
                 location={location}
                 vocab={this.props.vocab}
                 history={this.props.history}
                 changeForm={::this._changeForm}
                 onSubmit={::this._login}
                 btnText={this.props.vocab.get('SIGN_IN')} />
+                </div>
+        <div className="utility--background blue">
         </div>
       </div>
+
+      // <div className="rr-wrapper">
+      //   <div className="rr-panel">
+      //     <div className="rr-topbox">
+      //       <h1 className="rr m-t-0">{this.props.vocab.get('SIGN_IN')}</h1>
+      //     </div>
+      //     <Form data={formState}
+      //           location={location}
+      //           vocab={this.props.vocab}
+      //           history={this.props.history}
+      //           changeForm={::this._changeForm}
+      //           onSubmit={::this._login}
+      //           btnText={this.props.vocab.get('SIGN_IN')} />
+      //   </div>
+      // </div>
     );
   }
 
