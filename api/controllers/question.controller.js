@@ -32,6 +32,13 @@ exports.updateQuestion = function (req, res) {
         .catch(shared.handleError(res));
 };
 
+exports.updateQuestionText = function (req, res) {
+    const language = _.get(req, 'swagger.params.language.value');
+    Question.updateQuestionText(req.body, language)
+        .then(() => res.status(204).end())
+        .catch(shared.handleError(res));
+};
+
 exports.deleteQuestion = function (req, res) {
     const id = _.get(req, 'swagger.params.id.value');
     Question.deleteQuestion(id)
@@ -41,13 +48,17 @@ exports.deleteQuestion = function (req, res) {
 
 exports.getQuestion = function (req, res) {
     const id = _.get(req, 'swagger.params.id.value');
-    Question.getQuestion(id)
+    const language = _.get(req, 'swagger.params.language.value');
+    const options = language ? {language} : {};
+    Question.getQuestion(id, options)
         .then((question) => res.status(200).json(question))
         .catch(shared.handleError(res));
 };
 
 exports.listQuestions = function (req, res) {
-    Question.listQuestions()
+    const language = _.get(req, 'swagger.params.language.value');
+    const options = language ? {language} : {};
+    Question.listQuestions(options)
         .then((questions) => res.status(200).json(questions))
         .catch(shared.handleError(res));
 };

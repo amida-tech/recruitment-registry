@@ -767,6 +767,14 @@
                 "security": [{
                     "admin": []
                 }],
+                "parameters": [{
+                    "name": "language",
+                    "in": "query",
+                    "description": "Language requested",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 1
+                }],
                 "responses": {
                     "200": {
                         "description": "Successful response",
@@ -793,6 +801,14 @@
                 "operationId": "getQuestion",
                 "security": [{
                     "admin": []
+                }],
+                "parameters": [{
+                    "name": "language",
+                    "in": "query",
+                    "description": "Language requested",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 1
                 }],
                 "responses": {
                     "200": {
@@ -830,6 +846,39 @@
                 "responses": {
                     "204": {
                         "description": "Successful response."
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/questions/text/{language}": {
+            "x-swagger-router-controller": "question.controller",
+            "patch": {
+                "summary": "Updates or translates question text fields",
+                "operationId": "updateQuestionText",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "language",
+                    "in": "path",
+                    "description": "Language code",
+                    "required": true,
+                    "type": "string",
+                    "minLength": 2
+                }, {
+                    "name": "textUpdate",
+                    "in": "body",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/questionTextUpdate"
+                    }
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successul response"
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -1818,6 +1867,24 @@
                 }
             }
         },
+        "choiceTextUpdate": {
+            "type": "object",
+            "required": [
+                "id",
+                "text"
+            ],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "text": {
+                    "type": "string",
+                     "minLength": 1
+                }
+            },
+            "additionalProperties": false
+        },
         "answer": {
             "type": "object",
             "properties": {
@@ -1895,6 +1962,35 @@
                 "$ref": "#/definitions/question"
             },
             "minLength": 1
+        },
+        "questionTextUpdate": {
+            "type": "object",
+            "required": [
+                "id"
+            ],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "text": {
+                    "type": "string",
+                     "minLength": 1
+                },
+                "choices": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/choiceTextUpdate"
+                    }
+                },
+                "actions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/actionTextUpdate"
+                    }
+                 }
+            },
+            "additionalProperties": false
         },
         "newChoice": {
             "type": "object",
@@ -2046,10 +2142,27 @@
                     "minimum": 1
                 },
                 "text": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 1
                 },
                 "type": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "actionTextUpdate": {
+            "type": "object",
+            "required": ["id", "text"],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "text": {
+                    "type": "string",
+                    "minLength": 1
                 }
             },
             "additionalProperties": false
