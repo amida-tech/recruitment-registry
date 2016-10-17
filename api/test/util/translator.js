@@ -23,6 +23,11 @@ const translator = {
             });
         }
         return result;
+    },
+    translateConsentType(consentType, language) {
+        const result = _.pick(consentType, ['id', 'title']);
+        result.title = this._translate(result.title, language);
+        return result;
     }
 };
 

@@ -35,11 +35,22 @@ module.exports = function (sequelize, DataTypes) {
         deletedAt: 'deletedAt',
         paranoid: true,
         classMethods: {
-            listConsentTypes: function (options = {}) {
+            getConsentType(id, options = {}) {
+                const _options = {
+                    raw: true,
+                    attributes: ['id', 'name', 'type']
+                };
+                return ConsentType.findById(id, _options)
+                    .then(consentType => textHandler.updateText(consentType, options.language));
+            },
+            updateConsentTypeText({ id, title }, language) {
+                return textHandler.createText({ id, title, language });
+            },
+            listConsentTypes(options = {}) {
                 const query = {
                     raw: true,
                     attributes: ['id', 'name', 'type'],
-                    order: 'name'
+                    order: 'id'
                 };
                 if (options.ids) {
                     query.where = { id: { $in: options.ids } };
@@ -48,14 +59,14 @@ module.exports = function (sequelize, DataTypes) {
                     query.transaction = options.transaction;
                 }
                 return ConsentType.findAll(query)
-                    .then(types => textHandler.updateAllTexts(types));
+                    .then(types => textHandler.updateAllTexts(types, options.language));
             },
-            createConsentType: function ({ name, title, type }) {
+            createConsentType({ name, title, type }) {
                 return ConsentType.create({ name, type })
                     .then(({ id }) => textHandler.createText({ id, title }))
                     .then(({ id }) => ({ id }));
             },
-            deleteConsentType: function (id) {
+            deleteConsentType(id) {
                 const ConsentSection = sequelize.models.consent_section;
                 return ConsentSection.count({ where: { typeId: id } })
                     .then(count => {
