@@ -34,48 +34,67 @@ module.exports = function (sequelize, DataTypes) {
         deletedAt: 'deletedAt',
         paranoid: true,
         classMethods: {
-            listConsentDocuments: function (typeIds, tx) {
-                const options = {};
+            listConsentDocuments: function (options) {
+                const typeIds = options.typeIds;
+                const query = {
+                    raw: true,
+                    attributes: ['id', 'typeId'],
+                    order: 'id'
+                };
+                if (options.transaction) {
+                    query.transaction = options.transaction;
+                }
                 if (typeIds && typeIds.length) {
-                    options.ids = typeIds;
+                    query.where = { typeId: { $in: typeIds } };
                 }
-                if (tx) {
-                    options.transaction = tx;
-                }
-                return sequelize.models.consent_type.listConsentTypes(options)
-                    .then(docTypes => {
-                        if (!(typeIds && typeIds.length)) {
-                            typeIds = _.map(docTypes, 'id');
+                return ConsentDocument.findAll(query)
+                    .then(documents => {
+                        if (options.summary) {
+                            return documents;
+                        } else {
+                            return textHandler.updateAllTexts(documents);
                         }
-                        const query = {
-                            where: { typeId: { $in: typeIds } },
-                            raw: true,
-                            attributes: ['id', 'typeId'],
-                            order: 'id'
-                        };
-                        if (tx) {
-                            query.transaction = tx;
+                    })
+                    .then(documents => {
+                        const _options = {};
+                        if (options.transaction) {
+                            _options.transaction = options.transaction;
                         }
-                        return ConsentDocument.findAll(query)
-                            .then(docs => {
-                                if (docs.length !== typeIds.length) {
+                        if (typeIds && typeIds.length) {
+                            _options.ids = typeIds;
+                        }
+                        return sequelize.models.consent_type.listConsentTypes(_options)
+                            .then(types => {
+                                if (types.length !== documents.length) {
                                     return RRError.reject('noSystemConsentDocuments');
-                                } else {
-                                    const docTypeMap = _.keyBy(docTypes, 'id');
-                                    return docs.map(({ id, typeId }) => {
-                                        const { name, title } = docTypeMap[typeId];
-                                        return { id, name, title };
-                                    });
                                 }
+                                return _.keyBy(types, 'id');
+                            })
+                            .then(types => {
+                                documents.forEach(document => {
+                                    const typeId = document.typeId;
+                                    const { name, title } = types[typeId];
+                                    Object.assign(document, { name, title });
+                                    delete document.typeId;
+                                });
+                                return documents;
                             });
                     });
             },
-            getConsentDocumentsOfTypes: function (typeIds) {
-                return ConsentDocument.findAll({
-                        raw: true,
-                        attributes: ['id', 'typeId'],
-                        where: { typeId: { $in: typeIds } }
-                    })
+            getConsentDocumentsOfTypes: function (options) {
+                const typeIds = options.typeIds;
+                const query = {
+                    raw: true,
+                    attributes: ['id', 'typeId'],
+                    order: 'id'
+                };
+                if (options.transaction) {
+                    query.transaction = options.transaction;
+                }
+                if (typeIds && typeIds.length) {
+                    query.where = { typeId: { $in: typeIds } };
+                }
+                return ConsentDocument.findAll(query)
                     .then(documents => textHandler.updateAllTexts(documents))
                     .then(documents => _.keyBy(documents, 'typeId'))
                     .then(documents => {

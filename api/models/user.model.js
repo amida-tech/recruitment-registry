@@ -206,8 +206,15 @@ module.exports = function (sequelize, DataTypes) {
                     }
                 });
             },
-            listConsentDocuments: function (userId, docTypeIds, tx) {
-                return sequelize.models.consent_document.listConsentDocuments(docTypeIds, tx)
+            listConsentDocuments: function (userId, typeIds, tx) {
+                const options = { summary: true };
+                if (typeIds && typeIds.length) {
+                    options.typeIds = typeIds;
+                }
+                if (tx) {
+                    options.transaction = tx;
+                }
+                return sequelize.models.consent_document.listConsentDocuments(options)
                     .then(activeDocs => {
                         const query = {
                             where: { userId },

@@ -78,7 +78,7 @@ module.exports = function (sequelize, DataTypes) {
                                     .then(rawTypeIds => _.map(rawTypeIds, 'consentTypeId'))
                                     .then(typeIds => {
                                         if (typeIds.length) {
-                                            return ConsentDocument.listConsentDocuments(typeIds)
+                                            return ConsentDocument.listConsentDocuments({ summary: true, typeIds })
                                                 .then(consentDocuments => {
                                                     survey.consentDocument = consentDocuments;
                                                     return survey;

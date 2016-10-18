@@ -87,7 +87,7 @@ module.exports = function (sequelize, DataTypes) {
                     return ConsentSection.findAll({ where: { consentId: id }, raw: true, attributes: ['typeId', 'line'], order: 'line' })
                         .then(sections => {
                             const typeIds = _.map(sections, 'typeId');
-                            return ConsentDocument.getConsentDocumentsOfTypes(typeIds);
+                            return ConsentDocument.getConsentDocumentsOfTypes({ typeIds });
                         })
                         .then(sections => {
                             result.sections = sections;
