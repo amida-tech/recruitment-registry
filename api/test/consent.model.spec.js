@@ -138,46 +138,46 @@ describe('consent unit', function () {
         it(`create/verify consent document of type ${i}`, shared.createConsentDocumentFn(history, i));
     }
 
-    const fn = (() => {
-        [0, 1, 3].forEach(consentIndex => {
-            it(`get/verify consent ${consentIndex} documents`, function () {
-                const id = hxConsent.id(consentIndex);
-                return Consent.getConsentDocuments(id)
-                    .then(consent => {
-                        const typeIndices = consentSpecs[consentIndex];
-                        const expected = consentCommon.formExpectedConsent(consentIndex, typeIndices);
-                        expect(consent).to.deep.equal(expected);
-                    });
-            });
-
-            it(`get/verify consent ${consentIndex} documents by name`, function () {
-                const name = hxConsent.server(consentIndex).name;
-                return Consent.getConsentDocumentsByName(name)
-                    .then(consent => {
-                        const typeIndices = consentSpecs[consentIndex];
-                        const expected = consentCommon.formExpectedConsent(consentIndex, typeIndices);
-                        expect(consent).to.deep.equal(expected);
-                    });
-            });
-
-            _.range(userCount).forEach(userIndex => {
-                it(`get/verify user consent ${consentIndex} documents`, function () {
-                    return getUserConsentDocuments(userIndex, consentIndex, []);
-                });
-                it(`get/verify user consent ${consentIndex} documents by name`, function () {
-                    return getUserConsentDocumentsByName(userIndex, consentIndex, []);
-                });
-            });
-        });
+    it('error: get consent 0 documents', function () {
+        const id = hxConsent.id(0);
+        return Consent.getConsentDocuments(id)
+            .then(shared.throwingHandler, shared.expectedErrorHandler('noSystemConsentDocuments'));
     });
-
-    fn();
 
     for (let i = 3; i < typeCount; ++i) {
         it(`create/verify consent document of type ${i}`, shared.createConsentDocumentFn(history, i));
     }
 
-    fn();
+    [0, 1, 3].forEach(consentIndex => {
+        it(`get/verify consent ${consentIndex} documents`, function () {
+            const id = hxConsent.id(consentIndex);
+            return Consent.getConsentDocuments(id)
+                .then(consent => {
+                    const typeIndices = consentSpecs[consentIndex];
+                    const expected = consentCommon.formExpectedConsent(consentIndex, typeIndices);
+                    expect(consent).to.deep.equal(expected);
+                });
+        });
+
+        it(`get/verify consent ${consentIndex} documents by name`, function () {
+            const name = hxConsent.server(consentIndex).name;
+            return Consent.getConsentDocumentsByName(name)
+                .then(consent => {
+                    const typeIndices = consentSpecs[consentIndex];
+                    const expected = consentCommon.formExpectedConsent(consentIndex, typeIndices);
+                    expect(consent).to.deep.equal(expected);
+                });
+        });
+
+        _.range(userCount).forEach(userIndex => {
+            it(`get/verify user consent ${consentIndex} documents`, function () {
+                return getUserConsentDocuments(userIndex, consentIndex, []);
+            });
+            it(`get/verify user consent ${consentIndex} documents by name`, function () {
+                return getUserConsentDocumentsByName(userIndex, consentIndex, []);
+            });
+        });
+    });
 
     const signDocumentsFn = function (userIndex, index, newSignatureIndices, expectedSignatureIndices, language) {
         return function () {

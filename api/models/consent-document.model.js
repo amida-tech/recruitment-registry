@@ -65,52 +65,37 @@ module.exports = function (sequelize, DataTypes) {
                         }
                         return sequelize.models.consent_type.listConsentTypes(_options)
                             .then(types => {
+                                if (options.summary) {
+                                    return types.map(type => _.omit(type, 'type'));
+                                } else {
+                                    return types;
+                                }
+                            })
+                            .then(types => {
                                 if (types.length !== documents.length) {
                                     return RRError.reject('noSystemConsentDocuments');
                                 }
                                 return _.keyBy(types, 'id');
                             })
                             .then(types => {
-                                documents.forEach(document => {
-                                    const typeId = document.typeId;
-                                    const { name, title } = types[typeId];
-                                    Object.assign(document, { name, title });
-                                    delete document.typeId;
-                                });
-                                return documents;
-                            });
-                    });
-            },
-            getConsentDocumentsOfTypes: function (options) {
-                const typeIds = options.typeIds;
-                const query = {
-                    raw: true,
-                    attributes: ['id', 'typeId'],
-                    order: 'id'
-                };
-                if (options.transaction) {
-                    query.transaction = options.transaction;
-                }
-                if (typeIds && typeIds.length) {
-                    query.where = { typeId: { $in: typeIds } };
-                }
-                return ConsentDocument.findAll(query)
-                    .then(documents => textHandler.updateAllTexts(documents))
-                    .then(documents => _.keyBy(documents, 'typeId'))
-                    .then(documents => {
-                        const ConsentType = sequelize.models.consent_type;
-                        return ConsentType.listConsentTypes({
-                                ids: typeIds
-                            })
-                            .then(types => _.keyBy(types, 'id'))
-                            .then(types => {
-                                return typeIds.map(typeId => {
-                                    const d = documents[typeId];
-                                    if (!d) {
-                                        return null;
-                                    }
-                                    return Object.assign(types[typeId], _.omit(d, 'typeId'));
-                                });
+                                if (options.typeOrder) {
+                                    const map = _.keyBy(documents, 'typeId');
+                                    const result = typeIds.map(typeId => {
+                                        const fields = _.omit(types[typeId], 'id');
+                                        const r = Object.assign(map[typeId], fields);
+                                        delete r.typeId;
+                                        return r;
+                                    });
+                                    return result;
+                                } else {
+                                    documents.forEach(document => {
+                                        const typeId = document.typeId;
+                                        const fields = _.omit(types[typeId], 'id');
+                                        Object.assign(document, fields);
+                                        delete document.typeId;
+                                    });
+                                    return documents;
+                                }
                             });
                     });
             },
