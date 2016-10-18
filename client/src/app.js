@@ -59,8 +59,18 @@ export default (options) => {
   const initialMiddleware = [createLogger(loggerOptions)];
   const createStoreWithMiddleware = applyMiddleware(thunk)(createStore);
 
+  const appReducer = combineReducers({...reducers, routing})
+
+  const rootReducer = (state, action) => {
+    if (action.type === 'LOGOUT') {
+      state = frozen
+    }
+
+    return appReducer(state, action)
+  }
+
   const store = createStoreWithMiddleware(
-    combineReducers({...reducers, routing}),
+    rootReducer,
     frozen,
     compose(
       applyMiddleware(...initialMiddleware, ...middleware),
