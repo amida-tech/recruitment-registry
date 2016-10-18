@@ -22,10 +22,9 @@ export function clearChoices(data) {
   });
 }
 
-export function getSurvey(surveyName) {
+export function getSurvey() {
   return dispatch => dispatch({
-    type: actionTypes.GET_SURVEY,
-    surveyName: surveyName
+    type: actionTypes.GET_SURVEY
   });
 }
 

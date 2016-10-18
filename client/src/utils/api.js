@@ -83,7 +83,7 @@ const apiProvider = store => next => action => {
       break
     case 'GET_SURVEY':
       request
-        .get(apiUrl + '/registries/profile-survey/' + action.surveyName)
+        .get(apiUrl + '/profile-survey/')
         .end((error, response) => {
           if (!error) {
             next({
