@@ -1450,6 +1450,14 @@
             "get": {
                 "summary": "Gets the documents",
                 "operationId": "getConsentDocuments",
+                "parameters": [{
+                    "name": "language",
+                    "in": "query",
+                    "description": "Language code",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 2
+                }],
                 "responses": {
                     "200": {
                         "description": "Successful response",
@@ -1474,6 +1482,14 @@
             "get": {
                 "summary": "Gets the documents by name",
                 "operationId": "getConsentDocumentsByName",
+                "parameters": [{
+                    "name": "language",
+                    "in": "query",
+                    "description": "Language code",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 2
+                }],
                 "responses": {
                     "200": {
                         "description": "Successful response",
@@ -1501,6 +1517,14 @@
                 "security": [{
                     "participant": []
                 }],
+                "parameters": [{
+                    "name": "language",
+                    "in": "query",
+                    "description": "Language code",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 2
+                }],
                 "responses": {
                     "200": {
                         "description": "Successful response",
@@ -1527,6 +1551,14 @@
                 "operationId": "getUserConsentDocumentsByName",
                 "security": [{
                     "participant": []
+                }],
+                "parameters": [{
+                    "name": "language",
+                    "in": "query",
+                    "description": "Language code",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 2
                 }],
                 "responses": {
                     "200": {

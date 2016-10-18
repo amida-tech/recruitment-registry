@@ -43,28 +43,32 @@ exports.listConsents = function (req, res) {
 
 exports.getConsentDocuments = function (req, res) {
     const id = _.get(req, 'swagger.params.id.value');
-    Consent.getConsentDocuments(id)
+    const language = _.get(req, 'swagger.params.language.value');
+    Consent.getConsentDocuments(id, { language })
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };
 
 exports.getConsentDocumentsByName = function (req, res) {
     const name = _.get(req, 'swagger.params.name.value');
-    Consent.getConsentDocumentsByName(name)
+    const language = _.get(req, 'swagger.params.language.value');
+    Consent.getConsentDocumentsByName(name, { language })
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };
 
 exports.getUserConsentDocuments = function (req, res) {
     const id = _.get(req, 'swagger.params.id.value');
-    Consent.getUserConsentDocuments(req.user.id, id)
+    const language = _.get(req, 'swagger.params.language.value');
+    Consent.getUserConsentDocuments(req.user.id, id, { language })
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };
 
 exports.getUserConsentDocumentsByName = function (req, res) {
     const name = _.get(req, 'swagger.params.name.value');
-    Consent.getUserConsentDocumentsByName(req.user.id, name)
+    const language = _.get(req, 'swagger.params.language.value');
+    Consent.getUserConsentDocumentsByName(req.user.id, name, { language })
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };
