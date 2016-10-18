@@ -93,11 +93,21 @@ class History {
         _.set(this.translations, `${id}.${language}`, r);
     }
 
+    translateWithServer(server, language, translation) {
+        const id = server.id;
+        const r = _.merge({}, server, translation);
+        _.set(this.translations, `${id}.${language}`, r);
+    }
+
     translatedServer(index, language) {
         const server = this.history[index];
         const id = server.id;
         const tr = _.get(this.translations, `${id}.${language}`);
         return tr ? tr : server;
+    }
+
+    serverTranslation(id, language) {
+        return _.get(this.translations, `${id}.${language}`);
     }
 
     listTranslatedServers(language) {

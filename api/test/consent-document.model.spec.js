@@ -81,7 +81,7 @@ describe('consent document/type/signature unit', function () {
     for (let i = 0; i < 2; ++i) {
         it(`create consent document of type ${i}`, shared.createConsentDocumentFn(history, i));
         it(`verify consent document of type ${i}`, verifyConsentDocumentFn(i));
-        it(`add translated (es) consent document ${i}`, shared.translateConsentDocumentFn(i, 'es', history.hxDocument));
+        it(`add translated (es) consent document ${i}`, shared.translateConsentDocumentFn(i, 'es', history));
         it(`verify translated (es) consent document of type ${i}`, verifyTranslatedConsentDocumentFn(i, 'es'));
     }
 

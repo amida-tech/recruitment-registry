@@ -39,6 +39,10 @@ class ConsentDocumentHistory {
         return this.hxType.server(typeIndex);
     }
 
+    translatedType(typeIndex, language) {
+        return this.hxType.translatedServer(typeIndex, language);
+    }
+
     push(typeIndex, client, server) {
         const fullServer = Object.assign({}, client, server);
         if (!fullServer.updateComment) {
@@ -54,6 +58,12 @@ class ConsentDocumentHistory {
 
     server(typeIndex) {
         return this.activeConsentDocuments[typeIndex];
+    }
+
+    translatedServer(typeIndex, language) {
+        const server = this.activeConsentDocuments[typeIndex];
+        const tr = this.hxDocument.serverTranslation(server.id, language);
+        return tr ? tr : server;
     }
 
     serversInList(typeIndices) {

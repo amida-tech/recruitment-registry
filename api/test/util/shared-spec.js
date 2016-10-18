@@ -108,13 +108,13 @@ class SharedSpec {
         };
     }
 
-    translateConsentDocumentFn(index, language, hxDocument) {
+    translateConsentDocumentFn(index, language, history) {
         return function () {
-            const server = hxDocument.server(index);
+            const server = history.server(index);
             const translation = translator.translateConsentDocument(server, language);
             return models.ConsentDocument.updateConsentDocumentText(translation, language)
                 .then(() => {
-                    hxDocument.translate(index, language, translation);
+                    history.hxDocument.translateWithServer(server, language, translation);
                 });
         };
     }
