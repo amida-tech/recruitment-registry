@@ -45,7 +45,7 @@ describe('question unit', function () {
                 })
                 .then(question => {
                     const text = `Updated ${clientQuestion.text}`;
-                    return Question.updateQuestion(question.id, { text })
+                    return Question.updateQuestionText({ id: question.id, text })
                         .then(() => question);
                 })
                 .then(question => Question.getQuestion(question.id))
@@ -54,7 +54,7 @@ describe('question unit', function () {
                     const updatedInputQuestion = Object.assign({}, clientQuestion, { text: updatedText });
                     comparator.question(updatedInputQuestion, updatedQuestion);
                     const text = clientQuestion.text;
-                    return Question.updateQuestion(updatedQuestion.id, { text });
+                    return Question.updateQuestionText({ id: updatedQuestion.id, text });
                 });
         };
     };

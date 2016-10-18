@@ -25,13 +25,6 @@ exports.createQuestion = function (req, res) {
     }
 };
 
-exports.updateQuestion = function (req, res) {
-    const id = _.get(req, 'swagger.params.id.value');
-    Question.updateQuestion(id, req.body)
-        .then(() => res.status(204).json({}))
-        .catch(shared.handleError(res));
-};
-
 exports.updateQuestionText = function (req, res) {
     const language = _.get(req, 'swagger.params.language.value');
     Question.updateQuestionText(req.body, language)

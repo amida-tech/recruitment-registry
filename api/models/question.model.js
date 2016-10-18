@@ -170,9 +170,6 @@ module.exports = function (sequelize, DataTypes) {
                             });
                     });
             },
-            updateQuestion: function (id, { text }) {
-                return textHandler.createText({ id, text });
-            },
             _updateQuestionTextTx: function ({ id, text }, language, tx) {
                 if (text) {
                     return textHandler.createTextTx({ id, text, language }, tx);

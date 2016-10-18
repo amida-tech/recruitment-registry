@@ -818,21 +818,6 @@
                     }
                 }
             },
-            "patch": {
-                "summary": "Updates the question",
-                "operationId": "updateQuestion",
-                "security": [{
-                    "admin": []
-                }],
-                "responses": {
-                    "204": {
-                        "$ref": "#/responses/emptySuccess"
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            },
             "delete": {
                 "summary": "Deletes the question",
                 "operationId": "deleteQuestion",

@@ -142,8 +142,8 @@ describe('question integration', function () {
             const clientQuestion = hxQuestion.client(index);
             const text = `Updated ${clientQuestion.text}`;
             store.server
-                .patch(`/api/v1.0/questions/${id}`)
-                .send({ text })
+                .patch(`/api/v1.0/questions/text/en`)
+                .send({ id, text })
                 .set('Authorization', store.auth)
                 .expect(204, done);
         };
@@ -175,8 +175,8 @@ describe('question integration', function () {
             const clientQuestion = hxQuestion.client(index);
             const text = clientQuestion.text;
             store.server
-                .patch(`/api/v1.0/questions/${id}`)
-                .send({ text })
+                .patch(`/api/v1.0/questions/text/en`)
+                .send({ id, text })
                 .set('Authorization', store.auth)
                 .expect(204, done);
         };
