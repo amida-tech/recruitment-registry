@@ -1,7 +1,5 @@
 'use strict';
 
-const config = require('./config');
-
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -14,17 +12,15 @@ const app = express();
 
 const jsonParser = bodyParser.json();
 
-if (!config.logging.disable) {
-    expressWinston.requestWhitelist.push('body');
-    expressWinston.responseWhitelist.push('body');
+expressWinston.requestWhitelist.push('body');
+expressWinston.responseWhitelist.push('body');
 
-    app.use(expressWinston.logger({
-        winstonInstance: logger,
-        msg: 'HTTP {{req.method}} {{req.url}}',
-        expressFormat: true,
-        colorize: true
-    }));
-}
+app.use(expressWinston.logger({
+    winstonInstance: logger,
+    msg: 'HTTP {{req.method}} {{req.url}}',
+    expressFormat: true,
+    colorize: true
+}));
 
 app.use(cors());
 app.use(jsonParser);

@@ -7,6 +7,7 @@ const models = require('../../models');
 
 const RRError = require('../../lib/rr-error');
 const Generator = require('./entity-generator');
+const translator = require('./translator');
 
 const expect = chai.expect;
 
@@ -34,7 +35,7 @@ class SharedSpec {
         };
     }
 
-    createQuestion(store) {
+    createQuestion(hxQuestion) {
         const generator = this.generator;
         return function () {
             const inputQx = generator.newQuestion();
@@ -67,22 +68,22 @@ class SharedSpec {
                     }
                 })
                 .then(function (qx) {
-                    store.questions.push(qx);
+                    hxQuestion.push(inputQx, qx);
                 });
         };
     }
 
-    createSurvey(store, qxIndices) {
+    createSurvey(hxSurvey, hxQuestion, qxIndices) {
         const generator = this.generator;
         return function () {
             const inputSurvey = generator.newSurvey();
             inputSurvey.questions = qxIndices.map(index => ({
-                id: store.questions[index].id,
+                id: hxQuestion.server(index).id,
                 required: false
             }));
             return models.Survey.createSurvey(inputSurvey)
                 .then(id => {
-                    store.surveys.push(id);
+                    hxSurvey.push(inputSurvey, { id });
                 });
         };
     }
@@ -93,6 +94,28 @@ class SharedSpec {
             const cst = generator.newConsentType();
             return models.ConsentType.createConsentType(cst)
                 .then(server => history.pushType(cst, server));
+        };
+    }
+
+    translateConsentTypeFn(index, language, hxType) {
+        return function () {
+            const server = hxType.server(index);
+            const translation = translator.translateConsentType(server, language);
+            return models.ConsentType.updateConsentTypeText(translation, language)
+                .then(() => {
+                    hxType.translate(index, language, translation);
+                });
+        };
+    }
+
+    translateConsentDocumentFn(index, language, history) {
+        return function () {
+            const server = history.server(index);
+            const translation = translator.translateConsentDocument(server, language);
+            return models.ConsentDocument.updateConsentDocumentText(translation, language)
+                .then(() => {
+                    history.hxDocument.translateWithServer(server, language, translation);
+                });
         };
     }
 

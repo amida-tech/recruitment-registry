@@ -7,27 +7,24 @@ const History = require('./entity-history');
 class ConsentDocumentHistory {
     constructor(userCount) {
         this.hxUser = new History();
-        this.consentTypes = [];
+        this.hxType = new History();
+        this.hxDocument = new History();
         this.clientConsentDocuments = [];
-        this.consentDocuments = [];
         this.activeConsentDocuments = [];
         this.signatures = _.range(userCount).map(() => []);
     }
 
     pushType(client, server) {
-        const fullServer = Object.assign({}, client, server);
-        this.consentTypes.push(fullServer);
-        _.sortBy(this.consentTypes, 'id');
+        this.hxType.pushWithId(client, server.id);
         this.activeConsentDocuments.push(null);
     }
 
     deleteType(typeIndex) {
-        this.consentTypes.splice(typeIndex, 1);
-        this.activeConsentDocuments.splice(typeIndex, 1);
+        this.hxType.remove(typeIndex);
     }
 
     typeId(typeIndex) {
-        return this.consentTypes[typeIndex].id;
+        return this.hxType.id(typeIndex);
     }
 
     userId(userIndex) {
@@ -35,11 +32,15 @@ class ConsentDocumentHistory {
     }
 
     listTypes() {
-        return this.consentTypes;
+        return this.hxType.listServers();
     }
 
     type(typeIndex) {
-        return this.consentTypes[typeIndex];
+        return this.hxType.server(typeIndex);
+    }
+
+    translatedType(typeIndex, language) {
+        return this.hxType.translatedServer(typeIndex, language);
     }
 
     push(typeIndex, client, server) {
@@ -47,7 +48,7 @@ class ConsentDocumentHistory {
         if (!fullServer.updateComment) {
             fullServer.updateComment = null;
         }
-        this.consentDocuments.push(fullServer);
+        this.hxDocument.push(client, fullServer);
         this.activeConsentDocuments[typeIndex] = fullServer;
     }
 
@@ -59,22 +60,48 @@ class ConsentDocumentHistory {
         return this.activeConsentDocuments[typeIndex];
     }
 
+    translatedServer(typeIndex, language) {
+        const server = this.activeConsentDocuments[typeIndex];
+        const tr = this.hxDocument.serverTranslation(server.id, language);
+        return tr ? tr : server;
+    }
+
     serversInList(typeIndices) {
-        const result = typeIndices.map(index => ({
-            id: this.activeConsentDocuments[index].id,
-            name: this.consentTypes[index].name,
-            title: this.consentTypes[index].title
-        }));
+        const result = typeIndices.map(index => {
+            const type = this.hxType.server(index);
+            return {
+                id: this.activeConsentDocuments[index].id,
+                name: type.name,
+                title: type.title
+            };
+        });
+        return _.sortBy(result, 'id');
+    }
+
+    translatedServersInList(typeIndices, language) {
+        const result = typeIndices.map(index => {
+            const type = this.hxType.translatedServer(index, language);
+            return {
+                id: this.activeConsentDocuments[index].id,
+                name: type.name,
+                title: type.title
+            };
+        });
         return _.sortBy(result, 'id');
     }
 
     serversHistory() {
-        return this.consentDocuments;
+        return this.hxDocument.history;
     }
 
-    sign(typeIndex, userIndex) {
+    translatedServersHistory(language) {
+        return this.hxDocument.translatedHistory(language);
+    }
+
+    sign(typeIndex, userIndex, language) {
         const id = this.id(typeIndex);
-        this.signatures[userIndex].push(id);
+        language = language || 'en';
+        this.signatures[userIndex].push({ id, language });
     }
 }
 

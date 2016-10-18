@@ -3,12 +3,14 @@
 const _ = require('lodash');
 
 class History {
-    constructor() {
+    constructor(listFields) {
         this.clients = [];
         this.servers = [];
         this.history = [];
         this.currentIndex = [];
         this.removed = [];
+        this.listFields = listFields;
+        this.translations = {};
     }
 
     push(client, server) {
@@ -48,6 +50,10 @@ class History {
         return this.history[index].id;
     }
 
+    lastId() {
+        return this.history[this.history.length - 1].id;
+    }
+
     client(index) {
         const currentIndex = this.currentIndex[index];
         return this.clients[currentIndex];
@@ -57,12 +63,17 @@ class History {
         return this.history[index];
     }
 
-    clientList() {
+    listClients() {
         return this.clients;
     }
 
-    serverList() {
-        return this.servers;
+    listServers(fields) {
+        let result = this.servers;
+        fields = fields || this.listFields;
+        if (fields) {
+            result = result.map(element => _.pick(element, fields));
+        }
+        return result;
     }
 
     reloadServer(server) {
@@ -73,6 +84,51 @@ class History {
                 collection[index] = server;
             }
         });
+    }
+
+    translate(index, language, translation) {
+        const server = this.history[index];
+        const id = server.id;
+        const r = _.merge({}, server, translation);
+        _.set(this.translations, `${id}.${language}`, r);
+    }
+
+    translateWithServer(server, language, translation) {
+        const id = server.id;
+        const r = _.merge({}, server, translation);
+        _.set(this.translations, `${id}.${language}`, r);
+    }
+
+    translatedServer(index, language) {
+        const server = this.history[index];
+        const id = server.id;
+        const tr = _.get(this.translations, `${id}.${language}`);
+        return tr ? tr : server;
+    }
+
+    translatedHistory(language) {
+        return this.history.map(server => {
+            const id = server.id;
+            const tr = _.get(this.translations, `${id}.${language}`);
+            return tr ? tr : server;
+        });
+    }
+
+    serverTranslation(id, language) {
+        return _.get(this.translations, `${id}.${language}`);
+    }
+
+    listTranslatedServers(language) {
+        let result = this.servers;
+        result = result.map(server => {
+            const id = server.id;
+            const tr = _.get(this.translations, `${id}.${language}`);
+            return tr ? tr : server;
+        });
+        if (this.listFields) {
+            result = result.map(element => _.pick(element, this.listFields));
+        }
+        return result;
     }
 }
 

@@ -6,8 +6,5 @@ module.exports = {
     },
     db: {
         name: 'recregtest',
-    },
-    logging: {
-        express: false
     }
 };

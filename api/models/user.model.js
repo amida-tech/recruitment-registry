@@ -206,8 +206,19 @@ module.exports = function (sequelize, DataTypes) {
                     }
                 });
             },
-            listConsentDocuments: function (userId, docTypeIds, tx) {
-                return sequelize.models.consent_document.listConsentDocuments(docTypeIds, tx)
+            listConsentDocuments: function (userId, options = {}) {
+                const _options = { summary: true };
+                const typeIds = options.typeIds;
+                if (typeIds && typeIds.length) {
+                    _options.typeIds = typeIds;
+                }
+                if (options.transaction) {
+                    _options.transaction = options.transaction;
+                }
+                if (options.language) {
+                    _options.language = options.language;
+                }
+                return sequelize.models.consent_document.listConsentDocuments(_options)
                     .then(activeDocs => {
                         const query = {
                             where: { userId },
@@ -215,8 +226,8 @@ module.exports = function (sequelize, DataTypes) {
                             attributes: ['consentDocumentId'],
                             order: 'consent_document_id'
                         };
-                        if (tx) {
-                            query.transaction = tx;
+                        if (options.transaction) {
+                            query.transaction = options.transaction;
                         }
                         return sequelize.models.consent_signature.findAll(query)
                             .then(signedDocs => _.map(signedDocs, 'consentDocumentId'))

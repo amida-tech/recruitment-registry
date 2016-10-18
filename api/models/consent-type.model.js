@@ -2,13 +2,13 @@
 
 const RRError = require('../lib/rr-error');
 
+const textTableMethods = require('./text-table-methods');
+
 module.exports = function (sequelize, DataTypes) {
+    const textHandler = textTableMethods(sequelize, 'consent_type_text', 'consentTypeId', ['title']);
+
     const ConsentType = sequelize.define('consent_type', {
         name: {
-            type: DataTypes.TEXT,
-            allowNull: false
-        },
-        title: {
             type: DataTypes.TEXT,
             allowNull: false
         },
@@ -35,18 +35,38 @@ module.exports = function (sequelize, DataTypes) {
         deletedAt: 'deletedAt',
         paranoid: true,
         classMethods: {
-            listConsentTypes: function () {
-                return ConsentType.findAll({
+            getConsentType(id, options = {}) {
+                const _options = {
                     raw: true,
-                    attributes: ['id', 'name', 'title', 'type'],
-                    order: 'name'
-                });
+                    attributes: ['id', 'name', 'type']
+                };
+                return ConsentType.findById(id, _options)
+                    .then(consentType => textHandler.updateText(consentType, options.language));
             },
-            createConsentType: function ({ name, title, type }) {
-                return ConsentType.create({ name, title, type })
+            updateConsentTypeText({ id, title }, language) {
+                return textHandler.createText({ id, title, language });
+            },
+            listConsentTypes(options = {}) {
+                const query = {
+                    raw: true,
+                    attributes: ['id', 'name', 'type'],
+                    order: 'id'
+                };
+                if (options.ids) {
+                    query.where = { id: { $in: options.ids } };
+                }
+                if (options.transaction) {
+                    query.transaction = options.transaction;
+                }
+                return ConsentType.findAll(query)
+                    .then(types => textHandler.updateAllTexts(types, options.language));
+            },
+            createConsentType({ name, title, type }) {
+                return ConsentType.create({ name, type })
+                    .then(({ id }) => textHandler.createText({ id, title }))
                     .then(({ id }) => ({ id }));
             },
-            deleteConsentType: function (id) {
+            deleteConsentType(id) {
                 const ConsentSection = sequelize.models.consent_section;
                 return ConsentSection.count({ where: { typeId: id } })
                     .then(count => {

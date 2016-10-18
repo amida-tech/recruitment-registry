@@ -22,6 +22,15 @@ module.exports = function (sequelize, DataTypes) {
                 key: 'id'
             }
         },
+        language: {
+            type: DataTypes.TEXT,
+            allowNull: false,
+            field: 'language_code',
+            reference: {
+                model: 'language',
+                key: 'code'
+            }
+        },
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',
@@ -30,16 +39,29 @@ module.exports = function (sequelize, DataTypes) {
         freezeTableName: true,
         createdAt: 'createdAt',
         classMethods: {
-            createSignature: function (userId, consentDocumentId, tx) {
+            createSignature(userId, consentDocumentId, language, tx) {
                 const options = tx ? { transaction: tx } : {};
-                return ConsentSignature.create({ userId, consentDocumentId }, options)
+                language = language || 'en';
+                return ConsentSignature.create({ userId, consentDocumentId, language }, options)
                     .then(({ id }) => ({ id }));
             },
-            bulkCreateSignatures: function (userId, consentDocumentsIds) {
+            bulkCreateSignatures(userId, consentDocumentsIds, language = 'en') {
                 const pxs = consentDocumentsIds.map(consentDocumentId => {
-                    return ConsentSignature.create({ userId, consentDocumentId });
+                    return ConsentSignature.create({ userId, consentDocumentId, language });
                 });
                 return sequelize.Promise.all(pxs);
+            },
+            getSignatureHistory(userId) {
+                return ConsentSignature.findAll({
+                        where: { userId },
+                        raw: true,
+                        attributes: ['consentDocumentId', 'language'],
+                        order: 'consent_document_id'
+                    })
+                    .then(signatures => signatures.map(sign => ({
+                        id: sign.consentDocumentId,
+                        language: sign.language
+                    })));
             }
         }
     });

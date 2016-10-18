@@ -1,6 +1,10 @@
 'use strict';
 
+const textTableMethods = require('./text-table-methods');
+
 module.exports = function (sequelize, DataTypes) {
+    const textHandler = textTableMethods(sequelize, 'question_action_text', 'questionActionId');
+
     const QuestionAction = sequelize.define('question_action', {
         questionId: {
             type: DataTypes.INTEGER,
@@ -10,10 +14,6 @@ module.exports = function (sequelize, DataTypes) {
                 model: 'question',
                 key: 'id'
             }
-        },
-        text: {
-            type: DataTypes.TEXT,
-            allowNull: false,
         },
         type: {
             type: DataTypes.TEXT,
@@ -28,7 +28,44 @@ module.exports = function (sequelize, DataTypes) {
         }
     }, {
         freezeTableName: true,
-        createdAt: 'createdAt'
+        createdAt: 'createdAt',
+        classMethods: {
+            createActionPerQuestionTx(questionId, { text, type }, line, tx) {
+                const r = { questionId, type, line };
+                return QuestionAction.create(r, { transaction: tx })
+                    .then(({ id }) => textHandler.createTextTx({ id, text }, tx));
+            },
+            createActionsPerQuestionTx(questionId, actions, tx) {
+                return sequelize.Promise.all(actions.map((action, index) => {
+                    return QuestionAction.createActionPerQuestionTx(questionId, action, index, tx);
+                }));
+            },
+            findActionsPerQuestion(questionId, language) {
+                return QuestionAction.findAll({
+                        raw: true,
+                        where: { questionId },
+                        attributes: ['id', 'type'],
+                        order: 'line'
+                    })
+                    .then(actions => textHandler.updateAllTexts(actions, language));
+            },
+            findActionsPerQuestions(ids, language) {
+                const options = {
+                    raw: true,
+                    attributes: ['id', 'type', 'questionId'],
+                    order: 'line'
+                };
+                if (ids) {
+                    options.where = { questionId: { $in: ids } };
+                }
+                return QuestionAction.findAll(options)
+                    .then(actions => textHandler.updateAllTexts(actions, language));
+            },
+            updateMultipleActionTextsTx(actions, language, tx) {
+                const inputs = actions.map(({ id, text }) => ({ id, text, language }));
+                return textHandler.createMultipleTextsTx(inputs, tx);
+            }
+        }
     });
 
     return QuestionAction;

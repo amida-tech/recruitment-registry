@@ -58,9 +58,10 @@ module.exports = function (sequelize, DataTypes) {
                 }
                 return sequelize.models.survey_consent_type.findAll(query)
                     .then(result => _.map(result, 'consentTypeId'))
-                    .then(docTypeIds => {
-                        if (docTypeIds.length) {
-                            return sequelize.models.registry_user.listConsentDocuments(userId, docTypeIds, tx);
+                    .then(typeIds => {
+                        if (typeIds.length) {
+                            const options = { typeIds, transaction: tx };
+                            return sequelize.models.registry_user.listConsentDocuments(userId, options);
                         }
                     });
             }

@@ -25,29 +25,33 @@ exports.createQuestion = function (req, res) {
     }
 };
 
-exports.updateQuestion = function (req, res) {
-    const id = _.get(req, 'swagger.params.id.value');
-    Question.updateQuestion(id, req.body)
-        .then(() => res.status(204).json({}))
+exports.updateQuestionText = function (req, res) {
+    const language = _.get(req, 'swagger.params.language.value');
+    Question.updateQuestionText(req.body, language)
+        .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };
 
 exports.deleteQuestion = function (req, res) {
     const id = _.get(req, 'swagger.params.id.value');
     Question.deleteQuestion(id)
-        .then(() => res.status(204).json({}))
+        .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };
 
 exports.getQuestion = function (req, res) {
     const id = _.get(req, 'swagger.params.id.value');
-    Question.getQuestion(id)
+    const language = _.get(req, 'swagger.params.language.value');
+    const options = language ? { language } : {};
+    Question.getQuestion(id, options)
         .then((question) => res.status(200).json(question))
         .catch(shared.handleError(res));
 };
 
-exports.getAllQuestions = function (req, res) {
-    Question.getAllQuestions()
+exports.listQuestions = function (req, res) {
+    const language = _.get(req, 'swagger.params.language.value');
+    const options = language ? { language } : {};
+    Question.listQuestions(options)
         .then((questions) => res.status(200).json(questions))
         .catch(shared.handleError(res));
 };

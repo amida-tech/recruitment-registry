@@ -80,14 +80,18 @@ module.exports = function (sequelize, DataTypes) {
                         .then(() => ConsentSection.destroy({ where: { consentId: id } }, { transaction: tx }));
                 });
             },
-            fillConsentDocuments: function (id) {
+            fillConsentDocuments: function (id, options = {}) {
                 return function (result) {
                     const ConsentSection = sequelize.models.consent_section;
                     const ConsentDocument = sequelize.models.consent_document;
                     return ConsentSection.findAll({ where: { consentId: id }, raw: true, attributes: ['typeId', 'line'], order: 'line' })
                         .then(sections => {
                             const typeIds = _.map(sections, 'typeId');
-                            return ConsentDocument.getConsentDocumentsOfTypes(typeIds);
+                            const _options = { typeIds, typeOrder: true };
+                            if (options.language) {
+                                _options.language = options.language;
+                            }
+                            return ConsentDocument.listConsentDocuments(_options);
                         })
                         .then(sections => {
                             result.sections = sections;
@@ -95,15 +99,15 @@ module.exports = function (sequelize, DataTypes) {
                         });
                 };
             },
-            getConsentDocuments: function (id) {
+            getConsentDocuments: function (id, options) {
                 return Consent.findById(id, { raw: true, attributes: ['id', 'name'] })
-                    .then(Consent.fillConsentDocuments(id));
+                    .then(Consent.fillConsentDocuments(id, options));
             },
-            getConsentDocumentsByName: function (name) {
+            getConsentDocumentsByName: function (name, options) {
                 return Consent.findOne({ where: { name }, raw: true, attributes: ['id', 'name'] })
                     .then(result => {
                         const id = result.id;
-                        return Consent.fillConsentDocuments(id)(result);
+                        return Consent.fillConsentDocuments(id, options)(result);
                     });
             },
             fillUserConsentDocuments: function (userId) {
@@ -112,25 +116,28 @@ module.exports = function (sequelize, DataTypes) {
                     return ConsentSignature.findAll({
                             where: { userId },
                             raw: true,
-                            attributes: ['consentDocumentId']
+                            attributes: ['consentDocumentId', 'language']
                         })
                         .then(signatures => _.keyBy(signatures, 'consentDocumentId'))
                         .then(signatures => {
                             result.sections.forEach(section => {
                                 if (section) {
                                     section.signature = Boolean(signatures[section.id]);
+                                    if (section.signature) {
+                                        section.language = signatures[section.id].language;
+                                    }
                                 }
                             });
                             return result;
                         });
                 };
             },
-            getUserConsentDocuments: function (userId, id) {
-                return Consent.getConsentDocuments(id)
+            getUserConsentDocuments: function (userId, id, options) {
+                return Consent.getConsentDocuments(id, options)
                     .then(Consent.fillUserConsentDocuments(userId));
             },
-            getUserConsentDocumentsByName: function (userId, name) {
-                return Consent.getConsentDocumentsByName(name)
+            getUserConsentDocumentsByName: function (userId, name, options) {
+                return Consent.getConsentDocumentsByName(name, options)
                     .then(Consent.fillUserConsentDocuments(userId));
             }
         }

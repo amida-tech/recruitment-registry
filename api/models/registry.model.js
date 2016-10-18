@@ -66,7 +66,7 @@ module.exports = function (sequelize, DataTypes) {
             getProfileSurvey: function () {
                 return Registry.getProfileSurveyId()
                     .then(profileSurveyId => {
-                        return Survey.getSurveyById(profileSurveyId)
+                        return Survey.getSurvey(profileSurveyId)
                             .then(survey => {
                                 const surveyId = survey.id;
                                 const action = 'create';
@@ -78,7 +78,7 @@ module.exports = function (sequelize, DataTypes) {
                                     .then(rawTypeIds => _.map(rawTypeIds, 'consentTypeId'))
                                     .then(typeIds => {
                                         if (typeIds.length) {
-                                            return ConsentDocument.listConsentDocuments(typeIds)
+                                            return ConsentDocument.listConsentDocuments({ summary: true, typeIds })
                                                 .then(consentDocuments => {
                                                     survey.consentDocument = consentDocuments;
                                                     return survey;
@@ -90,7 +90,7 @@ module.exports = function (sequelize, DataTypes) {
                             });
                     });
             },
-            createProfile: function (input) {
+            createProfile: function (input, language) {
                 return sequelize.transaction(function (tx) {
                     return Registry.getProfileSurveyId()
                         .then(profileSurveyId => {
@@ -99,7 +99,7 @@ module.exports = function (sequelize, DataTypes) {
                                 .then(user => {
                                     if (input.signatures && input.signatures.length) {
                                         return sequelize.Promise.all(input.signatures.map(consentDocumentId => {
-                                                return ConsentSignature.createSignature(user.id, consentDocumentId, tx);
+                                                return ConsentSignature.createSignature(user.id, consentDocumentId, language, tx);
                                             }))
                                             .then(() => user);
                                     }
@@ -140,7 +140,7 @@ module.exports = function (sequelize, DataTypes) {
                     .then(profileSurveyId => {
                         return User.getUser(input.userId)
                             .then(function (user) {
-                                return Survey.getAnsweredSurveyById(user.id, profileSurveyId)
+                                return Survey.getAnsweredSurvey(user.id, profileSurveyId)
                                     .then(function (survey) {
                                         return {
                                             user,

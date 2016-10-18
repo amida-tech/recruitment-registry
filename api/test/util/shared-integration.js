@@ -6,6 +6,7 @@ const _ = require('lodash');
 
 const appgen = require('../../app-generator');
 const Generator = require('./entity-generator');
+const translator = require('./translator');
 
 const expect = chai.expect;
 
@@ -82,28 +83,28 @@ class SharedIntegration {
         };
     }
 
-    createQxFn(store) {
+    createQxFn(store, hxQuestions) {
         const generator = this.generator;
         return function (done) {
-            const inputQx = generator.newQuestion();
+            const clientQuestion = generator.newQuestion();
             store.server
                 .post('/api/v1.0/questions')
                 .set('Authorization', store.auth)
-                .send(inputQx)
+                .send(clientQuestion)
                 .expect(201)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
                     }
-                    store.questionIds.push(res.body.id);
+                    hxQuestions.push(clientQuestion, res.body);
                     done();
                 });
         };
     }
 
-    fillQxFn(store) {
+    fillQxFn(store, hxQuestions) {
         return function (done) {
-            const id = store.questionIds[store.questionIds.length - 1];
+            const id = hxQuestions.lastId();
             store.server
                 .get(`/api/v1.0/questions/${id}`)
                 .set('Authorization', store.auth)
@@ -121,7 +122,7 @@ class SharedIntegration {
                             question.choices = _.map(choices, choice => ({ id: choice.id, type: choice.type }));
                         }
                     }
-                    store.questions.push(question);
+                    hxQuestions.reloadServer(question);
                     done();
                 });
         };
@@ -141,12 +142,12 @@ class SharedIntegration {
         };
     }
 
-    createSurveyFn(store, qxIndices) {
+    createSurveyFn(store, hxSurvey, hxQuestion, qxIndices) {
         const generator = this.generator;
         return function (done) {
             const inputSurvey = generator.newSurvey();
             inputSurvey.questions = qxIndices.map(index => ({
-                id: store.questionIds[index],
+                id: hxQuestion.server(index).id,
                 required: false
             }));
             store.server
@@ -158,7 +159,7 @@ class SharedIntegration {
                     if (err) {
                         return done(err);
                     }
-                    store.surveyIds.push(res.body.id);
+                    hxSurvey.push(inputSurvey, res.body);
                     done();
                 });
         };
@@ -216,6 +217,45 @@ class SharedIntegration {
                 });
         };
     }
+
+    translateConsentTypeFn(store, index, language, hxType) {
+        return function (done) {
+            const server = hxType.server(index);
+            const translation = translator.translateConsentType(server, language);
+            store.server
+                .patch(`/api/v1.0/consent-types/text/${language}`)
+                .set('Authorization', store.auth)
+                .send(translation)
+                .expect(204)
+                .end(function (err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    hxType.translate(index, language, translation);
+                    done();
+                });
+        };
+    }
+
+    translateConsentDocumentFn(store, index, language, history) {
+        return function (done) {
+            const server = history.server(index);
+            const translation = translator.translateConsentDocument(server, language);
+            store.server
+                .patch(`/api/v1.0/consent-documents/text/${language}`)
+                .set('Authorization', store.auth)
+                .send(translation)
+                .expect(204)
+                .end(function (err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    history.hxDocument.translateWithServer(server, language, translation);
+                    done();
+                });
+        };
+    }
+
 }
 
 module.exports = SharedIntegration;
