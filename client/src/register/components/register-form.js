@@ -178,10 +178,8 @@ class Form extends Component {
         default:
       }
 
-      return (<div key={question.id}><div>{content}</div></div>)
+      return (<div key={question.id}>{content}</div>)
     }
-
-    var self = this
 
     var settings = {
       dots: false,
@@ -202,12 +200,21 @@ class Form extends Component {
       }
     }
 
-    var slides = this.props.survey.questions.map(question => renderSlide(question))
+    var slides = []
+    slides.push(renderInputField("username", "text", "admin", "Username"))
+    slides.push(renderInputField("password", "password", "••••••••••", "Password"))
+    slides.push(renderInputField("email", "email", "someone@domain.tld", "Email"))
+    slides.push(renderInputField("zip", "text", "", "Zip"))
+    slides.push(renderInputField("dob", "date", "mm/dd/yyyy", "Date of birth"))
+    slides.push(renderSelectField("gender", this.props.data.gender, "Gender", this.props.availableGenders))
+    slides.push(renderSelectField("ethnicity", this.props.data.ethnicity, "Ethnicity", this.props.availableEthnicities))
+    slides = slides.concat(this.props.survey.questions.map(question => renderSlide(question)))
+    slides.push(<div key="final">
+                  <p>Thanks</p>
+                  <p>Your account is created</p>
+                  <Link to="/profile">Go to My Dashboard</Link>
+                </div>)
 
-    var onSubmit = (evt) => {
-      evt.preventDefault();
-
-    }
 
     return(
       <form className="" autoComplete="off">
@@ -216,19 +223,7 @@ class Form extends Component {
             {
               this.props.survey.questions.length > 0 ? (
                 <Slider ref='slider' {...settings}>
-                  {renderInputField("username", "text", "admin", "Username")}
-                  {renderInputField("password", "password", "••••••••••", "Password")}
-                  {renderInputField("email", "email", "someone@domain.tld", "Email")}
-                  {renderInputField("zip", "text", "", "Zip")}
-                  {renderInputField("dob", "date", "mm/dd/yyyy", "Date of birth")}
-                  {renderSelectField("gender", this.props.data.gender, "Gender", this.props.availableGenders)}
-                  {renderSelectField("ethnicity", this.props.data.ethnicity, "Ethnicity", this.props.availableEthnicities)}
                   {slides}
-                  <div key="final">
-                    <p>Thanks</p>
-                    <p>Your account is created</p>
-                    <Link to="/profile">Go to My Dashboard</Link>
-                  </div>
                 </Slider>
               ) : (<div>Loading...</div>)
             }

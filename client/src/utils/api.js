@@ -24,6 +24,9 @@ const apiProvider = store => next => action => {
           })
         })
       break
+    case 'LOGOUT':
+      store.dispatch(push('/'))
+      break
     case 'LOGIN':
       request
         .get(apiUrl + '/auth/basic')
@@ -37,7 +40,7 @@ const apiProvider = store => next => action => {
             next({
               type: 'GET_USER'
             })
-            store.dispatch(push('/'))
+            store.dispatch(push('/profile'))
           } else {
             return next({
               type: 'LOGIN_ERROR',
@@ -80,7 +83,7 @@ const apiProvider = store => next => action => {
       break
     case 'GET_SURVEY':
       request
-        .get(apiUrl + '/registries/profile-survey/' + action.surveyName)
+        .get(apiUrl + '/profile-survey/')
         .end((error, response) => {
           if (!error) {
             next({
@@ -124,7 +127,7 @@ const apiProvider = store => next => action => {
       break
     case 'REGISTER':
       request
-        .post(apiUrl + '/registries/user-profile')
+        .post(apiUrl + '/profiles')
         .send(action.payload)
         .end((error, response) => {
           if (!error) {
@@ -133,12 +136,14 @@ const apiProvider = store => next => action => {
               data: response.body
             })
             store.dispatch({type: 'GET_USER'})
+            store.dispatch(push('/profile'))
           }
         })
       break
     case 'SAVE_SURVEY':
       request
         .post(apiUrl + '/surveys')
+        .set("Authorization", "Bearer " + store.getState().get('loggedIn'))
         .send(action.payload.toJS())
         .end((error) => {
           if (!error) {

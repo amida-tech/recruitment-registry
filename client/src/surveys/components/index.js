@@ -16,11 +16,6 @@ export class SurveysContainer extends Component {
   componentWillMount() {
     this.props.dispatch({type: 'GET_ALL_SURVEYS'})
   }
-
-  /*_changeChoice(item, evt) {
-    var choices = item.question.choices.map((choice) => {
-    this.props.dispatch(surveyBuilder.actions.updateQuestion(item.question))
-  }*/
 }
 
 const mapStateToProps = function(store) {
