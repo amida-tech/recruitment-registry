@@ -114,7 +114,7 @@ describe('consent document integration', function () {
     for (let i = 0; i < 2; ++i) {
         it(`create consent document of type ${i}`, shared.createConsentDocumentFn(store, history, i));
         it(`get/verify consent document content of type ${i}`, getConsentDocumentFn(i));
-        it(`add translated (es) consent document ${i}`, shared.translateConsentDocumentFn(store, i, 'es', history.hxDocument));
+        it(`add translated (es) consent document ${i}`, shared.translateConsentDocumentFn(store, i, 'es', history));
         it(`verify translated (es) consent document of type ${i}`, getTranslatedConsentDocumentFn(i, 'es'));
     }
 

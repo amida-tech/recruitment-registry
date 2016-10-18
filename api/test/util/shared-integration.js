@@ -237,9 +237,9 @@ class SharedIntegration {
         };
     }
 
-    translateConsentDocumentFn(store, index, language, hxDocument) {
+    translateConsentDocumentFn(store, index, language, history) {
         return function (done) {
-            const server = hxDocument.server(index);
+            const server = history.server(index);
             const translation = translator.translateConsentDocument(server, language);
             store.server
                 .patch(`/api/v1.0/consent-documents/text/${language}`)
@@ -250,7 +250,7 @@ class SharedIntegration {
                     if (err) {
                         return done(err);
                     }
-                    hxDocument.translate(index, language, translation);
+                    history.hxDocument.translateWithServer(server, language, translation);
                     done();
                 });
         };
