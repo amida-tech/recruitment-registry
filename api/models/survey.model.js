@@ -162,8 +162,11 @@ module.exports = function (sequelize, DataTypes) {
                 };
                 if (options.override) {
                     _options = _.assign({}, _options, options.override);
-                    if (_options.attributes.indexOf('name') < 0) {
+                    const indexName = _options.attributes.indexOf('name');
+                    if (indexName < 0) {
                         return Survey.findAll(_options);
+                    } else {
+                        _options.attributes.splice(indexName, 1);
                     }
                 }
                 return Survey.findAll(_options)

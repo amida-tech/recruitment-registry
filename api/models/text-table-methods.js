@@ -56,15 +56,13 @@ module.exports = function (sequelize, tableName, parentIdField, textFields = ['t
         },
         getAllTexts(ids, language = 'en') {
             const Table = sequelize.models[tableName];
-            const options = { raw: true, attributes: [parentIdField, ...textFields] };
+            const options = { raw: true, attributes: [parentIdField, 'language', ...textFields] };
             if (language === 'en') {
                 _.set(options, `where.language`, 'en');
             } else {
                 _.set(options, `where.language.$in`, ['en', language]);
             }
-            if (ids) {
-                _.set(options, `where.${parentIdField}.$in`, ids);
-            }
+            _.set(options, `where.${parentIdField}.$in`, ids);
             return Table.findAll(options)
                 .then(records => {
                     if (language === 'en') {

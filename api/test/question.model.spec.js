@@ -90,6 +90,9 @@ describe('question unit', function () {
         return function () {
             const server = hxQuestion.server(index);
             const translation = translator.translateQuestion(server, language);
+            if (translation.choices && index < 4) {
+                delete translation.text; // partial translation
+            }
             return Question.updateQuestionText(translation, language)
                 .then(() => {
                     hxQuestion.translate(index, language, translation);

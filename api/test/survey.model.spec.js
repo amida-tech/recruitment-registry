@@ -82,6 +82,11 @@ describe('survey unit', function () {
             .then(shared.throwingHandler, shared.expectedErrorHandler('surveyNotFound'));
     });
 
+    it('error: show a non-existent survey by name', function () {
+        return Survey.getSurveyByName('NotHere')
+            .then(shared.throwingHandler, shared.expectedErrorHandler('surveyNotFound'));
+    });
+
     it('error: replace with a survey with no questions', function () {
         const survey = history.server(1);
         const replacementSurvey = generator.newSurvey();
@@ -210,6 +215,23 @@ describe('survey unit', function () {
     it('survey 1 is version 1', dbVersionCompareFn(1, 1));
     it('survey 8 is version 2', dbVersionCompareFn(8, 2));
     it('survey 10 is version 3', dbVersionCompareFn(10, 3));
+
+    it('listSurvey override with name', function () {
+        return Survey.listSurveys({
+                override: {
+                    where: { version: 3 },
+                    paranoid: false,
+                    attributes: ['id', 'name', 'version']
+                }
+            })
+            .then(list => {
+                expect(list).to.have.length(1);
+                const { name, version } = list[0];
+                expect(version).to.equal(3);
+                const expected = history.server(10).name;
+                expect(name).to.equal(expected);
+            });
+    });
 
     it('delete survey 5', function () {
         const id = history.id(5);
