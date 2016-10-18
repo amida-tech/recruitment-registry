@@ -92,7 +92,7 @@ module.exports = function (sequelize, DataTypes) {
                     return Survey.createSurveyTx(survey, tx);
                 });
             },
-            updateSurveyText(id, { name }, language) {
+            updateSurveyText({ id, name }, language) {
                 return textHandler.createText({ id, name, language });
             },
             replaceSurveyTx(survey, replacement, tx) {

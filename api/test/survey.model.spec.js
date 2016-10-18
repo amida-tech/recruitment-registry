@@ -48,7 +48,7 @@ describe('survey unit', function () {
                             return serverSurvey.id;
                         });
                 })
-                .then((id) => Survey.updateSurveyText(id, { name: updatedName }))
+                .then((id) => Survey.updateSurveyText({ id, name: updatedName }))
                 .then(() => Survey.getSurveyByName(updatedName))
                 .then(serverSurvey => {
                     const updatedSurvey = Object.assign({}, clientSurvey, { name: updatedName });
@@ -58,7 +58,7 @@ describe('survey unit', function () {
                             return serverSurvey.id;
                         });
                 })
-                .then((id) => Survey.updateSurveyText(id, { name: clientSurvey.name }))
+                .then((id) => Survey.updateSurveyText({ id, name: clientSurvey.name }))
                 .then(() => Survey.listSurveys())
                 .then(surveys => {
                     expect(surveys).to.have.length(index + 1);
@@ -116,7 +116,7 @@ describe('survey unit', function () {
         return function () {
             const { name } = generator.newSurvey();
             const id = history.id(index);
-            return Survey.updateSurveyText(id, { name }, language)
+            return Survey.updateSurveyText({ id, name }, language)
                 .then(() => {
                     history.translate(index, language, { name });
                 });

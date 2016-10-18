@@ -44,9 +44,8 @@ exports.createSurvey = function (req, res) {
 };
 
 exports.updateSurveyText = function (req, res) {
-    const id = _.get(req, 'swagger.params.id.value');
     const language = _.get(req, 'swagger.params.language.value');
-    Survey.updateSurveyText(id, req.body, language)
+    Survey.updateSurveyText(req.body, language)
         .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };

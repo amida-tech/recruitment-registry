@@ -115,9 +115,9 @@ describe('survey integration', function () {
             const id = history.id(index);
             name = name || history.client(index).name;
             store.server
-                .patch(`/api/v1.0/surveys/${id}/text/en`)
+                .patch(`/api/v1.0/surveys/text/en`)
                 .set('Authorization', store.auth)
-                .send({ name })
+                .send({ id, name })
                 .expect(204, done);
         };
     };
@@ -203,9 +203,9 @@ describe('survey integration', function () {
             const { name } = generator.newSurvey();
             const id = history.id(index);
             store.server
-                .patch(`/api/v1.0/surveys/${id}/text/${language}`)
+                .patch(`/api/v1.0/surveys/text/${language}`)
                 .set('Authorization', store.auth)
-                .send({ name })
+                .send({ id, name })
                 .expect(204)
                 .end(function (err) {
                     if (err) {
