@@ -107,7 +107,7 @@ describe('consent document/type/signature unit', function () {
 
     const verifyTranslatedConsentDocumentsFn = function (userIndex, expectedIndices, language) {
         return function () {
-            return User.listConsentDocuments(history.userId(userIndex), undefined, undefined, language)
+            return User.listConsentDocuments(history.userId(userIndex), { language })
                 .then(consentDocuments => {
                     const expected = history.translatedServersInList(expectedIndices, language);
                     expect(consentDocuments).to.deep.equal(expected);
