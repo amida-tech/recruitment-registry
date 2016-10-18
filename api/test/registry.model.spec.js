@@ -99,8 +99,7 @@ describe('registry unit', function () {
     it('update user profile', function () {
         answers = helper.formAnswersToPost(store.survey, surveyExample.answerUpdate);
         const userUpdates = {
-            zip: '20999',
-            gender: 'other'
+            email: 'updated@example.com'
         };
         const updateObj = {
             user: userUpdates,
@@ -115,8 +114,7 @@ describe('registry unit', function () {
                 const expectedUser = _.cloneDeep(userExample);
                 const user = result.user;
                 expectedUser.id = user.id;
-                expectedUser.zip = '20999';
-                expectedUser.gender = 'other';
+                expectedUser.email = 'updated@example.com';
                 delete expectedUser.password;
                 delete user.createdAt;
                 delete user.updatedAt;

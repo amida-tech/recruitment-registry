@@ -8,10 +8,6 @@ const moment = require('moment');
 
 const config = require('../config');
 
-const GENDER_MALE = 'male';
-const GENDER_FEMALE = 'female';
-const GENDER_OTHER = 'other';
-
 module.exports = function (sequelize, DataTypes) {
     const bccompare = sequelize.Promise.promisify(bcrypt.compare, {
         context: bcrypt
@@ -23,7 +19,7 @@ module.exports = function (sequelize, DataTypes) {
         context: crypto
     });
 
-    const clientUpdatableFields = ['email', 'password', 'zip', 'ethnicity', 'gender'].reduce(function (r, p) {
+    const clientUpdatableFields = ['email', 'password'].reduce(function (r, p) {
         r[p] = true;
         return r;
     }, {});
@@ -58,32 +54,6 @@ module.exports = function (sequelize, DataTypes) {
                 notEmpty: true
             },
             allowNull: false
-        },
-        zip: {
-            type: DataTypes.TEXT
-        },
-        ethnicity: {
-            type: DataTypes.INTEGER,
-            references: {
-                model: 'ethnicity',
-                key: 'id'
-            },
-            set: function (val) {
-                if (typeof val === 'string') {
-                    val = sequelize.models.ethnicity.idByName(val);
-                }
-                this.setDataValue('ethnicity', val);
-            },
-            get: function () {
-                const value = this.getDataValue('ethnicity');
-                if ((value === null || value === undefined)) {
-                    return value;
-                }
-                return sequelize.models.ethnicity.nameById(value);
-            }
-        },
-        gender: {
-            type: DataTypes.ENUM(GENDER_MALE, GENDER_FEMALE, GENDER_OTHER)
         },
         role: {
             type: DataTypes.ENUM('admin', 'participant', 'clinician')
@@ -140,16 +110,7 @@ module.exports = function (sequelize, DataTypes) {
                             'resetPasswordExpires'
                         ]
                     }
-                }).then(function (result) {
-                    const e = result.ethnicity;
-                    if (e) {
-                        result.ethnicity = sequelize.models.ethnicity.nameById(e);
-                    }
-                    return result;
                 });
-            },
-            genders: function () {
-                return [GENDER_MALE, GENDER_FEMALE, GENDER_OTHER];
             },
             updateUser: function (id, values, options) {
                 options = options || {};

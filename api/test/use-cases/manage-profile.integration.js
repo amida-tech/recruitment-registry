@@ -41,20 +41,6 @@ describe('user set-up and login use-case', function () {
 
     let survey;
 
-    it('get available ethnicities', function (done) {
-        store.server
-            .get('/api/v1.0/ethnicities')
-            .expect(200)
-            .end(done);
-    });
-
-    it('get available genders', function (done) {
-        store.server
-            .get('/api/v1.0/genders')
-            .expect(200)
-            .end(done);
-    });
-
     it('get profile survey', function (done) {
         store.server
             .get('/api/v1.0/profile-survey')
@@ -124,8 +110,7 @@ describe('user set-up and login use-case', function () {
     it('update user profile', function (done) {
         answers = helper.formAnswersToPost(survey, surveyExample.answerUpdate);
         const userUpdates = {
-            zip: '20999',
-            gender: 'other'
+            email: 'updated@example.com'
         };
         store.server
             .patch('/api/v1.0/profiles')
@@ -149,8 +134,7 @@ describe('user set-up and login use-case', function () {
                 const result = res.body;
 
                 const expectedUser = _.cloneDeep(userExample);
-                expectedUser.zip = '20999';
-                expectedUser.gender = 'other';
+                expectedUser.email = 'updated@example.com';
                 const user = result.user;
                 expectedUser.id = user.id;
                 expectedUser.role = 'participant';
