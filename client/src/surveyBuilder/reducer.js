@@ -4,8 +4,7 @@ import Immutable from 'immutable'
 const initialState = {
   survey: {
     name: '',
-    questions: [],
-    released: true
+    questions: []
   }
 };
 

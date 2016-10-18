@@ -17,7 +17,8 @@ export default class Toolbox extends Component {
       text: "This is a choices question",
       id: undefined,
       choices: [],
-      released: true
+      isNew: true,
+      required: true
     })
 
     var choiceQuestion = JSON.stringify({
@@ -25,14 +26,16 @@ export default class Toolbox extends Component {
       text: "This is a choice question",
       id: undefined,
       choices: [],
-      released: true
+      isNew: true,
+      required: true
     })
 
     var textQuestion = JSON.stringify({
       type: "text",
       text: "This is a choice question",
       id: undefined,
-      released: true
+      isNew: true,
+      required: true
     })
 
     var boolQuestion = JSON.stringify({
@@ -40,7 +43,8 @@ export default class Toolbox extends Component {
       text: "This is a bool question",
       id: undefined,
       choices: [],
-      released: true
+      isNew: true,
+      required: true
     })
 
 
@@ -48,13 +52,15 @@ export default class Toolbox extends Component {
     var boolChoice = JSON.stringify({
       id: undefined,
       text: "Choice",
-      type: "bool"
+      type: "bool",
+      isNew: true
     })
 
     var textChoice = JSON.stringify({
       id: undefined,
       text: "Other",
-      type: "text"
+      type: "text",
+      isNew: true
     })
 
 

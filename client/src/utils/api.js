@@ -142,6 +142,7 @@ const apiProvider = store => next => action => {
     case 'SAVE_SURVEY':
       request
         .post(apiUrl + '/surveys')
+        .set("Authorization", "Bearer " + store.getState().get('loggedIn'))
         .send(action.payload.toJS())
         .end((error) => {
           if (!error) {
