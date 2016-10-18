@@ -127,7 +127,7 @@ const apiProvider = store => next => action => {
       break
     case 'REGISTER':
       request
-        .post(apiUrl + '/registries/user-profile')
+        .post(apiUrl + '/profiles')
         .send(action.payload)
         .end((error, response) => {
           if (!error) {
@@ -136,6 +136,7 @@ const apiProvider = store => next => action => {
               data: response.body
             })
             store.dispatch({type: 'GET_USER'})
+            store.dispatch(push('/profile'))
           }
         })
       break
