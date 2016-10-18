@@ -1,7 +1,5 @@
 'use strict';
 
-const _ = require('lodash');
-
 const models = require('../models');
 const shared = require('./shared.js');
 
@@ -14,8 +12,7 @@ exports.createProfileSurvey = function (req, res) {
 };
 
 exports.getProfileSurvey = function (req, res) {
-    const name = _.get(req, 'swagger.params.name.value');
-    Registry.getProfileSurvey(name)
+    Registry.getProfileSurvey()
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };

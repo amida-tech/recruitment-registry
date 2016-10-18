@@ -7,13 +7,14 @@ const chai = require('chai');
 
 const helper = require('../helper/survey-helper');
 
-const shared = require('../shared-integration');
+const SharedIntegration = require('../util/shared-integration');
 const userExamples = require('../fixtures/example/user');
 const surveyExamples = require('../fixtures/example/survey');
 
 const config = require('../../config');
 
 const expect = chai.expect;
+const shared = new SharedIntegration();
 
 describe('user set-up and login use-case', function () {
     const userExample = userExamples.Alzheimer;
@@ -39,20 +40,6 @@ describe('user set-up and login use-case', function () {
     // -------- client initialization
 
     let survey;
-
-    it('get available ethnicities', function (done) {
-        store.server
-            .get('/api/v1.0/ethnicities')
-            .expect(200)
-            .end(done);
-    });
-
-    it('get available genders', function (done) {
-        store.server
-            .get('/api/v1.0/genders')
-            .expect(200)
-            .end(done);
-    });
 
     it('get profile survey', function (done) {
         store.server
@@ -123,8 +110,7 @@ describe('user set-up and login use-case', function () {
     it('update user profile', function (done) {
         answers = helper.formAnswersToPost(survey, surveyExample.answerUpdate);
         const userUpdates = {
-            zip: '20999',
-            gender: 'other'
+            email: 'updated@example.com'
         };
         store.server
             .patch('/api/v1.0/profiles')
@@ -148,8 +134,7 @@ describe('user set-up and login use-case', function () {
                 const result = res.body;
 
                 const expectedUser = _.cloneDeep(userExample);
-                expectedUser.zip = '20999';
-                expectedUser.gender = 'other';
+                expectedUser.email = 'updated@example.com';
                 const user = result.user;
                 expectedUser.id = user.id;
                 expectedUser.role = 'participant';

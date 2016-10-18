@@ -55,7 +55,7 @@ export class RegisterContainer extends Component {
   }
 
   componentWillMount() {
-    this.props.dispatch(register.actions.getSurvey('Alzheimer'))
+    this.props.dispatch(register.actions.getSurvey())
   }
 
   _onSubmit(evt) {

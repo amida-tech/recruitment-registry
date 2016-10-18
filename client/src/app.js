@@ -1,18 +1,20 @@
 import ChartMonitor from 'redux-devtools-chart-monitor';
 import DockMonitor from 'redux-devtools-dock-monitor';
+import Immutable from 'immutable';
 import LogMonitor from 'redux-devtools-log-monitor';
 import React from 'react';
-import Immutable from 'immutable';
 import ReactDOM from 'react-dom';
 import SliderMonitor from 'redux-slider-monitor';
 import createLogger from 'redux-logger';
+import { LOCATION_CHANGE, syncHistoryWithStore, routerMiddleware } from 'react-router-redux';
 import { Provider } from 'react-redux';
 import { Router, Route, browserHistory } from 'react-router';
-import { applyMiddleware, compose, createStore } from 'redux';
 import { combineReducers } from 'redux-immutable'
+import { applyMiddleware, compose, createStore } from 'redux';
 import { createDevTools, persistState } from 'redux-devtools';
 import thunk from 'redux-thunk';
 import dataService from './utils/api';
+
 
 const IS_PROD = process.env.NODE_ENV !== 'development';
 const NOOP = () => null;
@@ -31,7 +33,7 @@ let DevTools = IS_PROD ? NOOP : createDevTools(
 );
 
 const initialEnhancers = IS_PROD ? [] : [
-  DevTools.instrument(),
+  window.devToolsExtension ? window.devToolsExtension() : DevTools.instrument(),
   persistState(location.href.match(/[?&]debug_session=([^&]+)\b/))
 ];
 
@@ -40,18 +42,36 @@ export default (options) => {
     initialState = {},
     Layout = NOOP,
     loggerOptions = {},
-    middleware = [dataService],
+    middleware = [dataService, routerMiddleware(browserHistory)],
     enhancers = {},
     routes = [],
     reducers = {}
   } = options;
 
-  const initialMiddleware = [createLogger(loggerOptions)];
+
   const frozen = Immutable.fromJS(initialState);
 
+  const routing = (state = frozen, action) => {
+    return action.type === LOCATION_CHANGE ?
+      state.merge({ locationBeforeTransitions: action.payload }) :
+      state;
+  };
+
+  const initialMiddleware = [createLogger(loggerOptions)];
   const createStoreWithMiddleware = applyMiddleware(thunk)(createStore);
+
+  const appReducer = combineReducers({...reducers, routing})
+
+  const rootReducer = (state, action) => {
+    if (action.type === 'LOGOUT') {
+      state = frozen
+    }
+
+    return appReducer(state, action)
+  }
+
   const store = createStoreWithMiddleware(
-    combineReducers(reducers),
+    rootReducer,
     frozen,
     compose(
       applyMiddleware(...initialMiddleware, ...middleware),
@@ -59,13 +79,9 @@ export default (options) => {
       ...enhancers
     ));
 
-  /**/
-
-  /*const routing = (state = frozen, action) => {
-    return action.type === LOCATION_CHANGE ?
-      state.merge({ locationBeforeTransitions: action.payload }) :
-      state;
-  };*/
+  const history = syncHistoryWithStore(browserHistory, store, {
+    selectLocationState: state => state.has('routing') ? state.get('routing').toJS() : null
+  });
 
   const LayoutWrapper = (props) => (
     <div id="wrapper">
@@ -75,12 +91,12 @@ export default (options) => {
   );
 
   return {
-    browserHistory,
+    store,
     history,
     render(rootElement = document.getElementById('root')) {
       ReactDOM.render(
         <Provider store={store}>
-          <Router history={browserHistory}>
+          <Router history={history}>
             <Route component={LayoutWrapper}>
               {routes.map(route => <Route key={route.path} path={route.path} component={route.component} />)}
             </Route>

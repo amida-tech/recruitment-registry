@@ -3,15 +3,12 @@
 const _ = require('lodash');
 
 const RRError = require('../lib/rr-error');
+const textTableMethods = require('./text-table-methods');
 
 module.exports = function (sequelize, DataTypes) {
-    const QX_TYPES_W_CHOICES = ['choice', 'choices'];
-    const QX_FIND_ATTRS = ['id', 'text', 'type'];
+    const textHandler = textTableMethods(sequelize, 'question_text', 'questionId');
 
     const Question = sequelize.define('question', {
-        text: {
-            type: DataTypes.TEXT
-        },
         type: {
             type: DataTypes.TEXT,
             allowNull: false,
@@ -49,15 +46,7 @@ module.exports = function (sequelize, DataTypes) {
         classMethods: {
             createActionsTx: function (id, actions, tx) {
                 if (actions && actions.length) {
-                    return sequelize.Promise.all(actions.map(function (action, index) {
-                            const record = {
-                                questionId: id,
-                                text: action.text,
-                                type: action.type,
-                                line: index
-                            };
-                            return sequelize.models.question_action.create(record, { transaction: tx });
-                        }))
+                    return sequelize.models.question_action.createActionsPerQuestionTx(id, actions, tx)
                         .then(() => ({ id }));
                 } else {
                     return sequelize.Promise.resolve({ id });
@@ -66,7 +55,13 @@ module.exports = function (sequelize, DataTypes) {
             auxCreateQuestionTx: function (question, tx) {
                 const qxFields = _.omit(question, ['oneOfChoices', 'choices', 'actions']);
                 return Question.create(qxFields, { transaction: tx })
-                    .then((created) => {
+                    .then(created => {
+                        const text = question.text;
+                        const id = created.id;
+                        return textHandler.createTextTx({ text, id }, tx)
+                            .then(() => created);
+                    })
+                    .then(created => {
                         return Question.createActionsTx(created.id, question.actions, tx)
                             .then(() => created);
                     })
@@ -85,9 +80,8 @@ module.exports = function (sequelize, DataTypes) {
                                     type: c.type || 'bool',
                                     line: index
                                 };
-                                return sequelize.models.question_choice.create(choice, {
-                                    transaction: tx
-                                }).then(() => created);
+                                return sequelize.models.question_choice.createQuestionChoiceTx(choice, tx)
+                                    .then(() => created);
                             })).then(() => created);
                         }
                         return created;
@@ -134,37 +128,31 @@ module.exports = function (sequelize, DataTypes) {
                         }
                     });
             },
-            getQuestion: function (id) {
-                return Question.findById(id, { raw: true, attributes: QX_FIND_ATTRS })
+            getQuestion: function (id, options = {}) {
+                const language = options.language;
+                return Question.findById(id, { raw: true, attributes: ['id', 'type'] })
                     .then(question => {
                         if (!question) {
                             return RRError.reject('qxNotFound');
                         }
                         return question;
                     })
+                    .then(question => textHandler.updateText(question, language))
                     .then(question => {
-                        return sequelize.models.question_action.findAll({
-                                where: { questionId: question.id },
-                                raw: true,
-                                attributes: ['text', 'type', 'line']
-                            })
+                        return sequelize.models.question_action.findActionsPerQuestion(question.id, language)
                             .then(actions => {
                                 if (actions.length) {
-                                    const sortedActions = _.sortBy(actions, 'line');
-                                    question.actions = sortedActions.map(({ text, type }) => ({ text, type }));
+                                    question.actions = actions;
+
                                 }
                                 return question;
                             });
                     })
                     .then(question => {
-                        if (QX_TYPES_W_CHOICES.indexOf(question.type) < 0) {
+                        if (['choice', 'choices'].indexOf(question.type) < 0) {
                             return question;
                         }
-                        return sequelize.models.question_choice.findAll({
-                                where: { questionId: question.id },
-                                raw: true,
-                                attributes: ['id', 'text', 'type']
-                            })
+                        return sequelize.models.question_choice.findChoicesPerQuestion(question.id, options.language)
                             .then(choices => {
                                 if (question.type === 'choice') {
                                     question.choices = choices.map(({ id, text }) => ({
@@ -182,9 +170,32 @@ module.exports = function (sequelize, DataTypes) {
                             });
                     });
             },
-            updateQuestion: function (id, { text }) {
-                const updateObj = { text };
-                return Question.findById(id).then(qx => qx.update(updateObj));
+            _updateQuestionTextTx: function ({ id, text }, language, tx) {
+                if (text) {
+                    return textHandler.createTextTx({ id, text, language }, tx);
+                } else {
+                    return sequelize.Promise.resolve();
+                }
+            },
+            updateQuestionTextTx: function (translation, language, tx) {
+                return Question._updateQuestionTextTx(translation, language, tx)
+                    .then(() => {
+                        const choices = translation.choices;
+                        if (choices) {
+                            return sequelize.models.question_choice.updateMultipleChoiceTextsTx(choices, language, tx);
+                        }
+                    })
+                    .then(() => {
+                        const actions = translation.actions;
+                        if (actions) {
+                            return sequelize.models.question_action.updateMultipleActionTextsTx(actions, language, tx);
+                        }
+                    });
+            },
+            updateQuestionText: function (translation, language) {
+                return sequelize.transaction(function (tx) {
+                    return Question.updateQuestionTextTx(translation, language, tx);
+                });
             },
             deleteQuestion: function (id) {
                 return sequelize.models.survey_question.count({ where: { questionId: id } })
@@ -199,92 +210,86 @@ module.exports = function (sequelize, DataTypes) {
                         }
                     });
             },
-            getQuestionsCommon: function (options, choiceOptions) {
-                return Question.findAll(options)
-                    .then(questions => {
-                        if (!questions.length) {
-                            return questions;
-                        }
-                        return sequelize.models.question_action.findAll(choiceOptions)
-                            .then(actions => {
-                                if (actions.length) {
-                                    const map = _.keyBy(questions, 'id');
-                                    actions.forEach(action => {
-                                        const q = map[action.questionId];
-                                        if (q) {
-                                            delete action.questionId;
-                                            delete action.id;
-                                            if (q.actions) {
-                                                q.actions.push(action);
-                                            } else {
-                                                q.actions = [action];
-                                            }
-                                        }
-                                    });
-                                }
-                                return questions;
-                            });
-                    })
+            _listQuestions: function (options = {}) {
+                const _options = {
+                    raw: true,
+                    attributes: ['id', 'type'],
+                    order: 'id'
+                };
+                const ids = options.ids;
+                const language = options.language;
+                if (ids) {
+                    _options.where = { id: { $in: ids } };
+                }
+                return Question.findAll(_options)
                     .then(questions => {
                         if (!questions.length) {
                             return { questions, map: {} };
                         }
-                        return sequelize.models.question_choice.findAll(choiceOptions)
-                            .then(choices => {
-                                const map = _.keyBy(questions, 'id');
-                                choices.forEach(choice => {
-                                    const q = map[choice.questionId];
-                                    if (q) {
-                                        delete choice.questionId;
-                                        if (q.type === 'choice') {
-                                            delete choice.type;
+                        const map = _.keyBy(questions, 'id');
+                        const qtOptions = {
+                            raw: true,
+                            language,
+                            attributes: ['questionId', 'text']
+                        };
+                        if (ids) {
+                            qtOptions.where = { questionId: { $in: ids } };
+                        }
+                        return textHandler.updateAllTexts(questions, language)
+                            .then(() => {
+                                return sequelize.models.question_action.findActionsPerQuestions(ids, language)
+                                    .then(actions => {
+                                        if (actions.length) {
+                                            actions.forEach(action => {
+                                                const q = map[action.questionId];
+                                                if (q) {
+                                                    delete action.questionId;
+                                                    if (q.actions) {
+                                                        q.actions.push(action);
+                                                    } else {
+                                                        q.actions = [action];
+                                                    }
+                                                }
+                                            });
                                         }
-                                        if (q.choices) {
-                                            q.choices.push(choice);
-                                        } else {
-                                            q.choices = [choice];
-                                        }
-                                    }
-                                });
-                                return { questions, map };
+                                    });
+                            })
+                            .then(() => {
+                                return sequelize.models.question_choice.getAllQuestionChoices(ids, language)
+                                    .then(choices => {
+                                        const map = _.keyBy(questions, 'id');
+                                        choices.forEach(choice => {
+                                            const q = map[choice.questionId];
+                                            if (q) {
+                                                delete choice.questionId;
+                                                if (q.type === 'choice') {
+                                                    delete choice.type;
+                                                }
+                                                if (q.choices) {
+                                                    q.choices.push(choice);
+                                                } else {
+                                                    q.choices = [choice];
+                                                }
+                                            }
+                                        });
+                                        return { questions, map };
+                                    });
                             });
                     });
             },
-            getQuestions: function (ids) {
-                const options = {
-                    where: { id: { in: ids } },
-                    raw: true,
-                    attributes: QX_FIND_ATTRS,
-                    order: 'id'
-                };
-                const choicesOptions = {
-                    where: { questionId: { in: ids } },
-                    raw: true,
-                    attributes: ['id', 'text', 'type', 'questionId'],
-                    order: 'line'
-                };
-                return Question.getQuestionsCommon(options, choicesOptions)
+            listQuestions: function (options = {}) {
+                return Question._listQuestions(options)
                     .then(({ questions, map }) => {
-                        if (questions.length !== ids.length) {
-                            return RRError.reject('qxNotFound');
+                        const ids = options.ids;
+                        if (ids) {
+                            if (questions.length !== ids.length) {
+                                return RRError.reject('qxNotFound');
+                            }
+                            return ids.map(id => map[id]);
+                        } else {
+                            return questions;
                         }
-                        return { questions, map };
-                    })
-                    .then(({ map }) => ids.map(id => map[id]));
-            },
-            getAllQuestions: function () {
-                const options = {
-                    raw: true,
-                    attributes: QX_FIND_ATTRS,
-                    order: 'id'
-                };
-                const choicesOptions = {
-                    raw: true,
-                    attributes: ['id', 'text', 'type', 'questionId'],
-                    order: 'line'
-                };
-                return Question.getQuestionsCommon(options, choicesOptions)
-                    .then(({ questions }) => questions);
+                    });
             }
         }
     });

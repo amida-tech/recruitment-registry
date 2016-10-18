@@ -9,6 +9,7 @@ import surveys from './surveys'
 import survey from './survey'
 import { browserHistory } from 'react-router'
 import Immutable from 'immutable'
+import { push } from 'react-router-redux'
 
 export const initialState = {
   title: "GAP",
@@ -18,60 +19,13 @@ export const initialState = {
       vocabulary: localStorage.vocabulary ? localStorage.vocabulary : require('./i18n/en.json')
     }
   },
-  login: {
-    formState: {
-      hasErrors: false,
-      username: '',
-      password: ''
-    },
-    user: localStorage.user ? JSON.parse(localStorage.user) : {
-      username: "",
-      role: "",
-      id: ""
-    }
-  },
-  register: {
-    formState: {
-      username: '',
-      password: '',
-      ethnicity: 'Caucasian',
-      gender: 'male'
-    },
-    availableEthnicities: [
-      "Caucasian",
-      "Hispanic",
-      "African",
-      "Asian"
-    ],
-    availableGenders: [
-      "male",
-      "female",
-      "other"
-    ],
-    survey: {
-      questions: []
-    },
-    surveyResult: {
-      answers: []
-    }
-  },
+  login: login.reducer.initialState,
+  register: register.reducer.initialState,
   loggedIn: localStorage.token ? localStorage.token : false,
-  profile: {
-    user: {
-      name: ""
-    },
-    survey: {
-      questions: []
-    }
-  },
-  surveyBuilder: {
-    survey: {
-      name: '',
-      questions: [],
-      released: true
-    }
-  },
-  surveys: []
+  profile: profile.reducer.initialState,
+  surveyBuilder: surveyBuilder.reducer.initialState,
+  surveys: surveys.reducer.initialState,
+  survey: survey.reducer.initialState
 };
 
 export const reducers = {
@@ -84,11 +38,9 @@ export const reducers = {
   loggedIn: (state = initialState, action) => {
     switch (action.type) {
       case "LOGIN_SUCCESS":
-        browserHistory.push('/')
         localStorage.setItem("token", action.data.token)
         return action.data.token
       case "LOGOUT":
-        browserHistory.push('/login')
         localStorage.removeItem("token")
         localStorage.removeItem("user")
         return false

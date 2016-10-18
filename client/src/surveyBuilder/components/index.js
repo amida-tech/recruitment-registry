@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import surveyBuilder from '../index';
 import Toolbox from './toolbox'
 import Guid from 'guid'
+import Immutable from 'immutable'
 
 export class SurveyBuilderContainer extends Component {
   render() {
@@ -49,7 +50,27 @@ export class SurveyBuilderContainer extends Component {
   }
 
   _saveSurvey(evt) {
-    this.props.dispatch(surveyBuilder.actions.saveSurvey(this.props.data.get('survey')))
+
+    var survey = this.props.data.get('survey').toJS()
+
+    survey.questions.forEach(function(question) {
+      if (question.isNew) {
+        delete question.id
+        delete question.isNew
+
+        if (question.choices) {
+          question.choices.forEach(function(choice) {
+            if (choice.isNew) {
+              delete choice.id
+              delete choice.isNew
+            }
+          })
+        }
+
+      }
+    })
+
+    this.props.dispatch(surveyBuilder.actions.saveSurvey(Immutable.fromJS(survey)))
   }
 
   updateSurveyName(name) {

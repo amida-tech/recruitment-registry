@@ -6,12 +6,13 @@ const chai = require('chai');
 
 const helper = require('../helper/survey-helper');
 
-const shared = require('../shared-integration');
+const SharedIntegration = require('../util/shared-integration');
 const surveyExamples = require('../fixtures/example/survey');
 
 const config = require('../../config');
 
 const expect = chai.expect;
+const shared = new SharedIntegration();
 
 describe('create-show-survey use case', function () {
     const surveyExample = surveyExamples.Alzheimer.survey;
