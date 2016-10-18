@@ -8,8 +8,8 @@ class ConsentDocumentHistory {
     constructor(userCount) {
         this.hxUser = new History();
         this.hxType = new History();
+        this.hxDocument = new History();
         this.clientConsentDocuments = [];
-        this.consentDocuments = [];
         this.activeConsentDocuments = [];
         this.signatures = _.range(userCount).map(() => []);
     }
@@ -44,7 +44,7 @@ class ConsentDocumentHistory {
         if (!fullServer.updateComment) {
             fullServer.updateComment = null;
         }
-        this.consentDocuments.push(fullServer);
+        this.hxDocument.push(client, fullServer);
         this.activeConsentDocuments[typeIndex] = fullServer;
     }
 
@@ -68,8 +68,20 @@ class ConsentDocumentHistory {
         return _.sortBy(result, 'id');
     }
 
+    translatedServersInList(typeIndices, language) {
+        const result = typeIndices.map(index => {
+            const type = this.hxType.translatedServer(index, language);
+            return {
+                id: this.activeConsentDocuments[index].id,
+                name: type.name,
+                title: type.title
+            };
+        });
+        return _.sortBy(result, 'id');
+    }
+
     serversHistory() {
-        return this.consentDocuments;
+        return this.hxDocument.history;
     }
 
     sign(typeIndex, userIndex, language) {

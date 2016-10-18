@@ -52,7 +52,7 @@ module.exports = function (sequelize, DataTypes) {
                         if (options.summary) {
                             return documents;
                         } else {
-                            return textHandler.updateAllTexts(documents);
+                            return textHandler.updateAllTexts(documents, options.language);
                         }
                     })
                     .then(documents => {
@@ -62,6 +62,9 @@ module.exports = function (sequelize, DataTypes) {
                         }
                         if (typeIds && typeIds.length) {
                             _options.ids = typeIds;
+                        }
+                        if (options.language) {
+                            _options.language = options.language;
                         }
                         return sequelize.models.consent_type.listConsentTypes(_options)
                             .then(types => {
@@ -115,9 +118,12 @@ module.exports = function (sequelize, DataTypes) {
                         });
                 });
             },
-            getConsentDocument: function (id) {
+            updateConsentDocumentText({ id, content, updateComment }, language) {
+                return textHandler.createText({ id, content, updateComment, language });
+            },
+            getConsentDocument: function (id, options = {}) {
                 return ConsentDocument.findById(id, { raw: true, attributes: ['id', 'typeId'] })
-                    .then(result => textHandler.updateText(result));
+                    .then(result => textHandler.updateText(result, options.language));
             },
             getUpdateCommentHistory: function (typeId) {
                 return ConsentDocument.findAll({

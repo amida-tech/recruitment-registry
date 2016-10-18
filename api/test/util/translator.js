@@ -28,6 +28,16 @@ const translator = {
         const result = _.pick(consentType, ['id', 'title']);
         result.title = this._translate(result.title, language);
         return result;
+    },
+    translateConsentDocument(consentDocument, language) {
+        const result = _.pick(consentDocument, ['id', 'content', 'updateComment']);
+        result.content = this._translate(result.content, language);
+        if (result.updateComment) {
+            result.updateComment = this._translate(result.updateComment, language);
+        } else {
+            result.updateComment = null;
+        }
+        return result;
     }
 };
 

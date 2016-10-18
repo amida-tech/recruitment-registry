@@ -8,7 +8,6 @@ const SharedSpec = require('./util/shared-spec');
 const Generator = require('./util/entity-generator');
 const History = require('./util/entity-history');
 const models = require('../models');
-const translator = require('./util/translator');
 
 const expect = chai.expect;
 const generator = new Generator();
@@ -58,17 +57,6 @@ describe('consent unit', function () {
 
     it('list consent types and verify', listConsentTypesFn());
 
-    const translateConsentTypeFn = function (index, language) {
-        return function () {
-            const server = hxType.server(index);
-            const translation = translator.translateConsentType(server, language);
-            return ConsentType.updateConsentTypeText(translation, language)
-                .then(() => {
-                    hxType.translate(index, language, translation);
-                });
-        };
-    };
-
     const getTranslatedConsentTypeFn = function (index, language) {
         return function () {
             const id = hxType.id(index);
@@ -95,14 +83,14 @@ describe('consent unit', function () {
     it('list consent types in spanish when no translation', listTranslatedConsentTypesFn('es'));
 
     for (let i = 0; i < typeCount; ++i) {
-        it(`add translated (es) consent type ${i}`, translateConsentTypeFn(i, 'es'));
+        it(`add translated (es) consent type ${i}`, shared.translateConsentTypeFn(i, 'es', hxType));
         it(`get and verify tanslated consent type ${i}`, getTranslatedConsentTypeFn(i, 'es'));
     }
 
     it('list and verify translated (es) consent types', listTranslatedConsentTypesFn('es'));
 
     for (let i = 0; i < typeCount; i += 2) {
-        it(`add translated (fr) consent type ${i}`, translateConsentTypeFn(i, 'fr'));
+        it(`add translated (fr) consent type ${i}`, shared.translateConsentTypeFn(i, 'fr', hxType));
         it(`get and verify tanslated (fr) consent type ${i}`, getTranslatedConsentTypeFn(i, 'fr'));
     }
 

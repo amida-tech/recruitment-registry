@@ -7,6 +7,7 @@ const models = require('../../models');
 
 const RRError = require('../../lib/rr-error');
 const Generator = require('./entity-generator');
+const translator = require('./translator');
 
 const expect = chai.expect;
 
@@ -93,6 +94,28 @@ class SharedSpec {
             const cst = generator.newConsentType();
             return models.ConsentType.createConsentType(cst)
                 .then(server => history.pushType(cst, server));
+        };
+    }
+
+    translateConsentTypeFn(index, language, hxType) {
+        return function () {
+            const server = hxType.server(index);
+            const translation = translator.translateConsentType(server, language);
+            return models.ConsentType.updateConsentTypeText(translation, language)
+                .then(() => {
+                    hxType.translate(index, language, translation);
+                });
+        };
+    }
+
+    translateConsentDocumentFn(index, language, hxDocument) {
+        return function () {
+            const server = hxDocument.server(index);
+            const translation = translator.translateConsentDocument(server, language);
+            return models.ConsentDocument.updateConsentDocumentText(translation, language)
+                .then(() => {
+                    hxDocument.translate(index, language, translation);
+                });
         };
     }
 

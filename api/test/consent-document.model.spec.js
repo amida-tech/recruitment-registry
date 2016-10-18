@@ -45,6 +45,7 @@ describe('consent document/type/signature unit', function () {
     for (let i = 0; i < 2; ++i) {
         it(`create consent type ${i}`, shared.createConsentTypeFn(history));
         it(`verify consent type list`, verifyConsentTypeInListFn);
+        it(`add translated (es) consent type ${i}`, shared.translateConsentTypeFn(i, 'es', history.hxType));
     }
 
     for (let i = 0; i < userCount; ++i) {
@@ -66,9 +67,22 @@ describe('consent document/type/signature unit', function () {
         };
     };
 
+    const verifyTranslatedConsentDocumentFn = function (index, language) {
+        return function () {
+            const id = history.id(index);
+            return ConsentDocument.getConsentDocument(id, { language })
+                .then(result => {
+                    const expected = history.hxDocument.translatedServer(index, language);
+                    expect(result).to.deep.equal(expected);
+                });
+        };
+    };
+
     for (let i = 0; i < 2; ++i) {
         it(`create consent document of type ${i}`, shared.createConsentDocumentFn(history, i));
         it(`verify consent document of type ${i}`, verifyConsentDocumentFn(i));
+        it(`add translated (es) consent document ${i}`, shared.translateConsentDocumentFn(i, 'es', history.hxDocument));
+        it(`verify translated (es) consent document of type ${i}`, verifyTranslatedConsentDocumentFn(i, 'es'));
     }
 
     const verifyConsentDocumentsFn = function (userIndex, expectedIndices) {
@@ -91,8 +105,29 @@ describe('consent document/type/signature unit', function () {
         };
     };
 
+    const verifyTranslatedConsentDocumentsFn = function (userIndex, expectedIndices, language) {
+        return function () {
+            return User.listConsentDocuments(history.userId(userIndex), undefined, undefined, language)
+                .then(consentDocuments => {
+                    const expected = history.translatedServersInList(expectedIndices, language);
+                    expect(consentDocuments).to.deep.equal(expected);
+                    return expected;
+                })
+                .then(() => {
+                    const css = expectedIndices.map(index => history.hxDocument.translatedServer(index, language));
+                    return models.sequelize.Promise.all(css.map(cs => {
+                        return ConsentDocument.getConsentDocument(cs.id, { language })
+                            .then(result => {
+                                expect(result).to.deep.equal(cs);
+                            });
+                    }));
+                });
+        };
+    };
+
     for (let i = 0; i < 4; ++i) {
         it(`verify consent documents required for user ${i}`, verifyConsentDocumentsFn(i, [0, 1]));
+        it(`verify translated consent documents required for user ${i}`, verifyTranslatedConsentDocumentsFn(i, [0, 1], 'es'));
     }
 
     const signConsentTypeFn = function (userIndex, typeIndex, language) {
@@ -253,7 +288,7 @@ describe('consent document/type/signature unit', function () {
         return ConsentDocument.findAll(queryParamsAll)
             .then(consentDocuments => textHandler.updateAllTexts(consentDocuments))
             .then(consentDocuments => {
-                expect(consentDocuments).to.deep.equal(history.consentDocuments);
+                expect(consentDocuments).to.deep.equal(history.serversHistory());
             })
             .then(() => {
                 return ConsentDocument.findAll(queryParams)

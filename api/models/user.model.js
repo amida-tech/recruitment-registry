@@ -206,13 +206,16 @@ module.exports = function (sequelize, DataTypes) {
                     }
                 });
             },
-            listConsentDocuments: function (userId, typeIds, tx) {
+            listConsentDocuments: function (userId, typeIds, tx, language) {
                 const options = { summary: true };
                 if (typeIds && typeIds.length) {
                     options.typeIds = typeIds;
                 }
                 if (tx) {
                     options.transaction = tx;
+                }
+                if (language) {
+                    options.language = language;
                 }
                 return sequelize.models.consent_document.listConsentDocuments(options)
                     .then(activeDocs => {
