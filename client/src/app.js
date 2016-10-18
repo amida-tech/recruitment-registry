@@ -16,13 +16,14 @@ import dataService from './utils/api';
 
 const IS_PROD = process.env.NODE_ENV !== 'development';
 const NOOP = () => null;
+var visible = false;
 
 let DevTools = IS_PROD ? NOOP : createDevTools(
   <DockMonitor
     toggleVisibilityKey="ctrl-h"
     changePositionKey="ctrl-q"
     changeMonitorKey="ctrl-m"
-    defaultVisible="false">
+    defaultIsVisible={true}>
       <LogMonitor />
       <SliderMonitor />
       <ChartMonitor />
