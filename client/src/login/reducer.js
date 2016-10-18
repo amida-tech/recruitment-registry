@@ -25,7 +25,7 @@ export default (state = immutableState, action) => {
       return state.setIn(['formState', 'hasErrors'], false)
     case actionTypes.GET_USER_SUCCESS:
       localStorage.user = JSON.stringify(action.payload)
-      return state.set('user', Immutable.fromJS(action.payload));
+      return state.set('user', Immutable.fromJS(action.payload))
     default:
       return state;
   }
