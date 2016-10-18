@@ -10,9 +10,7 @@ export default class ChoiceQuestion extends Component {
       <div key={question.id}>
         <label>Question text: <input onChange={this.props.changeQuestion.bind(this, question)} type="text" defaultValue={question.text}/></label>
         <div>
-
-          {
-            question.choices.map(choice => {
+          {question.choices.map(choice => {
             if (choice.type === 'text') {
               return <label key={choice.id}>Choice text: <input onChange={this.props.changeChoice}
                                                                 defaultValue={choice.text}

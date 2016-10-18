@@ -6,65 +6,16 @@ import register from './register'
 import profile from './profile'
 import surveyBuilder from './surveyBuilder'
 import surveys from './surveys'
-import { browserHistory } from 'react-router'
-
+import { push } from 'react-router-redux'
 
 export const initialState = {
   title: "GAP",
-  login: {
-    formState: {
-      hasErrors: false,
-      username: '',
-      password: ''
-    },
-    user: localStorage.user ? JSON.parse(localStorage.user) : {
-      username: "",
-      role: "",
-      id: ""
-    }
-  },
-  register: {
-    formState: {
-      username: '',
-      password: '',
-      ethnicity: 'Caucasian',
-      gender: 'male'
-    },
-    availableEthnicities: [
-      "Caucasian",
-      "Hispanic",
-      "African",
-      "Asian"
-    ],
-    availableGenders: [
-      "male",
-      "female",
-      "other"
-    ],
-    survey: {
-      questions: []
-    },
-    surveyResult: {
-      answers: []
-    }
-  },
+  login: login.reducer.initialState,
+  register: register.reducer.initialState,
   loggedIn: localStorage.token ? localStorage.token : false,
-  profile: {
-    user: {
-      name: ""
-    },
-    survey: {
-      questions: []
-    }
-  },
-  surveyBuilder: {
-    survey: {
-      name: '',
-      questions: [],
-      released: true
-    }
-  },
-  surveys: []
+  profile: profile.reducer.initialState,
+  surveyBuilder: surveyBuilder.reducer.initialState,
+  surveys: surveys.reducer.initialState,
 };
 
 export const reducers = {
@@ -76,11 +27,10 @@ export const reducers = {
   loggedIn: (state = initialState, action) => {
     switch (action.type) {
       case "LOGIN_SUCCESS":
-        browserHistory.push('/')
         localStorage.setItem("token", action.data.token)
         return action.data.token
       case "LOGOUT":
-        browserHistory.push('/login')
+
         localStorage.removeItem("token")
         localStorage.removeItem("user")
         return false
@@ -89,7 +39,7 @@ export const reducers = {
     }
   },
   title: (state = initialState) => state
-};
+}
 
 import './styles/main.scss'
 

@@ -5,22 +5,22 @@ import { browserHistory } from 'react-router';
 const initialState = {
   formState: {
     username: '',
-    password: '',
-    availableEthnicities: [
-      "Caucasian",
-      "Hispanic",
-      "African",
-      "Asian"
-    ],
-    availableGenders: [
-      "male",
-      "female",
-      "other"
-    ]
+    password: ''
   },
   survey: {
     questions: []
-  }
+  },
+  availableEthnicities: [
+    "Caucasian",
+    "Hispanic",
+    "African",
+    "Asian"
+  ],
+  availableGenders: [
+    "male",
+    "female",
+    "other"
+  ]
 };
 
 const immutableState = Immutable.fromJS(initialState)
