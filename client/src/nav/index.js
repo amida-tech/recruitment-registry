@@ -22,6 +22,7 @@ class Nav extends Component {
       nav = routesAuthed.map(r => {
         var path = r.path;
         if (r.path.indexOf('survey-builder') > -1) { path = '/survey-builder' }
+        if (r.path.indexOf('survey/:id') > -1) { return }
         if (r.isSuper && role !== 'admin') {
           return <div className="nav-item invisible" key={r.path}></div>
           }

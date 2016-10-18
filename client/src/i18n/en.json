@@ -16,6 +16,7 @@
   "LANGUAGE": "Language",
   "PROFILE": "Profile",
   "SURVEYS": "Surveys",
+  "SURVEY": "Survey",
   "DATE_OF_BIRTH": "Date of Birth",
   "SURVEY_BUILDER": "Survey Builder",
   "THANKS": "Thanks.",
@@ -41,5 +42,6 @@
   "MY_DOB": "My date of birth is",
   "MY_GENDER": "My gender is",
   "MY_ETHNIC": "My ethnicity is",
-  "INVALID_CREDENTIALS": "Invalid credentials!"
+  "INVALID_CREDENTIALS": "Invalid credentials!",
+  "AVAIL_SURVEYS": "Currently available surveys:"
 }
