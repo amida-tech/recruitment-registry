@@ -33,7 +33,7 @@ class Nav extends Component {
     }
 
     return (
-      <nav className="">
+      <nav className="dd">
         <a className="logo" href="/">{ title } Net</a>
         <ul>
           <li><a href="./contact">Contact Us</a></li>

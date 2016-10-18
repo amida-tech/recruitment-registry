@@ -26,6 +26,41 @@
 	border: 2px solid $gap-medium-blue;
 	background-color: $gap-medium-blue;
 	color: $gap-white;
+	&.light {
+		border: 2px solid $gap-white;
+		background-color: $gap-white;
+		color: $gap-medium-blue;
+	}
+	&.success, &.green {
+		border: 2px solid $gap-green;
+		background-color: $gap-green;
+		color: $gap-white;
+	}
+	&.alert, &.yellow {
+		border: 2px solid $gap-orange;
+		background-color: $gap-orange;
+		color: $gap-white;
+	}
+	&.warning, &.red {
+		border: 2px solid $gap-red;
+		background-color: $gap-red;
+		color: $gap-white;
+	}
+	&.info, &.purple {
+		border: 2px solid $gap-purple;
+		background-color: $gap-purple;
+		color: $gap-white;
+	}
+	&.system, &.navy {
+		border: 2px solid $gap-navy;
+		background-color: $gap-navy;
+		color: $gap-white;
+	}
+	&.dark {
+		border: 2px solid $gap-black;
+		background-color: $gap-black;
+		color: $gap-white;
+	}
 }
 
 .buttonConfirm {
@@ -39,4 +74,39 @@
 	@extend .btn;
 	border: 2px solid $gap-medium-blue;
 	color: $gap-medium-blue;
+
+	&.light {
+		border: 2px solid $gap-white;
+		color: $gap-white;
+	}
+	&.success, &.green {
+		border: 2px solid $gap-green;
+		color: $gap-green;
+	}
+	&.alert, &.yellow {
+		border: 2px solid $gap-orange;
+		color: $gap-orange;
+	}
+	&.warning, &.red {
+		border: 2px solid $gap-red;
+		color: $gap-red;
+	}
+	&.info, &.purple {
+		border: 2px solid $gap-purple;
+		color: $gap-purple;
+	}
+	&.system, &.navy {
+		border: 2px solid $gap-navy;
+		color: $gap-navy;
+	}
+	&.dark {
+		border: 2px solid $gap-black;
+		color: $gap-black;
+	}
+}
+
+.buttonSecondaryLight {
+	@extend .btn;
+	border: 2px solid $gap-white;
+	color: $gap-white;
 }

@@ -2,12 +2,15 @@ import React, { Component} from 'react';
 import { connect } from 'react-redux';
 import Form from './register-form';
 import register from '../index';
+import Background from '../../Background'
+
 
 export class RegisterContainer extends Component {
   render() {
     const { formState, survey, availableEthnicities, availableGenders } = this.props.data.toJS()
     return (
-      <div>
+      <div className="register">
+        <Background/>
         <Form data={formState}
               vocab={this.props.vocab}
               location={location}
@@ -21,7 +24,8 @@ export class RegisterContainer extends Component {
               changeForm={::this._changeForm}
               changeChoice={::this._changeChoice}
               changeBoolQuestion={::this._changeBoolQuestion}/>
-      </div>)
+              </div>
+      )
   }
 
   _changeForm(evt) {

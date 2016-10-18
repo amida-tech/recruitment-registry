@@ -68,7 +68,6 @@ export default (options) => {
 
   const LayoutWrapper = (props) => (
     <div id="wrapper">
-    <background/>
       <Layout {...props} />
       <DevTools />
     </div>

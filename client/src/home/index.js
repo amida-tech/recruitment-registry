@@ -9,7 +9,7 @@ class Home extends Component {
     const role = this.props.user.get('role');
     const username = this.props.user.get('username');
     return (
-      <div>
+      <div className="home">
         <h1>{this.props.vocab.get('HOME')}</h1>
         <div>
           { loggedIn ? (

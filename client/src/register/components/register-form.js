@@ -19,9 +19,7 @@ class Form extends Component {
 
   render() {
     var header = (
-      <div className="rr-wrapper m-b-2">
-        <h1 className="rr no-transform">{this.props.vocab.get('LETS_CREATE')}</h1>
-      </div>
+        <h4>{this.props.vocab.get('LETS_CREATE')}</h4>
     )
 
     const renderInputField = (id, type, placeholder, label) => (
@@ -228,8 +226,7 @@ class Form extends Component {
 
     return(
       <form autoComplete="off">
-        <div className="col-lg-6">
-          <div className="registry-specific">
+          <div className="registry-specific register--inputContainer">
             {
               this.props.survey.questions.length > 0 ? (
                 <Slider ref='slider' {...settings}>
@@ -252,8 +249,6 @@ class Form extends Component {
               ) : (<div>{this.props.vocab.get('LOADING')}...</div>)
             }
           </div>
-        </div>
-
       </form>
     );
 
