@@ -1152,6 +1152,14 @@
             "get": {
                 "summary": "Gets update comments for consent document",
                 "operationId": "getUpdateCommentHistory",
+                "parameters": [{
+                    "name": "language",
+                    "in": "query",
+                    "description": "Language code",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 2
+                }],
                 "responses": {
                     "200": {
                         "description": "Successful response",

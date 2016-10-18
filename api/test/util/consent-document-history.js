@@ -94,6 +94,10 @@ class ConsentDocumentHistory {
         return this.hxDocument.history;
     }
 
+    translatedServersHistory(language) {
+        return this.hxDocument.translatedHistory(language);
+    }
+
     sign(typeIndex, userIndex, language) {
         const id = this.id(typeIndex);
         language = language || 'en';

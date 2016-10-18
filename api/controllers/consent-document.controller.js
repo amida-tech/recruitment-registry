@@ -30,7 +30,8 @@ exports.updateConsentDocumentText = function (req, res) {
 
 exports.getUpdateCommentHistory = function (req, res) {
     const typeId = _.get(req, 'swagger.params.typeId.value');
-    ConsentDocument.getUpdateCommentHistory(typeId)
+    const language = _.get(req, 'swagger.params.language.value');
+    ConsentDocument.getUpdateCommentHistory(typeId, language)
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };

@@ -125,7 +125,7 @@ module.exports = function (sequelize, DataTypes) {
                 return ConsentDocument.findById(id, { raw: true, attributes: ['id', 'typeId'] })
                     .then(result => textHandler.updateText(result, options.language));
             },
-            getUpdateCommentHistory: function (typeId) {
+            getUpdateCommentHistory: function (typeId, language) {
                 return ConsentDocument.findAll({
                         raw: true,
                         attributes: ['id'],
@@ -133,7 +133,7 @@ module.exports = function (sequelize, DataTypes) {
                         order: 'id',
                         paranoid: false
                     })
-                    .then(documents => textHandler.updateAllTexts(documents))
+                    .then(documents => textHandler.updateAllTexts(documents, language))
                     .then(documents => _.map(documents, 'updateComment'));
             }
         }

@@ -106,6 +106,14 @@ class History {
         return tr ? tr : server;
     }
 
+    translatedHistory(language) {
+        return this.history.map(server => {
+            const id = server.id;
+            const tr = _.get(this.translations, `${id}.${language}`);
+            return tr ? tr : server;
+        });
+    }
+
     serverTranslation(id, language) {
         return _.get(this.translations, `${id}.${language}`);
     }

@@ -346,6 +346,7 @@ describe('consent unit', function () {
 
     [2, 10].forEach(typeIndex => {
         it(`create/verify consent document of type ${typeIndex}`, shared.createConsentDocumentFn(history, typeIndex));
+        it(`add translated (es) consent document ${typeIndex}`, shared.translateConsentDocumentFn(typeIndex, 'es', history));
     });
 
     it('update history for type 2', function () {
@@ -353,6 +354,16 @@ describe('consent unit', function () {
         return ConsentDocument.getUpdateCommentHistory(typeId)
             .then(result => {
                 const servers = history.serversHistory().filter(h => (h.typeId === typeId));
+                const comments = _.map(servers, 'updateComment');
+                expect(result).to.deep.equal(comments);
+            });
+    });
+
+    it('translated (es) update history for type 2', function () {
+        const typeId = history.typeId(2);
+        return ConsentDocument.getUpdateCommentHistory(typeId, 'es')
+            .then(result => {
+                const servers = history.translatedServersHistory('es').filter(h => (h.typeId === typeId));
                 const comments = _.map(servers, 'updateComment');
                 expect(result).to.deep.equal(comments);
             });

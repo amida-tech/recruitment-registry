@@ -498,6 +498,7 @@ describe('consent integration', function () {
     it('login as super', shared.loginFn(store, config.superUser));
     [2, 10].forEach(typeIndex => {
         it(`create/verify consent document of type ${typeIndex}`, shared.createConsentDocumentFn(store, history, typeIndex));
+        it(`add translated (es) consent document ${typeIndex}`, shared.translateConsentDocumentFn(store, typeIndex, 'es', history));
     });
     it('logout as super', shared.logoutFn(store));
 
@@ -511,6 +512,23 @@ describe('consent integration', function () {
                     return done(err);
                 }
                 const servers = history.serversHistory().filter(h => (h.typeId === typeId));
+                const comments = _.map(servers, 'updateComment');
+                expect(res.body).to.deep.equal(comments);
+                done();
+            });
+    });
+
+    it('translated update history for type 2', function (done) {
+        const typeId = history.typeId(2);
+        store.server
+            .get(`/api/v1.0/consent-documents/update-comments/${typeId}`)
+            .query({ language: 'es' })
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                const servers = history.translatedServersHistory('es').filter(h => (h.typeId === typeId));
                 const comments = _.map(servers, 'updateComment');
                 expect(res.body).to.deep.equal(comments);
                 done();
