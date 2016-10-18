@@ -539,42 +539,6 @@
                 }
             }
         },
-        "/ethnicities": {
-            "x-swagger-router-controller": "ethnicity.controller",
-            "get": {
-                "summary": "List available ethnicities",
-                "operationId": "getEthnicities",
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/genders": {
-            "x-swagger-router-controller": "gender.controller",
-            "get": {
-                "summary": "List available genders",
-                "operationId": "getGenders",
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/profile-survey": {
             "x-swagger-router-controller": "registry.controller",
             "post": {
@@ -1778,15 +1742,6 @@
                 "email": {
                     "type": "string",
                     "format": "email"
-                },
-                "zip": {
-                    "type": ["string", "null"]
-                },
-                "ethnicity": {
-                    "type": ["string", "null"]
-                },
-                "gender": {
-                    "type": ["string", "null"]
                 }
             }
         },
@@ -1799,15 +1754,6 @@
                 "email": {
                     "type": "string",
                     "format": "email"
-                },
-                "zip": {
-                    "type": ["string", "null"]
-                },
-                "ethnicity": {
-                    "type": ["string", "null"]
-                },
-                "gender": {
-                    "type": ["string", "null"]
                 }
             }
         },

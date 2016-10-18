@@ -79,7 +79,7 @@ All table and column names are in snake case to follow Postgres convention and f
 
 - `answer`: This table stores all the answers to questions.  Each record represents an answer to a question (column `question_id`) in a survey (`column survey_id`) by a user (column `user_id`).  Actual answer data can be a choice from question multiple choices (column `question_choice_id`) and/or a free value field (column `value`) whose type is also stored (column `type`).  Current supported types are `text and `bool`.
 
-- `registry_user`: This table store patient demographics (name, email, ethnicity, gender, and zip), role, and login information (username, password, password reset through email token and its expiration date).
+- `registry_user`: This table store patient demographics (name, email), role, and login information (username, password, password reset through email token and its expiration date).
 
 - `consent_type`: It stores all the consent types.  Actual data are name (column `name`) for programmatic purposes and description (column `description`) for user interface purposes.
 
@@ -90,10 +90,6 @@ All table and column names are in snake case to follow Postgres convention and f
 - `survey_consent_type`: Each record represents a consent section (column `consent_type_id`) that needs to signed by a user before a survey (column `survey_id`) can be read, submitted or edited (column `action`).
 
 - `registry`: This table stores registry level settings and includes only one record.  Currenly only data is the survey that is being used in user registration (column `profile_survey_id`).
-
-- `ethnicity`: This stores the choices that should be shown to user for ethnicity demographics field.
-
-- `gender`: This stores the choices that should be shown to user for gender demographics field.
 
 In very near future there will be one or two tables to store consent documents (composite of consent sections).  Also there will be additional tables to support internationalization.
 

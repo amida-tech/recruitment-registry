@@ -142,9 +142,6 @@ describe('survey consent section unit', function () {
                     const user = result.user;
                     expectedUser.id = user.id;
                     delete expectedUser.password;
-                    delete user.zip;
-                    delete user.ethnicity;
-                    delete user.gender;
                     expect(user).to.deep.equal(expectedUser);
                 });
         };

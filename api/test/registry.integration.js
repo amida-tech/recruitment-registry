@@ -132,8 +132,7 @@ describe('registry integration', function () {
     it('update user profile', function (done) {
         answers = surveyHelper.formAnswersToPost(store.survey, surveyExample.answerUpdate);
         const userUpdates = {
-            zip: '20999',
-            gender: 'other'
+            email: 'updated@example.com'
         };
         store.server
             .patch('/api/v1.0/profiles')
@@ -157,8 +156,7 @@ describe('registry integration', function () {
                 const result = res.body;
 
                 const expectedUser = _.cloneDeep(userExample);
-                expectedUser.zip = '20999';
-                expectedUser.gender = 'other';
+                expectedUser.email = 'updated@example.com';
                 const user = result.user;
                 expectedUser.id = user.id;
                 expectedUser.role = 'participant';

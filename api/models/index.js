@@ -17,7 +17,6 @@ const sequelize = new Sequelize(config.db.name, config.db.user, config.db.pass, 
     logging: message => logger.info(message)
 });
 
-const Ethnicity = sequelize.import('./ethnicity.model');
 const User = sequelize.import('./user.model');
 const QuestionType = sequelize.import('./question-type.model');
 const QuestionChoice = sequelize.import('./question-choice.model');
@@ -45,7 +44,6 @@ const Language = sequelize.import('./language.model');
 module.exports = {
     Sequelize,
     sequelize,
-    Ethnicity,
     User,
     QuestionType,
     QuestionChoice,

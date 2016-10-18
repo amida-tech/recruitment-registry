@@ -5,7 +5,6 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 const _ = require('lodash');
 
-const models = require('../models');
 const userExamples = require('./fixtures/example/user');
 
 const config = require('../config');
@@ -13,9 +12,6 @@ const SharedIntegration = require('./util/shared-integration');
 
 const expect = chai.expect;
 const shared = new SharedIntegration();
-
-const User = models.User;
-const Ethnicity = models.Ethnicity;
 
 describe('user integration', function () {
     const user = userExamples.Example;
@@ -26,37 +22,10 @@ describe('user integration', function () {
 
     before(shared.setUpFn(store));
 
-    let ethnicities;
-    let genders;
-
     it('invalid path', function (done) {
         store.server
             .get('/xxxxxxx')
             .expect(404)
-            .end(done);
-    });
-
-    it('get available ethnicities', function (done) {
-        store.server
-            .get('/api/v1.0/ethnicities')
-            .expect(200)
-            .expect(function (res) {
-                const expected = Ethnicity.ethnicities();
-                expect(res.body).to.deep.equal(expected);
-                ethnicities = expected;
-            })
-            .end(done);
-    });
-
-    it('get available genders', function (done) {
-        store.server
-            .get('/api/v1.0/genders')
-            .expect(200)
-            .expect(function (res) {
-                const expected = User.genders();
-                expect(res.body).to.deep.equal(expected);
-                genders = res.body;
-            })
             .end(done);
     });
 
@@ -143,31 +112,14 @@ describe('user integration', function () {
             .end(done);
     });
 
-    it('create user with null items (zip, gender)', function (done) {
-        const userWithNulls = _.cloneDeep(user);
-        userWithNulls.zip = null;
-        userWithNulls.gender = null;
-        userWithNulls.username = user.username + '1';
-        userWithNulls.email = 'a' + user.email;
-        store.server
-            .post('/api/v1.0/users')
-            .set('Authorization', store.auth)
-            .send(userWithNulls)
-            .expect(201)
-            .end(done);
-    });
-
     it('login as new user', shared.loginFn(store, user));
 
     let userUpdate = {
         email: 'newone@example.com',
-        password: 'newone',
-        zip: '20899'
+        password: 'newone'
     };
 
     it('update all user fields including password', function (done) {
-        userUpdate.ethnicity = ethnicities[1];
-        userUpdate.gender = genders[1];
         store.server
             .patch('/api/v1.0/users/me')
             .set('Authorization', store.auth)
@@ -201,17 +153,6 @@ describe('user integration', function () {
             });
     });
 
-    it('update selected user fields', function (done) {
-        userUpdate.ethnicity = null;
-        userUpdate.gender = genders[0];
-        userUpdate.zip = '20817';
-        store.server
-            .patch('/api/v1.0/users/me')
-            .set('Authorization', store.auth)
-            .send(_.pick(userUpdate, ['ethnicity', 'gender', 'zip']))
-            .expect(200, done);
-    });
-
     it('verify updated user fields', function (done) {
         store.server
             .get('/api/v1.0/users/me')
@@ -221,11 +162,8 @@ describe('user integration', function () {
                 if (err) {
                     return done(err);
                 }
-                const expected = _.pick(userUpdate, ['zip', 'gender', 'ethnicity', 'email']);
+                const expected = _.pick(userUpdate, ['email']);
                 const actual = _.omit(res.body, ['id', 'role', 'username']);
-                if (!actual.hasOwnProperty('ethnicity')) {
-                    actual.ethnicity = null;
-                }
                 expect(actual).to.deep.equal(expected);
                 done();
             });

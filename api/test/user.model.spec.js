@@ -282,7 +282,6 @@ describe('user unit', function () {
             const exampleWNull = _.cloneDeep(example);
             exampleWNull.username += '1';
             exampleWNull.email = 'a' + exampleWNull.email;
-            exampleWNull.zip = null;
             return User.create(exampleWNull).then(function (user) {
                 return User.getUser(user.id).then(function (actual) {
                     const expected = _.cloneDeep(exampleWNull);
@@ -297,20 +296,13 @@ describe('user unit', function () {
 
     describe('update users', function () {
         it('normal flow', function () {
-            const inputUser = entityGen.newUser({
-                zip: null,
-                ethnicity: null,
-                gender: null
-            });
+            const inputUser = entityGen.newUser();
             return User.create(inputUser).then(function (user) {
                 const id = user.id;
-                const attributes = ['email', 'zip', 'ethnicity', 'gender'];
+                const attributes = ['email'];
                 let updateObj = {
                     email: 'newone@example.com',
-                    password: 'newpasword!!',
-                    zip: '20888',
-                    ethnicity: 'Caucasian',
-                    gender: 'other'
+                    password: 'newpasword!!'
                 };
                 return User.updateUser(id, updateObj).then(function () {
                     return User.authenticateUser(id, updateObj.password);
@@ -320,35 +312,6 @@ describe('user unit', function () {
                     }).then(function (user) {
                         const actualAttrs = user.get();
                         delete updateObj.password;
-                        expect(actualAttrs).to.deep.equal(updateObj);
-                    });
-                }).then(function () {
-                    const incUpdateObj = {
-                        zip: '20555',
-                        gender: 'female'
-                    };
-                    return User.updateUser(id, incUpdateObj).then(function () {
-                        return User.findById(id, {
-                            attributes
-                        });
-                    }).then(function (user) {
-                        const actualAttrs = user.get();
-                        updateObj = _.assign(updateObj, incUpdateObj);
-                        expect(actualAttrs).to.deep.equal(updateObj);
-                    });
-                }).then(function () {
-                    const incUpdateObj = {
-                        zip: null,
-                        gender: 'male',
-                        ethnicity: null
-                    };
-                    return User.updateUser(id, incUpdateObj).then(function () {
-                        return User.findById(id, {
-                            attributes
-                        });
-                    }).then(function (user) {
-                        const actualAttrs = user.get();
-                        updateObj = _.assign(updateObj, incUpdateObj);
                         expect(actualAttrs).to.deep.equal(updateObj);
                     });
                 });
