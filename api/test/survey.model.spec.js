@@ -151,7 +151,7 @@ describe('survey unit', function () {
 
     for (let i = 0; i < surveyCount; i += 2) {
         it(`add translated name to survey ${i}`, translateTextFn(i, 'es'));
-        it(`get and verify tanslated  survey ${i}`, getTranslatedFn(i, 'es'));
+        it(`get and verify tanslated survey ${i}`, getTranslatedFn(i, 'es'));
     }
 
     it('list and verify translated surveys', listTranslatedFn('es'));
