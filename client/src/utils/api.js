@@ -24,6 +24,9 @@ const apiProvider = store => next => action => {
           })
         })
       break
+    case 'LOGOUT':
+      store.dispatch(push('/'))
+      break
     case 'LOGIN':
       request
         .get(apiUrl + '/auth/basic')
@@ -37,7 +40,7 @@ const apiProvider = store => next => action => {
             next({
               type: 'GET_USER'
             })
-            store.dispatch(push('/'))
+            store.dispatch(push('/profile'))
           } else {
             return next({
               type: 'LOGIN_ERROR',
