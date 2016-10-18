@@ -48,6 +48,7 @@ describe('consent document integration', function () {
     for (let i = 0; i < 2; ++i) {
         it(`create consent type ${i}`, shared.createConsentTypeFn(store, history));
         it('verify consent type list', listConsentTypesFn());
+        it(`add translated (es) consent type ${i}`, shared.translateConsentTypeFn(store, i, 'es', history.hxType));
     }
 
     for (let i = 0; i < userCount; ++i) {
@@ -92,9 +93,29 @@ describe('consent document integration', function () {
         };
     };
 
+    const getTranslatedConsentDocumentFn = function (typeIndex, language) {
+        return function (done) {
+            const id = history.id(typeIndex);
+            store.server
+                .get(`/api/v1.0/consent-documents/${id}`)
+                .query({ language })
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    const expected = history.hxDocument.translatedServer(typeIndex, language);
+                    expect(res.body).to.deep.equal(expected);
+                    done();
+                });
+        };
+    };
+
     for (let i = 0; i < 2; ++i) {
         it(`create consent document of type ${i}`, shared.createConsentDocumentFn(store, history, i));
         it(`get/verify consent document content of type ${i}`, getConsentDocumentFn(i));
+        it(`add translated (es) consent document ${i}`, shared.translateConsentDocumentFn(store, i, 'es', history.hxDocument));
+        it(`verify translated (es) consent document of type ${i}`, getTranslatedConsentDocumentFn(i, 'es'));
     }
 
     const getUserConsentDocumentsFn = function (expectedIndices) {
@@ -114,11 +135,32 @@ describe('consent document integration', function () {
         };
     };
 
+    const getTranslatedUserConsentDocumentsFn = function (expectedIndices, language) {
+        return function (done) {
+            store.server
+                .get('/api/v1.0/users/consent-documents')
+                .set('Authorization', store.auth)
+                .query({ language })
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    const expected = history.translatedServersInList(expectedIndices, language);
+                    expect(res.body).to.deep.equal(expected);
+                    done();
+                });
+        };
+    };
+
     for (let i = 0; i < 4; ++i) {
         it(`login as user ${i}`, shared.loginIndexFn(store, history.hxUser, i));
         it(`verify consent documents required for user ${i}`, getUserConsentDocumentsFn([0, 1]));
+        it(`verify translated consent documents required for user ${i}`, getTranslatedUserConsentDocumentsFn([0, 1], 'es'));
         it(`user ${i} get consent document of type 0`, getConsentDocumentFn(0));
         it(`user ${i} get consent document of type 1`, getConsentDocumentFn(1));
+        it(`user ${i} get translated (es) consent document of type 0`, getTranslatedConsentDocumentFn(0, 'es'));
+        it(`user ${i} get translated (es) consent document of type 1`, getTranslatedConsentDocumentFn(1, 'es'));
         it(`logout as user ${i}`, shared.logoutFn(store));
     }
 

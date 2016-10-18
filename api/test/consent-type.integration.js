@@ -8,7 +8,6 @@ const SharedIntegration = require('./util/shared-integration');
 const Generator = require('./util/entity-generator');
 const config = require('../config');
 const History = require('./util/entity-history');
-const translator = require('./util/translator');
 
 const expect = chai.expect;
 const generator = new Generator();
@@ -87,25 +86,6 @@ describe('consent section integration', function () {
 
     it('list consent types and verify', listConsentTypesFn());
 
-    const translateConsentTypeFn = function (index, language) {
-        return function (done) {
-            const server = hxType.server(index);
-            const translation = translator.translateConsentType(server, language);
-            store.server
-                .patch(`/api/v1.0/consent-types/text/${language}`)
-                .set('Authorization', store.auth)
-                .send(translation)
-                .expect(204)
-                .end(function (err) {
-                    if (err) {
-                        return done(err);
-                    }
-                    hxType.translate(index, language, translation);
-                    done();
-                });
-        };
-    };
-
     const getTranslatedConsentTypeFn = function (index, language) {
         return function (done) {
             const id = hxType.id(index);
@@ -148,14 +128,14 @@ describe('consent section integration', function () {
     it('list consent types in spanish when no translation', listTranslatedConsentTypesFn('es'));
 
     for (let i = 0; i < typeCount; ++i) {
-        it(`add translated (es) consent type ${i}`, translateConsentTypeFn(i, 'es'));
+        it(`add translated (es) consent type ${i}`, shared.translateConsentTypeFn(store, i, 'es', hxType));
         it(`get and verify tanslated consent type ${i}`, getTranslatedConsentTypeFn(i, 'es'));
     }
 
     it('list and verify translated (es) consent types', listTranslatedConsentTypesFn('es'));
 
     for (let i = 0; i < typeCount; i += 2) {
-        it(`add translated (fr) consent type ${i}`, translateConsentTypeFn(i, 'fr'));
+        it(`add translated (fr) consent type ${i}`, shared.translateConsentTypeFn(store, i, 'fr', hxType));
         it(`get and verify tanslated (fr) consent type ${i}`, getTranslatedConsentTypeFn(i, 'fr'));
     }
 

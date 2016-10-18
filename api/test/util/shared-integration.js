@@ -6,6 +6,7 @@ const _ = require('lodash');
 
 const appgen = require('../../app-generator');
 const Generator = require('./entity-generator');
+const translator = require('./translator');
 
 const expect = chai.expect;
 
@@ -216,6 +217,45 @@ class SharedIntegration {
                 });
         };
     }
+
+    translateConsentTypeFn(store, index, language, hxType) {
+        return function (done) {
+            const server = hxType.server(index);
+            const translation = translator.translateConsentType(server, language);
+            store.server
+                .patch(`/api/v1.0/consent-types/text/${language}`)
+                .set('Authorization', store.auth)
+                .send(translation)
+                .expect(204)
+                .end(function (err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    hxType.translate(index, language, translation);
+                    done();
+                });
+        };
+    }
+
+    translateConsentDocumentFn(store, index, language, hxDocument) {
+        return function (done) {
+            const server = hxDocument.server(index);
+            const translation = translator.translateConsentDocument(server, language);
+            store.server
+                .patch(`/api/v1.0/consent-documents/text/${language}`)
+                .set('Authorization', store.auth)
+                .send(translation)
+                .expect(204)
+                .end(function (err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    hxDocument.translate(index, language, translation);
+                    done();
+                });
+        };
+    }
+
 }
 
 module.exports = SharedIntegration;

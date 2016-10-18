@@ -188,6 +188,14 @@
                 "security": [{
                     "participant": []
                 }],
+                "parameters": [{
+                    "name": "language",
+                    "in": "query",
+                    "description": "Language code",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 2
+                }],
                 "responses": {
                     "200": {
                         "description": "Successul response",
@@ -1095,6 +1103,14 @@
             "get": {
                 "summary": "Gets consent section content",
                 "operationId": "getConsentDocument",
+                "parameters": [{
+                    "name": "language",
+                    "in": "query",
+                    "description": "Language code",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 2
+                }],
                 "responses": {
                     "200": {
                         "description": "Successful response",
@@ -1145,6 +1161,39 @@
                                 "type": ["string", "null"]
                             }
                         }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/consent-documents/text/{language}": {
+            "x-swagger-router-controller": "consent-document.controller",
+            "patch": {
+                "summary": "Translates consent type document",
+                "operationId": "updateConsentDocumentText",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "language",
+                    "in": "path",
+                    "description": "Language code",
+                    "required": true,
+                    "type": "string",
+                    "minLength": 2
+                }, {
+                    "name": "textUpdate",
+                    "in": "body",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/consentDocumentTextUpdate"
+                    }
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successul response"
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -2382,6 +2431,25 @@
                 },
                 "title": {
                     "type": "string",
+                    "minLength": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "consentDocumentTextUpdate": {
+            "type": "object",
+            "required": ["id", "content"],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "content": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "updateComment": {
+                    "type": ["string", "null"],
                     "minLength": 1
                 }
             },
