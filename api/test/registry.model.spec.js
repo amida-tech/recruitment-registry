@@ -8,7 +8,7 @@ const _ = require('lodash');
 const models = require('../models');
 const SharedSpec = require('./util/shared-spec.js');
 const tokener = require('../lib/tokener');
-const helper = require('./helper/survey-helper');
+const helper = require('./util/survey-common');
 const comparator = require('./util/client-server-comparator');
 
 const userExamples = require('./fixtures/example/user');

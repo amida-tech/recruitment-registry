@@ -2,7 +2,7 @@
 'use strict';
 process.env.NODE_ENV = 'test';
 
-const helper = require('../helper/survey-helper');
+const helper = require('../util/survey-common');
 
 const SharedIntegration = require('../util/shared-integration');
 const userExamples = require('../fixtures/example/user');

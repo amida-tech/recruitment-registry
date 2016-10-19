@@ -5,7 +5,7 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 const sinon = require('sinon');
 
-const helper = require('../helper/survey-helper');
+const helper = require('../util/survey-common');
 
 const SharedIntegration = require('../util/shared-integration');
 const userExamples = require('../fixtures/example/user');

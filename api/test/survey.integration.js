@@ -5,7 +5,7 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 const _ = require('lodash');
 
-const helper = require('./helper/survey-helper');
+const helper = require('./util/survey-common');
 
 const config = require('../config');
 

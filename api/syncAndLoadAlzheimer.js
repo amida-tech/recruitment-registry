@@ -8,7 +8,7 @@ const userExamples = require('./test/fixtures/example/user');
 const userExample = userExamples.Alzheimer;
 const sample = surveyExamples.Alzheimer;
 
-const helper = require('./test/helper/survey-helper');
+const helper = require('./test/util/survey-common');
 
 models.sequelize.sync({
     force: true

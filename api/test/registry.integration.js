@@ -9,7 +9,7 @@ const config = require('../config');
 const RRError = require('../lib/rr-error');
 
 const SharedIntegration = require('./util/shared-integration');
-const surveyHelper = require('./helper/survey-helper');
+const surveyHelper = require('./util/survey-common');
 const comparator = require('./util/client-server-comparator');
 
 const surveyExamples = require('./fixtures/example/survey');
