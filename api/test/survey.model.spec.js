@@ -22,7 +22,7 @@ describe('survey unit', function () {
     before(shared.setUpFn());
 
     const userCount = 1;
-    const surveyCount = 8;
+    let surveyCount = 8;
 
     const history = new History(['id', 'name']);
     const hxUser = new History();
@@ -203,15 +203,19 @@ describe('survey unit', function () {
         };
     };
 
-    [3, 0, 9].forEach(index => {
+    [3, 0, surveyCount+1].forEach(index => {
         it(`replace survey ${index} with survey ${surveyCount+index}`, replaceSurveyFn(index));
     });
 
     it('survey 1 is version 1', dbVersionCompareFn(1, 1));
-    it('survey 8 is version 2', dbVersionCompareFn(8, 2));
-    it('survey 10 is version 3', dbVersionCompareFn(10, 3));
+    it(`survey ${surveyCount} is version 2`, dbVersionCompareFn(surveyCount, 2));
+    it(`survey ${surveyCount+2} is version 3`, dbVersionCompareFn(surveyCount+2, 3));
 
-    it('listSurvey override with name', function () {
+    it('update survey count', function() {
+        surveyCount += 3;
+    });
+
+    it('listSurvey override where', function () {
         return Survey.listSurveys({
                 override: {
                     where: { version: 3 },
@@ -256,6 +260,8 @@ describe('survey unit', function () {
                     questions: questions
                 };
                 expect(serverSurvey).to.deep.equal(expected);
+                history.push(survey, serverSurvey);
+                ++surveyCount;
             });
     });
 
@@ -267,8 +273,10 @@ describe('survey unit', function () {
         return Survey.createSurvey(survey)
             .then(id => Survey.getSurvey(id))
             .then((serverSurvey) => {
+                ++surveyCount;
                 survey.questions[1] = history.questions[10];
                 survey.questions[2] = history.questions[11];
+                history.push(survey, serverSurvey);
                 return comparator.survey(survey, serverSurvey);
             });
     });
@@ -311,7 +319,9 @@ describe('survey unit', function () {
         };
     };
 
-    it('answer survey 1 and get/verify answered survey 1', answerVerifySurveyFn(1));
+    [1, 2, 7, 10, 11, 12].forEach(index => {
+        it(`answer survey ${index} and get/verify answered`, answerVerifySurveyFn(index));
+    });
 
     it('error: answer without required questions', function () {
         const survey = history.server(4);
