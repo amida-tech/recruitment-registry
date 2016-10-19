@@ -36,6 +36,13 @@
 				margin-top: 10px;
 				font-size: 14px;
 			}
+			input {
+				@extend h2;
+				font-weight: 300;
+				&:first-of-type {
+					margin-top: 0;
+				}
+			}
 		}
 	}
 }

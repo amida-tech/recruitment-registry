@@ -104,9 +104,3 @@
 		color: $gap-black;
 	}
 }
-
-.buttonSecondaryLight {
-	@extend .btn;
-	border: 2px solid $gap-white;
-	color: $gap-white;
-}

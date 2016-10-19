@@ -1,11 +1,11 @@
-.form__field-input {
+input {
   position: relative;
   width: 100%;
   color: $gap-dark-grey;
   border: none;
   outline: 0;
   letter-spacing: 0.05em;
-  @extend h2;
+  display: inline-block;
   margin: 0;
   background: transparent;
   padding: 0 4px;
@@ -16,7 +16,24 @@
 	margin-top: 50px;
 }
 
-
+select {
+  height: 36px;
+  -webkit-appearance:none;
+  outline: none;
+  border: 1px solid $gap-medium-blue;
+  background-color: transparent;
+  color: $gap-dark-grey;
+  font-size: 14px;
+  font-weight: 700;
+  padding-left: 12px;
+  padding-right: 45px;
+  min-width: 315px;
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  @extend .utility--shadow-flat.small;
+  // background image uses data attributes to accomodate for themeing. Colors are rendered via the urlFriendlyColor sass function in styles/utils/_ui.scss
+  background-image: url('data:image/svg+xml;charset=utf-8,<svg width="23px" height="21px" viewBox="0 0 23 21" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g id="Scratch" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g id="Group-7" transform="translate(-1.000000, -7.000000)"><rect id="Rectangle-3" x="1" y="0" width="32" height="36"></rect><path d="M1.5,7.5 L1.5,27.5" id="Line" stroke="#{urlFriendlyColor($gap-light-blue)}" stroke-linecap="square"></path><polygon id="▾" fill="#{urlFriendlyColor($gap-medium-blue)}" points="11.71875 14.8066406 23.28125 14.8066406 17.5 20.5878906"></polygon></g></g></svg>');
+}
 
 
 
