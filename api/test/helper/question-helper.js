@@ -71,30 +71,3 @@ exports.buildServerQuestions = function (questions, ids) {
         }
     }));
 };
-
-exports.prepareServerQuestion = function (question, clientQuestion) {
-    delete question.id;
-    const choices = question.choices;
-    if (choices && choices.length) {
-        if (clientQuestion.oneOfChoices) {
-            question.oneOfChoices = _.map(choices, 'text');
-            delete question.choices;
-        } else {
-            choices.forEach((choice) => delete choice.id);
-        }
-    }
-    return question;
-};
-
-exports.prepareClientQuestion = function (question) {
-    if (question.type === 'choices') {
-        question.choices.forEach((choice) => choice.type = choice.type || 'bool');
-    }
-    return question;
-};
-
-exports.prepareClientQuestions = function (questions, ids, indices) {
-    const testIds = _.pullAt(ids.slice(), indices);
-    const samples = _.pullAt(questions.slice(), indices);
-    return exports.buildServerQuestions(samples, testIds);
-};

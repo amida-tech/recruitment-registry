@@ -7,9 +7,9 @@ const _ = require('lodash');
 
 const models = require('../models');
 const SharedSpec = require('./util/shared-spec.js');
-const surveyHelper = require('./helper/survey-helper');
 const tokener = require('../lib/tokener');
 const helper = require('./helper/survey-helper');
+const comparator = require('./util/client-server-comparator');
 
 const userExamples = require('./fixtures/example/user');
 const surveyExamples = require('./fixtures/example/survey');
@@ -50,10 +50,7 @@ describe('registry unit', function () {
                 .then(actual => {
                     store.survey = actual;
                     store.surveys.push(actual);
-                    return surveyHelper.buildServerSurvey(store.clientSurveys[index], actual)
-                        .then(function (expected) {
-                            expect(actual).to.deep.equal(expected);
-                        });
+                    return comparator.survey(store.clientSurveys[index], actual);
                 });
         };
     };

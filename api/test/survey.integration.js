@@ -14,6 +14,7 @@ const Generator = require('./util/entity-generator');
 const History = require('./util/entity-history');
 const userExamples = require('./fixtures/example/user');
 const surveyExamples = require('./fixtures/example/survey');
+const comparator = require('./util/client-server-comparator');
 
 const invalidSurveysJSON = require('./fixtures/json-schema-invalid/new-survey');
 const invalidSurveysSwagger = require('./fixtures/swagger-invalid/new-survey');
@@ -83,12 +84,8 @@ describe('survey integration', function () {
                     }
                     const clientSurvey = history.client(index);
                     const expected = Object.assign({}, clientSurvey, update);
-                    helper.buildServerSurvey(expected, res.body)
-                        .then(function (expected) {
-                            expect(res.body).to.deep.equal(expected);
-                        })
-                        .then(() => done())
-                        .catch(err => done(err));
+                    comparator.survey(expected, res.body)
+                        .then(done, done);
                 });
         };
     };
@@ -353,14 +350,9 @@ describe('survey integration', function () {
                 if (err) {
                     return done(err);
                 }
-                helper.buildServerSurvey(example.survey, res.body).then(function (expected) {
-                    expect(res.body).to.deep.equal(expected);
-                    serverSurvey = res.body;
-                }).then(function () {
-                    done();
-                }).catch(function (err) {
-                    done(err);
-                });
+                serverSurvey = res.body;
+                comparator.survey(example.survey, res.body)
+                    .then(done, done);
             });
     });
 

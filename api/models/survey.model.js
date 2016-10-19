@@ -96,6 +96,7 @@ module.exports = function (sequelize, DataTypes) {
                 return textHandler.createText({ id, name, language });
             },
             replaceSurveyTx(survey, replacement, tx) {
+                replacement = _.cloneDeep(replacement);
                 replacement.version = survey.version + 1;
                 replacement.groupId = survey.groupId;
                 const newSurvey = {

@@ -2,20 +2,6 @@
 
 const _ = require('lodash');
 
-const qxHelper = require('./question-helper');
-
-exports.buildServerSurvey = function (clientSurvey, serverSurvey) {
-    const ids = _.map(serverSurvey.questions, 'id');
-    return qxHelper.buildServerQuestions(clientSurvey.questions, ids).then(function (expectedQuestions) {
-        const result = {
-            id: serverSurvey.id,
-            name: clientSurvey.name,
-            questions: expectedQuestions
-        };
-        return result;
-    });
-};
-
 exports.formAnswersToPost = function (survey, answersSpec) {
     const questions = survey.questions;
     const result = answersSpec.reduce(function (r, spec, index) {

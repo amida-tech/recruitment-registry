@@ -5,12 +5,12 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 const _ = require('lodash');
 
-const surveyHelper = require('./helper/survey-helper');
 const models = require('../models');
 
 const Generator = require('./util/entity-generator');
 const History = require('./util/entity-history');
 const SharedSpec = require('./util/shared-spec');
+const comparator = require('./util/client-server-comparator');
 
 const expect = chai.expect;
 const generator = new Generator();
@@ -41,9 +41,8 @@ describe('survey unit', function () {
             return Survey.createSurvey(clientSurvey)
                 .then(id => Survey.getSurvey(id))
                 .then((serverSurvey) => {
-                    return surveyHelper.buildServerSurvey(clientSurvey, serverSurvey)
-                        .then(expected => {
-                            expect(serverSurvey).to.deep.equal(expected);
+                    return comparator.survey(clientSurvey, serverSurvey)
+                        .then(() => {
                             history.push(clientSurvey, serverSurvey);
                             return serverSurvey.id;
                         });
@@ -52,11 +51,8 @@ describe('survey unit', function () {
                 .then(() => Survey.getSurveyByName(updatedName))
                 .then(serverSurvey => {
                     const updatedSurvey = Object.assign({}, clientSurvey, { name: updatedName });
-                    return surveyHelper.buildServerSurvey(updatedSurvey, serverSurvey)
-                        .then(expected => {
-                            expect(serverSurvey).to.deep.equal(expected);
-                            return serverSurvey.id;
-                        });
+                    return comparator.survey(updatedSurvey, serverSurvey)
+                        .then(() => serverSurvey.id);
                 })
                 .then((id) => Survey.updateSurveyText({ id, name: clientSurvey.name }))
                 .then(() => Survey.listSurveys())
@@ -171,9 +167,8 @@ describe('survey unit', function () {
             return Survey.replaceSurvey(id, clientSurvey)
                 .then(id => Survey.getSurvey(id))
                 .then((serverSurvey) => {
-                    return surveyHelper.buildServerSurvey(clientSurvey, serverSurvey)
-                        .then(expected => {
-                            expect(serverSurvey).to.deep.equal(expected);
+                    return comparator.survey(clientSurvey, serverSurvey)
+                        .then(() => {
                             history.replace(index, clientSurvey, serverSurvey);
                             return serverSurvey.id;
                         });
@@ -274,10 +269,7 @@ describe('survey unit', function () {
             .then((serverSurvey) => {
                 survey.questions[1] = history.questions[10];
                 survey.questions[2] = history.questions[11];
-                return surveyHelper.buildServerSurvey(survey, serverSurvey)
-                    .then(expected => {
-                        expect(serverSurvey).to.deep.equal(expected);
-                    });
+                return comparator.survey(survey, serverSurvey);
             });
     });
 
