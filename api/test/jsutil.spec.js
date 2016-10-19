@@ -8,6 +8,13 @@ const expect = chai.expect;
 
 const jsutil = require('../lib/jsutil');
 
+describe('errToJSON', function () {
+    it('not an object', function () {
+        const result = jsutil.errToJSON('string');
+        expect(typeof result).to.equal('object');
+    });
+});
+
 describe('question-type unit', function () {
     it('standing case 0', function () {
         // [4, 5, 6, 7, 8, 9, 11, 12, 15, 16]

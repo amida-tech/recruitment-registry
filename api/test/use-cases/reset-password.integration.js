@@ -77,6 +77,27 @@ describe('reset password use-case', function () {
 
     let token;
 
+    it('error: generate reset tokens', function (done) {
+        const stub = sinon.stub(mailer, 'sendEmail', function (spec, callback) {
+            callback(new Error(spec.link));
+        });
+        store.server
+            .post('/api/v1.0/reset-tokens')
+            .send({
+                email: userExample.email
+            })
+            .expect(500)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                expect(stub.called).to.equal(true);
+                expect(!!res.body.message).to.equal(true);
+                mailer.sendEmail.restore();
+                done();
+            });
+    });
+
     it('generate reset tokens', function (done) {
         const stub = sinon.stub(mailer, 'sendEmail', function (spec, callback) {
             const linkPieces = spec.link.split('/');

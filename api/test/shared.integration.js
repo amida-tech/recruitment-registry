@@ -43,5 +43,12 @@ describe('shared integration', function () {
             });
     });
 
+    it('unknown end point', function (done) {
+        store.server
+            .get('/api/v1.0/unknown')
+            .set('Authorization', store.auth)
+            .expect(404, done);
+    });
+
     it('logout as super', shared.logoutFn(store));
 });
