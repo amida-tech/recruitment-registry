@@ -1,6 +1,9 @@
 'use strict';
 
 const _ = require('lodash');
+const chai = require('chai');
+
+const expect = chai.expect;
 
 const translator = {
     _translate(text, language) {
@@ -38,6 +41,18 @@ const translator = {
             result.updateComment = null;
         }
         return result;
+    },
+    isConsentDocumentTranslated(consentDocument, language) {
+        const languageText = `(${language})`;
+        consentDocument.sections.forEach(section => {
+            ['title', 'content', 'updateComment'].forEach(property => {
+                const text = section[property];
+                if (text !== null) {
+                    const location = text.indexOf(languageText);
+                    expect(location).to.be.above(0);
+                }
+            });
+        });
     }
 };
 
