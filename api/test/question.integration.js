@@ -126,8 +126,8 @@ describe('question integration', function () {
                         return done(err);
                     }
                     hxQuestion.reloadServer(res.body);
-                    comparator.question(hxQuestion.client(index), res.body);
-                    done();
+                    comparator.question(hxQuestion.client(index), res.body)
+                        .then(done, done);
                 });
         };
     };
@@ -163,8 +163,8 @@ describe('question integration', function () {
                     if (err) {
                         return done(err);
                     }
-                    comparator.question(updatedQuestion, res.body);
-                    done();
+                    comparator.question(updatedQuestion, res.body)
+                        .then(done, done);
                 });
         };
     };
@@ -198,8 +198,8 @@ describe('question integration', function () {
                     return done(err);
                 }
                 const clientQuestions = hxQuestion.listClients();
-                comparator.questions(clientQuestions, res.body);
-                done();
+                comparator.questions(clientQuestions, res.body)
+                    .then(done, done);
             });
     };
 

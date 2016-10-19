@@ -39,9 +39,11 @@ describe('question unit', function () {
             return Question.createQuestion(clientQuestion)
                 .then(id => Question.getQuestion(id))
                 .then(question => {
-                    comparator.question(clientQuestion, question);
-                    hxQuestion.push(clientQuestion, question);
-                    return question;
+                    return comparator.question(clientQuestion, question)
+                        .then(() => {
+                            hxQuestion.push(clientQuestion, question);
+                            return question;
+                        });
                 })
                 .then(question => {
                     const text = `Updated ${clientQuestion.text}`;
