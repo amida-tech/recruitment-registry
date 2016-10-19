@@ -344,7 +344,7 @@ describe('user unit', function () {
                         });
                     });
                 }).then(function (token) {
-                    const wrongToken = '1' + token.slice(1);
+                    const wrongToken = (token.charAt(0) === '1' ? '2' : '1') + token.slice(1);
                     return User.resetPassword(wrongToken, 'newPassword').then(function () {
                         throw new Error('unexpected no error for no token');
                     }).catch(function (err) {

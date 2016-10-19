@@ -11,5 +11,5 @@ module.exports = new(winston.Logger)({
             colorize: true
         })
     ],
-    level: config.logging.level || 'info'
+    level: config.logging.level
 });

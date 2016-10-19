@@ -1,6 +1,7 @@
 'use strict';
 
 const nodemailer = require('nodemailer');
+const _ = require('lodash');
 
 const lines = [
     'You have requested the reset of the password for your registry account',
@@ -16,13 +17,15 @@ const emailText = function (link) {
     return textLines.join('\n');
 };
 
-exports.sendEmail = function (spec, callback) {
-    const options = {
-        from: `"${spec.emailName}" <${spec.emailFrom}>`,
-        to: spec.emailTo,
-        subject: spec.emailSubject,
-        text: emailText(spec.link)
+exports.sendEmail = function (options, callback) {
+    const _options = {
+        from: `"${options.emailName}" <${options.emailFrom}>`,
+        to: options.emailTo,
+        subject: options.emailSubject,
+        text: emailText(options.link)
     };
-    const transporter = nodemailer.createTransport(spec.emailUri);
-    transporter.sendMail(options, callback);
+    const otherOptions = _.omit(options, ['emailName', 'emailFrom', 'emailTo', 'emailSubject', 'link', 'emailUri']);
+    Object.assign(_options, otherOptions);
+    const transporter = nodemailer.createTransport(options.emailUri);
+    transporter.sendMail(_options, callback);
 };

@@ -236,6 +236,25 @@ describe('survey integration', function () {
         };
     };
 
+    const verifyTranslatedSurveyByNameFn = function (index, language) {
+        return function (done) {
+            const name = history.server(index).name;
+            store.server
+                .get(`/api/v1.0/surveys/name/${name}`)
+                .set('Authorization', store.auth)
+                .query({ language })
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    const expected = history.translatedServer(index, language);
+                    expect(res.body).to.deep.equal(expected);
+                    done();
+                });
+        };
+    };
+
     const listTranslatedSurveysFn = function (language) {
         return function (done) {
             store.server
@@ -256,7 +275,8 @@ describe('survey integration', function () {
 
     for (let i = 0; i < surveyCount; i += 2) {
         it(`add translated name to survey ${i}`, translateTextFn(i, 'es'));
-        it(`get and verify tanslated  survey ${i}`, verifyTranslatedSurveyFn(i, 'es'));
+        it(`get and verify tanslated survey ${i}`, verifyTranslatedSurveyFn(i, 'es'));
+        it(`get and verify tanslated survey ${i} by name`, verifyTranslatedSurveyByNameFn(i, 'es'));
     }
 
     it('list and verify translated surveys', listTranslatedSurveysFn('es'));
@@ -344,6 +364,22 @@ describe('survey integration', function () {
             });
     });
 
+    it('translate survey', function (done) {
+        const name = 'puenno';
+        const id = serverSurvey.id;
+        store.server
+            .patch(`/api/v1.0/surveys/text/es`)
+            .set('Authorization', store.auth)
+            .send({ id, name })
+            .expect(204)
+            .end(function (err) {
+                if (err) {
+                    return done(err);
+                }
+                done();
+            });
+    });
+
     let answers;
 
     it('login as user', shared.loginFn(store, user));
@@ -376,4 +412,22 @@ describe('survey integration', function () {
                 done();
             });
     });
+
+    it('get answered translated survey', function (done) {
+        store.server
+            .get('/api/v1.0/surveys/answered/name/Example')
+            .set('Authorization', store.auth)
+            .query({ language: 'es' })
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                const expected = helper.formAnsweredSurvey(serverSurvey, answers);
+                expected.name = 'puenno';
+                expect(res.body).to.deep.equal(expected);
+                done();
+            });
+    });
+
 });
