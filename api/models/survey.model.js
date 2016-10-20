@@ -11,8 +11,7 @@ module.exports = function (sequelize, DataTypes) {
 
     const Survey = sequelize.define('survey', {
         version: {
-            type: DataTypes.INTEGER,
-            allowNull: false
+            type: DataTypes.INTEGER
         },
         groupId: {
             type: DataTypes.INTEGER,
@@ -76,11 +75,7 @@ module.exports = function (sequelize, DataTypes) {
                 if (!(survey.questions && survey.questions.length)) {
                     return RRError.reject('surveyNoQuestions');
                 }
-                return Survey.create({ version: 1 }, { transaction: tx })
-                    .then(created => {
-                        // TODO: Find a way to use postgres sequences instead of update
-                        return created.update({ groupId: created.id }, { transaction: tx });
-                    })
+                return Survey.create({}, { transaction: tx })
                     .then(({ id }) => textHandler.createTextTx({ id, name: survey.name }, tx))
                     .then(({ id }) => {
                         return Survey.updateQuestionsTx(survey.questions, id, tx)
@@ -95,40 +90,7 @@ module.exports = function (sequelize, DataTypes) {
             updateSurveyText({ id, name }, language) {
                 return textHandler.createText({ id, name, language });
             },
-            replaceSurveyTx(survey, replacement, tx) {
-                replacement = _.cloneDeep(replacement);
-                replacement.version = survey.version + 1;
-                replacement.groupId = survey.groupId;
-                const newSurvey = {
-                    version: survey.version + 1,
-                    groupId: survey.groupId
-                };
-                return Survey.create(newSurvey, { transaction: tx })
-                    .then(({ id }) => textHandler.createTextTx({
-                        id,
-                        name: replacement.name
-                    }, tx))
-                    .then(({ id }) => {
-                        return Survey.updateQuestionsTx(replacement.questions, id, tx)
-                            .then(() => id);
-                    })
-                    .then((id) => {
-                        return Survey.destroy({ where: { id: survey.id } }, { transaction: tx })
-                            .then(() => id);
-                    })
-                    .then((id) => {
-                        return sequelize.models.survey_question.destroy({ where: { surveyId: id } }, { transaction: tx })
-                            .then(() => id);
-                    })
-                    .then((id) => {
-                        return sequelize.models.registry.update({ profileSurveyId: id }, { where: { profileSurveyId: survey.id }, transaction: tx })
-                            .then(() => id);
-                    });
-            },
-            replaceSurvey(id, replacement, tx) {
-                if (!_.get(replacement, 'questions.length')) {
-                    return RRError.reject('surveyNoQuestions');
-                }
+            replaceSurveyTx(id, replacement, tx) {
                 return Survey.findById(id)
                     .then(survey => {
                         if (!survey) {
@@ -137,20 +99,54 @@ module.exports = function (sequelize, DataTypes) {
                         return survey;
                     })
                     .then(survey => {
-                        if (tx) {
-                            return Survey.replaceSurveyTx(survey, replacement, tx);
-                        } else {
-                            return sequelize.transaction(function (tx) {
-                                return Survey.replaceSurveyTx(survey, replacement, tx);
+                        const version = survey.version || 1;
+                        const newSurvey = {
+                            version: version + 1,
+                            groupId: survey.groupId || survey.id
+                        };
+                        return Survey.create(newSurvey, { transaction: tx })
+                            .then(({ id }) => textHandler.createTextTx({
+                                id,
+                                name: replacement.name
+                            }, tx))
+                            .then(({ id }) => {
+                                return Survey.updateQuestionsTx(replacement.questions, id, tx)
+                                    .then(() => id);
+                            })
+                            .then((id) => {
+                                if (!survey.version) {
+                                    return survey.update({ version: 1, groupId: survey.id }, { transaction: tx })
+                                        .then(() => id);
+                                }
+                                return id;
+                            })
+                            .then((id) => {
+                                return survey.destroy({ transaction: tx })
+                                    .then(() => id);
+                            })
+                            .then((id) => {
+                                return sequelize.models.survey_question.destroy({ where: { surveyId: survey.id }, transaction: tx })
+                                    .then(() => id);
+                            })
+                            .then((id) => {
+                                return sequelize.models.registry.update({ profileSurveyId: id }, { where: { profileSurveyId: survey.id }, transaction: tx })
+                                    .then(() => id);
                             });
-                        }
                     });
+            },
+            replaceSurvey(id, replacement) {
+                if (!_.get(replacement, 'questions.length')) {
+                    return RRError.reject('surveyNoQuestions');
+                }
+                return sequelize.transaction(function (tx) {
+                    return Survey.replaceSurveyTx(id, replacement, tx);
+                });
             },
             deleteSurvey(id) {
                 return sequelize.transaction(function (tx) {
-                    return Survey.destroy({ where: { id } }, { transaction: tx })
+                    return Survey.destroy({ where: { id }, transaction: tx })
                         .then(() => {
-                            return sequelize.models.survey_question.destroy({ where: { surveyId: id } }, { transaction: tx })
+                            return sequelize.models.survey_question.destroy({ where: { surveyId: id }, transaction: tx })
                                 .then(() => id);
                         });
                 });

@@ -64,8 +64,8 @@ class Answerer {
 }
 
 class QuestionGenerator {
-    constructor() {
-        this.types = ['text', 'choice', 'choices', 'bool'];
+    constructor(types = ['text', 'choice', 'choices', 'bool']) {
+        this.types = types;
         this.index = -1;
 
         this.choiceIndex = 0;
@@ -125,6 +125,17 @@ class QuestionGenerator {
         return question;
     }
 
+    group() {
+        const question = this._body('group');
+        const generator = new QuestionGenerator(['text', 'choice', 'choices', 'bool']);
+        question.questions = _.range(3).map(i => {
+            const group = { text: `group_${this.index}_${i}`, type: 'group' };
+            group.questions = _.range(5).map(() => generator.newQuestion());
+            return group;
+        });
+        return question;
+    }
+
     newActions(index, count) {
         return _.range(count).map(i => {
             const text = `text_${index}_${i}`;
@@ -134,11 +145,13 @@ class QuestionGenerator {
     }
 
     newQuestion() {
-        const type = this.types[(this.index + 1) % 4];
+        const type = this.types[(this.index + 1) % this.types.length];
         const result = this[type]();
-        const actionCount = (this.index % 5) - 1;
-        if (actionCount > 0) {
-            result.actions = this.newActions(this.index, actionCount);
+        if (type !== 'group') {
+            const actionCount = (this.index % 3) - 1;
+            if (actionCount > 0) {
+                result.actions = this.newActions(this.index, actionCount);
+            }
         }
         return result;
     }

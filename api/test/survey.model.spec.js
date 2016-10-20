@@ -184,7 +184,7 @@ describe('survey unit', function () {
     const dbVersionCompareFn = function (index, count) {
         return function () {
             const id = history.id(index);
-            return Survey.getSurvey(id, { override: { attributes: ['id', 'groupId'] } })
+            return Survey.getSurvey(id, { override: { attributes: ['id', 'version', 'groupId'] } })
                 .then(surveyWithGroupId => {
                     const groupId = surveyWithGroupId.groupId;
                     return Survey.listSurveys({
@@ -203,15 +203,33 @@ describe('survey unit', function () {
         };
     };
 
-    [3, 0, surveyCount+1].forEach(index => {
+    [3, 0, surveyCount + 1].forEach(index => {
         it(`replace survey ${index} with survey ${surveyCount+index}`, replaceSurveyFn(index));
     });
 
-    it('survey 1 is version 1', dbVersionCompareFn(1, 1));
     it(`survey ${surveyCount} is version 2`, dbVersionCompareFn(surveyCount, 2));
-    it(`survey ${surveyCount+2} is version 3`, dbVersionCompareFn(surveyCount+2, 3));
+    it(`survey ${surveyCount+2} is version 3`, dbVersionCompareFn(surveyCount + 2, 3));
 
-    it('update survey count', function() {
+    const dbVersionParentlessCompareFn = function (index, replaced) {
+        return function () {
+            const id = history.id(index);
+            return Survey.getSurvey(id, { override: { attributes: ['id', 'version', 'groupId'], paranoid: false } })
+                .then(survey => {
+                    if (replaced) {
+                        const { version, groupId } = survey;
+                        expect({ id, version, groupId }).to.deep.equal({ id, version: 1, groupId: id });
+                    } else {
+                        const { version, groupId } = survey;
+                        expect({ id, version, groupId }).to.deep.equal({ id, version: null, groupId: null });
+                    }
+                });
+        };
+    };
+
+    it('survey 1 is version null', dbVersionParentlessCompareFn(1, false));
+    it('survey 3 is version 1', dbVersionParentlessCompareFn(3, true));
+
+    it('update survey count', function () {
         surveyCount += 3;
     });
 

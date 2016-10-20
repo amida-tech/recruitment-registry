@@ -280,8 +280,23 @@ describe('question unit', function () {
                     return versionInfo;
                 })
                 .then(versionInfo => {
-                    return Question.count({ where: { groupId: versionInfo.groupId }, paranoid: false })
-                        .then(count => expect(count).to.equal(versionInfo.version));
+                    if (versionInfo.version === null) {
+                        expect(versionInfo.groupId).to.equal(null);
+                    } else {
+                        return Question.count({ where: { groupId: versionInfo.groupId }, paranoid: false })
+                            .then(count => expect(count).to.equal(versionInfo.version));
+                    }
+                });
+        };
+    };
+
+    const verifyDeletedVersioningFn = function (index, expectedVersion) {
+        return function () {
+            const id = hxQuestion.id(index);
+            return Question.findById(id, { attributes: ['groupId', 'version'], raw: true, paranoid: false })
+                .then(versionInfo => {
+                    expect(versionInfo.version).to.equal(expectedVersion);
+                    expect(versionInfo.groupId).to.equal(expectedVersion ? id : null);
                 });
         };
     };
@@ -289,4 +304,8 @@ describe('question unit', function () {
     it('verify versioning for question 25', verifyVersioningFn(25, 4));
     it('verify versioning for question 23', verifyVersioningFn(23, 3));
     it('verify versioning for question 20', verifyVersioningFn(20, 2));
+    it('verify versioning for question 3', verifyVersioningFn(3, null));
+
+    it('verify versioning for question 6', verifyDeletedVersioningFn(6, null));
+    it('verify versioning for question 14', verifyDeletedVersioningFn(14, 1));
 });
