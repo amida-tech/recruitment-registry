@@ -40,6 +40,9 @@ const Consent = sequelize.import('./consent.model');
 const SurveyConsentType = sequelize.import('./survey-consent-type.model');
 const Registry = sequelize.import('./registry.model');
 const Language = sequelize.import('./language.model');
+const SurveySection = sequelize.import('./survey-section.model');
+const SectionText = sequelize.import('./section-text.model');
+const Section = sequelize.import('./section.model');
 
 module.exports = {
     Sequelize,
@@ -66,5 +69,8 @@ module.exports = {
     Consent,
     SurveyConsentType,
     Registry,
-    Language
+    Language,
+    Section,
+    SurveySection,
+    SectionText
 };

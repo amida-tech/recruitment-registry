@@ -11,6 +11,7 @@ const Generator = require('./util/entity-generator');
 const History = require('./util/entity-history');
 const SharedSpec = require('./util/shared-spec');
 const comparator = require('./util/client-server-comparator');
+const translator = require('./util/translator');
 
 const expect = chai.expect;
 const generator = new Generator();
@@ -115,11 +116,11 @@ describe('survey unit', function () {
 
     const translateTextFn = function (index, language) {
         return function () {
-            const { name } = generator.newSurvey();
-            const id = history.id(index);
-            return Survey.updateSurveyText({ id, name }, language)
+            const survey = history.server(index);
+            const translation = translator.translateSurvey(survey, language);
+            return Survey.updateSurveyText(translation, language)
                 .then(() => {
-                    history.translate(index, language, { name });
+                    history.translate(index, language, translation);
                 });
         };
     };
@@ -129,6 +130,7 @@ describe('survey unit', function () {
             const id = history.id(index);
             return Survey.getSurvey(id, { language })
                 .then(result => {
+                    translator.isSurveyTranslated(result, language);
                     const expected = history.translatedServer(index, language);
                     expect(result).to.deep.equal(expected);
                 });
@@ -147,7 +149,7 @@ describe('survey unit', function () {
 
     for (let i = 0; i < surveyCount; i += 2) {
         it(`add translated name to survey ${i}`, translateTextFn(i, 'es'));
-        it(`get and verify tanslated survey ${i}`, getTranslatedFn(i, 'es'));
+        it(`get and verify translated survey ${i}`, getTranslatedFn(i, 'es'));
     }
 
     it('list and verify translated surveys', listTranslatedFn('es'));
@@ -271,15 +273,13 @@ describe('survey unit', function () {
         survey.questions = questions.map(({ id, required }) => ({ id, required }));
         return Survey.createSurvey(survey)
             .then(id => Survey.getSurvey(id))
-            .then((serverSurvey) => {
-                const expected = {
-                    id: serverSurvey.id,
-                    name: survey.name,
-                    questions: questions
-                };
-                expect(serverSurvey).to.deep.equal(expected);
-                history.push(survey, serverSurvey);
-                ++surveyCount;
+            .then(serverSurvey => {
+                survey.questions = questions;
+                return comparator.survey(survey, serverSurvey)
+                    .then(() => {
+                        history.push(survey, serverSurvey);
+                        ++surveyCount;
+                    });
             });
     });
 

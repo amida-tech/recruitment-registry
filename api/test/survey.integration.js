@@ -15,6 +15,7 @@ const History = require('./util/entity-history');
 const userExamples = require('./fixtures/example/user');
 const surveyExamples = require('./fixtures/example/survey');
 const comparator = require('./util/client-server-comparator');
+const translator = require('./util/translator');
 
 const invalidSurveysJSON = require('./fixtures/json-schema-invalid/new-survey');
 const invalidSurveysSwagger = require('./fixtures/swagger-invalid/new-survey');
@@ -197,18 +198,18 @@ describe('survey integration', function () {
 
     const translateTextFn = function (index, language) {
         return function (done) {
-            const { name } = generator.newSurvey();
-            const id = history.id(index);
+            const survey = history.server(index);
+            const translation = translator.translateSurvey(survey, language);
             store.server
                 .patch(`/api/v1.0/surveys/text/${language}`)
                 .set('Authorization', store.auth)
-                .send({ id, name })
+                .send(translation)
                 .expect(204)
                 .end(function (err) {
                     if (err) {
                         return done(err);
                     }
-                    history.translate(index, language, { name });
+                    history.translate(index, language, translation);
                     done();
                 });
         };
@@ -226,6 +227,7 @@ describe('survey integration', function () {
                     if (err) {
                         return done(err);
                     }
+                    translator.isSurveyTranslated(res.body, language);
                     const expected = history.translatedServer(index, language);
                     expect(res.body).to.deep.equal(expected);
                     done();
@@ -271,9 +273,9 @@ describe('survey integration', function () {
     };
 
     for (let i = 0; i < surveyCount; i += 2) {
-        it(`add translated name to survey ${i}`, translateTextFn(i, 'es'));
-        it(`get and verify tanslated survey ${i}`, verifyTranslatedSurveyFn(i, 'es'));
-        it(`get and verify tanslated survey ${i} by name`, verifyTranslatedSurveyByNameFn(i, 'es'));
+        it(`add translation (es) to survey ${i}`, translateTextFn(i, 'es'));
+        it(`get and verify translated (es) survey ${i}`, verifyTranslatedSurveyFn(i, 'es'));
+        it(`get and verify translated (es) survey ${i} by name`, verifyTranslatedSurveyByNameFn(i, 'es'));
     }
 
     it('list and verify translated surveys', listTranslatedSurveysFn('es'));

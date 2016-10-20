@@ -75,11 +75,20 @@ module.exports = function (sequelize, DataTypes) {
                 if (!(survey.questions && survey.questions.length)) {
                     return RRError.reject('surveyNoQuestions');
                 }
-                return Survey.create({}, { transaction: tx })
+                const fields = _.omit(survey, ['name', 'sections', 'questions']);
+                return Survey.create(fields, { transaction: tx })
                     .then(({ id }) => textHandler.createTextTx({ id, name: survey.name }, tx))
                     .then(({ id }) => {
                         return Survey.updateQuestionsTx(survey.questions, id, tx)
                             .then(() => id);
+                    })
+                    .then(id => {
+                        if (survey.sections) {
+                            return sequelize.models.section.bulkCreateSectionsForSurveyTx(id, survey.sections, tx)
+                                .then(() => id);
+                        } else {
+                            return id;
+                        }
                     });
             },
             createSurvey(survey) {
@@ -87,8 +96,15 @@ module.exports = function (sequelize, DataTypes) {
                     return Survey.createSurveyTx(survey, tx);
                 });
             },
-            updateSurveyText({ id, name }, language) {
-                return textHandler.createText({ id, name, language });
+            updateSurveyText({ id, name, sections }, language) {
+                return sequelize.transaction(function (tx) {
+                    return textHandler.createTextTx({ id, name, language }, tx)
+                        .then(() => {
+                            if (sections) {
+                                return sequelize.models.section.updateMultipleSectionNamesTx(sections, language, tx);
+                            }
+                        });
+                });
             },
             replaceSurveyTx(id, replacement, tx) {
                 return Survey.findById(id)
@@ -100,19 +116,11 @@ module.exports = function (sequelize, DataTypes) {
                     })
                     .then(survey => {
                         const version = survey.version || 1;
-                        const newSurvey = {
+                        const newSurvey = Object.assign({
                             version: version + 1,
                             groupId: survey.groupId || survey.id
-                        };
-                        return Survey.create(newSurvey, { transaction: tx })
-                            .then(({ id }) => textHandler.createTextTx({
-                                id,
-                                name: replacement.name
-                            }, tx))
-                            .then(({ id }) => {
-                                return Survey.updateQuestionsTx(replacement.questions, id, tx)
-                                    .then(() => id);
-                            })
+                        }, replacement);
+                        return Survey.createSurveyTx(newSurvey, tx)
                             .then((id) => {
                                 if (!survey.version) {
                                     return survey.update({ version: 1, groupId: survey.id }, { transaction: tx })
@@ -197,7 +205,15 @@ module.exports = function (sequelize, DataTypes) {
                                     survey.questions = qxs;
                                     return survey;
                                 })
-                            );
+                            ).then(() => {
+                                return sequelize.models.section.getSectionsForSurveyTx(survey.id, options.language)
+                                    .then((sections) => {
+                                        if (sections && sections.length) {
+                                            survey.sections = sections;
+                                        }
+                                        return survey;
+                                    });
+                            });
                     });
             },
             getSurveyByName(name, options) {

@@ -21,7 +21,9 @@ const comparator = {
             expected.choices = expected.oneOfChoices.map(choice => ({ text: choice }));
             delete expected.oneOfChoices;
         }
-        expected.id = id;
+        if (!expected.id) {
+            expected.id = id;
+        }
         return QuestionChoice.findChoicesPerQuestion(id)
             .then(choices => {
                 return choices.reduce(function (r, choice) {
@@ -90,6 +92,9 @@ const comparator = {
             .then(() => {
                 delete expected.questions;
                 delete actual.questions;
+                if (actual.sections) {
+                    actual.sections.forEach(section => delete section.id);
+                }
                 expect(actual).to.deep.equal(expected);
             });
     }

@@ -1812,6 +1812,61 @@
             "minProperties": 2,
             "additionalProperties": false
         },
+        "newSection": {
+            "type": "object",
+            "required": ["name", "indices"],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "indices": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer",
+                        "minimum": 0
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+        "section": {
+            "type": "object",
+            "required": ["id", "name", "indices"],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "indices": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer",
+                        "minimum": 0
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+        "sectionTextUpdate": {
+            "type": "object",
+            "required": ["id", "name"],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "additionalProperties": false
+        },
         "newSurvey": {
             "type": "object",
             "required": [
@@ -1822,6 +1877,13 @@
                 "name": {
                     "type": "string",
                     "minLength": 1
+                },
+                "sections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/newSection"
+                    },
+                    "minItems": 1
                 },
                 "questions": {
                     "type": "array",
@@ -1888,6 +1950,13 @@
                     "type": "string",
                      "minLength": 1
                 },
+                "sections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/section"
+                    },
+                    "minItems": 1
+                },
                 "questions": {
                     "type": "array",
                     "items": {
@@ -1909,6 +1978,13 @@
                 "name": {
                     "type": "string",
                     "minLength": 1
+                },
+                "sections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/sectionTextUpdate"
+                    },
+                    "minItems": 1
                 }
             },
             "additionalProperties": false

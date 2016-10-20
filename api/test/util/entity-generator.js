@@ -64,8 +64,8 @@ class Answerer {
 }
 
 class QuestionGenerator {
-    constructor(types = ['text', 'choice', 'choices', 'bool']) {
-        this.types = types;
+    constructor() {
+        this.types = ['text', 'choice', 'choices', 'bool'];
         this.index = -1;
 
         this.choiceIndex = 0;
@@ -122,17 +122,6 @@ class QuestionGenerator {
             }
         });
         question.choices = choices;
-        return question;
-    }
-
-    group() {
-        const question = this._body('group');
-        const generator = new QuestionGenerator(['text', 'choice', 'choices', 'bool']);
-        question.questions = _.range(3).map(i => {
-            const group = { text: `group_${this.index}_${i}`, type: 'group' };
-            group.questions = _.range(5).map(() => generator.newQuestion());
-            return group;
-        });
         return question;
     }
 
@@ -193,9 +182,21 @@ class Generator {
         const result = { name };
         if (override.questions) {
             result.questions = override.questions;
+            if (override.sections) {
+                result.section = override.sections;
+            }
         } else {
-            result.questions = _.range(5).map(() => this.newQuestion());
+            const sectionType = this.surveyIndex % 3;
+            const count = sectionType ? 9 + sectionType - 1 : 5;
+            result.questions = _.range(count).map(() => this.newQuestion());
             result.questions.forEach((qx, surveyIndex) => (qx.required = Boolean(surveyIndex % 2)));
+            if (sectionType) {
+                const sections = Array(3);
+                sections[0] = { name: 'section_0', indices: _.range(0, 6, 2) };
+                sections[1] = { name: 'section_1', indices: _.range(1, 6, 2) };
+                sections[2] = { name: 'section_2', indices: _.rangeRight(count - 3, count) };
+                result.sections = sections;
+            }
         }
         return result;
     }
