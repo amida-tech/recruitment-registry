@@ -1,14 +1,47 @@
 import React, { Component} from 'react';
 import { connect } from 'react-redux';
-import { Link } from 'react-router';
-import survey from '../index'
+import { SurveyInputField, SurveyBoolField, SurveyChoiceField, SurveyChoicesField } from './survey-form';
 
 export class SurveyContainer extends Component {
   render() {
-    //const surveysTmp = this.props.data.toJS()
+    const { id, name, questions } = this.props.selectedSurvey.toJS()
+    var questionnaire = [];
+    if(questions){
+      questionnaire = questions.map((question) => {
+        switch(question.type) {
+          case "text":
+            return (
+              <SurveyInputField key={question.id}
+                id={question.id} text={question.text}
+                required={question.required}/>
+            );
+            case "bool":
+              return (
+                <SurveyBoolField key={question.id}
+                  id={question.id} text={question.text}
+                  vocab={this.props.vocab} required={question.required}/>
+              );
+          case "choice":
+            return (
+              <SurveyChoiceField key={question.id}
+                id={question.id} text={question.text}
+                choices={question.choices} required={question.required}/>
+            );
+          case "choices":
+            return (
+              <SurveyChoicesField key={question.id}
+                id={question.id} text={question.text} vocab={this.props.vocab}
+                choices={question.choices} required={question.required}/>
+            );
+        }
+      });
+    }
     return (
-      <div className="">
-        Off to a good start.
+      <div>
+        <h1>{name}</h1>
+        <div className="">
+          {questionnaire}
+        </div>
       </div>
     )}
 
@@ -19,9 +52,13 @@ export class SurveyContainer extends Component {
 
 const mapStateToProps = function(store) {
   return {
-    data: store.get('survey'),
+    selectedSurvey: store.getIn(['survey', 'selectedSurvey']),
     vocab: store.getIn(['settings', 'language', 'vocabulary'])
   };
+}
+
+SurveyContainer.propTypes = {
+  selectedSurvey: React.PropTypes.object.isRequired
 }
 
 export default connect(mapStateToProps)(SurveyContainer);
