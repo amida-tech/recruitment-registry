@@ -96,6 +96,11 @@ module.exports = function (sequelize, DataTypes) {
                     return Survey.createSurveyTx(survey, tx);
                 });
             },
+            replaceSurveySections(id, sections) {
+                return sequelize.transaction(function (tx) {
+                    return sequelize.models.section.bulkCreateSectionsForSurveyTx(id, sections, tx);
+                });
+            },
             updateSurveyText({ id, name, sections }, language) {
                 return sequelize.transaction(function (tx) {
                     return textHandler.createTextTx({ id, name, language }, tx)

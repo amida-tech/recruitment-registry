@@ -28,26 +28,17 @@ module.exports = function (sequelize, DataTypes) {
                 return Section.create({ indices }, { transaction: tx })
                     .then(({ id, indices }) => textHandler.createTextTx({ id, indices, name }, tx));
             },
-            createSection(section) {
-                return sequelize.transaction(function (tx) {
-                    return Section.createSectionTx(section, tx);
-                });
-            },
-            deleteSection(id, tx) {
-                const options = { where: { id } };
-                if (tx) {
-                    options.transaction = tx;
-                }
-                return Section.destroy(options);
-            },
             bulkCreateSectionsForSurveyTx(surveyId, sections, tx) { // TODO: Use sequelize bulkCreate with 4.0
                 const pxs = sections.map(({ name, indices }) => Section.createSectionTx({ name, indices }, tx));
                 return sequelize.Promise.all(pxs)
                     .then(result => {
                         const SurveySection = sequelize.models.survey_section;
-                        const pxs = result.map(({ id }, line) => SurveySection.create({ surveyId, sectionId: id, line }, { transaction: tx }));
-                        return sequelize.Promise.all(pxs)
-                            .then(() => result);
+                        return SurveySection.destroy({ where: { surveyId }, transaction: tx })
+                            .then(() => {
+                                const pxs = result.map(({ id }, line) => SurveySection.create({ surveyId, sectionId: id, line }, { transaction: tx }));
+                                return sequelize.Promise.all(pxs)
+                                    .then(() => result);
+                            });
                     });
             },
             getSectionsForSurveyTx(surveyId, language) {

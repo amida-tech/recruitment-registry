@@ -74,6 +74,37 @@ describe('survey unit', function () {
         it(`create/get/verify/update survey ${i} and list all`, createVerifySurveyFn(i));
     }
 
+    it('replace sections of first survey with sections', function () {
+        const index = _.findIndex(history.listClients(), client => client.sections);
+        const survey = history.server(index);
+        const count = survey.questions.length;
+        const newSectionCount = (count - count % 2) / 2;
+        const newSections = [{
+            name: 'new_section_0',
+            indices: _.range(newSectionCount)
+        }, {
+            name: 'new_section_1',
+            indices: _.rangeRight(newSectionCount, newSectionCount * 2)
+        }];
+        const clientSurvey = history.client(index);
+        clientSurvey.sections = newSections;
+        history.updateClient(index, clientSurvey);
+        return Survey.replaceSurveySections(survey.id, newSections);
+    });
+
+    it('get/verify sections of first survey with sections', function () {
+        const index = _.findIndex(history.listClients(), client => client.sections);
+        const id = history.id(index);
+        return Survey.getSurvey(id)
+            .then(survey => {
+                const clientSurvey = history.client(index);
+                return comparator.survey(clientSurvey, survey)
+                    .then(() => {
+                        history.updateServer(index, survey);
+                    });
+            });
+    });
+
     it('error: show a non-existent survey', function () {
         return Survey.getSurvey(999)
             .then(shared.throwingHandler, shared.expectedErrorHandler('surveyNotFound'));

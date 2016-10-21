@@ -192,6 +192,46 @@ describe('survey integration', function () {
         it(`list surveys and verify`, listSurveysFn());
     }
 
+    it('replace sections of first survey with sections', function (done) {
+        const index = _.findIndex(history.listClients(), client => client.sections);
+        const survey = history.server(index);
+        const count = survey.questions.length;
+        const newSectionCount = (count - count % 2) / 2;
+        const newSections = [{
+            name: 'new_section_0',
+            indices: _.range(newSectionCount)
+        }, {
+            name: 'new_section_1',
+            indices: _.rangeRight(newSectionCount, newSectionCount * 2)
+        }];
+        const clientSurvey = history.client(index);
+        clientSurvey.sections = newSections;
+        history.updateClient(index, clientSurvey);
+        store.server
+            .patch(`/api/v1.0/surveys/${survey.id}/sections`)
+            .set('Authorization', store.auth)
+            .send(newSections)
+            .expect(204, done);
+    });
+
+    it('get/verify sections of first survey with sections', function (done) {
+        const index = _.findIndex(history.listClients(), client => client.sections);
+        const id = history.id(index);
+        store.server
+            .get(`/api/v1.0/surveys/${id}`)
+            .set('Authorization', store.auth)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                history.updateServer(index, res.body);
+                const clientSurvey = history.client(index);
+                comparator.survey(clientSurvey, res.body)
+                    .then(done, done);
+            });
+    });
+
     it('get survey 3 in spanish when no name translation', verifySurveyFn(3));
 
     it('list surveys in spanish when no translation', listSurveysFn());

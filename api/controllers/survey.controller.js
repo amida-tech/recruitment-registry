@@ -74,3 +74,10 @@ exports.getAnsweredSurveyByName = function (req, res) {
         .then(survey => res.status(200).json(survey))
         .catch(shared.handleError(res));
 };
+
+exports.replaceSurveySections = function (req, res) {
+    const id = _.get(req, 'swagger.params.id.value');
+    Survey.replaceSurveySections(id, req.body)
+        .then(() => res.status(204).end())
+        .catch(shared.handleError(res));
+};
