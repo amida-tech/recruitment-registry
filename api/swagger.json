@@ -48,7 +48,7 @@
             "x-swagger-router-controller": "user.controller",
             "post": {
                 "operationId": "createNewUser",
-                "summary": "Creates a new user",
+                "summary": "Creates new user",
                 "security": [{
                     "admin": []
                 }],
@@ -75,7 +75,7 @@
             "x-swagger-router-controller": "user.controller",
             "get": {
                 "operationId": "showCurrentUser",
-                "summary": "Gets the current user",
+                "summary": "Gets current user",
                 "security": [{
                     "self": []
                 }],
@@ -93,7 +93,7 @@
             },
             "patch": {
                 "operationId": "updateCurrentUser",
-                "summary": "Updates the current user",
+                "summary": "Updates current user fields",
                 "security": [{
                     "self": []
                 }],
@@ -120,7 +120,7 @@
             "x-swagger-router-controller": "user.controller",
             "post": {
                 "operationId": "resetPassword",
-                "summary": "Resets the password",
+                "summary": "Resets password",
                 "parameters": [{
                     "name": "resetInfo",
                     "in": "body",
@@ -144,7 +144,7 @@
             "x-swagger-router-controller": "user.controller",
             "get": {
                 "operationId": "listConsentDocuments",
-                "summary": "Lists the required consent sections",
+                "summary": "Lists consent documents (section)",
                 "security": [{
                     "participant": []
                 }],
@@ -172,7 +172,7 @@
         "/surveys": {
             "x-swagger-router-controller": "survey.controller",
             "post": {
-                "summary": "Creates a new survey",
+                "summary": "Creates new survey",
                 "operationId": "createSurvey",
                 "security": [{
                     "admin": []
@@ -202,7 +202,7 @@
                 }
             },
             "get": {
-                "summary": "Lists all surveys",
+                "summary": "Lists surveys",
                 "description": "Only returns id and name fields.",
                 "operationId": "listSurveys",
                 "security": [{
@@ -238,7 +238,7 @@
                 "type": "integer"
             }],
             "get": {
-                "summary": "Gets the survey",
+                "summary": "Gets survey",
                 "operationId": "getSurvey",
                 "security": [{
                     "admin": []
@@ -264,7 +264,7 @@
                 }
             },
             "delete": {
-                "summary": "Deletes the survey",
+                "summary": "Deletes survey",
                 "operationId": "deleteSurvey",
                 "security": [{
                     "admin": []
@@ -282,7 +282,7 @@
         "/surveys/text/{language}": {
             "x-swagger-router-controller": "survey.controller",
             "patch": {
-                "summary": "Patches name of the survey",
+                "summary": "Updates or translates survey text fields",
                 "operationId": "updateSurveyText",
                 "security": [{
                     "admin": []
@@ -347,7 +347,7 @@
         "/surveys/name/{name}": {
             "x-swagger-router-controller": "survey.controller",
             "get": {
-                "summary": "Get named survey information",
+                "summary": "Gets survey by name",
                 "operationId": "getSurveyByName",
                 "parameters": [{
                     "name": "name",
@@ -378,7 +378,7 @@
         "/surveys/answered/name/{name}": {
             "x-swagger-router-controller": "survey.controller",
             "get": {
-                "summary": "Get named survey with answers",
+                "summary": "Get survey with answers by name",
                 "operationId": "getAnsweredSurveyByName",
                 "security": [{
                     "participant": []
@@ -472,7 +472,7 @@
         "/profile-survey": {
             "x-swagger-router-controller": "registry.controller",
             "post": {
-                "summary": "Creates/replaces the profile survey",
+                "summary": "Creates/replaces profile survey",
                 "operationId": "createProfileSurvey",
                 "security": [{
                     "admin": []
@@ -496,7 +496,7 @@
                 }
             },
             "get": {
-                "summary": "Gets the profile survey",
+                "summary": "Gets profile survey",
                 "operationId": "getProfileSurvey",
                 "responses": {
                     "200" : {
@@ -514,7 +514,7 @@
         "/profiles": {
             "x-swagger-router-controller": "registry.controller",
             "post": {
-                "summary": "Creates a registry user profile",
+                "summary": "Creates registry user profile",
                 "operationId": "createProfile",
                 "parameters": [
                     {
@@ -540,7 +540,7 @@
                 }
             },
             "patch": {
-                "summary": "Updates a registry user profile",
+                "summary": "Updates registry user profile",
                 "operationId": "updateProfile",
                 "security": [{
                     "participant": []
@@ -566,7 +566,7 @@
                 }
             },
             "get": {
-                "summary": "Get registry user profile",
+                "summary": "Gets user profile",
                 "operationId": "getProfile",
                 "security": [{
                     "participant": []
@@ -587,7 +587,7 @@
         "/reset-tokens": {
             "x-swagger-router-controller": "reset-token.controller",
             "post": {
-                "summary": "Generate reset token and e-mail",
+                "summary": "Generates reset token and e-mail",
                 "operationId": "resetToken",
                 "parameters": [{
                     "name": "email",
@@ -618,7 +618,7 @@
         "/questions": {
             "x-swagger-router-controller": "question.controller",
             "post": {
-                "summary": "Creates a new question",
+                "summary": "Creates new question",
                 "operationId": "createQuestion",
                 "security": [{
                     "admin": []
@@ -648,7 +648,7 @@
                 }
             },
             "get": {
-                "summary": "Gets all questions",
+                "summary": "Lists questions",
                 "operationId": "listQuestions",
                 "security": [{
                     "admin": []
@@ -683,7 +683,7 @@
                 "type": "integer"
             }],
             "get": {
-                "summary": "Gets the question",
+                "summary": "Gets question",
                 "operationId": "getQuestion",
                 "security": [{
                     "admin": []
@@ -709,7 +709,7 @@
                 }
             },
             "delete": {
-                "summary": "Deletes the question",
+                "summary": "Deletes question",
                 "operationId": "deleteQuestion",
                 "security": [{
                     "admin": []
@@ -836,7 +836,7 @@
                 "type": "integer"
             }],
             "get": {
-                "summary": "Gets the consent type",
+                "summary": "Gets consent type",
                 "operationId": "getConsentType",
                 "security": [{
                     "admin": []
@@ -862,7 +862,7 @@
                 }
             },
             "delete": {
-                "summary": "Deletes the consent type",
+                "summary": "Deletes consent type",
                 "operationId": "deleteConsentType",
                 "security": [{
                     "admin": []
@@ -880,7 +880,7 @@
         "/consent-types/text/{language}": {
             "x-swagger-router-controller": "consent-type.controller",
             "patch": {
-                "summary": "Updates or translates consent type title",
+                "summary": "Updates or translates consent type tetx fields",
                 "operationId": "updateConsentTypeText",
                 "security": [{
                     "admin": []
@@ -913,7 +913,7 @@
         "/consent-documents": {
             "x-swagger-router-controller": "consent-document.controller",
             "post": {
-                "summary": "Creates a consent section",
+                "summary": "Creates consent document (section)",
                 "operationId": "createConsentDocument",
                 "security": [{
                     "admin": []
@@ -946,7 +946,7 @@
                 "type": "integer"
             }],
             "get": {
-                "summary": "Gets consent section content",
+                "summary": "Gets consent document (section)",
                 "operationId": "getConsentDocument",
                 "parameters": [{
                     "name": "language",
@@ -978,7 +978,7 @@
                 "type": "integer"
             }],
             "get": {
-                "summary": "Gets update comments for consent document",
+                "summary": "Gets update comments history for consent type",
                 "operationId": "getUpdateCommentHistory",
                 "parameters": [{
                     "name": "language",
@@ -1004,7 +1004,7 @@
         "/consent-documents/text/{language}": {
             "x-swagger-router-controller": "consent-document.controller",
             "patch": {
-                "summary": "Translates consent type document",
+                "summary": "Translates consent document (section)",
                 "operationId": "updateConsentDocumentText",
                 "security": [{
                     "admin": []
@@ -1037,7 +1037,7 @@
         "/consent-signatures": {
             "x-swagger-router-controller": "consent-signature.controller",
             "post": {
-                "summary": "Marks a consent section as signed",
+                "summary": "Marks consent document (section) signed",
                 "operationId": "createSignature",
                 "security": [{
                     "participant": []
@@ -1079,7 +1079,7 @@
         "/consent-signatures/bulk": {
             "x-swagger-router-controller": "consent-signature.controller",
             "post": {
-                "summary": "Marks multiple consent sections as signed",
+                "summary": "Marks consent documents (sections) signed",
                 "operationId": "bulkCreateSignatures",
                 "security": [{
                     "participant": []
@@ -1117,7 +1117,7 @@
         "/consent-signatures/users/{id}/history": {
             "x-swagger-router-controller": "consent-signature.controller",
             "get": {
-                "summary": "History of user signatures",
+                "summary": "Gets history of consent signatures",
                 "operationId": "getSignatureHistory",
                 "security": [{
                     "admin": []
@@ -1146,7 +1146,7 @@
         "/consents": {
             "x-swagger-router-controller": "consent.controller",
             "post": {
-                "summary": "Creates a new consent",
+                "summary": "Creates new consent",
                 "operationId": "createConsent",
                 "security": [{
                     "admin": []
@@ -1197,7 +1197,7 @@
                 "type": "integer"
             }],
             "get": {
-                "summary": "Gets the consent",
+                "summary": "Gets consent",
                 "operationId": "getConsent",
                 "security": [{
                     "admin": []
@@ -1215,7 +1215,7 @@
                 }
             },
             "delete": {
-                "summary": "Deletes the consent",
+                "summary": "Deletes consent",
                 "operationId": "deleteConsent",
                 "security": [{
                     "admin": []
@@ -1239,7 +1239,7 @@
                 "type": "string"
             }],
             "get": {
-                "summary": "Gets the consent by name",
+                "summary": "Gets consent by name",
                 "operationId": "getConsentByName",
                 "security": [{
                     "admin": []
@@ -1266,7 +1266,7 @@
                 "type": "integer"
             }],
             "get": {
-                "summary": "Gets the documents",
+                "summary": "Gets documents (sections)",
                 "operationId": "getConsentDocuments",
                 "parameters": [{
                     "name": "language",
@@ -1298,7 +1298,7 @@
                 "type": "string"
             }],
             "get": {
-                "summary": "Gets the documents by name",
+                "summary": "Gets documents (sections) by name",
                 "operationId": "getConsentDocumentsByName",
                 "parameters": [{
                     "name": "language",
@@ -1330,7 +1330,7 @@
                 "type": "integer"
             }],
             "get": {
-                "summary": "Gets the user documents",
+                "summary": "Gets current user consents",
                 "operationId": "getUserConsentDocuments",
                 "security": [{
                     "participant": []
@@ -1365,7 +1365,7 @@
                 "type": "string"
             }],
             "get": {
-                "summary": "Gets the user documents by name",
+                "summary": "Gets current user consents by name",
                 "operationId": "getUserConsentDocumentsByName",
                 "security": [{
                     "participant": []
@@ -1445,7 +1445,7 @@
                 "type": "string"
             }],
             "get": {
-                "summary": "Gets the language",
+                "summary": "Gets language",
                 "operationId": "getLanguage",
                 "security": [{
                     "admin": []
@@ -1463,7 +1463,7 @@
                 }
             },
             "patch": {
-                "summary": "Update language fields",
+                "summary": "Updates language fields",
                 "operationId": "patchLanguage",
                 "security": [{
                     "admin": []
@@ -1487,7 +1487,7 @@
                 }
             },
             "delete": {
-                "summary": "Deletes the language",
+                "summary": "Deletes language",
                 "operationId": "deleteLanguage",
                 "security": [{
                     "admin": []
