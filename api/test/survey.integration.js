@@ -428,7 +428,7 @@ describe('survey integration', function () {
                 surveyId: id,
                 answers
             })
-            .expect(201)
+            .expect(204)
             .end(done);
     });
 

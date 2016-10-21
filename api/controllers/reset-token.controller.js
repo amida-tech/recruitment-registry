@@ -21,7 +21,7 @@ exports.resetToken = function (req, res) {
                 if (err) {
                     return shared.handleError(res)(err);
                 }
-                res.status(201).json({});
+                res.status(204).end();
             });
         })
         .catch(shared.handleError(res));

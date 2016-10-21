@@ -23,14 +23,14 @@ exports.getLanguage = function (req, res) {
 exports.patchLanguage = function (req, res) {
     const code = _.get(req, 'swagger.params.code.value');
     Language.patchLanguage(code, req.body)
-        .then(result => res.status(200).json(result))
+        .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };
 
 exports.deleteLanguage = function (req, res) {
     const code = _.get(req, 'swagger.params.code.value');
     Language.deleteLanguage(code)
-        .then(result => res.status(204).json(result))
+        .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };
 

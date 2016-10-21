@@ -2142,10 +2142,6 @@
                 }
             }
         },
-        "emptyObject": {
-            "type": "object",
-            "maxProperties": 0
-        },
         "newAction": {
             "type": "object",
             "required": ["text", "type"],

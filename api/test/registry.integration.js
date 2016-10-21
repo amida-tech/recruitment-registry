@@ -138,7 +138,7 @@ describe('registry integration', function () {
                 user: userUpdates,
                 answers
             })
-            .expect(200, done);
+            .expect(204, done);
     });
 
     it('verify user profile', function (done) {
