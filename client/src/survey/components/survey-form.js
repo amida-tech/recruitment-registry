@@ -6,7 +6,8 @@ export class SurveyInputField extends Component {
       <div key={this.props.id} >
         <div className="rr-question" >
           <label htmlFor={this.props.id}>{this.props.text}</label>
-          <input autoComplete="off" required className="rr-blankline rr-field" id={this.props.id} type={this.props.type} />
+          <input autoComplete="off" required className="rr-blankline rr-field"
+            id={this.props.id} type={this.props.type} />
         </div>
       </div>
     )
@@ -38,7 +39,8 @@ export class SurveyChoiceField extends Component {
         <div className="rr-question" >
           <label htmlFor={this.props.id}>{this.props.text}</label>
           <select required className="rr-blankline rr-field" id={this.props.id}>
-            {this.props.choices.map(choice => <option key={choice.id} value={choice.text}>{choice.text}</option>)}
+            {this.props.choices.map(choice => <option key={choice.id}
+              value={choice.text}>{choice.text}</option>)}
           </select>
         </div>
       </div>
@@ -48,27 +50,27 @@ export class SurveyChoiceField extends Component {
 
 export class SurveyChoicesField extends Component {
   render(){
-    console.log("SurveyChoicesField: ");
-    console.log(this.props);
+    var anyTexts = [];
     return (
-      <div key={this.props.id} >
+      <div key={this.props.id} className="rr-question">
+        <label key={this.props.id} >{this.props.text}</label>
+        <form id={this.props.id} className="radio">
           {this.props.choices.map(choice =>
-            <div className="rr-question">
-              {console.log('JAMES')}
-              {console.log(choice)}
-              <label htmlFor={choice.id}>{choice.text}</label>
-              <form id={choice.id}>
-                <label htmlFor={choice.id+'.true'}>{this.props.vocab.get('YES')}</label>
-                <input name={choice.id+'.true'} type="radio" value="true"/>
-                <label htmlFor={choice.id+'.false'}>{this.props.vocab.get('NO')}</label>
-                <input name={choice.id+'.false'} type="radio" value="false"/>
-              </form>
-            </div>
+              <label key={choice.id} htmlFor={choice.id}><input key={choice.id} name={this.props.id}
+                type="radio" value="false"/>{choice.text}</label>
           )}
+        </form>
       </div>
     )
   }
 }
+
+// {if(choice.type == "text") {
+//   <div>
+//     <label htmlFor={this.props.id+'text'}>{this.props.vocab.get('PLEASE_ENTER_DATA')}</label>
+//     <input name={this.props.id+'text'} autoComplete="off" required className="rr-blankline rr-field"/>
+//   </div>
+// }}
 
 
 const mapStateToProps = function(state) {
