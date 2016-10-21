@@ -21,7 +21,7 @@
         "/auth/basic": {
             "x-swagger-router-controller": "auth.controller",
             "get": {
-                "summary": "Authorization JWT",
+                "summary": "Gets authorization token (JWT)",
                 "operationId": "authenticateBasic",
                 "parameters": [{
                     "name": "Authorization",
@@ -63,28 +63,8 @@
                 }],
                 "responses": {
                     "201": {
-                        "description": "Successful response",
-                        "schema": {
-                            "description": "Selected user fields",
-                            "type": "object",
-                            "required": [
-                                "id",
-                                "username",
-                                "role"
-                            ],
-                            "properties": {
-                                "id": {
-                                    "type": "integer"
-                                },
-                                "username": {
-                                    "type": "string"
-                                },
-                                "role": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    },
+                       "$ref": "#/responses/idSuccess"
+                     },
                     "default": {
                         "$ref": "#/responses/genericError"
                     }
@@ -127,12 +107,8 @@
                     }
                 }],
                 "responses": {
-                    "200": {
-                        "description": "Successul response",
-                        "schema": {
-                            "type": "object",
-                            "maxProperties": 0
-                        }
+                    "204": {
+                        "description": "Successul response"
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -155,11 +131,8 @@
                     }
                 }],
                 "responses": {
-                    "201": {
-                        "description": "Successul response",
-                        "schema": {
-                            "$ref": "#/definitions/emptyObject"
-                        }
+                    "204": {
+                        "description": "Successul response"
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -462,8 +435,8 @@
                     "minLength": 2
                 }],
                 "responses": {
-                    "201": {
-                        "$ref": "#/responses/emptySuccess"
+                    "204": {
+                        "description": "Successful response."
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -584,13 +557,8 @@
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "schema": {
-                            "description": "Empty object",
-                            "type": "object",
-                            "maxProperties": 0
-                        }
+                    "204": {
+                        "description": "Successful response"
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -638,11 +606,8 @@
                     }
                 }],
                 "responses": {
-                    "201": {
-                        "description": "Successful response",
-                        "schema": {
-                            "$ref": "#/definitions/emptyObject"
-                        }
+                    "204": {
+                        "description": "Successful response"
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -1429,7 +1394,7 @@
         "/languages": {
             "x-swagger-router-controller": "language.controller",
             "post": {
-                "summary": "Creates a ew language",
+                "summary": "Creates new language",
                 "operationId": "createLanguage",
                 "security": [{
                     "admin": []
@@ -1445,7 +1410,7 @@
                 }],
                 "responses": {
                     "201": {
-                        "$ref": "#/responses/emptySuccess"
+                        "$ref": "#/responses/idSuccess"
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -1462,10 +1427,7 @@
                     "200": {
                         "description": "Successful response",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/language"
-                            }
+                            "$ref": "#/definitions/languages"
                         }
                     },
                     "default": {
@@ -1501,7 +1463,7 @@
                 }
             },
             "patch": {
-                "summary": "Paths the language",
+                "summary": "Update language fields",
                 "operationId": "patchLanguage",
                 "security": [{
                     "admin": []
@@ -1516,8 +1478,8 @@
                     }
                 }],
                 "responses": {
-                    "200": {
-                        "$ref": "#/responses/emptySuccess"
+                    "204": {
+                        "description": "Successful response."
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -1563,12 +1525,6 @@
             "description": "Error response",
             "schema": {
                 "$ref": "#/definitions/error"
-            }
-        },
-        "emptySuccess": {
-            "description": "Successful response.",
-            "schema": {
-                "$ref": "#/definitions/emptyObject"
             }
         },
         "idSuccess" : {
@@ -2543,6 +2499,12 @@
                 }
             },
             "additionalProperties": false
+        },
+        "languages": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/language"
+            }
         },
         "languageUpdate": {
             "type": "object",
