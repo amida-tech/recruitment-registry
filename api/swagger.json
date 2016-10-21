@@ -45,8 +45,8 @@
                             }
                         }
                     },
-                    "400": {
-                        "$ref": "#/responses/badRequest"
+                    "default": {
+                        "$ref": "#/responses/genericError"
                     }
                 }
             }
@@ -95,6 +95,9 @@
                                 }
                             }
                         }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
                     }
                 }
             }
@@ -113,6 +116,9 @@
                         "schema": {
                             "$ref": "#/definitions/user"
                         }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
                     }
                 }
             },
@@ -138,6 +144,9 @@
                             "type": "object",
                             "maxProperties": 0
                         }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
                     }
                 }
             }
@@ -176,6 +185,9 @@
                         "schema": {
                             "$ref": "#/definitions/emptyObject"
                         }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
                     }
                 }
             }
@@ -478,20 +490,8 @@
                     "201": {
                         "$ref": "#/responses/emptySuccess"
                     },
-                    "400": {
-                        "$ref": "#/responses/badRequest"
-                    },
-                    "401": {
-                        "$ref": "#/responses/unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/responses/forbidden"
-                    },
-                    "422": {
-                        "$ref": "#/responses/unprocessable"
-                    },
-                    "500": {
-                        "$ref": "#/responses/internal"
+                    "default": {
+                        "$ref": "#/responses/genericError"
                     }
                 }
             },
@@ -518,20 +518,8 @@
                             }
                         }
                     },
-                    "400": {
-                        "$ref": "#/responses/badRequest"
-                    },
-                    "401": {
-                        "$ref": "#/responses/unauthorized"
-                    },
-                    "403": {
-                        "$ref": "#/responses/forbidden"
-                    },
-                    "422": {
-                        "$ref": "#/responses/unprocessable"
-                    },
-                    "500": {
-                        "$ref": "#/responses/internal"
+                    "default": {
+                        "$ref": "#/responses/genericError"
                     }
                 }
             }
@@ -608,6 +596,9 @@
                             },
                             "additionalProperties": false
                         }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
                     }
                 }
             },
@@ -636,6 +627,9 @@
                             "type": "object",
                             "maxProperties": 0
                         }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
                     }
                 }
             },
@@ -651,6 +645,9 @@
                         "schema": {
                             "$ref": "#/definitions/userProfile"
                         }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
                     }
                 }
             }
@@ -682,6 +679,9 @@
                         "schema": {
                             "$ref": "#/definitions/emptyObject"
                         }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
                     }
                 }
             }
@@ -1648,30 +1648,6 @@
         }
     },
     "responses": {
-        "unauthorized": {
-            "description": "User is not authenticated.",
-            "schema": {
-                "$ref": "#/definitions/error"
-            }
-        },
-        "forbidden": {
-            "description": "User does not have permission.",
-            "schema": {
-                "$ref": "#/definitions/error"
-            }
-        },
-        "badRequest": {
-            "description": "Invalid request parameters.",
-            "schema": {
-                "$ref": "#/definitions/error"
-            }
-        },
-        "unprocessable": {
-            "description": "Request cannot be fullfilled",
-            "schema": {
-                "$ref": "#/definitions/error"
-            }
-        },
         "genericError": {
             "description": "Error response",
             "schema": {
@@ -1694,12 +1670,6 @@
                         "type": "integer"
                     }
                 }
-            }
-        },
-        "internal": {
-            "description": "Unexpected error.",
-            "schema": {
-                "$ref": "#/definitions/error"
             }
         },
         "anyArray": {
