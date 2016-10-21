@@ -23,26 +23,19 @@
             "get": {
                 "summary": "Authorization JWT",
                 "operationId": "authenticateBasic",
-                "parameters": [
-                    {
-                        "name": "Authorization",
-                        "description": "Basic authentication header 'Basic ...' where '...' is base64 encoded string for 'username:password'",
-                        "in": "header",
-                        "required": true,
-                        "type": "string"
-                    }
-                ],
+                "parameters": [{
+                    "name": "Authorization",
+                    "description": "Basic authentication header 'Basic ...' where '...' is base64 encoded string for 'username:password'",
+                    "in": "header",
+                    "required": true,
+                    "type": "string"
+                }],
                 "description": "Returns JWT token that can be used as API key.  Prefix with 'Bearer ' before pasting.",
                 "responses": {
                     "200": {
                         "description": "Successful response",
                         "schema": {
-                            "type": "object",
-                            "properties": {
-                                "token": {
-                                    "type": "string"
-                                }
-                            }
+                            "$ref": "#/definitions/token"
                         }
                     },
                     "default": {
@@ -56,22 +49,18 @@
             "post": {
                 "operationId": "createNewUser",
                 "summary": "Creates a new user",
-                "security": [
-                    {
-                        "admin": []
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "user",
+                    "in": "body",
+                    "description": "User specification",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/user"
                     }
-                ],
-                "parameters": [
-                    {
-                        "name": "user",
-                        "in": "body",
-                        "description": "User specification",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/user"
-                        }
-                    }
-                ],
+                }],
                 "responses": {
                     "201": {
                         "description": "Successful response",
@@ -162,21 +151,7 @@
                     "description": "Reset token and new password",
                     "required": true,
                     "schema": {
-                        "type": "object",
-                        "required": [
-                            "token",
-                            "password"
-                        ],
-                        "properties": {
-                            "token": {
-                                "type": "string",
-                                "minLength": 1
-                            },
-                            "password": {
-                                "type": "string",
-                                "minLength": 1
-                            }
-                        }
+                        "$ref": "#/definitions/resetPasswordInfo"
                     }
                 }],
                 "responses": {
@@ -1691,6 +1666,31 @@
             "properties": {
                 "message": {
                     "type": "string"
+                }
+            }
+        },
+        "token": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "resetPasswordInfo": {
+            "type": "object",
+            "required": [
+                "token",
+                "password"
+            ],
+            "properties": {
+                "token": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 1
                 }
             }
         },
