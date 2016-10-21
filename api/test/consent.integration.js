@@ -11,6 +11,7 @@ const History = require('./util/entity-history');
 const ConsentDocumentHistory = require('./util/consent-document-history');
 const ConsentCommon = require('./util/consent-common');
 const config = require('../config');
+const translator = require('./util/translator');
 
 const expect = chai.expect;
 const generator = new Generator();
@@ -190,15 +191,7 @@ describe('consent integration', function () {
                     }, {});
                     const expected = consentCommon.formTranslatedExpectedConsent(index, typeIndices, signatures, language);
                     expect(res.body).to.deep.equal(expected);
-                    res.body.sections.forEach(section => {
-                        ['title', 'content', 'updateComment'].forEach(property => {
-                            const text = section[property];
-                            if (text !== null) {
-                                const location = text.indexOf('(es)');
-                                expect(location).to.be.above(0);
-                            }
-                        });
-                    });
+                    translator.isConsentDocumentTranslated(res.body, language);
                     done();
                 });
         };
@@ -254,15 +247,7 @@ describe('consent integration', function () {
                     }, {});
                     const expected = consentCommon.formTranslatedExpectedConsent(index, typeIndices, signatures, language);
                     expect(res.body).to.deep.equal(expected);
-                    res.body.sections.forEach(section => {
-                        ['title', 'content', 'updateComment'].forEach(property => {
-                            const text = section[property];
-                            if (text !== null) {
-                                const location = text.indexOf('(es)');
-                                expect(location).to.be.above(0);
-                            }
-                        });
-                    });
+                    translator.isConsentDocumentTranslated(res.body, language);
                     done();
                 });
         };
@@ -307,15 +292,7 @@ describe('consent integration', function () {
                     const typeIndices = consentSpecs[consentIndex];
                     const expected = consentCommon.formTranslatedExpectedConsent(consentIndex, typeIndices, undefined, 'es');
                     expect(res.body).to.deep.equal(expected);
-                    res.body.sections.forEach(section => {
-                        ['title', 'content', 'updateComment'].forEach(property => {
-                            const text = section[property];
-                            if (text !== null) {
-                                const location = text.indexOf('(es)');
-                                expect(location).to.be.above(0);
-                            }
-                        });
-                    });
+                    translator.isConsentDocumentTranslated(res.body, 'es');
                     done();
                 });
         });
@@ -351,15 +328,7 @@ describe('consent integration', function () {
                     const typeIndices = consentSpecs[consentIndex];
                     const expected = consentCommon.formTranslatedExpectedConsent(consentIndex, typeIndices, undefined, 'es');
                     expect(res.body).to.deep.equal(expected);
-                    res.body.sections.forEach(section => {
-                        ['title', 'content', 'updateComment'].forEach(property => {
-                            const text = section[property];
-                            if (text !== null) {
-                                const location = text.indexOf('(es)');
-                                expect(location).to.be.above(0);
-                            }
-                        });
-                    });
+                    translator.isConsentDocumentTranslated(res.body, 'es');
                     done();
                 });
         });

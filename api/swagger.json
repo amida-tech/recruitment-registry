@@ -200,29 +200,7 @@
                     "200": {
                         "description": "Successul response",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "required": ["id", "name", "title"],
-                                "properties": {
-                                    "id": {
-                                        "type": "integer",
-                                        "minimum": 1
-                                    },
-                                    "name": {
-                                        "type": "string",
-                                        "minLength": 1
-                                    },
-                                    "title": {
-                                        "type": "string",
-                                        "minLength": 1
-                                    },
-                                    "type": {
-                                        "type": "string"
-                                    }
-                                },
-                                "additionalProperties": false
-                            }
+                            "$ref": "#/definitions/consentDocumentDashboard"
                         }
                     },
                     "default": {
@@ -282,20 +260,7 @@
                     "200": {
                         "description": "Successful response.",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "required": ["id", "name"],
-                                "properties": {
-                                    "id": {
-                                        "type": "integer"
-                                    },
-                                    "name": {
-                                        "type": "string"
-                                    }
-                                },
-                                "additionalProperties": false
-                            }
+                            "$ref": "#/definitions/surveyDashboard"
                         }
                     },
                     "default": {
@@ -375,6 +340,38 @@
                     "required": true,
                     "schema": {
                         "$ref": "#/definitions/surveyTextUpdate"
+                    }
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successul response"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/surveys/{id}/sections": {
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
+            "x-swagger-router-controller": "survey.controller",
+            "patch": {
+                "summary": "Replaces survey sections",
+                "operationId": "replaceSurveySections",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "sections",
+                    "in": "body",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/newSections"
                     }
                 }],
                 "responses": {
@@ -1790,18 +1787,7 @@
                 "choices": {
                     "type": "array",
                     "items": {
-                        "type": "object",
-                        "required": ["text"],
-                        "properties": {
-                            "text": {
-                                "type": "string",
-                                "minLength": 1
-                            },
-                            "type": {
-                                "type": "string",
-                                "enum": ["text", "bool"]
-                            }
-                        }
+                        "$ref": "#/definitions/newChoice"
                     },
                     "minItems": 1
                 },
@@ -1810,6 +1796,68 @@
                 }
             },
             "minProperties": 2,
+            "additionalProperties": false
+        },
+        "newSection": {
+            "type": "object",
+            "required": ["name", "indices"],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "indices": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer",
+                        "minimum": 0
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+        "newSections": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/newSection"
+            },
+            "minItems": 1
+        },
+        "section": {
+            "type": "object",
+            "required": ["id", "name", "indices"],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "indices": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer",
+                        "minimum": 0
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+        "sectionTextUpdate": {
+            "type": "object",
+            "required": ["id", "name"],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
             "additionalProperties": false
         },
         "newSurvey": {
@@ -1822,6 +1870,13 @@
                 "name": {
                     "type": "string",
                     "minLength": 1
+                },
+                "sections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/newSection"
+                    },
+                    "minItems": 1
                 },
                 "questions": {
                     "type": "array",
@@ -1888,6 +1943,13 @@
                     "type": "string",
                      "minLength": 1
                 },
+                "sections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/section"
+                    },
+                    "minItems": 1
+                },
                 "questions": {
                     "type": "array",
                     "items": {
@@ -1909,9 +1971,35 @@
                 "name": {
                     "type": "string",
                     "minLength": 1
+                },
+                "sections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/sectionTextUpdate"
+                    },
+                    "minItems": 1
                 }
             },
             "additionalProperties": false
+        },
+        "surveyInfo": {
+            "type": "object",
+            "required": ["id", "name"],
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false
+        },
+        "surveyDashboard": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/surveyInfo"
+            }
         },
         "choiceType": {
             "type": "string",
@@ -2394,6 +2482,35 @@
                 }
             },
             "additionalProperties": false
+        },
+        "consentDocumentInfo": {
+            "type": "object",
+            "required": ["id", "name", "title"],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "title": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "type": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "consentDocumentDashboard": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/consentDocumentInfo"
+            }
         },
         "consentTypeTextUpdate": {
             "type": "object",

@@ -5,7 +5,7 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 const _ = require('lodash');
 
-const helper = require('./helper/survey-helper');
+const helper = require('./util/survey-common');
 
 const config = require('../config');
 
@@ -14,6 +14,8 @@ const Generator = require('./util/entity-generator');
 const History = require('./util/entity-history');
 const userExamples = require('./fixtures/example/user');
 const surveyExamples = require('./fixtures/example/survey');
+const comparator = require('./util/client-server-comparator');
+const translator = require('./util/translator');
 
 const invalidSurveysJSON = require('./fixtures/json-schema-invalid/new-survey');
 const invalidSurveysSwagger = require('./fixtures/swagger-invalid/new-survey');
@@ -83,12 +85,8 @@ describe('survey integration', function () {
                     }
                     const clientSurvey = history.client(index);
                     const expected = Object.assign({}, clientSurvey, update);
-                    helper.buildServerSurvey(expected, res.body)
-                        .then(function (expected) {
-                            expect(res.body).to.deep.equal(expected);
-                        })
-                        .then(() => done())
-                        .catch(err => done(err));
+                    comparator.survey(expected, res.body)
+                        .then(done, done);
                 });
         };
     };
@@ -194,24 +192,64 @@ describe('survey integration', function () {
         it(`list surveys and verify`, listSurveysFn());
     }
 
+    it('replace sections of first survey with sections', function (done) {
+        const index = _.findIndex(history.listClients(), client => client.sections);
+        const survey = history.server(index);
+        const count = survey.questions.length;
+        const newSectionCount = (count - count % 2) / 2;
+        const newSections = [{
+            name: 'new_section_0',
+            indices: _.range(newSectionCount)
+        }, {
+            name: 'new_section_1',
+            indices: _.rangeRight(newSectionCount, newSectionCount * 2)
+        }];
+        const clientSurvey = history.client(index);
+        clientSurvey.sections = newSections;
+        history.updateClient(index, clientSurvey);
+        store.server
+            .patch(`/api/v1.0/surveys/${survey.id}/sections`)
+            .set('Authorization', store.auth)
+            .send(newSections)
+            .expect(204, done);
+    });
+
+    it('get/verify sections of first survey with sections', function (done) {
+        const index = _.findIndex(history.listClients(), client => client.sections);
+        const id = history.id(index);
+        store.server
+            .get(`/api/v1.0/surveys/${id}`)
+            .set('Authorization', store.auth)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                history.updateServer(index, res.body);
+                const clientSurvey = history.client(index);
+                comparator.survey(clientSurvey, res.body)
+                    .then(done, done);
+            });
+    });
+
     it('get survey 3 in spanish when no name translation', verifySurveyFn(3));
 
     it('list surveys in spanish when no translation', listSurveysFn());
 
     const translateTextFn = function (index, language) {
         return function (done) {
-            const { name } = generator.newSurvey();
-            const id = history.id(index);
+            const survey = history.server(index);
+            const translation = translator.translateSurvey(survey, language);
             store.server
                 .patch(`/api/v1.0/surveys/text/${language}`)
                 .set('Authorization', store.auth)
-                .send({ id, name })
+                .send(translation)
                 .expect(204)
                 .end(function (err) {
                     if (err) {
                         return done(err);
                     }
-                    history.translate(index, language, { name });
+                    history.translate(index, language, translation);
                     done();
                 });
         };
@@ -229,6 +267,7 @@ describe('survey integration', function () {
                     if (err) {
                         return done(err);
                     }
+                    translator.isSurveyTranslated(res.body, language);
                     const expected = history.translatedServer(index, language);
                     expect(res.body).to.deep.equal(expected);
                     done();
@@ -274,9 +313,9 @@ describe('survey integration', function () {
     };
 
     for (let i = 0; i < surveyCount; i += 2) {
-        it(`add translated name to survey ${i}`, translateTextFn(i, 'es'));
-        it(`get and verify tanslated survey ${i}`, verifyTranslatedSurveyFn(i, 'es'));
-        it(`get and verify tanslated survey ${i} by name`, verifyTranslatedSurveyByNameFn(i, 'es'));
+        it(`add translation (es) to survey ${i}`, translateTextFn(i, 'es'));
+        it(`get and verify translated (es) survey ${i}`, verifyTranslatedSurveyFn(i, 'es'));
+        it(`get and verify translated (es) survey ${i} by name`, verifyTranslatedSurveyByNameFn(i, 'es'));
     }
 
     it('list and verify translated surveys', listTranslatedSurveysFn('es'));
@@ -353,14 +392,9 @@ describe('survey integration', function () {
                 if (err) {
                     return done(err);
                 }
-                helper.buildServerSurvey(example.survey, res.body).then(function (expected) {
-                    expect(res.body).to.deep.equal(expected);
-                    serverSurvey = res.body;
-                }).then(function () {
-                    done();
-                }).catch(function (err) {
-                    done(err);
-                });
+                serverSurvey = res.body;
+                comparator.survey(example.survey, res.body)
+                    .then(done, done);
             });
     });
 

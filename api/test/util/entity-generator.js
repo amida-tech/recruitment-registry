@@ -134,11 +134,13 @@ class QuestionGenerator {
     }
 
     newQuestion() {
-        const type = this.types[(this.index + 1) % 4];
+        const type = this.types[(this.index + 1) % this.types.length];
         const result = this[type]();
-        const actionCount = (this.index % 5) - 1;
-        if (actionCount > 0) {
-            result.actions = this.newActions(this.index, actionCount);
+        if (type !== 'group') {
+            const actionCount = (this.index % 3) - 1;
+            if (actionCount > 0) {
+                result.actions = this.newActions(this.index, actionCount);
+            }
         }
         return result;
     }
@@ -180,9 +182,21 @@ class Generator {
         const result = { name };
         if (override.questions) {
             result.questions = override.questions;
+            if (override.sections) {
+                result.section = override.sections;
+            }
         } else {
-            result.questions = _.range(5).map(() => this.newQuestion());
+            const sectionType = this.surveyIndex % 3;
+            const count = sectionType ? 9 + sectionType - 1 : 5;
+            result.questions = _.range(count).map(() => this.newQuestion());
             result.questions.forEach((qx, surveyIndex) => (qx.required = Boolean(surveyIndex % 2)));
+            if (sectionType) {
+                const sections = Array(3);
+                sections[0] = { name: 'section_0', indices: _.range(0, 6, 2) };
+                sections[1] = { name: 'section_1', indices: _.range(1, 6, 2) };
+                sections[2] = { name: 'section_2', indices: _.rangeRight(count - 3, count) };
+                result.sections = sections;
+            }
         }
         return result;
     }

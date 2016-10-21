@@ -51,7 +51,7 @@ module.exports = function (sequelize, DataTypes) {
                         .then(registry => {
                             if (registry.profileSurveyId) {
                                 const id = registry.profileSurveyId;
-                                return Survey.replaceSurvey(id, survey, tx);
+                                return Survey.replaceSurveyTx(id, survey, tx);
                             } else {
                                 return Survey.createSurveyTx(survey, tx)
                                     .then((id) => {

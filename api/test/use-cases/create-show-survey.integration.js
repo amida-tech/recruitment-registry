@@ -4,10 +4,9 @@ process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
 
-const helper = require('../helper/survey-helper');
-
 const SharedIntegration = require('../util/shared-integration');
 const surveyExamples = require('../fixtures/example/survey');
+const comparator = require('../util/client-server-comparator');
 
 const config = require('../../config');
 
@@ -93,12 +92,8 @@ describe('create-show-survey use case', function () {
                 if (err) {
                     return done(err);
                 }
-                helper.buildServerSurvey(surveyExamples.Example.survey, res.body)
-                    .then(function (expected) {
-                        expect(res.body).to.deep.equal(expected);
-                    })
-                    .then(done)
-                    .catch(done);
+                comparator.survey(surveyExamples.Example.survey, res.body)
+                    .then(done, done);
             });
     });
 });

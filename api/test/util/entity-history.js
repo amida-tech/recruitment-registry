@@ -76,6 +76,17 @@ class History {
         return result;
     }
 
+    updateClient(index, client) {
+        const currentIndex = this.currentIndex[index];
+        this.clients[currentIndex] = client;
+    }
+
+    updateServer(index, server) {
+        const currentIndex = this.currentIndex[index];
+        this.servers[currentIndex] = server;
+        this.history[index] = server;
+    }
+
     reloadServer(server) {
         const id = server.id;
         [this.history, this.servers, this.removed].forEach(collection => {

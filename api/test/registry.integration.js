@@ -9,7 +9,8 @@ const config = require('../config');
 const RRError = require('../lib/rr-error');
 
 const SharedIntegration = require('./util/shared-integration');
-const surveyHelper = require('./helper/survey-helper');
+const surveyHelper = require('./util/survey-common');
+const comparator = require('./util/client-server-comparator');
 
 const surveyExamples = require('./fixtures/example/survey');
 const userExamples = require('./fixtures/example/user');
@@ -72,13 +73,9 @@ describe('registry integration', function () {
                 if (err) {
                     return done(err);
                 }
-                return surveyHelper.buildServerSurvey(surveyExample.survey, res.body)
-                    .then(function (expected) {
-                        expect(res.body).to.deep.equal(expected);
-                        store.survey = res.body;
-                    })
-                    .then(() => done())
-                    .catch((err) => done(err));
+                store.survey = res.body;
+                comparator.survey(surveyExample.survey, res.body)
+                    .then(done, done);
             });
     });
 

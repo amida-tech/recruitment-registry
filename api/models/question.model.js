@@ -18,8 +18,7 @@ module.exports = function (sequelize, DataTypes) {
             },
         },
         version: {
-            type: DataTypes.INTEGER,
-            allowNull: false
+            type: DataTypes.INTEGER
         },
         groupId: {
             type: DataTypes.INTEGER,
@@ -52,8 +51,8 @@ module.exports = function (sequelize, DataTypes) {
                     return sequelize.Promise.resolve({ id });
                 }
             },
-            auxCreateQuestionTx: function (question, tx) {
-                const qxFields = _.omit(question, ['oneOfChoices', 'choices', 'actions']);
+            createQuestionTx: function (question, tx) {
+                const qxFields = _.omit(question, ['oneOfChoices', 'choices', 'actions', 'questions']);
                 return Question.create(qxFields, { transaction: tx })
                     .then(created => {
                         const text = question.text;
@@ -85,12 +84,7 @@ module.exports = function (sequelize, DataTypes) {
                             })).then(() => created);
                         }
                         return created;
-                    });
-            },
-            createQuestionTx: function (question, tx) {
-                const qx = Object.assign({}, question, { version: 1 });
-                return Question.auxCreateQuestionTx(qx, tx)
-                    .then(created => created.update({ groupId: created.id }, { transaction: tx }))
+                    })
                     .then(({ id }) => id);
             },
             createQuestion: function (question) {
@@ -110,19 +104,25 @@ module.exports = function (sequelize, DataTypes) {
                                         if (!question) {
                                             return RRError.reject('qxNotFound');
                                         }
+                                        const version = question.version || 1;
                                         const newQuestion = Object.assign({}, replacement, {
-                                            version: question.version + 1,
-                                            groupId: question.groupId
+                                            version: version + 1,
+                                            groupId: question.groupId || question.id
                                         });
-                                        return Question.auxCreateQuestionTx(newQuestion, tx)
-                                            .then(({ id }) => id);
-                                    })
-                                    .then((newIdObj) => {
-                                        return Question.destroy({ where: { id } }, { transaction: tx })
-                                            .then(() => {
-                                                return sequelize.models.survey_question.destroy({ where: { questionId: id } });
+                                        return Question.createQuestionTx(newQuestion, tx)
+                                            .then(id => {
+                                                if (!question.groupId) {
+                                                    return question.update({ version: 1, groupId: question.id }, { transaction: tx })
+                                                        .then(() => id);
+                                                } else {
+                                                    return id;
+                                                }
                                             })
-                                            .then(() => ({ id: newIdObj }));
+                                            .then(id => {
+                                                return question.destroy({ transaction: tx })
+                                                    .then(() => sequelize.models.survey_question.destroy({ where: { questionId: question.id } }))
+                                                    .then(() => ({ id }));
+                                            });
                                     });
                             });
                         }

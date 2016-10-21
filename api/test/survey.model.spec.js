@@ -5,12 +5,13 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 const _ = require('lodash');
 
-const surveyHelper = require('./helper/survey-helper');
 const models = require('../models');
 
 const Generator = require('./util/entity-generator');
 const History = require('./util/entity-history');
 const SharedSpec = require('./util/shared-spec');
+const comparator = require('./util/client-server-comparator');
+const translator = require('./util/translator');
 
 const expect = chai.expect;
 const generator = new Generator();
@@ -22,7 +23,7 @@ describe('survey unit', function () {
     before(shared.setUpFn());
 
     const userCount = 1;
-    const surveyCount = 8;
+    let surveyCount = 8;
 
     const history = new History(['id', 'name']);
     const hxUser = new History();
@@ -41,9 +42,8 @@ describe('survey unit', function () {
             return Survey.createSurvey(clientSurvey)
                 .then(id => Survey.getSurvey(id))
                 .then((serverSurvey) => {
-                    return surveyHelper.buildServerSurvey(clientSurvey, serverSurvey)
-                        .then(expected => {
-                            expect(serverSurvey).to.deep.equal(expected);
+                    return comparator.survey(clientSurvey, serverSurvey)
+                        .then(() => {
                             history.push(clientSurvey, serverSurvey);
                             return serverSurvey.id;
                         });
@@ -52,11 +52,8 @@ describe('survey unit', function () {
                 .then(() => Survey.getSurveyByName(updatedName))
                 .then(serverSurvey => {
                     const updatedSurvey = Object.assign({}, clientSurvey, { name: updatedName });
-                    return surveyHelper.buildServerSurvey(updatedSurvey, serverSurvey)
-                        .then(expected => {
-                            expect(serverSurvey).to.deep.equal(expected);
-                            return serverSurvey.id;
-                        });
+                    return comparator.survey(updatedSurvey, serverSurvey)
+                        .then(() => serverSurvey.id);
                 })
                 .then((id) => Survey.updateSurveyText({ id, name: clientSurvey.name }))
                 .then(() => Survey.listSurveys())
@@ -76,6 +73,37 @@ describe('survey unit', function () {
     for (let i = 0; i < surveyCount; ++i) {
         it(`create/get/verify/update survey ${i} and list all`, createVerifySurveyFn(i));
     }
+
+    it('replace sections of first survey with sections', function () {
+        const index = _.findIndex(history.listClients(), client => client.sections);
+        const survey = history.server(index);
+        const count = survey.questions.length;
+        const newSectionCount = (count - count % 2) / 2;
+        const newSections = [{
+            name: 'new_section_0',
+            indices: _.range(newSectionCount)
+        }, {
+            name: 'new_section_1',
+            indices: _.rangeRight(newSectionCount, newSectionCount * 2)
+        }];
+        const clientSurvey = history.client(index);
+        clientSurvey.sections = newSections;
+        history.updateClient(index, clientSurvey);
+        return Survey.replaceSurveySections(survey.id, newSections);
+    });
+
+    it('get/verify sections of first survey with sections', function () {
+        const index = _.findIndex(history.listClients(), client => client.sections);
+        const id = history.id(index);
+        return Survey.getSurvey(id)
+            .then(survey => {
+                const clientSurvey = history.client(index);
+                return comparator.survey(clientSurvey, survey)
+                    .then(() => {
+                        history.updateServer(index, survey);
+                    });
+            });
+    });
 
     it('error: show a non-existent survey', function () {
         return Survey.getSurvey(999)
@@ -119,11 +147,11 @@ describe('survey unit', function () {
 
     const translateTextFn = function (index, language) {
         return function () {
-            const { name } = generator.newSurvey();
-            const id = history.id(index);
-            return Survey.updateSurveyText({ id, name }, language)
+            const survey = history.server(index);
+            const translation = translator.translateSurvey(survey, language);
+            return Survey.updateSurveyText(translation, language)
                 .then(() => {
-                    history.translate(index, language, { name });
+                    history.translate(index, language, translation);
                 });
         };
     };
@@ -133,6 +161,7 @@ describe('survey unit', function () {
             const id = history.id(index);
             return Survey.getSurvey(id, { language })
                 .then(result => {
+                    translator.isSurveyTranslated(result, language);
                     const expected = history.translatedServer(index, language);
                     expect(result).to.deep.equal(expected);
                 });
@@ -151,7 +180,7 @@ describe('survey unit', function () {
 
     for (let i = 0; i < surveyCount; i += 2) {
         it(`add translated name to survey ${i}`, translateTextFn(i, 'es'));
-        it(`get and verify tanslated survey ${i}`, getTranslatedFn(i, 'es'));
+        it(`get and verify translated survey ${i}`, getTranslatedFn(i, 'es'));
     }
 
     it('list and verify translated surveys', listTranslatedFn('es'));
@@ -171,9 +200,8 @@ describe('survey unit', function () {
             return Survey.replaceSurvey(id, clientSurvey)
                 .then(id => Survey.getSurvey(id))
                 .then((serverSurvey) => {
-                    return surveyHelper.buildServerSurvey(clientSurvey, serverSurvey)
-                        .then(expected => {
-                            expect(serverSurvey).to.deep.equal(expected);
+                    return comparator.survey(clientSurvey, serverSurvey)
+                        .then(() => {
                             history.replace(index, clientSurvey, serverSurvey);
                             return serverSurvey.id;
                         });
@@ -189,7 +217,7 @@ describe('survey unit', function () {
     const dbVersionCompareFn = function (index, count) {
         return function () {
             const id = history.id(index);
-            return Survey.getSurvey(id, { override: { attributes: ['id', 'groupId'] } })
+            return Survey.getSurvey(id, { override: { attributes: ['id', 'version', 'groupId'] } })
                 .then(surveyWithGroupId => {
                     const groupId = surveyWithGroupId.groupId;
                     return Survey.listSurveys({
@@ -208,15 +236,37 @@ describe('survey unit', function () {
         };
     };
 
-    [3, 0, 9].forEach(index => {
+    [3, 0, surveyCount + 1].forEach(index => {
         it(`replace survey ${index} with survey ${surveyCount+index}`, replaceSurveyFn(index));
     });
 
-    it('survey 1 is version 1', dbVersionCompareFn(1, 1));
-    it('survey 8 is version 2', dbVersionCompareFn(8, 2));
-    it('survey 10 is version 3', dbVersionCompareFn(10, 3));
+    it(`survey ${surveyCount} is version 2`, dbVersionCompareFn(surveyCount, 2));
+    it(`survey ${surveyCount+2} is version 3`, dbVersionCompareFn(surveyCount + 2, 3));
 
-    it('listSurvey override with name', function () {
+    const dbVersionParentlessCompareFn = function (index, replaced) {
+        return function () {
+            const id = history.id(index);
+            return Survey.getSurvey(id, { override: { attributes: ['id', 'version', 'groupId'], paranoid: false } })
+                .then(survey => {
+                    if (replaced) {
+                        const { version, groupId } = survey;
+                        expect({ id, version, groupId }).to.deep.equal({ id, version: 1, groupId: id });
+                    } else {
+                        const { version, groupId } = survey;
+                        expect({ id, version, groupId }).to.deep.equal({ id, version: null, groupId: null });
+                    }
+                });
+        };
+    };
+
+    it('survey 1 is version null', dbVersionParentlessCompareFn(1, false));
+    it('survey 3 is version 1', dbVersionParentlessCompareFn(3, true));
+
+    it('update survey count', function () {
+        surveyCount += 3;
+    });
+
+    it('listSurvey override where', function () {
         return Survey.listSurveys({
                 override: {
                     where: { version: 3 },
@@ -254,13 +304,13 @@ describe('survey unit', function () {
         survey.questions = questions.map(({ id, required }) => ({ id, required }));
         return Survey.createSurvey(survey)
             .then(id => Survey.getSurvey(id))
-            .then((serverSurvey) => {
-                const expected = {
-                    id: serverSurvey.id,
-                    name: survey.name,
-                    questions: questions
-                };
-                expect(serverSurvey).to.deep.equal(expected);
+            .then(serverSurvey => {
+                survey.questions = questions;
+                return comparator.survey(survey, serverSurvey)
+                    .then(() => {
+                        history.push(survey, serverSurvey);
+                        ++surveyCount;
+                    });
             });
     });
 
@@ -272,12 +322,11 @@ describe('survey unit', function () {
         return Survey.createSurvey(survey)
             .then(id => Survey.getSurvey(id))
             .then((serverSurvey) => {
+                ++surveyCount;
                 survey.questions[1] = history.questions[10];
                 survey.questions[2] = history.questions[11];
-                return surveyHelper.buildServerSurvey(survey, serverSurvey)
-                    .then(expected => {
-                        expect(serverSurvey).to.deep.equal(expected);
-                    });
+                history.push(survey, serverSurvey);
+                return comparator.survey(survey, serverSurvey);
             });
     });
 
@@ -319,7 +368,9 @@ describe('survey unit', function () {
         };
     };
 
-    it('answer survey 1 and get/verify answered survey 1', answerVerifySurveyFn(1));
+    [1, 2, 7, 10, 11, 12].forEach(index => {
+        it(`answer survey ${index} and get/verify answered`, answerVerifySurveyFn(index));
+    });
 
     it('error: answer without required questions', function () {
         const survey = history.server(4);

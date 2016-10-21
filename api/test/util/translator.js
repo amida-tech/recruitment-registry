@@ -1,10 +1,22 @@
 'use strict';
 
 const _ = require('lodash');
+const chai = require('chai');
+
+const expect = chai.expect;
 
 const translator = {
     _translate(text, language) {
         return `${text} (${language})`;
+    },
+    _isTranslated(texts, language) {
+        const languageText = `(${language})`;
+        texts.forEach(text => {
+            if (text !== null) {
+                const location = text.indexOf(languageText);
+                expect(location).to.be.above(0);
+            }
+        });
     },
     translateQuestion(question, language) {
         const result = _.cloneDeep(question);
@@ -24,6 +36,25 @@ const translator = {
         }
         return result;
     },
+    translateSurvey(survey, language) {
+        const result = _.cloneDeep(survey);
+        result.name = this._translate(result.name, language);
+        if (result.sections) {
+            result.sections.forEach(section => {
+                section.name = this._translate(section.name, language);
+                delete section.indices;
+            });
+        }
+        delete result.questions;
+        return result;
+    },
+    isSurveyTranslated(survey, language) {
+        const texts = [survey.name];
+        if (survey.sections) {
+            texts.push(...survey.sections.map(section => section.name));
+        }
+        this._isTranslated(texts, language);
+    },
     translateConsentType(consentType, language) {
         const result = _.pick(consentType, ['id', 'title']);
         result.title = this._translate(result.title, language);
@@ -38,6 +69,18 @@ const translator = {
             result.updateComment = null;
         }
         return result;
+    },
+    isConsentDocumentTranslated(consentDocument, language) {
+        const languageText = `(${language})`;
+        consentDocument.sections.forEach(section => {
+            ['title', 'content', 'updateComment'].forEach(property => {
+                const text = section[property];
+                if (text !== null) {
+                    const location = text.indexOf(languageText);
+                    expect(location).to.be.above(0);
+                }
+            });
+        });
     }
 };
 

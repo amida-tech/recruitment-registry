@@ -11,6 +11,7 @@ const History = require('./util/entity-history');
 const ConsentCommon = require('./util/consent-common');
 const ConsentDocumentHistory = require('./util/consent-document-history');
 const models = require('../models');
+const translator = require('./util/translator');
 
 const expect = chai.expect;
 const generator = new Generator();
@@ -132,15 +133,7 @@ describe('consent unit', function () {
                 }, {});
                 const expected = consentCommon.formTranslatedExpectedConsent(index, typeIndices, signatures, language);
                 expect(consent).to.deep.equal(expected);
-                consent.sections.forEach(section => {
-                    ['title', 'content', 'updateComment'].forEach(property => {
-                        const text = section[property];
-                        if (text !== null) {
-                            const location = text.indexOf(`(${language})`);
-                            expect(location).to.be.above(0);
-                        }
-                    });
-                });
+                translator.isConsentDocumentTranslated(consent, language);
             });
     };
 
@@ -178,16 +171,8 @@ describe('consent unit', function () {
                     return r;
                 }, {});
                 const expected = consentCommon.formTranslatedExpectedConsent(index, typeIndices, signatures, language);
+                translator.isConsentDocumentTranslated(consent, language);
                 expect(consent).to.deep.equal(expected);
-                consent.sections.forEach(section => {
-                    ['title', 'content', 'updateComment'].forEach(property => {
-                        const text = section[property];
-                        if (text !== null) {
-                            const location = text.indexOf(`(${language})`);
-                            expect(location).to.be.above(0);
-                        }
-                    });
-                });
             });
     };
 
@@ -225,15 +210,7 @@ describe('consent unit', function () {
                     const typeIndices = consentSpecs[consentIndex];
                     const expected = consentCommon.formTranslatedExpectedConsent(consentIndex, typeIndices, undefined, 'es');
                     expect(consent).to.deep.equal(expected);
-                    consent.sections.forEach(section => {
-                        ['title', 'content', 'updateComment'].forEach(property => {
-                            const text = section[property];
-                            if (text !== null) {
-                                const location = text.indexOf('(es)');
-                                expect(location).to.be.above(0);
-                            }
-                        });
-                    });
+                    translator.isConsentDocumentTranslated(consent, 'es');
                 });
         });
 
@@ -254,15 +231,7 @@ describe('consent unit', function () {
                     const typeIndices = consentSpecs[consentIndex];
                     const expected = consentCommon.formTranslatedExpectedConsent(consentIndex, typeIndices, undefined, 'es');
                     expect(consent).to.deep.equal(expected);
-                    consent.sections.forEach(section => {
-                        ['title', 'content', 'updateComment'].forEach(property => {
-                            const text = section[property];
-                            if (text !== null) {
-                                const location = text.indexOf('(es)');
-                                expect(location).to.be.above(0);
-                            }
-                        });
-                    });
+                    translator.isConsentDocumentTranslated(consent, 'es');
                 });
         });
 
