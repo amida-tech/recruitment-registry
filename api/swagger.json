@@ -561,15 +561,7 @@
                     "201": {
                         "description": "Successful response",
                         "schema": {
-                            "description": "User JWT token",
-                            "type": "object",
-                            "required": ["token"],
-                            "properties": {
-                                "token": {
-                                    "type": "string"
-                                }
-                            },
-                            "additionalProperties": false
+                            "$ref": "#/definitions/token"
                         }
                     },
                     "default": {
@@ -973,22 +965,7 @@
                     "description": "Content text",
                     "required": true,
                     "schema": {
-                        "type": "object",
-                        "required": ["typeId", "content"],
-                        "properties": {
-                            "typeId": {
-                                "type": "integer"
-                            },
-                            "content": {
-                                "type": "string",
-                                "minLength": 1
-                            },
-                            "updateComment": {
-                                "type": "string",
-                                "minLength": 1
-                            }
-                        },
-                        "additionalProperties": false
+                        "$ref": "#/definitions/newConsentDocument"
                     }
                 }],
                 "responses": {
@@ -1024,24 +1001,7 @@
                     "200": {
                         "description": "Successful response",
                         "schema": {
-                            "type": "object",
-                            "required": ["id", "typeId", "content"],
-                            "properties": {
-                                "id": {
-                                    "type": "integer"
-                                },
-                                "typeId": {
-                                    "type": "integer"
-                                },
-                                "content": {
-                                    "type": "string",
-                                    "minLength": 1
-                                },
-                                "updateComment": {
-                                    "type": ["string", "null"]
-                                }
-                            },
-                            "additionalProperties": false
+                            "$ref": "#/definitions/consentDocument"
                         }
                     },
                     "default": {
@@ -1073,10 +1033,7 @@
                     "200": {
                         "description": "Successful response",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": ["string", "null"]
-                            }
+                            "$ref": "#/definitions/consentUpdateComments"
                         }
                     },
                     "default": {
@@ -2452,6 +2409,49 @@
                 }
             },
             "additionalProperties": false
+        },
+        "newConsentDocument": {
+            "type": "object",
+            "required": ["typeId", "content"],
+            "properties": {
+                "typeId": {
+                    "type": "integer"
+                },
+                "content": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "updateComment": {
+                    "type": ["string", "null"]
+                }
+            },
+            "additionalProperties": false
+        },
+        "consentDocument": {
+            "type": "object",
+            "required": ["id", "typeId", "content"],
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "typeId": {
+                    "type": "integer"
+                },
+                "content": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "updateComment": {
+                    "type": ["string", "null"]
+                }
+            },
+            "additionalProperties": false
+        },
+        "consentUpdateComments": {
+            "type": "array",
+            "items": {
+                "type": ["string", "null"]
+            }
         },
         "consentDocumentInfo": {
             "type": "object",
