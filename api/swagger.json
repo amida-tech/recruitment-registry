@@ -487,10 +487,7 @@
                     "200": {
                         "description": "Successful response.",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/linkedAnswer"
-                            }
+                            "$ref": "#/definitions/linkedAnswers"
                         }
                     },
                     "default": {
@@ -856,10 +853,7 @@
                     "200": {
                         "description": "Successful response",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/consentType"
-                            }
+                            "$ref": "#/definitions/consentTypes"
                         }
                     },
                     "default": {
@@ -1175,22 +1169,7 @@
                     "200": {
                         "description": "Successful response",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "required": ["id", "language"],
-                                "properties": {
-                                    "id": {
-                                        "type": "integer",
-                                        "minimum": 1
-                                    },
-                                    "language": {
-                                        "type": "string",
-                                        "minLength": 2
-                                    }
-                                },
-                                "additionalProperties": false
-                            }
+                            "$ref": "#/definitions/consentSignatureHistory"
                         }
                     },
                     "default": {
@@ -2138,6 +2117,12 @@
                 }
             }
         },
+        "linkedAnswers": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/linkedAnswer"
+            }
+        },
         "newUserProfile": {
             "type": "object",
             "required": [
@@ -2410,6 +2395,12 @@
             },
             "additionalProperties": false
         },
+        "consentTypes": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/consentType"
+            }
+        },
         "newConsentDocument": {
             "type": "object",
             "required": ["typeId", "content"],
@@ -2515,6 +2506,24 @@
                 }
             },
             "additionalProperties": false
+        },
+        "consentSignatureHistory": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": ["id", "language"],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "language": {
+                        "type": "string",
+                        "minLength": 2
+                    }
+                },
+                "additionalProperties": false
+            }
         },
         "language": {
             "type": "object",
