@@ -200,29 +200,7 @@
                     "200": {
                         "description": "Successul response",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "required": ["id", "name", "title"],
-                                "properties": {
-                                    "id": {
-                                        "type": "integer",
-                                        "minimum": 1
-                                    },
-                                    "name": {
-                                        "type": "string",
-                                        "minLength": 1
-                                    },
-                                    "title": {
-                                        "type": "string",
-                                        "minLength": 1
-                                    },
-                                    "type": {
-                                        "type": "string"
-                                    }
-                                },
-                                "additionalProperties": false
-                            }
+                            "$ref": "#/definitions/consentDocumentDashboard"
                         }
                     },
                     "default": {
@@ -282,20 +260,7 @@
                     "200": {
                         "description": "Successful response.",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "required": ["id", "name"],
-                                "properties": {
-                                    "id": {
-                                        "type": "integer"
-                                    },
-                                    "name": {
-                                        "type": "string"
-                                    }
-                                },
-                                "additionalProperties": false
-                            }
+                            "$ref": "#/definitions/surveyDashboard"
                         }
                     },
                     "default": {
@@ -1822,18 +1787,7 @@
                 "choices": {
                     "type": "array",
                     "items": {
-                        "type": "object",
-                        "required": ["text"],
-                        "properties": {
-                            "text": {
-                                "type": "string",
-                                "minLength": 1
-                            },
-                            "type": {
-                                "type": "string",
-                                "enum": ["text", "bool"]
-                            }
-                        }
+                        "$ref": "#/definitions/newChoice"
                     },
                     "minItems": 1
                 },
@@ -2027,6 +1981,25 @@
                 }
             },
             "additionalProperties": false
+        },
+        "surveyInfo": {
+            "type": "object",
+            "required": ["id", "name"],
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false
+        },
+        "surveyDashboard": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/surveyInfo"
+            }
         },
         "choiceType": {
             "type": "string",
@@ -2509,6 +2482,35 @@
                 }
             },
             "additionalProperties": false
+        },
+        "consentDocumentInfo": {
+            "type": "object",
+            "required": ["id", "name", "title"],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "title": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "type": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "consentDocumentDashboard": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/consentDocumentInfo"
+            }
         },
         "consentTypeTextUpdate": {
             "type": "object",
