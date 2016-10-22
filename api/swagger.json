@@ -1530,13 +1530,7 @@
         "idSuccess" : {
             "description": "Successful response",
             "schema": {
-                "description": "Id",
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "type": "integer"
-                    }
-                }
+                "$ref": "#/definitions/id"
             }
         },
         "anyArray": {
@@ -1566,6 +1560,15 @@
             "properties": {
                 "token": {
                     "type": "string"
+                }
+            }
+        },
+        "id": {
+            "description": "id",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
                 }
             }
         },
@@ -1905,6 +1908,23 @@
             },
             "additionalProperties": false
         },
+        "choicesItem": {
+            "type": "object",
+            "required": ["id"],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "boolValue": {
+                    "type": "boolean"
+                },
+                "textValue": {
+                    "type": "string"
+                }
+            },
+            "maxProperties": 2
+        },
         "answer": {
             "type": "object",
             "properties": {
@@ -1915,21 +1935,7 @@
                 "choices": {
                     "type": "array",
                     "items": {
-                        "type": "object",
-                        "required": ["id"],
-                        "properties": {
-                            "id": {
-                                "type": "integer",
-                                "minimum": 1
-                            },
-                            "boolValue": {
-                                "type": "boolean"
-                            },
-                            "textValue": {
-                                "type": "string"
-                            }
-                        },
-                        "maxProperties": 2
+                        "$ref": "#/definitions/choicesItem"
                     },
                     "minItems": 1
                 },
