@@ -113,7 +113,7 @@ describe('language integration', function () {
             .patch(`/api/v1.0/languages/tr`)
             .set('Authorization', store.auth)
             .send(languageUpdate)
-            .expect(200)
+            .expect(204)
             .end(function (err) {
                 if (err) {
                     return done(err);

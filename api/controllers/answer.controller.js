@@ -15,7 +15,7 @@ exports.createAnswers = function (req, res) {
         answers.language = language;
     }
     Answer.createAnswers(answers)
-        .then(() => res.status(201).json({}))
+        .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };
 

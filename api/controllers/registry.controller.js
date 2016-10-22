@@ -25,7 +25,7 @@ exports.createProfile = function (req, res) {
 
 exports.updateProfile = function (req, res) {
     Registry.updateProfile(req.user.id, req.body)
-        .then(() => res.status(200).json({}))
+        .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };
 

@@ -38,13 +38,13 @@ exports.showCurrentUser = function (req, res) {
 
 exports.updateCurrentUser = function (req, res) {
     User.updateUser(req.user.id, req.body)
-        .then(() => res.status(200).json({}))
+        .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };
 
 exports.resetPassword = function (req, res) {
     User.resetPassword(req.body.token, req.body.password)
-        .then(() => res.status(201).json({}))
+        .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };
 

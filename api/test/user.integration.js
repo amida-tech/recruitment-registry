@@ -124,7 +124,7 @@ describe('user integration', function () {
             .patch('/api/v1.0/users/me')
             .set('Authorization', store.auth)
             .send(userUpdate)
-            .expect(200, done);
+            .expect(204, done);
     });
 
     it('error: bad login with old password', shared.badLoginFn(store, user));

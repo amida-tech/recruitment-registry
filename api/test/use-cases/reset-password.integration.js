@@ -109,7 +109,7 @@ describe('reset password use-case', function () {
             .send({
                 email: userExample.email
             })
-            .expect(201)
+            .expect(204)
             .end(function (err) {
                 if (err) {
                     return done(err);
@@ -130,7 +130,7 @@ describe('reset password use-case', function () {
                 token,
                 password: 'newPassword'
             })
-            .expect(201, done);
+            .expect(204, done);
     });
 
     it('verify user can not login with old password', shared.badLoginFn(store, userExample));

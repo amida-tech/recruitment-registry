@@ -75,7 +75,7 @@ describe('answer integration', function () {
                 .set('Authorization', store.auth)
                 .query(query)
                 .send(input)
-                .expect(201, done);
+                .expect(204, done);
         };
     };
 
