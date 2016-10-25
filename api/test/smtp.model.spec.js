@@ -20,6 +20,11 @@ describe('smtp unit', function () {
     let smtpText;
     let smtpTextTranslation = {};
 
+    const checkNull = function() {
+        return Smtp.getSmtp()
+            .then(result => expect(result).to.equal(null));
+    };
+
     const createNewSmtp = function (index) {
         return {
             protocol: `protocol_${index}`,
@@ -56,6 +61,14 @@ describe('smtp unit', function () {
                         smtpTextTranslation = {};
                     }
                 });
+        };
+    };
+
+    const updateSmtpTextFn = function(index, language) {
+        return function () {
+            const text = createNewSmtpText(index);
+            return Smtp.updateSmtpText(text, language)
+                .then(() => (smtpText = text));
         };
     };
 
@@ -119,20 +132,13 @@ describe('smtp unit', function () {
         };
     };
 
-    it('get null when no smtp server ever specified', function () {
-        return Smtp.getSmtp()
-            .then(result => expect(result).to.equal(null));
-    });
+    it('get null when no smtp server ever specified', checkNull);
 
     it('create smtp server setting without subject/content', createSmtpFn(0));
 
     it('get/verify smtp settings', getSmtpFn());
 
-    it('add subject/content', function () {
-        const text = createNewSmtpText(0);
-        return Smtp.updateSmtpText(text, 'en')
-            .then(() => (smtpText = text));
-    });
+    it('add subject/content', updateSmtpTextFn(0, 'en'));
 
     it('get/verify smtp settings', getSmtpFn());
 
@@ -158,20 +164,13 @@ describe('smtp unit', function () {
 
     it('delete smtp server settings', deleteSmtpFn());
 
-    it('get null when smtp server settings deactivated', function () {
-        return Smtp.getSmtp()
-            .then(result => expect(result).to.equal(null));
-    });
+    it('get null when smtp server settings deactivated', checkNull);
 
     it('update smtp server setting without subject/content', createSmtpFn(3));
 
     it('get/verify smtp settings', getSmtpFn());
 
-    it('add subject/content', function () {
-        const text = createNewSmtpText(1);
-        return Smtp.updateSmtpText(text)
-            .then(() => (smtpText = text));
-    });
+    it('add subject/content',  updateSmtpTextFn(1));
 
     it('get/verify smtp settings', getSmtpFn());
 
