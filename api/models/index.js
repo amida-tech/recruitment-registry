@@ -43,11 +43,16 @@ const Language = sequelize.import('./language.model');
 const SurveySection = sequelize.import('./survey-section.model');
 const SectionText = sequelize.import('./section-text.model');
 const Section = sequelize.import('./section.model');
+const SmtpText = sequelize.import('./smtp-text.model');
+const Smtp = sequelize.import('./smtp.model');
 
 module.exports = {
     Sequelize,
     sequelize,
     User,
+    Section,
+    SurveySection,
+    SectionText,
     QuestionType,
     QuestionChoice,
     QuestionChoiceText,
@@ -70,7 +75,6 @@ module.exports = {
     SurveyConsentType,
     Registry,
     Language,
-    Section,
-    SurveySection,
-    SectionText
+    SmtpText,
+    Smtp
 };
