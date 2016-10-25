@@ -16,7 +16,7 @@ module.exports = function (sequelize, DataTypes) {
             allowNull: false,
             field: 'section_id',
             references: {
-                model: 'section',
+                model: 'rr_section',
                 key: 'id'
             }
         },

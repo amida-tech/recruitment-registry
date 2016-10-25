@@ -7,7 +7,7 @@ module.exports = function (sequelize, DataTypes) {
             allowNull: false,
             fieldName: 'section_id',
             references: {
-                model: 'section',
+                model: 'rr_section',
                 key: 'id'
             }
         },
