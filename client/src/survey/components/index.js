@@ -3,6 +3,71 @@ import { connect } from 'react-redux';
 import { SurveyInputField, SurveyBoolField, SurveyChoiceField, SurveyChoicesField } from './survey-form';
 
 export class SurveyContainer extends Component {
+  constructor(props){
+    super(props);
+    this.state={};
+    this.handleSubmit= this.handleSubmit.bind(this);
+  }
+
+  handleSubmit(event){
+    var questions = this.props.selectedSurvey.toJS().questions;
+    console.log(questions);
+    var results = {
+      "surveyId": this.props.selectedSurvey.toJS().id,
+      "answers": []
+    };
+    questions.forEach(question => {
+      switch(question.type) {
+        case "text":
+          results.answers.push({
+            "questionId":question.id,
+            "answer": {
+              "textValue": document.getElementById(question.id).value
+            }});
+            break;
+        case "bool":
+          results.answers.push({
+            "questionId":question.id,
+            "answer": {
+              "boolValue": document.getElementById(question.id+'t').checked
+            }});
+            break;
+        case "choice":
+          results.answers.push({
+            "questionId":question.id,
+            "answer": {
+              "choice": document.getElementById(question.id).value
+            }});
+            break;
+        case "choices":
+          var choices = [];
+          question.choices.forEach(choice => {
+            if(choice.text == document.getElementById(question.id).value){
+              if(choice.type == "text"){
+                choices.push({
+                  "id":choice.id,
+                  "boolValue": true,
+                  "textValue": document.getElementById(question.id+'text').value
+                })} else {
+                  choices.push({
+                    "id":choice.id,
+                    "boolValue": true
+                  })
+              }} else {
+                  choices.push({
+                    "id":choice.id,
+                    "boolValue": false
+                  })}
+          });
+          results.answers.push({
+            "questionId":question.id,
+            "answer": choices
+          });
+          break;
+      }});
+    console.log(results.answers);
+  }
+
   render() {
     const { id, name, questions } = this.props.selectedSurvey.toJS()
     var questionnaire = [];
@@ -39,8 +104,9 @@ export class SurveyContainer extends Component {
     return (
       <div>
         <h1>{name}</h1>
-        <div className="">
+        <div key={id} className="">
           {questionnaire}
+          <button onClick={this.handleSubmit}>{this.props.vocab.get('SUBMIT')}</button>
         </div>
       </div>
     )}
@@ -48,6 +114,7 @@ export class SurveyContainer extends Component {
   componentWillMount() {
     this.props.dispatch({type: 'GET_SURVEY_BY_ID', payload: this.props.params.id});
   }
+
 }
 
 const mapStateToProps = function(store) {
