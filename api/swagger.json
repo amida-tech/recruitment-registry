@@ -1501,6 +1501,107 @@
                     }
                 }
             }
+        },
+        "/smtp": {
+            "x-swagger-router-controller": "smtp.controller",
+            "post": {
+                "summary": "Update smtp settings",
+                "operationId": "createSmtp",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "newSmtpSpec",
+                    "in": "body",
+                    "description": "Smtp specifications",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/newSmtpSpec"
+                    }
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successful response"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "get": {
+                "summary": "Gets smtp setting",
+                "operationId": "getSmtp",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "language",
+                    "in": "query",
+                    "description": "Language requested",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 1
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/smtpSpec"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Deletes smtp setting",
+                "operationId": "deleteSmtp",
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successful response"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/smtp/text/{language}": {
+            "x-swagger-router-controller": "smtp.controller",
+            "patch": {
+                "summary": "Updates or translates reset password text fields",
+                "operationId": "updateSmtpText",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "language",
+                    "in": "path",
+                    "description": "Language code",
+                    "required": true,
+                    "type": "string",
+                    "minLength": 2
+                }, {
+                    "name": "textUpdate",
+                    "in": "body",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/smtpSpecTextUpdate"
+                    }
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successul response"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
         }
     },
     "securityDefinitions": {
@@ -2521,6 +2622,97 @@
                 }
             },
             "additionalProperties": false
-       }
+       },
+       "smtpSpec": {
+            "type": ["object", "null"],
+            "required": ["protocol", "username", "password", "host", "from", "otherOptions"],
+            "properties": {
+                "protocol": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "username": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "host": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "from": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "otherOptions": {
+                    "type": "object"
+                },
+                "content": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "subject": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "newSmtpSpec": {
+            "type": "object",
+            "required": ["protocol", "username", "password", "host", "from", "otherOptions"],
+            "properties": {
+                "protocol": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "username": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "host": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "from": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "otherOptions": {
+                    "type": "object"
+                },
+                "content": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "subject": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "additionalProperties": false
+        },
+       "smtpSpecTextUpdate": {
+            "type": "object",
+            "required": ["subject", "content"],
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "subject": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "additionalProperties": false
+        }
     }
 }
