@@ -1,8 +1,9 @@
 'use strict';
 
+const nodemailer = require('nodemailer');
+
 const config = require('../config');
 const models = require('../models');
-const mailer = require('./mailer');
 const RRError = require('./rr-error');
 
 const User = models.User;
@@ -22,7 +23,7 @@ module.exports = function (email) {
         .then(smtp => {
             return User.resetPasswordToken(email)
                 .then(token => {
-                    const link = config.resetPw.clientBaseUrl + token;
+                    const link = config.clientBaseUrl + token;
                     const text = smtp.content.replace(/\$\{link\}/g, link);
                     const { protocol, username, password, host } = smtp;
                     const uri = `${protocol}://${username}:${password}@${host}:9001`;
@@ -34,7 +35,8 @@ module.exports = function (email) {
                     };
                     Object.assign(mailerOptions, smtp.otherOptions);
                     return new models.sequelize.Promise(function (resolve, reject) {
-                        mailer.sendEmail(uri, mailerOptions, function (err) {
+                        const transporter = nodemailer.createTransport(uri);
+                        transporter.sendMail(mailerOptions, function (err) {
                             if (err) {
                                 return reject(err);
                             }

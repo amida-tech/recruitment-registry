@@ -8,19 +8,19 @@ const stream = require('stream');
 const chai = require('chai');
 const smtpServer = require('smtp-server');
 
-const helper = require('../util/survey-common');
+const helper = require('./util/survey-common');
 
-const SharedIntegration = require('../util/shared-integration');
-const userExamples = require('../fixtures/example/user');
-const surveyExamples = require('../fixtures/example/survey');
+const SharedIntegration = require('./util/shared-integration');
+const userExamples = require('./fixtures/example/user');
+const surveyExamples = require('./fixtures/example/survey');
 
-const config = require('../../config');
-const RRError = require('../../lib/rr-error');
+const config = require('../config');
+const RRError = require('../lib/rr-error');
 
 const expect = chai.expect;
 const shared = new SharedIntegration();
 
-describe('reset password use-case', function () {
+describe('reset-token integration', function () {
     const userExample = userExamples.Alzheimer;
     const surveyExample = surveyExamples.Alzheimer;
 
