@@ -25,7 +25,7 @@ describe('smtp integration', function () {
     let smtpText;
     let smtpTextTranslation = {};
 
-    const checkNull = function(done) {
+    const checkNull = function (done) {
         store.server
             .get('/api/v1.0/smtp')
             .set('Authorization', store.auth)
@@ -130,7 +130,7 @@ describe('smtp integration', function () {
             store.server
                 .get('/api/v1.0/smtp')
                 .set('Authorization', store.auth)
-                .query({language})
+                .query({ language })
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -231,7 +231,7 @@ describe('smtp integration', function () {
 
     it('get/verify smtp settings', getSmtpFn());
 
-    it('add subject/content',  updateSmtpTextFn(1));
+    it('add subject/content', updateSmtpTextFn(1));
 
     it('get/verify smtp settings', getSmtpFn());
 

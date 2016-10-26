@@ -106,3 +106,11 @@ errors.qxReplaceWhenActiveSurveys = {
 errors.consentTypeDeleteOnConsent = {
     msg: 'Consent type cannot be removed because it is used by one or more consents.'
 };
+
+errors.smtpNotSpecified = {
+    msg: 'Smtp specifications are not specified.'
+};
+
+errors.smtpTextNotSpecified = {
+    msg: 'Email content and/or subject not specified for reset token.'
+};

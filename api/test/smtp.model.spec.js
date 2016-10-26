@@ -20,7 +20,7 @@ describe('smtp unit', function () {
     let smtpText;
     let smtpTextTranslation = {};
 
-    const checkNull = function() {
+    const checkNull = function () {
         return Smtp.getSmtp()
             .then(result => expect(result).to.equal(null));
     };
@@ -64,7 +64,7 @@ describe('smtp unit', function () {
         };
     };
 
-    const updateSmtpTextFn = function(index, language) {
+    const updateSmtpTextFn = function (index, language) {
         return function () {
             const text = createNewSmtpText(index);
             return Smtp.updateSmtpText(text, language)
@@ -170,7 +170,7 @@ describe('smtp unit', function () {
 
     it('get/verify smtp settings', getSmtpFn());
 
-    it('add subject/content',  updateSmtpTextFn(1));
+    it('add subject/content', updateSmtpTextFn(1));
 
     it('get/verify smtp settings', getSmtpFn());
 

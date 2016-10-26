@@ -50,12 +50,12 @@ describe('mailer unit', function () {
         }
     });
 
-    const mailerSpec = {
-        emailUri: 'smtp://test@example.com:pw@localhost:9001',
-        emailTo: 'test@example.com',
-        emailFrom: 'admin@example.com',
-        emailName: 'Registry Administration',
-        emailSubject: 'Registry Password Reset'
+    const uri = 'smtp://test@example.com:pw@localhost:9001';
+    const options = {
+        to: 'test@example.com',
+        from: 'admin@example.com',
+        subject: 'Registry Password Reset',
+        text: 'This is the content'
     };
 
     before(function () {
@@ -63,14 +63,14 @@ describe('mailer unit', function () {
     });
 
     it('send email', function (done) {
-        mailer.sendEmail(mailerSpec, done);
+        mailer.sendEmail(uri, options, done);
     });
 
     it('check email', function () {
         expect(store.auth.username).to.equal('test@example.com');
         expect(store.auth.password).to.equal('pw');
-        expect(store.from).to.equal(mailerSpec.emailFrom);
-        expect(store.to).to.equal(mailerSpec.emailTo);
+        expect(store.from).to.equal(options.from);
+        expect(store.to).to.equal(options.to);
     });
 
     after(function (done) {

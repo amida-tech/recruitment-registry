@@ -13,6 +13,7 @@ const surveyExamples = require('../fixtures/example/survey');
 
 const config = require('../../config');
 const mailer = require('../../lib/mailer');
+const RRError = require('../../lib/rr-error');
 
 const expect = chai.expect;
 const shared = new SharedIntegration();
@@ -77,9 +78,80 @@ describe('reset password use-case', function () {
 
     let token;
 
+    it('error: no smtp settings is specified', function (done) {
+        store.server
+            .post(`/api/v1.0/reset-tokens`)
+            .send({
+                email: userExample.email
+            })
+            .expect(400)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                expect(res.body.message).to.equal(RRError.message('smtpNotSpecified'));
+                done();
+            });
+    });
+
+    it('login as super', shared.loginFn(store, config.superUser));
+
+    const smtpSpec = {
+        protocol: 'smtp',
+        username: 'smtp@example.com',
+        password: 'pw',
+        host: 'localhost',
+        from: userExample.email,
+        otherOptions: {}
+    };
+
+    it('setup server specifications', function (done) {
+        store.server
+            .post('/api/v1.0/smtp')
+            .set('Authorization', store.auth)
+            .send(smtpSpec)
+            .expect(204, done);
+    });
+
+    it('logout as super', shared.logoutFn(store));
+
+    it('error: no email subject/content is specified', function (done) {
+        store.server
+            .post(`/api/v1.0/reset-tokens`)
+            .send({
+                email: userExample.email
+            })
+            .expect(400)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                expect(res.body.message).to.not.equal(RRError.message('unknown'));
+                expect(res.body.message).to.equal(RRError.message('smtpTextNotSpecified'));
+                done();
+            });
+    });
+
+    it('login as super', shared.loginFn(store, config.superUser));
+
+    const smtpText = {
+        subject: 'Registry Admin',
+        content: 'Click on this: ${link}',
+    };
+
+    it('setup server specifications', function (done) {
+        store.server
+            .patch('/api/v1.0/smtp/text/en')
+            .set('Authorization', store.auth)
+            .send(smtpText)
+            .expect(204, done);
+    });
+
+    it('logout as super', shared.logoutFn(store));
+
     it('error: generate reset tokens', function (done) {
-        const stub = sinon.stub(mailer, 'sendEmail', function (spec, callback) {
-            callback(new Error(spec.link));
+        const stub = sinon.stub(mailer, 'sendEmail', function (uri, options, callback) {
+            callback(new Error(options.subject));
         });
         store.server
             .post('/api/v1.0/reset-tokens')
@@ -99,8 +171,8 @@ describe('reset password use-case', function () {
     });
 
     it('generate reset tokens', function (done) {
-        const stub = sinon.stub(mailer, 'sendEmail', function (spec, callback) {
-            const linkPieces = spec.link.split('/');
+        const stub = sinon.stub(mailer, 'sendEmail', function (uri, options, callback) {
+            const linkPieces = options.text.split('/');
             token = linkPieces[linkPieces.length - 1];
             callback(null);
         });
