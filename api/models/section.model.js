@@ -5,7 +5,7 @@ const textTableMethods = require('./text-table-methods');
 module.exports = function (sequelize, DataTypes) {
     const textHandler = textTableMethods(sequelize, 'section_text', 'sectionId', ['name']);
 
-    const Section = sequelize.define('section', {
+    const Section = sequelize.define('rr_section', {
         indices: {
             type: DataTypes.ARRAY(DataTypes.INTEGER),
             allowNull: false

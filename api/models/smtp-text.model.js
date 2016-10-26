@@ -1,16 +1,7 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    const SectionText = sequelize.define('section_text', {
-        sectionId: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            fieldName: 'section_id',
-            references: {
-                model: 'rr_section',
-                key: 'id'
-            }
-        },
+    const SmtpText = sequelize.define('smtp_text', {
         language: {
             type: DataTypes.TEXT,
             allowNull: false,
@@ -20,7 +11,11 @@ module.exports = function (sequelize, DataTypes) {
                 key: 'code'
             }
         },
-        name: {
+        subject: {
+            type: DataTypes.TEXT,
+            allowNull: false
+        },
+        content: {
             type: DataTypes.TEXT,
             allowNull: false
         },
@@ -30,14 +25,15 @@ module.exports = function (sequelize, DataTypes) {
         },
         deletedAt: {
             type: DataTypes.DATE,
-            field: 'deleted_at'
+            field: 'deleted_at',
         }
     }, {
         freezeTableName: true,
         createdAt: 'createdAt',
+        updatedAt: false,
         deletedAt: 'deletedAt',
         paranoid: true
     });
 
-    return SectionText;
+    return SmtpText;
 };

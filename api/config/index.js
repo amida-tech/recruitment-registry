@@ -59,13 +59,7 @@ const main = {
         resetPasswordLength: process.env.RECREG_CRYPT_RESET_PASSWORD_LENGTH,
         resetExpires: process.env.RECREG_CRYPT_RESET_EXPIRES,
     },
-    resetPw: {
-        emailUri: process.env.RECREG_RESETPW_EMAIL_URI,
-        emailFrom: process.env.RECREG_RESETPW_EMAIL_FROM,
-        emailName: process.env.RECREG_RESETPW_EMAIL_NAME,
-        emailSubject: process.env.RECREG_RESETPW_EMAIL_SUBJECT,
-        clientBaseUrl: process.env.RECREG_RESETPW_CLIENT_BASE_URL
-    }
+    clientBaseUrl: process.env.RECREG_CLIENT_BASE_URL
 };
 
 all.expiresForDB = function () {

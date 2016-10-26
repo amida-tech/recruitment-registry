@@ -84,7 +84,7 @@ module.exports = function (sequelize, DataTypes) {
                     })
                     .then(id => {
                         if (survey.sections) {
-                            return sequelize.models.section.bulkCreateSectionsForSurveyTx(id, survey.sections, tx)
+                            return sequelize.models.rr_section.bulkCreateSectionsForSurveyTx(id, survey.sections, tx)
                                 .then(() => id);
                         } else {
                             return id;
@@ -98,7 +98,7 @@ module.exports = function (sequelize, DataTypes) {
             },
             replaceSurveySections(id, sections) {
                 return sequelize.transaction(function (tx) {
-                    return sequelize.models.section.bulkCreateSectionsForSurveyTx(id, sections, tx);
+                    return sequelize.models.rr_section.bulkCreateSectionsForSurveyTx(id, sections, tx);
                 });
             },
             updateSurveyText({ id, name, sections }, language) {
@@ -106,7 +106,7 @@ module.exports = function (sequelize, DataTypes) {
                     return textHandler.createTextTx({ id, name, language }, tx)
                         .then(() => {
                             if (sections) {
-                                return sequelize.models.section.updateMultipleSectionNamesTx(sections, language, tx);
+                                return sequelize.models.rr_section.updateMultipleSectionNamesTx(sections, language, tx);
                             }
                         });
                 });
@@ -211,7 +211,7 @@ module.exports = function (sequelize, DataTypes) {
                                     return survey;
                                 })
                             ).then(() => {
-                                return sequelize.models.section.getSectionsForSurveyTx(survey.id, options.language)
+                                return sequelize.models.rr_section.getSectionsForSurveyTx(survey.id, options.language)
                                     .then((sections) => {
                                         if (sections && sections.length) {
                                             survey.sections = sections;
