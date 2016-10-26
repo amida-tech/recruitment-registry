@@ -37,7 +37,8 @@ export class SurveyChoiceField extends Component {
       <div key={this.props.id} className="rr rr-question" >
         <label htmlFor={this.props.id}>{this.props.text}</label>
         <select required={this.props.required} className="rr-blankline rr-field" id={this.props.id}>
-          <option key={this.props.id+'x'}>{this.props.vocab.get('PLEASE_SELECT')}</option>
+          <option key={this.props.id+'x'} defaultValue="" selected disabled="disabled">
+            {this.props.vocab.get('PLEASE_SELECT')}</option>
           {this.props.choices.map(choice => <option key={choice.id}
             value={choice.text}>{choice.text}</option>)}
         </select>

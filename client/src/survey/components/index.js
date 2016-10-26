@@ -125,12 +125,14 @@ export class SurveyContainer extends Component {
 const mapStateToProps = function(store) {
   return {
     selectedSurvey: store.getIn(['survey', 'selectedSurvey']),
+    surveyAnswers: store.getIn(['survey', 'surveyAnswers']),
     vocab: store.getIn(['settings', 'language', 'vocabulary'])
   };
 }
 
 SurveyContainer.propTypes = {
-  selectedSurvey: React.PropTypes.object.isRequired
+  selectedSurvey: React.PropTypes.object.isRequired,
+  surveyAnswers: React.PropTypes.object.isRequired
 }
 
 export default connect(mapStateToProps)(SurveyContainer);
