@@ -3,12 +3,10 @@ import React, { Component } from 'react';
 export class SurveyInputField extends Component {
   render(){
     return(
-      <div key={this.props.id} className="rr">
-        <div className="rr-question" >
-          <label htmlFor={this.props.id}>{this.props.text}</label>
-          <input autoComplete="off" required className="rr-blankline rr-field"
-            id={this.props.id} type={this.props.type} />
-        </div>
+      <div key={this.props.id} className="rr rr-question" >
+        <label htmlFor={this.props.id}>{this.props.text}</label>
+        <input autoComplete="off" required={this.props.required} className="rr-blankline rr-field"
+          id={this.props.id} type={this.props.type} />
       </div>
     )
   }
@@ -19,16 +17,16 @@ export class SurveyInputField extends Component {
 export class SurveyBoolField extends Component {
   render(){
     return(
-      <div className="rr">
-        <label htmlFor={this.props.id}>{this.props.text}</label>
-        <div id={this.props.id}>
+        <div id={this.props.id} className="rr">
+          <label>{this.props.text}</label>
+          <br />
           <label htmlFor={this.props.id}><input name={this.props.id} id={this.props.id+'t'}
-            type="radio" value="true" /> {this.props.vocab.get('YES')}</label>
+            type="radio" value="true" required={this.props.required} />
+          {this.props.vocab.get('YES')}</label>
           <br />
           <label htmlFor={this.props.id}><input name={this.props.id} id={this.props.id+'f'}
             type="radio" value="false"/> {this.props.vocab.get('NO')}</label>
         </div>
-      </div>
     )
   }
 }
@@ -36,14 +34,13 @@ export class SurveyBoolField extends Component {
 export class SurveyChoiceField extends Component {
   render(){
     return(
-      <div key={this.props.id} className="rr">
-        <div className="rr-question" >
-          <label htmlFor={this.props.id}>{this.props.text}</label>
-          <select required className="rr-blankline rr-field" id={this.props.id}>
-            {this.props.choices.map(choice => <option key={choice.id}
-              value={choice.text}>{choice.text}</option>)}
-          </select>
-        </div>
+      <div key={this.props.id} className="rr rr-question" >
+        <label htmlFor={this.props.id}>{this.props.text}</label>
+        <select required={this.props.required} className="rr-blankline rr-field" id={this.props.id}>
+          <option key={this.props.id+'x'}>{this.props.vocab.get('PLEASE_SELECT')}</option>
+          {this.props.choices.map(choice => <option key={choice.id}
+            value={choice.text}>{choice.text}</option>)}
+        </select>
       </div>
     )
   }
@@ -76,7 +73,7 @@ export class SurveyChoicesField extends Component {
           </select>
           <div id={this.props.id+'textInput'} className="invisible">
             <label htmlFor={this.props.id+'text'}>{this.props.vocab.get('PLEASE_ENTER_DATA')}</label>
-            <input name={this.props.id+'text'} autoComplete="off" required className="rr-blankline rr-field"/>
+            <input name={this.props.id+'text'} autoComplete="off" className="rr-blankline rr-field"/>
           </div>
       </div>
     )

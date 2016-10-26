@@ -68,6 +68,11 @@ export class SurveyContainer extends Component {
     console.log(results.answers);
   }
 
+  submitAnswers(event){
+    event.preventDefault();
+    console.log(event.target);
+  }
+
   render() {
     const { id, name, questions } = this.props.selectedSurvey.toJS()
     var questionnaire = [];
@@ -89,7 +94,7 @@ export class SurveyContainer extends Component {
           case "choice":
             return (
               <SurveyChoiceField key={question.id}
-                id={question.id} text={question.text}
+                id={question.id} text={question.text} vocab={this.props.vocab}
                 choices={question.choices} required={question.required}/>
             );
           case "choices":
@@ -104,10 +109,10 @@ export class SurveyContainer extends Component {
     return (
       <div>
         <h1>{name}</h1>
-        <div key={id} className="">
+        <form name="questionForm" onSubmit={(event) => this.submitAnswers(event)} key={id} className="">
           {questionnaire}
-          <button onClick={this.handleSubmit}>{this.props.vocab.get('SUBMIT')}</button>
-        </div>
+          <button>{this.props.vocab.get('SUBMIT')}</button>
+        </form>
       </div>
     )}
 
