@@ -169,7 +169,6 @@ describe('consent unit', function () {
     // Here it has now been signed yet.
     //****** START 7
 
-
     it('get the Consents document', function (done) {
         store.server
             .get(`/api/v1.0/consents/name/consent/user-documents`)

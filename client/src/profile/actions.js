@@ -20,3 +20,8 @@ export function getProfile(surveyName) {
   });
 }
 
+export function changeLanguage() {
+  return dispatch => dispatch({
+    type: actionTypes.CHANGE_LANGUAGE
+  });
+}

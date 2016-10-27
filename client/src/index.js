@@ -6,16 +6,26 @@ import register from './register'
 import profile from './profile'
 import surveyBuilder from './surveyBuilder'
 import surveys from './surveys'
+import survey from './survey'
+import { browserHistory } from 'react-router'
+import Immutable from 'immutable'
 import { push } from 'react-router-redux'
 
 export const initialState = {
   title: "GAP",
+  settings: {
+    language: {
+      choice: localStorage.choice ? localStorage.choice : 'en',
+      vocabulary: localStorage.vocabulary ? localStorage.vocabulary : require('./i18n/en.json')
+    }
+  },
   login: login.reducer.initialState,
   register: register.reducer.initialState,
   loggedIn: localStorage.token ? localStorage.token : false,
   profile: profile.reducer.initialState,
   surveyBuilder: surveyBuilder.reducer.initialState,
   surveys: surveys.reducer.initialState,
+  survey: survey.reducer.initialState
 };
 
 export const reducers = {
@@ -24,13 +34,13 @@ export const reducers = {
   [profile.constants.NAME]: profile.reducer,
   [surveyBuilder.constants.NAME]: surveyBuilder.reducer,
   [surveys.constants.NAME]: surveys.reducer,
+  [survey.constants.NAME]: survey.reducer,
   loggedIn: (state = initialState, action) => {
     switch (action.type) {
       case "LOGIN_SUCCESS":
         localStorage.setItem("token", action.data.token)
         return action.data.token
       case "LOGOUT":
-
         localStorage.removeItem("token")
         localStorage.removeItem("user")
         return false
@@ -38,8 +48,17 @@ export const reducers = {
         return state
     }
   },
-  title: (state = initialState) => state
-}
+  title: (state = initialState) => state,
+  settings: (state = initialState, action) => {
+    switch (action.type) {
+      case "CHANGE_LANGUAGE":
+        var choice = state.getIn(['language','choice']) == 'en' ? 'es' : 'en';
+        return state.setIn(['language'], Immutable.fromJS({'choice': choice, 'vocabulary': require('./i18n/'+choice+'.json')}));
+      default:
+        return state;
+      }
+    }
+};
 
 import './styles/main.scss'
 

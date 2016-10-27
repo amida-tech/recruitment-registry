@@ -10,10 +10,10 @@ class Home extends Component {
     const username = this.props.user.get('username');
     return (
       <div>
-        <h1>Home</h1>
+        <h1>{this.props.vocab.get('HOME')}</h1>
         <div>
           { loggedIn ? (
-            <h6> <span style={{color: "#2196F3"}}>{ username }</span>, welcome to the { title }, you are logged in as <span style={{color: "#2196F3"}}>{ role }</span>!</h6>
+            <h6> <span style={{color: "#2196F3"}}>{ username }</span>, {this.props.vocab.get('WELCOME')} { title }, {this.props.vocab.get('LOGGED_IN_AS')} <span style={{color: "#2196F3"}}>{ role }</span>!</h6>
           ) : (<div></div>)
           }
         </div>
@@ -31,7 +31,8 @@ Home.displayName = 'Home';
 function mapStateToProps(state) {
   return {
     data: state,
-    user: state.getIn(['login', 'user'])
+    user: state.getIn(['login', 'user']),
+    vocab: state.getIn(['settings', 'language', 'vocabulary'])
   };
 }
 

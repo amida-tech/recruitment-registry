@@ -23,6 +23,8 @@ models.sequelize.sync({
         answers
     });
 }).then(function () {
+    return models.Survey.createSurvey(surveyExamples.Example.survey);
+}).then(function () {
     console.log('success');
 }).catch(function (err) {
     console.log('failure');
