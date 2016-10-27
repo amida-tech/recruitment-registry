@@ -6,9 +6,21 @@ module.exports = function (sequelize, DataTypes) {
         nativeName: 'English',
         code: 'en'
     }, {
+        name: 'Russian',
+        nativeName: 'Русский',
+        code: 'ru'
+    }, {
+        name: 'Japanese',
+        nativeName: '日本語',
+        code: 'jp'
+    }, {
         name: 'Spanish',
         nativeName: 'Español',
         code: 'es'
+    }, {
+        name: 'French',
+        nativeName: 'Le français',
+        code: 'fr'
     }];
 
     const Language = sequelize.define('language', {

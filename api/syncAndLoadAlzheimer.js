@@ -4,6 +4,8 @@ const models = require('./models');
 
 const surveyExamples = require('./test/fixtures/example/survey');
 const userExamples = require('./test/fixtures/example/user');
+const consentSeed = require('./test/util/consent-seed');
+const consentExample = require('./test/fixtures/example/consent-demo');
 
 const userExample = userExamples.Alzheimer;
 const sample = surveyExamples.Alzheimer;
@@ -22,8 +24,10 @@ models.sequelize.sync({
         user: userExample,
         answers
     });
+}).then(function () {
+    return models.Survey.createSurvey(surveyExamples.Example.survey);
 }).then(function() {
-  return models.Survey.createSurvey(surveyExamples.Example.survey);
+    return consentSeed(consentExample);
 }).then(function () {
     console.log('success');
 }).catch(function (err) {
