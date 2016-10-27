@@ -16,27 +16,41 @@ class Form extends Component {
   previous() {
     this.refs.slider.slickPrev()
   }
+
   render() {
+    var header = (
+      <div className="rr-wrapper m-b-2">
+        <h1 className="rr no-transform">{this.props.vocab.get('LETS_CREATE')}</h1>
+      </div>
+    )
 
     const renderInputField = (id, type, placeholder, label) => (
       <div key={id}>
-        <div className="form-group">
+        {header}
+        <div className="rr-question" >
           <label htmlFor={id}>{label}</label>
-          <input autoComplete="off" required className="form-control" id={id} type={type} onChange={this.props.changeForm} />
+          <input autoComplete="off" required className="rr-blankline rr-field" id={id} type={type} onChange={this.props.changeForm} />
         </div>
-        <button className="form__submit-btn" onClick={this.next} type="button">Next</button>
+        <div className="rr-controls">
+          <button className= {id == 'username' ? "invisible rr-button m-r-2": "btn rr-button m-r-2"} onClick={this.previous} type="button">{this.props.vocab.get('BACK')}</button>
+          <button className="btn rr-button" onClick={this.next} type="button">{this.props.vocab.get('NEXT')}</button>
+        </div>
       </div>
     )
 
     const renderSelectField = (id, defaultValue, label, options) => (
       <div key={id}>
-        <div className="form-group">
+        {header}
+        <div className="rr-question" >
           <label htmlFor="gender">{label}</label>
-          <select required onChange={this.props.changeForm} value={defaultValue} className="form-control" id={id}>
+          <select required onChange={this.props.changeForm} value={defaultValue} className="rr-blankline rr-field" id={id}>
             {options.map(option => <option key={option} value={option}>{option}</option>)}
           </select>
         </div>
-        <button className="form__submit-btn" onClick={this.next} type="button">Next</button>
+        <div className="rr-controls">
+          <button className="btn rr-button m-r-2" onClick={this.previous} type="button">{this.props.vocab.get('BACK')}</button>
+          <button className="btn rr-button" onClick={this.next} type="button">{this.props.vocab.get('NEXT')}</button>
+        </div>
       </div>
     )
 
@@ -71,11 +85,12 @@ class Form extends Component {
           } : this.next
 
           return (
-            <button className="form__submit-btn" onClick={boundItemClick}
+            <button className="btn rr-button m-r-2" onClick={boundItemClick}
                     key={question.id + "." + index}
                     type="button">{action.text}</button>
           )
         })
+        buttons = <div className="rr-controls">{buttons}</div>;
       } else {
         var self = this
         let boundItemClick = () => {
@@ -83,23 +98,22 @@ class Form extends Component {
             questionId: question.id,
             surveyId: this.props.survey.id
           })()
-
+          console.log(self);
           self.next()
         }
 
         buttons = (
-          <div>
-            <button className="form__submit-btn" onClick={this.next}
-                    type="button">Next</button>
-            <button className="form__submit-btn" onClick={boundItemClick}
-                    type="button">Skip</button>
+          <div className="rr-controls">
+            <button className="btn rr-button m-r-2" onClick={this.next} type="button">{this.props.vocab.get('NEXT')}</button>
+            <button className="btn rr-button" onClick={boundItemClick} type="button">{this.props.vocab.get('SKIP')}</button>
           </div>
         )
       }
 
       return (
-        <div>
-          <label>{question.text}</label>
+        <div className="rr">
+          {header}
+          <label className="rr-question">{question.text}</label>
           {checkboxes}
           {buttons}
         </div>
@@ -147,16 +161,19 @@ class Form extends Component {
             }
           }
 
-          return (<button className="form__submit-btn" onClick={boundItemClick}  key={question.id + "." + index} type="button">{action.text}</button>)
+          return (<button className="btn rr-button" onClick={boundItemClick}  key={question.id + "." + index} type="button">{action.text}</button>)
         }) :
         [
-          <button className="form__submit-btn" key={question.id + ".1"} type="button" onClick={boundItemClickDefault}>Yes</button>,
-          <button className="form__submit-btn" key={question.id + ".2"} onClick={this.next} type="button">No</button>
+          <div key={question.id + ".div"} className="rr-controls">
+          <button className="btn rr-button m-r-2" key={question.id + ".1"} type="button" onClick={boundItemClickDefault}>{this.props.vocab.get('YES')}</button>
+          <button className="btn rr-button" key={question.id + ".2"} onClick={this.next} type="button">{this.props.vocab.get('NO')}</button>
+          </div>
         ]
 
       return (
         <div>
-          <label>{question.text}</label>
+          {header}
+          <label className="rr-question">{question.text}</label>
           {buttons}
         </div>
       )
@@ -217,20 +234,19 @@ class Form extends Component {
 
 
     return(
-      <form className="" autoComplete="off">
-        <div className="col-sm-6">
+      <form autoComplete="off">
+        <div className="col-lg-6">
           <div className="registry-specific">
             {
               this.props.survey.questions.length > 0 ? (
                 <Slider ref='slider' {...settings}>
                   {slides}
                 </Slider>
-              ) : (<div>Loading...</div>)
+              ) : (<div>{this.props.vocab.get('LOADING')}...</div>)
             }
           </div>
         </div>
 
-      <button className="form__submit-btn back-registration" type="button" onClick={this.previous}>Back</button>
       </form>
     );
 

@@ -7,22 +7,20 @@ export class RegisterContainer extends Component {
   render() {
     const { formState, survey, availableEthnicities, availableGenders } = this.props.data.toJS()
     return (
-      <div className="container">
-          <div className="form-page__form-header">
-            <h2 className="form-page__form-heading">Register</h2>
-          </div>
-          <Form data={formState}
-                location={location}
-                availableEthnicities={availableEthnicities}
-                availableGenders={availableGenders}
-                history={this.props.history}
-                onSubmit={::this._onSubmit}
-                onChoicesClear={::this._onChoicesClick}
-                btnText={"Register"}
-                survey={survey}
-                changeForm={::this._changeForm}
-                changeChoice={::this._changeChoice}
-                changeBoolQuestion={::this._changeBoolQuestion}/>
+      <div>
+        <Form data={formState}
+              vocab={this.props.vocab}
+              location={location}
+              availableEthnicities={availableEthnicities}
+              availableGenders={availableGenders}
+              history={this.props.history}
+              onSubmit={::this._onSubmit}
+              onChoicesClear={::this._onChoicesClick}
+              btnText={this.props.vocab.get('REGISTER')}
+              survey={survey}
+              changeForm={::this._changeForm}
+              changeChoice={::this._changeChoice}
+              changeBoolQuestion={::this._changeBoolQuestion}/>
       </div>)
   }
 
@@ -111,7 +109,8 @@ export class RegisterContainer extends Component {
 
 const mapStateToProps = function(store) {
   return {
-    data: store.get('register')
+    data: store.get('register'),
+    vocab: store.getIn(['settings', 'language', 'vocabulary'])
   }
 }
 

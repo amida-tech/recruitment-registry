@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router';
 import routes from '../routes';
 import { logout } from '../login/actions';
+import { changeLanguage } from '../profile/actions';
 
 class Nav extends Component {
   render() {
@@ -11,13 +12,19 @@ class Nav extends Component {
     const role = this.props.user.get('role');
     var nav;
 
+    for(var i = 0; i< routes.length; i++){
+      routes[i].title = this.props.vocab.get(routes[i].transTerm);
+    }
+
     if (loggedIn) {
       var routesAuthed = routes.filter(r => r.requiresAuth || !r.newUsers)
       nav = routesAuthed.map(r => {
-        var path = r.path
+        var path = r.path;
         if (r.path.indexOf('survey-builder') > -1) { path = '/survey-builder' }
-        if (r.isSuper && role !== 'admin')
-          return <div key={r.path}></div>
+        if (r.path.indexOf('survey/:id') > -1) { return }
+        if (r.isSuper && role !== 'admin') {
+            return <div className="nav-item invisible" key={r.path}></div>
+        }
         return <Link className="nav-item nav-link" key={r.path} to={path}>{r.title}</Link>
       })
     } else {
@@ -28,13 +35,10 @@ class Nav extends Component {
     return (
       <nav className="navbar navbar-full navbar-dark bg-inverse">
         <a className="navbar-brand" href="/">{ title }</a>
-        <div className="nav navbar-nav">{nav}</div>
-        <div>
-          { loggedIn ? (
-            <div>
-              <button type="button" className="pull-right nav-item nav-link btn btn-primary" onClick={::this._logout}>Logout</button>
-            </div>
-          ) : (<div></div>)}
+        <div className="nav navbar-nav">{nav}
+          { loggedIn ? (<a className="nav-item nav-link m-l-1" onClick={::this._logout}>{this.props.vocab.get('LOGOUT')}</a>
+        ) : ""}
+          <a className="nav-item nav-link" onClick={::this._changeLanguage}>{this.props.vocab.get('LANGUAGE')}</a>
         </div>
       </nav>
     );
@@ -43,11 +47,16 @@ class Nav extends Component {
   _logout() {
     this.props.dispatch(logout());
   }
+
+  _changeLanguage() {
+    this.props.dispatch(changeLanguage());
+  }
 }
 
 function select(state) {
   return {
     data: state,
+    vocab: state.getIn(['settings', 'language', 'vocabulary']),
     user: state.getIn(['login', 'user'])
   };
 }

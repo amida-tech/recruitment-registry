@@ -207,6 +207,9 @@
                 "operationId": "listSurveys",
                 "security": [{
                     "admin": []
+                },{
+
+                    "participant": []
                 }],
                 "parameters": [{
                     "name": "language",
@@ -242,6 +245,9 @@
                 "operationId": "getSurvey",
                 "security": [{
                     "admin": []
+                },{
+
+                    "participant": []
                 }],
                 "parameters": [{
                     "name": "language",
