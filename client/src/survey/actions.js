@@ -1,15 +1,15 @@
 import * as actionTypes from './actionTypes';
 
-export function updateAnswer(index, id, value) {
+export function updateAnswer(itype, id, value, name) {
   return dispatch => dispatch({
     type: actionTypes.UPDATE_SURVEY_ANSWERS,
-    index, id, value
+    itype, id, value, name
   })
 }
 
-export function updateChoices(index, id, value) {
+export function submitAnswers(surveyAnswers){
   return dispatch => dispatch({
-    type: actionTypes.UPDATE_SURVEY_CHOICES,
-    index, id, value
+    type: actionTypes.SUBMIT_SURVEY,
+    payload: surveyAnswers
   })
 }

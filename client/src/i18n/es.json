@@ -46,5 +46,6 @@
   "MY_GENDER": "Mi género es",
   "MY_ETHNIC": "Mi origen étnico es",
   "INVALID_CREDENTIALS":"¡Credenciales no válidas!",
+  "SUBMISSION_FAILURE": "Presentación falló. Inténtelo de nuevo más tarde.",
   "AVAIL_SURVEYS": "Encuestas disponibles en la actualidad:"
 }

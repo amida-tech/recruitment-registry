@@ -8,52 +8,45 @@ export class SurveyContainer extends Component {
   //certain redux is the best call. However I'm doing it the redux way to learn.
   submitAnswers(event){
     event.preventDefault();
+      this.props.dispatch(submit.actions.submitAnswers(this.props.surveyAnswers));
   }
 
   _changeAnswer(event) {
-    this.props.dispatch(submit.actions.updateAnswer(event.target.dataset.index,
-      event.target.id, event.target.value))
-  }
-
-  _changeChoices(event){
-    console.log("YERP");
-    console.log(event);
-    //this.props.dispatch(submit.actions.updateChoices(event.target.dataset.index,))
+    this.props.dispatch(submit.actions.updateAnswer(event.target.dataset.itype,
+      event.target.id, event.target.value, event.target.name))
   }
 
   render() {
     const { id, name, questions } = this.props.selectedSurvey.toJS()
     var questionnaire = [];
     if(questions){
-      //Index tracks the question in its state, cause the id can differ
-      questionnaire = questions.map((question, index) => {
+      questionnaire = questions.map(question => {
         switch(question.type) {
           case "text":
             return (
               <SurveyInputField key={question.id} id={question.id}
-                index={index} changeForm={::this._changeAnswer}
-                text={question.text} required={question.required}/>
+                changeForm={::this._changeAnswer} text={question.text}
+                 required={question.required}/>
             );
             case "bool":
-              return (
-                <SurveyBoolField key={question.id} id={question.id}
-                  index={index} changeForm={::this._changeAnswer}
-                  text={question.text} vocab={this.props.vocab}
-                  required={question.required}/>
-              );
+            return (
+              <SurveyBoolField key={question.id} id={question.id}
+                changeForm={::this._changeAnswer} text={question.text}
+                vocab={this.props.vocab} required={question.required}/>
+            );
           case "choice":
             return (
               <SurveyChoiceField key={question.id} id={question.id}
-                index={index} changeForm={::this._changeAnswer}
-                text={question.text} vocab={this.props.vocab}
-                choices={question.choices} required={question.required} />
+                changeForm={::this._changeAnswer} text={question.text}
+                vocab={this.props.vocab} choices={question.choices}
+                required={question.required} />
             );
           case "choices":
             return (
               <SurveyChoicesField key={question.id} id={question.id}
-                index={index} changeForm={::this._changeChoices}
-                text={question.text} vocab={this.props.vocab}
-                choices={question.choices} required={question.required}/>
+                changeForm={::this._changeAnswer} text={question.text}
+                vocab={this.props.vocab} choices={question.choices}
+                required={question.required}/>
             );
         }
       });
@@ -61,6 +54,9 @@ export class SurveyContainer extends Component {
     return (
       <div>
         <h1>{name}</h1>
+        <div className="">
+          { this.props.data.get('hasErrors') ? (<p>{this.props.vocab.get('SUBMISSION_FAILURE')}</p>) : (<p></p>) }
+        </div>
         <form name="questionForm" onSubmit={(event) => this.submitAnswers(event)} key={id} className="">
           {questionnaire}
           <button>{this.props.vocab.get('SUBMIT')}</button>
@@ -76,6 +72,7 @@ export class SurveyContainer extends Component {
 
 const mapStateToProps = function(store) {
   return {
+    data: store.get('survey'),
     selectedSurvey: store.getIn(['survey', 'selectedSurvey']),
     surveyAnswers: store.getIn(['survey', 'surveyAnswers']),
     vocab: store.getIn(['settings', 'language', 'vocabulary'])

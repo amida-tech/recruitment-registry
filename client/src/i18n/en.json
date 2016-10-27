@@ -46,5 +46,6 @@
   "MY_GENDER": "My gender is",
   "MY_ETHNIC": "My ethnicity is",
   "INVALID_CREDENTIALS": "Invalid credentials!",
+  "SUBMISSION_FAILURE": "Something terrible has happened. Go home and never return.",
   "AVAIL_SURVEYS": "Currently available surveys:"
 }

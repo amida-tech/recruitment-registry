@@ -187,7 +187,22 @@ const apiProvider = store => next => action => {
           }
         })
       break
-
+    case 'SUBMIT_SURVEY':
+      request
+        .post(apiUrl + '/answers')
+        .set("Authorization", "Bearer " + store.getState().get('loggedIn'))
+        .send(action.payload.toJS())
+        .end((error, response) => {
+          if(!error) {
+            next({
+              type: 'SUBMIT_SURVEY_SUCCESS',
+              payload: response.body
+            })
+          } else {
+            next({type:'SUBMIT_SURVEY_FAILURE'})
+          }
+        })
+      break
     default:
       break
   }
