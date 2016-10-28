@@ -347,18 +347,7 @@ describe('survey unit', function () {
                 .then(function () {
                     return Survey.getAnsweredSurvey(input.userId, input.surveyId)
                         .then(answeredSurvey => {
-                            const expected = _.cloneDeep(survey);
-                            expected.questions.forEach((qx, index) => {
-                                qx.answer = answers[index].answer;
-                                if (qx.type === 'choices' && qx.answer.choices) {
-                                    qx.answer.choices.forEach((choice) => {
-                                        if (!choice.textValue && !choice.hasOwnProperty('boolValue')) {
-                                            choice.boolValue = true;
-                                        }
-                                    });
-                                }
-                            });
-                            expect(answeredSurvey).to.deep.equal(expected);
+                            comparator.answeredSurvey(survey, answers, answeredSurvey);
                             return Survey.getAnsweredSurveyByName(input.userId, survey.name)
                                 .then(answeredSurveyByName => {
                                     expect(answeredSurveyByName).to.deep.equal(answeredSurvey);

@@ -9,27 +9,25 @@ const models = require('../models');
 const SharedSpec = require('./util/shared-spec.js');
 const tokener = require('../lib/tokener');
 const helper = require('./util/survey-common');
+const History = require('./util/entity-history');
+const Generator = require('./util/entity-generator');
 const comparator = require('./util/client-server-comparator');
 
-const userExamples = require('./fixtures/example/user');
 const surveyExamples = require('./fixtures/example/survey');
 
 const expect = chai.expect;
-const shared = new SharedSpec();
+const generator = new Generator();
+const shared = new SharedSpec(generator);
 
 const Registry = models.Registry;
 
 describe('registry unit', function () {
-    const userExample = userExamples.Alzheimer;
     const surveyExample = surveyExamples.Alzheimer;
 
     before(shared.setUpFn());
 
-    const store = {
-        profileSurveyId: null,
-        clientSurveys: [],
-        surveys: []
-    };
+    const hxSurvey = new History(['id', 'name']);
+    const hxUser = new History();
 
     it('error: get profile survey when none created', function () {
         return Registry.getProfileSurvey()
@@ -38,19 +36,19 @@ describe('registry unit', function () {
 
     const createProfileSurveyFn = function (survey) {
         return function () {
-            store.clientSurveys.push(survey);
             return Registry.createProfileSurvey(survey)
-                .then(({ id }) => store.profileSurveyId = id);
+                .then(rawServer => hxSurvey.push(survey, rawServer));
         };
     };
 
     const verifyProfileSurveyFn = function (index) {
         return function () {
             return Registry.getProfileSurvey()
-                .then(actual => {
-                    store.survey = actual;
-                    store.surveys.push(actual);
-                    return comparator.survey(store.clientSurveys[index], actual);
+                .then(server => {
+                    const id = hxSurvey.id(index);
+                    expect(server.id).to.equal(id);
+                    hxSurvey.updateServer(index, server);
+                    return comparator.survey(hxSurvey.client(index), server);
                 });
         };
     };
@@ -63,23 +61,26 @@ describe('registry unit', function () {
     });
     it('get/verify profile survey', verifyProfileSurveyFn(0));
 
-    let userId;
     let answers;
 
     it('setup user with profile', function () {
-        answers = helper.formAnswersToPost(store.survey, surveyExample.answer);
+        const survey = hxSurvey.server(0);
+        const clientUser = generator.newUser();
+        answers = helper.formAnswersToPost(survey, surveyExample.answer);
         return Registry.createProfile({
-                user: userExample,
+                user: clientUser,
                 answers
             })
             .then(({ token }) => tokener.verifyJWT(token))
-            .then(({ id }) => userId = id);
+            .then(({ id }) => hxUser.push(clientUser, { id }));
     });
 
     it('verify user profile', function () {
+        const survey = hxSurvey.server(0);
+        const userId = hxUser.id(0);
         return Registry.getProfile({ userId })
             .then(function (result) {
-                const expectedUser = _.cloneDeep(userExample);
+                const expectedUser = _.cloneDeep(hxUser.client(0));
                 const user = result.user;
                 expectedUser.id = user.id;
                 delete expectedUser.password;
@@ -88,37 +89,39 @@ describe('registry unit', function () {
                 expect(user).to.deep.equal(expectedUser);
 
                 const actualSurvey = result.survey;
-                const expectedSurvey = helper.formAnsweredSurvey(store.survey, answers);
+                const expectedSurvey = helper.formAnsweredSurvey(survey, answers);
                 expect(actualSurvey).to.deep.equal(expectedSurvey);
             });
     });
 
     it('update user profile', function () {
-        answers = helper.formAnswersToPost(store.survey, surveyExample.answerUpdate);
+        const survey = hxSurvey.server(0);
+        answers = helper.formAnswersToPost(survey, surveyExample.answerUpdate);
         const userUpdates = {
-            email: 'updated@example.com'
+            email: 'updated0@example.com'
         };
         const updateObj = {
             user: userUpdates,
             answers
         };
+        const userId = hxUser.id(0);
         return Registry.updateProfile(userId, updateObj);
     });
 
     it('verify user profile', function () {
+        const survey = hxSurvey.server(0);
+        const userId = hxUser.id(0);
         return Registry.getProfile({ userId })
             .then(function (result) {
-                const expectedUser = _.cloneDeep(userExample);
+                const expectedUser = _.cloneDeep(hxUser.client(0));
                 const user = result.user;
                 expectedUser.id = user.id;
-                expectedUser.email = 'updated@example.com';
+                expectedUser.email = 'updated0@example.com';
                 delete expectedUser.password;
-                delete user.createdAt;
-                delete user.updatedAt;
                 expect(user).to.deep.equal(expectedUser);
 
                 const actualSurvey = result.survey;
-                const expectedSurvey = helper.formAnsweredSurvey(store.survey, answers);
+                const expectedSurvey = helper.formAnsweredSurvey(survey, answers);
                 expect(actualSurvey).to.deep.equal(expectedSurvey);
             });
     });

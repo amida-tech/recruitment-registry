@@ -26,7 +26,7 @@ models.sequelize.sync({
     });
 }).then(function () {
     return models.Survey.createSurvey(surveyExamples.Example.survey);
-}).then(function() {
+}).then(function () {
     return consentSeed(consentExample);
 }).then(function () {
     console.log('success');
