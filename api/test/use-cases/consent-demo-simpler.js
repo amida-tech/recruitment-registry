@@ -118,13 +118,12 @@ describe('consent unit', function () {
 
     //****** END 3
 
-
     //******
     // Later you can always get the Terms of use and check if a new signature is needed.
     // New signature will be needed if a new Terms of Use document is posted.
     //****** START 4
 
-    it('login as user', shared.loginFn(store, userExample)); 
+    it('login as user', shared.loginFn(store, userExample));
 
     it('get the Terms of Use document with signature', function (done) {
         store.server
