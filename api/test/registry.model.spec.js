@@ -3,7 +3,6 @@
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
-const _ = require('lodash');
 
 const models = require('../models');
 const SharedSpec = require('./util/shared-spec.js');
@@ -58,54 +57,58 @@ describe('registry unit', function () {
     });
     it('get/verify profile survey', verifyProfileSurveyFn(0));
 
-    it('setup user with profile', function () {
-        const survey = hxSurvey.server(0);
-        const clientUser = generator.newUser();
-        const answers = generator.answerQuestions(survey.questions);
-        hxAnswers.push(answers);
-        return Registry.createProfile({
-                user: clientUser,
+    const createProfileFn = function (surveyIndex) {
+        return function () {
+            const survey = hxSurvey.server(surveyIndex);
+            const clientUser = generator.newUser();
+            const answers = generator.answerQuestions(survey.questions);
+            hxAnswers.push(answers);
+            return Registry.createProfile({
+                    user: clientUser,
+                    answers
+                })
+                .then(({ token }) => tokener.verifyJWT(token))
+                .then(({ id }) => hxUser.push(clientUser, { id }));
+        };
+    };
+
+    const verifyProfileFn = function (surveyIndex, userIndex) {
+        return function () {
+            const survey = hxSurvey.server(surveyIndex);
+            const userId = hxUser.id(userIndex);
+            return Registry.getProfile({ userId })
+                .then(function (result) {
+                    comparator.user(hxUser.client(userIndex), result.user);
+                    comparator.answeredSurvey(survey, hxAnswers[surveyIndex], result.survey);
+                });
+        };
+    };
+
+    const updateProfileFn = function (surveyIndex, userIndex) {
+        return function () {
+            const survey = hxSurvey.server(surveyIndex);
+            const answers = generator.answerQuestions(survey.questions);
+            const userUpdates = {
+                email: `updated${userIndex}@example.com`
+            };
+            hxUser.client(userIndex).email = userUpdates.email;
+            const updateObj = {
+                user: userUpdates,
                 answers
-            })
-            .then(({ token }) => tokener.verifyJWT(token))
-            .then(({ id }) => hxUser.push(clientUser, { id }));
-    });
-
-    it('verify user profile', function () {
-        const survey = hxSurvey.server(0);
-        const userId = hxUser.id(0);
-        return Registry.getProfile({ userId })
-            .then(function (result) {
-                comparator.user(hxUser.client(0), result.user);
-                comparator.answeredSurvey(survey, hxAnswers[0], result.survey);
-            });
-    });
-
-    it('update user profile', function () {
-        const survey = hxSurvey.server(0);
-        const answers = generator.answerQuestions(survey.questions);
-        const userUpdates = {
-            email: 'updated0@example.com'
+            };
+            const userId = hxUser.id(userIndex);
+            hxAnswers[surveyIndex] = answers;
+            return Registry.updateProfile(userId, updateObj);
         };
-        hxUser.client(0).email = userUpdates.email;
-        const updateObj = {
-            user: userUpdates,
-            answers
-        };
-        const userId = hxUser.id(0);
-        hxAnswers[0] = answers;
-        return Registry.updateProfile(userId, updateObj);
-    });
+    };
 
-    it('verify user profile', function () {
-        const survey = hxSurvey.server(0);
-        const userId = hxUser.id(0);
-        return Registry.getProfile({ userId })
-            .then(function (result) {
-                comparator.user(hxUser.client(0), result.user);
-                comparator.answeredSurvey(survey, hxAnswers[0], result.survey);
-            });
-    });
+    it('setup user with profile', createProfileFn(0));
+
+    it('verify user profile', verifyProfileFn(0, 0));
+
+    it('update user profile', updateProfileFn(0, 0));
+
+    it('verify user profile', verifyProfileFn(0, 0));
 
     it('create profile survey', createProfileSurveyFn());
     it('get/verify profile survey', verifyProfileSurveyFn(1));
