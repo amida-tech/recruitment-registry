@@ -1,27 +1,113 @@
 import React, { Component} from 'react';
 import { connect } from 'react-redux';
 import Form from './register-form';
+import { Link } from 'react-router';
 import register from '../index';
+import Slider from 'react-slick'
+import '../../../node_modules/slick-carousel/slick/slick.scss'
+import * as SurveyFields from '../../common/SurveyFields';
+import SurveyNavigator from '../../common/SurveyNavigation';
 
 export class RegisterContainer extends Component {
   render() {
-    const { formState, survey, availableEthnicities, availableGenders } = this.props.data.toJS()
-    return (
-      <div>
-        <Form data={formState}
-              vocab={this.props.vocab}
-              location={location}
-              availableEthnicities={availableEthnicities}
-              availableGenders={availableGenders}
-              history={this.props.history}
-              onSubmit={::this._onSubmit}
-              onChoicesClear={::this._onChoicesClick}
-              btnText={this.props.vocab.get('REGISTER')}
-              survey={survey}
-              changeForm={::this._changeForm}
-              changeChoice={::this._changeChoice}
-              changeBoolQuestion={::this._changeBoolQuestion}/>
-      </div>)
+    const { formState, survey, availableEthnicities, availableGenders } = this.props.data.toJS();
+    var slides = [];
+    if(survey.questions){
+      slides = survey.questions.map(question => {
+        var inputField;
+        switch(question.type) {
+          case "text":
+            inputField = (
+              <SurveyFields.Input key={question.id} id={question.id}
+                changeForm={::this._changeAnswer} text={question.text}
+                 required={question.required}/>
+            );
+            break;
+          case "bool":
+            inputField = (
+              <SurveyFields.Bool key={question.id} id={question.id}
+                changeForm={::this._changeAnswer} text={question.text}
+                vocab={this.props.vocab} required={question.required}/>
+            );
+            break;
+          case "choice":
+            inputField = (
+              <SurveyFields.Choice key={question.id} id={question.id}
+                changeForm={::this._changeAnswer} text={question.text}
+                vocab={this.props.vocab} choices={question.choices}
+                required={question.required} />
+            );
+            break;
+          case "choices":
+            inputField = (
+              <SurveyFields.Choices key={question.id} id={question.id}
+                changeForm={::this._changeAnswer} text={question.text}
+                vocab={this.props.vocab} choices={question.choices}
+                required={question.required}/>
+            );
+            break;
+        }
+
+        slides.push(<SurveyNavigator
+          key='regNav'
+          id='regNav'
+          location={this.props.params.id}
+          vocab={this.props.vocab}
+          next={::this._next}
+          previous={::this._previous}
+          surveyField={inputField}>
+          </SurveyNavigator>)
+      }); //End of question mapping.
+
+      slides.push(
+        <div key="final">
+          <p>Thanks</p>
+          <p>Your account is created</p>
+          <Link to="/profile">Go to My Dashboard</Link>
+        </div>)
+    }
+
+    var settings = {
+      dots: false,
+      infinite: false,
+      speed: 500,
+      slidesToShow: 1,
+      slidesToScroll: 1,
+      arrows: false,
+      draggable: false,
+      accessibility: false,
+      useCSS: false,
+      beforeChange: (currentSlide, nextSlide) => {
+        console.log(currentSlide + " : " + nextSlide)
+        if (nextSlide === (7 + this.props.survey.questions.length)) {
+          this.props.onSubmit()
+          // self.next()
+        }
+      }
+    }
+
+    return(
+      <form autoComplete="off">
+        <div className="col-lg-6">
+          <div className="registry-specific">
+            {
+              survey.questions.length > 0 ? (
+                <Slider ref='slider' {...settings}>
+                  {slides}
+                </Slider>
+              ) : (<div>{this.props.vocab.get('LOADING')}...</div>)
+            }
+          </div>
+        </div>
+      </form>
+    );
+  }
+
+  next() {
+    this.refs.slider.slickNext()
+  }
+  previous() {
+    this.refs.slider.slickPrev()
   }
 
   _changeForm(evt) {
