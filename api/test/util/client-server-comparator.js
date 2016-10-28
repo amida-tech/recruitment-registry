@@ -111,6 +111,12 @@ const comparator = {
             }
         });
         expect(server).to.deep.equal(expected);
+    },
+    user(client, server) {
+        const expected = _.cloneDeep(client);
+        expected.id = server.id;
+        delete expected.password;
+        expect(server).to.deep.equal(expected);
     }
 };
 
