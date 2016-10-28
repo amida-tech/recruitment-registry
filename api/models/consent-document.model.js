@@ -125,6 +125,25 @@ module.exports = function (sequelize, DataTypes) {
                 return ConsentDocument.findById(id, { raw: true, attributes: ['id', 'typeId'] })
                     .then(result => textHandler.updateText(result, options.language));
             },
+            getSignedConsentDocument: function (userId, id) {
+                return ConsentDocument.getConsentDocument(id)
+                    .then((result) => {
+                        return sequelize.models.consent_signature.findOne({
+                                where: { userId, consentDocumentId: id },
+                                raw: true,
+                                attributes: ['language']
+                            })
+                            .then(signature => {
+                                if (signature) {
+                                    result.signature = true;
+                                    result.language = signature.language;
+                                } else {
+                                    result.signature = false;
+                                }
+                                return result;
+                            });
+                    });
+            },
             getUpdateCommentHistory: function (typeId, language) {
                 return ConsentDocument.findAll({
                         raw: true,

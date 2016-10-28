@@ -10,12 +10,14 @@ const tokener = require('../lib/tokener');
 const History = require('./util/entity-history');
 const Generator = require('./util/entity-generator');
 const comparator = require('./util/client-server-comparator');
+const ConsentDocumentHistory = require('./util/consent-document-history');
 
 const expect = chai.expect;
 const generator = new Generator();
 const shared = new SharedSpec(generator);
 
 const Registry = models.Registry;
+const ConsentDocument = models.ConsentDocument;
 
 describe('registry unit', function () {
     before(shared.setUpFn());
@@ -23,6 +25,7 @@ describe('registry unit', function () {
     const hxSurvey = new History(['id', 'name']);
     const hxUser = new History();
     const hxAnswers = [];
+    const hxConsentDoc = new ConsentDocumentHistory(2);
 
     it('error: get profile survey when none created', function () {
         return Registry.getProfileSurvey()
@@ -57,16 +60,26 @@ describe('registry unit', function () {
     });
     it('get/verify profile survey', verifyProfileSurveyFn(0));
 
-    const createProfileFn = function (surveyIndex) {
+
+    for (let i = 0; i < 2; ++i) {
+        it(`create consent type ${i}`, shared.createConsentTypeFn(hxConsentDoc));
+    }
+
+    for (let i = 0; i < 2; ++i) {
+        it(`create consent document of type ${i}`, shared.createConsentDocumentFn(hxConsentDoc, i));
+    }
+
+    const createProfileFn = function (surveyIndex, signatures) {
         return function () {
             const survey = hxSurvey.server(surveyIndex);
             const clientUser = generator.newUser();
             const answers = generator.answerQuestions(survey.questions);
             hxAnswers.push(answers);
-            return Registry.createProfile({
-                    user: clientUser,
-                    answers
-                })
+            const input = {user: clientUser, answers};
+            if (signatures) {
+                input.signatures = signatures.map(sign => hxConsentDoc.id(sign));
+            }
+            return Registry.createProfile(input)
                 .then(({ token }) => tokener.verifyJWT(token))
                 .then(({ id }) => hxUser.push(clientUser, { id }));
         };
@@ -79,7 +92,7 @@ describe('registry unit', function () {
             return Registry.getProfile({ userId })
                 .then(function (result) {
                     comparator.user(hxUser.client(userIndex), result.user);
-                    comparator.answeredSurvey(survey, hxAnswers[surveyIndex], result.survey);
+                    comparator.answeredSurvey(survey, hxAnswers[userIndex], result.survey);
                 });
         };
     };
@@ -97,18 +110,41 @@ describe('registry unit', function () {
                 answers
             };
             const userId = hxUser.id(userIndex);
-            hxAnswers[surveyIndex] = answers;
+            hxAnswers[userIndex] = answers;
             return Registry.updateProfile(userId, updateObj);
         };
     };
 
-    it('setup user with profile', createProfileFn(0));
+    it('register user 0 with profile survey 0', createProfileFn(0));
 
-    it('verify user profile', verifyProfileFn(0, 0));
+    it('verify user 0 profile', verifyProfileFn(0, 0));
 
-    it('update user profile', updateProfileFn(0, 0));
+    it('verify document 0 is not signed by user 0', function() {
+        const id = hxConsentDoc.id(0);
+        const userId = hxUser.id(0);
+        return ConsentDocument.getSignedConsentDocument(userId, id)
+            .then(result => {
+                expect(result.signature).to.equal(false);
+            });
+    });
 
-    it('verify user profile', verifyProfileFn(0, 0));
+    it('update user 0 profile', updateProfileFn(0, 0));
+
+    it('verify user 0 profile', verifyProfileFn(0, 0));
+
+    it('register user 1 with profile survey 0 and doc 0 signature', createProfileFn(0, [0]));
+
+    it('verify user 1 profile', verifyProfileFn(0, 1));
+
+    it('verify document 0 is signed by user 1', function() {
+        const id = hxConsentDoc.id(0);
+        const userId = hxUser.id(1);
+        return ConsentDocument.getSignedConsentDocument(userId, id)
+            .then(result => {
+                expect(result.signature).to.equal(true);
+                expect(result.language).to.equal('en');
+            });
+    });
 
     it('create profile survey', createProfileSurveyFn());
     it('get/verify profile survey', verifyProfileSurveyFn(1));
