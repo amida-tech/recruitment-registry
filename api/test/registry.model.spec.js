@@ -52,8 +52,8 @@ describe('registry unit', function () {
         };
     };
 
-    it('create profile survey', createProfileSurveyFn());
-    it('get/verify profile survey', verifyProfileSurveyFn(0));
+    it('create profile survey 0', createProfileSurveyFn());
+    it('get/verify profile survey 0', verifyProfileSurveyFn(0));
 
     it('check soft sync does not reset registry', function () {
         return models.sequelize.sync({ force: false });
@@ -145,6 +145,6 @@ describe('registry unit', function () {
             });
     });
 
-    it('create profile survey', createProfileSurveyFn());
-    it('get/verify profile survey', verifyProfileSurveyFn(1));
+    it('create profile survey 1', createProfileSurveyFn());
+    it('get/verify profile survey 1', verifyProfileSurveyFn(1));
 });

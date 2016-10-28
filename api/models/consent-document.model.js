@@ -125,8 +125,8 @@ module.exports = function (sequelize, DataTypes) {
                 return ConsentDocument.findById(id, { raw: true, attributes: ['id', 'typeId'] })
                     .then(result => textHandler.updateText(result, options.language));
             },
-            getSignedConsentDocument: function (userId, id) {
-                return ConsentDocument.getConsentDocument(id)
+            getSignedConsentDocument: function (userId, id, options) {
+                return ConsentDocument.getConsentDocument(id, options)
                     .then((result) => {
                         return sequelize.models.consent_signature.findOne({
                                 where: { userId, consentDocumentId: id },

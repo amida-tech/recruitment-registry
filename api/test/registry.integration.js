@@ -82,11 +82,11 @@ describe('registry integration', function () {
         };
     };
 
-    it('create profile survey', createProfileSurveyFn());
+    it('create profile survey 0', createProfileSurveyFn());
 
     it('logout as super', shared.logoutFn(store));
 
-    const verifyProfileSurveyFn = function () {
+    const verifyProfileSurveyFn = function (index) {
         return function (done) {
             store.server
                 .get('/api/v1.0/profile-survey')
@@ -95,7 +95,6 @@ describe('registry integration', function () {
                     if (err) {
                         return done(err);
                     }
-                    const index = 0;
                     const id = hxSurvey.id(index);
                     expect(res.body.id).to.equal(id);
                     hxSurvey.updateServer(index, res.body);
@@ -105,20 +104,19 @@ describe('registry integration', function () {
         };
     };
 
-    it(`get profile survey`, verifyProfileSurveyFn());
+    it(`get profile survey 0`, verifyProfileSurveyFn(0));
 
-    const createProfileFn = function (surveyIndex) {
+    const createProfileFn = function (surveyIndex, signatures) {
         return function (done) {
-            //const signatures = [0];
             const survey = hxSurvey.server(surveyIndex);
             const clientUser = generator.newUser();
             clientUser.role = 'participant';
             const answers = generator.answerQuestions(survey.questions);
             hxAnswers.push(answers);
             const input = { user: clientUser, answers };
-            //if (signatures) {
-            //    input.signatures = signatures.map(sign => hxConsentDoc.id(sign));
-            //}
+            if (signatures) {
+                input.signatures = signatures.map(sign => hxConsentDoc.id(sign));
+            }
             store.server
                 .post('/api/v1.0/profiles')
                 .send(input)
@@ -180,7 +178,52 @@ describe('registry integration', function () {
 
     it('verify user 0 profile', verifyProfileFn(0, 0));
 
+    it('verify document 0 is not signed by user 0', function (done) {
+        const id = hxConsentDoc.id(0);
+        store.server
+            .get(`/api/v1.0/consent-documents/${id}/with-signature`)
+            .set('Authorization', store.auth)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                const result = res.body;
+                expect(result.signature).to.equal(false);
+                done();
+            });
+    });
+
     it('update user 0 profile', updateProfileFn(0, 0));
 
     it('verify user 0 profile', verifyProfileFn(0, 0));
+
+    it('register user 1 with profile survey 0 and doc 0 signature', createProfileFn(0, [0]));
+
+    it('verify user 1 profile', verifyProfileFn(0, 1));
+
+    it('verify document 0 is signed by user 1', function (done) {
+        const id = hxConsentDoc.id(0);
+        store.server
+            .get(`/api/v1.0/consent-documents/${id}/with-signature`)
+            .set('Authorization', store.auth)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                const result = res.body;
+                expect(result.signature).to.equal(true);
+                expect(result.language).to.equal('en');
+                done();
+            });
+    });
+
+    it('login as super', shared.loginFn(store, config.superUser));
+
+    it('create profile survey 1', createProfileSurveyFn());
+
+    it('logout as super', shared.logoutFn(store));
+
+    it('get/verify profile survey 1', verifyProfileSurveyFn(1));
 });

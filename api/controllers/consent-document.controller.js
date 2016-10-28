@@ -21,6 +21,14 @@ exports.getConsentDocument = function (req, res) {
         .catch(shared.handleError(res));
 };
 
+exports.getSignedConsentDocument = function (req, res) {
+    const id = _.get(req, 'swagger.params.id.value');
+    const language = _.get(req, 'swagger.params.language.value');
+    ConsentDocument.getSignedConsentDocument(req.user.id, id, { language })
+        .then(result => res.status(200).json(result))
+        .catch(shared.handleError(res));
+};
+
 exports.updateConsentDocumentText = function (req, res) {
     const language = _.get(req, 'swagger.params.language.value');
     ConsentDocument.updateConsentDocumentText(req.body, language)
