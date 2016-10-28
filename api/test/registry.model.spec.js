@@ -60,7 +60,6 @@ describe('registry unit', function () {
     });
     it('get/verify profile survey', verifyProfileSurveyFn(0));
 
-
     for (let i = 0; i < 2; ++i) {
         it(`create consent type ${i}`, shared.createConsentTypeFn(hxConsentDoc));
     }
@@ -75,7 +74,7 @@ describe('registry unit', function () {
             const clientUser = generator.newUser();
             const answers = generator.answerQuestions(survey.questions);
             hxAnswers.push(answers);
-            const input = {user: clientUser, answers};
+            const input = { user: clientUser, answers };
             if (signatures) {
                 input.signatures = signatures.map(sign => hxConsentDoc.id(sign));
             }
@@ -119,7 +118,7 @@ describe('registry unit', function () {
 
     it('verify user 0 profile', verifyProfileFn(0, 0));
 
-    it('verify document 0 is not signed by user 0', function() {
+    it('verify document 0 is not signed by user 0', function () {
         const id = hxConsentDoc.id(0);
         const userId = hxUser.id(0);
         return ConsentDocument.getSignedConsentDocument(userId, id)
@@ -136,7 +135,7 @@ describe('registry unit', function () {
 
     it('verify user 1 profile', verifyProfileFn(0, 1));
 
-    it('verify document 0 is signed by user 1', function() {
+    it('verify document 0 is signed by user 1', function () {
         const id = hxConsentDoc.id(0);
         const userId = hxUser.id(1);
         return ConsentDocument.getSignedConsentDocument(userId, id)
