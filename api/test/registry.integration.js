@@ -174,25 +174,58 @@ describe('registry integration', function () {
         };
     };
 
+    const verifySignedDocumentFn = function (expected) {
+        return function (done) {
+            const server = hxConsentDoc.server(0);
+            store.server
+                .get(`/api/v1.0/consent-documents/${server.id}/with-signature`)
+                .set('Authorization', store.auth)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    const result = res.body;
+                    expect(result.content).to.equal(server.content);
+                    expect(result.signature).to.equal(expected);
+                    if (expected) {
+                        expect(result.language).to.equal('en');
+                    }
+                    done();
+                });
+        };
+    };
+
+    const verifySignedDocumentByTypeNameFn = function (expected) {
+        return function (done) {
+            const server = hxConsentDoc.server(0);
+            const typeName = hxConsentDoc.type(0).name;
+            store.server
+                .get(`/api/v1.0/consent-documents/type-name/${typeName}/with-signature`)
+                .set('Authorization', store.auth)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    const result = res.body;
+                    expect(result.content).to.equal(server.content);
+                    expect(result.signature).to.equal(expected);
+                    if (expected) {
+                        expect(result.language).to.equal('en');
+                    }
+                    done();
+                });
+        };
+    };
+
     it('register user 0 with profile survey 0', createProfileFn(0));
 
     it('verify user 0 profile', verifyProfileFn(0, 0));
 
-    it('verify document 0 is not signed by user 0', function (done) {
-        const id = hxConsentDoc.id(0);
-        store.server
-            .get(`/api/v1.0/consent-documents/${id}/with-signature`)
-            .set('Authorization', store.auth)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-                const result = res.body;
-                expect(result.signature).to.equal(false);
-                done();
-            });
-    });
+    it('verify document 0 is not signed by user 0', verifySignedDocumentFn(false));
+
+    it('verify document 0 is not signed by user 0 (type name)', verifySignedDocumentByTypeNameFn(false));
 
     it('update user 0 profile', updateProfileFn(0, 0));
 
@@ -202,22 +235,9 @@ describe('registry integration', function () {
 
     it('verify user 1 profile', verifyProfileFn(0, 1));
 
-    it('verify document 0 is signed by user 1', function (done) {
-        const id = hxConsentDoc.id(0);
-        store.server
-            .get(`/api/v1.0/consent-documents/${id}/with-signature`)
-            .set('Authorization', store.auth)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-                const result = res.body;
-                expect(result.signature).to.equal(true);
-                expect(result.language).to.equal('en');
-                done();
-            });
-    });
+    it('verify document 0 is signed by user 1', verifySignedDocumentFn(true));
+
+    it('verify document 0 is not signed by user 1 (type name)', verifySignedDocumentByTypeNameFn(true));
 
     it('login as super', shared.loginFn(store, config.superUser));
 
