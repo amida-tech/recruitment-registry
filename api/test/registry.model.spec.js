@@ -3,127 +3,167 @@
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
-const _ = require('lodash');
 
 const models = require('../models');
 const SharedSpec = require('./util/shared-spec.js');
 const tokener = require('../lib/tokener');
-const helper = require('./util/survey-common');
+const History = require('./util/entity-history');
+const Generator = require('./util/entity-generator');
 const comparator = require('./util/client-server-comparator');
-
-const userExamples = require('./fixtures/example/user');
-const surveyExamples = require('./fixtures/example/survey');
+const ConsentDocumentHistory = require('./util/consent-document-history');
 
 const expect = chai.expect;
-const shared = new SharedSpec();
+const generator = new Generator();
+const shared = new SharedSpec(generator);
 
 const Registry = models.Registry;
+const ConsentDocument = models.ConsentDocument;
 
 describe('registry unit', function () {
-    const userExample = userExamples.Alzheimer;
-    const surveyExample = surveyExamples.Alzheimer;
-
     before(shared.setUpFn());
 
-    const store = {
-        profileSurveyId: null,
-        clientSurveys: [],
-        surveys: []
-    };
+    const hxSurvey = new History(['id', 'name']);
+    const hxUser = new History();
+    const hxAnswers = [];
+    const hxConsentDoc = new ConsentDocumentHistory(2);
 
     it('error: get profile survey when none created', function () {
         return Registry.getProfileSurvey()
             .then(shared.throwingHandler, shared.expectedErrorHandler('registryNoProfileSurvey'));
     });
 
-    const createProfileSurveyFn = function (survey) {
+    const createProfileSurveyFn = function () {
+        const clientSurvey = generator.newSurvey();
         return function () {
-            store.clientSurveys.push(survey);
-            return Registry.createProfileSurvey(survey)
-                .then(({ id }) => store.profileSurveyId = id);
+            return Registry.createProfileSurvey(clientSurvey)
+                .then(idOnlyServer => hxSurvey.push(clientSurvey, idOnlyServer));
         };
     };
 
     const verifyProfileSurveyFn = function (index) {
         return function () {
             return Registry.getProfileSurvey()
-                .then(actual => {
-                    store.survey = actual;
-                    store.surveys.push(actual);
-                    return comparator.survey(store.clientSurveys[index], actual);
+                .then(server => {
+                    const id = hxSurvey.id(index);
+                    expect(server.id).to.equal(id);
+                    hxSurvey.updateServer(index, server);
+                    return comparator.survey(hxSurvey.client(index), server);
                 });
         };
     };
 
-    it('create profile survey', createProfileSurveyFn(surveyExample.survey));
-    it('get/verify profile survey', verifyProfileSurveyFn(0));
+    it('create profile survey 0', createProfileSurveyFn());
+    it('get/verify profile survey 0', verifyProfileSurveyFn(0));
 
     it('check soft sync does not reset registry', function () {
         return models.sequelize.sync({ force: false });
     });
     it('get/verify profile survey', verifyProfileSurveyFn(0));
 
-    let userId;
-    let answers;
+    for (let i = 0; i < 2; ++i) {
+        it(`create consent type ${i}`, shared.createConsentTypeFn(hxConsentDoc));
+    }
 
-    it('setup user with profile', function () {
-        answers = helper.formAnswersToPost(store.survey, surveyExample.answer);
-        return Registry.createProfile({
-                user: userExample,
+    for (let i = 0; i < 2; ++i) {
+        it(`create consent document of type ${i}`, shared.createConsentDocumentFn(hxConsentDoc, i));
+    }
+
+    const createProfileFn = function (surveyIndex, signatures) {
+        return function () {
+            const survey = hxSurvey.server(surveyIndex);
+            const clientUser = generator.newUser();
+            const answers = generator.answerQuestions(survey.questions);
+            hxAnswers.push(answers);
+            const input = { user: clientUser, answers };
+            if (signatures) {
+                input.signatures = signatures.map(sign => hxConsentDoc.id(sign));
+            }
+            return Registry.createProfile(input)
+                .then(({ token }) => tokener.verifyJWT(token))
+                .then(({ id }) => hxUser.push(clientUser, { id }));
+        };
+    };
+
+    const verifyProfileFn = function (surveyIndex, userIndex) {
+        return function () {
+            const survey = hxSurvey.server(surveyIndex);
+            const userId = hxUser.id(userIndex);
+            return Registry.getProfile({ userId })
+                .then(function (result) {
+                    comparator.user(hxUser.client(userIndex), result.user);
+                    comparator.answeredSurvey(survey, hxAnswers[userIndex], result.survey);
+                });
+        };
+    };
+
+    const updateProfileFn = function (surveyIndex, userIndex) {
+        return function () {
+            const survey = hxSurvey.server(surveyIndex);
+            const answers = generator.answerQuestions(survey.questions);
+            const userUpdates = {
+                email: `updated${userIndex}@example.com`
+            };
+            hxUser.client(userIndex).email = userUpdates.email;
+            const updateObj = {
+                user: userUpdates,
                 answers
-            })
-            .then(({ token }) => tokener.verifyJWT(token))
-            .then(({ id }) => userId = id);
-    });
-
-    it('verify user profile', function () {
-        return Registry.getProfile({ userId })
-            .then(function (result) {
-                const expectedUser = _.cloneDeep(userExample);
-                const user = result.user;
-                expectedUser.id = user.id;
-                delete expectedUser.password;
-                delete user.createdAt;
-                delete user.updatedAt;
-                expect(user).to.deep.equal(expectedUser);
-
-                const actualSurvey = result.survey;
-                const expectedSurvey = helper.formAnsweredSurvey(store.survey, answers);
-                expect(actualSurvey).to.deep.equal(expectedSurvey);
-            });
-    });
-
-    it('update user profile', function () {
-        answers = helper.formAnswersToPost(store.survey, surveyExample.answerUpdate);
-        const userUpdates = {
-            email: 'updated@example.com'
+            };
+            const userId = hxUser.id(userIndex);
+            hxAnswers[userIndex] = answers;
+            return Registry.updateProfile(userId, updateObj);
         };
-        const updateObj = {
-            user: userUpdates,
-            answers
+    };
+
+    const verifySignedDocumentFn = function (userIndex, expected) {
+        return function () {
+            const server = hxConsentDoc.server(0);
+            const userId = hxUser.id(userIndex);
+            return ConsentDocument.getSignedConsentDocument(userId, server.id)
+                .then(result => {
+                    expect(result.content).to.equal(server.content);
+                    expect(result.signature).to.equal(expected);
+                    if (expected) {
+                        expect(result.language).to.equal('en');
+                    }
+                });
         };
-        return Registry.updateProfile(userId, updateObj);
-    });
+    };
 
-    it('verify user profile', function () {
-        return Registry.getProfile({ userId })
-            .then(function (result) {
-                const expectedUser = _.cloneDeep(userExample);
-                const user = result.user;
-                expectedUser.id = user.id;
-                expectedUser.email = 'updated@example.com';
-                delete expectedUser.password;
-                delete user.createdAt;
-                delete user.updatedAt;
-                expect(user).to.deep.equal(expectedUser);
+    const verifySignedDocumentByTypeNameFn = function (userIndex, expected) {
+        return function () {
+            const server = hxConsentDoc.server(0);
+            const typeName = hxConsentDoc.type(0).name;
+            const userId = hxUser.id(userIndex);
+            return ConsentDocument.getSignedConsentDocumentByTypeName(userId, typeName)
+                .then(result => {
+                    expect(result.content).to.equal(server.content);
+                    expect(result.signature).to.equal(expected);
+                    if (expected) {
+                        expect(result.language).to.equal('en');
+                    }
+                });
+        };
+    };
+    it('register user 0 with profile survey 0', createProfileFn(0));
 
-                const actualSurvey = result.survey;
-                const expectedSurvey = helper.formAnsweredSurvey(store.survey, answers);
-                expect(actualSurvey).to.deep.equal(expectedSurvey);
-            });
-    });
+    it('verify user 0 profile', verifyProfileFn(0, 0));
 
-    const replacement = _.cloneDeep(surveyExamples.Example.survey);
-    it('create profile survey', createProfileSurveyFn(replacement));
-    it('get/verify profile survey', verifyProfileSurveyFn(1));
+    it('verify document 0 is not signed by user 0', verifySignedDocumentFn(0, false));
+
+    it('verify document 0 is not signed by user 0 (type name)', verifySignedDocumentByTypeNameFn(0, false));
+
+    it('update user 0 profile', updateProfileFn(0, 0));
+
+    it('verify user 0 profile', verifyProfileFn(0, 0));
+
+    it('register user 1 with profile survey 0 and doc 0 signature', createProfileFn(0, [0]));
+
+    it('verify user 1 profile', verifyProfileFn(0, 1));
+
+    it('verify document 0 is signed by user 1', verifySignedDocumentFn(1, true));
+
+    it('verify document 0 is signed by user 1 (type name)', verifySignedDocumentByTypeNameFn(1, true));
+
+    it('create profile survey 1', createProfileSurveyFn());
+    it('get/verify profile survey 1', verifyProfileSurveyFn(1));
 });

@@ -67,6 +67,17 @@ describe('consent document/type/signature unit', function () {
         };
     };
 
+    const verifyConsentDocumentByTypeNameFn = function (typeIndex) {
+        return function () {
+            const cs = history.server(typeIndex);
+            const typeName = history.type(typeIndex).name;
+            return ConsentDocument.getConsentDocumentByTypeName(typeName)
+                .then(result => {
+                    expect(result).to.deep.equal(cs);
+                });
+        };
+    };
+
     const verifyTranslatedConsentDocumentFn = function (index, language) {
         return function () {
             const id = history.id(index);
@@ -81,9 +92,15 @@ describe('consent document/type/signature unit', function () {
     for (let i = 0; i < 2; ++i) {
         it(`create consent document of type ${i}`, shared.createConsentDocumentFn(history, i));
         it(`verify consent document of type ${i}`, verifyConsentDocumentFn(i));
+        it(`verify consent document of type ${i} (type name)`, verifyConsentDocumentByTypeNameFn(i));
         it(`add translated (es) consent document ${i}`, shared.translateConsentDocumentFn(i, 'es', history));
         it(`verify translated (es) consent document of type ${i}`, verifyTranslatedConsentDocumentFn(i, 'es'));
     }
+
+    it('error: no consent documents with type name', function () {
+        return ConsentDocument.getConsentDocumentByTypeName('Not Here')
+            .then(shared.throwingHandler, shared.expectedErrorHandler('consentTypeNotFound'));
+    });
 
     const verifyConsentDocumentsFn = function (userIndex, expectedIndices) {
         return function () {

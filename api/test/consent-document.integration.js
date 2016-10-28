@@ -93,6 +93,23 @@ describe('consent document integration', function () {
         };
     };
 
+    const getConsentDocumentByTypeNameFn = function (typeIndex) {
+        return function (done) {
+            const typeName = history.type(typeIndex).name;
+            store.server
+                .get(`/api/v1.0/consent-documents/type-name/${typeName}`)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    const expected = history.server(typeIndex);
+                    expect(res.body).to.deep.equal(expected);
+                    done();
+                });
+        };
+    };
+
     const getTranslatedConsentDocumentFn = function (typeIndex, language) {
         return function (done) {
             const id = history.id(typeIndex);
@@ -114,6 +131,7 @@ describe('consent document integration', function () {
     for (let i = 0; i < 2; ++i) {
         it(`create consent document of type ${i}`, shared.createConsentDocumentFn(store, history, i));
         it(`get/verify consent document content of type ${i}`, getConsentDocumentFn(i));
+        it(`get/verify consent document content of type ${i} (type name)`, getConsentDocumentByTypeNameFn(i));
         it(`add translated (es) consent document ${i}`, shared.translateConsentDocumentFn(store, i, 'es', history));
         it(`verify translated (es) consent document of type ${i}`, getTranslatedConsentDocumentFn(i, 'es'));
     }

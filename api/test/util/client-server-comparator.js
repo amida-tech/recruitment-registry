@@ -97,6 +97,26 @@ const comparator = {
                 }
                 expect(actual).to.deep.equal(expected);
             });
+    },
+    answeredSurvey(survey, answers, server) {
+        const expected = _.cloneDeep(survey);
+        expected.questions.forEach((qx, index) => {
+            qx.answer = answers[index].answer;
+            if (qx.type === 'choices' && qx.answer.choices) {
+                qx.answer.choices.forEach((choice) => {
+                    if (!choice.textValue && !choice.hasOwnProperty('boolValue')) {
+                        choice.boolValue = true;
+                    }
+                });
+            }
+        });
+        expect(server).to.deep.equal(expected);
+    },
+    user(client, server) {
+        const expected = _.cloneDeep(client);
+        expected.id = server.id;
+        delete expected.password;
+        expect(server).to.deep.equal(expected);
     }
 };
 

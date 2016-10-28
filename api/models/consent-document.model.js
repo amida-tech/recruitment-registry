@@ -125,6 +125,50 @@ module.exports = function (sequelize, DataTypes) {
                 return ConsentDocument.findById(id, { raw: true, attributes: ['id', 'typeId'] })
                     .then(result => textHandler.updateText(result, options.language));
             },
+            getConsentDocumentByTypeName: function (typeName, options = {}) {
+                return sequelize.models.consent_type.findOne({
+                        raw: true,
+                        where: { name: typeName },
+                        attributes: ['id']
+                    })
+                    .then(consentType => {
+                        if (consentType) {
+                            const typeId = consentType.id;
+                            return ConsentDocument.findOne({
+                                    raw: true,
+                                    where: { typeId },
+                                    attributes: ['id', 'typeId']
+                                })
+                                .then(result => textHandler.updateText(result, options.language));
+                        } else {
+                            return RRError.reject('consentTypeNotFound');
+                        }
+                    });
+            },
+            _fillSignature: function (result, userId, id) {
+                return sequelize.models.consent_signature.findOne({
+                        where: { userId, consentDocumentId: id },
+                        raw: true,
+                        attributes: ['language']
+                    })
+                    .then(signature => {
+                        if (signature) {
+                            result.signature = true;
+                            result.language = signature.language;
+                        } else {
+                            result.signature = false;
+                        }
+                        return result;
+                    });
+            },
+            getSignedConsentDocument: function (userId, id, options) {
+                return ConsentDocument.getConsentDocument(id, options)
+                    .then(result => ConsentDocument._fillSignature(result, userId, id));
+            },
+            getSignedConsentDocumentByTypeName: function (userId, typeName, options = {}) {
+                return ConsentDocument.getConsentDocumentByTypeName(typeName, options)
+                    .then(result => ConsentDocument._fillSignature(result, userId, result.id));
+            },
             getUpdateCommentHistory: function (typeId, language) {
                 return ConsentDocument.findAll({
                         raw: true,
