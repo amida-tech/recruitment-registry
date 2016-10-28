@@ -114,18 +114,43 @@ describe('registry unit', function () {
         };
     };
 
+    const verifySignedDocumentFn = function (userIndex, expected) {
+        return function () {
+            const server = hxConsentDoc.server(0);
+            const userId = hxUser.id(userIndex);
+            return ConsentDocument.getSignedConsentDocument(userId, server.id)
+                .then(result => {
+                    expect(result.content).to.equal(server.content);
+                    expect(result.signature).to.equal(expected);
+                    if (expected) {
+                        expect(result.language).to.equal('en');
+                    }
+                });
+        };
+    };
+
+    const verifySignedDocumentByTypeNameFn = function (userIndex, expected) {
+        return function () {
+            const server = hxConsentDoc.server(0);
+            const typeName = hxConsentDoc.type(0).name;
+            const userId = hxUser.id(userIndex);
+            return ConsentDocument.getSignedConsentDocumentByTypeName(userId, typeName)
+                .then(result => {
+                    expect(result.content).to.equal(server.content);
+                    expect(result.signature).to.equal(expected);
+                    if (expected) {
+                        expect(result.language).to.equal('en');
+                    }
+                });
+        };
+    };
     it('register user 0 with profile survey 0', createProfileFn(0));
 
     it('verify user 0 profile', verifyProfileFn(0, 0));
 
-    it('verify document 0 is not signed by user 0', function () {
-        const id = hxConsentDoc.id(0);
-        const userId = hxUser.id(0);
-        return ConsentDocument.getSignedConsentDocument(userId, id)
-            .then(result => {
-                expect(result.signature).to.equal(false);
-            });
-    });
+    it('verify document 0 is not signed by user 0', verifySignedDocumentFn(0, false));
+
+    it('verify document 0 is not signed by user 0 (type name)', verifySignedDocumentByTypeNameFn(0, false));
 
     it('update user 0 profile', updateProfileFn(0, 0));
 
@@ -135,15 +160,9 @@ describe('registry unit', function () {
 
     it('verify user 1 profile', verifyProfileFn(0, 1));
 
-    it('verify document 0 is signed by user 1', function () {
-        const id = hxConsentDoc.id(0);
-        const userId = hxUser.id(1);
-        return ConsentDocument.getSignedConsentDocument(userId, id)
-            .then(result => {
-                expect(result.signature).to.equal(true);
-                expect(result.language).to.equal('en');
-            });
-    });
+    it('verify document 0 is signed by user 1', verifySignedDocumentFn(1, true));
+
+    it('verify document 0 is signed by user 1 (type name)', verifySignedDocumentByTypeNameFn(1, true));
 
     it('create profile survey 1', createProfileSurveyFn());
     it('get/verify profile survey 1', verifyProfileSurveyFn(1));

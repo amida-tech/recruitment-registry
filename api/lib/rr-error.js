@@ -103,6 +103,10 @@ errors.qxReplaceWhenActiveSurveys = {
     msg: 'Question in active surveys cannot be removed or replaced.'
 };
 
+errors.consentTypeNotFound = {
+    msg: 'No such consent type.'
+};
+
 errors.consentTypeDeleteOnConsent = {
     msg: 'Consent type cannot be removed because it is used by one or more consents.'
 };
