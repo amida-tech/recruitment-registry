@@ -476,7 +476,7 @@
             }
         },
         "/profile-survey": {
-            "x-swagger-router-controller": "registry.controller",
+            "x-swagger-router-controller": "profile-survey.controller",
             "post": {
                 "summary": "Creates/replaces profile survey",
                 "operationId": "createProfileSurvey",
@@ -526,7 +526,7 @@
             }
         },
         "/profile-survey/text/{language}": {
-            "x-swagger-router-controller": "registry.controller",
+            "x-swagger-router-controller": "profile-survey.controller",
             "patch": {
                 "summary": "Updates or translates profile survey text fields",
                 "operationId": "updateProfileSurveyText",
@@ -559,7 +559,7 @@
             }
         },
         "/profiles": {
-            "x-swagger-router-controller": "registry.controller",
+            "x-swagger-router-controller": "profile.controller",
             "post": {
                 "summary": "Creates registry user profile",
                 "operationId": "createProfile",
