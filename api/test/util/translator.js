@@ -14,7 +14,7 @@ const translator = {
         texts.forEach(text => {
             if (text !== null) {
                 const location = text.indexOf(languageText);
-                expect(location).to.be.above(0);
+                expect(location).to.be.above(0, `is not translated to ${language}`);
             }
         });
     },
@@ -77,7 +77,7 @@ const translator = {
                 const text = section[property];
                 if (text !== null) {
                     const location = text.indexOf(languageText);
-                    expect(location).to.be.above(0);
+                    expect(location).to.be.above(0, `is not translated to ${language}`);
                 }
             });
         });

@@ -10,6 +10,7 @@ const tokener = require('../lib/tokener');
 const History = require('./util/entity-history');
 const Generator = require('./util/entity-generator');
 const comparator = require('./util/client-server-comparator');
+const translator = require('./util/translator');
 const ConsentDocumentHistory = require('./util/consent-document-history');
 
 const expect = chai.expect;
@@ -52,13 +53,47 @@ describe('registry unit', function () {
         };
     };
 
+    const translateProfileSurveyFn = function (index, language) {
+        return function () {
+            const survey = hxSurvey.server(index);
+            const translation = translator.translateSurvey(survey, language);
+            delete translation.id;
+            return Registry.updateProfileSurveyText(translation, language)
+                .then(() => {
+                    hxSurvey.translate(index, language, translation);
+                });
+        };
+    };
+
+    const verifyTranslatedProfileSurveyFn = function (index, language) {
+        return function () {
+            return Registry.getProfileSurvey({ language })
+                .then(result => {
+                    translator.isSurveyTranslated(result, language);
+                    const expected = hxSurvey.translatedServer(index, language);
+                    expect(result).to.deep.equal(expected);
+                });
+        };
+    };
+
     it('create profile survey 0', createProfileSurveyFn());
     it('get/verify profile survey 0', verifyProfileSurveyFn(0));
 
     it('check soft sync does not reset registry', function () {
         return models.sequelize.sync({ force: false });
     });
-    it('get/verify profile survey', verifyProfileSurveyFn(0));
+    it('get/verify profile survey 0', verifyProfileSurveyFn(0));
+
+    it('get profile survey 0 in spanish when no translation', function () {
+        return Registry.getProfileSurvey({ language: 'es' })
+            .then(result => {
+                const survey = hxSurvey.server(0);
+                expect(result).to.deep.equal(survey);
+            });
+    });
+
+    it('translate profile survey 0 to spanish', translateProfileSurveyFn(0, 'es'));
+    it('get/verify translated profile survey 0 (spanish)', verifyTranslatedProfileSurveyFn(0, 'es'));
 
     for (let i = 0; i < 2; ++i) {
         it(`create consent type ${i}`, shared.createConsentTypeFn(hxConsentDoc));

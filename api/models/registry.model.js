@@ -46,7 +46,7 @@ module.exports = function (sequelize, DataTypes) {
 
             },
             createProfileSurvey: function (survey) {
-                return sequelize.transaction(function (tx) {
+                return sequelize.transaction(tx => {
                     return Registry.findOne()
                         .then(registry => {
                             if (registry.profileSurveyId) {
@@ -64,10 +64,16 @@ module.exports = function (sequelize, DataTypes) {
                         });
                 });
             },
-            getProfileSurvey: function () {
+            updateProfileSurveyText: function ({ name, sections }, language) {
+                return sequelize.transaction(tx => {
+                    return Registry.getProfileSurveyId()
+                        .then(id => Survey.updateSurveyTextTx({ id, name, sections }, language, tx));
+                });
+            },
+            getProfileSurvey: function (options = {}) {
                 return Registry.getProfileSurveyId()
                     .then(profileSurveyId => {
-                        return Survey.getSurvey(profileSurveyId)
+                        return Survey.getSurvey(profileSurveyId, options)
                             .then(survey => {
                                 const surveyId = survey.id;
                                 const action = 'create';
@@ -92,7 +98,7 @@ module.exports = function (sequelize, DataTypes) {
                     });
             },
             createProfile: function (input, language) {
-                return sequelize.transaction(function (tx) {
+                return sequelize.transaction(tx => {
                     return Registry.getProfileSurveyId()
                         .then(profileSurveyId => {
                             input.user.role = 'participant';
@@ -121,7 +127,7 @@ module.exports = function (sequelize, DataTypes) {
             updateProfile: function (id, input) {
                 return Registry.getProfileSurveyId()
                     .then(profileSurveyId => {
-                        return sequelize.transaction(function (tx) {
+                        return sequelize.transaction(tx => {
                             return User.updateUser(id, input.user, {
                                     transaction: tx
                                 })

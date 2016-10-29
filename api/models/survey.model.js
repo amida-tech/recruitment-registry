@@ -101,14 +101,17 @@ module.exports = function (sequelize, DataTypes) {
                     return sequelize.models.rr_section.bulkCreateSectionsForSurveyTx(id, sections, tx);
                 });
             },
+            updateSurveyTextTx({ id, name, sections }, language, tx) {
+                return textHandler.createTextTx({ id, name, language }, tx)
+                    .then(() => {
+                        if (sections) {
+                            return sequelize.models.rr_section.updateMultipleSectionNamesTx(sections, language, tx);
+                        }
+                    });
+            },
             updateSurveyText({ id, name, sections }, language) {
                 return sequelize.transaction(function (tx) {
-                    return textHandler.createTextTx({ id, name, language }, tx)
-                        .then(() => {
-                            if (sections) {
-                                return sequelize.models.rr_section.updateMultipleSectionNamesTx(sections, language, tx);
-                            }
-                        });
+                    return Survey.updateSurveyTextTx({ id, name, sections }, language, tx);
                 });
             },
             replaceSurveyTx(id, replacement, tx) {
