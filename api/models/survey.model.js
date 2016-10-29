@@ -37,15 +37,15 @@ module.exports = function (sequelize, DataTypes) {
         paranoid: true,
         classMethods: {
             createNewQuestionsTx(questions, tx) {
-                const newQuestions = questions.reduce(function (r, qx, index) {
+                const newQuestions = questions.reduce((r, qx, index) => {
                     if (!qx.id) {
                         r.push({ qx, index });
                     }
                     return r;
                 }, []);
                 if (newQuestions.length) {
-                    return sequelize.Promise.all(newQuestions.map(function (q) {
-                            return sequelize.models.question.createQuestionTx(q.qx, tx).then(function (id) {
+                    return sequelize.Promise.all(newQuestions.map(q => {
+                            return sequelize.models.question.createQuestionTx(q.qx, tx).then(id => {
                                 const oldQx = questions[q.index];
                                 questions[q.index] = { id, required: oldQx.required };
                             });
@@ -92,12 +92,12 @@ module.exports = function (sequelize, DataTypes) {
                     });
             },
             createSurvey(survey) {
-                return sequelize.transaction(function (tx) {
+                return sequelize.transaction(tx => {
                     return Survey.createSurveyTx(survey, tx);
                 });
             },
             replaceSurveySections(id, sections) {
-                return sequelize.transaction(function (tx) {
+                return sequelize.transaction(tx => {
                     return sequelize.models.rr_section.bulkCreateSectionsForSurveyTx(id, sections, tx);
                 });
             },
@@ -110,7 +110,7 @@ module.exports = function (sequelize, DataTypes) {
                     });
             },
             updateSurveyText({ id, name, sections }, language) {
-                return sequelize.transaction(function (tx) {
+                return sequelize.transaction(tx => {
                     return Survey.updateSurveyTextTx({ id, name, sections }, language, tx);
                 });
             },
@@ -154,12 +154,12 @@ module.exports = function (sequelize, DataTypes) {
                 if (!_.get(replacement, 'questions.length')) {
                     return RRError.reject('surveyNoQuestions');
                 }
-                return sequelize.transaction(function (tx) {
+                return sequelize.transaction(tx => {
                     return Survey.replaceSurveyTx(id, replacement, tx);
                 });
             },
             deleteSurvey(id) {
-                return sequelize.transaction(function (tx) {
+                return sequelize.transaction(tx => {
                     return Survey.destroy({ where: { id }, transaction: tx })
                         .then(() => {
                             return sequelize.models.survey_question.destroy({ where: { surveyId: id }, transaction: tx })
@@ -191,7 +191,7 @@ module.exports = function (sequelize, DataTypes) {
                     _options = _.assign({}, _options, options.override);
                 }
                 return Survey.findOne(_options)
-                    .then(function (survey) {
+                    .then(survey => {
                         if (!survey) {
                             return RRError.reject('surveyNotFound');
                         }
@@ -240,12 +240,12 @@ module.exports = function (sequelize, DataTypes) {
             },
             _getAnsweredSurvey(surveyPromise, userId) {
                 return surveyPromise
-                    .then(function (survey) {
+                    .then(survey => {
                         return sequelize.models.answer.getAnswers({
                                 userId,
                                 surveyId: survey.id
                             })
-                            .then(function (answers) {
+                            .then(answers => {
                                 const qmap = _.keyBy(survey.questions, 'id');
                                 answers.forEach(answer => {
                                     const qid = answer.questionId;

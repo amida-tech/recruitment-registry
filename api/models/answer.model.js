@@ -146,7 +146,7 @@ module.exports = function (sequelize, DataTypes) {
         deletedAt: 'deletedAt',
         paranoid: true,
         classMethods: {
-            auxCreateAnswersTx: function ({ userId, surveyId, language, answers }, tx) {
+            auxCreateAnswersTx({ userId, surveyId, language, answers }, tx) {
                 // TO DO: Put an assertion here to check the answers match with question type
                 answers = answers.reduce((r, q) => {
                     const questionId = q.questionId;
@@ -163,11 +163,11 @@ module.exports = function (sequelize, DataTypes) {
                     return r;
                 }, []);
                 // TODO: Switch to bulkCreate when Sequelize 4 arrives
-                return sequelize.Promise.all(answers.map(function (answer) {
+                return sequelize.Promise.all(answers.map(answer => {
                     return Answer.create(answer, { transaction: tx });
                 }));
             },
-            createAnswersTx: function ({ userId, surveyId, language = 'en', answers }, tx) {
+            createAnswersTx({ userId, surveyId, language = 'en', answers }, tx) {
                 const ids = _.map(answers, 'questionId');
                 return sequelize.models.survey_question.findAll({
                         where: { surveyId },
@@ -212,12 +212,12 @@ module.exports = function (sequelize, DataTypes) {
                         }
                     });
             },
-            createAnswers: function (input) {
-                return sequelize.transaction(function (tx) {
+            createAnswers(input) {
+                return sequelize.transaction(tx => {
                     return Answer.createAnswersTx(input, tx);
                 });
             },
-            getAnswers: function ({ userId, surveyId }) {
+            getAnswers({ userId, surveyId }) {
                 return sequelize.models.survey_consent_type.listSurveyConsentTypes({
                         userId,
                         surveyId,
@@ -232,9 +232,9 @@ module.exports = function (sequelize, DataTypes) {
                                 },
                                 type: sequelize.QueryTypes.SELECT
                             })
-                            .then(function (result) {
+                            .then(result => {
                                 const groupedResult = _.groupBy(result, 'qid');
-                                return Object.keys(groupedResult).map(function (key) {
+                                return Object.keys(groupedResult).map(key => {
                                     const v = groupedResult[key];
                                     const r = {
                                         questionId: v[0].qid,
@@ -246,7 +246,7 @@ module.exports = function (sequelize, DataTypes) {
                             });
                     });
             },
-            getOldAnswers: function ({ userId, surveyId }) {
+            getOldAnswers({ userId, surveyId }) {
                 return Answer.findAll({
                         paranoid: false,
                         where: { userId, surveyId, deletedAt: { $ne: null } },
@@ -271,10 +271,10 @@ module.exports = function (sequelize, DataTypes) {
                             .then(rawQuestions => _.keyBy(rawQuestions, 'id'))
                             .then(qxMap => {
                                 const rmGrouped = _.groupBy(rawAnswers, 'deletedAt');
-                                return Object.keys(rmGrouped).reduce(function (r, date) {
+                                return Object.keys(rmGrouped).reduce((r, date) => {
                                     const rmGroup = rmGrouped[date];
                                     const qxGrouped = _.groupBy(rmGroup, 'questionId');
-                                    const newValue = Object.keys(qxGrouped).map(function (qid) {
+                                    const newValue = Object.keys(qxGrouped).map(qid => {
                                         const qxGroup = qxGrouped[qid];
                                         return {
                                             questionId: parseInt(qid),

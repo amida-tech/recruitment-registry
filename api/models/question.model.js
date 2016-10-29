@@ -43,7 +43,7 @@ module.exports = function (sequelize, DataTypes) {
         deletedAt: 'deletedAt',
         paranoid: true,
         classMethods: {
-            createActionsTx: function (id, actions, tx) {
+            createActionsTx(id, actions, tx) {
                 if (actions && actions.length) {
                     return sequelize.models.question_action.createActionsPerQuestionTx(id, actions, tx)
                         .then(() => ({ id }));
@@ -51,7 +51,7 @@ module.exports = function (sequelize, DataTypes) {
                     return sequelize.Promise.resolve({ id });
                 }
             },
-            createQuestionTx: function (question, tx) {
+            createQuestionTx(question, tx) {
                 const qxFields = _.omit(question, ['oneOfChoices', 'choices', 'actions', 'questions']);
                 return Question.create(qxFields, { transaction: tx })
                     .then(created => {
@@ -72,7 +72,7 @@ module.exports = function (sequelize, DataTypes) {
                             if (nOneOfChoices) {
                                 choices = oneOfChoices.map(text => ({ text, type: 'bool' }));
                             }
-                            return sequelize.Promise.all(choices.map(function (c, index) {
+                            return sequelize.Promise.all(choices.map((c, index) => {
                                 const choice = {
                                     questionId: created.id,
                                     text: c.text,
@@ -87,12 +87,12 @@ module.exports = function (sequelize, DataTypes) {
                     })
                     .then(({ id }) => id);
             },
-            createQuestion: function (question) {
-                return sequelize.transaction(function (tx) {
+            createQuestion(question) {
+                return sequelize.transaction(tx => {
                     return Question.createQuestionTx(question, tx);
                 });
             },
-            replaceQuestion: function (id, replacement) {
+            replaceQuestion(id, replacement) {
                 return sequelize.models.survey_question.count({ where: { questionId: id } })
                     .then(count => {
                         if (count) {
@@ -128,7 +128,7 @@ module.exports = function (sequelize, DataTypes) {
                         }
                     });
             },
-            getQuestion: function (id, options = {}) {
+            getQuestion(id, options = {}) {
                 const language = options.language;
                 return Question.findById(id, { raw: true, attributes: ['id', 'type'] })
                     .then(question => {
@@ -170,14 +170,14 @@ module.exports = function (sequelize, DataTypes) {
                             });
                     });
             },
-            _updateQuestionTextTx: function ({ id, text }, language, tx) {
+            _updateQuestionTextTx({ id, text }, language, tx) {
                 if (text) {
                     return textHandler.createTextTx({ id, text, language }, tx);
                 } else {
                     return sequelize.Promise.resolve();
                 }
             },
-            updateQuestionTextTx: function (translation, language, tx) {
+            updateQuestionTextTx(translation, language, tx) {
                 return Question._updateQuestionTextTx(translation, language, tx)
                     .then(() => {
                         const choices = translation.choices;
@@ -192,12 +192,12 @@ module.exports = function (sequelize, DataTypes) {
                         }
                     });
             },
-            updateQuestionText: function (translation, language) {
-                return sequelize.transaction(function (tx) {
+            updateQuestionText(translation, language) {
+                return sequelize.transaction(tx => {
                     return Question.updateQuestionTextTx(translation, language, tx);
                 });
             },
-            deleteQuestion: function (id) {
+            deleteQuestion(id) {
                 return sequelize.models.survey_question.count({ where: { questionId: id } })
                     .then(count => {
                         if (count) {
@@ -210,7 +210,7 @@ module.exports = function (sequelize, DataTypes) {
                         }
                     });
             },
-            _listQuestions: function (options = {}) {
+            _listQuestions(options = {}) {
                 const _options = {
                     raw: true,
                     attributes: ['id', 'type'],
@@ -277,7 +277,7 @@ module.exports = function (sequelize, DataTypes) {
                             });
                     });
             },
-            listQuestions: function (options = {}) {
+            listQuestions(options = {}) {
                 return Question._listQuestions(options)
                     .then(({ questions, map }) => {
                         const ids = options.ids;

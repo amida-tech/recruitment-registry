@@ -25,14 +25,14 @@ module.exports = function (sequelize, DataTypes) {
     }, {
         freezeTableName: true,
         hooks: {
-            afterSync: function (options) {
+            afterSync(options) {
                 if (options.force) {
                     return Registry.create();
                 }
             }
         },
         classMethods: {
-            getProfileSurveyId: function () {
+            getProfileSurveyId() {
                 return Registry.findOne({
                         raw: true,
                         attributes: ['profileSurveyId']
@@ -45,7 +45,7 @@ module.exports = function (sequelize, DataTypes) {
                     });
 
             },
-            createProfileSurvey: function (survey) {
+            createProfileSurvey(survey) {
                 return sequelize.transaction(tx => {
                     return Registry.findOne()
                         .then(registry => {
@@ -64,13 +64,13 @@ module.exports = function (sequelize, DataTypes) {
                         });
                 });
             },
-            updateProfileSurveyText: function ({ name, sections }, language) {
+            updateProfileSurveyText({ name, sections }, language) {
                 return sequelize.transaction(tx => {
                     return Registry.getProfileSurveyId()
                         .then(id => Survey.updateSurveyTextTx({ id, name, sections }, language, tx));
                 });
             },
-            getProfileSurvey: function (options = {}) {
+            getProfileSurvey(options = {}) {
                 return Registry.getProfileSurveyId()
                     .then(profileSurveyId => {
                         return Survey.getSurvey(profileSurveyId, options)
@@ -97,7 +97,7 @@ module.exports = function (sequelize, DataTypes) {
                             });
                     });
             },
-            createProfile: function (input, language) {
+            createProfile(input, language) {
                 return sequelize.transaction(tx => {
                     return Registry.getProfileSurveyId()
                         .then(profileSurveyId => {
@@ -124,7 +124,7 @@ module.exports = function (sequelize, DataTypes) {
                         });
                 });
             },
-            updateProfile: function (id, input) {
+            updateProfile(id, input) {
                 return Registry.getProfileSurveyId()
                     .then(profileSurveyId => {
                         return sequelize.transaction(tx => {
@@ -142,13 +142,13 @@ module.exports = function (sequelize, DataTypes) {
                         });
                     });
             },
-            getProfile: function (input) {
+            getProfile(input) {
                 return Registry.getProfileSurveyId()
                     .then(profileSurveyId => {
                         return User.getUser(input.userId)
-                            .then(function (user) {
+                            .then(user => {
                                 return Survey.getAnsweredSurvey(user.id, profileSurveyId)
-                                    .then(function (survey) {
+                                    .then(survey => {
                                         return {
                                             user,
                                             survey

@@ -57,7 +57,7 @@ module.exports = function (sequelize, DataTypes) {
         deletedAt: 'deletedAt',
         paranoid: true,
         hooks: {
-            afterSync: function (options) {
+            afterSync(options) {
                 if (options.force) {
                     const pxs = languages.map(lang => Language.create(lang));
                     return sequelize.Promise.all(pxs);

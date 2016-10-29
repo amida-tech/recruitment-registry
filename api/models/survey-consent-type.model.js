@@ -40,14 +40,14 @@ module.exports = function (sequelize, DataTypes) {
         deletedAt: 'deletedAt',
         paranoid: true,
         classMethods: {
-            createSurveyConsentType: function ({ surveyId, consentTypeId, action }) {
+            createSurveyConsentType({ surveyId, consentTypeId, action }) {
                 return SurveyConsentType.create({ surveyId, consentTypeId, action })
                     .then(({ id }) => ({ id }));
             },
-            deleteSurveyConsentType: function (id) {
+            deleteSurveyConsentType(id) {
                 return SurveyConsentType.destroy({ where: { id } });
             },
-            listSurveyConsentTypes: function ({ userId, surveyId, action }, tx) {
+            listSurveyConsentTypes({ userId, surveyId, action }, tx) {
                 const query = {
                     where: { surveyId, action },
                     raw: true,

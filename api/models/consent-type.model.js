@@ -73,7 +73,7 @@ module.exports = function (sequelize, DataTypes) {
                         if (count) {
                             return RRError.reject('consentTypeDeleteOnConsent');
                         } else {
-                            return sequelize.transaction(function (tx) {
+                            return sequelize.transaction(tx => {
                                 return ConsentType.destroy({ where: { id }, transaction: tx })
                                     .then(() => sequelize.models.consent_document.destroy({
                                         where: { typeId: id }

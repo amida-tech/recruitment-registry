@@ -15,7 +15,7 @@ module.exports = function (sequelize, DataTypes) {
         freezeTableName: true,
         createdAt: 'createdAt',
         hooks: {
-            afterSync: function (options) {
+            afterSync(options) {
                 if (options.force) {
                     const names = ['choice', 'text', 'bool'];
                     const ps = names.map(name => AnswerType.create({ name }));

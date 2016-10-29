@@ -19,7 +19,7 @@ module.exports = function (sequelize, DataTypes) {
         context: crypto
     });
 
-    const clientUpdatableFields = ['email', 'password'].reduce(function (r, p) {
+    const clientUpdatableFields = ['email', 'password'].reduce((r, p) => {
         r[p] = true;
         return r;
     }, {});
@@ -43,7 +43,7 @@ module.exports = function (sequelize, DataTypes) {
             validate: {
                 isEmail: true
             },
-            set: function (val) {
+            set(val) {
                 this.setDataValue('email', val && val.toLowerCase());
             },
             allowNull: false
@@ -80,7 +80,7 @@ module.exports = function (sequelize, DataTypes) {
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
         hooks: {
-            afterSync: function (options) {
+            afterSync(options) {
                 if (options.force) {
                     const user = _.assign(config.superUser, {
                         role: 'admin'
@@ -88,17 +88,17 @@ module.exports = function (sequelize, DataTypes) {
                     return User.create(user);
                 }
             },
-            beforeCreate: function (user) {
+            beforeCreate(user) {
                 return user.updatePassword();
             },
-            beforeUpdate: function (user) {
+            beforeUpdate(user) {
                 if (user.changed('password')) {
                     return user.updatePassword();
                 }
             }
         },
         classMethods: {
-            getUser: function (id) {
+            getUser(id) {
                 return User.findById(id, {
                     raw: true,
                     attributes: {
@@ -112,10 +112,10 @@ module.exports = function (sequelize, DataTypes) {
                     }
                 });
             },
-            updateUser: function (id, values, options) {
+            updateUser(id, values, options) {
                 options = options || {};
-                return User.findById(id, options).then(function (user) {
-                    Object.keys(values).forEach(function (key) {
+                return User.findById(id, options).then(user => {
+                    Object.keys(values).forEach(key => {
                         if (!clientUpdatableFields[key]) {
                             const msg = util.format('Field %s cannot be updated.', key);
                             throw new sequelize.ValidationError(msg);
@@ -124,12 +124,12 @@ module.exports = function (sequelize, DataTypes) {
                     return user.update(values, options);
                 });
             },
-            authenticateUser: function (id, password) {
-                return User.findById(id).then(function (user) {
+            authenticateUser(id, password) {
+                return User.findById(id).then(user => {
                     return user.authenticate(password);
                 });
             },
-            resetPasswordToken: function (email) {
+            resetPasswordToken(email) {
                 return this.find({
                     where: {
                         email: email
@@ -143,7 +143,7 @@ module.exports = function (sequelize, DataTypes) {
                     }
                 });
             },
-            resetPassword: function (token, password) {
+            resetPassword(token, password) {
                 const rejection = function () {
                     const err = new Error('Password reset token is invalid or has expired.');
                     return sequelize.Promise.reject(err);
@@ -167,7 +167,7 @@ module.exports = function (sequelize, DataTypes) {
                     }
                 });
             },
-            listConsentDocuments: function (userId, options = {}) {
+            listConsentDocuments(userId, options = {}) {
                 const _options = { summary: true };
                 const typeIds = options.typeIds;
                 if (typeIds && typeIds.length) {
@@ -197,24 +197,24 @@ module.exports = function (sequelize, DataTypes) {
             }
         },
         instanceMethods: {
-            authenticate: function (password) {
-                return bccompare(password, this.password).then(function (result) {
+            authenticate(password) {
+                return bccompare(password, this.password).then(result => {
                     if (!result) {
                         throw new Error('Authentication error.');
                     }
                 });
             },
-            updatePassword: function () {
-                return bchash(this.password, config.crypt.hashrounds).then((hash) => {
+            updatePassword() {
+                return bchash(this.password, config.crypt.hashrounds).then(hash => {
                     this.password = hash;
                 });
             },
-            updateResetPWToken: function () {
-                return randomBytes(config.crypt.resetTokenLength).then((buf) => {
+            updateResetPWToken() {
+                return randomBytes(config.crypt.resetTokenLength).then(buf => {
                     const token = buf.toString('hex');
                     return token;
                 }).then((token) => {
-                    return randomBytes(config.crypt.resetPasswordLength).then((passwordBuf) => {
+                    return randomBytes(config.crypt.resetPasswordLength).then(passwordBuf => {
                         return {
                             token,
                             password: passwordBuf.toString('hex')

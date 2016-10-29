@@ -34,7 +34,7 @@ module.exports = function (sequelize, DataTypes) {
         deletedAt: 'deletedAt',
         paranoid: true,
         classMethods: {
-            listConsentDocuments: function (options) {
+            listConsentDocuments(options) {
                 const typeIds = options.typeIds;
                 const query = {
                     raw: true,
@@ -102,8 +102,8 @@ module.exports = function (sequelize, DataTypes) {
                             });
                     });
             },
-            createConsentDocument: function (input) {
-                return sequelize.transaction(function (tx) {
+            createConsentDocument(input) {
+                return sequelize.transaction(tx => {
                     const typeId = input.typeId;
                     return ConsentDocument.destroy({ where: { typeId } }, { transaction: tx })
                         .then(() => ConsentDocument.create(input, { transaction: tx }))
@@ -121,11 +121,11 @@ module.exports = function (sequelize, DataTypes) {
             updateConsentDocumentText({ id, content, updateComment }, language) {
                 return textHandler.createText({ id, content, updateComment, language });
             },
-            getConsentDocument: function (id, options = {}) {
+            getConsentDocument(id, options = {}) {
                 return ConsentDocument.findById(id, { raw: true, attributes: ['id', 'typeId'] })
                     .then(result => textHandler.updateText(result, options.language));
             },
-            getConsentDocumentByTypeName: function (typeName, options = {}) {
+            getConsentDocumentByTypeName(typeName, options = {}) {
                 return sequelize.models.consent_type.findOne({
                         raw: true,
                         where: { name: typeName },
@@ -145,7 +145,7 @@ module.exports = function (sequelize, DataTypes) {
                         }
                     });
             },
-            _fillSignature: function (result, userId, id) {
+            _fillSignature(result, userId, id) {
                 return sequelize.models.consent_signature.findOne({
                         where: { userId, consentDocumentId: id },
                         raw: true,
@@ -161,15 +161,15 @@ module.exports = function (sequelize, DataTypes) {
                         return result;
                     });
             },
-            getSignedConsentDocument: function (userId, id, options) {
+            getSignedConsentDocument(userId, id, options) {
                 return ConsentDocument.getConsentDocument(id, options)
                     .then(result => ConsentDocument._fillSignature(result, userId, id));
             },
-            getSignedConsentDocumentByTypeName: function (userId, typeName, options = {}) {
+            getSignedConsentDocumentByTypeName(userId, typeName, options = {}) {
                 return ConsentDocument.getConsentDocumentByTypeName(typeName, options)
                     .then(result => ConsentDocument._fillSignature(result, userId, result.id));
             },
-            getUpdateCommentHistory: function (typeId, language) {
+            getUpdateCommentHistory(typeId, language) {
                 return ConsentDocument.findAll({
                         raw: true,
                         attributes: ['id'],

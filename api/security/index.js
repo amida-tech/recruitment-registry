@@ -95,13 +95,13 @@ module.exports = {
     noAuth,
     invalidUser,
     unauthorizedUser,
-    participant: function (req, def, header, callback) {
+    participant(req, def, header, callback) {
         jwtAuth(req, header, rolesCheck(['participant', 'admin']), callback);
     },
-    admin: function (req, def, header, callback) {
+    admin(req, def, header, callback) {
         jwtAuth(req, header, roleCheck('admin'), callback);
     },
-    self: function (req, def, header, callback) {
+    self(req, def, header, callback) {
         jwtAuth(req, header, _.constant(null), callback);
     }
 };
