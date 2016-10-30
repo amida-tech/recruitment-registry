@@ -20,6 +20,7 @@ select {
   height: 36px;
   -webkit-appearance:none;
   outline: none;
+  margin: 20px 0 20px;
   border: 1px solid $gap-medium-blue;
   background-color: transparent;
   color: $gap-dark-grey;
@@ -35,6 +36,42 @@ select {
   background-image: url('data:image/svg+xml;charset=utf-8,<svg width="23px" height="21px" viewBox="0 0 23 21" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g id="Scratch" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g id="Group-7" transform="translate(-1.000000, -7.000000)"><rect id="Rectangle-3" x="1" y="0" width="32" height="36"></rect><path d="M1.5,7.5 L1.5,27.5" id="Line" stroke="#{urlFriendlyColor($gap-light-blue)}" stroke-linecap="square"></path><polygon id="▾" fill="#{urlFriendlyColor($gap-medium-blue)}" points="11.71875 14.8066406 23.28125 14.8066406 17.5 20.5878906"></polygon></g></g></svg>');
 }
 
+.radioGroup {
+  margin:              20px 0 20px;
+  input[type="radio"] {
+    display:           none;
+  }
+  input[type="radio"] + label {
+    @extend            .utility--shadow-flat.activeS;
+    @extend            .utility--shadow-flat.small;
+    height:            36px;
+    min-width:         145px;
+    color:             $gap-dark-grey;
+    cursor:            pointer;
+    display:           inline-block;
+    text-align:        center;
+    font-size:         14px;
+    font-weight:       700;
+    letter-spacing:    .5px;
+    padding-top:       8px;
+    margin-top:        -8px;
+    border-bottom:     1px solid $gap-medium-blue;
+    border-top:        1px solid $gap-medium-blue;
+    border-right:      1px solid $gap-medium-blue;
+    &:first-of-type {
+      border-radius:   4px 0 0 4px;
+      border-left:     1px solid $gap-medium-blue;
+    }
+    &:last-of-type {
+      border-radius:   0 4px 4px 0;
+    }
+  }
+  input[type="radio"]:checked + label {
+    font-weight:       700;
+    background-color:  $gap-medium-blue;
+    color:             $gap-white;
+  }
+}
 
 
 // .form__field-wrapper {

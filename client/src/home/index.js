@@ -19,10 +19,17 @@ class Home extends Component {
           }
 
         </div>
-        <form className="form" onSubmit={this.props.onSubmit}>
-            <input className="form__field-input" id="password" name="fuck" type="radio" onChange={ this.props.changeForm } placeholder={this.props.vocab.get('PASSWORD')} />
-            <input className="form__field-input" id="password" name="fuck" type="radio" onChange={ this.props.changeForm } placeholder={this.props.vocab.get('PASSWORD')} />
+        <form className="radioGroup"> 
+          <input type="radio" name="gender" id="male" value="male"/>
+          <label htmlFor="male">Male</label>
+          <input type="radio" name="gender" id="female" value="female"/>
+          <label htmlFor="female">Female</label>
+          <input type="radio" name="gender" id="other" value="other"/>
+          <label htmlFor="other">Other</label>
         </form>
+
+
+
         <select className="form-select">
           <option value="A">I'm not sure</option>
           <option value="B">Banana</option>
