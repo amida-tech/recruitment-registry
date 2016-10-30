@@ -4,8 +4,8 @@ const _ = require('lodash');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 
-const config = require('../config');
-const SPromise = require('../lib/promise');
+const config = require('../../config');
+const SPromise = require('../../lib/promise');
 
 module.exports = function (sequelize, DataTypes) {
     const bccompare = SPromise.promisify(bcrypt.compare, {

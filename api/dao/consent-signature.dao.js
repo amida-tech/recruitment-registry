@@ -1,10 +1,10 @@
 'use strict';
 
-const models = require('../models');
+const db = require('../models/db');
 
 const SPromise = require('../lib/promise');
 
-const ConsentSignature = models.ConsentSignature;
+const ConsentSignature = db.ConsentSignature;
 
 module.exports = class {
 	constructor() {

@@ -12,12 +12,14 @@ const History = require('./util/entity-history');
 const ConsentDocumentHistory = require('./util/consent-document-history');
 const dao = require('../dao');
 const models = require('../models');
+const db = require('../models/db');
 const textTableMethods = require('../dao/text-table-methods');
 
 const expect = chai.expect;
 
 const generator = new Generator();
 const shared = new SharedSpec(generator);
+const ConsentDocument = db.ConsentDocument;
 
 const textHandler = textTableMethods(models.sequelize, 'consent_document_text', 'consentDocumentId', ['content', 'updateComment']);
 
@@ -299,13 +301,13 @@ describe('consent document/type/signature unit', function () {
     it('verify all consent documents still exists', function () {
         const queryParams = { raw: true, attributes: ['id', 'typeId'], order: ['id'] };
         const queryParamsAll = Object.assign({}, { paranoid: false }, queryParams);
-        return models.ConsentDocument.findAll(queryParamsAll)
+        return ConsentDocument.findAll(queryParamsAll)
             .then(consentDocuments => textHandler.updateAllTexts(consentDocuments))
             .then(consentDocuments => {
                 expect(consentDocuments).to.deep.equal(history.serversHistory());
             })
             .then(() => {
-                return models. ConsentDocument.findAll(queryParams)
+                return ConsentDocument.findAll(queryParams)
                     .then((consentDocuments => textHandler.updateAllTexts(consentDocuments)));
             })
             .then(consentDocuments => {

@@ -2,16 +2,16 @@
 
 const _ = require('lodash');
 
-const models = require('../models');
+const db = require('../models/db');
 
 const tokener = require('../lib/tokener');
 const RRError = require('../lib/rr-error');
 const SPromise = require('../lib/promise');
 
-const sequelize = models.sequelize;
-const Registry = models.Registry;
-const User = models.User;
-const SurveyConsentType = models.SurveyConsentType;
+const sequelize = db.sequelize;
+const Registry = db.Registry;
+const User = db.User;
+const SurveyConsentType = db.SurveyConsentType;
 
 module.exports = class {
     constructor(dependencies) {

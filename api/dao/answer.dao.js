@@ -2,13 +2,13 @@
 
 const _ = require('lodash');
 
-const models = require('../models');
+const db = require('../models/db');
 const RRError = require('../lib/rr-error');
 const SPromise = require('../lib/promise');
 
-const sequelize = models.sequelize;
-const Answer = models.Answer;
-const SurveyQuestion = models.SurveyQuestion;
+const sequelize = db.sequelize;
+const Answer = db.Answer;
+const SurveyQuestion = db.SurveyQuestion;
 
 const missingConsentDocumentHandler = function () {
     return function (consentDocuments) {

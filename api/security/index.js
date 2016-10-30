@@ -5,9 +5,9 @@ const config = require('../config');
 const jwt = require('jsonwebtoken');
 const _ = require('lodash');
 
-const models = require('../models');
+const db = require('../models/db');
 
-const User = models.User;
+const User = db.User;
 
 const invalidAuth = {
     message: 'Invalid authorization',

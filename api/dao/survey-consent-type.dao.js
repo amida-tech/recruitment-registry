@@ -2,9 +2,9 @@
 
 const _ = require('lodash');
 
-const models = require('../models');
+const db = require('../models/db');
 
-const SurveyConsentType = models.SurveyConsentType;
+const SurveyConsentType = db.SurveyConsentType;
 
 module.exports = class {
 	constructor(dependencies) {

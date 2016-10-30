@@ -11,7 +11,7 @@ const SPromise = require('../lib/promise');
 const SharedSpec = require('./util/shared-spec');
 const config = require('../config');
 const dao = require('../dao');
-const models = require('../models');
+const db = require('../models/db');
 const Generator = require('./util/entity-generator');
 
 const userExamples = require('./fixtures/example/user');
@@ -20,7 +20,7 @@ const expect = chai.expect;
 const entityGen = new Generator();
 const shared = new SharedSpec();
 
-const User = models.User;
+const User = db.User;
 
 describe('user unit', function () {
     const example = userExamples.Example;

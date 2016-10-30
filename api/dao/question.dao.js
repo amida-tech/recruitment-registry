@@ -2,15 +2,15 @@
 
 const _ = require('lodash');
 
-const models = require('../models');
+const db = require('../models/db');
 
 const RRError = require('../lib/rr-error');
 const SPromise = require('../lib/promise');
 const textTableMethods = require('./text-table-methods');
 
-const sequelize = models.sequelize;
-const SurveyQuestion = models.SurveyQuestion;
-const Question = models.Question;
+const sequelize = db.sequelize;
+const SurveyQuestion = db.SurveyQuestion;
+const Question = db.Question;
 
 const textHandler = textTableMethods(sequelize, 'question_text', 'questionId');
 

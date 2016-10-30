@@ -4,12 +4,12 @@ const _ = require('lodash');
 const util = require('util');
 const moment = require('moment');
 
-const models = require('../models');
+const db = require('../models/db');
 const SPromise = require('../lib/promise');
 
-const sequelize = models.sequelize;
-const ConsentSignature = models.ConsentSignature;
-const User = models.User;
+const sequelize = db.sequelize;
+const ConsentSignature = db.ConsentSignature;
+const User = db.User;
 
 const clientUpdatableFields = ['email', 'password'].reduce((r, p) => {
     r[p] = true;

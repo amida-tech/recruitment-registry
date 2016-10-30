@@ -2,16 +2,16 @@
 
 const _ = require('lodash');
 
-const models = require('../models');
+const db = require('../models/db');
 
 const RRError = require('../lib/rr-error');
 
 const textTableMethods = require('./text-table-methods');
 
-const sequelize = models.sequelize;
-const ConsentType = models.ConsentType;
-const ConsentDocument = models.ConsentDocument;
-const ConsentSignature = models.ConsentSignature;
+const sequelize = db.sequelize;
+const ConsentType = db.ConsentType;
+const ConsentDocument = db.ConsentDocument;
+const ConsentSignature = db.ConsentSignature;
 
 const textHandler = textTableMethods(sequelize, 'consent_document_text', 'consentDocumentId', ['content', 'updateComment']);
 

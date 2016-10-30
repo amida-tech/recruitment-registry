@@ -4,6 +4,7 @@ const chai = require('chai');
 const _ = require('lodash');
 
 const models = require('../../models');
+const db = require('../../models/db');
 const dao = require('../../dao');
 
 const RRError = require('../../lib/rr-error');
@@ -11,6 +12,9 @@ const Generator = require('./entity-generator');
 const translator = require('./translator');
 
 const expect = chai.expect;
+
+const User = db.User;
+const QuestionChoice = db.QuestionChoice;
 
 class SharedSpec {
     constructor(generator) {
@@ -29,7 +33,7 @@ class SharedSpec {
         const generator = this.generator;
         return function () {
             const clientUser = generator.newUser();
-            return models.User.create(clientUser)
+            return User.create(clientUser)
                 .then(function (user) {
                     hxUser.push(clientUser, user);
                 });
@@ -49,7 +53,7 @@ class SharedSpec {
                         type
                     };
                     if ((type === 'choices') || (type === 'choice')) {
-                        return models.QuestionChoice.findAll({
+                        return QuestionChoice.findAll({
                                 where: {
                                     questionId: id
                                 },

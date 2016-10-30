@@ -2,11 +2,11 @@
 
 const _ = require('lodash');
 
-const models = require('../models');
+const db = require('../models/db');
 
-const sequelize = models.sequelize;
-const Smtp = models.Smtp;
-const SmtpText = models.SmtpText;
+const sequelize = db.sequelize;
+const Smtp = db.Smtp;
+const SmtpText = db.SmtpText;
 
 module.exports = class {
 	constructor() {}

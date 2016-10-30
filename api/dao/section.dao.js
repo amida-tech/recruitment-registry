@@ -1,14 +1,14 @@
 'use strict';
 
-const models = require('../models');
+const db = require('../models/db');
 
 const SPromise = require('../lib/promise');
 
 const textTableMethods = require('./text-table-methods');
 
-const sequelize = models.sequelize;
-const Section = models.Section;
-const SurveySection = models.SurveySection;
+const sequelize = db.sequelize;
+const Section = db.Section;
+const SurveySection = db.SurveySection;
 
 const textHandler = textTableMethods(sequelize, 'section_text', 'sectionId', ['name']);
 

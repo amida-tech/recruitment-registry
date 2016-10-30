@@ -1,6 +1,6 @@
 'use strict';
 
-const SPromise = require('../lib/promise');
+const SPromise = require('../../lib/promise');
 
 module.exports = function (sequelize, DataTypes) {
     const languages = [{

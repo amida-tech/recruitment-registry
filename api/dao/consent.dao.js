@@ -2,14 +2,14 @@
 
 const _ = require('lodash');
 
-const models = require('../models');
+const db = require('../models/db');
 
 const SPromise = require('../lib/promise');
 
-const sequelize = models.sequelize;
-const Consent = models.Consent;
-const ConsentSection = models.ConsentSection;
-const ConsentSignature = models.ConsentSignature;
+const sequelize = db.sequelize;
+const Consent = db.Consent;
+const ConsentSection = db.ConsentSection;
+const ConsentSignature = db.ConsentSignature;
 
 const fillSections = function (result) {
     return ConsentSection.findAll({

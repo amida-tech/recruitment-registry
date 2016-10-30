@@ -6,7 +6,7 @@ const chai = require('chai');
 const _ = require('lodash');
 
 const dao = require('../dao');
-const models = require('../models');
+const db = require('../models/db');
 
 const SharedSpec = require('./util/shared-spec.js');
 const Generator = require('./util/entity-generator');
@@ -18,7 +18,7 @@ const expect = chai.expect;
 const generator = new Generator();
 const shared = new SharedSpec();
 
-const Question = models.Question;
+const Question = db.Question;
 
 describe('question unit', function () {
     before(shared.setUpFn());

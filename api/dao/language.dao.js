@@ -1,8 +1,8 @@
 'use strict';
 
-const models = require('../models');
+const db = require('../models/db');
 
-const Language = models.Language;
+const Language = db.Language;
 
 module.exports = class {
 	constructor() {}
