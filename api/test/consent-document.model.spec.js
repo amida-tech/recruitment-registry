@@ -5,6 +5,7 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 const _ = require('lodash');
 
+const SPromise = require('../lib/promise');
 const SharedSpec = require('./util/shared-spec');
 const Generator = require('./util/entity-generator');
 const History = require('./util/entity-history');
@@ -112,7 +113,7 @@ describe('consent document/type/signature unit', function () {
                 })
                 .then(() => {
                     const css = expectedIndices.map(index => history.server(index));
-                    return models.sequelize.Promise.all(css.map(cs => {
+                    return SPromise.all(css.map(cs => {
                         return ConsentDocument.getConsentDocument(cs.id)
                             .then(result => {
                                 expect(result).to.deep.equal(cs);
@@ -132,7 +133,7 @@ describe('consent document/type/signature unit', function () {
                 })
                 .then(() => {
                     const css = expectedIndices.map(index => history.hxDocument.translatedServer(index, language));
-                    return models.sequelize.Promise.all(css.map(cs => {
+                    return SPromise.all(css.map(cs => {
                         return ConsentDocument.getConsentDocument(cs.id, { language })
                             .then(result => {
                                 expect(result).to.deep.equal(cs);

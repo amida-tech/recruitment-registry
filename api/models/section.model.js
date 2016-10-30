@@ -1,5 +1,7 @@
 'use strict';
 
+const SPromise = require('../lib/promise');
+
 const textTableMethods = require('./text-table-methods');
 
 module.exports = function (sequelize, DataTypes) {
@@ -30,13 +32,13 @@ module.exports = function (sequelize, DataTypes) {
             },
             bulkCreateSectionsForSurveyTx(surveyId, sections, tx) { // TODO: Use sequelize bulkCreate with 4.0
                 const pxs = sections.map(({ name, indices }) => Section.createSectionTx({ name, indices }, tx));
-                return sequelize.Promise.all(pxs)
+                return SPromise.all(pxs)
                     .then(result => {
                         const SurveySection = sequelize.models.survey_section;
                         return SurveySection.destroy({ where: { surveyId }, transaction: tx })
                             .then(() => {
                                 const pxs = result.map(({ id }, line) => SurveySection.create({ surveyId, sectionId: id, line }, { transaction: tx }));
-                                return sequelize.Promise.all(pxs)
+                                return SPromise.all(pxs)
                                     .then(() => result);
                             });
                     });

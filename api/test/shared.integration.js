@@ -9,6 +9,7 @@ const SharedIntegration = require('./util/shared-integration.js');
 
 const models = require('../models');
 const config = require('../config');
+const SPromise = require('../lib/promise');
 
 const Language = models.Language;
 
@@ -27,7 +28,7 @@ describe('shared integration', function () {
 
     it('unexpected run time error', function (done) {
         sinon.stub(Language, 'listLanguages', function () {
-            return models.sequelize.Promise.reject(new Error('unexpected error'));
+            return SPromise.reject(new Error('unexpected error'));
         });
         store.server
             .get('/api/v1.0/languages')

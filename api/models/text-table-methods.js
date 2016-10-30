@@ -2,6 +2,8 @@
 
 const _ = require('lodash');
 
+const SPromise = require('../lib/promise');
+
 module.exports = function (sequelize, tableName, parentIdField, textFields = ['text']) {
     return {
         createTextTx(input, tx) {
@@ -26,7 +28,7 @@ module.exports = function (sequelize, tableName, parentIdField, textFields = ['t
         },
         createMultipleTextsTx(inputs, tx) {
             const pxs = inputs.map(input => this.createTextTx(input, tx));
-            return sequelize.Promise.all(pxs);
+            return SPromise.all(pxs);
         },
         createText(input) {
             return sequelize.transaction(tx => {

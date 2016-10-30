@@ -1,5 +1,7 @@
 'use strict';
 
+const SPromise = require('../lib/promise');
+
 module.exports = function (sequelize, DataTypes) {
     const ConsentSignature = sequelize.define('consent_signature', {
         consentDocumentId: {
@@ -49,7 +51,7 @@ module.exports = function (sequelize, DataTypes) {
                 const pxs = consentDocumentsIds.map(consentDocumentId => {
                     return ConsentSignature.create({ userId, consentDocumentId, language });
                 });
-                return sequelize.Promise.all(pxs);
+                return SPromise.all(pxs);
             },
             getSignatureHistory(userId) {
                 return ConsentSignature.findAll({

@@ -1,5 +1,7 @@
 'use strict';
 
+const SPromise = require('../lib/promise');
+
 const textTableMethods = require('./text-table-methods');
 
 module.exports = function (sequelize, DataTypes) {
@@ -36,7 +38,7 @@ module.exports = function (sequelize, DataTypes) {
                     .then(({ id }) => textHandler.createTextTx({ id, text }, tx));
             },
             createActionsPerQuestionTx(questionId, actions, tx) {
-                return sequelize.Promise.all(actions.map((action, index) => {
+                return SPromise.all(actions.map((action, index) => {
                     return QuestionAction.createActionPerQuestionTx(questionId, action, index, tx);
                 }));
             },

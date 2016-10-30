@@ -4,6 +4,7 @@ const chai = require('chai');
 const _ = require('lodash');
 
 const models = require('../../models');
+const SPromise = require('../../lib/promise');
 
 const QuestionChoice = models.QuestionChoice;
 const QuestionAction = models.QuestionAction;
@@ -81,7 +82,7 @@ const comparator = {
         const n = client.length;
         expect(n).to.equal(server.length);
         const pxs = _.range(n).map(i => this.question(client[i], server[i]));
-        return models.sequelize.Promise.all(pxs)
+        return SPromise.all(pxs)
             .then(() => {});
     },
     survey(client, server) {

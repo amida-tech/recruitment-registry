@@ -3,6 +3,7 @@
 const _ = require('lodash');
 
 const RRError = require('../lib/rr-error');
+const SPromise = require('../lib/promise');
 const textTableMethods = require('./text-table-methods');
 
 module.exports = function (sequelize, DataTypes) {
@@ -48,7 +49,7 @@ module.exports = function (sequelize, DataTypes) {
                     return sequelize.models.question_action.createActionsPerQuestionTx(id, actions, tx)
                         .then(() => ({ id }));
                 } else {
-                    return sequelize.Promise.resolve({ id });
+                    return SPromise.resolve({ id });
                 }
             },
             createQuestionTx(question, tx) {
@@ -72,7 +73,7 @@ module.exports = function (sequelize, DataTypes) {
                             if (nOneOfChoices) {
                                 choices = oneOfChoices.map(text => ({ text, type: 'bool' }));
                             }
-                            return sequelize.Promise.all(choices.map((c, index) => {
+                            return SPromise.all(choices.map((c, index) => {
                                 const choice = {
                                     questionId: created.id,
                                     text: c.text,
@@ -174,7 +175,7 @@ module.exports = function (sequelize, DataTypes) {
                 if (text) {
                     return textHandler.createTextTx({ id, text, language }, tx);
                 } else {
-                    return sequelize.Promise.resolve();
+                    return SPromise.resolve();
                 }
             },
             updateQuestionTextTx(translation, language, tx) {

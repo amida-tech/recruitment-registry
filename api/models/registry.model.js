@@ -4,6 +4,7 @@ const _ = require('lodash');
 
 const tokener = require('../lib/tokener');
 const RRError = require('../lib/rr-error');
+const SPromise = require('../lib/promise');
 
 module.exports = function (sequelize, DataTypes) {
     const User = sequelize.import('./user.model');
@@ -105,7 +106,7 @@ module.exports = function (sequelize, DataTypes) {
                             return User.create(input.user, { transaction: tx })
                                 .then(user => {
                                     if (input.signatures && input.signatures.length) {
-                                        return sequelize.Promise.all(input.signatures.map(consentDocumentId => {
+                                        return SPromise.all(input.signatures.map(consentDocumentId => {
                                                 return ConsentSignature.createSignature(user.id, consentDocumentId, language, tx);
                                             }))
                                             .then(() => user);

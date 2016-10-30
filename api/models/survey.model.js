@@ -3,6 +3,7 @@
 const _ = require('lodash');
 
 const RRError = require('../lib/rr-error');
+const SPromise = require('../lib/promise');
 
 const textTableMethods = require('./text-table-methods');
 
@@ -44,7 +45,7 @@ module.exports = function (sequelize, DataTypes) {
                     return r;
                 }, []);
                 if (newQuestions.length) {
-                    return sequelize.Promise.all(newQuestions.map(q => {
+                    return SPromise.all(newQuestions.map(q => {
                             return sequelize.models.question.createQuestionTx(q.qx, tx).then(id => {
                                 const oldQx = questions[q.index];
                                 questions[q.index] = { id, required: oldQx.required };
@@ -52,14 +53,14 @@ module.exports = function (sequelize, DataTypes) {
                         }))
                         .then(() => questions);
                 } else {
-                    return sequelize.Promise.resolve(questions);
+                    return SPromise.resolve(questions);
                 }
             },
             updateQuestionsTx(inputQxs, surveyId, tx) {
                 const questions = inputQxs.slice();
                 return Survey.createNewQuestionsTx(questions, tx)
                     .then((questions) => {
-                        return sequelize.Promise.all(questions.map((qx, line) => {
+                        return SPromise.all(questions.map((qx, line) => {
                             return sequelize.models.survey_question.create({
                                 questionId: qx.id,
                                 surveyId,

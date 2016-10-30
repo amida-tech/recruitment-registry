@@ -1,5 +1,7 @@
 'use strict';
 
+const SPromise = require('../lib/promise');
+
 module.exports = function (sequelize, DataTypes) {
     const languages = [{
         name: 'English',
@@ -60,7 +62,7 @@ module.exports = function (sequelize, DataTypes) {
             afterSync(options) {
                 if (options.force) {
                     const pxs = languages.map(lang => Language.create(lang));
-                    return sequelize.Promise.all(pxs);
+                    return SPromise.all(pxs);
                 }
             }
         },

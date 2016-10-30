@@ -7,15 +7,16 @@ const crypto = require('crypto');
 const moment = require('moment');
 
 const config = require('../config');
+const SPromise = require('../lib/promise');
 
 module.exports = function (sequelize, DataTypes) {
-    const bccompare = sequelize.Promise.promisify(bcrypt.compare, {
+    const bccompare = SPromise.promisify(bcrypt.compare, {
         context: bcrypt
     });
-    const bchash = sequelize.Promise.promisify(bcrypt.hash, {
+    const bchash = SPromise.promisify(bcrypt.hash, {
         context: bcrypt
     });
-    const randomBytes = sequelize.Promise.promisify(crypto.randomBytes, {
+    const randomBytes = SPromise.promisify(crypto.randomBytes, {
         context: crypto
     });
 
@@ -137,7 +138,7 @@ module.exports = function (sequelize, DataTypes) {
                 }).then((user) => {
                     if (!user) {
                         const err = new Error('Email is invalid.');
-                        return sequelize.Promise.reject(err);
+                        return SPromise.reject(err);
                     } else {
                         return user.updateResetPWToken();
                     }
@@ -146,7 +147,7 @@ module.exports = function (sequelize, DataTypes) {
             resetPassword(token, password) {
                 const rejection = function () {
                     const err = new Error('Password reset token is invalid or has expired.');
-                    return sequelize.Promise.reject(err);
+                    return SPromise.reject(err);
                 };
                 return this.find({
                     where: {

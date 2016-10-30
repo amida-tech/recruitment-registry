@@ -2,6 +2,8 @@
 
 const _ = require('lodash');
 
+const SPromise = require('../lib/promise');
+
 module.exports = function (sequelize, DataTypes) {
     const fillSections = function (result) {
         const ConsentSection = sequelize.models.consent_section;
@@ -45,7 +47,7 @@ module.exports = function (sequelize, DataTypes) {
                             const records = sections.map((typeId, line) => ({ consentId, typeId, line }));
                             const ConsentSection = sequelize.models.consent_section;
                             const pxs = records.map(record => ConsentSection.create(record)); // TODO: replace with bulkCreate when sequelize 4
-                            return sequelize.Promise.all(pxs, { transaction: tx })
+                            return SPromise.all(pxs, { transaction: tx })
                                 .then(() => ({ id }));
                         });
                 });

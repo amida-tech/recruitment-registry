@@ -1,5 +1,7 @@
 'use strict';
 
+const SPromise = require('../lib/promise');
+
 module.exports = function (sequelize, DataTypes) {
     const QuestionType = sequelize.define('question_type', {
         name: {
@@ -19,7 +21,7 @@ module.exports = function (sequelize, DataTypes) {
                 if (options.force) {
                     const names = ['text', 'choice', 'choices', 'bool', 'group'];
                     const ps = names.map(name => QuestionType.create({ name }));
-                    return sequelize.Promise.all(ps);
+                    return SPromise.all(ps);
                 }
             }
         }

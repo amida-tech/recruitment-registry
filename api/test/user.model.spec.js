@@ -7,6 +7,7 @@ const sinon = require('sinon');
 const moment = require('moment');
 const _ = require('lodash');
 
+const SPromise = require('../lib/promise');
 const SharedSpec = require('./util/shared-spec');
 const config = require('../config');
 const models = require('../models');
@@ -71,7 +72,7 @@ describe('user unit', function () {
         });
 
         it('reject null/undefined/missing/empty', function () {
-            let p = models.sequelize.Promise.resolve(entityGen.newUser());
+            let p = SPromise.resolve(entityGen.newUser());
             [null, undefined, '--', ''].forEach(function (value) {
                 p = p.then(function (inputUser) {
                     if (value === '--') {
@@ -125,7 +126,7 @@ describe('user unit', function () {
         });
 
         it('reject null/undefined/missing/empty', function () {
-            let p = models.sequelize.Promise.resolve(entityGen.newUser());
+            let p = SPromise.resolve(entityGen.newUser());
             [null, undefined, '--', ''].forEach(function (value) {
                 p = p.then(function (inputUser) {
                     if (value === '--') {
@@ -223,7 +224,7 @@ describe('user unit', function () {
         });
 
         it('reject create invalid/null/undefined/missing/empty', function () {
-            let p = models.sequelize.Promise.resolve(entityGen.newUser());
+            let p = SPromise.resolve(entityGen.newUser());
             ['noatemail', null, undefined, '--', ''].forEach(function (value) {
                 p = p.then(function (inputUser) {
                     if (value === '--') {
@@ -387,7 +388,7 @@ describe('user unit', function () {
                 return User.resetPasswordToken(user.email);
             }).then(function (token) {
                 return User.resetPassword(token, 'newPassword').then(function () {
-                    return models.sequelize.Promise.delay(600);
+                    return SPromise.delay(600);
                 }).then(function () {
                     return User.resetPassword(token, 'newPassword');
                 }).then(function () {

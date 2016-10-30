@@ -3,13 +3,14 @@
 const _ = require('lodash');
 
 const RRError = require('../lib/rr-error');
+const SPromise = require('../lib/promise');
 
-const missingConsentDocumentHandler = function (sequelize) {
+const missingConsentDocumentHandler = function () {
     return function (consentDocuments) {
         if (consentDocuments && consentDocuments.length > 0) {
             const err = new RRError('profileSignaturesMissing');
             err.consentDocument = consentDocuments;
-            return sequelize.Promise.reject(err);
+            return SPromise.reject(err);
         }
     };
 };
@@ -163,7 +164,7 @@ module.exports = function (sequelize, DataTypes) {
                     return r;
                 }, []);
                 // TODO: Switch to bulkCreate when Sequelize 4 arrives
-                return sequelize.Promise.all(answers.map(answer => {
+                return SPromise.all(answers.map(answer => {
                     return Answer.create(answer, { transaction: tx });
                 }));
             },
@@ -204,7 +205,7 @@ module.exports = function (sequelize, DataTypes) {
                         surveyId,
                         action: 'create'
                     }, tx))
-                    .then(missingConsentDocumentHandler(sequelize))
+                    .then(missingConsentDocumentHandler())
                     .then(() => {
                         answers = _.filter(answers, answer => answer.answer);
                         if (answers.length) {
@@ -223,7 +224,7 @@ module.exports = function (sequelize, DataTypes) {
                         surveyId,
                         action: 'read'
                     })
-                    .then(missingConsentDocumentHandler(sequelize))
+                    .then(missingConsentDocumentHandler())
                     .then(() => {
                         return sequelize.query('select a.question_choice_id as "questionChoiceId", a.language_code as language, a.value as value, a.answer_type_id as type, q.type as qtype, q.id as qid from answer a, question q where a.deleted_at is null and a.user_id = :userid and a.survey_id = :surveyid and a.question_id = q.id', {
                                 replacements: {
