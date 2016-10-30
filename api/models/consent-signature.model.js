@@ -1,7 +1,5 @@
 'use strict';
 
-const SPromise = require('../lib/promise');
-
 module.exports = function (sequelize, DataTypes) {
     const ConsentSignature = sequelize.define('consent_signature', {
         consentDocumentId: {
@@ -39,33 +37,7 @@ module.exports = function (sequelize, DataTypes) {
         }
     }, {
         freezeTableName: true,
-        createdAt: 'createdAt',
-        classMethods: {
-            createSignature(userId, consentDocumentId, language, tx) {
-                const options = tx ? { transaction: tx } : {};
-                language = language || 'en';
-                return ConsentSignature.create({ userId, consentDocumentId, language }, options)
-                    .then(({ id }) => ({ id }));
-            },
-            bulkCreateSignatures(userId, consentDocumentsIds, language = 'en') {
-                const pxs = consentDocumentsIds.map(consentDocumentId => {
-                    return ConsentSignature.create({ userId, consentDocumentId, language });
-                });
-                return SPromise.all(pxs);
-            },
-            getSignatureHistory(userId) {
-                return ConsentSignature.findAll({
-                        where: { userId },
-                        raw: true,
-                        attributes: ['consentDocumentId', 'language'],
-                        order: 'consent_document_id'
-                    })
-                    .then(signatures => signatures.map(sign => ({
-                        id: sign.consentDocumentId,
-                        language: sign.language
-                    })));
-            }
-        }
+        createdAt: 'createdAt'
     });
 
     return ConsentSignature;

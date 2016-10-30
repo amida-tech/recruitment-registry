@@ -4,7 +4,7 @@
 const chai = require('chai');
 const _ = require('lodash');
 
-const models = require('../models');
+const dao = require('../dao');
 const SharedSpec = require('./util/shared-spec');
 const AnswerHistory = require('./util/answer-history');
 const answerCommon = require('./util/answer-common');
@@ -45,9 +45,9 @@ describe('answer unit', function () {
             if (language) {
                 input.language = language;
             }
-            return models.Answer.createAnswers(input)
+            return dao.answer.createAnswers(input)
                 .then(function () {
-                    return models.Answer.getAnswers({
+                    return dao.answer.getAnswers({
                             userId: hxUser.id(userIndex),
                             surveyId: hxSurvey.id(surveyIndex)
                         })
@@ -71,9 +71,9 @@ describe('answer unit', function () {
             if (language) {
                 input.language = language;
             }
-            return models.Answer.createAnswers(input)
+            return dao.answer.createAnswers(input)
                 .then(function () {
-                    return models.Answer.getAnswers({
+                    return dao.answer.getAnswers({
                             userId: hxUser.id(userIndex),
                             surveyId: hxSurvey.id(surveyIndex)
                         })
@@ -82,7 +82,7 @@ describe('answer unit', function () {
                             const actual = _.sortBy(result, 'questionId');
                             expect(actual).to.deep.equal(expected);
                         })
-                        .then(() => models.Answer.getOldAnswers({
+                        .then(() => dao.answer.getOldAnswers({
                             userId: hxUser.id(userIndex),
                             surveyId: hxSurvey.id(surveyIndex)
                         }))

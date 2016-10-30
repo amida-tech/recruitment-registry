@@ -6,12 +6,11 @@ const chai = require('chai');
 const _ = require('lodash');
 
 const SharedSpec = require('./util/shared-spec');
-const models = require('../models');
+const dao = require('../dao');
 
 const expect = chai.expect;
 
 const shared = new SharedSpec();
-const Smtp = models.Smtp;
 
 describe('smtp unit', function () {
     before(shared.setUpFn());
@@ -21,7 +20,7 @@ describe('smtp unit', function () {
     let smtpTextTranslation = {};
 
     const checkNull = function () {
-        return Smtp.getSmtp()
+        return dao.smtp.getSmtp()
             .then(result => expect(result).to.equal(null));
     };
 
@@ -53,7 +52,7 @@ describe('smtp unit', function () {
             if (withText) {
                 Object.assign(newSmtp, newSmtpText);
             }
-            return Smtp.createSmtp(newSmtp)
+            return dao.smtp.createSmtp(newSmtp)
                 .then(() => {
                     smtp = newSmtp;
                     if (withText) {
@@ -67,14 +66,14 @@ describe('smtp unit', function () {
     const updateSmtpTextFn = function (index, language) {
         return function () {
             const text = createNewSmtpText(index);
-            return Smtp.updateSmtpText(text, language)
+            return dao.smtp.updateSmtpText(text, language)
                 .then(() => (smtpText = text));
         };
     };
 
     const getSmtpFn = function () {
         return function () {
-            return Smtp.getSmtp()
+            return dao.smtp.getSmtp()
                 .then(result => {
                     let expected = _.cloneDeep(smtp);
                     if (smtpText) {
@@ -87,7 +86,7 @@ describe('smtp unit', function () {
 
     const getTranslatedSmtpFn = function (language, checkFields) {
         return function () {
-            return Smtp.getSmtp({ language })
+            return dao.smtp.getSmtp({ language })
                 .then(result => {
                     const expected = _.cloneDeep(smtp);
                     let translation = smtpTextTranslation[language];
@@ -118,7 +117,7 @@ describe('smtp unit', function () {
         return function (language) {
             return function () {
                 const translation = translateSmtp(smtpText, language);
-                return Smtp.updateSmtpText(translation, language)
+                return dao.smtp.updateSmtpText(translation, language)
                     .then(() => {
                         smtpTextTranslation[language] = translation;
                     });
@@ -128,7 +127,7 @@ describe('smtp unit', function () {
 
     const deleteSmtpFn = function () {
         return function () {
-            return Smtp.deleteSmtp();
+            return dao.smtp.deleteSmtp();
         };
     };
 

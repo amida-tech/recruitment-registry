@@ -1,25 +1,6 @@
 'use strict';
 
-const _ = require('lodash');
-
-const SPromise = require('../lib/promise');
-
 module.exports = function (sequelize, DataTypes) {
-    const fillSections = function (result) {
-        const ConsentSection = sequelize.models.consent_section;
-        return ConsentSection.findAll({
-                where: { consentId: result.id },
-                attributes: ['typeId'],
-                raw: true,
-                order: 'line'
-            })
-            .then(rawTypeIds => _.map(rawTypeIds, 'typeId'))
-            .then(typeIds => {
-                result.sections = typeIds;
-                return result;
-            });
-    };
-
     const Consent = sequelize.define('consent', {
         name: {
             type: DataTypes.TEXT,
@@ -37,110 +18,7 @@ module.exports = function (sequelize, DataTypes) {
         freezeTableName: true,
         createdAt: 'createdAt',
         deletedAt: 'deletedAt',
-        paranoid: true,
-        classMethods: {
-            createConsent({ name, sections }) {
-                return sequelize.transaction(tx => {
-                    return Consent.create({ name })
-                        .then(({ id }) => {
-                            const consentId = id;
-                            const records = sections.map((typeId, line) => ({ consentId, typeId, line }));
-                            const ConsentSection = sequelize.models.consent_section;
-                            const pxs = records.map(record => ConsentSection.create(record)); // TODO: replace with bulkCreate when sequelize 4
-                            return SPromise.all(pxs, { transaction: tx })
-                                .then(() => ({ id }));
-                        });
-                });
-            },
-            getConsent(id) {
-                return Consent.findById(id, { raw: true, attributes: ['id', 'name'] })
-                    .then(result => fillSections(result));
-            },
-            getConsentByName(name) {
-                return Consent.findOne({ where: { name }, raw: true, attributes: ['id', 'name'] })
-                    .then(result => fillSections(result));
-            },
-            listConsents() {
-                return Consent.findAll({ raw: true, attributes: ['id', 'name'], order: 'id' })
-                    .then(consents => {
-                        const ConsentSection = sequelize.models.consent_section;
-                        return ConsentSection.findAll({ raw: true, attributes: ['consentId', 'typeId', 'line'] })
-                            .then(allSections => _.groupBy(allSections, 'consentId'))
-                            .then(allSections => {
-                                return consents.map(consent => {
-                                    const sections = _.sortBy(allSections[consent.id], 'line');
-                                    consent.sections = _.map(sections, 'typeId');
-                                    return consent;
-                                });
-                            });
-                    });
-            },
-            deleteConsent(id) {
-                return sequelize.transaction(tx => {
-                    const ConsentSection = sequelize.models.consent_section;
-                    return Consent.destroy({ where: { id } }, { transaction: tx })
-                        .then(() => ConsentSection.destroy({ where: { consentId: id } }, { transaction: tx }));
-                });
-            },
-            fillConsentDocuments(id, options = {}) {
-                return function (result) {
-                    const ConsentSection = sequelize.models.consent_section;
-                    const ConsentDocument = sequelize.models.consent_document;
-                    return ConsentSection.findAll({ where: { consentId: id }, raw: true, attributes: ['typeId', 'line'], order: 'line' })
-                        .then(sections => {
-                            const typeIds = _.map(sections, 'typeId');
-                            const _options = { typeIds, typeOrder: true };
-                            if (options.language) {
-                                _options.language = options.language;
-                            }
-                            return ConsentDocument.listConsentDocuments(_options);
-                        })
-                        .then(sections => {
-                            result.sections = sections;
-                            return result;
-                        });
-                };
-            },
-            getConsentDocuments(id, options) {
-                return Consent.findById(id, { raw: true, attributes: ['id', 'name'] })
-                    .then(Consent.fillConsentDocuments(id, options));
-            },
-            getConsentDocumentsByName(name, options) {
-                return Consent.findOne({ where: { name }, raw: true, attributes: ['id', 'name'] })
-                    .then(result => {
-                        const id = result.id;
-                        return Consent.fillConsentDocuments(id, options)(result);
-                    });
-            },
-            fillUserConsentDocuments(userId) {
-                return function (result) {
-                    const ConsentSignature = sequelize.models.consent_signature;
-                    return ConsentSignature.findAll({
-                            where: { userId },
-                            raw: true,
-                            attributes: ['consentDocumentId', 'language']
-                        })
-                        .then(signatures => _.keyBy(signatures, 'consentDocumentId'))
-                        .then(signatures => {
-                            result.sections.forEach(section => {
-                                section.signature = Boolean(signatures[section.id]);
-                                if (section.signature) {
-                                    section.language = signatures[section.id].language;
-                                }
-                            });
-                            return result;
-                        });
-                };
-            },
-            getUserConsentDocuments(userId, id, options) {
-                return Consent.getConsentDocuments(id, options)
-                    .then(Consent.fillUserConsentDocuments(userId));
-            },
-            getUserConsentDocumentsByName(userId, name, options) {
-                return Consent.getConsentDocumentsByName(name, options)
-                    .then(Consent.fillUserConsentDocuments(userId));
-            }
-        }
+        paranoid: true
     });
 
     return Consent;

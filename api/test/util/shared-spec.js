@@ -4,6 +4,7 @@ const chai = require('chai');
 const _ = require('lodash');
 
 const models = require('../../models');
+const dao = require('../../dao');
 
 const RRError = require('../../lib/rr-error');
 const Generator = require('./entity-generator');
@@ -40,7 +41,7 @@ class SharedSpec {
         return function () {
             const inputQx = generator.newQuestion();
             const type = inputQx.type;
-            return models.Question.createQuestion(inputQx)
+            return dao.question.createQuestion(inputQx)
                 .then(function (id) {
                     const qx = {
                         id,
@@ -81,7 +82,7 @@ class SharedSpec {
                 id: hxQuestion.server(index).id,
                 required: false
             }));
-            return models.Survey.createSurvey(inputSurvey)
+            return dao.survey.createSurvey(inputSurvey)
                 .then(id => {
                     hxSurvey.push(inputSurvey, { id });
                 });
@@ -92,7 +93,7 @@ class SharedSpec {
         const generator = this.generator;
         return function () {
             const cst = generator.newConsentType();
-            return models.ConsentType.createConsentType(cst)
+            return dao.consentType.createConsentType(cst)
                 .then(server => history.pushType(cst, server));
         };
     }
@@ -101,7 +102,7 @@ class SharedSpec {
         return function () {
             const server = hxType.server(index);
             const translation = translator.translateConsentType(server, language);
-            return models.ConsentType.updateConsentTypeText(translation, language)
+            return dao.consentType.updateConsentTypeText(translation, language)
                 .then(() => {
                     hxType.translate(index, language, translation);
                 });
@@ -112,7 +113,7 @@ class SharedSpec {
         return function () {
             const server = history.server(index);
             const translation = translator.translateConsentDocument(server, language);
-            return models.ConsentDocument.updateConsentDocumentText(translation, language)
+            return dao.consentDocument.updateConsentDocumentText(translation, language)
                 .then(() => {
                     history.hxDocument.translateWithServer(server, language, translation);
                 });
@@ -124,7 +125,7 @@ class SharedSpec {
         return function () {
             const typeId = history.typeId(typeIndex);
             const cs = generator.newConsentDocument({ typeId });
-            return models.ConsentDocument.createConsentDocument(cs)
+            return dao.consentDocument.createConsentDocument(cs)
                 .then(server => history.push(typeIndex, cs, server));
         };
     }
@@ -134,7 +135,7 @@ class SharedSpec {
             const consentDocumentId = history.id(typeIndex);
             const userId = history.userId(userIndex);
             history.sign(typeIndex, userIndex);
-            return models.ConsentSignature.createSignature(userId, consentDocumentId);
+            return dao.consentSignature.createSignature(userId, consentDocumentId);
         };
     }
 

@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 const chai = require('chai');
 const sinon = require('sinon');
 
-const models = require('../models');
+const dao = require('../dao');
 const config = require('../config');
 const tokener = require('../lib/tokener');
 

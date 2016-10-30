@@ -5,6 +5,7 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 const _ = require('lodash');
 
+const dao = require('../dao');
 const models = require('../models');
 
 const SharedSpec = require('./util/shared-spec.js');
@@ -18,7 +19,6 @@ const generator = new Generator();
 const shared = new SharedSpec();
 
 const Question = models.Question;
-const Survey = models.Survey;
 
 describe('question unit', function () {
     before(shared.setUpFn());
@@ -27,7 +27,7 @@ describe('question unit', function () {
     const hxSurvey = new History();
 
     it('get all questions when none', function () {
-        return Question.listQuestions()
+        return dao.question.listQuestions()
             .then(questions => {
                 expect(questions).to.have.length(0);
             });
@@ -36,8 +36,8 @@ describe('question unit', function () {
     const qxBasicFn = function () {
         return function () {
             const clientQuestion = generator.newQuestion();
-            return Question.createQuestion(clientQuestion)
-                .then(id => Question.getQuestion(id))
+            return dao.question.createQuestion(clientQuestion)
+                .then(id => dao.question.getQuestion(id))
                 .then(question => {
                     return comparator.question(clientQuestion, question)
                         .then(() => {
@@ -47,16 +47,16 @@ describe('question unit', function () {
                 })
                 .then(question => {
                     const text = `Updated ${clientQuestion.text}`;
-                    return Question.updateQuestionText({ id: question.id, text })
+                    return dao.question.updateQuestionText({ id: question.id, text })
                         .then(() => question);
                 })
-                .then(question => Question.getQuestion(question.id))
+                .then(question => dao.question.getQuestion(question.id))
                 .then(updatedQuestion => {
                     const updatedText = `Updated ${clientQuestion.text}`;
                     const updatedInputQuestion = Object.assign({}, clientQuestion, { text: updatedText });
                     comparator.question(updatedInputQuestion, updatedQuestion);
                     const text = clientQuestion.text;
-                    return Question.updateQuestionText({ id: updatedQuestion.id, text });
+                    return dao.question.updateQuestionText({ id: updatedQuestion.id, text });
                 });
         };
     };
@@ -66,7 +66,7 @@ describe('question unit', function () {
     }
 
     it('error: get with non-existent id', function () {
-        return Question.getQuestion(99999)
+        return dao.question.getQuestion(99999)
             .then(shared.throwingHandler, shared.expectedErrorHandler('qxNotFound'));
     });
 
@@ -74,17 +74,17 @@ describe('question unit', function () {
         const indices = [2, 4, 7];
         const ids = indices.map(i => hxQuestion.id(i));
         const clientQuestions = indices.map(i => hxQuestion.client(i));
-        return Question.listQuestions({ ids })
+        return dao.question.listQuestions({ ids })
             .then(questions => comparator.questions(clientQuestions, questions));
     });
 
     it('get all questions', function () {
-        return Question.listQuestions()
+        return dao.question.listQuestions()
             .then(questions => comparator.questions(hxQuestion.listClients(), questions));
     });
 
     it('error: get multiple with non-existent id', function () {
-        return Question.listQuestions({ ids: [1, 99999] })
+        return dao.question.listQuestions({ ids: [1, 99999] })
             .then(shared.throwingHandler, shared.expectedErrorHandler('qxNotFound'));
     });
 
@@ -95,7 +95,7 @@ describe('question unit', function () {
             if (translation.choices && index < 4) {
                 delete translation.text; // partial translation
             }
-            return Question.updateQuestionText(translation, language)
+            return dao.question.updateQuestionText(translation, language)
                 .then(() => {
                     hxQuestion.translate(index, language, translation);
                 });
@@ -105,7 +105,7 @@ describe('question unit', function () {
     const getTranslatedQuestionFn = function (index, language) {
         return function () {
             const id = hxQuestion.id(index);
-            return Question.getQuestion(id, { language })
+            return dao.question.getQuestion(id, { language })
                 .then(result => {
                     const expected = hxQuestion.translatedServer(index, language);
                     expect(result).to.deep.equal(expected);
@@ -115,7 +115,7 @@ describe('question unit', function () {
 
     const listTranslatedQuestionsFn = function (language) {
         return function () {
-            return Question.listQuestions({ language })
+            return dao.question.listQuestions({ language })
                 .then(result => {
                     const expected = hxQuestion.listTranslatedServers(language);
                     expect(result).to.deep.equal(expected);
@@ -145,7 +145,7 @@ describe('question unit', function () {
 
     const qxDeleteFn = function (index) {
         return function () {
-            return Question.deleteQuestion(hxQuestion.id(index))
+            return dao.question.deleteQuestion(hxQuestion.id(index))
                 .then(() => {
                     hxQuestion.remove(index);
                 });
@@ -157,7 +157,7 @@ describe('question unit', function () {
     });
 
     it('verify all questions', function () {
-        return Question.listQuestions()
+        return dao.question.listQuestions()
             .then(questions => comparator.questions(hxQuestion.listClients(), questions));
     });
 
@@ -169,7 +169,7 @@ describe('question unit', function () {
         return function () {
             const questionIds = questionIndices.map(index => hxQuestion.id(index));
             const clientSurvey = generator.newSurveyQuestionIds(questionIds);
-            return Survey.createSurvey(clientSurvey)
+            return dao.survey.createSurvey(clientSurvey)
                 .then(id => hxSurvey.push(clientSurvey, { id }));
         };
     };
@@ -184,31 +184,31 @@ describe('question unit', function () {
 
     _.forEach([2, 7, 11, 13, 14], questionIndex => {
         it(`error: delete question ${questionIndex} on an active survey`, function () {
-            return Question.deleteQuestion(hxQuestion.id(questionIndex))
+            return dao.question.deleteQuestion(hxQuestion.id(questionIndex))
                 .then(shared.throwingHandler, shared.expectedErrorHandler('qxReplaceWhenActiveSurveys'));
         });
     });
 
     it('delete survey 1', function () {
-        return Survey.deleteSurvey(hxSurvey.id(1))
+        return dao.survey.deleteSurvey(hxSurvey.id(1))
             .then(() => hxSurvey.remove(1));
     });
 
     _.forEach([2, 7, 11, 14], questionIndex => {
         it(`error: delete question ${questionIndex} on an active survey`, function () {
-            return Question.deleteQuestion(hxQuestion.id(questionIndex))
+            return dao.question.deleteQuestion(hxQuestion.id(questionIndex))
                 .then(shared.throwingHandler, shared.expectedErrorHandler('qxReplaceWhenActiveSurveys'));
         });
     });
 
     it('delete survey 2', function () {
-        return Survey.deleteSurvey(hxSurvey.id(2))
+        return dao.survey.deleteSurvey(hxSurvey.id(2))
             .then(() => hxSurvey.remove(2));
     });
 
     _.forEach([2, 7], questionIndex => {
         it(`error: delete question ${questionIndex} on an active survey`, function () {
-            return Question.deleteQuestion(hxQuestion.id(questionIndex))
+            return dao.question.deleteQuestion(hxQuestion.id(questionIndex))
                 .then(shared.throwingHandler, shared.expectedErrorHandler('qxReplaceWhenActiveSurveys'));
         });
     });
@@ -219,7 +219,7 @@ describe('question unit', function () {
 
     it(`error: replace a non-existent question`, function () {
         const replacement = generator.newQuestion();
-        return Question.replaceQuestion(999, replacement)
+        return dao.question.replaceQuestion(999, replacement)
             .then(shared.throwingHandler, shared.expectedErrorHandler('qxNotFound'));
     });
 
@@ -233,40 +233,40 @@ describe('question unit', function () {
     _.forEach([2, 7, 9], questionIndex => {
         it(`error: replace question ${questionIndex} on an active survey`, function () {
             const replacement = generator.newQuestion();
-            return Question.replaceQuestion(hxQuestion.id(questionIndex), replacement)
+            return dao.question.replaceQuestion(hxQuestion.id(questionIndex), replacement)
                 .then(shared.throwingHandler, shared.expectedErrorHandler('qxReplaceWhenActiveSurveys'));
         });
     });
 
     it('delete survey 0', function () {
-        return Survey.deleteSurvey(hxSurvey.id(0))
+        return dao.survey.deleteSurvey(hxSurvey.id(0))
             .then(() => hxSurvey.remove(0));
     });
 
     _.forEach([7, 9], questionIndex => {
         it(`error: replace question ${questionIndex} on an active survey`, function () {
             const replacement = generator.newQuestion();
-            return Question.replaceQuestion(hxQuestion.id(questionIndex), replacement)
+            return dao.question.replaceQuestion(hxQuestion.id(questionIndex), replacement)
                 .then(shared.throwingHandler, shared.expectedErrorHandler('qxReplaceWhenActiveSurveys'));
         });
     });
 
     it('delete survey 3', function () {
-        return Survey.deleteSurvey(hxSurvey.id(3))
+        return dao.survey.deleteSurvey(hxSurvey.id(3))
             .then(() => hxSurvey.remove(3));
     });
 
     [7, 10, 14, 21, 22, 24].forEach((questionIndex, index) => {
         it(`replace question ${questionIndex} with question ${20 + index}`, function () {
             const replacement = generator.newQuestion();
-            return Question.replaceQuestion(hxQuestion.id(questionIndex), replacement)
-                .then(({ id }) => Question.getQuestion(id))
+            return dao.question.replaceQuestion(hxQuestion.id(questionIndex), replacement)
+                .then(({ id }) => dao.question.getQuestion(id))
                 .then(question => {
                     comparator.question(replacement, question);
                     hxQuestion.replace(questionIndex, replacement, question);
                     return question;
                 })
-                .then(() => Question.listQuestions())
+                .then(() => dao.question.listQuestions())
                 .then(questions => comparator.questions(hxQuestion.listClients(), questions));
         });
     });

@@ -7,7 +7,7 @@ const sinon = require('sinon');
 
 const SharedIntegration = require('./util/shared-integration.js');
 
-const models = require('../models');
+const dao = require('../dao');
 const config = require('../config');
 const SPromise = require('../lib/promise');
 

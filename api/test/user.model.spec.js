@@ -10,6 +10,7 @@ const _ = require('lodash');
 const SPromise = require('../lib/promise');
 const SharedSpec = require('./util/shared-spec');
 const config = require('../config');
+const dao = require('../dao');
 const models = require('../models');
 const Generator = require('./util/entity-generator');
 
@@ -44,7 +45,7 @@ describe('user unit', function () {
                 expect(user.username).to.equal(inputUser.username);
                 return user;
             }).then(function (user) {
-                return User.updateUser(user.id, {
+                return dao.user.updateUser(user.id, {
                     username: 'rejectusername'
                 }).then(function () {
                     throw new Error('unexpected no error');
@@ -115,7 +116,7 @@ describe('user unit', function () {
                     return user.id;
                 });
             }).then(function (id) {
-                return User.updateUser(id, {
+                return dao.user.updateUser(id, {
                     password: 'newPassword'
                 }).then(function () {
                     return User.findById(id).then(function (user) {
@@ -153,7 +154,7 @@ describe('user unit', function () {
             });
             [null, undefined, ''].forEach(function (value) {
                 p = p.then(function (id) {
-                    return User.updateUser(id, {
+                    return dao.user.updateUser(id, {
                         password: value
                     }).then(function () {
                         throw new Error('no error for \'' + value + '\'');
@@ -251,7 +252,7 @@ describe('user unit', function () {
             });
             ['noatemail', null, undefined, ''].forEach(function (value) {
                 p = p.then(function (id) {
-                    return User.updateUser(id, {
+                    return dao.user.updateUser(id, {
                         email: value
                     }).then(function () {
                         throw new Error('no error for \'' + value + '\'');
@@ -269,7 +270,7 @@ describe('user unit', function () {
     describe('create/get users', function () {
         it('post/get user', function () {
             return User.create(example).then(function (user) {
-                return User.getUser(user.id).then(function (actual) {
+                return dao.user.getUser(user.id).then(function (actual) {
                     const expected = _.cloneDeep(example);
                     expected.id = user.id;
                     delete actual.role;
@@ -284,7 +285,7 @@ describe('user unit', function () {
             exampleWNull.username += '1';
             exampleWNull.email = 'a' + exampleWNull.email;
             return User.create(exampleWNull).then(function (user) {
-                return User.getUser(user.id).then(function (actual) {
+                return dao.user.getUser(user.id).then(function (actual) {
                     const expected = _.cloneDeep(exampleWNull);
                     expected.id = user.id;
                     delete actual.role;
@@ -305,8 +306,8 @@ describe('user unit', function () {
                     email: 'newone@example.com',
                     password: 'newpasword!!'
                 };
-                return User.updateUser(id, updateObj).then(function () {
-                    return User.authenticateUser(id, updateObj.password);
+                return dao.user.updateUser(id, updateObj).then(function () {
+                    return dao.user.authenticateUser(id, updateObj.password);
                 }).then(function () {
                     return User.findById(id, {
                         attributes
@@ -326,7 +327,7 @@ describe('user unit', function () {
             return User.create(inputUser).then(function (user) {
                 let token;
 
-                return User.resetPasswordToken(user.email).then(function (result) {
+                return dao.user.resetPasswordToken(user.email).then(function (result) {
                     token = result;
                     expect(!!token).to.equal(true);
                     return token;
@@ -346,7 +347,7 @@ describe('user unit', function () {
                     });
                 }).then(function (token) {
                     const wrongToken = (token.charAt(0) === '1' ? '2' : '1') + token.slice(1);
-                    return User.resetPassword(wrongToken, 'newPassword').then(function () {
+                    return dao.user.resetPassword(wrongToken, 'newPassword').then(function () {
                         throw new Error('unexpected no error for no token');
                     }).catch(function (err) {
                         expect(err.message).not.to.equal('unexpected no error for no token');
@@ -354,7 +355,7 @@ describe('user unit', function () {
                         expect(err.message).to.equal(emsg);
                         return token;
                     }).then(function (token) {
-                        return User.resetPassword(token, 'newPassword');
+                        return dao.user.resetPassword(token, 'newPassword');
                     });
                 });
             }).then(function () {
@@ -369,7 +370,7 @@ describe('user unit', function () {
         });
 
         it('invalid email', function () {
-            return User.resetPasswordToken('a@a.com').then(function () {
+            return dao.user.resetPasswordToken('a@a.com').then(function () {
                 throw new Error('unexpected no error ');
             }).catch(function (err) {
                 expect(err.message).not.to.equal('unexpected no error');
@@ -385,12 +386,12 @@ describe('user unit', function () {
             });
             const inputUser = entityGen.newUser();
             return User.create(inputUser).then(function (user) {
-                return User.resetPasswordToken(user.email);
+                return dao.user.resetPasswordToken(user.email);
             }).then(function (token) {
-                return User.resetPassword(token, 'newPassword').then(function () {
+                return dao.user.resetPassword(token, 'newPassword').then(function () {
                     return SPromise.delay(600);
                 }).then(function () {
-                    return User.resetPassword(token, 'newPassword');
+                    return dao.user.resetPassword(token, 'newPassword');
                 }).then(function () {
                     throw new Error('unexpected no expiration error');
                 }).catch(function (err) {

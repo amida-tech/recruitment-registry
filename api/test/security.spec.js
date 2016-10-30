@@ -14,6 +14,7 @@ const SharedSpec = require('./util/shared-spec');
 const expect = chai.expect;
 const shared = new SharedSpec();
 
+
 describe('security unit', function () {
     const admin = {
         username: 'admin',
