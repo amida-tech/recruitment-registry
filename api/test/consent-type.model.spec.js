@@ -7,7 +7,7 @@ const chai = require('chai');
 const SharedSpec = require('./util/shared-spec');
 const Generator = require('./util/entity-generator');
 const History = require('./util/entity-history');
-const dao = require('../dao');
+const models = require('../models');
 
 const expect = chai.expect;
 const generator = new Generator();
@@ -24,7 +24,7 @@ describe('consent unit', function () {
     const createConsentTypeFn = function () {
         return function () {
             const cst = generator.newConsentType();
-            return dao.consentType.createConsentType(cst)
+            return models.consentType.createConsentType(cst)
                 .then(server => hxType.pushWithId(cst, server.id));
         };
     };
@@ -32,7 +32,7 @@ describe('consent unit', function () {
     const getConsentTypeFn = function (index) {
         return function () {
             const consentType = hxType.server(index);
-            return dao.consentType.getConsentType(consentType.id)
+            return models.consentType.getConsentType(consentType.id)
                 .then(result => {
                     expect(result).to.deep.equal(consentType);
                 });
@@ -41,7 +41,7 @@ describe('consent unit', function () {
 
     const listConsentTypesFn = function () {
         return function () {
-            return dao.consentType.listConsentTypes()
+            return models.consentType.listConsentTypes()
                 .then(result => {
                     const expected = hxType.listServers();
                     expect(result).to.deep.equal(expected);
@@ -59,7 +59,7 @@ describe('consent unit', function () {
     const getTranslatedConsentTypeFn = function (index, language) {
         return function () {
             const id = hxType.id(index);
-            return dao.consentType.getConsentType(id, { language })
+            return models.consentType.getConsentType(id, { language })
                 .then(result => {
                     const expected = hxType.translatedServer(index, language);
                     expect(result).to.deep.equal(expected);
@@ -69,7 +69,7 @@ describe('consent unit', function () {
 
     const listTranslatedConsentTypesFn = function (language) {
         return function () {
-            return dao.consentType.listConsentTypes({ language })
+            return models.consentType.listConsentTypes({ language })
                 .then(result => {
                     const expected = hxType.listTranslatedServers(language);
                     expect(result).to.deep.equal(expected);

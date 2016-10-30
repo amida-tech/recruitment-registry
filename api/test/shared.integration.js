@@ -7,11 +7,11 @@ const sinon = require('sinon');
 
 const SharedIntegration = require('./util/shared-integration.js');
 
-const dao = require('../dao');
+const models = require('../models');
 const config = require('../config');
 const SPromise = require('../lib/promise');
 
-const Language = models.Language;
+const language = models.language;
 
 const expect = chai.expect;
 const shared = new SharedIntegration();
@@ -27,7 +27,7 @@ describe('shared integration', function () {
     it('login as super', shared.loginFn(store, config.superUser));
 
     it('unexpected run time error', function (done) {
-        sinon.stub(Language, 'listLanguages', function () {
+        sinon.stub(language, 'listLanguages', function () {
             return SPromise.reject(new Error('unexpected error'));
         });
         store.server
@@ -39,7 +39,7 @@ describe('shared integration', function () {
                     return done(err);
                 }
                 expect(res.body.message).to.deep.equal('unexpected error');
-                Language.listLanguages.restore();
+                language.listLanguages.restore();
                 done();
             });
     });

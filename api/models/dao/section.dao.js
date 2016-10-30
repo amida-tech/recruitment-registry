@@ -1,8 +1,8 @@
 'use strict';
 
-const db = require('../models/db');
+const db = require('../db');
 
-const SPromise = require('../lib/promise');
+const SPromise = require('../../lib/promise');
 
 const textTableMethods = require('./text-table-methods');
 
@@ -13,7 +13,7 @@ const SurveySection = db.SurveySection;
 const textHandler = textTableMethods(sequelize, 'section_text', 'sectionId', ['name']);
 
 module.exports = class {
-	constructor() {}
+    constructor() {}
 
     createSectionTx({ name, indices }, tx) {
         return Section.create({ indices }, { transaction: tx })

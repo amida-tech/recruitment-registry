@@ -10,10 +10,9 @@ const SharedSpec = require('./util/shared-spec');
 const Generator = require('./util/entity-generator');
 const History = require('./util/entity-history');
 const ConsentDocumentHistory = require('./util/consent-document-history');
-const dao = require('../dao');
 const models = require('../models');
 const db = require('../models/db');
-const textTableMethods = require('../dao/text-table-methods');
+const textTableMethods = require('../models/dao/text-table-methods');
 
 const expect = chai.expect;
 
@@ -33,7 +32,7 @@ describe('consent document/type/signature unit', function () {
 
     const verifyConsentTypeInListFn = function () {
         return function () {
-            return dao.consentType.listConsentTypes()
+            return models.consentType.listConsentTypes()
                 .then(result => {
                     const types = history.listTypes();
                     expect(result).to.deep.equal(types);
@@ -52,14 +51,14 @@ describe('consent document/type/signature unit', function () {
     }
 
     it('error: no consent documents of existing types', function () {
-        return dao.user.listConsentDocuments(history.userId(0))
+        return models.user.listConsentDocuments(history.userId(0))
             .then(shared.throwingHandler, shared.expectedErrorHandler('noSystemConsentDocuments'));
     });
 
     const verifyConsentDocumentFn = function (typeIndex) {
         return function () {
             const cs = history.server(typeIndex);
-            return dao.consentDocument.getConsentDocument(cs.id)
+            return models.consentDocument.getConsentDocument(cs.id)
                 .then(result => {
                     expect(result).to.deep.equal(cs);
                 });
@@ -70,7 +69,7 @@ describe('consent document/type/signature unit', function () {
         return function () {
             const cs = history.server(typeIndex);
             const typeName = history.type(typeIndex).name;
-            return dao.consentDocument.getConsentDocumentByTypeName(typeName)
+            return models.consentDocument.getConsentDocumentByTypeName(typeName)
                 .then(result => {
                     expect(result).to.deep.equal(cs);
                 });
@@ -80,7 +79,7 @@ describe('consent document/type/signature unit', function () {
     const verifyTranslatedConsentDocumentFn = function (index, language) {
         return function () {
             const id = history.id(index);
-            return dao.consentDocument.getConsentDocument(id, { language })
+            return models.consentDocument.getConsentDocument(id, { language })
                 .then(result => {
                     const expected = history.hxDocument.translatedServer(index, language);
                     expect(result).to.deep.equal(expected);
@@ -97,13 +96,13 @@ describe('consent document/type/signature unit', function () {
     }
 
     it('error: no consent documents with type name', function () {
-        return dao.consentDocument.getConsentDocumentByTypeName('Not Here')
+        return models.consentDocument.getConsentDocumentByTypeName('Not Here')
             .then(shared.throwingHandler, shared.expectedErrorHandler('consentTypeNotFound'));
     });
 
     const verifyConsentDocumentsFn = function (userIndex, expectedIndices) {
         return function () {
-            return dao.user.listConsentDocuments(history.userId(userIndex))
+            return models.user.listConsentDocuments(history.userId(userIndex))
                 .then(consentDocuments => {
                     const expected = history.serversInList(expectedIndices);
                     expect(consentDocuments).to.deep.equal(expected);
@@ -112,7 +111,7 @@ describe('consent document/type/signature unit', function () {
                 .then(() => {
                     const css = expectedIndices.map(index => history.server(index));
                     return SPromise.all(css.map(cs => {
-                        return dao.consentDocument.getConsentDocument(cs.id)
+                        return models.consentDocument.getConsentDocument(cs.id)
                             .then(result => {
                                 expect(result).to.deep.equal(cs);
                             });
@@ -123,7 +122,7 @@ describe('consent document/type/signature unit', function () {
 
     const verifyTranslatedConsentDocumentsFn = function (userIndex, expectedIndices, language) {
         return function () {
-            return dao.user.listConsentDocuments(history.userId(userIndex), { language })
+            return models.user.listConsentDocuments(history.userId(userIndex), { language })
                 .then(consentDocuments => {
                     const expected = history.translatedServersInList(expectedIndices, language);
                     expect(consentDocuments).to.deep.equal(expected);
@@ -132,7 +131,7 @@ describe('consent document/type/signature unit', function () {
                 .then(() => {
                     const css = expectedIndices.map(index => history.hxDocument.translatedServer(index, language));
                     return SPromise.all(css.map(cs => {
-                        return dao.consentDocument.getConsentDocument(cs.id, { language })
+                        return models.consentDocument.getConsentDocument(cs.id, { language })
                             .then(result => {
                                 expect(result).to.deep.equal(cs);
                             });
@@ -152,9 +151,9 @@ describe('consent document/type/signature unit', function () {
             const userId = history.userId(userIndex);
             history.sign(typeIndex, userIndex, language);
             if (language) {
-                return dao.consentSignature.createSignature(userId, consentDocumentId, language);
+                return models.consentSignature.createSignature(userId, consentDocumentId, language);
             } else {
-                return dao.consentSignature.createSignature(userId, consentDocumentId);
+                return models.consentSignature.createSignature(userId, consentDocumentId);
             }
         };
     };
@@ -173,7 +172,7 @@ describe('consent document/type/signature unit', function () {
 
     it('error: invalid user signs already signed consent document of type 0 ', function () {
         const consentDocumentId = history.activeConsentDocuments[0].id;
-        return dao.consentSignature.createSignature(999, consentDocumentId)
+        return models.consentSignature.createSignature(999, consentDocumentId)
             .then(shared.throwingHandler, err => {
                 expect(err).is.instanceof(models.sequelize.ForeignKeyConstraintError);
             });
@@ -181,7 +180,7 @@ describe('consent document/type/signature unit', function () {
 
     it('error: user 0 signs invalid consent document', function () {
         const userId = history.userId(0);
-        return dao.consentSignature.createSignature(userId, 999)
+        return models.consentSignature.createSignature(userId, 999)
             .then(shared.throwingHandler, err => {
                 expect(err).is.instanceof(models.sequelize.ForeignKeyConstraintError);
             });
@@ -191,7 +190,7 @@ describe('consent document/type/signature unit', function () {
     it(`verify the new consent type in the list`, verifyConsentTypeInListFn);
 
     it('error: no consent document of existing types', function () {
-        return dao.consentDocument.listConsentDocuments(history.userId(2))
+        return models.consentDocument.listConsentDocuments(history.userId(2))
             .then(shared.throwingHandler, shared.expectedErrorHandler('noSystemConsentDocuments'));
     });
 
@@ -251,26 +250,26 @@ describe('consent document/type/signature unit', function () {
     it(`create consent from types 0, 1, 2`, function () {
         const sections = [0, 1, 2].map(typeIndex => history.typeId(typeIndex));
         const clientConsent = generator.newConsent({ sections });
-        return dao.consent.createConsent(clientConsent)
+        return models.consent.createConsent(clientConsent)
             .then(result => hxConsent.pushWithId(clientConsent, result.id));
     });
 
     it('error: delete consent type when on a consent', function () {
         const id = history.typeId(1);
-        return dao.consentType.deleteConsentType(id)
+        return models.consentType.deleteConsentType(id)
             .then(shared.throwingHandler, shared.expectedErrorHandler('consentTypeDeleteOnConsent'))
             .then(() => {
                 const consentId = hxConsent.id(0);
-                return dao.consent.deleteConsent(consentId);
+                return models.consent.deleteConsent(consentId);
             });
     });
 
     it('delete consent type 1', function () {
         const id = history.typeId(1);
-        return dao.consentType.deleteConsentType(id)
+        return models.consentType.deleteConsentType(id)
             .then(() => {
                 history.deleteType(1);
-                return dao.consentType.listConsentTypes()
+                return models.consentType.listConsentTypes()
                     .then(result => {
                         const types = history.listTypes();
                         expect(result).to.deep.equal(types);
@@ -286,7 +285,7 @@ describe('consent document/type/signature unit', function () {
     const verifySignatureExistenceFn = function (userIndex) {
         return function () {
             const userId = history.userId(userIndex);
-            return dao.consentSignature.getSignatureHistory(userId)
+            return models.consentSignature.getSignatureHistory(userId)
                 .then(result => {
                     const expected = _.sortBy(history.signatures[userIndex], 'id');
                     expect(result).to.deep.equal(expected);

@@ -5,7 +5,7 @@ const _ = require('lodash');
 
 const SPromise = require('../../lib/promise');
 
-const dao = require('../../dao');
+const models = require('../../models');
 
 const expect = chai.expect;
 
@@ -23,7 +23,7 @@ const comparator = {
         if (!expected.id) {
             expected.id = id;
         }
-        return dao.questionChoice.findChoicesPerQuestion(id)
+        return models.questionChoice.findChoicesPerQuestion(id)
             .then(choices => {
                 return choices.reduce(function (r, choice) {
                     r[choice.text] = choice.id;
@@ -55,7 +55,7 @@ const comparator = {
             })
             .then(() => {
                 if (expected.actions) {
-                    return dao.questionAction.findActionsPerQuestion(id)
+                    return models.questionAction.findActionsPerQuestion(id)
                         .then((expected) => {
                             return expected.reduce(function (r, action) {
                                 r[action.text] = action.id;

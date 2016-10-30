@@ -1,11 +1,11 @@
 'use strict';
 
-const db = require('../models/db');
+const db = require('../db');
 
 const Language = db.Language;
 
 module.exports = class {
-	constructor() {}
+    constructor() {}
 
     createLanguage(language) {
         return Language.create(language)

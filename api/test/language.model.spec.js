@@ -5,7 +5,7 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 const _ = require('lodash');
 
-const dao = require('../dao');
+const models = require('../models');
 
 const SharedSpec = require('./util/shared-spec.js');
 
@@ -18,7 +18,7 @@ describe('language unit', function () {
     let languages;
 
     it('list existing languages', function () {
-        return dao.language.listLanguages()
+        return models.language.listLanguages()
             .then(result => {
                 languages = result;
                 expect(languages).to.have.length.above(0);
@@ -32,7 +32,7 @@ describe('language unit', function () {
     };
 
     it('create language', function () {
-        return dao.language.createLanguage(example)
+        return models.language.createLanguage(example)
             .then(() => {
                 languages.push(example);
                 _.sortBy(languages, 'code');
@@ -40,28 +40,28 @@ describe('language unit', function () {
     });
 
     it('get language', function () {
-        return dao.language.getLanguage(example.code)
+        return models.language.getLanguage(example.code)
             .then(result => {
                 expect(result).to.deep.equal(example);
             });
     });
 
     it('list existing languages', function () {
-        return dao.language.listLanguages()
+        return models.language.listLanguages()
             .then(result => {
                 expect(result).to.deep.equal(languages);
             });
     });
 
     it('delete language', function () {
-        return dao.language.deleteLanguage('fr')
+        return models.language.deleteLanguage('fr')
             .then(() => {
                 _.remove(languages, { code: 'fr' });
             });
     });
 
     it('list existing languages', function () {
-        return dao.language.listLanguages()
+        return models.language.listLanguages()
             .then(result => {
                 expect(result).to.deep.equal(languages);
             });
@@ -69,7 +69,7 @@ describe('language unit', function () {
 
     it('patch language', function () {
         const languageUpdate = { name: 'Turk', nativeName: 'Türk' };
-        return dao.language.patchLanguage('tr', languageUpdate)
+        return models.language.patchLanguage('tr', languageUpdate)
             .then(() => {
                 const language = _.find(languages, { code: 'tr' });
                 Object.assign(language, languageUpdate);
@@ -77,7 +77,7 @@ describe('language unit', function () {
     });
 
     it('list existing languages', function () {
-        return dao.language.listLanguages()
+        return models.language.listLanguages()
             .then(result => {
                 expect(result).to.deep.equal(languages);
             });

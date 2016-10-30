@@ -1,6 +1,6 @@
 'use strict';
 
-const db = require('../models/db');
+const db = require('../db');
 
 const textTableMethods = require('./text-table-methods');
 
@@ -10,8 +10,7 @@ const QuestionChoice = db.QuestionChoice;
 const textHandler = textTableMethods(sequelize, 'question_choice_text', 'questionChoiceId');
 
 module.exports = class {
-	constructor() {
-	}
+    constructor() {}
 
     createQuestionChoiceTx(choice, tx) {
         return QuestionChoice.create(choice, { transaction: tx })

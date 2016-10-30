@@ -2,11 +2,11 @@
 
 const _ = require('lodash');
 
-const db = require('../models/db');
+const db = require('../db');
 
-const tokener = require('../lib/tokener');
-const RRError = require('../lib/rr-error');
-const SPromise = require('../lib/promise');
+const tokener = require('../../lib/tokener');
+const RRError = require('../../lib/rr-error');
+const SPromise = require('../../lib/promise');
 
 const sequelize = db.sequelize;
 const Registry = db.Registry;

@@ -3,13 +3,12 @@
 const _ = require('lodash');
 
 const models = require('../models');
+const db = require('../models/db');
 const shared = require('./shared.js');
-
-const User = models.User;
 
 exports.createNewUser = function (req, res) {
     const username = req.body.username;
-    User.findOne({ where: { username } })
+    db.User.findOne({ where: { username } })
         .then(data => {
             if (data) {
                 return res.status(400).json({
@@ -18,7 +17,7 @@ exports.createNewUser = function (req, res) {
             } else {
                 const newUser = req.body;
                 newUser.role = 'participant';
-                return User.create(req.body)
+                return db.User.create(req.body)
                     .then(user => {
                         return res.status(201).json({
                             id: user.id,
@@ -37,20 +36,20 @@ exports.showCurrentUser = function (req, res) {
 };
 
 exports.updateCurrentUser = function (req, res) {
-    User.updateUser(req.user.id, req.body)
+    models.user.updateUser(req.user.id, req.body)
         .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };
 
 exports.resetPassword = function (req, res) {
-    User.resetPassword(req.body.token, req.body.password)
+    models.user.resetPassword(req.body.token, req.body.password)
         .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };
 
 exports.listConsentDocuments = function (req, res) {
     const language = _.get(req, 'swagger.params.language.value');
-    User.listConsentDocuments(req.user.id, { language })
+    models.user.listConsentDocuments(req.user.id, { language })
         .then(consentDocuments => res.status(200).json(consentDocuments))
         .catch(shared.handleError(res));
 };

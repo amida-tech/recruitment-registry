@@ -2,9 +2,9 @@
 
 const _ = require('lodash');
 
-const db = require('../models/db');
+const db = require('../db');
 
-const RRError = require('../lib/rr-error');
+const RRError = require('../../lib/rr-error');
 
 const textTableMethods = require('./text-table-methods');
 

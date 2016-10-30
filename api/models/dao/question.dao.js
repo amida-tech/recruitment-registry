@@ -2,10 +2,10 @@
 
 const _ = require('lodash');
 
-const db = require('../models/db');
+const db = require('../db');
 
-const RRError = require('../lib/rr-error');
-const SPromise = require('../lib/promise');
+const RRError = require('../../lib/rr-error');
+const SPromise = require('../../lib/promise');
 const textTableMethods = require('./text-table-methods');
 
 const sequelize = db.sequelize;
@@ -15,9 +15,9 @@ const Question = db.Question;
 const textHandler = textTableMethods(sequelize, 'question_text', 'questionId');
 
 module.exports = class {
-	constructor(dependencies) {
+    constructor(dependencies) {
         Object.assign(this, dependencies);
-	}
+    }
 
     createActionsTx(id, actions, tx) {
         if (actions && actions.length) {

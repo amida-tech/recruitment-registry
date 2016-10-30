@@ -2,9 +2,9 @@
 
 const _ = require('lodash');
 
-const db = require('../models/db');
+const db = require('../db');
 
-const SPromise = require('../lib/promise');
+const SPromise = require('../../lib/promise');
 
 const sequelize = db.sequelize;
 const Consent = db.Consent;

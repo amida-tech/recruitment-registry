@@ -2,7 +2,7 @@
 
 const _ = require('lodash');
 
-const SPromise = require('../lib/promise');
+const SPromise = require('../../lib/promise');
 
 module.exports = function (sequelize, tableName, parentIdField, textFields = ['text']) {
     return {

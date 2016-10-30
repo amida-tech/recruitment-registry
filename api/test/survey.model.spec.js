@@ -5,7 +5,7 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 const _ = require('lodash');
 
-const dao = require('../dao');
+const models = require('../models');
 
 const Generator = require('./util/entity-generator');
 const History = require('./util/entity-history');
@@ -27,7 +27,7 @@ describe('survey unit', function () {
     const hxUser = new History();
 
     it('verify no surveys', function () {
-        return dao.survey.listSurveys()
+        return models.survey.listSurveys()
             .then((surveys) => {
                 expect(surveys).to.have.length(0);
             });
@@ -37,8 +37,8 @@ describe('survey unit', function () {
         return function () {
             const clientSurvey = generator.newSurvey();
             const updatedName = clientSurvey.name + 'xyz';
-            return dao.survey.createSurvey(clientSurvey)
-                .then(id => dao.survey.getSurvey(id))
+            return models.survey.createSurvey(clientSurvey)
+                .then(id => models.survey.getSurvey(id))
                 .then((serverSurvey) => {
                     return comparator.survey(clientSurvey, serverSurvey)
                         .then(() => {
@@ -46,15 +46,15 @@ describe('survey unit', function () {
                             return serverSurvey.id;
                         });
                 })
-                .then((id) => dao.survey.updateSurveyText({ id, name: updatedName }))
-                .then(() => dao.survey.getSurveyByName(updatedName))
+                .then((id) => models.survey.updateSurveyText({ id, name: updatedName }))
+                .then(() => models.survey.getSurveyByName(updatedName))
                 .then(serverSurvey => {
                     const updatedSurvey = Object.assign({}, clientSurvey, { name: updatedName });
                     return comparator.survey(updatedSurvey, serverSurvey)
                         .then(() => serverSurvey.id);
                 })
-                .then((id) => dao.survey.updateSurveyText({ id, name: clientSurvey.name }))
-                .then(() => dao.survey.listSurveys())
+                .then((id) => models.survey.updateSurveyText({ id, name: clientSurvey.name }))
+                .then(() => models.survey.listSurveys())
                 .then(surveys => {
                     expect(surveys).to.have.length(index + 1);
                     const expected = history.listServers().map(({ id, name }) => ({ id, name }));
@@ -64,7 +64,7 @@ describe('survey unit', function () {
     };
 
     it('error: create survey without questions', function () {
-        return dao.survey.createSurvey({ name: 'name' })
+        return models.survey.createSurvey({ name: 'name' })
             .then(shared.throwingHandler, shared.expectedErrorHandler('surveyNoQuestions'));
     });
 
@@ -87,13 +87,13 @@ describe('survey unit', function () {
         const clientSurvey = history.client(index);
         clientSurvey.sections = newSections;
         history.updateClient(index, clientSurvey);
-        return dao.survey.replaceSurveySections(survey.id, newSections);
+        return models.survey.replaceSurveySections(survey.id, newSections);
     });
 
     it('get/verify sections of first survey with sections', function () {
         const index = _.findIndex(history.listClients(), client => client.sections);
         const id = history.id(index);
-        return dao.survey.getSurvey(id)
+        return models.survey.getSurvey(id)
             .then(survey => {
                 const clientSurvey = history.client(index);
                 return comparator.survey(clientSurvey, survey)
@@ -104,12 +104,12 @@ describe('survey unit', function () {
     });
 
     it('error: show a non-existent survey', function () {
-        return dao.survey.getSurvey(999)
+        return models.survey.getSurvey(999)
             .then(shared.throwingHandler, shared.expectedErrorHandler('surveyNotFound'));
     });
 
     it('error: show a non-existent survey by name', function () {
-        return dao.survey.getSurveyByName('NotHere')
+        return models.survey.getSurveyByName('NotHere')
             .then(shared.throwingHandler, shared.expectedErrorHandler('surveyNotFound'));
     });
 
@@ -117,26 +117,26 @@ describe('survey unit', function () {
         const survey = history.server(1);
         const replacementSurvey = generator.newSurvey();
         delete replacementSurvey.questions;
-        return dao.survey.replaceSurvey(survey.id, replacementSurvey)
+        return models.survey.replaceSurvey(survey.id, replacementSurvey)
             .then(shared.throwingHandler, shared.expectedErrorHandler('surveyNoQuestions'));
     });
 
     it('error: replace a non-existent survey', function () {
         const replacementSurvey = generator.newSurvey();
-        return dao.survey.replaceSurvey(999, replacementSurvey)
+        return models.survey.replaceSurvey(999, replacementSurvey)
             .then(shared.throwingHandler, shared.expectedErrorHandler('surveyNotFound'));
     });
 
     it('get survey 3 in spanish when no name translation', function () {
         const survey = history.server(3);
-        return dao.survey.getSurvey(survey.id, { language: 'es' })
+        return models.survey.getSurvey(survey.id, { language: 'es' })
             .then(result => {
                 expect(result).to.deep.equal(survey);
             });
     });
 
     it('list surveys in spanish when no translation', function () {
-        return dao.survey.listSurveys({ language: 'es' })
+        return models.survey.listSurveys({ language: 'es' })
             .then(result => {
                 const list = history.listServers();
                 expect(result).to.deep.equal(list);
@@ -147,7 +147,7 @@ describe('survey unit', function () {
         return function () {
             const survey = history.server(index);
             const translation = translator.translateSurvey(survey, language);
-            return dao.survey.updateSurveyText(translation, language)
+            return models.survey.updateSurveyText(translation, language)
                 .then(() => {
                     history.translate(index, language, translation);
                 });
@@ -157,7 +157,7 @@ describe('survey unit', function () {
     const getTranslatedFn = function (index, language) {
         return function () {
             const id = history.id(index);
-            return dao.survey.getSurvey(id, { language })
+            return models.survey.getSurvey(id, { language })
                 .then(result => {
                     translator.isSurveyTranslated(result, language);
                     const expected = history.translatedServer(index, language);
@@ -168,7 +168,7 @@ describe('survey unit', function () {
 
     const listTranslatedFn = function (language) {
         return function () {
-            return dao.survey.listSurveys({ language })
+            return models.survey.listSurveys({ language })
                 .then(result => {
                     const expected = history.listTranslatedServers(language);
                     expect(result).to.deep.equal(expected);
@@ -184,7 +184,7 @@ describe('survey unit', function () {
     it('list and verify translated surveys', listTranslatedFn('es'));
 
     it('list surveys in english (original)', function () {
-        return dao.survey.listSurveys({ language: 'en' })
+        return models.survey.listSurveys({ language: 'en' })
             .then(result => {
                 const list = history.listServers();
                 expect(result).to.deep.equal(list);
@@ -195,8 +195,8 @@ describe('survey unit', function () {
         return function () {
             const id = history.id(index);
             const clientSurvey = generator.newSurvey();
-            return dao.survey.replaceSurvey(id, clientSurvey)
-                .then(id => dao.survey.getSurvey(id))
+            return models.survey.replaceSurvey(id, clientSurvey)
+                .then(id => models.survey.getSurvey(id))
                 .then((serverSurvey) => {
                     return comparator.survey(clientSurvey, serverSurvey)
                         .then(() => {
@@ -204,7 +204,7 @@ describe('survey unit', function () {
                             return serverSurvey.id;
                         });
                 })
-                .then(() => dao.survey.listSurveys())
+                .then(() => models.survey.listSurveys())
                 .then(surveys => {
                     const expected = history.listServers();
                     expect(surveys).to.deep.equal(expected);
@@ -215,10 +215,10 @@ describe('survey unit', function () {
     const dbVersionCompareFn = function (index, count) {
         return function () {
             const id = history.id(index);
-            return dao.survey.getSurvey(id, { override: { attributes: ['id', 'version', 'groupId'] } })
+            return models.survey.getSurvey(id, { override: { attributes: ['id', 'version', 'groupId'] } })
                 .then(surveyWithGroupId => {
                     const groupId = surveyWithGroupId.groupId;
-                    return dao.survey.listSurveys({
+                    return models.survey.listSurveys({
                             override: {
                                 where: { groupId },
                                 paranoid: false,
@@ -244,7 +244,7 @@ describe('survey unit', function () {
     const dbVersionParentlessCompareFn = function (index, replaced) {
         return function () {
             const id = history.id(index);
-            return dao.survey.getSurvey(id, { override: { attributes: ['id', 'version', 'groupId'], paranoid: false } })
+            return models.survey.getSurvey(id, { override: { attributes: ['id', 'version', 'groupId'], paranoid: false } })
                 .then(survey => {
                     if (replaced) {
                         const { version, groupId } = survey;
@@ -265,7 +265,7 @@ describe('survey unit', function () {
     });
 
     it('listSurvey override where', function () {
-        return dao.survey.listSurveys({
+        return models.survey.listSurveys({
                 override: {
                     where: { version: 3 },
                     paranoid: false,
@@ -284,8 +284,8 @@ describe('survey unit', function () {
     it('delete survey 5', function () {
         const id = history.id(5);
         history.remove(5);
-        return dao.survey.deleteSurvey(id)
-            .then(() => dao.survey.listSurveys())
+        return models.survey.deleteSurvey(id)
+            .then(() => models.survey.listSurveys())
             .then(surveys => {
                 const expected = history.listServers();
                 expect(surveys).to.deep.equal(expected);
@@ -300,8 +300,8 @@ describe('survey unit', function () {
         const survey = generator.newSurvey();
         const questions = history.questions.slice(0, 10);
         survey.questions = questions.map(({ id, required }) => ({ id, required }));
-        return dao.survey.createSurvey(survey)
-            .then(id => dao.survey.getSurvey(id))
+        return models.survey.createSurvey(survey)
+            .then(id => models.survey.getSurvey(id))
             .then(serverSurvey => {
                 survey.questions = questions;
                 return comparator.survey(survey, serverSurvey)
@@ -317,8 +317,8 @@ describe('survey unit', function () {
         const fn = index => ({ id: history.questions[index].id, required: history.questions[index].required });
         const additionalIds = [10, 11].map(fn);
         survey.questions.splice(1, 0, ...additionalIds);
-        return dao.survey.createSurvey(survey)
-            .then(id => dao.survey.getSurvey(id))
+        return models.survey.createSurvey(survey)
+            .then(id => models.survey.getSurvey(id))
             .then((serverSurvey) => {
                 ++surveyCount;
                 survey.questions[1] = history.questions[10];
@@ -341,12 +341,12 @@ describe('survey unit', function () {
                 surveyId: survey.id,
                 answers
             };
-            return dao.answer.createAnswers(input)
+            return models.answer.createAnswers(input)
                 .then(function () {
-                    return dao.survey.getAnsweredSurvey(input.userId, input.surveyId)
+                    return models.survey.getAnsweredSurvey(input.userId, input.surveyId)
                         .then(answeredSurvey => {
                             comparator.answeredSurvey(survey, answers, answeredSurvey);
-                            return dao.survey.getAnsweredSurveyByName(input.userId, survey.name)
+                            return models.survey.getAnsweredSurveyByName(input.userId, survey.name)
                                 .then(answeredSurveyByName => {
                                     expect(answeredSurveyByName).to.deep.equal(answeredSurvey);
                                 });
@@ -371,17 +371,17 @@ describe('survey unit', function () {
         const requiredIndices = _.range(qxs.length).filter(index => qxs[index].required);
         expect(requiredIndices).to.have.length.above(0);
         const removedAnswers = _.pullAt(answers, requiredIndices);
-        let px = dao.answer.createAnswers(input)
+        let px = models.answer.createAnswers(input)
             .then(shared.throwingHandler, shared.expectedErrorHandler('answerRequiredMissing'));
         _.range(1, removedAnswers.length).forEach(index => {
             px = px
                 .then(() => answers.push(removedAnswers[index]))
-                .then(() => dao.answer.createAnswers(input))
+                .then(() => models.answer.createAnswers(input))
                 .then(shared.throwingHandler, shared.expectedErrorHandler('answerRequiredMissing'));
         });
         px = px.then(() => {
             answers.push(removedAnswers[0]);
-            return dao.answer.createAnswers(input);
+            return models.answer.createAnswers(input);
         });
         return px;
     });
@@ -396,7 +396,7 @@ describe('survey unit', function () {
             answers
         };
         answers[0].questionId = 999;
-        return dao.answer.createAnswers(input)
+        return models.answer.createAnswers(input)
             .then(shared.throwingHandler, shared.expectedErrorHandler('answerQxNotInSurvey'));
     });
 });

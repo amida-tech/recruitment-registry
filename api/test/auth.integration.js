@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 const chai = require('chai');
 const sinon = require('sinon');
 
-const dao = require('../dao');
+const db = require('../models/db');
 const config = require('../config');
 const tokener = require('../lib/tokener');
 
@@ -29,7 +29,7 @@ describe('auth integration', function () {
     before(shared.setUpFn(store));
 
     it('create test user directly on db', function () {
-        return models.User.create(testUser)
+        return db.User.create(testUser)
             .then(user => (testUser.id = user.id));
     });
 

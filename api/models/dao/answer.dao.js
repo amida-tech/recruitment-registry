@@ -2,9 +2,9 @@
 
 const _ = require('lodash');
 
-const db = require('../models/db');
-const RRError = require('../lib/rr-error');
-const SPromise = require('../lib/promise');
+const db = require('../db');
+const RRError = require('../../lib/rr-error');
+const SPromise = require('../../lib/promise');
 
 const sequelize = db.sequelize;
 const Answer = db.Answer;
@@ -81,9 +81,9 @@ const generateAnswer = {
 };
 
 module.exports = class {
-	constructor(dependencies) {
+    constructor(dependencies) {
         Object.assign(this, dependencies);
-	}
+    }
 
     auxCreateAnswersTx({ userId, surveyId, language, answers }, tx) {
         // TO DO: Put an assertion here to check the answers match with question type

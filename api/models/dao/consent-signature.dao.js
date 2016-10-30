@@ -1,14 +1,13 @@
 'use strict';
 
-const db = require('../models/db');
+const db = require('../db');
 
-const SPromise = require('../lib/promise');
+const SPromise = require('../../lib/promise');
 
 const ConsentSignature = db.ConsentSignature;
 
 module.exports = class {
-	constructor() {
-	}
+    constructor() {}
 
     createSignature(userId, consentDocumentId, language, tx) {
         const options = tx ? { transaction: tx } : {};

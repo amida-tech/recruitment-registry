@@ -4,7 +4,6 @@ process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
 
-const dao = require('../dao');
 const models = require('../models');
 const SharedSpec = require('./util/shared-spec.js');
 const tokener = require('../lib/tokener');
@@ -27,21 +26,21 @@ describe('registry unit', function () {
     const hxConsentDoc = new ConsentDocumentHistory(2);
 
     it('error: get profile survey when none created', function () {
-        return dao.registry.getProfileSurvey()
+        return models.registry.getProfileSurvey()
             .then(shared.throwingHandler, shared.expectedErrorHandler('registryNoProfileSurvey'));
     });
 
     const createProfileSurveyFn = function () {
         const clientSurvey = generator.newSurvey();
         return function () {
-            return dao.registry.createProfileSurvey(clientSurvey)
+            return models.registry.createProfileSurvey(clientSurvey)
                 .then(idOnlyServer => hxSurvey.push(clientSurvey, idOnlyServer));
         };
     };
 
     const verifyProfileSurveyFn = function (index) {
         return function () {
-            return dao.registry.getProfileSurvey()
+            return models.registry.getProfileSurvey()
                 .then(server => {
                     const id = hxSurvey.id(index);
                     expect(server.id).to.equal(id);
@@ -56,7 +55,7 @@ describe('registry unit', function () {
             const survey = hxSurvey.server(index);
             const translation = translator.translateSurvey(survey, language);
             delete translation.id;
-            return dao.registry.updateProfileSurveyText(translation, language)
+            return models.registry.updateProfileSurveyText(translation, language)
                 .then(() => {
                     hxSurvey.translate(index, language, translation);
                 });
@@ -65,7 +64,7 @@ describe('registry unit', function () {
 
     const verifyTranslatedProfileSurveyFn = function (index, language) {
         return function () {
-            return dao.registry.getProfileSurvey({ language })
+            return models.registry.getProfileSurvey({ language })
                 .then(result => {
                     translator.isSurveyTranslated(result, language);
                     const expected = hxSurvey.translatedServer(index, language);
@@ -83,7 +82,7 @@ describe('registry unit', function () {
     it('get/verify profile survey 0', verifyProfileSurveyFn(0));
 
     it('get profile survey 0 in spanish when no translation', function () {
-        return dao.registry.getProfileSurvey({ language: 'es' })
+        return models.registry.getProfileSurvey({ language: 'es' })
             .then(result => {
                 const survey = hxSurvey.server(0);
                 expect(result).to.deep.equal(survey);
@@ -111,7 +110,7 @@ describe('registry unit', function () {
             if (signatures) {
                 input.signatures = signatures.map(sign => hxConsentDoc.id(sign));
             }
-            return dao.registry.createProfile(input)
+            return models.registry.createProfile(input)
                 .then(({ token }) => tokener.verifyJWT(token))
                 .then(({ id }) => hxUser.push(clientUser, { id }));
         };
@@ -121,7 +120,7 @@ describe('registry unit', function () {
         return function () {
             const survey = hxSurvey.server(surveyIndex);
             const userId = hxUser.id(userIndex);
-            return dao.registry.getProfile({ userId })
+            return models.registry.getProfile({ userId })
                 .then(function (result) {
                     comparator.user(hxUser.client(userIndex), result.user);
                     comparator.answeredSurvey(survey, hxAnswers[userIndex], result.survey);
@@ -143,7 +142,7 @@ describe('registry unit', function () {
             };
             const userId = hxUser.id(userIndex);
             hxAnswers[userIndex] = answers;
-            return dao.registry.updateProfile(userId, updateObj);
+            return models.registry.updateProfile(userId, updateObj);
         };
     };
 
@@ -151,7 +150,7 @@ describe('registry unit', function () {
         return function () {
             const server = hxConsentDoc.server(0);
             const userId = hxUser.id(userIndex);
-            return dao.consentDocument.getSignedConsentDocument(userId, server.id)
+            return models.consentDocument.getSignedConsentDocument(userId, server.id)
                 .then(result => {
                     expect(result.content).to.equal(server.content);
                     expect(result.signature).to.equal(expected);
@@ -167,7 +166,7 @@ describe('registry unit', function () {
             const server = hxConsentDoc.server(0);
             const typeName = hxConsentDoc.type(0).name;
             const userId = hxUser.id(userIndex);
-            return dao.consentDocument.getSignedConsentDocumentByTypeName(userId, typeName)
+            return models.consentDocument.getSignedConsentDocumentByTypeName(userId, typeName)
                 .then(result => {
                     expect(result.content).to.equal(server.content);
                     expect(result.signature).to.equal(expected);

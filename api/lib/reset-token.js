@@ -7,11 +7,8 @@ const models = require('../models');
 const RRError = require('./rr-error');
 const SPromise = require('./promise');
 
-const User = models.User;
-const Smtp = models.Smtp;
-
 module.exports = function (email) {
-    return Smtp.getSmtp()
+    return models.smtp.getSmtp()
         .then(smtp => {
             if (!smtp) {
                 return RRError.reject('smtpNotSpecified');
@@ -22,7 +19,7 @@ module.exports = function (email) {
             return smtp;
         })
         .then(smtp => {
-            return User.resetPasswordToken(email)
+            return models.user.resetPasswordToken(email)
                 .then(token => {
                     const link = config.clientBaseUrl + token;
                     const text = smtp.content.replace(/\$\{link\}/g, link);

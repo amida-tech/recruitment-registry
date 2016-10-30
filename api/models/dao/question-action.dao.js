@@ -1,8 +1,8 @@
 'use strict';
 
-const db = require('../models/db');
+const db = require('../db');
 
-const SPromise = require('../lib/promise');
+const SPromise = require('../../lib/promise');
 
 const textTableMethods = require('./text-table-methods');
 
@@ -12,8 +12,7 @@ const QuestionAction = db.QuestionAction;
 const textHandler = textTableMethods(sequelize, 'question_action_text', 'questionActionId');
 
 module.exports = class {
-	constructor() {
-	}
+    constructor() {}
 
     createActionPerQuestionTx(questionId, { text, type }, line, tx) {
         const r = { questionId, type, line };

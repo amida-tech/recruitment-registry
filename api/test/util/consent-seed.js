@@ -3,12 +3,8 @@
 const models = require('../../models');
 const SPromise = require('../../lib/promise');
 
-const ConsentType = models.ConsentType;
-const ConsentDocument = models.ConsentDocument;
-const Consent = models.Consent;
-
 module.exports = function (example) {
-    const consentTypePxs = example.consentTypes.map(consentType => ConsentType.createConsentType(consentType));
+    const consentTypePxs = example.consentTypes.map(consentType => models.consentType.createConsentType(consentType));
     return SPromise.all(consentTypePxs)
         .then(ids => {
             return example.consentTypes.reduce((r, consentType, index) => {
@@ -25,10 +21,10 @@ module.exports = function (example) {
                 name,
                 sections: sectionsByName.map(sectionName => typeMap[sectionName])
             }));
-            const documentsPx = documents.map(doc => ConsentDocument.createConsentDocument(doc));
+            const documentsPx = documents.map(doc => models.consentDocument.createConsentDocument(doc));
             return SPromise.all(documentsPx)
                 .then(() => {
-                    const consentsPx = consents.map(consent => Consent.createConsent(consent));
+                    const consentsPx = consents.map(consent => models.consent.createConsent(consent));
                     return SPromise.all(consentsPx);
                 });
         });

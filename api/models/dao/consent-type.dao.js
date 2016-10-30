@@ -1,8 +1,8 @@
 'use strict';
 
-const db = require('../models/db');
+const db = require('../db');
 
-const RRError = require('../lib/rr-error');
+const RRError = require('../../lib/rr-error');
 
 const textTableMethods = require('./text-table-methods');
 
@@ -14,7 +14,7 @@ const ConsentDocument = db.ConsentDocument;
 const textHandler = textTableMethods(sequelize, 'consent_type_text', 'consentTypeId', ['title']);
 
 module.exports = class {
-	constructor() {}
+    constructor() {}
 
     getConsentType(id, options = {}) {
         const _options = {

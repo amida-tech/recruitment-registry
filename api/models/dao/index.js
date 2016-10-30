@@ -17,18 +17,18 @@ const Section = require('./section.dao');
 const Smtp = require('./smtp.dao');
 
 const consentType = new ConsentType();
-const consentDocument = new ConsentDocument({consentType});
+const consentDocument = new ConsentDocument({ consentType });
 const consentSignature = new ConsentSignature();
-const user = new User({consentDocument});
-const surveyConsentType = new SurveyConsentType({user});
+const user = new User({ consentDocument });
+const surveyConsentType = new SurveyConsentType({ user });
 const section = new Section();
 const questionChoice = new QuestionChoice();
 const questionAction = new QuestionAction();
-const question = new Question({questionChoice, questionAction});
-const answer = new Answer({surveyConsentType});
-const survey = new Survey({answer, section, question});
-const consent = new Consent({consentDocument});
-const registry = new Registry({survey, consentDocument, answer, user, consentSignature});
+const question = new Question({ questionChoice, questionAction });
+const answer = new Answer({ surveyConsentType });
+const survey = new Survey({ answer, section, question });
+const consent = new Consent({ consentDocument });
+const registry = new Registry({ survey, consentDocument, answer, user, consentSignature });
 const language = new Language();
 const smtp = new Smtp();
 
