@@ -4,7 +4,7 @@ export class SurveyNavigator extends Component {
   render() {
     var temp ="btn rr-button m-r-2";
     return(
-        <div id={this.props.id} className="rr">
+        <div id={this.props.id} className="rr-height rr">
           {this.props.location == 8 ? (
             <div className="rr-wrapper m-b-2">
               <h1 className="rr no-transform">{this.props.vocab.get('LETS_CREATE')}</h1>

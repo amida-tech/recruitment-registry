@@ -1,4 +1,4 @@
-import React, { Component} from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import Form from './register-form';
 import { Link } from 'react-router';
@@ -6,7 +6,7 @@ import register from '../index';
 import Slider from 'react-slick'
 import '../../../node_modules/slick-carousel/slick/slick.scss'
 import * as SurveyFields from '../../common/SurveyFields';
-import SurveyNavigator from '../../common/SurveyNavigation';
+import { SurveyNavigator } from '../../common/SurveyNavigation';
 
 export class RegisterContainer extends Component {
   render() {
@@ -47,25 +47,28 @@ export class RegisterContainer extends Component {
             );
             break;
         }
-
-        slides.push(<SurveyNavigator
-          key='regNav'
-          id='regNav'
-          location={this.props.params.id}
-          vocab={this.props.vocab}
-          next={::this._next}
-          previous={::this._previous}
-          surveyField={inputField}>
-          </SurveyNavigator>)
+        console.log("What DO we have?");
+        return (
+          <div key={'slick' + question.id}>
+            <SurveyNavigator
+            key={'regNav' + question.id}
+            id={'regNav' + question.id}
+            location={this.props.params.id}
+            vocab={this.props.vocab}
+            next={::this._next}
+            previous={::this._previous}
+            surveyField={inputField}>
+            </SurveyNavigator>
+          </div>)
       }); //End of question mapping.
-
-      slides.push(
-        <div key="final">
-          <p>Thanks</p>
-          <p>Your account is created</p>
-          <Link to="/profile">Go to My Dashboard</Link>
-        </div>)
     }
+
+    slides.push(
+      <div key="final">
+        <p>Thanks</p>
+        <p>Your account is created</p>
+        <Link to="/profile">Go to My Dashboard</Link>
+      </div>);
 
     var settings = {
       dots: false,
@@ -79,7 +82,7 @@ export class RegisterContainer extends Component {
       useCSS: false,
       beforeChange: (currentSlide, nextSlide) => {
         console.log(currentSlide + " : " + nextSlide)
-        if (nextSlide === (7 + this.props.survey.questions.length)) {
+        if (nextSlide === (survey.questions.length)) {
           this.props.onSubmit()
           // self.next()
         }
@@ -103,11 +106,20 @@ export class RegisterContainer extends Component {
     );
   }
 
-  next() {
+  _next() {
     this.refs.slider.slickNext()
   }
-  previous() {
+  _previous() {
     this.refs.slider.slickPrev()
+  }
+  // submitAnswers(event){
+  //   event.preventDefault();
+  //     this.props.dispatch(submit.actions.submitAnswers(this.props.surveyAnswers));
+  // }
+
+  _changeAnswer(event) {
+    this.props.dispatch(register.actions.updateAnswer(event.target.dataset.itype,
+      event.target.id, event.target.value, event.target.name))
   }
 
   _changeForm(evt) {
@@ -194,6 +206,7 @@ export class RegisterContainer extends Component {
 }
 
 const mapStateToProps = function(store) {
+  console.log("mapped?");
   return {
     data: store.get('register'),
     vocab: store.getIn(['settings', 'language', 'vocabulary'])

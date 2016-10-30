@@ -35,9 +35,52 @@ export default (state = immutableState, action) => {
       })
     case 'GET_SURVEY_SUCCESS':
       return state.merge({
-        survey: action.payload
+        survey: action.payload,
+        surveyResult: {
+            surveyId: action.payload.id,
+            answers: []
+          }
       })
-    case 'CLEAR_CHOICES_ANSWER': {
+      case t.UPDATE_REGISTER_ANSWERS:
+      var newAnswer = {
+        'questionId': parseInt(action.id),
+        'answer': {}
+      }
+      switch(action.itype){
+        case "text":
+          newAnswer.answer = {'textValue': action.value};
+          break;
+        case "choice":
+          newAnswer.answer = {'choice': parseInt(action.value)};
+          break;
+        case "bool":
+          newAnswer.answer = {'boolValue': action.value == 'true'}
+          break;
+        case "choices.bool":
+          newAnswer.answer = {'choices': [{
+            'id': parseInt(action.value),
+            'boolValue': true}
+          ]};
+          break;
+        case "choices.text": //I am interested in a less craptastic way.
+          newAnswer.questionId =
+            parseInt(action.name.substring(0, action.name.indexOf('.')));
+          newAnswer.answer = {'choices': [{
+            'id': parseInt(action.id),
+            'boolValue': true,
+            'textValue': action.value}
+          ]};
+          break;
+        }
+        var answers = state.getIn(['surveyResult', 'answers']).toJS();
+        answers.forEach((answer, index) => { //Removes old answers.
+            if(answer.questionId == newAnswer.questionId){
+                answers.splice(index);
+            }
+          })
+        answers.push(newAnswer);
+        return state.setIn(['surveyResult', 'answers'], Immutable.fromJS(answers));
+    case 'CLEAR_CHOICES_ANSWER': { //OLD
       let answersClear = {};
 
       let qidClear = action.payload.questionId
@@ -58,7 +101,7 @@ export default (state = immutableState, action) => {
         }
       })
     }
-    case 'UPDATE_CHOICES_ANSWER': {
+    case 'UPDATE_CHOICES_ANSWER': { //OLD
 
       let answers = {};
 

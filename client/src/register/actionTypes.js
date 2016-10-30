@@ -1,2 +1,3 @@
 export const CHANGE_FORM = 'register/CHANGE_FORM';
 export const GET_SURVEY = 'GET_SURVEY';
+export const UPDATE_REGISTER_ANSWERS = 'UPDATE_REGISTER_ANSWERS';

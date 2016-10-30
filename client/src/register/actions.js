@@ -1,6 +1,13 @@
 import * as actionTypes from './actionTypes';
 import apiProvider from '../utils/api';
 
+export function updateAnswer(itype, id, value, name) {
+  return dispatch => dispatch({
+    type: actionTypes.UPDATE_REGISTER_ANSWERS,
+    itype, id, value, name
+  })
+}
+
 export function update(name, value) {
   return dispatch => dispatch({
     type: actionTypes.CHANGE_FORM,
