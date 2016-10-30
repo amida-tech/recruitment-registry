@@ -1,21 +1,6 @@
 import React, { Component } from 'react';
 
-export class SurveyInputField extends Component {
-  render(){
-    return(
-      <div key={this.props.id} className="rr rr-question" >
-        <label htmlFor={this.props.id}>{this.props.text}</label>
-        <input id={this.props.id} type={this.props.type} required={this.props.required}
-          className="rr-blankline rr-field" onChange={ this.props.changeForm }
-          autoComplete="off" data-itype="text" />
-      </div>
-    )
-  }
-}
-
-//Truth be told, we could probably have a decision made within SurveyChoicesField
-//instead of having bool be its own Component. That's a performance question.
-export class SurveyBoolField extends Component {
+export class Bool extends Component {
   render(){
     return(
         <div id={this.props.id} className="rr">
@@ -35,24 +20,51 @@ export class SurveyBoolField extends Component {
   }
 }
 
-export class SurveyChoiceField extends Component {
+export class Choice extends Component {
   render(){
     return(
       <div key={this.props.id} className="rr rr-question" >
         <label htmlFor={this.props.id}>{this.props.text}</label>
-        <select id={this.props.id} required={this.props.required} className="rr-blankline rr-field"
-          onChange={this.props.changeForm} data-itype="choice">
-          <option key={this.props.id+'x'} defaultValue="" selected disabled="disabled">
-            {this.props.vocab.get('PLEASE_SELECT')}</option>
-          {this.props.choices.map((choice, index) => <option key={choice.id}
-            value={choice.id}>{choice.text}</option>)}
+        <select
+          id={this.props.id}
+          required={this.props.required}
+          className="rr-blankline rr-field"
+          onChange={this.props.changeForm}
+          data-itype="choice"
+          >
+          <option
+            key={this.props.id+'x'}
+            defaultValue
+            disabled="disabled">
+              {this.props.vocab.get('PLEASE_SELECT')}
+          </option>
+          {this.props.choices.map((choice, index) =>
+            <option
+              key={choice.id}
+              value={choice.id}>
+              {choice.text}
+            </option>
+          )}
         </select>
       </div>
     )
   }
 }
 
-export class SurveyChoicesField extends Component {
+export class Input extends Component {
+  render(){
+    return(
+      <div key={this.props.id} className="rr rr-question" >
+        <label htmlFor={this.props.id}>{this.props.text}</label>
+        <input id={this.props.id} type={this.props.type} required={this.props.required}
+          className="rr-blankline rr-field" onChange={ this.props.changeForm }
+          autoComplete="off" data-itype="text" />
+      </div>
+    )
+  }
+}
+
+export class Choices extends Component {
   constructor(props){
     super(props);
     this.handleChange = this.handleChange.bind(this);
@@ -62,7 +74,7 @@ export class SurveyChoicesField extends Component {
   handleChange(event) {
     this.props.changeForm(event);
     if (event.target.options[event.target.selectedIndex].getAttribute('type') == 'text'){
-      document.getElementById(this.props.id+'.textInput').className=""
+      document.getElementById(this.props.id+'.textInput').className="";
       document.getElementsByName(this.props.id+'.text')[0].setAttribute('id',event.target.value);
     } else {
       document.getElementById(this.props.id+'.textInput').className="invisible";
@@ -86,14 +98,4 @@ export class SurveyChoicesField extends Component {
       </div>
     )
   }
-}
-
-const mapStateToProps = function(state) {
-  return {
-    vocab: state.getIn(['settings', 'language', 'vocabulary'])
-  };
-}
-
-SurveyInputField.propTypes = {
-  changeForm: React.PropTypes.func.isRequired
 }

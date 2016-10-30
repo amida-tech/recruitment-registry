@@ -1,7 +1,7 @@
 import React, { Component} from 'react';
 import { connect } from 'react-redux';
 import submit from '../index'
-import { SurveyInputField, SurveyBoolField, SurveyChoiceField, SurveyChoicesField } from './survey-form';
+import * as SurveyFields from '../../common/SurveyFields';
 
 export class SurveyContainer extends Component {
   //Form submit seems to be such a good way to get what you need that I'm not
@@ -24,26 +24,26 @@ export class SurveyContainer extends Component {
         switch(question.type) {
           case "text":
             return (
-              <SurveyInputField key={question.id} id={question.id}
+              <SurveyFields.Input key={question.id} id={question.id}
                 changeForm={::this._changeAnswer} text={question.text}
                  required={question.required}/>
             );
             case "bool":
             return (
-              <SurveyBoolField key={question.id} id={question.id}
+              <SurveyFields.Bool key={question.id} id={question.id}
                 changeForm={::this._changeAnswer} text={question.text}
                 vocab={this.props.vocab} required={question.required}/>
             );
           case "choice":
             return (
-              <SurveyChoiceField key={question.id} id={question.id}
+              <SurveyFields.Choice key={question.id} id={question.id}
                 changeForm={::this._changeAnswer} text={question.text}
                 vocab={this.props.vocab} choices={question.choices}
                 required={question.required} />
             );
           case "choices":
             return (
-              <SurveyChoicesField key={question.id} id={question.id}
+              <SurveyFields.Choices key={question.id} id={question.id}
                 changeForm={::this._changeAnswer} text={question.text}
                 vocab={this.props.vocab} choices={question.choices}
                 required={question.required}/>
@@ -70,12 +70,13 @@ export class SurveyContainer extends Component {
 
 }
 
-const mapStateToProps = function(store) {
+const mapStateToProps = function(state, ownProps) {
   return {
-    data: store.get('survey'),
-    selectedSurvey: store.getIn(['survey', 'selectedSurvey']),
-    surveyAnswers: store.getIn(['survey', 'surveyAnswers']),
-    vocab: store.getIn(['settings', 'language', 'vocabulary'])
+    data: state.get('survey'),
+    selectedSurvey: state.getIn(['survey', 'selectedSurvey']),
+    surveyAnswers: state.getIn(['survey', 'surveyAnswers']),
+    vocab: state.getIn(['settings', 'language', 'vocabulary']),
+    ...ownProps
   };
 }
 
