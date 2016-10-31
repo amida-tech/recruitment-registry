@@ -16,6 +16,7 @@ module.exports = function (sequelize, DataTypes) {
     }, {
         freezeTableName: true,
         createdAt: 'createdAt',
+        updatedAt: false,
         hooks: {
             afterSync(options) {
                 if (options.force) {

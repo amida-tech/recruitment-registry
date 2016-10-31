@@ -93,36 +93,41 @@ module.exports = function (sequelize, DataTypes) {
         },
         instanceMethods: {
             authenticate(password) {
-                return bccompare(password, this.password).then(result => {
-                    if (!result) {
-                        throw new Error('Authentication error.');
-                    }
-                });
+                return bccompare(password, this.password)
+                    .then(result => {
+                        if (!result) {
+                            throw new Error('Authentication error.');
+                        }
+                    });
             },
             updatePassword() {
-                return bchash(this.password, config.crypt.hashrounds).then(hash => {
-                    this.password = hash;
-                });
+                return bchash(this.password, config.crypt.hashrounds)
+                    .then(hash => {
+                        this.password = hash;
+                    });
             },
             updateResetPWToken() {
-                return randomBytes(config.crypt.resetTokenLength).then(buf => {
-                    const token = buf.toString('hex');
-                    return token;
-                }).then((token) => {
-                    return randomBytes(config.crypt.resetPasswordLength).then(passwordBuf => {
-                        return {
-                            token,
-                            password: passwordBuf.toString('hex')
-                        };
+                return randomBytes(config.crypt.resetTokenLength)
+                    .then(buf => {
+                        const token = buf.toString('hex');
+                        return token;
+                    })
+                    .then((token) => {
+                        return randomBytes(config.crypt.resetPasswordLength).then(passwordBuf => {
+                            return {
+                                token,
+                                password: passwordBuf.toString('hex')
+                            };
+                        });
+                    })
+                    .then((result) => {
+                        this.resetPasswordToken = result.token;
+                        this.password = result.password;
+                        this.resetPasswordExpires = config.expiresForDB();
+                        return this.save().then(() => {
+                            return result.token;
+                        });
                     });
-                }).then((result) => {
-                    this.resetPasswordToken = result.token;
-                    this.password = result.password;
-                    this.resetPasswordExpires = config.expiresForDB();
-                    return this.save().then(() => {
-                        return result.token;
-                    });
-                });
             }
         }
     });

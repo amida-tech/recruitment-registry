@@ -22,7 +22,7 @@ module.exports = function (sequelize, DataTypes) {
     }, {
         freezeTableName: true,
         createdAt: 'createdAt',
-        updatedAt: 'updatedAt',
+        updatedAt: false,
         deletedAt: 'deletedAt',
         paranoid: true
     });

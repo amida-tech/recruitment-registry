@@ -36,6 +36,7 @@ module.exports = function (sequelize, DataTypes) {
             field: 'created_at',
         }
     }, {
+        updatedAt: false,
         freezeTableName: true,
         createdAt: 'createdAt'
     });

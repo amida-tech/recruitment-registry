@@ -14,10 +14,6 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.DATE,
             field: 'created_at',
         },
-        updatedAt: {
-            type: DataTypes.DATE,
-            field: 'created_at',
-        },
         deletedAt: {
             type: DataTypes.DATE,
             field: 'deleted_at'
@@ -25,7 +21,7 @@ module.exports = function (sequelize, DataTypes) {
     }, {
         freezeTableName: true,
         createdAt: 'createdAt',
-        updatedAt: 'updatedAt',
+        updatedAt: false,
         deletedAt: 'deletedAt',
         paranoid: true
     });

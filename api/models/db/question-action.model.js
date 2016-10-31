@@ -25,7 +25,7 @@ module.exports = function (sequelize, DataTypes) {
     }, {
         freezeTableName: true,
         createdAt: 'createdAt',
-        classMethods: {}
+        updatedAt: false
     });
 
     return QuestionAction;

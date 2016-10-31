@@ -17,6 +17,7 @@ module.exports = function (sequelize, DataTypes) {
     }, {
         freezeTableName: true,
         createdAt: 'createdAt',
+        updatedAt: false,
         deletedAt: 'deletedAt',
         paranoid: true
     });
