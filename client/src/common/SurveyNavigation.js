@@ -2,26 +2,21 @@ import React, { Component} from 'react';
 
 export class SurveyNavigator extends Component {
   render() {
-    var temp ="btn rr-button m-r-2";
     return(
         <div id={this.props.id}>
-          {this.props.id != 'username' ? (
-            <div>
-              <h1>{this.props.vocab.get('LETS_CREATE')}</h1>
-            </div>
-          ) : (<div></div>)}
           {this.props.surveyField}
-          <div className="rr-controls">
-            <button className={this.props.id == 'regNav.username' ? "invisible " + temp : temp}
+          <div className="form__footer">
+            <button
             onClick={this.props.previous} type="button">
               {this.props.vocab.get('BACK')}
             </button>
-            <button className={temp}
+            <button
               onClick={this.props.next}
+              className="buttonPrimary pull-right"
               type="button"
               value={this.props.location}>
               {this.props.location != this.props.final ?
-              (this.props.vocab.get('NEXT')) :
+              (this.props.vocab.get('CONTINUE')) :
               (this.props.vocab.get('REGISTER'))}
             </button>
           </div>

@@ -20,7 +20,7 @@ export class RegisterContainer extends Component {
         id={field}
         type={field == 'username' ? 'text' : field}
         changeForm={::this._changeUser}
-        text={this.props.vocab.get(field.toUpperCase())}
+        text={this.props.vocab.get('PICK_'+field.toUpperCase())}
         required={true}/>);
 
       return(
@@ -111,27 +111,25 @@ export class RegisterContainer extends Component {
         console.log(currentSlide + " : " + nextSlide)
         if (nextSlide === (survey.questions.length+3)) {
           this._submitRegister()
-          // self.next()
         }
       }
     }
-
+    console.log(slides);
     return(
       <div className="register">
           <Background/>
-            <form autoComplete="off">
-            <div className="col-lg-6">
-              <div className="register register--inputContainer">
-                {
-                  survey.questions.length > 0 ? (
-                    <Slider ref='slider' {...settings}>
-                      {slides}
-                    </Slider>
-                  ) : (<div>{this.props.vocab.get('LOADING')}...</div>)
-                }
-              </div>
-            </div>
-          </form>
+          <p className="subtitle">{this.props.vocab.get('LETS_CREATE')}</p>
+          <div className="register--inputContainer">
+            <form className="form" autoComplete="off">
+              {
+                survey.questions.length > 0 ? (
+                  <Slider ref='slider' {...settings}>
+                    {slides}
+                  </Slider>
+                ) : (<div>{this.props.vocab.get('LOADING')}...</div>)
+              }
+            </form>
+          </div>
       </div>
     );
   }
@@ -145,6 +143,7 @@ export class RegisterContainer extends Component {
     }
   }
   _previous() {
+
     this.refs.slider.slickPrev()
   }
 

@@ -4,9 +4,8 @@ export class Bool extends Component {
   render(){
     return(
         <div id={this.props.id+'bool'}>
-          <label>{this.props.text}</label>
-          <br />
-          <label htmlFor={this.props.id}>
+          <p className='question'>{this.props.text}</p>
+          <label htmlFor={"true"}>
             <input name={this.props.id}
               id={this.props.id}
               type="radio"
@@ -14,18 +13,16 @@ export class Bool extends Component {
               onChange={ this.props.changeForm }
               value="true"
               data-itype="bool" />
-            {this.props.vocab.get('YES')}
-          </label>
+            {this.props.vocab.get('YES')}</label>
           <br />
-          <label htmlFor={this.props.id}>
+          <label htmlFor={"false"}>
             <input name={this.props.id}
               id={this.props.id}
               type="radio"
               onChange={this.props.changeForm}
               value="false"
               data-itype="bool"/>
-            {this.props.vocab.get('NO')}
-          </label>
+            {this.props.vocab.get('NO')}</label>
         </div>
     )
   }
@@ -35,7 +32,7 @@ export class Choice extends Component {
   render(){
     return(
       <div key={this.props.id}>
-        <label htmlFor={this.props.id}>{this.props.text}</label>
+        <p className='question'>{this.props.text}</p>
         <select
           id={this.props.id}
           required={this.props.required}
@@ -65,7 +62,7 @@ export class Input extends Component {
   render(){
     return(
       <div key={this.props.id} >
-        <label htmlFor={this.props.id}>{this.props.text}</label>
+        <p className='question'>{this.props.text}</p>
         <input
           id={this.props.id}
           type={this.props.type}
@@ -98,7 +95,7 @@ export class Choices extends Component {
   render(){
     return (
       <div key={this.props.id} >
-        <label key={this.props.id} >{this.props.text}</label>
+        <p className='question'>{this.props.text}</p>
           <select
             id={this.props.id}
             onChange={this.handleChange}
@@ -116,10 +113,8 @@ export class Choices extends Component {
               type={choice.type}>
               {choice.text}</option>)}
           </select>
-          <div id={this.props.id+'.textInput'} className="invisible">
-            <label htmlFor={this.props.id+'.text'}>
-              {this.props.vocab.get('PLEASE_ENTER_DATA')}
-            </label>
+          <div id={this.props.id+'.textInput'} className='invisible'>
+            <p className='question'>{this.props.vocab.get('PLEASE_ENTER_DATA')}</p>
             <input name={this.props.id+'.text'}
               onChange={this.props.changeForm}
               autoComplete="off"
