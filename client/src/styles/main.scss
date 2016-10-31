@@ -1,137 +1,33 @@
 @charset "UTF-8";
-// @import "~bootstrap/scss/bootstrap";
-@import 'vendor/_normalize';
-@import 'vendor/_flexboxgrid';
 
+// Init imports. Strips default browser styling, and imports the scaffolding framework (flexboxgrid -- see http://flexboxgrid.com/ for documentation)
+@import 'vendor/normalize';
+@import 'vendor/flexboxgrid';
 
-@import 'utils/_variables';
+// Global variables and UI chrome
+@import 'utils/variables';
 @import 'utils/ui';
 
+// Theme variables are made available via import in '~/client/src/styles/theme/*' read the README.md in that directory for more.
+@import 'theme/config';
 
-@import 'base/_base';
+// Base styling. Applies to all pages
+@import 'base/base';
 
+// Header and footer
+@import 'layout/header';
+@import 'layout/footer';
 
-@import 'layout/_header';
-@import 'layout/_footer';
+// Various UI components. (Comments are provided for utilization, review each document for expample utilization.)
+@import 'components/text';
+@import 'components/buttons';
+@import 'components/home';
+@import 'components/form-page';
+@import 'components/form';
+@import 'components/nav';
+@import 'components/loading-indicator';
 
-
-@import 'components/_text';
-@import 'components/_buttons';
-@import 'components/_home';
-@import 'components/_form-page';
-@import 'components/_form';
-@import 'components/_nav';
-@import 'components/_loading-indicator';
-
-
-@import 'views/_login.scss';
-@import 'views/_register.scss';
-@import 'views/_home.scss';
-
-// h1 {
-// 	font-size:12px !important;
-// 	font-weight:bold;
-// 	padding-top: 15px;
-// }
-
-// h2 {
-// 	font-size:11px !important;
-// 	font-weight:bold;
-// }
-
-// .rr {
-//   font-family: 'Arial';
-//   color: #808080;
-//   font-weight:bold;
-//   font-size:10px;
-//   text-transform: uppercase;
-// }
-
-// .rr-hint {
-// 	font-size:9px;
-// }
-
-// .rr-wrapper {
-// 	display: flex;
-// 	align-items: center;
-// 	justify-content: center;
-// 	padding-top:100px;
-// }
-
-// .rr-panel {
-//   max-width: 380px;
-// 	min-width: 300px;
-//   border-radius: 3px !important;
-//   border: 1px solid;
-//   border-color: #DCDCDC;
-// }
-
-// .rr-margins {
-//   padding: 1.5rem;
-// }
-
-// .rr-topbox {
-//   background-color: #DCDCDC;
-//   border-top-right-radius: 3px;
-//   border-top-left-radius: 3px;
-//   text-align:center;
-//   height:40px;
-// }
-
-// .rr-controls {
-//   text-align: center;
-//   margin-top: 20px;
-// 	margin-bottom: 20px;
-// }
-
-// .rr-button {
-//   font-size: 9px;
-// 	font-weight: bold;
-// 	color: #808080;
-//   max-width: 200px;
-// 	min-width: 150px;
-//   padding-top: 8px;
-//   background-color: #DCDCDC;
-//   border-width:0px;
-//   text-align: center;
-//   border-radius: 50px;
-//   box-shadow:2px 2px 5px #888888;
-// }
-
-// .rr-float{ //Look for utiltiy class
-// 	display:inline-block;
-// }
-
-// .rr-group {
-//   display: block;
-//   text-align:left;
-// }
-
-// .rr-question {
-// 		font-family: 'Arial';
-//   	color: #808080;
-//   	font-weight:bold;
-// 	  display: block;
-// 	  text-align:center;
-// 		font-size:14px;
-// }
-
-// .rr-blankline{
-// 		margin-left:5px;
-//     max-width:50% !important;
-// }
-
-// .rr-field {
-//   border:1px solid #ccc;
-//   border-radius:0.25rem;
-// 	width:100%;
-// 	height:30px;
-//   border-top: 0px;
-//   border-left: 0px;
-//   border-right: 0px;
-// 	text-transform:none !important;
-// }
-
-// .no-transform {
-// 	text-transform:none !important;
-// }
+// View specific componenets.
+@import 'views/login';
+@import 'views/register';
+@import 'views/home';

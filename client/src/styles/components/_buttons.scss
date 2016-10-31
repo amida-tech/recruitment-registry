@@ -10,11 +10,10 @@
 .btn {
 	padding: auto 18px;
 	height: 36px;
-	border-radius: 1000px;
+	border-radius: $theme-button-radius;
 	min-width: 145px;
 	cursor: pointer;
 	display: inline-block;
-	// margin-top: -11px;
 	text-align: center;
 	font-size: 14px;
 	font-weight: 700;
@@ -23,43 +22,43 @@
 
 .buttonPrimary {
 	@extend .btn;
-	border: 2px solid $gap-medium-blue;
-	background-color: $gap-medium-blue;
-	color: $gap-white;
+	border: $theme-button-border-width solid $theme-key-medium;
+	background-color: $theme-key-medium;
+	color: $theme-white;
 	&.light {
-		border: 2px solid $gap-white;
-		background-color: $gap-white;
+		border: 2px solid $theme-white;
+		background-color: $theme-white;
 		color: $gap-medium-blue;
 	}
 	&.success, &.green {
 		border: 2px solid $gap-green;
 		background-color: $gap-green;
-		color: $gap-white;
+		color: $theme-white;
 	}
 	&.alert, &.yellow {
 		border: 2px solid $gap-orange;
 		background-color: $gap-orange;
-		color: $gap-white;
+		color: $theme-white;
 	}
 	&.warning, &.red {
 		border: 2px solid $gap-red;
 		background-color: $gap-red;
-		color: $gap-white;
+		color: $theme-white;
 	}
 	&.info, &.purple {
 		border: 2px solid $gap-purple;
 		background-color: $gap-purple;
-		color: $gap-white;
+		color: $theme-white;
 	}
 	&.system, &.navy {
 		border: 2px solid $gap-navy;
 		background-color: $gap-navy;
-		color: $gap-white;
+		color: $theme-white;
 	}
 	&.dark {
 		border: 2px solid $gap-black;
 		background-color: $gap-black;
-		color: $gap-white;
+		color: $theme-white;
 	}
 }
 
