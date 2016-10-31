@@ -13,7 +13,7 @@ Recruitment Registry API
 ## Installation
 
 1. Install Node.js v6 - previous node versions may require Babel
-2. Install a Sequelize compatible relational database - currently all testing is being done on Postgres 9.4
+2. Install Postgres v9.4 or better (see Postgres dependencies to switch to another Sequelize compatible relational database)
 3. Create a database `recreg`
 4. Install Grunt
 5. Install dependencies: `npm install`
@@ -42,16 +42,27 @@ RECREG_DB_HOST=localhost
 RECREG_DB_PORT=5432
 RECREG_DB_DIALECT=postgres
 ```
-
 ## Commands
 
-`node index.h`
+`npm start`
 
 > Run server (default port is 9005)
 
-`grunt`
+`npm start`
 
 > First beautifies and lints all files and then runs all tests.
+
+`npm run-script coverage`
+
+> Runs all the tests and displays coverage metrics.
+
+## Postgres specific functionality
+
+Although this project uses Sequelize it does not support other Sequelize compatible relational databases such as MySql and MSSql out of the box.  The following are the Postgres only functionalities that need to be replaced to be able to use other databases.
+
+* `smtp` table includes a JSON type column named `other_options`.  This column can be replaced with a string type and string to/from JSON conversion can be done manually done in the code.
+* `rr_section`table includes an integer array type column named `indices`.  A seperate table can be used instead.  Code need to be updated acccordingly.
+* `answer` data access object (answer.dao.js) uses Postgres `to_char` function in one of the queries.  This function needs to be replaced by equivalent.
 
 ## API
 
