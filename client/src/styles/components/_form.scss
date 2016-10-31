@@ -46,7 +46,6 @@ select {
   &.success, &.green {
     border:                       $dropdown-border-width solid $color-success;
     color:                        $color-success;
-    background-color:             transparent;
     background-image:             url('data:image/svg+xml;charset=utf-8,<svg width="23px" height="21px" viewBox="0 0 23 21" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g id="Scratch" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g id="Group-7" transform="translate(-1.000000, -7.000000)"><rect id="Rectangle-3" x="1" y="0" width="32" height="36"></rect><path d="M1.5,7.5 L1.5,27.5" id="Line" stroke="#{urlFriendlyColor($color-success)}" stroke-linecap="square"></path><polygon id="▾" fill="#{urlFriendlyColor($color-success)}" points="11.71875 14.8066406 23.28125 14.8066406 17.5 20.5878906"></polygon></g></g></svg>');
                                   // background image uses data attributes to accomodate for themeing. Colors are rendered via the urlFriendlyColor sass function in styles/utils/_ui.scss
   }
@@ -86,9 +85,6 @@ select {
     background-image:               url('data:image/svg+xml;charset=utf-8,<svg width="23px" height="21px" viewBox="0 0 23 21" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g id="Scratch" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g id="Group-7" transform="translate(-1.000000, -7.000000)"><rect id="Rectangle-3" x="1" y="0" width="32" height="36"></rect><path d="M1.5,7.5 L1.5,27.5" id="Line" stroke="#{urlFriendlyColor($color-black)}" stroke-linecap="square"></path><polygon id="▾" fill="#{urlFriendlyColor($color-black)}" points="11.71875 14.8066406 23.28125 14.8066406 17.5 20.5878906"></polygon></g></g></svg>');
                                     // background image uses data attributes to accomodate for themeing. Colors are rendered via the urlFriendlyColor sass function in styles/utils/_ui.scss
   }
-
-
-
 }
 
 .radioGroup {
@@ -245,5 +241,54 @@ select {
       background-color:  $color-black;
       color:             $color-white;
     }
+  }
+}
+
+.displayBox {
+  margin:                         20px 0 20px;
+  height:                         auto;
+  padding:                        12px 9px;
+  border:                         $displayBox-border-width solid $color-key-medium;
+  border-radius:                  $displayBox-border-radius;
+  color:                          $color-dark-grey;
+  &.light, &.white {
+    border:                       $displayBox-border-width solid $color-white;
+    color:                        $color-white;
+    background-color:             lighten($color-white, 33%);
+  }
+  &.success, &.green {
+    border:                       $displayBox-border-width solid $color-success;
+    color:                        $color-success;
+    background-color:             lighten($color-success, 33%);
+  }
+  &.confirm, &.lightGreen {
+    border:                       $displayBox-border-width solid $color-confirm;
+    color:                        $color-confirm;
+    background-color:             lighten($color-confirm, 33%);
+  }
+  &.alert, &.yellow {
+    border:                       $displayBox-border-width solid $color-alert;
+    color:                        $color-alert;
+    background-color:             lighten($color-alert, 33%);
+  }
+  &.warning, &.red {
+    border:                       $displayBox-border-width solid $color-warning;
+    color:                        $color-warning;
+    background-color:             lighten($color-warning, 33%);
+  }
+  &.info, &.purple {
+    border:                       $displayBox-border-width solid $color-info;
+    color:                        $color-info;
+    background-color:             lighten($color-info, 33%);
+  }
+  &.system, &.navy {
+    border:                       $dropdown-border-width solid $color-key-dark;
+    color:                        $color-key-dark;
+    background-color:             lighten($color-key-dark, 33%);
+  }
+  &.dark {
+    border:                       $dropdown-border-width solid $color-black;
+    color:                        $color-black;
+    background-color:             lighten($color-black, 33%);
   }
 }

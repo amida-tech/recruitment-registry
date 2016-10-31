@@ -5,19 +5,17 @@ class Form extends Component {
     return(
       <form className="form" onSubmit={this.props.onSubmit}>
         <h1>Sign In</h1>
-        <div className="">
-          { this.props.data.get('hasErrors') ? (<p>{this.props.vocab.get('INVALID_CREDENTIALS')}</p>) : (<p></p>) }
-        </div>
         <div className="rr-group">
           <label className="rr" htmlFor="username">{this.props.vocab.get('EMAIL')}</label>
           <input className="form__field-input" type="text" id="username" onChange={ this.props.changeForm } autoCorrect="off" autoCapitalize="off" spellCheck="false" placeholder={this.props.vocab.get('EMAIL')}/>
         </div>
-        <div className="rr-group m-t-1">
+        <div className="rr-group">
           <label className="rr" htmlFor="password">{this.props.vocab.get('PASSWORD')}</label>
           <input className="form__field-input" id="password" type="password" onChange={ this.props.changeForm } placeholder={this.props.vocab.get('PASSWORD')} />
         </div>
+          { this.props.data.get('hasErrors') ? (<div className="displayBox warning animated fadeInUp">{this.props.vocab.get('INVALID_CREDENTIALS')}</div>) : (<a></a>) }
         <div className="form__footer">
-          <button className="buttonConfirm" type="submit">{ this.props.btnText }</button>
+          <button className="buttonPrimary confirm" type="submit">{ this.props.btnText }</button>
           <a href="/">{this.props.vocab.get('FORGOT_USER_PASS')}</a>
         </div>
       </form>

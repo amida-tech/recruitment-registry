@@ -1,5 +1,5 @@
 // Universial Variables
-	$default-border-radius: '4px';
+	$default-border-radius: 4px;
 	$default-border-width: 2px;
 
 // FONTS
@@ -30,6 +30,13 @@
 // DROPDOWNS
 	$dropdown-border-width: 1px;
 	$dropdown-border-radius: $default-border-radius;
+
+
+
+// DISPLAYBOX
+	$displayBox-border-width: 4px;
+	$displayBox-border-radius: $default-border-radius;
+
 
 
 

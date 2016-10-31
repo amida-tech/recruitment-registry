@@ -25,13 +25,9 @@ let DevTools = IS_PROD ? NOOP : createDevTools(
     toggleVisibilityKey="ctrl-h"
     changePositionKey="ctrl-q"
     changeMonitorKey="ctrl-m"
-<<<<<<< HEAD
     fluid="true"
     defaultSize="0"
     defaultIsVisible="false">
-=======
-    defaultIsVisible={true}>
->>>>>>> origin/develop
       <LogMonitor />
       <SliderMonitor />
       <ChartMonitor />
