@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import Form from './register-form';
 import { Link } from 'react-router';
 import register from '../index';
 import Slider from 'react-slick'
@@ -10,7 +9,7 @@ import { SurveyNavigator } from '../../common/SurveyNavigation';
 
 export class RegisterContainer extends Component {
   render() {
-    const { formState, survey } = this.props.data.toJS();
+    const { survey } = this.props.data.toJS();
     var slides = [];
     var userInfo = ['username', 'password', 'email'];
 

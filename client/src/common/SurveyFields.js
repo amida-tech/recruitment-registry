@@ -133,3 +133,19 @@ export class Choices extends Component {
     )
   }
 }
+
+//Saved from Almir for study later.
+// const renderCheckbox = (surveyId, questionId, choiceId, label) => (
+//   <div className="checkbox" key={surveyId + '.' + questionId + '.' + choiceId}>
+//     <label><input type="checkbox"
+//                   name={surveyId + '.' + questionId + '.' + choiceId}
+//                   id={surveyId + '.' + questionId + '.' + choiceId}
+//                   onChange={this.props.changeChoice}
+//                   value={surveyId + '.' + questionId + '.' + choiceId}/> {label}</label>
+//   </div>
+// )
+//
+// const renderChoices = (question) => {
+//   var checkboxes = question.choices.map(choice => {
+//     return renderCheckbox(this.props.survey.id, question.id, choice.id, choice.text);
+//   })

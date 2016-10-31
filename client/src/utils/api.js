@@ -135,8 +135,7 @@ const apiProvider = store => next => action => {
               type: 'LOGIN_SUCCESS',
               data: response.body
             })
-            store.dispatch({type: 'GET_USER'})
-            store.dispatch(push('/profile'))
+            store.dispatch({type: 'GET_USER'}) //We used to send them to profile.
           }
         })
       break
