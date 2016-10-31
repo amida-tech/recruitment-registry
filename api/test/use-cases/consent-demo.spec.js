@@ -16,7 +16,7 @@ const expect = chai.expect;
 const generator = new Generator();
 const shared = new SharedIntegration(generator);
 
-describe('consent unit', function () {
+describe('consent demo', function () {
     const store = {
         server: null,
         auth: null

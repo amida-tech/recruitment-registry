@@ -17,9 +17,6 @@ const expect = chai.expect;
 const generator = new Generator();
 
 const shared = new SharedSpec(generator);
-const Consent = models.Consent;
-const ConsentDocument = models.ConsentDocument;
-const ConsentSignature = models.ConsentSignature;
 
 describe('consent unit', function () {
     const userCount = 4;
@@ -51,7 +48,7 @@ describe('consent unit', function () {
         it(`create consent ${index}`, function () {
             const sections = typeIndices.map(typeIndex => history.typeId(typeIndex));
             const clientConsent = generator.newConsent({ sections });
-            return Consent.createConsent(clientConsent)
+            return models.consent.createConsent(clientConsent)
                 .then(result => hxConsent.pushWithId(clientConsent, result.id));
         });
     });
@@ -59,7 +56,7 @@ describe('consent unit', function () {
     _.range(consentSpecs.length).forEach(index => {
         it(`get/verify consent ${index}`, function () {
             const id = hxConsent.id(index);
-            return Consent.getConsent(id)
+            return models.consent.getConsent(id)
                 .then(consent => {
                     const expected = hxConsent.server(index);
                     expect(consent).to.deep.equal(expected);
@@ -70,7 +67,7 @@ describe('consent unit', function () {
     _.range(consentSpecs.length).forEach(index => {
         it(`get/verify consent by name ${index}`, function () {
             const name = hxConsent.client(index).name;
-            return Consent.getConsentByName(name)
+            return models.consent.getConsentByName(name)
                 .then(consent => {
                     const expected = hxConsent.server(index);
                     expect(consent).to.deep.equal(expected);
@@ -79,7 +76,7 @@ describe('consent unit', function () {
     });
 
     const listConsentsFn = function () {
-        return Consent.listConsents()
+        return models.consent.listConsents()
             .then(consents => {
                 const expected = hxConsent.listServers();
                 expect(consents).to.deep.equal(expected);
@@ -90,7 +87,7 @@ describe('consent unit', function () {
 
     it('delete consent 2', function () {
         const id = hxConsent.id(2);
-        return Consent.deleteConsent(id)
+        return models.consent.deleteConsent(id)
             .then(() => {
                 hxConsent.remove(2);
             });
@@ -101,7 +98,7 @@ describe('consent unit', function () {
     const getUserConsentDocuments = function (userIndex, index, signatureIndices) {
         const id = hxConsent.id(index);
         const userId = history.userId(userIndex);
-        return Consent.getUserConsentDocuments(userId, id)
+        return models.consent.getUserConsentDocuments(userId, id)
             .then(consent => {
                 const typeIndices = consentSpecs[index];
                 const signatures = signatureIndices.reduce((r, i) => {
@@ -120,7 +117,7 @@ describe('consent unit', function () {
     const getTranslatedUserConsentDocuments = function (userIndex, index, signatureIndices, language) {
         const id = hxConsent.id(index);
         const userId = history.userId(userIndex);
-        return Consent.getUserConsentDocuments(userId, id, { language })
+        return models.consent.getUserConsentDocuments(userId, id, { language })
             .then(consent => {
                 const typeIndices = consentSpecs[index];
                 const signatures = signatureIndices.reduce((r, i) => {
@@ -140,7 +137,7 @@ describe('consent unit', function () {
     const getUserConsentDocumentsByName = function (userIndex, index, signatureIndices) {
         const name = hxConsent.server(index).name;
         const userId = history.userId(userIndex);
-        return Consent.getUserConsentDocumentsByName(userId, name)
+        return models.consent.getUserConsentDocumentsByName(userId, name)
             .then(consent => {
                 const typeIndices = consentSpecs[index];
                 const signatures = signatureIndices.reduce((r, i) => {
@@ -159,7 +156,7 @@ describe('consent unit', function () {
     const getTranslatedUserConsentDocumentsByName = function (userIndex, index, signatureIndices, language) {
         const name = hxConsent.server(index).name;
         const userId = history.userId(userIndex);
-        return Consent.getUserConsentDocumentsByName(userId, name, { language })
+        return models.consent.getUserConsentDocumentsByName(userId, name, { language })
             .then(consent => {
                 const typeIndices = consentSpecs[index];
                 const signatures = signatureIndices.reduce((r, i) => {
@@ -183,7 +180,7 @@ describe('consent unit', function () {
 
     it('error: get consent 0 documents', function () {
         const id = hxConsent.id(0);
-        return Consent.getConsentDocuments(id)
+        return models.consent.getConsentDocuments(id)
             .then(shared.throwingHandler, shared.expectedErrorHandler('noSystemConsentDocuments'));
     });
 
@@ -195,7 +192,7 @@ describe('consent unit', function () {
     [0, 1, 3].forEach(consentIndex => {
         it(`get/verify consent ${consentIndex} documents`, function () {
             const id = hxConsent.id(consentIndex);
-            return Consent.getConsentDocuments(id)
+            return models.consent.getConsentDocuments(id)
                 .then(consent => {
                     const typeIndices = consentSpecs[consentIndex];
                     const expected = consentCommon.formExpectedConsent(consentIndex, typeIndices);
@@ -205,7 +202,7 @@ describe('consent unit', function () {
 
         it(`get/verify translated (es) consent ${consentIndex} documents`, function () {
             const id = hxConsent.id(consentIndex);
-            return Consent.getConsentDocuments(id, { language: 'es' })
+            return models.consent.getConsentDocuments(id, { language: 'es' })
                 .then(consent => {
                     const typeIndices = consentSpecs[consentIndex];
                     const expected = consentCommon.formTranslatedExpectedConsent(consentIndex, typeIndices, undefined, 'es');
@@ -216,7 +213,7 @@ describe('consent unit', function () {
 
         it(`get/verify consent ${consentIndex} documents by name`, function () {
             const name = hxConsent.server(consentIndex).name;
-            return Consent.getConsentDocumentsByName(name)
+            return models.consent.getConsentDocumentsByName(name)
                 .then(consent => {
                     const typeIndices = consentSpecs[consentIndex];
                     const expected = consentCommon.formExpectedConsent(consentIndex, typeIndices);
@@ -226,7 +223,7 @@ describe('consent unit', function () {
 
         it(`get/verify translated (es) consent ${consentIndex} documents by name`, function () {
             const name = hxConsent.server(consentIndex).name;
-            return Consent.getConsentDocumentsByName(name, { language: 'es' })
+            return models.consent.getConsentDocumentsByName(name, { language: 'es' })
                 .then(consent => {
                     const typeIndices = consentSpecs[consentIndex];
                     const expected = consentCommon.formTranslatedExpectedConsent(consentIndex, typeIndices, undefined, 'es');
@@ -255,7 +252,7 @@ describe('consent unit', function () {
         return function () {
             const userId = history.userId(userIndex);
             const documentIds = newSignatureIndices.map(i => history.id(i));
-            return ConsentSignature.bulkCreateSignatures(userId, documentIds, language)
+            return models.consentSignature.bulkCreateSignatures(userId, documentIds, language)
                 .then(() => getUserConsentDocuments(userIndex, index, expectedSignatureIndices));
         };
     };
@@ -320,7 +317,7 @@ describe('consent unit', function () {
 
     it('update history for type 2', function () {
         const typeId = history.typeId(2);
-        return ConsentDocument.getUpdateCommentHistory(typeId)
+        return models.consentDocument.getUpdateCommentHistory(typeId)
             .then(result => {
                 const servers = history.serversHistory().filter(h => (h.typeId === typeId));
                 const comments = _.map(servers, 'updateComment');
@@ -330,7 +327,7 @@ describe('consent unit', function () {
 
     it('translated (es) update history for type 2', function () {
         const typeId = history.typeId(2);
-        return ConsentDocument.getUpdateCommentHistory(typeId, 'es')
+        return models.consentDocument.getUpdateCommentHistory(typeId, 'es')
             .then(result => {
                 const servers = history.translatedServersHistory('es').filter(h => (h.typeId === typeId));
                 const comments = _.map(servers, 'updateComment');

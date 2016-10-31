@@ -1,15 +1,11 @@
 'use strict';
 
 const models = require('../../models');
-
-const ConsentType = models.ConsentType;
-const ConsentDocument = models.ConsentDocument;
-const Consent = models.Consent;
-const sequelize = models.sequelize;
+const SPromise = require('../../lib/promise');
 
 module.exports = function (example) {
-    const consentTypePxs = example.consentTypes.map(consentType => ConsentType.createConsentType(consentType));
-    return sequelize.Promise.all(consentTypePxs)
+    const consentTypePxs = example.consentTypes.map(consentType => models.consentType.createConsentType(consentType));
+    return SPromise.all(consentTypePxs)
         .then(ids => {
             return example.consentTypes.reduce((r, consentType, index) => {
                 r[consentType.name] = ids[index].id;
@@ -25,11 +21,11 @@ module.exports = function (example) {
                 name,
                 sections: sectionsByName.map(sectionName => typeMap[sectionName])
             }));
-            const documentsPx = documents.map(doc => ConsentDocument.createConsentDocument(doc));
-            return sequelize.Promise.all(documentsPx)
+            const documentsPx = documents.map(doc => models.consentDocument.createConsentDocument(doc));
+            return SPromise.all(documentsPx)
                 .then(() => {
-                    const consentsPx = consents.map(consent => Consent.createConsent(consent));
-                    return sequelize.Promise.all(consentsPx);
+                    const consentsPx = consents.map(consent => models.consent.createConsent(consent));
+                    return SPromise.all(consentsPx);
                 });
         });
 };

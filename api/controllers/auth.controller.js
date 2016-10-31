@@ -3,14 +3,12 @@
 const passport = require('passport');
 const passportHttp = require('passport-http');
 
-const models = require('../models');
+const db = require('../models/db');
 const tokener = require('../lib/tokener');
 const jsutil = require('../lib/jsutil');
 
-const User = models.User;
-
 const basicStrategy = function (username, password, done) {
-    User.findOne({ where: { username } })
+    db.User.findOne({ where: { username } })
         .then(function (user) {
             if (user) {
                 return user.authenticate(password)

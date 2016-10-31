@@ -1,7 +1,117 @@
-/*This file contains all styles related to the button component.*/
+// This file contains all styles related to the button component.
 
+// 
+// Buttons are created via an `<button>` or `<a>` tag.
+// 
+// You MUST apply one of the following classes to a button:
+// .buttonPrimary -OR- .buttonSecondary
+// 
+// You SHOULD apply one of the following classes to a button:
+// .light - used for dark backgrounds
+// .success
+// .confirm
+// .alert
+// .warning
+// .info
+// .system
+// .dark - use only for system / admin messages
 
-.btn--loading {
-  color: white;
-  background-color: $brand-color;
+.btn, button {
+	padding: auto 18px;
+	height: 36px;
+	border-radius: $button-radius;
+	min-width: 145px;
+	cursor: pointer;
+	display: inline-block;
+	text-align: center;
+	font-size: 14px;
+	font-weight: 700;
+	letter-spacing: .5px;
+	-webkit-appearance:             none;
+	background-color: transparent;
+	color: $color-key-dark;
+	border: $button-border-width solid $color-key-dark;
+	outline: none;
+}
+
+.buttonPrimary {
+	@extend .btn;
+	border: $button-border-width solid $color-key-medium;
+	background-color: $color-key-medium;
+	color: $color-white;
+	&.light, &.white {
+		border: $button-border-width solid $color-white;
+		background-color: $color-white;
+		color: $color-key-medium;
+	}
+	&.success, &.green {
+		border: $button-border-width solid $color-success;
+		background-color: $color-success;
+		color: $color-white;
+	}
+	&.confirm, &.lightGreen {
+		border: $button-border-width solid $color-confirm;
+		background-color: $color-confirm;
+		color: $color-white;
+	}
+	&.alert, &.yellow {
+		border: $button-border-width solid $color-alert;
+		background-color: $color-alert;
+		color: $color-white;
+	}
+	&.warning, &.red {
+		border: $button-border-width solid $color-warning;
+		background-color: $color-warning;
+		color: $color-white;
+	}
+	&.info, &.purple {
+		border: $button-border-width solid $color-info;
+		background-color: $color-info;
+		color: $color-white;
+	}
+	&.system, &.navy {
+		border: $button-border-width solid $color-key-dark;
+		background-color: $color-key-dark;
+		color: $color-white;
+	}
+	&.dark {
+		border: $button-border-width solid $color-black;
+		background-color: $color-black;
+		color: $color-white;
+	}
+}
+
+.buttonSecondary {
+	@extend .btn;
+	border: $button-border-width solid $color-key-medium;
+	color: $color-key-medium;
+
+	&.light {
+		border: $button-border-width solid $color-white;
+		color: $color-white;
+	}
+	&.success, &.green {
+		border: $button-border-width solid $color-success;
+		color: $color-success;
+	}
+	&.alert, &.yellow {
+		border: $button-border-width solid $color-alert;
+		color: $color-alert;
+	}
+	&.warning, &.red {
+		border: $button-border-width solid $color-warning;
+		color: $color-warning;
+	}
+	&.info, &.purple {
+		border: $button-border-width solid $color-info;
+		color: $color-info;
+	}
+	&.system, &.navy {
+		border: $button-border-width solid $color-key-dark;
+		color: $color-key-dark;
+	}
+	&.dark {
+		border: $button-border-width solid $gap-black;
+		color: $gap-black;
+	}
 }

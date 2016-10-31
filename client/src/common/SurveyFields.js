@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 export class Bool extends Component {
   render(){
     return(
-        <div id={this.props.id+'bool'} className="rr">
+        <div id={this.props.id+'bool'}>
           <label>{this.props.text}</label>
           <br />
           <label htmlFor={this.props.id}>
@@ -34,12 +34,11 @@ export class Bool extends Component {
 export class Choice extends Component {
   render(){
     return(
-      <div key={this.props.id} className="rr rr-question" >
+      <div key={this.props.id}>
         <label htmlFor={this.props.id}>{this.props.text}</label>
         <select
           id={this.props.id}
           required={this.props.required}
-          className="rr-blankline rr-field"
           onChange={this.props.changeForm}
           data-itype="choice"
           defaultValue='x'>
@@ -65,13 +64,12 @@ export class Choice extends Component {
 export class Input extends Component {
   render(){
     return(
-      <div key={this.props.id} className="rr rr-question" >
+      <div key={this.props.id} >
         <label htmlFor={this.props.id}>{this.props.text}</label>
         <input
           id={this.props.id}
           type={this.props.type}
           required={this.props.required}
-          className="rr-blankline rr-field"
           onChange={ this.props.changeForm }
           autoComplete="off"
           data-itype="text" />
@@ -99,12 +97,11 @@ export class Choices extends Component {
 
   render(){
     return (
-      <div key={this.props.id} className="rr">
+      <div key={this.props.id} >
         <label key={this.props.id} >{this.props.text}</label>
           <select
             id={this.props.id}
             onChange={this.handleChange}
-            className="rr-blankline rr-field"
             required={this.props.required}
             data-itype="choices.bool"
             defaultValue={this.props.vocab.get('PLEASE_SELECT')}>
@@ -126,7 +123,6 @@ export class Choices extends Component {
             <input name={this.props.id+'.text'}
               onChange={this.props.changeForm}
               autoComplete="off"
-              className="rr-blankline rr-field"
               data-itype="choices.text"/>
           </div>
       </div>

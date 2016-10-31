@@ -14,11 +14,7 @@ const expect = chai.expect;
 const generator = new Generator();
 const shared = new SharedSpec(generator);
 
-const ConsentDocument = models.ConsentDocument;
-const Registry = models.Registry;
-const SurveyConsentType = models.SurveyConsentType;
 const ConsentDocumentHistory = require('./util/consent-document-history');
-const User = models.User;
 
 describe('survey consent section unit', function () {
     const consentTypeCount = 2;
@@ -34,11 +30,11 @@ describe('survey consent section unit', function () {
 
     it('create registry', function () {
         const survey = generator.newSurvey();
-        return Registry.createProfileSurvey(survey);
+        return models.registry.createProfileSurvey(survey);
     });
 
     it('get registry profile survey, verify no required consentDocuments', function () {
-        return Registry.getProfileSurvey()
+        return models.registry.getProfileSurvey()
             .then(survey => {
                 expect(survey.id).to.be.above(0);
                 expect(survey.consentDocument).to.equal(undefined);
@@ -54,7 +50,7 @@ describe('survey consent section unit', function () {
         return function () {
             const consentTypeId = history.typeId(typeIndex);
             const surveyId = profileSurvey.id;
-            return SurveyConsentType.createSurveyConsentType({ surveyId, consentTypeId, action })
+            return models.surveyConsentType.createSurveyConsentType({ surveyId, consentTypeId, action })
                 .then(({ id }) => profileSurveyConsentTypes.push({ id, consentTypeId, action }));
         };
     };
@@ -65,7 +61,7 @@ describe('survey consent section unit', function () {
     }
 
     it('error: get profile survey with no consentDocuments of existing types', function () {
-        return Registry.getProfileSurvey()
+        return models.registry.getProfileSurvey()
             .then(shared.throwingHandler, shared.expectedErrorHandler('noSystemConsentDocuments'));
     });
 
@@ -74,7 +70,7 @@ describe('survey consent section unit', function () {
     }
 
     it('get registry profile survey with required consentDocuments', function () {
-        return Registry.getProfileSurvey()
+        return models.registry.getProfileSurvey()
             .then(actual => {
                 expect(actual.id).to.equal(profileSurvey.id);
                 const expected = history.serversInList([0, 1]);
@@ -85,7 +81,7 @@ describe('survey consent section unit', function () {
     const verifyConsentDocumentContentFn = function (typeIndex) {
         return function () {
             const cs = history.server(typeIndex);
-            return ConsentDocument.getConsentDocument(cs.id)
+            return models.consentDocument.getConsentDocument(cs.id)
                 .then(result => {
                     expect(result).to.deep.equal(cs);
                 });
@@ -110,7 +106,7 @@ describe('survey consent section unit', function () {
                 signObj = Object.assign({}, profileResponses[index], { signatures });
             }
             const response = Object.assign({}, profileResponses[index], signObj);
-            return Registry.createProfile(response)
+            return models.registry.createProfile(response)
                 .then(shared.throwingHandler, shared.expectedErrorHandler('profileSignaturesMissing'))
                 .then(err => {
                     const expected = history.serversInList(missingConsentDocumentIndices);
@@ -124,10 +120,10 @@ describe('survey consent section unit', function () {
             const signatures = signIndices.map(signIndex => history.id(signIndex));
             let signObj = Object.assign({}, profileResponses[index], { signatures });
             const response = Object.assign({}, profileResponses[index], signObj);
-            return Registry.createProfile(response)
+            return models.registry.createProfile(response)
                 .then(({ token }) => tokener.verifyJWT(token))
                 .then(({ id }) => history.hxUser.push(response.user, { id }))
-                .then(() => User.listConsentDocuments(history.userId(index)))
+                .then(() => models.user.listConsentDocuments(history.userId(index)))
                 .then(consentDocuments => expect(consentDocuments).to.have.length(0));
         };
     };
@@ -135,7 +131,7 @@ describe('survey consent section unit', function () {
     const readProfileFn = function (index) {
         return function () {
             const userId = history.userId(index);
-            return Registry.getProfile({ userId })
+            return models.registry.getProfile({ userId })
                 .then(function (result) {
                     const pr = profileResponses[index];
                     const expectedUser = _.cloneDeep(pr.user);
@@ -150,7 +146,7 @@ describe('survey consent section unit', function () {
     const readProfileWithoutSignaturesFn = function (index, missingConsentDocumentIndices) {
         return function () {
             const userId = history.userId(index);
-            return Registry.getProfile({ userId })
+            return models.registry.getProfile({ userId })
                 .then(shared.throwingHandler, shared.expectedErrorHandler('profileSignaturesMissing'))
                 .then(err => {
                     const expected = history.serversInList(missingConsentDocumentIndices);
@@ -190,7 +186,7 @@ describe('survey consent section unit', function () {
     const fnDelete = function (index) {
         return function () {
             const id = profileSurveyConsentTypes[index].id;
-            return SurveyConsentType.deleteSurveyConsentType(id);
+            return models.surveyConsentType.deleteSurveyConsentType(id);
         };
     };
 

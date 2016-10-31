@@ -50,13 +50,13 @@ describe('reset-token integration', function () {
     const server = new smtpServer.SMTPServer({
         name: 'localhost',
         authOptional: true,
-        onAuth: function (auth, session, callback) {
+        onAuth(auth, session, callback) {
             receivedEmail.auth = auth;
             callback(null, {
                 user: 1
             });
         },
-        onMailFrom: function (address, session, callback) {
+        onMailFrom(address, session, callback) {
             receivedEmail.from = address.address;
             if (address.address.indexOf('smtp') >= 0) {
                 return callback(null);
@@ -64,11 +64,11 @@ describe('reset-token integration', function () {
                 return callback(new Error('invalid'));
             }
         },
-        onRcptTo: function (address, session, callback) {
+        onRcptTo(address, session, callback) {
             receivedEmail.to = address.address;
             callback();
         },
-        onData: function (stream, session, callback) {
+        onData(stream, session, callback) {
             stream.pipe(smtpStream);
             stream.on('end', callback);
         }

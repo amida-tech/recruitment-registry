@@ -3,22 +3,19 @@ import React, { Component } from 'react';
 class Form extends Component {
   render() {
     return(
-      <form className="rr-form m-x-1" onSubmit={this.props.onSubmit}>
-        <div className="">
-          { this.props.data.get('hasErrors') ? (<p>{this.props.vocab.get('INVALID_CREDENTIALS')}</p>) : (<p></p>) }
-        </div>
+      <form className="form" onSubmit={this.props.onSubmit}>
+        <h1>Sign In</h1>
         <div className="rr-group">
           <label className="rr" htmlFor="username">{this.props.vocab.get('EMAIL')}</label>
-          <input className="rr rr-field rr-hint" type="text" id="username" onChange={ this.props.changeForm } autoCorrect="off" autoCapitalize="off" spellCheck="false" placeholder={this.props.vocab.get('EMAIL')}/>
+          <input className="form__field-input" type="text" id="username" onChange={ this.props.changeForm } autoCorrect="off" autoCapitalize="off" spellCheck="false" placeholder={this.props.vocab.get('EMAIL')}/>
         </div>
-        <div className="rr-group m-t-1">
+        <div className="rr-group">
           <label className="rr" htmlFor="password">{this.props.vocab.get('PASSWORD')}</label>
-          <input className="rr-field rr-hint" id="password" type="password" onChange={ this.props.changeForm } />
+          <input className="form__field-input" id="password" type="password" onChange={ this.props.changeForm } placeholder={this.props.vocab.get('PASSWORD')} />
         </div>
-        <div className="rr-controls">
-          <button className="rr-button btn" type="submit">{ this.props.btnText }</button>
-        </div>
-        <div className="rr rr-hint no-transform m-b-1">
+          { this.props.data.get('hasErrors') ? (<div className="displayBox warning animated fadeInUp">{this.props.vocab.get('INVALID_CREDENTIALS')}</div>) : (<a></a>) }
+        <div className="form__footer">
+          <button className="buttonPrimary confirm" type="submit">{ this.props.btnText }</button>
           <a href="/">{this.props.vocab.get('FORGOT_USER_PASS')}</a>
         </div>
       </form>

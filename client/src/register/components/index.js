@@ -6,6 +6,7 @@ import Slider from 'react-slick'
 import '../../../node_modules/slick-carousel/slick/slick.scss'
 import * as SurveyFields from '../../common/SurveyFields';
 import { SurveyNavigator } from '../../common/SurveyNavigation';
+import Background from '../../Background'
 
 export class RegisterContainer extends Component {
   render() {
@@ -116,19 +117,22 @@ export class RegisterContainer extends Component {
     }
 
     return(
-      <form autoComplete="off">
-        <div className="col-lg-6">
-          <div className="registry-specific">
-            {
-              survey.questions.length > 0 ? (
-                <Slider ref='slider' {...settings}>
-                  {slides}
-                </Slider>
-              ) : (<div>{this.props.vocab.get('LOADING')}...</div>)
-            }
-          </div>
-        </div>
-      </form>
+      <div className="register">
+          <Background/>
+            <form autoComplete="off">
+            <div className="col-lg-6">
+              <div className="register register--inputContainer">
+                {
+                  survey.questions.length > 0 ? (
+                    <Slider ref='slider' {...settings}>
+                      {slides}
+                    </Slider>
+                  ) : (<div>{this.props.vocab.get('LOADING')}...</div>)
+                }
+              </div>
+            </div>
+          </form>
+      </div>
     );
   }
 

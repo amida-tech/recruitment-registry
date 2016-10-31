@@ -5,7 +5,7 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 const _ = require('lodash');
 
-const models = require('../models');
+const db = require('../models/db');
 const tokener = require('../lib/tokener');
 const security = require('../security');
 
@@ -13,6 +13,7 @@ const SharedSpec = require('./util/shared-spec');
 
 const expect = chai.expect;
 const shared = new SharedSpec();
+const User = db.User;
 
 describe('security unit', function () {
     const admin = {
@@ -54,28 +55,28 @@ describe('security unit', function () {
     before(shared.setUpFn());
 
     it('create users', function () {
-        return models.User.create(admin)
+        return User.create(admin)
             .then(user => {
                 admin.id = user.id;
                 adminJWT = tokener.createJWT(admin);
             })
-            .then(() => models.User.create(participant))
+            .then(() => User.create(participant))
             .then(user => {
                 participant.id = user.id;
                 participantJWT = tokener.createJWT(participant);
             })
-            .then(() => models.User.create(other))
+            .then(() => User.create(other))
             .then(user => {
                 other.id = user.id;
                 otherJWT = tokener.createJWT(other);
             })
-            .then(() => models.User.create(deleted))
+            .then(() => User.create(deleted))
             .then(user => {
                 deleted.id = user.id;
                 deletedJWT = tokener.createJWT(deleted);
                 return user.id;
             })
-            .then(id => models.User.destroy({ where: { id } }));
+            .then(id => User.destroy({ where: { id } }));
     });
 
     it('valid admin for admin', function (done) {

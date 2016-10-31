@@ -1,6 +1,7 @@
 import App from './app'
 import routes from './routes'
 import Layout from './layout/index'
+import Background from './background/index'
 import login from './login'
 import register from './register'
 import profile from './profile'
@@ -62,4 +63,4 @@ export const reducers = {
 
 import './styles/main.scss'
 
-App({ reducers, initialState, Layout, routes }).render()
+App({ reducers, initialState, Layout, Background, routes }).render()

@@ -10,6 +10,7 @@ class Nav extends Component {
     const title = this.props.data.get('title');
     const loggedIn = this.props.data.get('loggedIn');
     const role = this.props.user.get('role');
+    const email = this.props.user.get('email');
     var nav;
 
     for(var i = 0; i< routes.length; i++){
@@ -35,13 +36,27 @@ class Nav extends Component {
     }
 
     return (
-      <nav className="navbar navbar-full navbar-dark bg-inverse">
-        <a className="navbar-brand" href="/">{ title }</a>
-        <div className="nav navbar-nav">{nav}
-          { loggedIn ? (<a className="nav-item nav-link m-l-1" onClick={::this._logout}>{this.props.vocab.get('LOGOUT')}</a>
-        ) : ""}
-          <a className="nav-item nav-link" onClick={::this._changeLanguage}>{this.props.vocab.get('LANGUAGE')}</a>
-        </div>
+      <nav className="dd">
+        <a className="logo" href="/">{ title } Net</a>
+        <ul>
+          <li><a href="./contact">Contact Us</a></li>
+          { loggedIn ? (
+                <li><a href="./">Dashboard</a></li>
+            ) : ""
+          }
+          { loggedIn ? (
+                <li><a id="nav--userSettings" onClick={::this._logout}>{ email }</a></li>
+            ) : ""
+          }
+          { !loggedIn ? (
+                <li><a id="nav--login" href="./login">Log In</a></li>
+            ) : ""
+          }
+          { !loggedIn ? (
+                <li><a id="nav--register" href="./register">Register</a></li>
+            ) : ""
+          }
+        </ul>
       </nav>
     );
   }

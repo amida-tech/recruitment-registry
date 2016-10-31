@@ -5,10 +5,10 @@ const _ = require('lodash');
 const models = require('../models');
 const shared = require('./shared.js');
 
-const ConsentDocument = models.ConsentDocument;
+const consentDocument = models.consentDocument;
 
 exports.createConsentDocument = function (req, res) {
-    ConsentDocument.createConsentDocument(req.body)
+    consentDocument.createConsentDocument(req.body)
         .then(result => res.status(201).json(result))
         .catch(shared.handleError(res));
 };
@@ -16,7 +16,7 @@ exports.createConsentDocument = function (req, res) {
 exports.getConsentDocument = function (req, res) {
     const id = _.get(req, 'swagger.params.id.value');
     const language = _.get(req, 'swagger.params.language.value');
-    ConsentDocument.getConsentDocument(id, { language })
+    consentDocument.getConsentDocument(id, { language })
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };
@@ -24,7 +24,7 @@ exports.getConsentDocument = function (req, res) {
 exports.getConsentDocumentByTypeName = function (req, res) {
     const typeName = _.get(req, 'swagger.params.typeName.value');
     const language = _.get(req, 'swagger.params.language.value');
-    ConsentDocument.getConsentDocumentByTypeName(typeName, { language })
+    consentDocument.getConsentDocumentByTypeName(typeName, { language })
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };
@@ -32,7 +32,7 @@ exports.getConsentDocumentByTypeName = function (req, res) {
 exports.getSignedConsentDocument = function (req, res) {
     const id = _.get(req, 'swagger.params.id.value');
     const language = _.get(req, 'swagger.params.language.value');
-    ConsentDocument.getSignedConsentDocument(req.user.id, id, { language })
+    consentDocument.getSignedConsentDocument(req.user.id, id, { language })
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };
@@ -40,14 +40,14 @@ exports.getSignedConsentDocument = function (req, res) {
 exports.getSignedConsentDocumentByTypeName = function (req, res) {
     const typeName = _.get(req, 'swagger.params.typeName.value');
     const language = _.get(req, 'swagger.params.language.value');
-    ConsentDocument.getSignedConsentDocumentByTypeName(req.user.id, typeName, { language })
+    consentDocument.getSignedConsentDocumentByTypeName(req.user.id, typeName, { language })
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };
 
 exports.updateConsentDocumentText = function (req, res) {
     const language = _.get(req, 'swagger.params.language.value');
-    ConsentDocument.updateConsentDocumentText(req.body, language)
+    consentDocument.updateConsentDocumentText(req.body, language)
         .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };
@@ -55,7 +55,7 @@ exports.updateConsentDocumentText = function (req, res) {
 exports.getUpdateCommentHistory = function (req, res) {
     const typeId = _.get(req, 'swagger.params.typeId.value');
     const language = _.get(req, 'swagger.params.language.value');
-    ConsentDocument.getUpdateCommentHistory(typeId, language)
+    consentDocument.getUpdateCommentHistory(typeId, language)
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };

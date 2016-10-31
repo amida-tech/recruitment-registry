@@ -476,7 +476,7 @@
             }
         },
         "/profile-survey": {
-            "x-swagger-router-controller": "registry.controller",
+            "x-swagger-router-controller": "profile-survey.controller",
             "post": {
                 "summary": "Creates/replaces profile survey",
                 "operationId": "createProfileSurvey",
@@ -504,6 +504,14 @@
             "get": {
                 "summary": "Gets profile survey",
                 "operationId": "getProfileSurvey",
+                "parameters": [{
+                    "name": "language",
+                    "in": "query",
+                    "description": "Language code",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 2
+                }],
                 "responses": {
                     "200" : {
                         "description": "Successul response",
@@ -517,8 +525,41 @@
                 }
             }
         },
+        "/profile-survey/text/{language}": {
+            "x-swagger-router-controller": "profile-survey.controller",
+            "patch": {
+                "summary": "Updates or translates profile survey text fields",
+                "operationId": "updateProfileSurveyText",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "language",
+                    "in": "path",
+                    "description": "Language code",
+                    "required": true,
+                    "type": "string",
+                    "minLength": 2
+                }, {
+                    "name": "textUpdate",
+                    "in": "body",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/profileSurveyTextUpdate"
+                    }
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successul response"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
         "/profiles": {
-            "x-swagger-router-controller": "registry.controller",
+            "x-swagger-router-controller": "profile.controller",
             "post": {
                 "summary": "Creates registry user profile",
                 "operationId": "createProfile",
@@ -2031,6 +2072,24 @@
                     "minimum": 1
                 },
                 "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "sections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/sectionTextUpdate"
+                    },
+                    "minItems": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "profileSurveyTextUpdate": {
+            "type": "object",
+            "required": ["name"],
+            "properties": {
+               "name": {
                     "type": "string",
                     "minLength": 1
                 },
