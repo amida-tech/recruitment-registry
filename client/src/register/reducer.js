@@ -7,20 +7,29 @@ const initialState = {
     username: '',
     password: ''
   },
+  newUserProfile: {
+    user: {
+      username: '',
+      password: '',
+      role: 'participant',
+      email: ''
+    },
+    answers: []
+  },
   survey: {
     questions: []
   },
   availableEthnicities: [
-    "Caucasian",
-    "Hispanic",
-    "African",
-    "Asian"
-  ],
-  availableGenders: [
-    "male",
-    "female",
-    "other"
-  ]
+     "Caucasian",
+     "Hispanic",
+     "African",
+     "Asian"
+   ],
+   availableGenders: [
+     "male",
+     "female",
+     "other"
+   ]
 };
 
 const immutableState = Immutable.fromJS(initialState)
@@ -36,11 +45,18 @@ export default (state = immutableState, action) => {
     case 'GET_SURVEY_SUCCESS':
       return state.merge({
         survey: action.payload,
-        surveyResult: {
-            surveyId: action.payload.id,
-            answers: []
-          }
+        newUserProfile: {
+          user: {
+            username: '',
+            password: '',
+            role: 'participant',
+            email: ''
+          },
+          answers: []
+        }
       })
+      case t.UPDATE_REGISTER_USER:
+        return state.setIn(['newUserProfile', 'user', action.id], Immutable.fromJS(action.value));
       case t.UPDATE_REGISTER_ANSWERS:
       var newAnswer = {
         'questionId': parseInt(action.id),
@@ -72,14 +88,14 @@ export default (state = immutableState, action) => {
           ]};
           break;
         }
-        var answers = state.getIn(['surveyResult', 'answers']).toJS();
+        var answers = state.getIn(['newUserProfile', 'answers']).toJS();
         answers.forEach((answer, index) => { //Removes old answers.
             if(answer.questionId == newAnswer.questionId){
                 answers.splice(index);
             }
           })
         answers.push(newAnswer);
-        return state.setIn(['surveyResult', 'answers'], Immutable.fromJS(answers));
+        return state.setIn(['newUserProfile', 'answers'], Immutable.fromJS(answers));
     case 'CLEAR_CHOICES_ANSWER': { //OLD
       let answersClear = {};
 

@@ -1,6 +1,13 @@
 import * as actionTypes from './actionTypes';
 import apiProvider from '../utils/api';
 
+export function updateUser(id, value){
+  return dispatch => dispatch({
+    type: actionTypes.UPDATE_REGISTER_USER,
+    id, value
+  })
+}
+
 export function updateAnswer(itype, id, value, name) {
   return dispatch => dispatch({
     type: actionTypes.UPDATE_REGISTER_ANSWERS,

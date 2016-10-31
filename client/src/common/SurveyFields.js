@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 export class Bool extends Component {
   render(){
     return(
-        <div id={this.props.id} className="rr">
+        <div id={this.props.id+'bool'} className="rr">
           <label>{this.props.text}</label>
           <br />
           <label htmlFor={this.props.id}>
@@ -41,12 +41,13 @@ export class Choice extends Component {
           required={this.props.required}
           className="rr-blankline rr-field"
           onChange={this.props.changeForm}
-          data-itype="choice">
+          data-itype="choice"
+          defaultValue='x'>
           <option
             key={this.props.id+'x'}
-            defaultValue
-            disabled="disabled">
-              {this.props.vocab.get('PLEASE_SELECT')}
+            value='x'
+            disabled={true}>
+            {this.props.vocab.get('PLEASE_SELECT')}
           </option>
           {this.props.choices.map((choice, index) =>
             <option
@@ -105,7 +106,13 @@ export class Choices extends Component {
             onChange={this.handleChange}
             className="rr-blankline rr-field"
             required={this.props.required}
-            data-itype="choices.bool">
+            data-itype="choices.bool"
+            defaultValue={this.props.vocab.get('PLEASE_SELECT')}>
+            <option
+              key={this.props.id+'x'}
+              disabled={true}>
+              {this.props.vocab.get('PLEASE_SELECT')}
+            </option>
             {this.props.choices.map((choice, index) =>
               <option key={choice.id}
               value={choice.id}
