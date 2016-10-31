@@ -1,118 +1,294 @@
-.form__field-wrapper {
-  width: 100%;
-  position: relative;
-  padding-top: 1.75em;
-  border-top: 1px solid $very-light-grey;
-  border-bottom: 1px solid $very-light-grey;
-  background-color: #fff;
+input {
+  position:                       relative;
+  width:                          100%;
+  color:                          $color-dark-grey;
+  border:                         none;
+  outline:                        0;
+  letter-spacing:                 0.05em;
+  display:                        inline-block;
+  margin:                         0;
+  background:                     transparent;
+  padding:                        0 4px;
+  font-weight:                    300;
+  border-bottom:                  1px solid $color-dark-grey;
+  outline:                        none;
+}
+.form__footer {
+	margin-top:                     50px;
 }
 
-.form__field-wrapper + .form__field-wrapper {
-  border-top: none;
-}
+select {
+  height:                         36px;
+  -webkit-appearance:             none;
+  outline:                        none;
+  margin:                         20px 0 20px;
+  border:                         $dropdown-border-width solid $color-key-medium;
+  border-radius:                  $dropdown-border-radius;
+  background-color:               transparent;
+  color:                          $color-dark-grey;
+  font-size:                      14px;
+  font-weight:                    700;
+  padding-left:                   12px;
+  padding-right:                  45px;
+  min-width:                      315px;
+  background-repeat:              no-repeat;
+  background-position:            right 10px center;
+  @extend                         .utility--shadow-flat.small;
+  background-image:               url('data:image/svg+xml;charset=utf-8,<svg width="23px" height="21px" viewBox="0 0 23 21" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g id="Scratch" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g id="Group-7" transform="translate(-1.000000, -7.000000)"><rect id="Rectangle-3" x="1" y="0" width="32" height="36"></rect><path d="M1.5,7.5 L1.5,27.5" id="Line" stroke="#{urlFriendlyColor($color-key-medium)}" stroke-linecap="square"></path><polygon id="▾" fill="#{urlFriendlyColor($color-key-medium)}" points="11.71875 14.8066406 23.28125 14.8066406 17.5 20.5878906"></polygon></g></g></svg>');
+                                  // background image uses data attributes to accomodate for themeing. Colors are rendered via the urlFriendlyColor sass function in styles/utils/_ui.scss
 
-.form__field-input:focus ~ .form__field-label {
-  color: $dark-grey;
-  background-color: $very-light-grey;
-}
-
-.form__field-input:focus {
-  background-color: $very-light-grey;
-  color: $very-dark-grey;
-}
-
-.form__field-label {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  padding: 16px;
-  padding-top: 20px;
-  padding-bottom: 0;
-  margin: 0;
-  z-index: 1;
-  font-size: .8em;
-  color: $mid-grey;
-  font-weight: 400;
-  user-select: none;
-  cursor: text;
-}
-
-.form__field-input {
-  position: relative;
-  padding: 1.625em 16px;
-  width: 100%;
-  color: $dark-grey;
-  border: none;
-  outline: 0;
-  letter-spacing: 0.05em;
-}
-
-.form__submit-btn-wrapper {
-  padding: 2em 1em;
-  width: 100%;
-  background-color: #fff;
-  display: flex;
-  justify-content: center;
-}
-
-.form__submit-btn {
-  border: none;
-  background-color: #fff;
-  border: 1px solid $brand-color;
-  padding: 0.5em 1em;
-  border-radius: 3px;
-  background-color: $brand-color;
-  color: white;
-  display: inline-block;
-  margin: 0 auto;
-  position: relative;
-}
-
-.js-form__err-animation {
-  animation: shake 150ms ease-in-out;
-}
-
-.form__error-wrapper {
-  display: none;
-  justify-content: center;
-  max-width: calc(100% - 2em);
-  margin: 0 auto;
-  margin-bottom: 1em;
-}
-
-.form__error {
-  background-color: $error-color;
-  color: white;
-  margin: 0;
-  padding: 0.5em 1em;
-  font-size: 0.8em;
-  font-family: $text-font-stack;
-  user-select: none;
-}
-
-.js-form__err .form__error-wrapper {
-  display: flex;
-}
-
-.js-form__err--user-doesnt-exist .form__error--username-not-registered,
-.js-form__err--username-exists .form__error--username-taken,
-.js-form__err--password-wrong .form__error--wrong-password,
-.js-form__err--field-missing .form__error--field-missing {
-  display: inline-block;
-}
-
-@keyframes shake {
-  0% {
-    transform: translateX(0);
+  &.light, &.white {
+    border:                       $dropdown-border-width solid $color-white;
+    color:                        $color-white;
+    background-image:             url('data:image/svg+xml;charset=utf-8,<svg width="23px" height="21px" viewBox="0 0 23 21" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g id="Scratch" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g id="Group-7" transform="translate(-1.000000, -7.000000)"><rect id="Rectangle-3" x="1" y="0" width="32" height="36"></rect><path d="M1.5,7.5 L1.5,27.5" id="Line" stroke="#{urlFriendlyColor($color-white)}" stroke-linecap="square"></path><polygon id="▾" fill="#{urlFriendlyColor($color-white)}" points="11.71875 14.8066406 23.28125 14.8066406 17.5 20.5878906"></polygon></g></g></svg>');
+                                  // background image uses data attributes to accomodate for themeing. Colors are rendered via the urlFriendlyColor sass function in styles/utils/_ui.scss
   }
-  25% {
-    transform: translateX(10px);
+  &.success, &.green {
+    border:                       $dropdown-border-width solid $color-success;
+    color:                        $color-success;
+    background-image:             url('data:image/svg+xml;charset=utf-8,<svg width="23px" height="21px" viewBox="0 0 23 21" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g id="Scratch" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g id="Group-7" transform="translate(-1.000000, -7.000000)"><rect id="Rectangle-3" x="1" y="0" width="32" height="36"></rect><path d="M1.5,7.5 L1.5,27.5" id="Line" stroke="#{urlFriendlyColor($color-success)}" stroke-linecap="square"></path><polygon id="▾" fill="#{urlFriendlyColor($color-success)}" points="11.71875 14.8066406 23.28125 14.8066406 17.5 20.5878906"></polygon></g></g></svg>');
+                                  // background image uses data attributes to accomodate for themeing. Colors are rendered via the urlFriendlyColor sass function in styles/utils/_ui.scss
   }
-  75% {
-    transform: translateX(-10px);
+  &.confirm, &.lightGreen {
+    border:                       $dropdown-border-width solid $color-confirm;
+    color:                        $color-confirm;
+    background-image:             url('data:image/svg+xml;charset=utf-8,<svg width="23px" height="21px" viewBox="0 0 23 21" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g id="Scratch" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g id="Group-7" transform="translate(-1.000000, -7.000000)"><rect id="Rectangle-3" x="1" y="0" width="32" height="36"></rect><path d="M1.5,7.5 L1.5,27.5" id="Line" stroke="#{urlFriendlyColor($color-confirm)}" stroke-linecap="square"></path><polygon id="▾" fill="#{urlFriendlyColor($color-confirm)}" points="11.71875 14.8066406 23.28125 14.8066406 17.5 20.5878906"></polygon></g></g></svg>');
+                                  // background image uses data attributes to accomodate for themeing. Colors are rendered via the urlFriendlyColor sass function in styles/utils/_ui.scss
   }
-  100% {
-    transform: translateX(0);
+  &.alert, &.yellow {
+    border:                       $dropdown-border-width solid $color-alert;
+    color:                        $color-alert;
+    background-image:             url('data:image/svg+xml;charset=utf-8,<svg width="23px" height="21px" viewBox="0 0 23 21" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g id="Scratch" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g id="Group-7" transform="translate(-1.000000, -7.000000)"><rect id="Rectangle-3" x="1" y="0" width="32" height="36"></rect><path d="M1.5,7.5 L1.5,27.5" id="Line" stroke="#{urlFriendlyColor($color-alert)}" stroke-linecap="square"></path><polygon id="▾" fill="#{urlFriendlyColor($color-alert)}" points="11.71875 14.8066406 23.28125 14.8066406 17.5 20.5878906"></polygon></g></g></svg>');
+                                  // background image uses data attributes to accomodate for themeing. Colors are rendered via the urlFriendlyColor sass function in styles/utils/_ui.scss
+  }
+  &.warning, &.red {
+    border:                        $dropdown-border-width solid $color-warning;
+    color:                         $color-warning;
+    background-image:              url('data:image/svg+xml;charset=utf-8,<svg width="23px" height="21px" viewBox="0 0 23 21" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g id="Scratch" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g id="Group-7" transform="translate(-1.000000, -7.000000)"><rect id="Rectangle-3" x="1" y="0" width="32" height="36"></rect><path d="M1.5,7.5 L1.5,27.5" id="Line" stroke="#{urlFriendlyColor($color-warning)}" stroke-linecap="square"></path><polygon id="▾" fill="#{urlFriendlyColor($color-warning)}" points="11.71875 14.8066406 23.28125 14.8066406 17.5 20.5878906"></polygon></g></g></svg>');
+                                    // background image uses data attributes to accomodate for themeing. Colors are rendered via the urlFriendlyColor sass function in styles/utils/_ui.scss
+  }
+  &.info, &.purple {
+    border:                         $dropdown-border-width solid $color-info;
+    color:                          $color-info;
+    background-image:               url('data:image/svg+xml;charset=utf-8,<svg width="23px" height="21px" viewBox="0 0 23 21" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g id="Scratch" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g id="Group-7" transform="translate(-1.000000, -7.000000)"><rect id="Rectangle-3" x="1" y="0" width="32" height="36"></rect><path d="M1.5,7.5 L1.5,27.5" id="Line" stroke="#{urlFriendlyColor($color-info)}" stroke-linecap="square"></path><polygon id="▾" fill="#{urlFriendlyColor($color-info)}" points="11.71875 14.8066406 23.28125 14.8066406 17.5 20.5878906"></polygon></g></g></svg>');
+                                    // background image uses data attributes to accomodate for themeing. Colors are rendered via the urlFriendlyColor sass function in styles/utils/_ui.scss
+  }
+  &.system, &.navy {
+    border:                         $dropdown-border-width solid $color-key-dark;
+    color:                          $color-key-dark;
+    background-image:               url('data:image/svg+xml;charset=utf-8,<svg width="23px" height="21px" viewBox="0 0 23 21" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g id="Scratch" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g id="Group-7" transform="translate(-1.000000, -7.000000)"><rect id="Rectangle-3" x="1" y="0" width="32" height="36"></rect><path d="M1.5,7.5 L1.5,27.5" id="Line" stroke="#{urlFriendlyColor($color-key-dark)}" stroke-linecap="square"></path><polygon id="▾" fill="#{urlFriendlyColor($color-key-dark)}" points="11.71875 14.8066406 23.28125 14.8066406 17.5 20.5878906"></polygon></g></g></svg>');
+                                    // background image uses data attributes to accomodate for themeing. Colors are rendered via the urlFriendlyColor sass function in styles/utils/_ui.scss
+  }
+  &.dark {
+    border:                         $dropdown-border-width solid $color-black;
+    color:                          $color-black;
+    background-image:               url('data:image/svg+xml;charset=utf-8,<svg width="23px" height="21px" viewBox="0 0 23 21" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g id="Scratch" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g id="Group-7" transform="translate(-1.000000, -7.000000)"><rect id="Rectangle-3" x="1" y="0" width="32" height="36"></rect><path d="M1.5,7.5 L1.5,27.5" id="Line" stroke="#{urlFriendlyColor($color-black)}" stroke-linecap="square"></path><polygon id="▾" fill="#{urlFriendlyColor($color-black)}" points="11.71875 14.8066406 23.28125 14.8066406 17.5 20.5878906"></polygon></g></g></svg>');
+                                    // background image uses data attributes to accomodate for themeing. Colors are rendered via the urlFriendlyColor sass function in styles/utils/_ui.scss
+  }
+}
+
+.radioGroup {
+  margin:              20px 0 20px;
+  input[type="radio"] {
+    display:           none;
+  }
+  input[type="radio"] + label {
+    @extend            .utility--shadow-flat.activeS;
+    @extend            .utility--shadow-flat.small;
+    height:            36px;
+    min-width:         145px;
+    color:             $color-dark-grey;
+    cursor:            pointer;
+    display:           inline-block;
+    text-align:        center;
+    font-size:         14px;
+    font-weight:       700;
+    letter-spacing:    .5px;
+    padding-top:       8px;
+    margin-top:        -8px;
+    border-bottom:     1px solid $color-key-medium;
+    border-top:        1px solid $color-key-medium;
+    border-right:      1px solid $color-key-medium;
+    &:first-of-type {
+      border-radius:   4px 0 0 4px;
+      border-left:     1px solid $color-key-medium;
+    }
+    &:last-of-type {
+      border-radius:   0 4px 4px 0;
+    }
+  }
+  input[type="radio"]:checked + label {
+    font-weight:       700;
+    background-color:  $color-key-medium;
+    color:             $color-white;
+  }
+  &.light, &.white {
+    input[type="radio"] + label {
+      color:             $color-white;
+      border-bottom:     1px solid $color-white;
+      border-top:        1px solid $color-white;
+      border-right:      1px solid $color-white;
+      &:first-of-type {
+        border-left:     1px solid $color-white;
+      }
+    }
+    input[type="radio"]:checked + label {
+      background-color:  $color-white;
+      color:             $color-key-medium;
+    }
+  }
+  &.success, &.green {
+    input[type="radio"] + label {
+      color:             $color-success;
+      border-bottom:     1px solid $color-success;
+      border-top:        1px solid $color-success;
+      border-right:      1px solid $color-success;
+      &:first-of-type {
+        border-left:     1px solid $color-success;
+      }
+    }
+    input[type="radio"]:checked + label {
+      background-color:  $color-success;
+      color:             $color-white;
+    }
+  }
+  &.confirm, &.lightGreen {
+    input[type="radio"] + label {
+      color:             $color-confirm;
+      border-bottom:     1px solid $color-confirm;
+      border-top:        1px solid $color-confirm;
+      border-right:      1px solid $color-confirm;
+      &:first-of-type {
+        border-left:     1px solid $color-confirm;
+      }
+    }
+    input[type="radio"]:checked + label {
+      background-color:  $color-confirm;
+      color:             $color-white;
+    }
+  }
+  &.alert, &.yellow {
+    input[type="radio"] + label {
+      color:             $color-alert;
+      border-bottom:     1px solid $color-alert;
+      border-top:        1px solid $color-alert;
+      border-right:      1px solid $color-alert;
+      &:first-of-type {
+        border-left:     1px solid $color-alert;
+      }
+    }
+    input[type="radio"]:checked + label {
+      background-color:  $color-alert;
+      color:             $color-white;
+    }
+  }
+  &.warning, &.red {
+    input[type="radio"] + label {
+      color:             $color-warning;
+      border-bottom:     1px solid $color-warning;
+      border-top:        1px solid $color-warning;
+      border-right:      1px solid $color-warning;
+      &:first-of-type {
+        border-left:     1px solid $color-warning;
+      }
+    }
+    input[type="radio"]:checked + label {
+      background-color:  $color-warning;
+      color:             $color-white;
+    }
+  }
+  &.info, &.purple {
+    input[type="radio"] + label {
+      color:             $color-info;
+      border-bottom:     1px solid $color-info;
+      border-top:        1px solid $color-info;
+      border-right:      1px solid $color-info;
+      &:first-of-type {
+        border-left:     1px solid $color-info;
+      }
+    }
+    input[type="radio"]:checked + label {
+      background-color:  $color-info;
+      color:             $color-white;
+    }
+  }
+  &.system, &.navy {
+    input[type="radio"] + label {
+      color:             $color-key-dark;
+      border-bottom:     1px solid $color-key-dark;
+      border-top:        1px solid $color-key-dark;
+      border-right:      1px solid $color-key-dark;
+      &:first-of-type {
+        border-left:     1px solid $color-key-dark;
+      }
+    }
+    input[type="radio"]:checked + label {
+      background-color:  $color-key-dark;
+      color:             $color-white;
+    }
+  }
+  &.dark {
+    input[type="radio"] + label {
+      color:             $color-black;
+      border-bottom:     1px solid $color-black;
+      border-top:        1px solid $color-black;
+      border-right:      1px solid $color-black;
+      &:first-of-type {
+        border-left:     1px solid $color-black;
+      }
+    }
+    input[type="radio"]:checked + label {
+      background-color:  $color-black;
+      color:             $color-white;
+    }
+  }
+}
+
+.displayBox {
+  margin:                         20px 0 20px;
+  height:                         auto;
+  padding:                        12px 9px;
+  border:                         $displayBox-border-width solid $color-key-medium;
+  border-radius:                  $displayBox-border-radius;
+  color:                          $color-dark-grey;
+  &.light, &.white {
+    border:                       $displayBox-border-width solid $color-white;
+    color:                        $color-white;
+    background-color:             lighten($color-white, 33%);
+  }
+  &.success, &.green {
+    border:                       $displayBox-border-width solid $color-success;
+    color:                        $color-success;
+    background-color:             lighten($color-success, 33%);
+  }
+  &.confirm, &.lightGreen {
+    border:                       $displayBox-border-width solid $color-confirm;
+    color:                        $color-confirm;
+    background-color:             lighten($color-confirm, 33%);
+  }
+  &.alert, &.yellow {
+    border:                       $displayBox-border-width solid $color-alert;
+    color:                        $color-alert;
+    background-color:             lighten($color-alert, 33%);
+  }
+  &.warning, &.red {
+    border:                       $displayBox-border-width solid $color-warning;
+    color:                        $color-warning;
+    background-color:             lighten($color-warning, 33%);
+  }
+  &.info, &.purple {
+    border:                       $displayBox-border-width solid $color-info;
+    color:                        $color-info;
+    background-color:             lighten($color-info, 33%);
+  }
+  &.system, &.navy {
+    border:                       $dropdown-border-width solid $color-key-dark;
+    color:                        $color-key-dark;
+    background-color:             lighten($color-key-dark, 33%);
+  }
+  &.dark {
+    border:                       $dropdown-border-width solid $color-black;
+    color:                        $color-black;
+    background-color:             lighten($color-black, 33%);
   }
 }

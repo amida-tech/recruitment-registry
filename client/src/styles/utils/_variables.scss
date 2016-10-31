@@ -1,20 +1,34 @@
 /*This file contains all application-wide CSS variables.*/
-
-$text-font-stack: 'Helvetica Neue Light', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+@import url('https://fonts.googleapis.com/css?family=Raleway:400,500');
+$text-font-stack: 'Raleway', sans-serif;
 $code-font-stack: 'Courier New', 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', 'Monaco', monospace;
-$serif-font-stack: Georgia, Times, 'Times New Roman', serif;
+$serif-font-stack: 'Raleway', sans-serif;
+@import url('https://fonts.googleapis.com/css?family=Lato:300,400,700');
+$ui-text-font-stack: 'Lato', sans-serif;
 
-$brand-color: #6CC0E5;
-$dark-brand-color: #41ADDD;
-$error-color: #FB4F4F;
+// COLORS MUST BE HEX
 
-$background-color: #FAFAFA;
-$very-light-grey: #EDEDED;
-$light-grey: #CCC;
-$mid-grey: #999;
-$dark-grey: #666;
-$very-dark-grey: #333;
-$text-color: #222;
+$gap-black: #333333;
+$gap-dark-grey: #6B6E88;
+$gap-medium-grey: #C1C1C1;
+$gap-light-grey: #E7EAEE;
+$gap-white: #F5F6F7;
 
-$max-width: 768px;
+$gap-navy: #283178;
+$gap-medium-blue: #359BE6;
+$gap-light-blue: #9FC6E2;
+
+$gap-red: #DD3953;
+
+$gap-dark-purple: #4A059E;
+$gap-purple: #6B14CE;
+$gap-light-purple: #C86DD7;
+
+$gap-green: #04A777;
+$gap-light-green: #00D196;
+
+$gap-orange: #EEBA3D;
+
+
+$max-width: 1440px;
 $nav-height: 3.5em;

@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
 import Slider from 'react-slick'
-import './index.scss';
 import { Link } from 'react-router';
 import '../../../node_modules/slick-carousel/slick/slick.scss'
 
@@ -19,9 +18,7 @@ class Form extends Component {
 
   render() {
     var header = (
-      <div className="rr-wrapper m-b-2">
-        <h1 className="rr no-transform">{this.props.vocab.get('LETS_CREATE')}</h1>
-      </div>
+        <h4>{this.props.vocab.get('LETS_CREATE')}</h4>
     )
 
     const renderInputField = (id, type, placeholder, label) => (
@@ -32,8 +29,8 @@ class Form extends Component {
           <input autoComplete="off" required className="rr-blankline rr-field" id={id} type={type} onChange={this.props.changeForm} />
         </div>
         <div className="rr-controls">
-          <button className= {id == 'username' ? "invisible rr-button m-r-2": "btn rr-button m-r-2"} onClick={this.previous} type="button">{this.props.vocab.get('BACK')}</button>
-          <button className="btn rr-button" onClick={this.next} type="button">{this.props.vocab.get('NEXT')}</button>
+          <button className="buttonPrimary pull-right" onClick={this.next} type="button">{this.props.vocab.get('NEXT')}</button>
+          <button className="buttonSecondary" onClick={this.previous} type="button">{this.props.vocab.get('BACK')}</button>
         </div>
       </div>
     )
@@ -48,8 +45,8 @@ class Form extends Component {
           </select>
         </div>
         <div className="rr-controls">
-          <button className="btn rr-button m-r-2" onClick={this.previous} type="button">{this.props.vocab.get('BACK')}</button>
-          <button className="btn rr-button" onClick={this.next} type="button">{this.props.vocab.get('NEXT')}</button>
+          <button className="buttonPrimary" onClick={this.previous} type="button">{this.props.vocab.get('BACK')}</button>
+          <button className="buttonPrimary" onClick={this.next} type="button">{this.props.vocab.get('NEXT')}</button>
         </div>
       </div>
     )
@@ -235,8 +232,7 @@ class Form extends Component {
 
     return(
       <form autoComplete="off">
-        <div className="col-lg-6">
-          <div className="registry-specific">
+          <div className="registry-specific register--inputContainer">
             {
               this.props.survey.questions.length > 0 ? (
                 <Slider ref='slider' {...settings}>
@@ -245,8 +241,6 @@ class Form extends Component {
               ) : (<div>{this.props.vocab.get('LOADING')}...</div>)
             }
           </div>
-        </div>
-
       </form>
     );
 
