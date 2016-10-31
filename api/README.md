@@ -64,11 +64,26 @@ Although this project uses Sequelize it does not support other Sequelize compati
 * `rr_section`table includes an integer array type column named `indices`.  A seperate table can be used instead.  Code need to be updated acccordingly.
 * `answer` data access object (answer.dao.js) uses Postgres `to_char` function in one of the queries.  This function needs to be replaced by equivalent.
 
+## Resources
+
+Primary resources are questions, answers, surveys and consent documents.  All the other resources are axulliary in nature to support the primary resources.
+
+#### Question
+
+This is a question centric design where all participant information (except login) is obtained from answers to some question.  Questions are stand alone and can be shared between surveys.  Currently four types of questions are supported
+
+- 'text': These are free text questions.
+- 'bool': These are yes/no questions
+- 'choice': These are multiple choice questions from which a single selection needs to be made.
+- 'choices': These are multi answer questions where participants can make multiple selections from multiple choices.  Additional free text components can be also specified for this type to collect additional information from participants that is not covered by the choices.
+
+
+
 ## API
 
 [swagger.json](./swagger.json) describes the API.  You can view by various swagger tools.
 
-When the server running `/doc` path serves API user interface (`localhost:9005/docs` for default settings).
+When the server is running `/doc` path serves API user interface (`localhost:9005/docs` for default settings).
 
 ## Database Design
 
