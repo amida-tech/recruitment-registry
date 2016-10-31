@@ -9,6 +9,7 @@
   "NEXT": "Next",
   "SKIP": "Skip",
   "BACK": "Back",
+  "SUBMIT": "Submit",
   "FORGOT_USER_PASS": "Forgot your username and password?",
   "LOGIN": "Login",
   "LOGOUT":"Logout",
@@ -22,6 +23,8 @@
   "THANKS": "Thanks.",
   "ACCOUNT_CREATED": "Your account has been created.",
   "GO_DASHBOARD": "Go to My Dashboard",
+  "PLEASE_SELECT": "Please Select",
+  "PLEASE_ENTER_DATA": "Please enter how:",
   "LOADING": "Loading",
   "NEW_PASSWORD": "New Password",
   "ZIP": "ZIP Code",
@@ -43,5 +46,6 @@
   "MY_GENDER": "My gender is",
   "MY_ETHNIC": "My ethnicity is",
   "INVALID_CREDENTIALS": "Invalid credentials!",
+  "SUBMISSION_FAILURE": "Something terrible has happened. Go home and never return.",
   "AVAIL_SURVEYS": "Currently available surveys:"
 }

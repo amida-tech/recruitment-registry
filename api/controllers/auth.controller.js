@@ -3,27 +3,21 @@
 const passport = require('passport');
 const passportHttp = require('passport-http');
 
-const models = require('../models');
+const db = require('../models/db');
 const tokener = require('../lib/tokener');
-
-const User = models.User;
+const jsutil = require('../lib/jsutil');
 
 const basicStrategy = function (username, password, done) {
-    User.findOne({
-        where: {
-            username
-        }
-    }).then(function (user) {
-        if (user) {
-            return user.authenticate(password).then(function () {
-                done(null, user);
-            }).catch(function (err) {
-                done(err);
-            });
-        } else {
-            return done(null, false);
-        }
-    });
+    db.User.findOne({ where: { username } })
+        .then(function (user) {
+            if (user) {
+                return user.authenticate(password)
+                    .then(() => done(null, user))
+                    .catch(err => done(err));
+            } else {
+                return done(null, false);
+            }
+        });
 };
 
 exports.init = function () {
@@ -33,28 +27,17 @@ exports.init = function () {
 exports.init();
 
 const authenticate = passport.authenticate('basic', {
-    session: false
+    session: false,
+    failWithError: true
 });
 
-const sendToken = function (req, res) {
-    const token = tokener.createJWT(req.user);
-    if (token) {
-        res.status(200).json({
-            token
-        }); // This is for development. We will probably want to return as a cookie.
-    } else {
-        res.status(400).json({
-            message: 'Unexpected error.'
-        });
-    }
-};
-
-exports.authenticateBasic = function (req, res, next) {
+exports.authenticateBasic = function (req, res) {
     authenticate(req, res, function (err) {
         if (err) {
-            res.status(401);
-            return next(err);
+            err = jsutil.errToJSON(err);
+            return res.status(401).json(err);
         }
-        sendToken(req, res);
+        const token = tokener.createJWT(req.user);
+        res.status(200).json({ token }); // This is for development. We will probably want to return as a cookie.
     });
 };

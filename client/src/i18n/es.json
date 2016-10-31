@@ -9,6 +9,7 @@
   "NEXT": "Siguiente",
   "SKIP": "Omitir",
   "BACK": "Volvir",
+  "SUBMIT": "Enviar",
   "FORGOT_USER_PASS": "¿Ha olvidado su nombre de usuario o contraseña?",
   "LOGIN": "Iniciar Sesión",
   "LOGOUT":"Cerrar Sesión",
@@ -22,6 +23,8 @@
   "THANKS": "Gracias.",
   "ACCOUNT_CREATED": "Tu cuenta ha sido creada.",
   "GO_DASHBOARD": "Ir a Mi tablero",
+  "PLEASE_SELECT": "Por Favor Seleccione",
+  "PLEASE_ENTER_DATA": "Por favor escribe cómo:",
   "LOADING": "Cargando",
   "NEW_PASSWORD": "Nueva Contraseña",
   "ZIP": "Código Postal",
@@ -43,5 +46,6 @@
   "MY_GENDER": "Mi género es",
   "MY_ETHNIC": "Mi origen étnico es",
   "INVALID_CREDENTIALS":"¡Credenciales no válidas!",
+  "SUBMISSION_FAILURE": "Presentación falló. Inténtelo de nuevo más tarde.",
   "AVAIL_SURVEYS": "Encuestas disponibles en la actualidad:"
 }

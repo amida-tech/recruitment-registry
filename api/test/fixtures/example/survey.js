@@ -65,6 +65,25 @@ exports.Alzheimer = {
     survey: {
         name: 'Alzheimer',
         questions: [{
+            text: 'Ethnicity',
+            required: true,
+            type: 'choice',
+            oneOfChoices: [
+                'Caucasian',
+                'Hispanic',
+                'African',
+                'Asian'
+            ]
+        }, {
+            text: 'Gender',
+            required: true,
+            type: 'choice',
+            oneOfChoices: ['male', 'female', 'other']
+        }, {
+            text: 'Zip code',
+            required: false,
+            type: 'text'
+        }, {
             text: 'Family history of memory disorders/AD/dementia?',
             required: true,
             type: 'bool'
@@ -105,6 +124,12 @@ exports.Alzheimer = {
         }]
     },
     answer: [{
+        choice: 1
+    }, {
+        choice: 1
+    }, {
+        textValue: '20850'
+    }, {
         boolValue: true
     }, {
         choices: [{ index: 0 }, { index: 5 }, { index: 8, textValue: 'Internet' }]
@@ -114,6 +139,12 @@ exports.Alzheimer = {
         boolValue: true
     }],
     answerUpdate: [{
+        choice: 0
+    }, {
+        choice: 0
+    }, {
+        textValue: '20855'
+    }, {
         boolValue: true
     }, {
         choices: [{ index: 2 }, { index: 3 }, { index: 8, textValue: 'Metro Ad' }]

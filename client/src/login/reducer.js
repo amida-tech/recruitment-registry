@@ -1,18 +1,17 @@
 import * as actionTypes from './actionTypes'
 import Immutable from 'immutable'
 
-
-const initialState = {
+export const initialState = {
   formState: {
     username: '',
     password: '',
-    user: localStorage.user ? JSON.parse(localStorage.user) : {
-      username: "",
-      role: "",
-      id: ""
-    }
+  },
+  user: localStorage.user ? JSON.parse(localStorage.user) : {
+    username: "",
+    role: "",
+    id: ""
   }
-};
+}
 
 var immutableState = Immutable.fromJS(initialState);
 
@@ -26,7 +25,7 @@ export default (state = immutableState, action) => {
       return state.setIn(['formState', 'hasErrors'], false)
     case actionTypes.GET_USER_SUCCESS:
       localStorage.user = JSON.stringify(action.payload)
-      return state.set('user', Immutable.fromJS(action.payload));
+      return state.set('user', Immutable.fromJS(action.payload))
     default:
       return state;
   }

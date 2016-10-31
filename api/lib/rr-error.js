@@ -1,6 +1,6 @@
 'use strict';
 
-const Sequelize = require('sequelize');
+const SPromise = require('.//promise');
 
 const errors = {};
 
@@ -18,7 +18,7 @@ class RRError extends Error {
 
     static reject(code, params) {
         const err = new RRError(code, params);
-        return Sequelize.Promise.reject(err); // TODO: Change to ES6 Promise with Sequelize 4
+        return SPromise.reject(err);
     }
 
     static injectParams(msg, params) {
@@ -75,12 +75,12 @@ errors.surveyNoQuestions = {
     msg: 'Surveys without questions are not accepted.'
 };
 
-errors.documentNoSystemDocuments = {
-    msg: 'System does not have the required documents uploaded.'
+errors.noSystemConsentDocuments = {
+    msg: 'System does not have the required consent sections uploaded.'
 };
 
 errors.profileSignaturesMissing = {
-    msg: 'Required document signatures are not included.'
+    msg: 'Required consent section signatures are not included.'
 };
 
 errors.jsonSchemaFailed = {
@@ -101,4 +101,20 @@ errors.answerQxNotInSurvey = {
 
 errors.qxReplaceWhenActiveSurveys = {
     msg: 'Question in active surveys cannot be removed or replaced.'
+};
+
+errors.consentTypeNotFound = {
+    msg: 'No such consent type.'
+};
+
+errors.consentTypeDeleteOnConsent = {
+    msg: 'Consent type cannot be removed because it is used by one or more consents.'
+};
+
+errors.smtpNotSpecified = {
+    msg: 'Smtp specifications are not specified.'
+};
+
+errors.smtpTextNotSpecified = {
+    msg: 'Email content and/or subject not specified for reset token.'
 };

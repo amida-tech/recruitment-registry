@@ -38,7 +38,7 @@ _.set(schema, 'definitions.newSurveyQuestion', {
             type: { type: 'string', enum: ['text', 'bool'] },
             required: { type: 'boolean' },
             actions: {
-                $ref: '#/definitions/actions'
+                $ref: '#/definitions/newActions'
             }
         },
         additionalProperties: false
@@ -61,7 +61,7 @@ _.set(schema, 'definitions.newSurveyQuestion', {
                 }
             },
             actions: {
-                $ref: '#/definitions/actions'
+                $ref: '#/definitions/newActions'
             }
         },
         additionalProperties: false,
@@ -77,7 +77,7 @@ _.set(schema, 'definitions.newSurveyQuestion', {
                 items: { type: 'string', minLength: 1 }
             },
             actions: {
-                $ref: '#/definitions/actions'
+                $ref: '#/definitions/newActions'
             }
         },
         additionalProperties: false,
@@ -101,7 +101,7 @@ _.set(schema, 'definitions.newSurveyQuestion', {
                 }
             },
             actions: {
-                $ref: '#/definitions/actions'
+                $ref: '#/definitions/newActions'
             }
         },
         additionalProperties: false
@@ -116,7 +116,7 @@ _.set(schema, 'definitions.newQuestion', {
             text: { type: 'string' },
             type: { type: 'string', enum: ['text', 'bool'] },
             actions: {
-                $ref: '#/definitions/actions'
+                $ref: '#/definitions/newActions'
             }
         },
         additionalProperties: false
@@ -138,7 +138,7 @@ _.set(schema, 'definitions.newQuestion', {
                 }
             },
             actions: {
-                $ref: '#/definitions/actions'
+                $ref: '#/definitions/newActions'
             }
         },
         additionalProperties: false,
@@ -153,7 +153,7 @@ _.set(schema, 'definitions.newQuestion', {
                 items: { type: 'string', minLength: 1 }
             },
             actions: {
-                $ref: '#/definitions/actions'
+                $ref: '#/definitions/newActions'
             }
         },
         additionalProperties: false,
@@ -176,7 +176,7 @@ _.set(schema, 'definitions.newQuestion', {
                 }
             },
             actions: {
-                $ref: '#/definitions/actions'
+                $ref: '#/definitions/newActions'
             }
         },
         additionalProperties: false

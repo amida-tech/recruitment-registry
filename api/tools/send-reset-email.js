@@ -2,13 +2,15 @@
 'use strict';
 process.env.NODE_ENV = 'test';
 
-const helper = require('../helper/survey-helper');
+const helper = require('../util/survey-common');
 
-const shared = require('../shared-integration');
+const SharedIntegration = require('../util/shared-integration');
 const userExamples = require('../fixtures/example/user');
 const surveyExamples = require('../fixtures/example/survey');
 
 const config = require('../../config');
+
+const shared = new SharedIntegration();
 
 describe('user set-up and login use-case', function () {
     const userExample = userExamples.Alzheimer;

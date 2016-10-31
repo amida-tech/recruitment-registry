@@ -5,68 +5,71 @@ const config = require('../config');
 const jwt = require('jsonwebtoken');
 const _ = require('lodash');
 
-const models = require('../models');
+const db = require('../models/db');
 
-const User = models.User;
+const User = db.User;
+
+const invalidAuth = {
+    message: 'Invalid authorization',
+    code: 'invalid_auth',
+    statusCode: 401
+};
+
+const noAuth = {
+    message: 'No authorization',
+    code: 'no_auth',
+    statusCode: 401
+};
+
+const invalidUser = {
+    message: 'Invalid user',
+    code: 'invalid_user',
+    statusCode: 403
+};
+
+const unauthorizedUser = {
+    message: 'Unauthorized user',
+    code: 'unauth_user',
+    statusCode: 403
+};
 
 const jwtAuth = function (req, header, verifyUserFn, callback) {
     if (header) {
         const matches = header.match(/(\S+)\s+(\S+)/);
         if (matches && matches[1] === 'Bearer') {
             const token = matches[2];
-            if (token) {
-                return jwt.verify(token, config.jwt.secret, {}, function (err, payload) {
-                    if (err) {
-                        err.statusCode = 401;
-                        return callback({
-                            message: 'Invalid authorization',
-                            code: 'invalid_auth',
-                            statusCode: 401
-                        });
+            return jwt.verify(token, config.jwt.secret, {}, function (err, payload) {
+                if (err) {
+                    return callback(invalidAuth);
+                }
+                User.findOne({
+                    where: {
+                        id: payload.id,
+                        username: payload.username
+                    },
+                    attributes: {
+                        exclude: [
+                            'createdAt', 'updatedAt', 'password'
+                        ]
                     }
-                    User.findOne({
-                        where: {
-                            id: payload.id,
-                            username: payload.username
-                        },
-                        attributes: {
-                            exclude: [
-                                'createdAt', 'updatedAt', 'password'
-                            ]
-                        }
-                    }).then(user => {
-                        if (user) {
-                            user = user.get(undefined, {
-                                plain: true
-                            });
-                            let err = verifyUserFn(user);
-                            req.user = user;
-                            return callback(err);
-                        } else {
-                            let err = {
-                                message: 'Invalid user',
-                                code: 'invalid_user',
-                                statusCode: 403
-                            };
-                            return callback(err);
-                        }
-                    });
+                }).then(user => {
+                    if (user) {
+                        user = user.get(undefined, {
+                            plain: true
+                        });
+                        let err = verifyUserFn(user);
+                        req.user = user;
+                        return callback(err);
+                    } else {
+                        return callback(invalidUser);
+                    }
                 });
-            }
-        } else {
-            return callback({
-                message: 'Invalid authorization',
-                code: 'invalid_auth',
-                statusCode: 401
             });
+        } else {
+            return callback(invalidAuth);
         }
     }
-    let err = {
-        message: 'No authorization',
-        code: 'no_auth',
-        statusCode: 401
-    };
-    callback(err);
+    callback(noAuth);
 };
 
 const roleCheck = function (role) {
@@ -74,11 +77,7 @@ const roleCheck = function (role) {
         if (user.role === role) {
             return null;
         }
-        return {
-            message: 'Unauthorized user',
-            code: 'unauth_user',
-            statusCode: 403
-        };
+        return unauthorizedUser;
     };
 };
 
@@ -87,22 +86,22 @@ const rolesCheck = function (roles) {
         if (roles.indexOf(user.role) >= 0) {
             return null;
         }
-        return {
-            message: 'Unauthorized user',
-            code: 'unauth_user',
-            statusCode: 403
-        };
+        return unauthorizedUser;
     };
 };
 
 module.exports = {
-    participant: function (req, def, header, callback) {
+    invalidAuth,
+    noAuth,
+    invalidUser,
+    unauthorizedUser,
+    participant(req, def, header, callback) {
         jwtAuth(req, header, rolesCheck(['participant', 'admin']), callback);
     },
-    admin: function (req, def, header, callback) {
+    admin(req, def, header, callback) {
         jwtAuth(req, header, roleCheck('admin'), callback);
     },
-    self: function (req, def, header, callback) {
+    self(req, def, header, callback) {
         jwtAuth(req, header, _.constant(null), callback);
     }
 };

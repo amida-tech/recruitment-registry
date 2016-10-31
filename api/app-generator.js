@@ -1,5 +1,7 @@
 'use strict';
 
+const config = require('./config');
+
 const swaggerTools = require('swagger-tools');
 
 const models = require('./models');
@@ -9,17 +11,9 @@ const logger = require('./logger');
 const jsutil = require('./lib/jsutil');
 
 const errHandler = function (err, req, res, next) {
+    next = next; // rid of unused error
     logger.error(err);
-
     err = jsutil.errToJSON(err);
-
-    if (res.headersSent) {
-        return next(err);
-    }
-    if ((!res.statusCode) || (res.statusCode < 300)) {
-        res.statusCode = 500;
-    }
-
     res.json(err);
 };
 
@@ -45,11 +39,9 @@ exports.initialize = function (app, options, callback) {
         app.use(errHandler);
 
         models.sequelize.sync({
-            force: process.env.NODE_ENV === 'test'
+            force: config.env === 'test'
         }).then(function () {
             callback(null, app);
-        }).catch(function (err) {
-            callback(err);
         });
     });
 };
