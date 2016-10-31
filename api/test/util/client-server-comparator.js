@@ -3,10 +3,9 @@
 const chai = require('chai');
 const _ = require('lodash');
 
-const models = require('../../models');
+const SPromise = require('../../lib/promise');
 
-const QuestionChoice = models.QuestionChoice;
-const QuestionAction = models.QuestionAction;
+const models = require('../../models');
 
 const expect = chai.expect;
 
@@ -24,7 +23,7 @@ const comparator = {
         if (!expected.id) {
             expected.id = id;
         }
-        return QuestionChoice.findChoicesPerQuestion(id)
+        return models.questionChoice.findChoicesPerQuestion(id)
             .then(choices => {
                 return choices.reduce(function (r, choice) {
                     r[choice.text] = choice.id;
@@ -56,7 +55,7 @@ const comparator = {
             })
             .then(() => {
                 if (expected.actions) {
-                    return QuestionAction.findActionsPerQuestion(id)
+                    return models.questionAction.findActionsPerQuestion(id)
                         .then((expected) => {
                             return expected.reduce(function (r, action) {
                                 r[action.text] = action.id;
@@ -81,7 +80,7 @@ const comparator = {
         const n = client.length;
         expect(n).to.equal(server.length);
         const pxs = _.range(n).map(i => this.question(client[i], server[i]));
-        return models.sequelize.Promise.all(pxs)
+        return SPromise.all(pxs)
             .then(() => {});
     },
     survey(client, server) {

@@ -1,6 +1,6 @@
 'use strict';
 
-const Sequelize = require('sequelize');
+const SPromise = require('.//promise');
 
 const errors = {};
 
@@ -18,7 +18,7 @@ class RRError extends Error {
 
     static reject(code, params) {
         const err = new RRError(code, params);
-        return Sequelize.Promise.reject(err); // TODO: Change to ES6 Promise with Sequelize 4
+        return SPromise.reject(err);
     }
 
     static injectParams(msg, params) {

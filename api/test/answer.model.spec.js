@@ -45,9 +45,9 @@ describe('answer unit', function () {
             if (language) {
                 input.language = language;
             }
-            return models.Answer.createAnswers(input)
+            return models.answer.createAnswers(input)
                 .then(function () {
-                    return models.Answer.getAnswers({
+                    return models.answer.getAnswers({
                             userId: hxUser.id(userIndex),
                             surveyId: hxSurvey.id(surveyIndex)
                         })
@@ -71,9 +71,9 @@ describe('answer unit', function () {
             if (language) {
                 input.language = language;
             }
-            return models.Answer.createAnswers(input)
+            return models.answer.createAnswers(input)
                 .then(function () {
-                    return models.Answer.getAnswers({
+                    return models.answer.getAnswers({
                             userId: hxUser.id(userIndex),
                             surveyId: hxSurvey.id(surveyIndex)
                         })
@@ -82,7 +82,7 @@ describe('answer unit', function () {
                             const actual = _.sortBy(result, 'questionId');
                             expect(actual).to.deep.equal(expected);
                         })
-                        .then(() => models.Answer.getOldAnswers({
+                        .then(() => models.answer.getOldAnswers({
                             userId: hxUser.id(userIndex),
                             surveyId: hxSurvey.id(surveyIndex)
                         }))

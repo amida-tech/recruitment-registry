@@ -17,8 +17,8 @@ describe('json schema validations', function () {
     let lastErr = {};
     let lastStatusCode;
     const res = {
-        status: function (statusCode) { lastStatusCode = statusCode; return this; },
-        json: function (err) { lastErr = err; }
+        status(statusCode) { lastStatusCode = statusCode; return this; },
+        json(err) { lastErr = err; }
     };
 
     it('invalid object key', function () {

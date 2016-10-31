@@ -20,7 +20,7 @@ const expect = chai.expect;
 const generator = new Generator();
 const shared = new SharedIntegration(generator);
 
-describe('consent unit', function () {
+describe('consent demo simpler', function () {
     const userExample = userExamples.Alzheimer;
     const surveyExample = surveyExamples.Alzheimer;
 
@@ -38,7 +38,7 @@ describe('consent unit', function () {
     before(shared.setUpFn(store));
 
     it('create Terms of Use and Consent Form records', function () {
-        return models.Registry.createProfileSurvey(surveyExample.survey);
+        return models.registry.createProfileSurvey(surveyExample.survey);
     });
 
     it('create Terms of Use and Consent Form records', function () {

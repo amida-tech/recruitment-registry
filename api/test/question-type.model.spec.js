@@ -6,10 +6,11 @@ const chai = require('chai');
 const _ = require('lodash');
 
 const models = require('../models');
+const db = require('../models/db');
 
 const expect = chai.expect;
 
-const QuestionType = models.QuestionType;
+const QuestionType = db.QuestionType;
 
 describe('question-type unit', function () {
     before(function () {
