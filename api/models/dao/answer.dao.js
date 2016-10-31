@@ -8,6 +8,7 @@ const SPromise = require('../../lib/promise');
 
 const sequelize = db.sequelize;
 const Answer = db.Answer;
+const Question = db.Question;
 const SurveyQuestion = db.SurveyQuestion;
 
 const missingConsentDocumentHandler = function () {
@@ -167,21 +168,24 @@ module.exports = class {
             })
             .then(missingConsentDocumentHandler())
             .then(() => {
-                return sequelize.query('select a.question_choice_id as "questionChoiceId", a.language_code as language, a.value as value, a.answer_type_id as type, q.type as qtype, q.id as qid from answer a, question q where a.deleted_at is null and a.user_id = :userid and a.survey_id = :surveyid and a.question_id = q.id', {
-                        replacements: {
-                            userid: { userId, surveyId }.userId,
-                            surveyid: { userId, surveyId }.surveyId
-                        },
-                        type: sequelize.QueryTypes.SELECT
+                return Answer.findAll({
+                        raw: true,
+                        where: { userId, surveyId },
+                        attributes: ['questionChoiceId', 'language', 'value', 'type'],
+                        include: [{
+                            model: Question,
+                            as: 'question',
+                            attributes: ['id', 'type']
+                        }]
                     })
                     .then(result => {
-                        const groupedResult = _.groupBy(result, 'qid');
+                        const groupedResult = _.groupBy(result, 'question.id');
                         return Object.keys(groupedResult).map(key => {
                             const v = groupedResult[key];
                             const r = {
-                                questionId: v[0].qid,
+                                questionId: v[0]['question.id'],
                                 language: v[0].language,
-                                answer: generateAnswer[v[0].qtype](v)
+                                answer: generateAnswer[v[0]['question.type']](v)
                             };
                             return r;
                         });
@@ -206,7 +210,7 @@ module.exports = class {
             .then(rawAnswers => {
                 const qidGrouped = _.groupBy(rawAnswers, 'questionId');
                 const qids = Object.keys(qidGrouped);
-                return sequelize.models.question.findAll({
+                return Question.findAll({
                         where: { id: { $in: qids } },
                         raw: true,
                         attributes: ['id', 'type']

@@ -46,18 +46,18 @@ const Section = sequelize.import('./section.model');
 const SmtpText = sequelize.import('./smtp-text.model');
 const Smtp = sequelize.import('./smtp.model');
 
-//Answer.belongsTo(Question, {
-//    as: 'question',
-//    foreignKey: {
-//        allowNull: false,
-//        fieldName: 'questionId',
-//        field: 'question_id',
-//        references: {
-//            model: 'question',
-//            key: 'id'
-//        }
-//    }
-//});
+Answer.belongsTo(Question, {
+    as: 'question',
+    foreignKey: {
+        allowNull: false,
+        fieldName: 'questionId',
+        field: 'question_id',
+        references: {
+            model: 'question',
+            key: 'id'
+        }
+    }
+});
 
 module.exports = {
     Sequelize,
