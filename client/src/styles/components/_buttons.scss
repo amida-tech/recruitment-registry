@@ -1,16 +1,25 @@
-// /*This file contains all styles related to the button component.*/
+// This file contains all styles related to the button component.
 
+// 
+// Buttons are created via an `<button>` or `<a>` tag.
+// 
+// You MUST apply one of the following classes to a button:
+// .buttonPrimary -OR- .buttonSecondary
+// 
+// You SHOULD apply one of the following classes to a button:
+// .light - used for dark backgrounds
+// .success
+// .confirm
+// .alert
+// .warning
+// .info
+// .system
+// .dark - use only for system / admin messages
 
-// .btn--loading {
-//   color: white;
-//   background-color: $brand-color;
-// }
-
-
-.btn {
+.btn, button {
 	padding: auto 18px;
 	height: 36px;
-	border-radius: $theme-button-radius;
+	border-radius: $button-radius;
 	min-width: 145px;
 	cursor: pointer;
 	display: inline-block;
@@ -18,88 +27,91 @@
 	font-size: 14px;
 	font-weight: 700;
 	letter-spacing: .5px;
+	-webkit-appearance:             none;
+	background-color: transparent;
+	color: $color-key-dark;
+	border: $button-border-width solid $color-key-dark;
+	outline: none;
 }
 
 .buttonPrimary {
 	@extend .btn;
-	border: $theme-button-border-width solid $theme-key-medium;
-	background-color: $theme-key-medium;
-	color: $theme-white;
-	&.light {
-		border: 2px solid $theme-white;
-		background-color: $theme-white;
-		color: $gap-medium-blue;
+	border: $button-border-width solid $color-key-medium;
+	background-color: $color-key-medium;
+	color: $color-white;
+	&.light, &.white {
+		border: $button-border-width solid $color-white;
+		background-color: $color-white;
+		color: $color-key-medium;
 	}
 	&.success, &.green {
-		border: 2px solid $gap-green;
-		background-color: $gap-green;
-		color: $theme-white;
+		border: $button-border-width solid $color-success;
+		background-color: $color-success;
+		color: $color-white;
+	}
+	&.confirm, &.lightGreen {
+		border: $button-border-width solid $color-confirm;
+		background-color: $color-confirm;
+		color: $color-white;
 	}
 	&.alert, &.yellow {
-		border: 2px solid $gap-orange;
-		background-color: $gap-orange;
-		color: $theme-white;
+		border: $button-border-width solid $color-alert;
+		background-color: $color-alert;
+		color: $color-white;
 	}
 	&.warning, &.red {
-		border: 2px solid $gap-red;
-		background-color: $gap-red;
-		color: $theme-white;
+		border: $button-border-width solid $color-warning;
+		background-color: $color-warning;
+		color: $color-white;
 	}
 	&.info, &.purple {
-		border: 2px solid $gap-purple;
-		background-color: $gap-purple;
-		color: $theme-white;
+		border: $button-border-width solid $color-info;
+		background-color: $color-info;
+		color: $color-white;
 	}
 	&.system, &.navy {
-		border: 2px solid $gap-navy;
-		background-color: $gap-navy;
-		color: $theme-white;
+		border: $button-border-width solid $color-key-dark;
+		background-color: $color-key-dark;
+		color: $color-white;
 	}
 	&.dark {
-		border: 2px solid $gap-black;
-		background-color: $gap-black;
-		color: $theme-white;
+		border: $button-border-width solid $color-black;
+		background-color: $color-black;
+		color: $color-white;
 	}
-}
-
-.buttonConfirm {
-	@extend .btn;
-	border: 2px solid $gap-light-green;
-	background-color: $gap-light-green;
-	color: $gap-white;
 }
 
 .buttonSecondary {
 	@extend .btn;
-	border: 2px solid $gap-medium-blue;
-	color: $gap-medium-blue;
+	border: $button-border-width solid $color-key-medium;
+	color: $color-key-medium;
 
 	&.light {
-		border: 2px solid $gap-white;
-		color: $gap-white;
+		border: $button-border-width solid $color-white;
+		color: $color-white;
 	}
 	&.success, &.green {
-		border: 2px solid $gap-green;
-		color: $gap-green;
+		border: $button-border-width solid $color-success;
+		color: $color-success;
 	}
 	&.alert, &.yellow {
-		border: 2px solid $gap-orange;
-		color: $gap-orange;
+		border: $button-border-width solid $color-alert;
+		color: $color-alert;
 	}
 	&.warning, &.red {
-		border: 2px solid $gap-red;
-		color: $gap-red;
+		border: $button-border-width solid $color-warning;
+		color: $color-warning;
 	}
 	&.info, &.purple {
-		border: 2px solid $gap-purple;
-		color: $gap-purple;
+		border: $button-border-width solid $color-info;
+		color: $color-info;
 	}
 	&.system, &.navy {
-		border: 2px solid $gap-navy;
-		color: $gap-navy;
+		border: $button-border-width solid $color-key-dark;
+		color: $color-key-dark;
 	}
 	&.dark {
-		border: 2px solid $gap-black;
+		border: $button-border-width solid $gap-black;
 		color: $gap-black;
 	}
 }

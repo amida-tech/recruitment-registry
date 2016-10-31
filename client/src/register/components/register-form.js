@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
 import Slider from 'react-slick'
-import './index.scss';
 import { Link } from 'react-router';
 import '../../../node_modules/slick-carousel/slick/slick.scss'
 
@@ -30,8 +29,8 @@ class Form extends Component {
           <input autoComplete="off" required className="rr-blankline rr-field" id={id} type={type} onChange={this.props.changeForm} />
         </div>
         <div className="rr-controls">
-          <button className= {id == 'username' ? "invisible rr-button m-r-2": "btn rr-button m-r-2"} onClick={this.previous} type="button">{this.props.vocab.get('BACK')}</button>
-          <button className="btn rr-button" onClick={this.next} type="button">{this.props.vocab.get('NEXT')}</button>
+          <button className="buttonPrimary pull-right" onClick={this.next} type="button">{this.props.vocab.get('NEXT')}</button>
+          <button className="buttonSecondary" onClick={this.previous} type="button">{this.props.vocab.get('BACK')}</button>
         </div>
       </div>
     )
@@ -46,8 +45,8 @@ class Form extends Component {
           </select>
         </div>
         <div className="rr-controls">
-          <button className="btn rr-button m-r-2" onClick={this.previous} type="button">{this.props.vocab.get('BACK')}</button>
-          <button className="btn rr-button" onClick={this.next} type="button">{this.props.vocab.get('NEXT')}</button>
+          <button className="buttonPrimary" onClick={this.previous} type="button">{this.props.vocab.get('BACK')}</button>
+          <button className="buttonPrimary" onClick={this.next} type="button">{this.props.vocab.get('NEXT')}</button>
         </div>
       </div>
     )

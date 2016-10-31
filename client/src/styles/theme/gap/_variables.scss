@@ -1,70 +1,72 @@
 // Universial Variables
-	$theme-default-border-radius: '4px';
+	$default-border-radius: '4px';
+	$default-border-width: 2px;
 
 // FONTS
 	// You'll need to specify your imports here as well. 
 	@import url('https://fonts.googleapis.com/css?family=Raleway:400,500');
 	@import url('https://fonts.googleapis.com/css?family=Lato:300,400,700');
 
-	$theme-font-primary: 'Raleway', sans-serif;
+	$font-primary: 'Raleway', sans-serif;
 		// a sans-serif font used for default text elements
 
-	$theme-font-secondary: 'Lato', sans-serif;
+	$font-secondary: 'Lato', sans-serif;
 		// a sans-serif font used for context information (such as tooltips and modal window descriptions)
 
-	$theme-font-serif: 'Lato', sans-serif;
+	$font-serif: 'Lato', sans-serif;
 		// a serif-font used for the input of personal details
 
-	$theme-font-code: 'Courier New', 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', 'Monaco', monospace;
+	$font-code: 'Courier New', 'DejaVu Sans Mono', 'Bitstream Vera Sans Mono', 'Monaco', monospace;
 		// a monospaced font
 
 
 
 // BUTTONS
-	$theme-button-border-width: '1px';
-	$theme-button-radius: '1000px';
+	$button-border-width: $default-border-width;
+	$button-radius: 1000px;
 
 
 
 // DROPDOWNS
-	$theme-dropdown-border-radius: $theme-default-border-radius;
+	$dropdown-border-width: 1px;
+	$dropdown-border-radius: $default-border-radius;
 
 
 
 // COLORS
-	$theme-black: #333333;
+	$color-black: #333333;
 		// default color for primary text styles
 
-	$theme-dark-grey: #6B6E88;
+	$color-dark-grey: #6B6E88;
 		// defualt color for secondary text styles
 
-	$theme-medium-grey: #C1C1C1;
+	$color-medium-grey: #C1C1C1;
 
-	$theme-light-grey: #E7EAEE;
+	$color-light-grey: #E7EAEE;
 
-	$theme-white: #F5F6F7;
+	$color-white: #F5F6F7;
 		// default background color
 
-	$theme-key-dark: #283178;
+	$color-key-dark: #283178;
 		// default dark non-neutral color. Is also used to style 'system' elements.
 
-	$theme-key-medium: #359BE6;
+	$color-key-medium: #359BE6;
 		// default button color
 
-	$theme-key-light: #9FC6E2;
+	$color-key-light: #9FC6E2;
 		// default secondary button color
 
-	$theme-warning: #DD3953;
+	$color-warning: #DD3953;
 		// default color for alerts and warnings (typically red)
 
-	$theme-alert: #EEBA3D;
+	$color-alert: #EEBA3D;
 		// default color for alerts (typically orange)
 
-	$theme-info: #6B14CE;
+	$color-info: #6B14CE;
 		// default color for highlighed informational elements (typically purple)
 
-	$theme-success: #04A777;
+	$color-success: #04A777;
 		// default color for success elements. (typically green)
 
-	$theme-confirm: #00D196;
+	$color-confirm: #00D196;
 		// default color for confirmation elements. (typically light green)
