@@ -1,0 +1,18 @@
+input {
+  position:                       relative;
+  width:                          100%;
+  color:                          $color-dark-grey;
+  border:                         none;
+  outline:                        0;
+  letter-spacing:                 0.05em;
+  display:                        inline-block;
+  margin:                         0;
+  background:                     transparent;
+  padding:                        0 4px;
+  font-weight:                    300;
+  border-bottom:                  1px solid $color-dark-grey;
+  outline:                        none;
+  &.warning {
+  	border-bottom: 1px solid $color-warning;
+  }
+}
