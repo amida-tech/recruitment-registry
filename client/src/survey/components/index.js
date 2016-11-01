@@ -28,7 +28,7 @@ export class SurveyContainer extends Component {
                 changeForm={::this._changeAnswer} text={question.text}
                  required={question.required}/>
             );
-            case "bool":
+          case "bool":
             return (
               <SurveyFields.Bool key={question.id} id={question.id}
                 changeForm={::this._changeAnswer} text={question.text}

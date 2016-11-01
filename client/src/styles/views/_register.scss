@@ -5,9 +5,17 @@
 	right: 0;
 	position: fixed;
 	@extend .row;
+	.subtitle {
+		position:absolute;
+		top: 20%;
+		left: 50%;
+		transform: translate(-50% ,-50%);
+		font-weight: bold;
+		color: $color-white;
+	}
 	.register--inputContainer {
 		position: absolute;
-		top: 50%;
+		top: 55%;
 		left: 50%;
 		transform: translate(-50% ,-50%);
 		margin: 0 auto;
@@ -27,14 +35,23 @@
 				text-transform: uppercase;
 				line-height: 24px;
 			}
-			label {
-				display: none;
-			}
+			// label {
+			// 	display: none;
+			// }
 			a {
 				float: right;
 				vertical-align: baseline;
 				margin-top: 10px;
 				font-size: 14px;
+			}
+			input[type=radio],
+			input.radio{
+				float:left;
+				clear: none;
+				width: 5%;
+				margin: 2px 0 0 2px;
+			}
+			.controls {
 			}
 		}
 	}

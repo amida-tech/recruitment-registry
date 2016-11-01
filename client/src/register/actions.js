@@ -1,25 +1,18 @@
 import * as actionTypes from './actionTypes';
 import apiProvider from '../utils/api';
 
-export function update(name, value) {
+export function updateUser(id, value){
   return dispatch => dispatch({
-    type: actionTypes.CHANGE_FORM,
-    name, value
-  });
+    type: actionTypes.UPDATE_REGISTER_USER,
+    id, value
+  })
 }
 
-export function updateChoicesAnswer(data) {
+export function updateAnswer(itype, id, value, name) {
   return dispatch => dispatch({
-    type: "UPDATE_CHOICES_ANSWER",
-    payload: data
-  });
-}
-
-export function clearChoices(data) {
-  return dispatch => dispatch({
-    type: "CLEAR_CHOICES_ANSWER",
-    payload: data
-  });
+    type: actionTypes.UPDATE_REGISTER_ANSWERS,
+    itype, id, value, name
+  })
 }
 
 export function getSurvey() {
