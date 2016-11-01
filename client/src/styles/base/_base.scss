@@ -1,18 +1,10 @@
-/*This file contains very basic styles.*/
 
-/**
- * Set up a decent box model on the root element
- */
+
+// Box-sizing fixes
+// https://css-tricks.com/inheriting-box-sizing-probably-slightly-better-best-practice/
 html {
   box-sizing: border-box;
 }
-
-/**
- * Make all elements from the DOM inherit from the parent box-sizing
- * Since `*` has a specificity of 0, it does not override the `html` value
- * making all elements inheriting from the root box-sizing value
- * See: https://css-tricks.com/inheriting-box-sizing-probably-slightly-better-best-practice/
- */
 *, *::before, *::after {
   box-sizing: inherit;
 }
@@ -25,11 +17,19 @@ body {
   height: 100%;
 }
 
-body {
-	font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
-    color: black;
+#root {
+  max-width: $max-width;
+  width: 90%;
+  position: relative;
+  margin: 0 auto;
 }
 
-body.js-open-sans-loaded {
-	font-family: 'Open Sans', Helvetica Neue, Helvetica, Arial, sans-serif;
-}
+
+
+
+
+
+
+
+
+
