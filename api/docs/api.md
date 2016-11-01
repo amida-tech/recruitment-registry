@@ -271,6 +271,26 @@ request
 
 If successful this post will return HTTP status 201 (Created) and the survey `id` will be in the body.  If post fails the HTTP status will be one of 40x codes or 500 depending on the error type - 400 (Bad Request), 401 (Unauthorized), 403 (Forbidden), 500 (Internal Server Error).
 
+##### Profile Survey
+
+The system is required to have one special survey called profile survey.  This special survey is used during registration of participants and contains all the questions needed for registration.  JSON definition of this survey does not have any difference from other surveys and is desribed in [survey administration](#admin-surveys).  Only posting differs
+
+```
+let profileSurveyId = null;
+request
+	.post('http://localhost:9005/api/v1.0/profile-survey')
+	.set('Authorization', 'Bearer ' + jwt)
+	.send(survey)
+	.end(function (err, res) {
+		console.log(res.status);  // 201
+		console.log(res.body.id); // Expected to be internal id of the survey
+		profileSurveyId = res.body.id;
+	});
+```
+
+Response details are identical to posting an ordinary survey.
+
+##### Consent Documents
 
 ### Multi Lingual Support
 <a name="multi-lingual-support"/>
