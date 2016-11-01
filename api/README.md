@@ -77,13 +77,13 @@ This is a question centric design where all participant information (except logi
 - 'choice': These are multiple choice questions from which a single selection needs to be made.
 - 'choices': These are multi answer questions where participants can make multiple selections from multiple choices.  Additional free text components can be also specified for this type to collect additional information from participants that is not covered by the choices.
 
-
+#### Answers
 
 ## API
 
-[swagger.json](./swagger.json) describes the API.  You can view by various swagger tools.
+File [swagger.json](./swagger.json) describes the API.  There are various [swagger](http://swagger.io/) tools such as [swagger-codegen](https://github.com/swagger-api/swagger-codegen) that can be used view or generate reports based on this file.  In addition when the recruitment-registry api server is running `/doc` path serves as the API user interface (`localhost:9005/docs` for default settings).
 
-When the server is running `/doc` path serves API user interface (`localhost:9005/docs` for default settings).
+Another detailed description of the API with working examples is provided in the [integration document](./docs/api.md).
 
 ## Database Design
 
