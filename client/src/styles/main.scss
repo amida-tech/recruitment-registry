@@ -20,13 +20,15 @@
 @import 'layout/footer';
 
 // Various UI components. (Comments are provided for utilization, review each document for expample utilization.)
-@import 'components/text';
 @import 'components/buttons';
-@import 'components/home';
-@import 'components/form-page';
+@import 'components/displayBox';
 @import 'components/form';
-@import 'components/nav';
+@import 'components/input';
 @import 'components/loading-indicator';
+@import 'components/nav';
+@import 'components/radio';
+@import 'components/select';
+@import 'components/text';
 
 // View specific componenets.
 @import 'views/login';

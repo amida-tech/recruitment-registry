@@ -1,0 +1,68 @@
+select {
+  height:                         36px;
+  -webkit-appearance:             none;
+  outline:                        none;
+  margin:                         20px 0 20px;
+  border:                         $dropdown-border-width solid $color-key-medium;
+  border-radius:                  $dropdown-border-radius;
+  background-color:               transparent;
+  color:                          $color-dark-grey;
+  font-size:                      14px;
+  font-weight:                    700;
+  padding-left:                   12px;
+  padding-right:                  45px;
+  min-width:                      315px;
+  background-repeat:              no-repeat;
+  background-position:            right 10px center;
+  @extend                         .utility--shadow-flat.small;
+  background-image:               url('data:image/svg+xml;charset=utf-8,<svg width="23px" height="21px" viewBox="0 0 23 21" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g id="Scratch" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g id="Group-7" transform="translate(-1.000000, -7.000000)"><rect id="Rectangle-3" x="1" y="0" width="32" height="36"></rect><path d="M1.5,7.5 L1.5,27.5" id="Line" stroke="#{urlFriendlyColor($color-key-medium)}" stroke-linecap="square"></path><polygon id="▾" fill="#{urlFriendlyColor($color-key-medium)}" points="11.71875 14.8066406 23.28125 14.8066406 17.5 20.5878906"></polygon></g></g></svg>');
+                                  // background image uses data attributes to accomodate for themeing. Colors are rendered via the urlFriendlyColor sass function in styles/utils/_ui.scss
+  &.light, &.white {
+    border:                       $dropdown-border-width solid $color-white;
+    color:                        $color-white;
+    background-image:             url('data:image/svg+xml;charset=utf-8,<svg width="23px" height="21px" viewBox="0 0 23 21" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g id="Scratch" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g id="Group-7" transform="translate(-1.000000, -7.000000)"><rect id="Rectangle-3" x="1" y="0" width="32" height="36"></rect><path d="M1.5,7.5 L1.5,27.5" id="Line" stroke="#{urlFriendlyColor($color-white)}" stroke-linecap="square"></path><polygon id="▾" fill="#{urlFriendlyColor($color-white)}" points="11.71875 14.8066406 23.28125 14.8066406 17.5 20.5878906"></polygon></g></g></svg>');
+                                  // background image uses data attributes to accomodate for themeing. Colors are rendered via the urlFriendlyColor sass function in styles/utils/_ui.scss
+  }
+  &.success, &.green {
+    border:                       $dropdown-border-width solid $color-success;
+    color:                        $color-success;
+    background-image:             url('data:image/svg+xml;charset=utf-8,<svg width="23px" height="21px" viewBox="0 0 23 21" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g id="Scratch" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g id="Group-7" transform="translate(-1.000000, -7.000000)"><rect id="Rectangle-3" x="1" y="0" width="32" height="36"></rect><path d="M1.5,7.5 L1.5,27.5" id="Line" stroke="#{urlFriendlyColor($color-success)}" stroke-linecap="square"></path><polygon id="▾" fill="#{urlFriendlyColor($color-success)}" points="11.71875 14.8066406 23.28125 14.8066406 17.5 20.5878906"></polygon></g></g></svg>');
+                                  // background image uses data attributes to accomodate for themeing. Colors are rendered via the urlFriendlyColor sass function in styles/utils/_ui.scss
+  }
+  &.confirm, &.lightGreen {
+    border:                       $dropdown-border-width solid $color-confirm;
+    color:                        $color-confirm;
+    background-image:             url('data:image/svg+xml;charset=utf-8,<svg width="23px" height="21px" viewBox="0 0 23 21" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g id="Scratch" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g id="Group-7" transform="translate(-1.000000, -7.000000)"><rect id="Rectangle-3" x="1" y="0" width="32" height="36"></rect><path d="M1.5,7.5 L1.5,27.5" id="Line" stroke="#{urlFriendlyColor($color-confirm)}" stroke-linecap="square"></path><polygon id="▾" fill="#{urlFriendlyColor($color-confirm)}" points="11.71875 14.8066406 23.28125 14.8066406 17.5 20.5878906"></polygon></g></g></svg>');
+                                  // background image uses data attributes to accomodate for themeing. Colors are rendered via the urlFriendlyColor sass function in styles/utils/_ui.scss
+  }
+  &.alert, &.yellow {
+    border:                       $dropdown-border-width solid $color-alert;
+    color:                        $color-alert;
+    background-image:             url('data:image/svg+xml;charset=utf-8,<svg width="23px" height="21px" viewBox="0 0 23 21" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g id="Scratch" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g id="Group-7" transform="translate(-1.000000, -7.000000)"><rect id="Rectangle-3" x="1" y="0" width="32" height="36"></rect><path d="M1.5,7.5 L1.5,27.5" id="Line" stroke="#{urlFriendlyColor($color-alert)}" stroke-linecap="square"></path><polygon id="▾" fill="#{urlFriendlyColor($color-alert)}" points="11.71875 14.8066406 23.28125 14.8066406 17.5 20.5878906"></polygon></g></g></svg>');
+                                  // background image uses data attributes to accomodate for themeing. Colors are rendered via the urlFriendlyColor sass function in styles/utils/_ui.scss
+  }
+  &.warning, &.red {
+    border:                        $dropdown-border-width solid $color-warning;
+    color:                         $color-warning;
+    background-image:              url('data:image/svg+xml;charset=utf-8,<svg width="23px" height="21px" viewBox="0 0 23 21" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g id="Scratch" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g id="Group-7" transform="translate(-1.000000, -7.000000)"><rect id="Rectangle-3" x="1" y="0" width="32" height="36"></rect><path d="M1.5,7.5 L1.5,27.5" id="Line" stroke="#{urlFriendlyColor($color-warning)}" stroke-linecap="square"></path><polygon id="▾" fill="#{urlFriendlyColor($color-warning)}" points="11.71875 14.8066406 23.28125 14.8066406 17.5 20.5878906"></polygon></g></g></svg>');
+                                    // background image uses data attributes to accomodate for themeing. Colors are rendered via the urlFriendlyColor sass function in styles/utils/_ui.scss
+  }
+  &.info, &.purple {
+    border:                         $dropdown-border-width solid $color-info;
+    color:                          $color-info;
+    background-image:               url('data:image/svg+xml;charset=utf-8,<svg width="23px" height="21px" viewBox="0 0 23 21" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g id="Scratch" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g id="Group-7" transform="translate(-1.000000, -7.000000)"><rect id="Rectangle-3" x="1" y="0" width="32" height="36"></rect><path d="M1.5,7.5 L1.5,27.5" id="Line" stroke="#{urlFriendlyColor($color-info)}" stroke-linecap="square"></path><polygon id="▾" fill="#{urlFriendlyColor($color-info)}" points="11.71875 14.8066406 23.28125 14.8066406 17.5 20.5878906"></polygon></g></g></svg>');
+                                    // background image uses data attributes to accomodate for themeing. Colors are rendered via the urlFriendlyColor sass function in styles/utils/_ui.scss
+  }
+  &.system, &.navy {
+    border:                         $dropdown-border-width solid $color-key-dark;
+    color:                          $color-key-dark;
+    background-image:               url('data:image/svg+xml;charset=utf-8,<svg width="23px" height="21px" viewBox="0 0 23 21" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g id="Scratch" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g id="Group-7" transform="translate(-1.000000, -7.000000)"><rect id="Rectangle-3" x="1" y="0" width="32" height="36"></rect><path d="M1.5,7.5 L1.5,27.5" id="Line" stroke="#{urlFriendlyColor($color-key-dark)}" stroke-linecap="square"></path><polygon id="▾" fill="#{urlFriendlyColor($color-key-dark)}" points="11.71875 14.8066406 23.28125 14.8066406 17.5 20.5878906"></polygon></g></g></svg>');
+                                    // background image uses data attributes to accomodate for themeing. Colors are rendered via the urlFriendlyColor sass function in styles/utils/_ui.scss
+  }
+  &.dark {
+    border:                         $dropdown-border-width solid $color-black;
+    color:                          $color-black;
+    background-image:               url('data:image/svg+xml;charset=utf-8,<svg width="23px" height="21px" viewBox="0 0 23 21" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g id="Scratch" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"><g id="Group-7" transform="translate(-1.000000, -7.000000)"><rect id="Rectangle-3" x="1" y="0" width="32" height="36"></rect><path d="M1.5,7.5 L1.5,27.5" id="Line" stroke="#{urlFriendlyColor($color-black)}" stroke-linecap="square"></path><polygon id="▾" fill="#{urlFriendlyColor($color-black)}" points="11.71875 14.8066406 23.28125 14.8066406 17.5 20.5878906"></polygon></g></g></svg>');
+                                    // background image uses data attributes to accomodate for themeing. Colors are rendered via the urlFriendlyColor sass function in styles/utils/_ui.scss
+  }
+}

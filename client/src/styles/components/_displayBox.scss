@@ -1,0 +1,49 @@
+.displayBox {
+  margin:                         20px 0 20px;
+  height:                         auto;
+  padding:                        12px 9px;
+  border:                         $displayBox-border-width solid $color-key-medium;
+  border-radius:                  $displayBox-border-radius;
+  color:                          $color-key-medium;
+  background-color:               lighten($color-key-medium, 33%);
+  &.light, &.white {
+    border:                       $displayBox-border-width solid $color-medium-grey;
+    color:                        $color-dark-grey;
+    background-color:             lighten($color-white, 33%);
+  }
+  &.success, &.green {
+    border:                       $displayBox-border-width solid $color-success;
+    color:                        $color-success;
+    background-color:             lighten($color-success, 33%);
+  }
+  &.confirm, &.lightGreen {
+    border:                       $displayBox-border-width solid $color-confirm;
+    color:                        $color-confirm;
+    background-color:             lighten($color-confirm, 33%);
+  }
+  &.alert, &.yellow {
+    border:                       $displayBox-border-width solid $color-alert;
+    color:                        $color-alert;
+    background-color:             lighten($color-alert, 33%);
+  }
+  &.warning, &.red {
+    border:                       $displayBox-border-width solid $color-warning;
+    color:                        $color-warning;
+    background-color:             lighten($color-warning, 33%);
+  }
+  &.info, &.purple {
+    border:                       $displayBox-border-width solid $color-info;
+    color:                        $color-info;
+    background-color:             lighten($color-info, 33%);
+  }
+  &.system, &.navy {
+    border:                       $displayBox-border-width solid $color-key-dark;
+    color:                        $color-key-dark;
+    background-color:             lighten($color-key-dark, 33%);
+  }
+  &.dark {
+    border:                       $displayBox-border-width solid $color-black;
+    color:                        $color-black;
+    background-color:             lighten($color-black, 33%);
+  }
+}
