@@ -69,7 +69,9 @@ If authorization fails HTTP status will be 401 (Unauthorized) or 403 (Forbidden)
 
 Before any participant can use system, questions and surveys that are to be answered by the participants must be posted to the system.  In particular one of the surveys must be specified as a profile survey.  If the registry requires consent documents they must also be posted.
 
-This section describes all the administrative API to achieve these tasks.  Majority of these tasks can also be done during installation with registry specific system initialization scripts.
+This section describes basic administrative API to achieve these tasks.  Majority of these tasks can also be done during installation with registry specific system initialization scripts.  In addition the input format of resources (questions, surveys, consent documents) are also examplified.
+
+More administration functionality can be found [Advanced System Administration](#advanced-system-admin) and [Multi Lingual Support](#multi-lingual-support).
 
 All the tasks in this section requires `admin` authorization.
 
@@ -159,8 +161,121 @@ request
 	});
 ```
 
-If successful this post will return HTTP status 201 (Created) and the question `id` will be in the body.  If post fails the HTTP status will be one of 40x codes or 500 depending on the error type - 400 (Bad Request), 401 (Unauthorized), 403 (Forbidden), 500 (Internal Server Error).
+If successful this post will return HTTP status 201 (Created) and the question `id` will be in the body.  If post fails the HTTP status will be one of 40x codes or 500 depending on the error type - 400 (Bad Request), 401 (Unauthorized), 403 (Forbidden), 500 (Internal Server Error).  In the rest of document `choicesQxId`, `textQxId` or `boolQxId` are used in snippets as well.  They can be created just like `choiceQxId` above.
 
 ##### Surveys
 <a name="admin-surveys"/>
+
+Surveys serve as question containers.  In the simplest case a survey can be defined with its questions.  In that case the questions will be created on the fly when posted
+
+```js
+let survey = {
+    name: 'Example',
+    questions: [{
+        text: 'Which sports do you like?',
+        required: false,
+        type: 'choices',
+        choices: [
+            { text: 'Football' },
+            { text: 'Basketball' },
+            { text: 'Soccer' },
+            { text: 'Tennis' }
+        ]
+    }, {
+        text: 'What is your hair color?',
+        required: true,
+        type: 'choice',
+        choices: [
+            { text: 'Black' },
+            { text: 'Brown' },
+            { text: 'Blonde' },
+            { text: 'Other' }
+        ]
+    }, {
+        text: 'Where were you born?',
+        required: true,
+        type: 'text'
+    }, {
+        text: 'Are you injured?',
+        required: false,
+        type: 'bool'
+    }]
+};
+```
+
+Notice that for each question, it must be specified the question is required to be answered.
+
+Alternatively surveys can be defined using existing questions
+
+```js
+survey = {
+    name: 'Example',
+    questions: [{
+        required: false,
+        id: textQxId
+    }, {
+        required: true,
+        id: boolQxId
+    }, {
+        required: true,
+        id: choiceQxId
+    }, {
+        required: false,
+        id: choicesQxId
+    }]
+};
+```
+
+A mix is also possible
+
+```js
+survey = {
+    name: 'Example',
+    questions: [{
+        required: false,
+        id: textQxId
+    }, {
+        required: true,
+        id: boolQxId
+    }, {
+        text: 'What is your hair color?',
+        required: true,
+        type: 'choice',
+        choices: [
+            { text: 'Black' },
+            { text: 'Brown' },
+            { text: 'Blonde' },
+            { text: 'Other' }
+        ]
+    }, {
+        required: false,
+        id: choicesQxId
+    }]
+};
+```
+
+Once you have the JSON description of the survey they can be simply posted to system
+
+```
+let surveyId = null;
+request
+	.post('http://localhost:9005/api/v1.0/surveys')
+	.set('Authorization', 'Bearer ' + jwt)
+	.send(survey)
+	.end(function (err, res) {
+		console.log(res.status);  // 201
+		console.log(res.body.id); // Expected to be internal id of the survey
+		surveyId = res.body.id;
+	});
+```
+
+If successful this post will return HTTP status 201 (Created) and the survey `id` will be in the body.  If post fails the HTTP status will be one of 40x codes or 500 depending on the error type - 400 (Bad Request), 401 (Unauthorized), 403 (Forbidden), 500 (Internal Server Error).
+
+
+### Multi Lingual Support
+<a name="multi-lingual-support"/>
+
+### Advanced System Administration
+<a name="advanced-system-admin"/>
+
 
