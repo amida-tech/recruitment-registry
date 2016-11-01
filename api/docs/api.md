@@ -292,10 +292,66 @@ Response details are identical to posting an ordinary survey.
 
 ##### Consent Documents
 
+Recruitment Registries support multiple consent document types.  Consent Types in this API may refer to actual Consent Forms or similar documents that participants have to sign such as Terms Of Use.  Separate API paths are provided for Consent Types and Consent Documents as it is expected to have versions of Consent Document of the same type with only one of them being active at one time.
+
+Consent Type JSON descriptions are minimal
+
+```js
+let consentTypeTOU = {
+    name: 'terms-of-use',
+    title: 'Terms of Use',
+    type: 'single'
+};
+
+let consentTypeConsent = {
+    name: 'consent',
+    title: 'Consent Form',
+    type: 'single'
+}
+```
+
+Property `title` is shown in listings of consent documents and `type` is designed to be used by clients for [SAGE](#sage) support where various icons can be shown based on type.  Once you have the JSON definition of a type, it can be simply posted
+
+```
+let consentTypeTOUId = null;
+request
+	.post('http://localhost:9005/api/v1.0/consent-types')
+	.set('Authorization', 'Bearer ' + jwt)
+	.send(survey)
+	.end(function (err, res) {
+		console.log(res.status);  // 201
+		console.log(res.body.id); // Expected to be internal id of the consent type
+		consentTypeTOUId = res.body.id;
+	});
+```
+
+and similarly for `consentTypeConsentId`.  Once types are created actual consent documents can be posted with their content specified in JSON `content` field
+
+```
+let consentDocTOU = {
+	typeId: consentTypeTOUId,
+	content: 'This is a terms of use document.'
+};
+
+request
+	.post('http://localhost:9005/api/v1.0/consent-documents')
+	.set('Authorization', 'Bearer ' + jwt)
+	.send(consentDocTOU)
+	.end(function (err, res) {
+		console.log(res.status);  // 201
+		console.log(res.body.id); // Expected to be internal id of the consent document
+		consentDocTOUId = res.body.id;
+	});
+```
+
+Both `consent-types` and `consent-documents` paths return HTTP status 201 (Created) and the `id`'s' will be in the body.  If post fails the HTTP status will be one of 40x codes or 500 depending on the error type - 400 (Bad Request), 401 (Unauthorized), 403 (Forbidden), 500 (Internal Server Error).
+
 ### Multi Lingual Support
 <a name="multi-lingual-support"/>
 
 ### Advanced System Administration
 <a name="advanced-system-admin"/>
 
+### SAGE
+<a name="sage"/>
 

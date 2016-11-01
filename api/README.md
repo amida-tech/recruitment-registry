@@ -48,13 +48,31 @@ RECREG_DB_DIALECT=postgres
 
 > Run server (default port is 9005)
 
-`npm start`
+`grunt`
 
-> First beautifies and lints all files and then runs all tests.
+> First beautifies and lints all files and then runs all the tests.
+
+`npm test`
+
+> Runs all the tests.
 
 `npm run-script coverage`
 
 > Runs all the tests and displays coverage metrics.
+
+## Tests
+
+This project primarily uses [Mocha](http://mochajs.org/), [Chai](http://chaijs.com/) and Super Test for automated testing.  Sinon is also used in a couple of tests when it is absolutely necessary to use stubs.  Stubbing in general however is avoided.
+
+All tests are located in `test` directory in a mostly flat directory structure.  All API entries both get a HTTP integration test and an equivalent model test.  Unit tests for other utility modules are also included in the root directory.  In addition `test/use-cases` directory includes informative tests designed to instruct how to use the API from a client.
+
+Individual test suites can be run using mocha
+
+```
+$ mocha test/survey.model.spec.js --bail
+```
+
+Each test in a file may depend on some of the previous tests so using flag `bail` is recommended.
 
 ## Postgres specific functionality
 
