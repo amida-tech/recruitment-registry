@@ -7,7 +7,7 @@ export class SurveysContainer extends Component {
 
   render() {
     return (
-      <div className="">
+      <div>
         {this.props.vocab.get('AVAIL_SURVEYS')}
         <ul>
           {this.props.data.map(survey => (<li key={survey.id}><Link to={'/survey/' + survey.id}>{survey.name}</Link></li>)) }
