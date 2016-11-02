@@ -108,7 +108,7 @@ export class RegisterContainer extends Component {
       accessibility: false,
       useCSS: false,
       beforeChange: (currentSlide, nextSlide) => {
-        console.log(currentSlide + " : " + nextSlide)
+        console.log(currentSlide + " : " + nextSlide);
         if (nextSlide === (survey.questions.length+3)) {
           this._submitRegister()
         }
@@ -138,22 +138,21 @@ export class RegisterContainer extends Component {
     if(!given.checkValidity() || given.value == 'x' || given.value == undefined){
       alert("Please enter a valid value for this.")
     } else {
-      this.refs.slider.slickNext()
+      this.refs.slider.slickNext();
     }
   }
   _previous() {
-
-    this.refs.slider.slickPrev()
+    this.refs.slider.slickPrev();
   }
 
   _changeUser(event){
     this.props.dispatch(register.actions.updateUser(event.target.id,
-    event.target.value))
+    event.target.value));
   }
 
   _changeAnswer(event) {
     this.props.dispatch(register.actions.updateAnswer(event.target.dataset.itype,
-      event.target.id, event.target.value, event.target.name))
+      event.target.id, event.target.value, event.target.name));
   }
 
   _changeAnswerText(questionId, answerId, value) {
@@ -170,7 +169,7 @@ export class RegisterContainer extends Component {
   }
 
   componentWillMount() {
-    this.props.dispatch(register.actions.getSurvey())
+    this.props.dispatch(register.actions.getSurvey());
   }
 }
 
@@ -178,7 +177,7 @@ const mapStateToProps = function(store) {
   return {
     data: store.get('register'),
     vocab: store.getIn(['settings', 'language', 'vocabulary'])
-  }
+  };
 }
 
 export default connect(mapStateToProps)(RegisterContainer)

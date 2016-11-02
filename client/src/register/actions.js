@@ -5,14 +5,14 @@ export function updateUser(id, value){
   return dispatch => dispatch({
     type: actionTypes.UPDATE_REGISTER_USER,
     id, value
-  })
+  });
 }
 
 export function updateAnswer(itype, id, value, subvalue) {
   return dispatch => dispatch({
     type: actionTypes.UPDATE_REGISTER_ANSWERS,
     itype, id, value, subvalue
-  })
+  });
 }
 
 export function getSurvey() {

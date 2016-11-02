@@ -43,14 +43,14 @@ export default (state = immutableState, action) => {
           },
           answers: []
         }
-      })
+      });
       case t.UPDATE_REGISTER_USER:
         return state.setIn(['newUserProfile', 'user', action.id], Immutable.fromJS(action.value));
       case t.UPDATE_REGISTER_ANSWERS:
       var newAnswer = {
         'questionId': parseInt(action.id),
         'answer': {}
-      }
+        };
       switch(action.itype){
         case "text":
           newAnswer.answer = {'textValue': action.value};
@@ -59,7 +59,7 @@ export default (state = immutableState, action) => {
           newAnswer.answer = {'choice': parseInt(action.value)};
           break;
         case "bool":
-          newAnswer.answer = {'boolValue': action.value == 'true'}
+          newAnswer.answer = {'boolValue': action.value == 'true'};
           break;
         case "choices.bool":
           newAnswer.answer = {'choices': [{
