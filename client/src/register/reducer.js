@@ -67,13 +67,10 @@ export default (state = immutableState, action) => {
             'boolValue': true}
           ]};
           break;
-        case "choices.text": //I am interested in a less craptastic way.
-          newAnswer.questionId =
-            parseInt(action.name.substring(0, action.name.indexOf('.')));
+        case 'choices.text': //I am interested in a less craptastic way.
           newAnswer.answer = {'choices': [{
-            'id': parseInt(action.id),
-            'boolValue': true,
-            'textValue': action.value}
+            'id': parseInt(action.value),
+            'textValue': action.subvalue}
           ]};
           break;
         }

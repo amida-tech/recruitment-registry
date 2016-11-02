@@ -8,10 +8,10 @@ export function updateUser(id, value){
   })
 }
 
-export function updateAnswer(itype, id, value, name) {
+export function updateAnswer(itype, id, value, subvalue) {
   return dispatch => dispatch({
     type: actionTypes.UPDATE_REGISTER_ANSWERS,
-    itype, id, value, name
+    itype, id, value, subvalue
   })
 }
 

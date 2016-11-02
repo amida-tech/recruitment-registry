@@ -70,7 +70,7 @@ export class RegisterContainer extends Component {
                 <SurveyFields.Choices key={question.id} id={question.id}
                   changeForm={::this._changeAnswer} text={question.text}
                   vocab={this.props.vocab} choices={question.choices}
-                  required={question.required}/>
+                  changeFormChoices={::this._changeAnswerText} required={question.required}/>
               );
               break;
           }
@@ -114,7 +114,6 @@ export class RegisterContainer extends Component {
         }
       }
     }
-    console.log(slides);
     return(
       <div className="register">
           <Background/>
@@ -155,6 +154,11 @@ export class RegisterContainer extends Component {
   _changeAnswer(event) {
     this.props.dispatch(register.actions.updateAnswer(event.target.dataset.itype,
       event.target.id, event.target.value, event.target.name))
+  }
+
+  _changeAnswerText(questionId, answerId, value) {
+    this.props.dispatch(register.actions.updateAnswer('choices.text', questionId,
+      answerId, value));
   }
 
   _submitRegister(){
