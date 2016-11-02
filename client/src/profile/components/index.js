@@ -47,7 +47,7 @@ class ProfileContainer extends Component {
   }
 
   _saveProfile(evt) {
-    evt.preventDefault()
+    evt.preventDefault();
 
     this.props.dispatch(actions.saveProfile());
   }
