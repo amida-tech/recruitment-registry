@@ -1,10 +1,20 @@
-const request = require('superagent');
-const jwt = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJzdXBlciIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTQ3Nzk2MTYxNSwiZXhwIjoxNDgwNTUzNjE1fQ.HJubwTIVEf7Z-83oUTWDVu0AEx-_8DZL46lmZo2WVTo';
+'use strict';
 
-request
-    .get('http://localhost:9005/api/v1.0/surveys')
-    .set('Authorization', 'Bearer ' + jwt)
-    .end(function (err, res) {
-    	console.log(res.status); // 200
-    	console.log(res.body);   // []
-    });
+const request = require('superagent');
+
+module.exports = function(locals) {
+	console.log(`------ start ${module.filename}`);
+	const jwt = locals.jwt;
+
+	return request
+	    .get('http://localhost:9005/api/v1.0/surveys')
+	    .set('Authorization', 'Bearer ' + jwt)
+	    .then(res => {
+	    	console.log(res.status); // 200
+	    	console.log(res.body);   // []
+	    })
+	    .then(() => {
+			console.log(`------ end ${module.filename}`);
+	    	return locals;
+	    });
+};

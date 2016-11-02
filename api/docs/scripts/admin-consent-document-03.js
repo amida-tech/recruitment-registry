@@ -6,25 +6,23 @@ module.exports = function(locals) {
 	console.log(`------ start ${module.filename}`);
 	const jwt = locals.jwt;
 
-	const textQx = {
-		type: 'text',
-		text: 'Please describe reason for your enrollment?'
+	const consentTypeTOUId = locals.consentTypeTOUId;
+
+	const consentDocTOU = {
+		typeId: consentTypeTOUId,
+		content: 'This is a terms of use document.'
 	};
 
-	let textQxId = null;
 	return request
-		.post('http://localhost:9005/api/v1.0/questions')
+		.post('http://localhost:9005/api/v1.0/consent-documents')
 		.set('Authorization', 'Bearer ' + jwt)
-		.send(textQx)
+		.send(consentDocTOU)
 		.then(res => {
 			console.log(res.status);  // 201
-			console.log(res.body.id); // Expected to be internal id of question
-			textQxId = res.body.id;
+			console.log(res.body.id); // Expected to be internal id of the consent document
 		})
 	    .then(() => {
-	    	locals.textQx = textQx;
-	    	locals.textQxId = textQxId;
 			console.log(`------ end ${module.filename}`);
 	    	return locals;
-	    });
+		});
 };

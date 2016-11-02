@@ -62,7 +62,7 @@ RECREG_DB_DIALECT=postgres
 
 ## Tests
 
-This project primarily uses [Mocha](http://mochajs.org/), [Chai](http://chaijs.com/) and Super Test for automated testing.  Sinon is also used in a couple of tests when it is absolutely necessary to use stubs.  Stubbing in general however is avoided.
+This project primarily uses [Mocha](http://mochajs.org/), [Chai](http://chaijs.com/) and [Super Test](https://github.com/visionmedia/supertest) for automated testing.  [Sinon](http://sinonjs.org/) is also used in a couple of tests when it is absolutely necessary to use stubs.  Stubbing in general however is avoided.
 
 All tests are located in `test` directory in a mostly flat directory structure.  All API entries both get a HTTP integration test and an equivalent model test.  Unit tests for other utility modules are also included in the root directory.  In addition `test/use-cases` directory includes informative tests designed to instruct how to use the API from a client.
 
@@ -144,6 +144,7 @@ In very near future there will be one or two tables to store consent documents (
 - [Grunt](http://gruntjs.com/)
 - [Sequelize](http://docs.sequelizejs.com/en/v3/)
 - [Postgres](https://www.postgresql.org/)
+- [Sinon](http://sinonjs.org/)
 - [Mocha](http://mochajs.org/)
 - [Chai](http://chaijs.com/)
 - [Supertest](https://github.com/visionmedia/supertest)
