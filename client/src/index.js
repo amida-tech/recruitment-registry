@@ -85,7 +85,7 @@ export const reducers = {
     switch (action.type) {
       case "CHANGE_LANGUAGE":
         var choice = state.getIn(['language','choice']) == 'en' ? 'es' : 'en';
-        return state.setIn(['language'], Immutable.fromJS({'choice': choice, 'vocabulary': require('./i18n/'+choice+'.json')}));
+        return state.setIn(['language'], {'choice': choice, 'vocabulary': require('./i18n/'+choice+'.json')});
       default:
         return state;
       }
