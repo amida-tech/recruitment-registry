@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router';
-import register from '../index';
-import Slider from 'react-slick'
-import '../../../node_modules/slick-carousel/slick/slick.scss'
+import * as actions from '../actions';
+import Slider from 'react-slick';
+import '../../../node_modules/slick-carousel/slick/slick.scss';
 import * as SurveyFields from '../../common/SurveyFields';
 import { SurveyNavigator } from '../../common/SurveyNavigation';
 import Background from '../../Background'
@@ -148,12 +148,12 @@ export class RegisterContainer extends Component {
   }
 
   _changeUser(event){
-    this.props.dispatch(register.actions.updateUser(event.target.id,
+    this.props.dispatch(actions.updateUser(event.target.id,
     event.target.value))
   }
 
   _changeAnswer(event) {
-    this.props.dispatch(register.actions.updateAnswer(event.target.dataset.itype,
+    this.props.dispatch(actions.updateAnswer(event.target.dataset.itype,
       event.target.id, event.target.value, event.target.name))
   }
 
@@ -166,7 +166,7 @@ export class RegisterContainer extends Component {
   }
 
   componentWillMount() {
-    this.props.dispatch(register.actions.getSurvey())
+    this.props.dispatch(actions.getSurvey())
   }
 }
 

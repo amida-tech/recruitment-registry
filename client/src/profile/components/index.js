@@ -7,8 +7,8 @@ import SurveyForm from './survey-form'
 class ProfileContainer extends Component {
   render() {
 
-    const survey = this.props.data.get('survey')
-    const user = this.props.data.get('user').toJS()
+    const survey = this.props.data.get('survey');
+    const user = this.props.data.get('user').toJS();
 
     return (
       <div className="rr-wrapper">
