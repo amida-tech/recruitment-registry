@@ -1,7 +1,7 @@
 import Home from './home/index';
 import Login from './login/components/index';
 import { RegisterContainer } from './register';
-import ProfileContainer from './profile/components/index';
+import { ProfileContainer } from './profile';
 import SurveyBuilderContainer from './surveyBuilder/components/index'
 import SurveysContainer from './surveys/components/index'
 import SurveyContainer from './survey/components/index'

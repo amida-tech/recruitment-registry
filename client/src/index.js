@@ -4,7 +4,7 @@ import Layout from './layout/index';
 import Background from './background/index';
 import login from './login';
 import { RegisterReducer } from './register';
-import profile from './profile';
+import { ProfileReducer } from './profile';
 import surveyBuilder from './surveyBuilder';
 import surveys from './surveys';
 import survey from './survey';
@@ -47,7 +47,14 @@ export const initialState = {
       "other"
     ]
   },
-  profile: profile.reducer.initialState,
+  profile: {
+    user: {
+      name: ""
+    },
+    survey: {
+      questions: []
+    }
+  },
   surveyBuilder: surveyBuilder.reducer.initialState,
   surveys: surveys.reducer.initialState,
   survey: survey.reducer.initialState
@@ -56,7 +63,7 @@ export const initialState = {
 export const reducers = {
   login: login.reducer,
   register: RegisterReducer,
-  profile: profile.reducer,
+  profile: ProfileReducer,
   surveyBuilder: surveyBuilder.reducer,
   surveys: surveys.reducer,
   survey: survey.reducer,

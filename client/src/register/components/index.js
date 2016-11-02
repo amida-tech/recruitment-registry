@@ -113,7 +113,7 @@ export class RegisterContainer extends Component {
           this._submitRegister()
         }
       }
-    }
+    };
     console.log(slides);
     return(
       <div className="register">
@@ -166,7 +166,7 @@ export class RegisterContainer extends Component {
   }
 
   componentWillMount() {
-    this.props.dispatch(actions.getSurvey())
+    this.props.dispatch(actions.getSurvey());
   }
 }
 
@@ -175,6 +175,6 @@ const mapStateToProps = function(store) {
     data: store.get('register'),
     vocab: store.getIn(['settings', 'language', 'vocabulary'])
   }
-}
+};
 
 export default connect(mapStateToProps)(RegisterContainer)

@@ -1,8 +1,8 @@
-import React, { Component } from 'react'
-import { connect } from 'react-redux'
-import profile from '../index'
-import UserForm from './user-form'
-import SurveyForm from './survey-form'
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import * as actions from '../actions';
+import UserForm from './user-form';
+import SurveyForm from './survey-form';
 
 class ProfileContainer extends Component {
   render() {
@@ -39,17 +39,17 @@ class ProfileContainer extends Component {
   }
 
   _changeProfile(evt) {
-    this.props.dispatch(profile.actions.updateProfile(evt.target.id, evt.target.value))
+    this.props.dispatch(actions.updateProfile(evt.target.id, evt.target.value))
   }
 
   componentWillMount() {
-    this.props.dispatch(profile.actions.getProfile('Alzheimer'))
+    this.props.dispatch(actions.getProfile('Alzheimer'))
   }
 
   _saveProfile(evt) {
     evt.preventDefault()
 
-    this.props.dispatch(profile.actions.saveProfile());
+    this.props.dispatch(actions.saveProfile());
   }
 }
 
