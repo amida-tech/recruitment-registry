@@ -7,7 +7,7 @@ import { RegisterReducer } from './register';
 import { ProfileReducer } from './profile';
 import surveyBuilder from './surveyBuilder';
 import surveys from './surveys';
-import survey from './survey';
+import { SurveyReducer } from './survey';
 import { browserHistory } from 'react-router';
 import i18n from './i18n/en.json';
 
@@ -56,7 +56,13 @@ export const initialState = {
   },
   surveyBuilder: surveyBuilder.reducer.initialState,
   surveys: surveys.reducer.initialState,
-  survey: survey.reducer.initialState
+  survey: {
+    selectedSurvey: [],
+    surveyAnswers: {
+      'surveyId': 0,
+      'answers': []
+    }
+  }
 };
 
 export const reducers = {
@@ -65,7 +71,7 @@ export const reducers = {
   profile: ProfileReducer,
   surveyBuilder: surveyBuilder.reducer,
   surveys: surveys.reducer,
-  survey: survey.reducer,
+  survey: SurveyReducer,
   loggedIn: (state = initialState, action) => {
     switch (action.type) {
       case "LOGIN_SUCCESS":
@@ -79,7 +85,7 @@ export const reducers = {
         return state
     }
   },
-  title: (state = initialState) => state,
+  title: state => state,
   settings: (state = initialState, action) => {
     switch (action.type) {
       case "CHANGE_LANGUAGE":

@@ -1,6 +1,6 @@
 import React, { Component} from 'react';
 import { connect } from 'react-redux';
-import submit from '../index'
+import * as actions from '../actions';
 import * as SurveyFields from '../../common/SurveyFields';
 
 export class SurveyContainer extends Component {
@@ -8,11 +8,11 @@ export class SurveyContainer extends Component {
   //certain redux is the best call. However I'm doing it the redux way to learn.
   submitAnswers(event){
     event.preventDefault();
-      this.props.dispatch(submit.actions.submitAnswers(this.props.surveyAnswers));
+      this.props.dispatch(actions.submitAnswers(this.props.surveyAnswers));
   }
 
   _changeAnswer(event) {
-    this.props.dispatch(submit.actions.updateAnswer(event.target.dataset.itype,
+    this.props.dispatch(actions.updateAnswer(event.target.dataset.itype,
       event.target.id, event.target.value, event.target.name))
   }
 
