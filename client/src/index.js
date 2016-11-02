@@ -9,7 +9,6 @@ import surveyBuilder from './surveyBuilder';
 import surveys from './surveys';
 import survey from './survey';
 import { browserHistory } from 'react-router';
-import Immutable from 'immutable';
 import i18n from './i18n/en.json';
 
 export const initialState = {
