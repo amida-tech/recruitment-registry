@@ -16,6 +16,11 @@ export class SurveyContainer extends Component {
       event.target.id, event.target.value, event.target.name))
   }
 
+  _changeAnswerText(questionId, answerId, value) {
+    this.props.dispatch(submit.actions.updateAnswer('choices.text', questionId,
+      answerId, value));
+  }
+
   render() {
     const { id, name, questions } = this.props.selectedSurvey.toJS()
     var questionnaire = [];
@@ -46,6 +51,7 @@ export class SurveyContainer extends Component {
               <SurveyFields.Choices key={question.id} id={question.id}
                 changeForm={::this._changeAnswer} text={question.text}
                 vocab={this.props.vocab} choices={question.choices}
+                changeFormChoices={::this._changeAnswerText}
                 required={question.required}/>
             );
         }
