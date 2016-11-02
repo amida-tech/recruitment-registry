@@ -2,7 +2,7 @@ import App from './app';
 import routes from './routes';
 import Layout from './layout/index';
 import Background from './background/index';
-import login from './login';
+import { LoginReducer } from './login';
 import { RegisterReducer } from './register';
 import { ProfileReducer } from './profile';
 import surveyBuilder from './surveyBuilder';
@@ -19,7 +19,17 @@ export const initialState = {
       vocabulary: localStorage.vocabulary || i18n // this is redundant with the above value.
     }
   },
-  login: login.reducer.initialState,
+  login: {
+    formState: {
+      username: '',
+      password: '',
+    },
+    user: localStorage.user ? JSON.parse(localStorage.user) : {
+      username: "",
+      role: "",
+      id: ""
+    }
+  },
   loggedIn: localStorage.token || false,
   register: {
     newUserProfile: {
@@ -66,7 +76,7 @@ export const initialState = {
 };
 
 export const reducers = {
-  login: login.reducer,
+  login: LoginReducer,
   register: RegisterReducer,
   profile: ProfileReducer,
   surveyBuilder: surveyBuilder.reducer,
