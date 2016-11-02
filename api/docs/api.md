@@ -117,7 +117,7 @@ let choiceQx = {
 Choices questions are multiple choice questions where multiple selections are possible.  In addition some choices can be free text
 
 ```js
-let choicesText = {
+let choicesQx = {
     type: 'choices',
     text: 'What kind of exercises do you do?',
     choices: [
@@ -272,6 +272,7 @@ request
 If successful this post will return HTTP status 201 (Created) and the survey `id` will be in the body.  If post fails the HTTP status will be one of 40x codes or 500 depending on the error type - 400 (Bad Request), 401 (Unauthorized), 403 (Forbidden), 500 (Internal Server Error).
 
 ##### Profile Survey
+<a name="admin-profile-survey"/>
 
 The system is required to have one special survey called profile survey.  This special survey is used during registration of participants and contains all the questions needed for registration.  JSON definition of this survey does not have any difference from other surveys and is desribed in [survey administration](#admin-surveys).  Only posting differs
 
@@ -291,6 +292,7 @@ request
 Response details are identical to posting an ordinary survey.
 
 ##### Consent Documents
+<a name="admin-consent-document"/>
 
 Recruitment Registries support multiple consent document types.  Consent Types in this API may refer to actual Consent Forms or similar documents that participants have to sign such as Terms Of Use.  Separate API paths are provided for Consent Types and Consent Documents as it is expected to have versions of Consent Document of the same type with only one of them being active at one time.
 
@@ -312,7 +314,7 @@ let consentTypeConsent = {
 
 Property `title` is shown in listings of consent documents and `type` is designed to be used by clients for [SAGE](#sage) support where various icons can be shown based on type.  Once you have the JSON definition of a type, it can be simply posted
 
-```
+```js
 let consentTypeTOUId = null;
 request
 	.post('http://localhost:9005/api/v1.0/consent-types')
@@ -327,7 +329,7 @@ request
 
 and similarly for `consentTypeConsentId`.  Once types are created actual consent documents can be posted with their content specified in JSON `content` field
 
-```
+```js
 let consentDocTOU = {
 	typeId: consentTypeTOUId,
 	content: 'This is a terms of use document.'
@@ -345,6 +347,45 @@ request
 ```
 
 Both `consent-types` and `consent-documents` paths return HTTP status 201 (Created) and the `id`'s' will be in the body.  If post fails the HTTP status will be one of 40x codes or 500 depending on the error type - 400 (Bad Request), 401 (Unauthorized), 403 (Forbidden), 500 (Internal Server Error).
+
+### Registration and Profiles
+
+This section describes the API that is needed to register a participant.  Together with the user account details `username`, `password` and `email`, the main component of the registration is answers to profile survey that has been posted in [Profile Survey Administration](#admin-profile-survey).  The profile survey is available to clients without authorization
+
+```js
+let profileSurvey;
+request
+	.get('http://localhost:9005/api/v1.0/profile-survey')
+	.end(function (err, res) {
+		console.log(res.status);  // 200
+		profileSurvey = res.body;
+	});
+```
+
+If successful server returns HTTP status 200 (OK) and the profile survey will be in the body.  On failure server returns HTPP status 400 (Bad Request) or 500 (Internal Server Error).  Profile survey itself is similar to what is posted but with internal id's that are to be used when posting answers
+
+```js
+{
+
+}
+```
+
+Client can require consent documents of certain types to be signed during registration.  For this reason consent document are also available to client without authorization.  As an example Terms Of Use that is posted in [Consent Document Administration](#admin-consent-document) can be obtained
+
+```js
+let touDocument;
+request
+	.get('http://localhost:9005/api/v1.0/consent-documents/type-name/terms-of-use')
+	.end(function (err, res) {
+		console.log(res.status);  // 200
+		touDocument = res.body;
+	});
+```
+
+If successful server responds with HTTP status 200 (OK) and body containing Terms Of Use document.  The document is identical to what is posted accept
+
+
+
 
 ### Multi Lingual Support
 <a name="multi-lingual-support"/>
