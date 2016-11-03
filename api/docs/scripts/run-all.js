@@ -18,6 +18,8 @@ const registration01 = require('./registration-01');
 const registration02 = require('./registration-02');
 const registration03 = require('./registration-03');
 const registration04 = require('./registration-04');
+const profile01 = require('./profile-01');
+const profile02 = require('./profile-02');
 
 const locals = {};
 
@@ -39,6 +41,9 @@ models.sequelize.sync({ force: true })
 	.then(registration02)
 	.then(registration03)
 	.then(registration04)
+	.then(profile01)
+	.then(profile02)
+	.then(profile01)
 	.then(() => {
 		console.log('success');
 		process.exit(0);

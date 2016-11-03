@@ -399,6 +399,7 @@ request
 The server responds with the consent document `id` in the response body.  The rest of this document assumes that the second type in this section (`init-consent`) is similary created.
 
 ### Registration
+<a name="registration"/>
 
 This section describes the API that is needed to register a participant.  During registration participants are expected to specify their account details `username`, `password` and `email` and answer the profile survey that has been posted in [Profile Survey Administration](#admin-profile-survey).  The profile survey is available without authorization
 
@@ -605,6 +606,304 @@ request
     });
 ```
 
+### Profile
+
+Participant profile is the account information and the profile survey answers that are created during [Registration](#registration).  Consent document signatures, which can also be taken during registration, are not considered part of profile and discussed in [Consent Document](#consent-document) section.
+
+Existing profiles are available to authorized participants
+
+```js
+request
+	.get('http://localhost:9005/api/v1.0/profiles')
+	.set('Authorization', 'Bearer ' + jwtUser)
+	.then(res => {
+		console.log(res.status);  // 200
+		console.log(JSON.stringify(res.body, undefined, 4));    // profile
+	});
+```
+
+Server responds with the profile in the response body.  Profile contains account information, profile survey questions and answers
+
+```js
+{
+    "user": {
+        "id": 2,
+        "username": "testparticipant",
+        "email": "test@example.com",
+        "role": "participant"
+    },
+    "survey": {
+        "id": 2,
+        "name": "Alzheimer",
+        "questions": [
+            {
+                "id": 6,
+                "type": "choice",
+                "text": "Gender",
+                "choices": [
+                    {
+                        "id": 13,
+                        "text": "male"
+                    },
+                    {
+                        "id": 14,
+                        "text": "female"
+                    },
+                    {
+                        "id": 15,
+                        "text": "other"
+                    }
+                ],
+                "required": true,
+                "answer": {
+                    "choice": 13
+                }
+            },
+            {
+                "id": 7,
+                "type": "text",
+                "text": "Zip code",
+                "required": false,
+                "answer": {
+                    "textValue": "20850"
+                }
+            },
+            {
+                "id": 8,
+                "type": "bool",
+                "text": "Family history of memory disorders/AD/dementia?",
+                "required": true,
+                "answer": {
+                    "boolValue": true
+                }
+            },
+            {
+                "id": 9,
+                "type": "choices",
+                "text": "How did you hear about us?",
+                "choices": [
+                    {
+                        "id": 16,
+                        "type": "bool",
+                        "text": "TV"
+                    },
+                    {
+                        "id": 17,
+                        "type": "bool",
+                        "text": "Radio"
+                    },
+                    {
+                        "id": 18,
+                        "type": "bool",
+                        "text": "Newspaper"
+                    },
+                    {
+                        "id": 19,
+                        "type": "bool",
+                        "text": "Facebook/Google Ad/OtherInternet ad"
+                    },
+                    {
+                        "id": 20,
+                        "type": "bool",
+                        "text": "Physician/nurse/healthcare professional"
+                    },
+                    {
+                        "id": 21,
+                        "type": "bool",
+                        "text": "Caregiver"
+                    },
+                    {
+                        "id": 22,
+                        "type": "bool",
+                        "text": "Friend/Family member"
+                    },
+                    {
+                        "id": 23,
+                        "type": "text",
+                        "text": "Other source"
+                    }
+                ],
+                "required": false,
+                "answer": {
+                    "choices": [
+                        {
+                            "id": 16,
+                            "boolValue": true
+                        },
+                        {
+                            "id": 17,
+                            "boolValue": true
+                        },
+                        {
+                            "id": 23,
+                            "textValue": "Community event"
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+}
+```
+
+Profiles can be updated.  Only email and password can be updated for account information.  Any profile survey answer can be resubmitted.  Answers will be updated only for resubmitted questions.  For each resubmitted question all the old answers will be soft deleted.  If a `questionId` is specified without answer the old answer will be removed for questions that are not required
+
+```js
+const user = {
+	email: 'test@example.com'
+};
+
+const answers = [{
+	questionId: 6,
+	answer: { choice: 14 }
+}, {
+	questionId: 7
+}, {
+	questionId: 8,
+	answer: { boolValue: false }
+}, {
+	questionId: 9,
+	answer: {
+		choices: [{
+			id: 15,
+			boolValue: true
+		}, {
+			id: 23,
+			textValue: 'Community event'
+		}]
+	}
+}];
+
+request
+	.patch('http://localhost:9005/api/v1.0/profiles')
+	.set('Authorization', 'Bearer ' + jwtUser)
+	.send({ user, answers })
+	.then(res => {
+		console.log(res.status);  // 204
+	})
+```
+
+Server does not return any content after updates.  Updated profile is available as discussed in this section
+
+```js
+{
+    "user": {
+        "id": 2,
+        "username": "testparticipant",
+        "email": "test2@example2.com",
+        "role": "participant"
+    },
+    "survey": {
+        "id": 2,
+        "name": "Alzheimer",
+        "questions": [
+            {
+                "id": 6,
+                "type": "choice",
+                "text": "Gender",
+                "choices": [
+                    {
+                        "id": 13,
+                        "text": "male"
+                    },
+                    {
+                        "id": 14,
+                        "text": "female"
+                    },
+                    {
+                        "id": 15,
+                        "text": "other"
+                    }
+                ],
+                "required": true,
+                "answer": {
+                    "choice": 14
+                }
+            },
+            {
+                "id": 7,
+                "type": "text",
+                "text": "Zip code",
+                "required": false
+            },
+            {
+                "id": 8,
+                "type": "bool",
+                "text": "Family history of memory disorders/AD/dementia?",
+                "required": true,
+                "answer": {
+                    "boolValue": false
+                }
+            },
+            {
+                "id": 9,
+                "type": "choices",
+                "text": "How did you hear about us?",
+                "choices": [
+                    {
+                        "id": 16,
+                        "type": "bool",
+                        "text": "TV"
+                    },
+                    {
+                        "id": 17,
+                        "type": "bool",
+                        "text": "Radio"
+                    },
+                    {
+                        "id": 18,
+                        "type": "bool",
+                        "text": "Newspaper"
+                    },
+                    {
+                        "id": 19,
+                        "type": "bool",
+                        "text": "Facebook/Google Ad/OtherInternet ad"
+                    },
+                    {
+                        "id": 20,
+                        "type": "bool",
+                        "text": "Physician/nurse/healthcare professional"
+                    },
+                    {
+                        "id": 21,
+                        "type": "bool",
+                        "text": "Caregiver"
+                    },
+                    {
+                        "id": 22,
+                        "type": "bool",
+                        "text": "Friend/Family member"
+                    },
+                    {
+                        "id": 23,
+                        "type": "text",
+                        "text": "Other source"
+                    }
+                ],
+                "required": false,
+                "answer": {
+                    "choices": [
+                        {
+                            "id": 15,
+                            "boolValue": true
+                        },
+                        {
+                            "id": 23,
+                            "textValue": "Community event"
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+}
+```
+
+### Consent Document
+<a name="consent-document"/>
+
+
 ### Multi Lingual Support
 <a name="multi-lingual-support"/>
 
@@ -618,4 +917,4 @@ This section describes more advanced functionalities in this API that is not cov
 ### SAGE
 <a name="sage"/>
 
-This section describes how [Sage](http://sagebase.org/platforms/governance/participant-centered-consent-toolkit/) is covered in this API.
+This section describes how [Sage](http://sagebase.org/platforms/governance/participant-centered-consent-toolkit/) is supported in this API.
