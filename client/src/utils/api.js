@@ -4,7 +4,7 @@ import { push } from 'react-router-redux'
 var apiUrl = 'http://localhost:9005/api/v1.0';
 
 const apiProvider = store => next => action => {
-  next(action)
+  next(action);
   switch (action.type) {
     case 'GET_USER':
       request
@@ -22,11 +22,11 @@ const apiProvider = store => next => action => {
             type: 'GET_USER_SUCCESS',
             payload: response.body
           })
-        })
-      break
+        });
+      break;
     case 'LOGOUT':
-      store.dispatch(push('/'))
-      break
+      store.dispatch(push('/'));
+      break;
     case 'LOGIN':
       request
         .get(apiUrl + '/auth/basic')
@@ -36,10 +36,10 @@ const apiProvider = store => next => action => {
             next({
               type: 'LOGIN_SUCCESS',
               data: response.body
-            })
+            });
             next({
               type: 'GET_USER'
-            })
+            });
             store.dispatch(push('/profile'))
           } else {
             return next({
@@ -47,8 +47,8 @@ const apiProvider = store => next => action => {
               error
             })
           }
-        })
-      break
+        });
+      break;
     case 'ADD_USER':
       request
         .post(apiUrl + '/users')
@@ -65,8 +65,8 @@ const apiProvider = store => next => action => {
               error
             })
           }
-        })
-      break
+        });
+      break;
     case 'GET_ETHNICITIES':
       request
         .get(apiUrl + '/ethnicities')
@@ -79,8 +79,8 @@ const apiProvider = store => next => action => {
           } else {
             next({type: 'GET_ETHNICITIES_ERROR'})
           }
-        })
-      break
+        });
+      break;
     case 'GET_SURVEY':
       request
         .get(apiUrl + '/profile-survey/')
@@ -94,7 +94,7 @@ const apiProvider = store => next => action => {
             next({type:'GET_SURVEY_ERROR'})
           }
         })
-      break
+      break;
     case 'GET_PROFILE':
       request
         .get(apiUrl + '/profiles')
@@ -108,8 +108,8 @@ const apiProvider = store => next => action => {
           } else {
             next({type:'GET_PROFILE_ERROR'})
           }
-        })
-      break
+        });
+      break;
     case 'SAVE_PROFILE':
       request
         .patch(apiUrl + '/users/me')
@@ -123,8 +123,8 @@ const apiProvider = store => next => action => {
           } else {
             next({type:'SAVE_PROFILE_ERROR'})
           }
-        })
-      break
+        });
+      break;
     case 'REGISTER':
       request
         .post(apiUrl + '/profiles')
@@ -134,11 +134,11 @@ const apiProvider = store => next => action => {
             next({
               type: 'LOGIN_SUCCESS',
               data: response.body
-            })
+            });
             store.dispatch({type: 'GET_USER'}) //We used to send them to profile.
           }
-        })
-      break
+        });
+      break;
     case 'SAVE_SURVEY':
       request
         .post(apiUrl + '/surveys')
@@ -154,8 +154,8 @@ const apiProvider = store => next => action => {
               type: 'SAVE_SURVEY_ERROR'
             })
           }
-        })
-      break
+        });
+      break;
     case 'GET_SURVEY_BY_ID':
       request
         .get(apiUrl + '/surveys/' + action.payload)
@@ -169,8 +169,8 @@ const apiProvider = store => next => action => {
           } else {
             next({type:'GET_SURVEY_BY_ID_ERROR'})
           }
-        })
-      break
+        });
+      break;
     case 'GET_ALL_SURVEYS':
       request
         .get(apiUrl + '/surveys')
@@ -184,8 +184,8 @@ const apiProvider = store => next => action => {
           } else {
             next({type:'GET_ALL_SURVEYS_ERROR'})
           }
-        })
-      break
+        });
+      break;
     case 'SUBMIT_SURVEY':
       request
         .post(apiUrl + '/answers')
@@ -200,8 +200,8 @@ const apiProvider = store => next => action => {
           } else {
             next({type:'SUBMIT_SURVEY_FAILURE'})
           }
-        })
-      break
+        });
+      break;
     default:
       break
   }
