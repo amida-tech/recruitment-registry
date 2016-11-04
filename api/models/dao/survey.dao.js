@@ -183,7 +183,7 @@ module.exports = class {
     }
 
     getSurvey(id, options = {}) {
-        let _options = { where: { id }, raw: true, attributes: ['id'] };
+        let _options = { where: { id }, raw: true, attributes: ['id', 'meta'] };
         if (options.override) {
             _options = _.assign({}, _options, options.override);
         }
@@ -191,6 +191,9 @@ module.exports = class {
             .then(survey => {
                 if (!survey) {
                     return RRError.reject('surveyNotFound');
+                }
+                if (survey.meta === null) {
+                    delete survey.meta;
                 }
                 return textHandler.updateText(survey, options.language)
                     .then(() => SurveyQuestion.findAll({

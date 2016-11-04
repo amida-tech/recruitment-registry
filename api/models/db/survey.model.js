@@ -9,6 +9,9 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.INTEGER,
             field: 'group_id'
         },
+        meta: {
+            type: DataTypes.JSON
+        },
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',
