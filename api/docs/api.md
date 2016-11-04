@@ -14,7 +14,7 @@ Package needs to be required before running the snippets
 const request = require('superagent');
 ```
 
-Snippets in the later stages of the document can depend on variables that are defined in previous snippets.  Each snippet is a promised an can be chained.  A full chain, [run-all.js](./run-all.js), that starts from a clean database and exercises all the snippets is included in the repository.
+Snippets in the later stages of the document can depend on variables that are defined in previous snippets.  Each snippet is a promise and can be chained.  A full chain, [run-all.js](./run-all.js), that starts from a clean database and exercises all the snippets is included in the repository.
 
 ##### Seed Data
 
@@ -71,17 +71,17 @@ request
 
 This API return the following HTTP status codes for success
 
-- 200 (OK): Used for [GET] requests when there server responds with an object in the response body
-- 201 (Created): Used for [POST] requests that create new records.  For all posts that create a new record the id is included in the response body (Ex: `{id: 5}`)
-- 204 (No Content): Used for all requests (typically [PATCH] and [DELETE]) that returns no content
+- 200 (OK): Used for [GET] requests when server responds with an object in the response body.
+- 201 (Created): Used for [POST] requests that create new records.  For all posts that create a new record the id is included in the response body (Ex: `{id: 5}`).
+- 204 (No Content): Used for all requests (typically [PATCH] and [DELETE]) that returns no content.
 
 In the case of error the following error codes are used
 
 - 400 (Bad Request): Indicates bad parameter(s) is/are passed to the API.  This can be wrong input object format, invalid value (for example not existing id) or constraint violations such as trying to create a new user with the same username.
 - 401 (Unauthorized): Indicates JWT specified in the Authorization header is invalid or does not correspond to an active user.
-- 403 (Forbidden): Indicates JWT specified in the Authorization header is valid and corresponds to a user but that user does not have permission to access to the API path.
-- 404 (Not Found): Indicates paths does not exist.
-- 500 (Internal Server Error): These are unexpected run time errors.
+- 403 (Forbidden): Indicates JWT specified in the Authorization header is valid and corresponds to a user but that user does not have permission to access to resource requested.
+- 404 (Not Found): Indicates path does not exist.
+- 500 (Internal Server Error): Indicates an unexpected run time errors.
 
 When server responds with an error status, an error object is always included in the response body and minimally contains `message` property.
 
@@ -167,7 +167,7 @@ choiceQx = {
 
 It an error to specify `type` for `choices` element for `choice` question.
 
-Once you have the JSON description of the question they can be simply posted to system
+Once you have the JSON description of the question they can be posted
 
 ```js
 let choiceQxId = null;
@@ -182,7 +182,7 @@ request
 	});
 ```
 
-The server responds with the question `id` in the response body.  In the rest of this other questions specified in this section is also assumed to be posted similarly.
+The server responds with the question `id` in the response body.  In the rest of this document other questions specified in this section is also assumed to be posted similarly.
 
 ##### Surveys
 <a name="admin-surveys"/>
@@ -275,7 +275,7 @@ survey = {
 };
 ```
 
-Once you have the JSON description of the survey they can be simply posted to system
+Once you have the JSON description of the survey they can be posted to system
 
 ```
 let surveyId = null;
@@ -362,7 +362,7 @@ let consentTypeConsent = {
 }
 ```
 
-Property `title` is shown in listings of consent documents and `type` is designed to be used by clients for [SAGE](#sage) support where various icons can be shown based on type.  Once you have the JSON definition of a consnt type, it can be simply posted
+Property `title` is shown in listings of consent documents and `type` is designed to be used by clients for [SAGE](#sage) support where various icons can be shown based on type.  Once you have the JSON definition of a consent type, it can be posted
 
 ```js
 let consentTypeTOUId = null;
@@ -900,9 +900,440 @@ Server does not return any content after updates.  Updated profile is available 
 }
 ```
 
-### Consent Document
+### Surveys
+<a name="surveys"/>
+
+A list of all surveys in the registry is available to authorized participants and admins using resource `/surveys`
+
+```js
+request
+	.get('http://localhost:9005/api/v1.0/surveys')
+	.set('Authorization', 'Bearer ' + jwtUser)
+	.then(res => {
+		console.log(res.status);  // 200
+		const surveyList = res.body;
+		console.log(JSON.stringify(surveyList, undefined, 4));
+	});
+```
+
+Server responds with the list in the response body.  Each entry in the list includes `id` and `name` fields
+
+```js
+[
+    {
+        "id": 1,
+        "name": "Example"
+    },
+    {
+        "id": 2,
+        "name": "Alzheimer"
+    }
+]
+```
+
+Individual surveys can be shown using `/surveys/{id}` resource
+
+```js
+request
+	.get('http://localhost:9005/api/v1.0/surveys/1')
+	.set('Authorization', 'Bearer ' + jwtUser)
+	.then(res => {
+		console.log(res.status);  // 200
+		const survey = res.body;
+		console.log(JSON.stringify(survey, undefined, 4));
+	});
+```
+
+Surveys responds with all the survey details in particular its questions
+
+```js
+{
+    "id": 1,
+    "name": "Example",
+    "questions": [
+        {
+            "id": 1,
+            "type": "text",
+            "text": "Please describe reason for your enrollment?",
+            "required": false
+        },
+        {
+            "id": 2,
+            "type": "bool",
+            "text": "Do you own a pet?",
+            "required": true
+        },
+        {
+            "id": 5,
+            "type": "choice",
+            "text": "What is your hair color?",
+            "choices": [
+                {
+                    "id": 9,
+                    "text": "Black"
+                },
+                {
+                    "id": 10,
+                    "text": "Brown"
+                },
+                {
+                    "id": 11,
+                    "text": "Blonde"
+                },
+                {
+                    "id": 12,
+                    "text": "Other"
+                }
+            ],
+            "required": true
+        },
+        {
+            "id": 4,
+            "type": "choices",
+            "text": "What kind of exercises do you do?",
+            "choices": [
+                {
+                    "id": 5,
+                    "type": "bool",
+                    "text": "Walking"
+                },
+                {
+                    "id": 6,
+                    "type": "bool",
+                    "text": "Jogging"
+                },
+                {
+                    "id": 7,
+                    "type": "bool",
+                    "text": "Cycling"
+                },
+                {
+                    "id": 8,
+                    "type": "text",
+                    "text": "Please specify other"
+                }
+            ],
+            "required": false
+        }
+    ]
+}
+```
+
+Survey details include `id` fields for the survey, its questions, and question choices.
+
+JSON definition of answers is an array of objects where each object includes the id of the question being answered and the actual answer
+
+```js
+const answers = [{
+	questionId: 1,
+	answer: { textValue: 'Try new medicine' }
+}, {
+	questionId: 2,
+	answer: { boolValue: false }
+}, {
+	questionId: 5,
+	answer: { choice: 4 }
+}, {
+	questionId: 4,
+	answer: {
+		choices: [{
+			id: 5,
+			boolValue: true
+		}, {
+			id: 7
+		}, {
+			id: 8,
+			textValue: 'Soccer'
+		}]
+	}
+}];
+```
+
+Notice that the format of the answer depends on the type of question.  It is an error to use properties for one type of question for the other.  For `choices` type questions `boolValue` property of individual choices can be safely omitted and defaults to `true`.  For bool type questions `boolValue` property is required.  Answers can be posted using `/answers` resource
+
+```js
+request
+	.post('http://localhost:9005/api/v1.0/answers')
+	.set('Authorization', 'Bearer ' + jwtUser)
+	.send({ surveyId: 1, answers })
+	.then(res => {
+		console.log(res.status);  // 204
+	});
+```
+
+Answers to a survey can be shown using `/answers` resource
+
+```js
+request
+	.get('http://localhost:9005/api/v1.0/answers')
+	.set('Authorization', 'Bearer ' + jwtUser)
+	.query({ surveyId: 1})
+	.then(res => {
+		console.log(res.status);  // 200
+		console.log(JSON.stringify(res.body, undefined, 4)); // answers
+	});
+```
+
+Server responds with answers in the the response body and the format is identical to how answers are posted except an additional language field
+
+```js
+[
+    {
+        "questionId": 1,
+        "language": "en",
+        "answer": {
+            "textValue": "Try new medicine"
+        }
+    },
+    {
+        "questionId": 2,
+        "language": "en",
+        "answer": {
+            "boolValue": false
+        }
+    },
+    {
+        "questionId": 4,
+        "language": "en",
+        "answer": {
+            "choices": [
+                {
+                    "id": 5,
+                    "boolValue": true
+                },
+                {
+                    "id": 7,
+                    "boolValue": true
+                },
+                {
+                    "id": 8,
+                    "textValue": "Soccer"
+                }
+            ]
+        }
+    },
+    {
+        "questionId": 5,
+        "language": "en",
+        "answer": {
+            "choice": 4
+        }
+    }
+]
+```
+
+A survey can also be shown using resource `/surveys/name/{name}`.  Server responses identically to resource `surveys/{id}`.  In addition it is possible to show a survey with its answers using resource `/surveys/answered/name/{name}`
+
+```js
+	.get('http://localhost:9005/api/v1.0/surveys/answered/name/Example')
+	.set('Authorization', 'Bearer ' + jwtUser)
+	.then(res => {
+		console.log(res.status);  // 200
+		console.log(JSON.stringify(res.body, undefined, 4)); // survey with answers
+	});
+```
+
+Survey responds with the survey details in the response body.  Survey details is similar to `/surveys/{id}` resource response but also includes the answers for each question
+
+```js
+{
+    "id": 1,
+    "name": "Example",
+    "questions": [
+        {
+            "id": 1,
+            "type": "text",
+            "text": "Please describe reason for your enrollment?",
+            "required": false,
+            "answer": {
+                "textValue": "Try new medicine"
+            }
+        },
+        {
+            "id": 2,
+            "type": "bool",
+            "text": "Do you own a pet?",
+            "required": true,
+            "answer": {
+                "boolValue": false
+            }
+        },
+        {
+            "id": 5,
+            "type": "choice",
+            "text": "What is your hair color?",
+            "choices": [
+                {
+                    "id": 9,
+                    "text": "Black"
+                },
+                {
+                    "id": 10,
+                    "text": "Brown"
+                },
+                {
+                    "id": 11,
+                    "text": "Blonde"
+                },
+                {
+                    "id": 12,
+                    "text": "Other"
+                }
+            ],
+            "required": true,
+            "answer": {
+                "choice": 4
+            }
+        },
+        {
+            "id": 4,
+            "type": "choices",
+            "text": "What kind of exercises do you do?",
+            "choices": [
+                {
+                    "id": 5,
+                    "type": "bool",
+                    "text": "Walking"
+                },
+                {
+                    "id": 6,
+                    "type": "bool",
+                    "text": "Jogging"
+                },
+                {
+                    "id": 7,
+                    "type": "bool",
+                    "text": "Cycling"
+                },
+                {
+                    "id": 8,
+                    "type": "text",
+                    "text": "Please specify other"
+                }
+            ],
+            "required": false,
+            "answer": {
+                "choices": [
+                    {
+                        "id": 5,
+                        "boolValue": true
+                    },
+                    {
+                        "id": 7,
+                        "boolValue": true
+                    },
+                    {
+                        "id": 8,
+                        "textValue": "Soccer"
+                    }
+                ]
+            }
+        }
+    ]
+}
+```
+
+### Consent Documents
 <a name="consent-document"/>
 
+Participant have to sign registry specific Consent Documents to be able to get access to various functionality. Currently this API does not enforce any requirement on consent documents itself and leaves any requirement enforcement to clients.  Consent Document API stores and provides content and signature status of consent documents.
+
+All consent documents that has to be signed for a user is shown by resource `/users/consent-documents`
+
+```js
+request
+	.get('http://localhost:9005/api/v1.0/users/consent-documents')
+	.set('Authorization', 'Bearer ' + jwtUser)
+	.then(res => {
+		console.log(res.status);  // 200
+		console.log(JSON.stringify(res.body, undefined, 4)); // unsigned consent documents
+	});
+```
+
+Server responsds withs a list in the response body that shows id of the consent document and type information
+
+```js
+[
+    {
+        "id": 2,
+        "name": "consent",
+        "title": "Consent Form"
+    }
+]
+```
+
+Content of the documents can be shown using user `/consent-documents/{id}` resource
+
+```js
+request
+    .get('http://localhost:9005/api/v1.0/consent-documents/2')
+    .set('Authorization', 'Bearer ' + jwtUser)
+    .then(res => {
+        console.log(res.status);  // 200
+        console.log(JSON.stringify(res.body, undefined, 4)); // unsigned consent documents
+    });
+```
+
+Server responds with details of consent document include the content in the response body
+
+```js
+{
+    "id": 2,
+    "typeId": 2,
+    "content": "This is consent form.",
+    "updateComment": null
+}
+```
+
+Same information is also available using the type name of the consent document
+
+```js
+request
+    .get('http://localhost:9005/api/v1.0/consent-documents/type-name/consent')
+    .set('Authorization', 'Bearer ' + jwtUser)
+    .then(res => {
+        console.log(res.status);  // 200
+        console.log(JSON.stringify(res.body, undefined, 4)); // unsigned consent documents
+    });
+```
+
+Consent documents can be signed with `consent-signatures` resource.  This resource accepts the id of the consent document
+
+```js
+request
+    .post('http://localhost:9005/api/v1.0/consent-signatures')
+    .set('Authorization', 'Bearer ' + jwtUser)
+    .send( {consentDocumentId : 2} )
+    .then(res => {
+        console.log(res.status);  // 201
+        console.log(res.body.id); // id of the signature
+    });
+```
+
+Consent documents can be shown with the signature information
+
+```js
+request
+    .get('http://localhost:9005/api/v1.0/consent-documents/2/with-signature')
+    .set('Authorization', 'Bearer ' + jwtUser)
+    .then(res => {
+        console.log(res.status);  // 200
+        console.log(JSON.stringify(res.body, undefined, 4)); // consent document with signature
+    });
+```
+
+Server responds with the consent document and its signature status
+
+```js
+{
+    "id": 2,
+    "typeId": 2,
+    "content": "This is consent form.",
+    "updateComment": null,
+    "signature": true,
+    "language": "en"
+}
+```
 
 ### Multi Lingual Support
 <a name="multi-lingual-support"/>

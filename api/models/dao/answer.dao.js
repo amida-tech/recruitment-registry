@@ -109,9 +109,6 @@ module.exports = class {
     }
 
     createAnswersTx({ userId, surveyId, language = 'en', answers }, tx) {
-        console.log('*********************');
-        console.log(answers);
-        console.log('*********************');
         const ids = _.map(answers, 'questionId');
         return SurveyQuestion.findAll({
                 where: { surveyId },
@@ -129,10 +126,6 @@ module.exports = class {
                         qx.required = false;
                     }
                 });
-                console.log('======================');
-                console.log(qxMap);
-                console.log(answers);
-                console.log('======================');
                 _.values(qxMap).forEach(qx => {
                     if (qx.required) {
                         throw new RRError('answerRequiredMissing');

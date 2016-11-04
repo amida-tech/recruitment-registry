@@ -35,9 +35,9 @@ module.exports = function(locals) {
 		}
 	}];
 
-	const signature = [1];
+	const signatures = [1];
 
-	const registration = { user, answers, signature };
+	const registration = { user, answers, signatures };
 
 	let jwtUser = null;
 	return request
