@@ -3,18 +3,26 @@ import React, { Component } from 'react';
 export class Bool extends Component {
   render(){
     return(
-        <div id={this.props.id} className="rr">
-          <label>{this.props.text}</label>
+        <div id={this.props.id+'bool'}>
+          <p className='question'>{this.props.text}</p>
+          <label htmlFor={"true"}>
+            <input name={this.props.id}
+              id={this.props.id}
+              type="radio"
+              required={this.props.required}
+              onChange={ this.props.changeForm }
+              value="true"
+              data-itype="bool" />
+            {this.props.vocab.get('YES')}</label>
           <br />
-          <label htmlFor={this.props.id}><input name={this.props.id} id={this.props.id}
-            type="radio" required={this.props.required} onChange={ this.props.changeForm }
-            value="true" data-itype="bool" />
-          {this.props.vocab.get('YES')}</label>
-          <br />
-          <label htmlFor={this.props.id}><input name={this.props.id} id={this.props.id}
-            type="radio" onChange={this.props.changeForm} value="false"
-             data-itype="bool"/>{this.props.vocab.get('NO')}
-          </label>
+          <label htmlFor={"false"}>
+            <input name={this.props.id}
+              id={this.props.id}
+              type="radio"
+              onChange={this.props.changeForm}
+              value="false"
+              data-itype="bool"/>
+            {this.props.vocab.get('NO')}</label>
         </div>
     )
   }
@@ -23,20 +31,19 @@ export class Bool extends Component {
 export class Choice extends Component {
   render(){
     return(
-      <div key={this.props.id} className="rr rr-question" >
-        <label htmlFor={this.props.id}>{this.props.text}</label>
+      <div key={this.props.id}>
+        <p className='question'>{this.props.text}</p>
         <select
           id={this.props.id}
           required={this.props.required}
-          className="rr-blankline rr-field"
           onChange={this.props.changeForm}
           data-itype="choice"
-          >
+          defaultValue='x'>
           <option
             key={this.props.id+'x'}
-            defaultValue
-            disabled="disabled">
-              {this.props.vocab.get('PLEASE_SELECT')}
+            value='x'
+            disabled={true}>
+            {this.props.vocab.get('PLEASE_SELECT')}
           </option>
           {this.props.choices.map((choice, index) =>
             <option
@@ -54,11 +61,15 @@ export class Choice extends Component {
 export class Input extends Component {
   render(){
     return(
-      <div key={this.props.id} className="rr rr-question" >
-        <label htmlFor={this.props.id}>{this.props.text}</label>
-        <input id={this.props.id} type={this.props.type} required={this.props.required}
-          className="rr-blankline rr-field" onChange={ this.props.changeForm }
-          autoComplete="off" data-itype="text" />
+      <div key={this.props.id} >
+        <p className='question'>{this.props.text}</p>
+        <input
+          id={this.props.id}
+          type={this.props.type}
+          required={this.props.required}
+          onChange={ this.props.changeForm }
+          autoComplete="off"
+          data-itype="text" />
       </div>
     )
   }
@@ -83,19 +94,49 @@ export class Choices extends Component {
 
   render(){
     return (
-      <div key={this.props.id} className="rr">
-        <label key={this.props.id} >{this.props.text}</label>
-          <select id={this.props.id} onChange={this.handleChange}
-            className="rr-blankline rr-field" required={this.props.required} data-itype="choices.bool">
-            {this.props.choices.map((choice, index) => <option key={choice.id}
-              value={choice.id} type={choice.type}>{choice.text}</option>)}
+      <div key={this.props.id} >
+        <p className='question'>{this.props.text}</p>
+          <select
+            id={this.props.id}
+            onChange={this.handleChange}
+            required={this.props.required}
+            data-itype="choices.bool"
+            defaultValue={this.props.vocab.get('PLEASE_SELECT')}>
+            <option
+              key={this.props.id+'x'}
+              disabled={true}>
+              {this.props.vocab.get('PLEASE_SELECT')}
+            </option>
+            {this.props.choices.map((choice, index) =>
+              <option key={choice.id}
+              value={choice.id}
+              type={choice.type}>
+              {choice.text}</option>)}
           </select>
-          <div id={this.props.id+'.textInput'} className="invisible">
-            <label htmlFor={this.props.id+'.text'}>{this.props.vocab.get('PLEASE_ENTER_DATA')}</label>
-            <input name={this.props.id+'.text'} onChange={this.props.changeForm} autoComplete="off"
-              className="rr-blankline rr-field" data-itype="choices.text"/>
+          <div id={this.props.id+'.textInput'} className='invisible'>
+            <p className='question'>{this.props.vocab.get('PLEASE_ENTER_DATA')}</p>
+            <input name={this.props.id+'.text'}
+              onChange={this.props.changeForm}
+              autoComplete="off"
+              data-itype="choices.text"/>
           </div>
       </div>
     )
   }
 }
+
+//Saved from Almir for study later.
+// const renderCheckbox = (surveyId, questionId, choiceId, label) => (
+//   <div className="checkbox" key={surveyId + '.' + questionId + '.' + choiceId}>
+//     <label><input type="checkbox"
+//                   name={surveyId + '.' + questionId + '.' + choiceId}
+//                   id={surveyId + '.' + questionId + '.' + choiceId}
+//                   onChange={this.props.changeChoice}
+//                   value={surveyId + '.' + questionId + '.' + choiceId}/> {label}</label>
+//   </div>
+// )
+//
+// const renderChoices = (question) => {
+//   var checkboxes = question.choices.map(choice => {
+//     return renderCheckbox(this.props.survey.id, question.id, choice.id, choice.text);
+//   })

@@ -2,9 +2,9 @@ nav {
 	position: relative;
 	top: 0;
 	z-index: 999999;
-	border-bottom: 4px solid $gap-navy;
+	border-bottom: 4px solid $color-key-dark;
 	a {
-		color: $gap-navy;
+		color: $color-key-dark;
 		text-decoration: none;
 		font-weight: 700;
 		&.logo {
@@ -47,19 +47,19 @@ nav {
 
 .alt-nav {
 	nav {
-	border-bottom: 4px solid $gap-white;
+	border-bottom: 4px solid $color-white;
 	a {
-		color: $gap-white;
+		color: $color-white;
 		&.logo {
-			color: #gap-white;
+			color: $color-white;
 		}
 	}
 	ul {
 		li {
 			#nav--userSettings {
-				border: 2px solid $gap-white !important;
-				background-color: $gap-white !important;
-				color: $gap-medium-blue !important;
+				border: 2px solid $color-white !important;
+				background-color: $color-white !important;
+				color: $color-key-medium !important;
 			}
 			#nav--login {
 				@extend .buttonSecondary.light;

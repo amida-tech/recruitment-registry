@@ -30,7 +30,9 @@ class Nav extends Component {
       })
     } else {
       var routesNewUsers = routes.filter(r => !r.requiresAuth || r.newUsers)
-      nav = routesNewUsers.map(r => <Link className="nav-item nav-link" key={r.path} to={r.path}>{r.title}</Link>)
+      nav = routesNewUsers.map(r => {
+        return <Link className="nav-item nav-link" key={r.path} to={r.path}>{r.title}</Link>
+        })
     }
 
     return (

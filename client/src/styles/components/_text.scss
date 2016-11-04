@@ -1,6 +1,6 @@
 html, body {
-  font-family: $text-font-stack;
-  color: $gap-black;
+  font-family: $font-primary;
+  color: $color-black;
 }
 h1 {
   font-family: inherit;
@@ -72,5 +72,22 @@ sub {
   bottom: -0.25em;
 }
 a {
-  color: $gap-medium-blue;
+  color: $color-key-medium;
+}
+span.tooltip {
+  @extend p;
+  font-family: $font-secondary;
+  color: $color-dark-grey;
+}
+span.label {
+  @extend p;
+  font-family: $font-secondary;
+  color: $color-dark-grey;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+p.question {
+  @extend h3;
+  font-size: 24px;
+  font-family: $font-serif;
 }

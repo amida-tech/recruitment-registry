@@ -1,12 +1,12 @@
 import React, { Component} from 'react';
 import { connect } from 'react-redux';
 import Form from './login-form';
-import login from '../index';
+import * as actions from '../actions';
 import Background from '../../Background'
 
 export class LoginContainer extends Component {
   render() {
-    const formState = this.props.data.get('formState')
+    const formState = this.props.data.get('formState');
     return (
       <div className="login">
         <Background/>
@@ -24,16 +24,16 @@ export class LoginContainer extends Component {
   }
 
   _login(evt) {
-    evt.preventDefault()
+    evt.preventDefault();
 
     var username = this.props.data.getIn(['formState', 'username'])
     var password = this.props.data.getIn(['formState', 'password'])
 
-    this.props.dispatch(login.actions.login(username, password));
+    this.props.dispatch(actions.login(username, password));
   }
 
   _changeForm(evt) {
-    this.props.dispatch(login.actions.update(evt.target.id, evt.target.value))
+    this.props.dispatch(actions.update(evt.target.id, evt.target.value))
   }
 }
 
