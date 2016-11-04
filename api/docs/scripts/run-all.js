@@ -34,41 +34,41 @@ const consentDocuments05 = require('./consent-documents-05');
 const locals = {};
 
 models.sequelize.sync({ force: true })
-	.then(() => locals)
-	.then(authentication01)
-	.then(authorization01)
-	.then(adminQuestion01)
-	.then(adminQuestion02)
-	.then(adminQuestion03)
-	.then(adminQuestion04)
-	.then(adminSurvey01)
-	.then(adminProfileSurvey01)
-	.then(adminConsentDocument01)
-	.then(adminConsentDocument02)
-	.then(adminConsentDocument03)
-	.then(adminConsentDocument04)
-	.then(registration01)
-	.then(registration02)
-	.then(registration03)
-	.then(registration04)
-	.then(profile01)
-	.then(profile02)
-	.then(profile01)
-	.then(surveys01)
-	.then(surveys02)
-	.then(surveys03)
-	.then(surveys04)
-	.then(surveys05)
-	.then(consentDocuments01)
-	.then(consentDocuments02)
-	.then(consentDocuments03)
-	.then(consentDocuments04)
-	.then(consentDocuments05)
-	.then(() => {
-		console.log('success');
-		process.exit(0);
-	})
-	.catch((err) => {
-		console.log(err);
-		process.exit(1);
-	});
+    .then(() => locals)
+    .then(authentication01)
+    .then(authorization01)
+    .then(adminQuestion01)
+    .then(adminQuestion02)
+    .then(adminQuestion03)
+    .then(adminQuestion04)
+    .then(adminSurvey01)
+    .then(adminProfileSurvey01)
+    .then(adminConsentDocument01)
+    .then(adminConsentDocument02)
+    .then(adminConsentDocument03)
+    .then(adminConsentDocument04)
+    .then(registration01)
+    .then(registration02)
+    .then(registration03)
+    .then(registration04)
+    .then(profile01)
+    .then(profile02)
+    .then(profile01)
+    .then(surveys01)
+    .then(surveys02)
+    .then(surveys03)
+    .then(surveys04)
+    .then(surveys05)
+    .then(consentDocuments01)
+    .then(consentDocuments02)
+    .then(consentDocuments03)
+    .then(consentDocuments04)
+    .then(consentDocuments05)
+    .then(() => {
+        console.log('success');
+        process.exit(0);
+    })
+    .catch((err) => {
+        console.log(err);
+        process.exit(1);
+    });
