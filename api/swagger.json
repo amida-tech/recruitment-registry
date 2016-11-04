@@ -1974,6 +1974,10 @@
                     "type": "string",
                     "minLength": 1
                 },
+                "meta": {
+                    "type": "object",
+                    "properties": {}
+                },
                 "sections": {
                     "type": "array",
                     "items": {
@@ -2045,6 +2049,10 @@
                 "name": {
                     "type": "string",
                      "minLength": 1
+                },
+                "meta": {
+                    "type": "object",
+                    "properties": {}
                 },
                 "sections": {
                     "type": "array",
