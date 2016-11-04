@@ -269,6 +269,29 @@
                     }
                 }
             },
+            "patch": {
+                "summary": "Updates survey",
+                "operationId": "updateSurvey",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "surveyUpdate",
+                    "in": "body",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/surveyUpdate"
+                    }
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successful response."
+                    },
+                   "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
             "delete": {
                 "summary": "Deletes survey",
                 "operationId": "deleteSurvey",
@@ -1963,6 +1986,10 @@
             },
             "additionalProperties": false
         },
+        "surveyMeta": {
+            "type": "object",
+            "properties": {}
+        },
         "newSurvey": {
             "type": "object",
             "required": [
@@ -1975,8 +2002,7 @@
                     "minLength": 1
                 },
                 "meta": {
-                    "type": "object",
-                    "properties": {}
+                    "$ref": "#/definitions/surveyMeta"
                 },
                 "sections": {
                     "type": "array",
@@ -2051,8 +2077,7 @@
                      "minLength": 1
                 },
                 "meta": {
-                    "type": "object",
-                    "properties": {}
+                    "$ref": "#/definitions/surveyMeta"
                 },
                 "sections": {
                     "type": "array",
@@ -2069,6 +2094,16 @@
                     "minItems": 1
                 }
             },
+            "additionalProperties": false
+        },
+        "surveyUpdate": {
+            "type": "object",
+            "properties": {
+                "meta": {
+                    "$ref": "#/definitions/surveyMeta"
+                }
+            },
+            "minProperties": 1,
             "additionalProperties": false
         },
         "surveyTextUpdate": {

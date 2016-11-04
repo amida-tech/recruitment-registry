@@ -37,6 +37,9 @@ describe('survey unit', function () {
         return function () {
             const clientSurvey = generator.newSurvey();
             const updatedName = clientSurvey.name + 'xyz';
+            let updatedMeta = {
+                meta: { anyProperty: 2 }
+            };
             return models.survey.createSurvey(clientSurvey)
                 .then(id => models.survey.getSurvey(id))
                 .then((serverSurvey) => {
@@ -46,7 +49,23 @@ describe('survey unit', function () {
                             return serverSurvey.id;
                         });
                 })
-                .then((id) => models.survey.updateSurveyText({ id, name: updatedName }))
+                .then(id => models.survey.updateSurvey(id, updatedMeta))
+                .then(() => models.survey.getSurveyByName(clientSurvey.name))
+                .then((serverSurvey) => {
+                    const updatedSurvey = Object.assign({}, clientSurvey, updatedMeta);
+                    return comparator.survey(updatedSurvey, serverSurvey)
+                        .then(() => serverSurvey.id);
+                })
+                .then(id => {
+                    let { meta } = clientSurvey;
+                    if (meta === undefined) {
+                        meta = null;
+                    }
+                    return models.survey.updateSurvey(id, { meta })
+                        .then(() => id);
+
+                })
+                .then(id => models.survey.updateSurveyText({ id, name: updatedName }))
                 .then(() => models.survey.getSurveyByName(updatedName))
                 .then(serverSurvey => {
                     const updatedSurvey = Object.assign({}, clientSurvey, { name: updatedName });

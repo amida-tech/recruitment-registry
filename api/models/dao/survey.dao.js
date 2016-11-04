@@ -107,6 +107,10 @@ module.exports = class {
         });
     }
 
+    updateSurvey(id, surveyUpdate) {
+        return Survey.update(surveyUpdate, { where: { id } });
+    }
+
     replaceSurveyTx(id, replacement, tx) {
         return Survey.findById(id)
             .then(survey => {
