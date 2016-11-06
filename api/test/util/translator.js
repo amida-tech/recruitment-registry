@@ -39,6 +39,7 @@ const translator = {
     translateSurvey(survey, language) {
         const result = _.cloneDeep(survey);
         result.name = this._translate(result.name, language);
+        delete result.meta;
         if (result.sections) {
             result.sections.forEach(section => {
                 section.name = this._translate(section.name, language);

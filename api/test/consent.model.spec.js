@@ -252,7 +252,7 @@ describe('consent unit', function () {
         return function () {
             const userId = history.userId(userIndex);
             const documentIds = newSignatureIndices.map(i => history.id(i));
-            return models.consentSignature.bulkCreateSignatures(userId, documentIds, language)
+            return models.consentSignature.bulkCreateSignatures(documentIds, { userId, language })
                 .then(() => getUserConsentDocuments(userIndex, index, expectedSignatureIndices));
         };
     };

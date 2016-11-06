@@ -48,6 +48,13 @@ exports.updateSurveyText = function (req, res) {
         .catch(shared.handleError(res));
 };
 
+exports.updateSurvey = function (req, res) {
+    const id = _.get(req, 'swagger.params.id.value');
+    models.survey.updateSurvey(id, req.body)
+        .then(() => res.status(204).end())
+        .catch(shared.handleError(res));
+};
+
 exports.deleteSurvey = function (req, res) {
     const id = _.get(req, 'swagger.params.id.value');
     models.survey.deleteSurvey(id)

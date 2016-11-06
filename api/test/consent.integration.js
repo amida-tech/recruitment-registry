@@ -12,6 +12,7 @@ const ConsentDocumentHistory = require('./util/consent-document-history');
 const ConsentCommon = require('./util/consent-common');
 const config = require('../config');
 const translator = require('./util/translator');
+const models = require('../models');
 
 const expect = chai.expect;
 const generator = new Generator();
@@ -28,6 +29,7 @@ describe('consent integration', function () {
     const history = new ConsentDocumentHistory(userCount);
     const hxConsent = new History();
     const consentCommon = new ConsentCommon(hxConsent, history);
+    const browserMap = new Map();
 
     before(shared.setUpFn(store));
 
@@ -343,22 +345,33 @@ describe('consent integration', function () {
         });
     });
 
-    const signDocumentsFn = function (userIndex, index, newSignatureIndices, language) {
-        return function (done) {
-            language = language || 'en';
-            const query = {};
-            if (language) {
-                query.language = language;
-            }
-            const documentIds = newSignatureIndices.map(i => history.id(i));
-            store.server
-                .post(`/api/v1.0/consent-signatures/bulk`)
-                .set('Authorization', store.auth)
-                .query(query)
-                .send(documentIds)
-                .expect(201, done);
+    const signDocumentsFn = (function () {
+        let browserIndex = 0;
+
+        return function (userIndex, index, newSignatureIndices, language) {
+            return function (done) {
+                language = language || 'en';
+                const query = {};
+                if (language) {
+                    query.language = language;
+                }
+                const documentIds = newSignatureIndices.map(i => history.id(i));
+                ++browserIndex;
+                const userAgent = `Browser-${browserIndex}`;
+                const ip = `9848.3${browserIndex}.838`;
+                const userId = history.hxUser.id(userIndex);
+                documentIds.forEach(documentId => browserMap.set(`${userId}.${documentId}`, { userAgent, ip }));
+                store.server
+                    .post(`/api/v1.0/consent-signatures/bulk`)
+                    .set('Authorization', store.auth)
+                    .set('User-Agent', userAgent)
+                    .set('X-Forwarded-For', [ip, `111.${browserIndex}0.999`])
+                    .query(query)
+                    .send(documentIds)
+                    .expect(201, done);
+            };
         };
-    };
+    })();
 
     it(`login as user 0`, shared.loginIndexFn(store, history.hxUser, 0));
     it('user 0 signs consent 0 (1, 2, 3)', signDocumentsFn(0, 0, [1, 2, 3], 'sp'));
@@ -501,6 +514,17 @@ describe('consent integration', function () {
                 const comments = _.map(servers, 'updateComment');
                 expect(res.body).to.deep.equal(comments);
                 done();
+            });
+    });
+
+    it('check ip and browser (user-agent) of signature', function () {
+        const query = 'select registry_user.id as "userId", consent_document.id as "documentId", ip, user_agent as "userAgent" from consent_signature, consent_document, registry_user where consent_signature.user_id = registry_user.id and consent_signature.consent_document_id = consent_document.id';
+        return models.sequelize.query(query, { type: models.sequelize.QueryTypes.SELECT })
+            .then(result => {
+                result.forEach(({ userId, documentId, userAgent, ip }) => {
+                    const expected = browserMap.get(`${userId}.${documentId}`);
+                    expect({ userAgent, ip }).to.deep.equal(expected);
+                });
             });
     });
 });
