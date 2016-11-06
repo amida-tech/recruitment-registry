@@ -81,31 +81,30 @@ const generateAnswer = {
     }
 };
 
+const fileAnswer = function ({ userId, surveyId, language, answers }, tx) {
+    answers = answers.reduce((r, q) => {
+        const questionId = q.questionId;
+        const values = uiToDbAnswer(q.answer).map(value => ({
+            userId,
+            surveyId,
+            language,
+            questionId,
+            questionChoiceId: value.questionChoiceId || null,
+            value: value.hasOwnProperty('value') ? value.value : null,
+            type: value.type
+        }));
+        values.forEach(value => r.push(value));
+        return r;
+    }, []);
+    // TODO: Switch to bulkCreate when Sequelize 4 arrives
+    return SPromise.all(answers.map(answer => {
+        return Answer.create(answer, { transaction: tx });
+    }));
+};
+
 module.exports = class {
     constructor(dependencies) {
         Object.assign(this, dependencies);
-    }
-
-    auxCreateAnswersTx({ userId, surveyId, language, answers }, tx) {
-        // TO DO: Put an assertion here to check the answers match with question type
-        answers = answers.reduce((r, q) => {
-            const questionId = q.questionId;
-            const values = uiToDbAnswer(q.answer).map(value => ({
-                userId,
-                surveyId,
-                language,
-                questionId,
-                questionChoiceId: value.questionChoiceId || null,
-                value: value.hasOwnProperty('value') ? value.value : null,
-                type: value.type
-            }));
-            values.forEach(value => r.push(value));
-            return r;
-        }, []);
-        // TODO: Switch to bulkCreate when Sequelize 4 arrives
-        return SPromise.all(answers.map(answer => {
-            return Answer.create(answer, { transaction: tx });
-        }));
     }
 
     createAnswersTx({ userId, surveyId, language = 'en', answers }, tx) {
@@ -126,11 +125,18 @@ module.exports = class {
                         qx.required = false;
                     }
                 });
+                const remainingRequired = new Set();
                 _.values(qxMap).forEach(qx => {
                     if (qx.required) {
-                        throw new RRError('answerRequiredMissing');
+                        remainingRequired.add(qx.questionId);
                     }
                 });
+                return remainingRequired;
+            })
+            .then(remainingRequired => {
+                if (remainingRequired.size) {
+                    throw new RRError('answerRequiredMissing');
+                }
             })
             .then(() => Answer.destroy({
                 where: {
@@ -149,7 +155,7 @@ module.exports = class {
             .then(() => {
                 answers = _.filter(answers, answer => answer.answer);
                 if (answers.length) {
-                    return this.auxCreateAnswersTx({ userId, surveyId, language, answers }, tx);
+                    return fileAnswer({ userId, surveyId, language, answers }, tx);
                 }
             });
     }
