@@ -351,6 +351,20 @@ describe('survey unit', function () {
         it(`create user ${i}`, shared.createUser(hxUser));
     }
 
+    const auxAnswerVerifySurvey = function (survey, input) {
+        return models.answer.createAnswers(input)
+            .then(function () {
+                return models.survey.getAnsweredSurvey(input.userId, input.surveyId)
+                    .then(answeredSurvey => {
+                        comparator.answeredSurvey(survey, input.answers, answeredSurvey);
+                        return models.survey.getAnsweredSurveyByName(input.userId, survey.name)
+                            .then(answeredSurveyByName => {
+                                expect(answeredSurveyByName).to.deep.equal(answeredSurvey);
+                            });
+                    });
+            });
+    };
+
     const answerVerifySurveyFn = function (surveyIndex) {
         return function () {
             const survey = history.server(surveyIndex);
@@ -360,17 +374,7 @@ describe('survey unit', function () {
                 surveyId: survey.id,
                 answers
             };
-            return models.answer.createAnswers(input)
-                .then(function () {
-                    return models.survey.getAnsweredSurvey(input.userId, input.surveyId)
-                        .then(answeredSurvey => {
-                            comparator.answeredSurvey(survey, answers, answeredSurvey);
-                            return models.survey.getAnsweredSurveyByName(input.userId, survey.name)
-                                .then(answeredSurveyByName => {
-                                    expect(answeredSurveyByName).to.deep.equal(answeredSurvey);
-                                });
-                        });
-                });
+            return auxAnswerVerifySurvey(survey, input);
         };
     };
 
@@ -400,7 +404,7 @@ describe('survey unit', function () {
         });
         px = px.then(() => {
             answers.push(removedAnswers[0]);
-            return models.answer.createAnswers(input);
+            return auxAnswerVerifySurvey(survey, input);
         });
         return px;
     });
