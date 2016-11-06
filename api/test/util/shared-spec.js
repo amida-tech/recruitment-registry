@@ -138,7 +138,7 @@ class SharedSpec {
             const consentDocumentId = history.id(typeIndex);
             const userId = history.userId(userIndex);
             history.sign(typeIndex, userIndex);
-            return models.consentSignature.createSignature(userId, consentDocumentId);
+            return models.consentSignature.createSignature({ userId, consentDocumentId });
         };
     }
 

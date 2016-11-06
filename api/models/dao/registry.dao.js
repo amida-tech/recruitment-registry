@@ -95,7 +95,8 @@ module.exports = class {
                         .then(user => {
                             if (input.signatures && input.signatures.length) {
                                 return SPromise.all(input.signatures.map(consentDocumentId => {
-                                        return this.consentSignature.createSignature(user.id, consentDocumentId, language, tx);
+                                        const userId = user.id;
+                                        return this.consentSignature.createSignature({ userId, consentDocumentId, language }, tx);
                                     }))
                                     .then(() => user);
                             }

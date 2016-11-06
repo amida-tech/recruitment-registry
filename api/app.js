@@ -24,6 +24,7 @@ app.use(expressWinston.logger({
 
 app.use(cors());
 app.use(jsonParser);
+app.enable('trust proxy');
 app.use(passport.initialize());
 app.use(passport.session());
 
