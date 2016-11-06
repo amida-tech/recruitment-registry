@@ -135,7 +135,19 @@ module.exports = class {
             })
             .then(remainingRequired => {
                 if (remainingRequired.size) {
-                    throw new RRError('answerRequiredMissing');
+                    const ids = [...remainingRequired];
+                    return Answer.findAll({
+                            raw: true,
+                            where: { userId, surveyId, questionId: { $in: ids } },
+                            attributes: ['questionId']
+                        })
+                        .then(records => {
+                            const questionIds = records.map(record => record.questionId);
+                            const existingRequired = new Set(questionIds);
+                            if (existingRequired.size !== remainingRequired.size) {
+                                throw new RRError('answerRequiredMissing');
+                            }
+                        });
                 }
             })
             .then(() => Answer.destroy({

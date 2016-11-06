@@ -409,6 +409,34 @@ describe('survey unit', function () {
         return px;
     });
 
+    it('reanswer without all required questions', function () {
+        const survey = history.server(4);
+        const userId = hxUser.id(0);
+        return models.survey.getAnsweredSurvey(userId, survey.id)
+            .then(answeredSurvey => {
+                const qxs = survey.questions;
+                const answers = generator.answerQuestions(qxs);
+                const input = {
+                    userId: hxUser.id(0),
+                    surveyId: survey.id,
+                    answers
+                };
+                const requiredIndices = _.range(qxs.length).filter(index => qxs[index].required);
+                expect(requiredIndices).to.have.length.above(1);
+                _.pullAt(answers, requiredIndices[0]);
+                return models.answer.createAnswers(input)
+                    .then(() => {
+                        const removedQxId = qxs[requiredIndices[0]].id;
+                        const removedAnswer = answeredSurvey.questions.find(qx => (qx.id === removedQxId)).answer;
+                        answers.push({ questionId: removedQxId, answer: removedAnswer });
+                        return models.survey.getAnsweredSurvey(input.userId, input.surveyId)
+                            .then(answeredSurvey => {
+                                comparator.answeredSurvey(survey, answers, answeredSurvey);
+                            });
+                    });
+            });
+    });
+
     it('error: answer with invalid question id', function () {
         const survey = history.server(6);
         const qxs = survey.questions;
