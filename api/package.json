@@ -47,6 +47,7 @@
         "mocha": "^3.0.2",
         "sinon": "^1.17.5",
         "smtp-server": "^1.16.1",
+        "superagent": "^2.3.0",
         "supertest": "^2.0.0"
     }
 }

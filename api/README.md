@@ -48,13 +48,31 @@ RECREG_DB_DIALECT=postgres
 
 > Run server (default port is 9005)
 
-`npm start`
+`grunt`
 
-> First beautifies and lints all files and then runs all tests.
+> First beautifies and lints all files and then runs all the tests.
+
+`npm test`
+
+> Runs all the tests.
 
 `npm run-script coverage`
 
 > Runs all the tests and displays coverage metrics.
+
+## Tests
+
+This project primarily uses [Mocha](http://mochajs.org/), [Chai](http://chaijs.com/) and [Super Test](https://github.com/visionmedia/supertest) for automated testing.  [Sinon](http://sinonjs.org/) is also used in a couple of tests when it is absolutely necessary to use stubs.  Stubbing in general however is avoided.
+
+All tests are located in `test` directory in a mostly flat directory structure.  All API entries both get a HTTP integration test and an equivalent model test.  Unit tests for other utility modules are also included in the root directory.  In addition `test/use-cases` directory includes informative tests designed to instruct how to use the API from a client.
+
+Individual test suites can be run using mocha
+
+```
+$ mocha test/survey.model.spec.js --bail
+```
+
+Each test in a file may depend on some of the previous tests so using flag `bail` is recommended.
 
 ## Postgres specific functionality
 
@@ -77,13 +95,13 @@ This is a question centric design where all participant information (except logi
 - 'choice': These are multiple choice questions from which a single selection needs to be made.
 - 'choices': These are multi answer questions where participants can make multiple selections from multiple choices.  Additional free text components can be also specified for this type to collect additional information from participants that is not covered by the choices.
 
-
+#### Answers
 
 ## API
 
-[swagger.json](./swagger.json) describes the API.  You can view by various swagger tools.
+File [swagger.json](./swagger.json) describes the API.  There are various [swagger](http://swagger.io/) tools such as [swagger-codegen](https://github.com/swagger-api/swagger-codegen) that can be used view or generate reports based on this file.  In addition when the recruitment-registry api server is running `/doc` path serves as the API user interface (`localhost:9005/docs` for default settings).
 
-When the server is running `/doc` path serves API user interface (`localhost:9005/docs` for default settings).
+Another detailed description of the API with working examples is provided in the [integration document](./docs/api.md).
 
 ## Database Design
 
@@ -126,6 +144,7 @@ In very near future there will be one or two tables to store consent documents (
 - [Grunt](http://gruntjs.com/)
 - [Sequelize](http://docs.sequelizejs.com/en/v3/)
 - [Postgres](https://www.postgresql.org/)
+- [Sinon](http://sinonjs.org/)
 - [Mocha](http://mochajs.org/)
 - [Chai](http://chaijs.com/)
 - [Supertest](https://github.com/visionmedia/supertest)
