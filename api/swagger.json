@@ -1615,7 +1615,7 @@
                 "summary": "Gets all languages",
                 "operationId": "listLanguages",
                 "security": [{
-                    "admin": []
+                    "participant": []
                 }],
                 "responses": {
                     "200": {
@@ -1642,7 +1642,7 @@
                 "summary": "Gets language",
                 "operationId": "getLanguage",
                 "security": [{
-                    "admin": []
+                    "participant": []
                 }],
                 "responses": {
                     "200": {

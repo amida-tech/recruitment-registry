@@ -1340,7 +1340,161 @@ Server responds with the consent document and its signature status
 ### Multi Lingual Support
 <a name="multi-lingual-support"/>
 
-This section describes the multi lingual support in the API.
+This API follows an English first approach where every newly created resource is assumed to be in English. After the resource is created, user facing fields of resources can be translated into any language.
+
+##### Languages
+
+This section describes preloaded language definitions and how to add a new language to the system. All [GET] operations in this section is available to both participants and admins while only admins are authorized for other operations.
+
+Recruitment Registry installations are preloaded with languages that can be listed by `/languages` resource
+
+```js
+request
+    .get('http://localhost:9005/api/v1.0/languages')
+    .set('Authorization', 'Bearer ' + jwtUser)
+    .then(res => {
+        console.log(res.status);  // 200
+        console.log(JSON.stringify(res.body, undefined, 4)); // list of languages
+    });
+```
+
+Server responds with a list of languages preloaded to the system in the body
+
+```js
+[
+    {
+        "code": "en",
+        "name": "English",
+        "nativeName": "English"
+    },
+    {
+        "code": "es",
+        "name": "Spanish",
+        "nativeName": "Español"
+    },
+    {
+        "code": "fr",
+        "name": "French",
+        "nativeName": "Le français"
+    },
+    {
+        "code": "jp",
+        "name": "Japanese",
+        "nativeName": "日本語"
+    },
+    {
+        "code": "ru",
+        "name": "Russian",
+        "nativeName": "Русский"
+    }
+]
+```
+
+Any new language can be created using `/languages` resource
+
+```js
+const newLanguage = {
+    code: 'tr',
+    name: 'Turkish',
+    nativeName: 'Türkçe'
+};
+
+request
+    .post('http://localhost:9005/api/v1.0/languages')
+    .set('Authorization', 'Bearer ' + jwt)
+    .send(newLanguage)
+    .then(res => {
+        console.log(res.status);  // 201
+        console.log(res.body);    // code of the new language
+    });
+```
+
+Languages API does not check validity of the two digit ISO codes.  There letter ISO codes or any other language encoding can be used if necessary.  Codes are used in other resources to identify the language and are the only language resource property that are used elsewhere in this API.
+
+Any existing language detail can be shown individually
+
+```js
+request
+    .get('http://localhost:9005/api/v1.0/languages/es')
+    .set('Authorization', 'Bearer ' + jwtUser)
+    .then(res => {
+        console.log(res.status); // 200
+        console.log(res.body);  // definition of spanish
+    });
+```
+
+Server responds with language details in the body
+
+```js
+{
+    "code": "es",
+    "name": "Spanish",
+    "nativeName": "Español"
+}
+```
+
+Existing languages, including the preloaded ones, can the updated
+
+```js
+const languageUpdate = {
+    name: 'Castilian Spanish',
+    nativeName: 'Castillan'
+};
+
+request
+    .patch('http://localhost:9005/api/v1.0/languages/es')
+    .set('Authorization', 'Bearer ' + jwt)
+    .send(languageUpdate)
+    .then(res => {
+        console.log(res.status);  // 204
+    });
+```
+
+Language code updates are not allowed.  To use a new code for an existing language, the existing language resource has to deleted and recreated with the new code. Deleting a language is possible using `/languages/{code}` resource
+
+```js
+request
+    .delete('http://localhost:9005/api/v1.0/languages/fr')
+    .set('Authorization', 'Bearer ' + jwt)
+    .then(res => {
+        console.log(res.status);  // 204
+    });
+```
+
+Deleting language resources are only allowed only if no other active resource exists in or refer to that language. All changes changes can be verified listing the languages using `/languages` resource
+
+```js
+[
+    {
+        "code": "en",
+        "name": "English",
+        "nativeName": "English"
+    },
+    {
+        "code": "es",
+        "name": "Castilian Spanish",
+        "nativeName": "Castillan"
+    },
+    {
+        "code": "jp",
+        "name": "Japanese",
+        "nativeName": "日本語"
+    },
+    {
+        "code": "ru",
+        "name": "Russian",
+        "nativeName": "Русский"
+    },
+    {
+        "code": "tr",
+        "name": "Turkish",
+        "nativeName": "Türkçe"
+    }
+]
+```
+
+##### Translations
+
 
 ### Advanced System Administration
 <a name="advanced-system-admin"/>
