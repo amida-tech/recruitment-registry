@@ -404,7 +404,41 @@
                 }
             }
         },
-        "/surveys/answered/name/{name}": {
+        "/answered-surveys/{id}": {
+            "x-swagger-router-controller": "survey.controller",
+            "get": {
+                "summary": "Get survey with answers",
+                "operationId": "getAnsweredSurvey",
+                "security": [{
+                    "participant": []
+                }],
+                "parameters": [{
+                    "name": "id",
+                    "in": "path",
+                    "required": true,
+                    "type": "integer"
+                }, {
+                    "name": "language",
+                    "in": "query",
+                    "description": "Language code",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 2
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successul response",
+                        "schema": {
+                            "$ref": "#/definitions/survey"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/answered-surveys/name/{name}": {
             "x-swagger-router-controller": "survey.controller",
             "get": {
                 "summary": "Get survey with answers by name",
