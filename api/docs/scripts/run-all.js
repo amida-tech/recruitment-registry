@@ -30,6 +30,8 @@ const consentDocuments02 = require('./consent-documents-02');
 const consentDocuments03 = require('./consent-documents-03');
 const consentDocuments04 = require('./consent-documents-04');
 const consentDocuments05 = require('./consent-documents-05');
+const consentDocuments06 = require('./consent-documents-06');
+const consentDocuments07 = require('./consent-documents-07');
 const languages01 = require('./languages-01');
 const languages02 = require('./languages-02');
 const languages03 = require('./languages-03');
@@ -75,6 +77,9 @@ models.sequelize.sync({ force: true })
     .then(consentDocuments03)
     .then(consentDocuments04)
     .then(consentDocuments05)
+    .then(consentDocuments06)
+    .then(consentDocuments01)
+    .then(consentDocuments07)
     .then(languages01)
     .then(languages02)
     .then(languages03)

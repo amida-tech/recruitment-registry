@@ -1458,6 +1458,61 @@ Server responds with the consent document and its signature status
 }
 ```
 
+A new version of the consent document can be created using `/consent-document` resource.
+
+```js
+let consentDocUpdate = {
+    typeId: 2,
+    content: 'This is an updated Consent Form.',
+    updateComment: 'Updated notice added'
+};
+
+request
+    .post('http://localhost:9005/api/v1.0/consent-documents')
+    .set('Authorization', 'Bearer ' + jwt)
+    .send(consentDocUpdate)
+    .then(res => {
+        console.log(res.status);  // 201
+        console.log(res.body.id); // id of the updated consent document
+    });
+```
+
+Server responds with the id of the updated consent document.  Once a Consent Document is updated, it is added to the list of documents that has to signed by the participant.  The list is shown by `/users/consent-documents` as discussed before
+
+```js
+[
+    {
+        "id": 3,
+        "name": "consent",
+        "title": "Consent Form"
+    }
+]
+```
+
+Resource `/consent-documents/{id}/with-signature` shows the content and the new signature status
+
+```js
+request
+    .get('http://localhost:9005/api/v1.0/consent-documents/3/with-signature')
+    .set('Authorization', 'Bearer ' + jwtUser)
+    .then(res => {
+        console.log(res.status);  // 200
+        console.log(JSON.stringify(res.body, undefined, 4)); // consent document with signature information
+    });
+```
+
+Server responds with the new signature status which is false
+
+```js
+{
+    "id": 3,
+    "typeId": 2,
+    "content": "This is an updated Consent Form.",
+    "updateComment": "Updated notice added",
+    "signature": false
+}
+```
+
 ### Multi Lingual Support
 <a name="multi-lingual-support"/>
 
