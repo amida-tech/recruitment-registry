@@ -35,8 +35,10 @@ const languages02 = require('./languages-02');
 const languages03 = require('./languages-03');
 const languages04 = require('./languages-04');
 const languages05 = require('./languages-05');
-const translations01 = require('./translations-01');
-const translations02 = require('./translations-02');
+const translationsQuestions01 = require('./translations-questions-01');
+const translationsQuestions02 = require('./translations-questions-02');
+const translationsSurveys01 = require('./translations-surveys-01');
+const translationsSurveys02 = require('./translations-surveys-02');
 
 const locals = {};
 
@@ -77,8 +79,10 @@ models.sequelize.sync({ force: true })
     .then(languages04)
     .then(languages05)
     .then(languages01)
-    .then(translations01)
-    .then(translations02)
+    .then(translationsQuestions01)
+    .then(translationsQuestions02)
+    .then(translationsSurveys01)
+    .then(translationsSurveys02)
     .then(() => {
         console.log('success');
         process.exit(0);

@@ -207,7 +207,7 @@ module.exports = class {
                         })
                         .then(surveyQuestions => {
                             const questionIds = _.map(surveyQuestions, 'questionId');
-                            return this.question.listQuestions({ ids: questionIds })
+                            return this.question.listQuestions({ ids: questionIds, language: options.language })
                                 .then(questions => ({ questions, surveyQuestions }));
                         })
                         .then(({ questions, surveyQuestions }) => {

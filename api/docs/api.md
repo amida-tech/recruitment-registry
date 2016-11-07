@@ -1624,7 +1624,7 @@ English versions of text fields can be updated using the same resources that tra
 
 ###### Questions
 
-All question text fields are translated by `/questions/text` resource
+All question text fields are translated by `/questions/text/{language}` resource
 
 ```js
 const choicesQxTurkish = {
@@ -1669,7 +1669,7 @@ request
     });
 ```
 
-Translations are available to any [GET] method that responds with any one of questions text fields. As an example for `/questions` resource
+Translations are available to any [GET] method that responds with any one of questions text fields by specifying language url query parameter. As an example for `/questions` resource
 
 ```js
 request
@@ -1727,6 +1727,150 @@ responds with the Turkish translation in the body
 ```
 
 ###### Surveys
+
+Survey text fields that do not belong to its questions are translated by `/surveys/text/{language} resource
+
+```js
+const surveyTurkish = {
+    id: 1,
+    name: 'Örnek',
+    sections: [{
+        id: 1,
+        name: 'Kişisel Bilgiler'
+    }, {
+        id: 2,
+        name: 'Sağlık'
+    }]
+};
+
+request
+    .patch('http://localhost:9005/api/v1.0/surveys/text/tr')
+    .set('Authorization', 'Bearer ' + jwt)
+    .send(surveyTurkish)
+    .then(res => {
+        console.log(res.status);  // 204
+    });
+```
+
+Currently questions cannot be translated using `/surveys/text/{language}` resource and `/questions/text/{language}` has to be used.  Translations are available to any [GET] method that responds with any one of surveys text fields by specifying language url query parameter. As an example for `/surveys` resource
+
+```js
+request
+    .get('http://localhost:9005/api/v1.0/surveys/1')
+    .set('Authorization', 'Bearer ' + jwtUser)
+    .query({language: 'tr'})
+    .then(res => {
+        console.log(res.status);  // 200
+        console.log(JSON.stringify(res.body, undefined, 4)); // Turkish version of the survey
+    });
+```
+
+responds with the Turkish translation in the body
+
+```js
+{
+    "id": 1,
+    "name": "Örnek",
+    "questions": [
+        {
+            "id": 1,
+            "type": "text",
+            "text": "Please describe reason for your enrollment?",
+            "required": false
+        },
+        {
+            "id": 2,
+            "type": "bool",
+            "text": "Do you own a pet?",
+            "required": true
+        },
+        {
+            "id": 5,
+            "type": "choice",
+            "text": "What is your hair color?",
+            "choices": [
+                {
+                    "id": 9,
+                    "text": "Black"
+                },
+                {
+                    "id": 10,
+                    "text": "Brown"
+                },
+                {
+                    "id": 11,
+                    "text": "Blonde"
+                },
+                {
+                    "id": 12,
+                    "text": "Other"
+                }
+            ],
+            "required": true
+        },
+        {
+            "id": 4,
+            "type": "choices",
+            "text": "Hangi eksersizleri yapıyorsunuz?",
+            "actions": [
+                {
+                    "id": 1,
+                    "type": "true",
+                    "text": "Kabul Et"
+                },
+                {
+                    "id": 2,
+                    "type": "false",
+                    "text": "Eksersiz yapmıyorum."
+                }
+            ],
+            "choices": [
+                {
+                    "id": 5,
+                    "type": "bool",
+                    "text": "Yürüyüş"
+                },
+                {
+                    "id": 6,
+                    "type": "bool",
+                    "text": "Yavaş Koşu"
+                },
+                {
+                    "id": 7,
+                    "type": "bool",
+                    "text": "Koşu"
+                },
+                {
+                    "id": 8,
+                    "type": "text",
+                    "text": "Lütfen başka bir eksersiz belirtiniz."
+                }
+            ],
+            "required": false
+        }
+    ],
+    "sections": [
+        {
+            "id": 1,
+            "indices": [
+                1,
+                2
+            ],
+            "name": "Kişisel Bilgiler"
+        },
+        {
+            "id": 2,
+            "indices": [
+                0,
+                3
+            ],
+            "name": "Sağlık"
+        }
+    ]
+}
+```
+
+Note that all questions that are not yet translated is shown in English.
 
 ### Advanced System Administration
 <a name="advanced-system-admin"/>
