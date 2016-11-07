@@ -146,7 +146,7 @@ let choicesQx = {
         { text: 'Jogging', type: 'bool' },
         { text: 'Cycling', type: 'bool' },
         { text: 'Please specify other', type: 'text' }
-    ],
+    ]
 };
 ```
 
@@ -166,6 +166,30 @@ choiceQx = {
 ```
 
 It an error to specify `type` for a `choices` element for `choice` question.
+
+For each question a client dependent `actions` property can be specified.  This field is designed to store button texts and actions that depend on client ui design but can be used for any other client specific functionality such as sub texts to be shown to user.
+
+```js
+choicesQx = {
+    type: 'choices',
+    text: 'What kind of exercises do you do?',
+    choices: [
+        { text: 'Walking' },
+        { text: 'Jogging', type: 'bool' },
+        { text: 'Cycling', type: 'bool' },
+        { text: 'Please specify other', type: 'text' }
+    ],
+    actions: [{
+        type: 'true',
+        text: 'Confirm'
+    }, {
+        type: 'false',
+        text: 'I don\'t exercise.'
+    }]
+};
+```
+
+This API just store and retrieve `actions` property for the client.  There are no business logic related to `actions` field.
 
 Questions are created using the `/questions` resource
 
@@ -993,6 +1017,18 @@ Server responds with all the survey details and in particular its questions
             "id": 4,
             "type": "choices",
             "text": "What kind of exercises do you do?",
+            "actions": [
+                {
+                    "id": 1,
+                    "type": "true",
+                    "text": "Confirm"
+                },
+                {
+                    "id": 2,
+                    "type": "false",
+                    "text": "I don't exercise."
+                }
+            ],
             "choices": [
                 {
                     "id": 5,
@@ -1191,6 +1227,18 @@ Survey responds with the survey details in the response body.  Survey details is
             "id": 4,
             "type": "choices",
             "text": "What kind of exercises do you do?",
+            "actions": [
+                {
+                    "id": 1,
+                    "type": "true",
+                    "text": "Confirm"
+                },
+                {
+                    "id": 2,
+                    "type": "false",
+                    "text": "I don't exercise."
+                }
+            ],
             "choices": [
                 {
                     "id": 5,
@@ -1495,6 +1543,14 @@ Deleting language resources are only allowed only if no other active resource ex
 
 ##### Translations
 
+Every resource field in this API that is designed to be user facing (shown to user in a user interface) can be translated into any language that is defined as a language resource. Such fields are referred as `text` fields in this API.
+
+###### Questions
+
+All question text fields are translated by `/questions/text` resource
+
+```js
+```
 
 ### Advanced System Administration
 <a name="advanced-system-admin"/>
