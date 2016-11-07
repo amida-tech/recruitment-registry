@@ -1545,11 +1545,112 @@ Deleting language resources are only allowed only if no other active resource ex
 
 Every resource field in this API that is designed to be user facing (shown to user in a user interface) can be translated into any language that is defined as a language resource. Such fields are referred as `text` fields in this API.
 
+Translations are available to any [GET] request method by specifying the language as an url query parameter. If a language is specified as a query parameter but the translation does not exist, server always responds with the English version instead.
+
+English versions of text fields can be updated using the same resources that translates and is specified below; `en` specified as language code for this case.
+
 ###### Questions
 
 All question text fields are translated by `/questions/text` resource
 
 ```js
+const choicesQxTurkish = {
+    'id': 4,
+    'text': 'Hangi eksersizleri yapıyorsunuz?',
+    'actions': [
+        {
+            'id': 1,
+            'text': 'Kabul Et'
+        },
+        {
+            'id': 2,
+            'text': 'Eksersiz yapmıyorum.'
+        }
+    ],
+    'choices': [
+        {
+            'id': 5,
+            'text': 'Yürüyüş'
+        },
+        {
+            'id': 6,
+            'text': 'Yavaş Koşu'
+        },
+        {
+            'id': 7,
+            'text': 'Koşu'
+        },
+        {
+            'id': 8,
+            'text': 'Lütfen başka bir eksersiz belirtiniz.'
+        }
+    ]
+};
+
+request
+    .patch('http://localhost:9005/api/v1.0/questions/text/tr')
+    .set('Authorization', 'Bearer ' + jwt)
+    .send(choicesQxTurkish)
+    .then(res => {
+        console.log(res.status);  // 204
+    });
+```
+
+Translations are available to any [GET] method that responds with any one of questions text fields. As an example for `/questions` resource
+
+```js
+request
+    .get('http://localhost:9005/api/v1.0/questions/4')
+    .set('Authorization', 'Bearer ' + jwtUser)
+    .query({language: 'tr'})
+    .then(res => {
+        console.log(res.status);  // 200
+        console.log(JSON.stringify(res.body, undefined, 4)); // Turkish version of the questions
+    });
+```
+
+responds with the Turkish translation in the body
+
+```js
+{
+    "id": 4,
+    "type": "choices",
+    "text": "Hangi eksersizleri yapıyorsunuz?",
+    "actions": [
+        {
+            "id": 1,
+            "type": "true",
+            "text": "Kabul Et"
+        },
+        {
+            "id": 2,
+            "type": "false",
+            "text": "Eksersiz yapmıyorum."
+        }
+    ],
+    "choices": [
+        {
+            "id": 5,
+            "text": "Yürüyüş",
+            "type": "bool"
+        },
+        {
+            "id": 6,
+            "text": "Yavaş Koşu",
+            "type": "bool"
+        },
+        {
+            "id": 7,
+            "text": "Koşu",
+            "type": "bool"
+        },
+        {
+            "id": 8,
+            "text": "Lütfen başka bir eksersiz belirtiniz.",
+            "type": "text"
+        }
+    ]
+}
 ```
 
 ### Advanced System Administration

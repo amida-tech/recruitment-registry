@@ -790,7 +790,7 @@
                 "summary": "Gets question",
                 "operationId": "getQuestion",
                 "security": [{
-                    "admin": []
+                    "participant": []
                 }],
                 "parameters": [{
                     "name": "language",
@@ -2349,7 +2349,8 @@
                     }
                  }
             },
-            "additionalProperties": false
+            "additionalProperties": false,
+            "minProperties": 2
         },
         "newChoice": {
             "type": "object",
