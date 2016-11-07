@@ -299,6 +299,43 @@ survey = {
 };
 ```
 
+Questions can be grouped into sections.  Currenly only one level sections are possible
+
+```js
+survey = {
+    name: 'Example',
+    sections: [{
+        name: 'Demographics',
+        indices: [1, 2]
+    }, {
+        name: 'Health',
+        indices: [0, 3]
+    }],
+    questions: [{
+        required: false,
+        id: textQxId
+    }, {
+        required: true,
+        id: boolQxId
+    }, {
+        text: 'What is your hair color?',
+        required: true,
+        type: 'choice',
+        choices: [
+            { text: 'Black' },
+            { text: 'Brown' },
+            { text: 'Blonde' },
+            { text: 'Other' }
+        ]
+    }, {
+        required: false,
+        id: choicesQxId
+    }]
+};
+```
+
+This API only stores and retrieves section information and this information is not used in any business logic elsewhere.
+
 Surveys are created using `/surveys` resource
 
 ```
@@ -1053,6 +1090,24 @@ Server responds with all the survey details and in particular its questions
             ],
             "required": false
         }
+    ],
+    "sections": [
+        {
+            "id": 1,
+            "indices": [
+                1,
+                2
+            ],
+            "name": "Demographics"
+        },
+        {
+            "id": 2,
+            "indices": [
+                0,
+                3
+            ],
+            "name": "Health"
+        }
     ]
 }
 ```
@@ -1278,6 +1333,24 @@ Survey responds with the survey details in the response body.  Survey details is
                     }
                 ]
             }
+        }
+    ],
+    "sections": [
+        {
+            "id": 1,
+            "indices": [
+                1,
+                2
+            ],
+            "name": "Demographics"
+        },
+        {
+            "id": 2,
+            "indices": [
+                0,
+                3
+            ],
+            "name": "Health"
         }
     ]
 }
@@ -1652,6 +1725,8 @@ responds with the Turkish translation in the body
     ]
 }
 ```
+
+###### Surveys
 
 ### Advanced System Administration
 <a name="advanced-system-admin"/>
