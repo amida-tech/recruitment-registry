@@ -1872,6 +1872,58 @@ responds with the Turkish translation in the body
 
 Note that all questions that are not yet translated is shown in English.
 
+###### Profile Survey
+
+A special resource `/profile-survey/text/{language}` is available to translate the profile survey.  This shows little difference from the survey translations except translation object does not contain an `id` property.
+
+###### Consent Types
+
+The `title` field of consent type is translated by `/consent-types/text/{language}` resource
+
+```js
+const consentTypeConsentTurkish = {
+    id: 2,
+    title: 'İzin Metni'
+};
+
+request
+    .patch('http://localhost:9005/api/v1.0/consent-types/text/tr')
+    .set('Authorization', 'Bearer ' + jwt)
+    .send(consentTypeConsentTurkish)
+    .then(res => {
+        console.log(res.status);  // 204
+    });
+```
+
+Translations are available to any [GET] method that responds with the `title` field. As an example for `/consent-type` resource
+
+```js
+request
+    .get(`http://localhost:9005/api/v1.0/consent-types/2`)
+    .set('Authorization', 'Bearer ' + jwt)
+    .query({ language: 'tr' })
+    .then(res => {
+        console.log(res.status); // 200
+        console.log(JSON.stringify(res.body, undefined, 4)); // Turkish version of the consent type
+    });
+```
+
+Server responds with the Turkish translation in the body
+
+```js
+{
+    "id": 2,
+    "name": "consent",
+    "type": "single",
+    "title": "İzin Metni"
+}
+```
+
+###### Consent Documents
+
+
+
+
 ### Advanced System Administration
 <a name="advanced-system-admin"/>
 
