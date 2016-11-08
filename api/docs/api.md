@@ -1477,7 +1477,7 @@ request
     });
 ```
 
-Server responds with the id of the updated consent document.  Once a Consent Document is updated, it is added to the list of documents that has to signed by the participant.  The list is shown by `/users/consent-documents` as discussed before
+Server responds with the id of the updated consent document.  Once a Consent Document is updated, it is added to the list of documents that has to be signed by the participant.  The list is shown by `/users/consent-documents` as discussed before
 
 ```js
 [
@@ -1950,7 +1950,7 @@ request
     });
 ```
 
-Translations are available to any [GET] method that responds with the `title` field. As an example for `/consent-type` resource
+Translations are available to any [GET] request that responds with the `title` field. As an example for `/consent-type` resource
 
 ```js
 request
@@ -1976,8 +1976,46 @@ Server responds with the Turkish translation in the body
 
 ###### Consent Documents
 
+Consent document text fields are translated by `/consent-documents/text/{language} resource
 
+```js
+const consentDocTurkish = {
+    id: 3,
+    content: 'Bu güncelleştirilmiş bir izin metnidir.',
+    updateComment: 'Güncelleştirilmiş ibaresi eklendi'
+};
 
+request
+    .patch('http://localhost:9005/api/v1.0/consent-documents/text/tr')
+    .set('Authorization', 'Bearer ' + jwt)
+    .send(consentDocTurkish)
+    .then(res => {
+        console.log(res.status);  // 204
+    });
+```
+Currently questions cannot be translated using `/surveys/text/{language}` resource and `/questions/text/{language}` has to be used.  Translations are available to any [GET] request that responds with one of consent document text fields by specifying language as url query parameter. As an example for `/consent-dcouments/{id}` resource
+
+```js
+request
+    .get('http://localhost:9005/api/v1.0/consent-documents/3')
+    .set('Authorization', 'Bearer ' + jwtUser)
+    .query({language: 'tr'})
+    .then(res => {
+        console.log(res.status);  // 200
+        console.log(JSON.stringify(res.body, undefined, 4)); // Turkish version of the consent document
+    });
+```
+
+responds with the Turkish translation in the body
+
+```js
+{
+    "id": 3,
+    "typeId": 2,
+    "content": "Bu güncelleştirilmiş bir izin metnidir.",
+    "updateComment": "Güncelleştirilmiş ibaresi eklendi"
+}
+```
 
 ### Advanced System Administration
 <a name="advanced-system-admin"/>

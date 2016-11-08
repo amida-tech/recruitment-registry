@@ -43,6 +43,8 @@ const translationsSurveys01 = require('./translations-surveys-01');
 const translationsSurveys02 = require('./translations-surveys-02');
 const translationsConsentTypes01 = require('./translations-consent-types-01');
 const translationsConsentTypes02 = require('./translations-consent-types-02');
+const translationsConsentDocuments01 = require('./translations-consent-documents-01');
+const translationsConsentDocuments02 = require('./translations-consent-documents-02');
 
 const locals = {};
 
@@ -92,6 +94,8 @@ models.sequelize.sync({ force: true })
     .then(translationsSurveys02)
     .then(translationsConsentTypes01)
     .then(translationsConsentTypes02)
+    .then(translationsConsentDocuments01)
+    .then(translationsConsentDocuments02)
     .then(() => {
         console.log('success');
         process.exit(0);
