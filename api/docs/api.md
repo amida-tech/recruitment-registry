@@ -963,6 +963,212 @@ Server does not return any content after updates.  Updated profile is available 
 }
 ```
 
+### Questions
+
+A list of all questions is available to admins using resource `/questions`
+
+```js
+request
+    .get('http://localhost:9005/api/v1.0/questions')
+    .set('Authorization', 'Bearer ' + jwt)
+    .then(res => {
+        console.log(res.status);  // 200
+        const questionList = res.body;
+        console.log(JSON.stringify(questionList, undefined, 4));
+    });
+```
+
+Server responds with the list in the response body
+
+```js
+[
+    {
+        "id": 1,
+        "type": "text",
+        "text": "Please describe reason for your enrollment?"
+    },
+    {
+        "id": 2,
+        "type": "bool",
+        "text": "Do you own a pet?"
+    },
+    {
+        "id": 3,
+        "type": "choice",
+        "text": "What is your hair color?",
+        "choices": [
+            {
+                "id": 1,
+                "text": "Black"
+            },
+            {
+                "id": 2,
+                "text": "Brown"
+            },
+            {
+                "id": 3,
+                "text": "Blonde"
+            },
+            {
+                "id": 4,
+                "text": "Other"
+            }
+        ]
+    },
+    {
+        "id": 4,
+        "type": "choices",
+        "text": "What kind of exercises do you do?",
+        "actions": [
+            {
+                "id": 1,
+                "type": "true",
+                "text": "Confirm"
+            },
+            {
+                "id": 2,
+                "type": "false",
+                "text": "I don't exercise."
+            }
+        ],
+        "choices": [
+            {
+                "id": 5,
+                "type": "bool",
+                "text": "Walking"
+            },
+            {
+                "id": 6,
+                "type": "bool",
+                "text": "Jogging"
+            },
+            {
+                "id": 7,
+                "type": "bool",
+                "text": "Cycling"
+            },
+            {
+                "id": 8,
+                "type": "text",
+                "text": "Please specify other"
+            }
+        ]
+    },
+    {
+        "id": 5,
+        "type": "choice",
+        "text": "What is your hair color?",
+        "choices": [
+            {
+                "id": 9,
+                "text": "Black"
+            },
+            {
+                "id": 10,
+                "text": "Brown"
+            },
+            {
+                "id": 11,
+                "text": "Blonde"
+            },
+            {
+                "id": 12,
+                "text": "Other"
+            }
+        ]
+    },
+    {
+        "id": 6,
+        "type": "choice",
+        "text": "Gender",
+        "choices": [
+            {
+                "id": 13,
+                "text": "male"
+            },
+            {
+                "id": 14,
+                "text": "female"
+            },
+            {
+                "id": 15,
+                "text": "other"
+            }
+        ]
+    },
+    {
+        "id": 7,
+        "type": "text",
+        "text": "Zip code"
+    },
+    {
+        "id": 8,
+        "type": "bool",
+        "text": "Family history of memory disorders/AD/dementia?"
+    },
+    {
+        "id": 9,
+        "type": "choices",
+        "text": "How did you hear about us?",
+        "choices": [
+            {
+                "id": 16,
+                "type": "bool",
+                "text": "TV"
+            },
+            {
+                "id": 17,
+                "type": "bool",
+                "text": "Radio"
+            },
+            {
+                "id": 18,
+                "type": "bool",
+                "text": "Newspaper"
+            },
+            {
+                "id": 19,
+                "type": "bool",
+                "text": "Facebook/Google Ad/OtherInternet ad"
+            },
+            {
+                "id": 20,
+                "type": "bool",
+                "text": "Physician/nurse/healthcare professional"
+            },
+            {
+                "id": 21,
+                "type": "bool",
+                "text": "Caregiver"
+            },
+            {
+                "id": 22,
+                "type": "bool",
+                "text": "Friend/Family member"
+            },
+            {
+                "id": 23,
+                "type": "text",
+                "text": "Other source"
+            }
+        ]
+    }
+]
+```
+
+Individual questions can be shown using `/questions/{id}` resource
+
+```js
+request
+    .get('http://localhost:9005/api/v1.0/questions/1')
+    .set('Authorization', 'Bearer ' + jwt)
+    .then(res => {
+        console.log(res.status);  // 200
+        const question = res.body;
+        console.log(JSON.stringify(question, undefined, 4));
+    });
+```
+
 ### Surveys
 <a name="surveys"/>
 

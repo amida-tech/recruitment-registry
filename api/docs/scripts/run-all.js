@@ -20,6 +20,8 @@ const registration03 = require('./registration-03');
 const registration04 = require('./registration-04');
 const profile01 = require('./profile-01');
 const profile02 = require('./profile-02');
+const questions01 = require('./questions-01');
+const questions02 = require('./questions-02');
 const surveys01 = require('./surveys-01');
 const surveys02 = require('./surveys-02');
 const surveys03 = require('./surveys-03');
@@ -71,6 +73,8 @@ models.sequelize.sync({ force: true })
     .then(profile01)
     .then(profile02)
     .then(profile01)
+    .then(questions01)
+    .then(questions02)
     .then(surveys01)
     .then(surveys02)
     .then(surveys03)
