@@ -41,7 +41,7 @@ class Nav extends Component {
         <ul>
           <li><a href="./contact">Contact Us</a></li>
           { loggedIn ? (
-                <li><a href="./">Dashboard</a></li>
+                <li><Link to="/">Dashboard</Link></li>
             ) : ""
           }
           { loggedIn ? (
@@ -49,11 +49,11 @@ class Nav extends Component {
             ) : ""
           }
           { !loggedIn ? (
-                <li><a id="nav--login" href="./login">Log In</a></li>
+                <li><Link id="nav--login" to="/login">Log In</Link></li>
             ) : ""
           }
           { !loggedIn ? (
-                <li><a id="nav--register" href="./register">Register</a></li>
+                <li><Link id="nav--register" to="/register">Register</Link></li>
             ) : ""
           }
         </ul>
