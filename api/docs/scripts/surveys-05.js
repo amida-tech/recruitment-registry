@@ -7,7 +7,7 @@ module.exports = function (locals) {
     const jwtUser = locals.jwtUser;
 
     return request
-        .get('http://localhost:9005/api/v1.0/answered-surveys/name/Example')
+        .get('http://localhost:9005/api/v1.0/answered-surveys/1')
         .set('Authorization', 'Bearer ' + jwtUser)
         .then(res => {
             console.log(res.status); // 200
