@@ -1,6 +1,8 @@
-## Integration Document
+## Recruitment Registry Integration Document
 
 ### Introduction
+
+This document gives examples for most resources available in Recruitment Registry API.
 
 ##### Code Snippets
 
@@ -14,7 +16,7 @@ Package needs to be required before running the snippets
 const request = require('superagent');
 ```
 
-Snippets in later stages of the document can depend on variables that are defined in previous snippets.  Each snippet is a promise and can be chained.  A full chain, [run-all.js](./run-all.js), that starts from a clean database and exercises all the snippets is included in the repository.
+Snippets in later stages of the document can depend on variables that are defined in previous snippets.  Each snippet is a promise and can be chained.  A full chain, [run-all.js](./run-all.js), that starts from a clean database and exercises most of the snippets is included in the repository.
 
 ##### Seed Data
 
@@ -73,7 +75,7 @@ This API uses the following HTTP status codes for success
 
 - 200 (OK): Used for request when server responds with a resource (typically [GET]) in the response body.
 - 201 (Created): Used for [POST] requests that create new resources.  New resource id is included in the response body (Ex: `{id: 5}`).
-- 204 (No Content): Used for all requests (typically [PATCH] and [DELETE]) that contains no content in the response body.
+- 204 (No Content): Used for all requests (typically [PATCH] or [DELETE]) that contains no content in the response body.
 
 In the case of error the following error codes are used
 
@@ -90,7 +92,7 @@ When server responds with an error status, an error object is always included in
 
 Before any participant can use system, questions and surveys that are to be answered by the participants must be created in the system.  In particular one of the surveys must be specified as a profile survey.  If the registry requires consent documents they must also be created.
 
-This section describes basic administrative API to achieve these tasks.  Majority of these tasks can also be done during installation with registry specific system initialization scripts.  In addition the input format of resources (questions, surveys, consent documents) are also examplified.
+This section administrative API to achieve these tasks.  Majority of these tasks can also be done during installation with registry specific system initialization scripts.  In addition the input format of resources (questions, surveys, consent documents) are also examplified.
 
 All API requests in this section requires `admin` authorization.
 
@@ -163,9 +165,9 @@ choiceQx = {
 };
 ```
 
-It an error to specify `type` for a `choices` element for `choice` question.
+It an error to specify `type` for a `choices` element for a `choice` question.
 
-For each question a client dependent `actions` property can be specified.  This field is designed to store button texts and actions that depend on client ui design but can be used for any other client specific functionality such as sub texts to be shown to user.
+For each question a client dependent `actions` property can be specified.  This field is designed to store button texts and actions that depend on client ui design but can be used for any other client specific functionality such as sub texts that needs to shown to user
 
 ```js
 choicesQx = {
@@ -187,7 +189,7 @@ choicesQx = {
 };
 ```
 
-This API just store and retrieve `actions` property for the client.  There are no business logic related to `actions` field.
+This API just store and retrieve `actions` property for the client.  There are no business logic related to `actions` property.
 
 Questions are created using the `/questions` resource
 
@@ -206,9 +208,9 @@ request
 
 The server responds with the new question `id` in the response body.  In the rest of this document other questions specified in this section is also assumed to have been created similarly.
 
-Questions can be soft deleted by `/questions/{id}` resource.  Questions can only be soft deleted if there are no active survey that use the questions.
+Questions can be soft deleted by `/questions/{id}` resource.  Questions can only be soft deleted if there are no active surveys that use the questions.
 
-It is possible replace an existing question with a new version by including the query parameter `{ parent: id }` during creation.  In such cases the new and existing questions are linked in the database and the existing question is soft-deleted.  Currently there are no resources that exposes linked questions on the API level.
+It is possible replace an existing question with a new version by including the query parameter `{ parent: id }` during creation.  In such cases the new and existing questions are linked in the database and the existing question is soft-deleted.  Currently there are no resources that expose linked questions on the API level.
 
 ##### Surveys
 <a name="admin-surveys"/>
@@ -301,7 +303,7 @@ survey = {
 };
 ```
 
-Questions can be grouped into sections.  Currenly only one level deep sections are possible
+Questions can be grouped into sections.  Currenly only one level deep sections are supported
 
 ```js
 survey = {
@@ -336,7 +338,7 @@ survey = {
 };
 ```
 
-This API only stores and retrieves section information and this information is not used in any business logic elsewhere.
+Section indices refer to the index of the question inside the survey.  This API only stores and retrieves section information and this information is not used in any business logic elsewhere.
 
 In addition this API supports a client specific `meta` property which can be used to store any settings that relates to user interface or any other client setting
 
@@ -377,7 +379,7 @@ survey = {
 };
 ```
 
-Survey `meta` property is stored as a JSON object and subproperties are not validated and fullu client specific.  this property is not used in any business logic elsewhere.
+Survey `meta` property is stored as a JSON object and subproperties are not validated and fully client specific.  This property is not used in any business logic elsewhere.
 
 Surveys are created using `/surveys` resource
 
@@ -395,7 +397,7 @@ request
 ```
 The server responds with the new survey `id` in the response body.
 
-Surveys can be soft deleted by `/surveys/{id}` resource.  It also is possible replace an existing survey with a new version by including the query parameter `{ parent: id }` during creation.  In such cases the new and existing surveys are linked in the database and the existing survey is soft-deleted.  Currently there are no resources that exposes linked surveyss on the API level.
+Surveys can be soft deleted by `/surveys/{id}` resource.  It is also possible replace an existing survey with a new version by including the query parameter `{ parent: id }` during creation.  In such cases the new and existing surveys are linked in the database and the existing survey is soft-deleted.  Currently there are no resources that exposes linked surveys on the API level.
 
 ##### Profile Survey
 <a name="admin-profile-survey"/>
@@ -503,6 +505,8 @@ request
 ```
 
 The server responds with the consent document `id` in the response body.  The rest of this document assumes that the second type in this section (`init-consent`) is similary created.
+
+This API does not provide a resource to delete Consent Documents since there is no need.  If a certain Consent Type is not needed resource `/consent_types/{id}` can be used.  This will soft delete the Consent Type and the active Consent Document with that type.
 
 ### Registration
 <a name="registration"/>
@@ -636,7 +640,7 @@ Server responds with the consent document content in the response body
 }
 ```
 
-Consent Document `id` is needed to sign the document during registration.  Property `updateComment` is optional and collected when a consent document is updated and null here since it was not collected.
+Consent Document `id` is needed to sign the document during registration.  Property `updateComment` is optional and collected when a consent document is updated.
 
 There are three seperate pieces of information required for participant registration.  First is the account information which consists of username, email, and password
 
@@ -895,7 +899,7 @@ request
 	})
 ```
 
-Server does not return any content after updates.  Updated profile is available using `profiles` resource as disccused earlier in this section
+Server does not return any content after updates.  Updated profile is available using `/profiles` resource as disccused earlier in this section
 
 ```js
 {
@@ -1429,7 +1433,7 @@ request
 	});
 ```
 
-Server responds with answers in the the response body and the format is identical to how answers are created except an additional language field
+Server responds with answers in the the response body and the format is identical to how answers are created except an additional language field which is by default is English (en).  Language field identifies the language that the participant saw the survey in and [dictated by the client](#language_spec)
 
 ```js
 [
@@ -1693,7 +1697,7 @@ request
     });
 ```
 
-Consent documents can be signed with `consent-signatures` resource.  This resource accepts the id of the consent document
+Consent documents can be signed with `consent-signatures` resource.  This resource accepts the `id` of the consent document
 
 ```js
 request
@@ -2005,7 +2009,7 @@ request
     });
 ```
 
-Deleting language resources are only allowed only if no other active resource exists in or refer to that language. All changes changes can be verified listing the languages using `/languages` resource
+Deleting language resources are only allowed if no other active resource exists in or refer to that language. All changes can be verified listing the languages using `/languages` resource
 
 ```js
 [
@@ -2039,7 +2043,7 @@ Deleting language resources are only allowed only if no other active resource ex
 
 ##### Translations
 
-Every resource field in this API that is designed to be user facing (shown to user in a user interface) can be translated into any language that is defined as a language resource. Such fields are referred as `text` fields in this API.
+Every resource field in this API that is designed to be user facing (shown to user in a user interface) can be translated into any language that is defined as a language resource. Such fields are referred as `text` fields.
 
 Translations are available to any [GET] request by specifying the language as an url query parameter. If a language is specified as a query parameter but the translation does not exist, server always responds with the English version instead.
 
@@ -2105,7 +2109,7 @@ request
     });
 ```
 
-responds with the Turkish translation in the body
+server responds with the Turkish translation in the body
 
 ```js
 {
@@ -2365,7 +2369,7 @@ request
         console.log(res.status);  // 204
     });
 ```
-Currently questions cannot be translated using `/surveys/text/{language}` resource and `/questions/text/{language}` has to be used.  Translations are available to any [GET] request that responds with one of consent document text fields by specifying language as url query parameter. As an example for `/consent-dcouments/{id}` resource
+Translations are available to any [GET] request that responds with one of consent document text fields by specifying language as url query parameter. As an example for `/consent-documents/{id}` resource
 
 ```js
 request
@@ -2378,7 +2382,7 @@ request
     });
 ```
 
-responds with the Turkish translation in the body
+server responds with the Turkish translation in the body
 
 ```js
 {
@@ -2419,8 +2423,9 @@ request
 ```
 
 ##### Language Specification
+<a name="language_spec"/>
 
-This API stores keeps track of the language the Consent Documents and Questions are in when participants signs the documents or answer questions.  In all cases language has to be specified as a query parameter (Ex: `{ language: 'tr' } and this is client's responsibility.  This applies to the following resources
+This API keeps track of the language the Consent Documents and Questions are in when participants signs the documents or answer questions.  In all cases language has to be specified as a query parameter (Ex: `{ language: 'tr' } and this is client's responsibility.  This applies to the following resources
 
 - `/profiles` [POST] and [PATCH]
 - `/answers` [POST]
