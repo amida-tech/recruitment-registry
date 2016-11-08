@@ -7,8 +7,8 @@ const models = require('../models');
 const RRError = require('./rr-error');
 const SPromise = require('./promise');
 
-module.exports = function (email) {
-    return models.smtp.getSmtp()
+module.exports = function (email, language) {
+    return models.smtp.getSmtp({ language })
         .then(smtp => {
             if (!smtp) {
                 return RRError.reject('smtpNotSpecified');
@@ -19,6 +19,7 @@ module.exports = function (email) {
             return smtp;
         })
         .then(smtp => {
+            console.log(smtp);
             return models.user.resetPasswordToken(email)
                 .then(token => {
                     const link = config.clientBaseUrl + token;
@@ -31,6 +32,7 @@ module.exports = function (email) {
                         subject: smtp.subject,
                         text
                     };
+                    console.log(text);
                     Object.assign(mailerOptions, smtp.otherOptions);
                     return new SPromise(function (resolve, reject) {
                         const transporter = nodemailer.createTransport(uri);

@@ -699,14 +699,7 @@
                     "description": "User email for password reset",
                     "required": true,
                     "schema": {
-                        "type": "object",
-                        "required": ["email"],
-                        "properties": {
-                            "email": {
-                                "type": "string",
-                                "format": "email"
-                            }
-                        }
+                        "$ref": "#/definitions/resetTokenRecipient"
                     }
                 }],
                 "responses": {
@@ -2988,6 +2981,21 @@
                 "subject": {
                     "type": "string",
                     "minLength": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "resetTokenRecipient": {
+            "type": "object",
+            "required": ["email"],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "format": "email"
+                },
+                "language": {
+                    "type": "string",
+                    "minLength": 2
                 }
             },
             "additionalProperties": false

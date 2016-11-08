@@ -6,19 +6,23 @@ module.exports = function (locals) {
     console.log(`------ start ${module.filename}`);
     const jwt = locals.jwt;
 
-    let consentDocUpdate = {
-        typeId: 2,
-        content: 'This is an updated Consent Form.',
-        updateComment: 'Updated notice added'
+    const smtpSpec = {
+        protocol: 'smtp',
+        username: 'smtp@example.com',
+        password: 'pw',
+        host: 'localhost',
+        from: 'admin@rr.com',
+        otherOptions: {},
+        subject: 'Registry Admin',
+        content: 'Click on this: ${link}'
     };
 
     return request
-        .post('http://localhost:9005/api/v1.0/consent-documents')
+        .post('http://localhost:9005/api/v1.0/smtp')
         .set('Authorization', 'Bearer ' + jwt)
-        .send(consentDocUpdate)
+        .send(smtpSpec)
         .then(res => {
-            console.log(res.status); // 201
-            console.log(res.body.id); // id of the updated consent document
+            console.log(res.status); // 204
         })
         .then(() => {
             console.log(`------ end ${module.filename}`);

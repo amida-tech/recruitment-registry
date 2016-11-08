@@ -9,9 +9,9 @@ module.exports = function (locals) {
     return request
         .get('http://localhost:9005/api/v1.0/consent-documents/3')
         .set('Authorization', 'Bearer ' + jwtUser)
-        .query({language: 'tr'})
+        .query({ language: 'tr' })
         .then(res => {
-            console.log(res.status);  // 200
+            console.log(res.status); // 200
             console.log(JSON.stringify(res.body, undefined, 4)); // Turkish version of the consent document
         })
         .then(() => {
