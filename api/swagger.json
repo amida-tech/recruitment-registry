@@ -620,17 +620,22 @@
             "post": {
                 "summary": "Creates registry user profile",
                 "operationId": "createProfile",
-                "parameters": [
-                    {
-                        "name": "newUserProfile",
-                        "in": "body",
-                        "description": "Registration information of new user",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/newUserProfile"
-                        }
+                "parameters": [{
+                    "name": "newUserProfile",
+                    "in": "body",
+                    "description": "Registration information of new user",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/newUserProfile"
                     }
-                ],
+                }, {
+                    "name": "language",
+                    "in": "query",
+                    "description": "Language code",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 2
+                }],
                 "responses": {
                     "201": {
                         "description": "Successful response",
@@ -649,17 +654,22 @@
                 "security": [{
                     "participant": []
                 }],
-                "parameters": [
-                    {
-                        "name": "updateUserProfile",
-                        "in": "body",
-                        "description": "Update information of user",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/updateUserProfile"
-                        }
+                "parameters": [{
+                    "name": "updateUserProfile",
+                    "in": "body",
+                    "description": "Update information of user",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/updateUserProfile"
                     }
-                ],
+                }, {
+                    "name": "language",
+                    "in": "query",
+                    "description": "Language code",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 2
+                }],
                 "responses": {
                     "204": {
                         "description": "Successful response"
@@ -2083,6 +2093,10 @@
                  },
                 "answer": {
                     "$ref": "#/definitions/answer"
+                },
+                "language": {
+                    "type": "string",
+                    "minLength": 2
                 }
             },
             "additionalProperties": false

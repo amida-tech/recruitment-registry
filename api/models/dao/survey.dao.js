@@ -256,6 +256,7 @@ module.exports = class {
                         answers.forEach(answer => {
                             const qid = answer.questionId;
                             const question = qmap[qid];
+                            question.language = answer.language;
                             question.answer = answer.answer;
                         });
                         return survey;

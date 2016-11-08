@@ -763,6 +763,7 @@ Server responds with the profile in the response body.  Profile contains account
                     }
                 ],
                 "required": true,
+                "language": "en",
                 "answer": {
                     "choice": 13
                 }
@@ -772,6 +773,7 @@ Server responds with the profile in the response body.  Profile contains account
                 "type": "text",
                 "text": "Zip code",
                 "required": false,
+                "language": "en",
                 "answer": {
                     "textValue": "20850"
                 }
@@ -781,6 +783,7 @@ Server responds with the profile in the response body.  Profile contains account
                 "type": "bool",
                 "text": "Family history of memory disorders/AD/dementia?",
                 "required": true,
+                "language": "en",
                 "answer": {
                     "boolValue": true
                 }
@@ -832,6 +835,7 @@ Server responds with the profile in the response body.  Profile contains account
                     }
                 ],
                 "required": false,
+                "language": "en",
                 "answer": {
                     "choices": [
                         {
@@ -924,6 +928,7 @@ Server does not return any content after updates.  Updated profile is available 
                     }
                 ],
                 "required": true,
+                "language": "en",
                 "answer": {
                     "choice": 14
                 }
@@ -939,6 +944,7 @@ Server does not return any content after updates.  Updated profile is available 
                 "type": "bool",
                 "text": "Family history of memory disorders/AD/dementia?",
                 "required": true,
+                "language": "en",
                 "answer": {
                     "boolValue": false
                 }
@@ -990,6 +996,7 @@ Server does not return any content after updates.  Updated profile is available 
                     }
                 ],
                 "required": false,
+                "language": "en",
                 "answer": {
                     "choices": [
                         {
@@ -1486,17 +1493,18 @@ Survey responds with the survey details in the response body.  Survey details is
 ```js
 {
     "id": 1,
-    "name": "Example",
-    meta: {
-        displayAsWizard: true,
-        saveProgress: false
+    "meta": {
+        "displayAsWizard": true,
+        "saveProgress": false
     },
+    "name": "Example",
     "questions": [
         {
             "id": 1,
             "type": "text",
             "text": "Please describe reason for your enrollment?",
             "required": false,
+            "language": "en",
             "answer": {
                 "textValue": "Try new medicine"
             }
@@ -1506,6 +1514,7 @@ Survey responds with the survey details in the response body.  Survey details is
             "type": "bool",
             "text": "Do you own a pet?",
             "required": true,
+            "language": "en",
             "answer": {
                 "boolValue": false
             }
@@ -1533,6 +1542,7 @@ Survey responds with the survey details in the response body.  Survey details is
                 }
             ],
             "required": true,
+            "language": "en",
             "answer": {
                 "choice": 4
             }
@@ -1576,6 +1586,7 @@ Survey responds with the survey details in the response body.  Survey details is
                 }
             ],
             "required": false,
+            "language": "en",
             "answer": {
                 "choices": [
                     {
@@ -2406,6 +2417,15 @@ request
         console.log(res.status);  // 204
     });
 ```
+
+##### Language Specification
+
+This API stores keeps track of the language the Consent Documents and Questions are in when participants signs the documents or answer questions.  In all cases language has to be specified as a query parameter (Ex: `{ language: 'tr' } and this is client's responsibility.  This applies to the following resources
+
+- `/profiles` [POST] and [PATCH]
+- `/answers` [POST]
+- `/consent-signatures` [POST]
+
 
 ### Consents
 <a name="sage"/>
