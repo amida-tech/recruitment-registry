@@ -7,54 +7,24 @@ import { changeLanguage } from '../profile/actions';
 
 class Nav extends Component {
   render() {
-    const title = this.props.data.get('title');
     const loggedIn = this.props.data.get('loggedIn');
     const role = this.props.user.get('role');
-    const email = this.props.user.get('email');
-    var nav;
-
-    for(var i = 0; i< routes.length; i++){
-      routes[i].title = this.props.vocab.get(routes[i].transTerm);
-    }
-
-    if (loggedIn) {
-      var routesAuthed = routes.filter(r => r.requiresAuth || !r.newUsers)
-      nav = routesAuthed.map(r => {
-        var path = r.path;
-        if (r.path.indexOf('survey-builder') > -1) { path = '/survey-builder' }
-        if (r.path.indexOf('survey/:id') > -1) { return }
-        if (r.isSuper && role !== 'admin') {
-            return <div className="nav-item invisible" key={r.path}></div>
-        }
-        return <Link className="nav-item nav-link" key={r.path} to={path}>{r.title}</Link>
-      })
-    } else {
-      var routesNewUsers = routes.filter(r => !r.requiresAuth || r.newUsers)
-      nav = routesNewUsers.map(r => {
-        return <Link className="nav-item nav-link" key={r.path} to={r.path}>{r.title}</Link>
-        })
-    }
-
     return (
       <nav className="dd">
-        <a className="logo" href="/">{ title } Net</a>
+        <a className="logo" href="/">{ this.props.data.get('title') } Net</a>
         <ul>
           <li><a href="./contact">Contact Us</a></li>
-          { loggedIn ? (
-                <li><Link to="/">Dashboard</Link></li>
-            ) : ""
+          { loggedIn &&
+            <li><Link to="/">Dashboard</Link></li>
           }
-          { loggedIn ? (
-                <li><a id="nav--userSettings" onClick={::this._logout}>{ email }</a></li>
-            ) : ""
+          { loggedIn &&
+            <li><a id="nav--userSettings" onClick={::this._logout}>{ this.props.user.get('email') }</a></li>
           }
-          { !loggedIn ? (
-                <li><Link id="nav--login" to="/login">Log In</Link></li>
-            ) : ""
+          { !loggedIn &&
+            <li><Link id="nav--login" to="/login">Log In</Link></li>
           }
-          { !loggedIn ? (
-                <li><Link id="nav--register" to="/register">Register</Link></li>
-            ) : ""
+          { !loggedIn &&
+            <li><Link id="nav--register" to="/register">Register</Link></li>
           }
         </ul>
       </nav>
