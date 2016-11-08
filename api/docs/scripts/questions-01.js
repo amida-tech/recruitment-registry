@@ -10,7 +10,7 @@ module.exports = function (locals) {
         .get('http://localhost:9005/api/v1.0/questions')
         .set('Authorization', 'Bearer ' + jwt)
         .then(res => {
-            console.log(res.status);  // 200
+            console.log(res.status); // 200
             const questionList = res.body;
             console.log(JSON.stringify(questionList, undefined, 4));
         })

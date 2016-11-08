@@ -4,15 +4,14 @@ const request = require('superagent');
 
 module.exports = function (locals) {
     console.log(`------ start ${module.filename}`);
-    const jwt = locals.jwt;
+    const jwtUser = locals.jwtUser;
 
     return request
-        .get('http://localhost:9005/api/v1.0/questions/1')
-        .set('Authorization', 'Bearer ' + jwt)
+        .get('http://localhost:9005/api/v1.0/consents/1/user-documents')
+        .set('Authorization', 'Bearer ' + jwtUser)
         .then(res => {
             console.log(res.status); // 200
-            const question = res.body;
-            console.log(JSON.stringify(question, undefined, 4));
+            console.log(JSON.stringify(res.body, undefined, 4)); // full consent details with signature information
         })
         .then(() => {
             console.log(`------ end ${module.filename}`);

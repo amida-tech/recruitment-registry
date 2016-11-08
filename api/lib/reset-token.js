@@ -19,7 +19,6 @@ module.exports = function (email, language) {
             return smtp;
         })
         .then(smtp => {
-            console.log(smtp);
             return models.user.resetPasswordToken(email)
                 .then(token => {
                     const link = config.clientBaseUrl + token;
@@ -32,7 +31,6 @@ module.exports = function (email, language) {
                         subject: smtp.subject,
                         text
                     };
-                    console.log(text);
                     Object.assign(mailerOptions, smtp.otherOptions);
                     return new SPromise(function (resolve, reject) {
                         const transporter = nodemailer.createTransport(uri);

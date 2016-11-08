@@ -6,13 +6,18 @@ module.exports = function (locals) {
     console.log(`------ start ${module.filename}`);
     const jwt = locals.jwt;
 
+    const consent = {
+        name: 'primary-consent',
+        sections: [1, 2]
+    };
+
     return request
-        .get('http://localhost:9005/api/v1.0/questions/1')
+        .post('http://localhost:9005/api/v1.0/consents')
         .set('Authorization', 'Bearer ' + jwt)
+        .send(consent)
         .then(res => {
-            console.log(res.status); // 200
-            const question = res.body;
-            console.log(JSON.stringify(question, undefined, 4));
+            console.log(res.status); // 201
+            console.log(res.body.id); // id of the new consent
         })
         .then(() => {
             console.log(`------ end ${module.filename}`);

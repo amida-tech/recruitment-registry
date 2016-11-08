@@ -1978,7 +1978,7 @@ Deleting language resources are only allowed only if no other active resource ex
 
 Every resource field in this API that is designed to be user facing (shown to user in a user interface) can be translated into any language that is defined as a language resource. Such fields are referred as `text` fields in this API.
 
-Translations are available to any [GET] request method by specifying the language as an url query parameter. If a language is specified as a query parameter but the translation does not exist, server always responds with the English version instead.
+Translations are available to any [GET] request by specifying the language as an url query parameter. If a language is specified as a query parameter but the translation does not exist, server always responds with the English version instead.
 
 English versions of text fields can be updated using the same resources that translates and is specified below; `en` specified as language code for this case.
 
@@ -2351,7 +2351,194 @@ request
     });
 ```
 
-### SAGE
+### Consents
 <a name="sage"/>
 
-This section describes how [Sage](http://sagebase.org/platforms/governance/participant-centered-consent-toolkit/) is supported in this API.
+This API allows grouping of multiple Consent Documents.  This overall collection, which is simply referred as Consent hereafter, is mainly designed to support [Sage](http://sagebase.org/platforms/governance/participant-centered-consent-toolkit/).
+
+Consents are created by specifying Consent Types they are composed of using `/consents` resource
+
+```js
+const consent = {
+    name: 'primary-consent',
+    sections: [1, 2]
+};
+
+request
+    .post('http://localhost:9005/api/v1.0/consents')
+    .set('Authorization', 'Bearer ' + jwt)
+    .send(consent)
+    .then(res => {
+        console.log(res.status);  // 201
+        console.log(res.body.id); // id of the new consent
+    });
+```
+
+Consent `name` property is not designed to be user facing and identify the consent in the API request.
+
+A list of all consents is available using `/consents` resource
+
+```js
+request
+    .get('http://localhost:9005/api/v1.0/consents')
+    .set('Authorization', 'Bearer ' + jwt)
+    .then(res => {
+        console.log(res.status);  // 200
+        console.log(JSON.stringify(res.body, undefined, 4)); // list of consents
+    });
+```
+
+Server responds with the list of consents in the body
+
+```js
+[
+    {
+        "id": 1,
+        "name": "primary-consent",
+        "sections": [
+            1,
+            2
+        ]
+    }
+]
+```
+
+Consents can be shown using resource `/consents/{id}`
+
+```js
+request
+    .get('http://localhost:9005/api/v1.0/consents/1')
+    .set('Authorization', 'Bearer ' + jwt)
+    .then(res => {
+        console.log(res.status);  // 200
+        console.log(JSON.stringify(res.body, undefined, 4)); // consent details
+    });
+```
+
+Server responds with the details of the Consent in the body
+
+```js
+{
+    "id": 1,
+    "name": "primary-consent",
+    "sections": [
+        1,
+        2
+    ]
+}
+```
+
+Consent can also be shown using resource `/consents/name/{name}`
+
+```js
+request
+    .get('http://localhost:9005/api/v1.0/consents/name/primary-consent')
+    .set('Authorization', 'Bearer ' + jwt)
+    .then(res => {
+        console.log(res.status);  // 200
+        console.log(JSON.stringify(res.body, undefined, 4)); // consent details
+    });
+```
+
+Server responds with the same details as `/consents/{id}`.
+
+Actual content of the documents in Consent is available unauthorized using `/consents/{id}/documents` resource
+
+```
+request
+    .get('http://localhost:9005/api/v1.0/consents/1/documents')
+    .then(res => {
+        console.log(res.status);  // 200
+        console.log(JSON.stringify(res.body, undefined, 4)); // consent with documents
+    });
+```
+
+Server responds with the Consent and details of its documents in the body.
+
+```js
+{
+    "id": 1,
+    "name": "primary-consent",
+    "sections": [
+        {
+            "id": 1,
+            "content": "This is a terms of use document.",
+            "updateComment": null,
+            "name": "terms-of-use",
+            "type": "single",
+            "title": "Terms of Use"
+        },
+        {
+            "id": 3,
+            "content": "This is an updated Consent Form.",
+            "updateComment": "Updated notice added",
+            "name": "consent",
+            "type": "single",
+            "title": "Consent Form"
+        }
+    ]
+}
+```
+
+Same response is also available using the name of the consent and resource `/consents/name/{name}/documents`
+
+```
+request
+    .get('http://localhost:9005/api/v1.0/consents/name/primary-consent/documents')
+    .then(res => {
+        console.log(res.status);  // 200
+        console.log(JSON.stringify(res.body, undefined, 4)); // consent with documents
+    });
+```
+
+Resource `/consents/{id}/documents` only provide document content.  It is available unauthorized since certain use cases may require documents before a user is authenticated or registered.  Authorized users can use resource `/consents/{id}/user-documents` to show both the consent document content and signature status
+
+```js
+request
+    .get('http://localhost:9005/api/v1.0/consents/1/user-documents')
+    .set('Authorization', 'Bearer ' + jwtUser)
+    .then(res => {
+        console.log(res.status);  // 200
+        console.log(JSON.stringify(res.body, undefined, 4)); // full consent details with signature information
+    });
+```
+
+```js
+{
+    "id": 1,
+    "name": "primary-consent",
+    "sections": [
+        {
+            "id": 1,
+            "content": "This is a terms of use document.",
+            "updateComment": null,
+            "name": "terms-of-use",
+            "type": "single",
+            "title": "Terms of Use",
+            "signature": true,
+            "language": "en"
+        },
+        {
+            "id": 3,
+            "content": "This is an updated Consent Form.",
+            "updateComment": "Updated notice added",
+            "name": "consent",
+            "type": "single",
+            "title": "Consent Form",
+            "signature": false
+        }
+    ]
+}
+```
+
+Same response is available using the name of the consent and resource `/consents/name/{name}/user-documents`
+
+```js
+request
+    .get('http://localhost:9005/api/v1.0/consents/name/primary-consent/user-documents')
+    .set('Authorization', 'Bearer ' + jwtUser)
+    .then(res => {
+        console.log(res.status);  // 200
+        console.log(JSON.stringify(res.body, undefined, 4)); // full consent details with signature information
+    });
+```

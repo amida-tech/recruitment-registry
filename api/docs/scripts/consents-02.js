@@ -7,12 +7,11 @@ module.exports = function (locals) {
     const jwt = locals.jwt;
 
     return request
-        .get('http://localhost:9005/api/v1.0/questions/1')
+        .get('http://localhost:9005/api/v1.0/consents')
         .set('Authorization', 'Bearer ' + jwt)
         .then(res => {
             console.log(res.status); // 200
-            const question = res.body;
-            console.log(JSON.stringify(question, undefined, 4));
+            console.log(JSON.stringify(res.body, undefined, 4)); // list of consents
         })
         .then(() => {
             console.log(`------ end ${module.filename}`);
