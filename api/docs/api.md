@@ -92,8 +92,6 @@ Before any participant can use system, questions and surveys that are to be answ
 
 This section describes basic administrative API to achieve these tasks.  Majority of these tasks can also be done during installation with registry specific system initialization scripts.  In addition the input format of resources (questions, surveys, consent documents) are also examplified.
 
-More administrative functionality can be found [Advanced System Administration](#advanced-system-admin) and [Multi Lingual Support](#multi-lingual-support).
-
 All API requests in this section requires `admin` authorization.
 
 ##### Questions
@@ -207,6 +205,10 @@ request
 ```
 
 The server responds with the new question `id` in the response body.  In the rest of this document other questions specified in this section is also assumed to have been created similarly.
+
+Questions can be soft deleted by `/questions/{id}` resource.  Questions can only be soft deleted if there are no active survey that use the questions.
+
+It is possible replace an existing question with a new version by including the query parameter `{ parent: id }` during creation.  In such cases the new and existing questions are linked in the database and the existing question is soft-deleted.  Currently there are no resources that exposes linked questions on the API level.
 
 ##### Surveys
 <a name="admin-surveys"/>
@@ -351,6 +353,8 @@ request
 	});
 ```
 The server responds with the new survey `id` in the response body.
+
+Surveys can be soft deleted by `/surveys/{id}` resource.  It also is possible replace an existing survey with a new version by including the query parameter `{ parent: id }` during creation.  In such cases the new and existing surveys are linked in the database and the existing survey is soft-deleted.  Currently there are no resources that exposes linked surveyss on the API level.
 
 ##### Profile Survey
 <a name="admin-profile-survey"/>
@@ -591,7 +595,7 @@ Server responds with the consent document content in the response body
 }
 ```
 
-Consent Document `id` is needed to sign the document during registration.  Property `updateComment` is optional and collected when a consent document is updated and null here since it was not collected.  More on this property in [Advanced System Administration](#advanced-system-admin).
+Consent Document `id` is needed to sign the document during registration.  Property `updateComment` is optional and collected when a consent document is updated and null here since it was not collected.
 
 There are three seperate pieces of information required for participant registration.  First is the account information which consists of username, email, and password
 
@@ -2346,11 +2350,6 @@ request
         console.log(res.status);  // 204
     });
 ```
-
-### Advanced System Administration
-<a name="advanced-system-admin"/>
-
-This section describes more advanced functionalities in this API that is not cover in [System Administration]()
 
 ### SAGE
 <a name="sage"/>
