@@ -11,9 +11,9 @@ class Nav extends Component {
     const role = this.props.user.get('role');
     return (
       <nav className="dd">
-        <a className="logo" href="/">{ this.props.data.get('title') } Net</a>
+        <Link className="logo" href="/">{ this.props.data.get('title') } Net</Link>
         <ul>
-          <li><a href="./contact">Contact Us</a></li>
+          <li><Link to="/contact">Contact Us</Link></L>
           { loggedIn &&
             <li><Link to="/">Dashboard</Link></li>
           }
