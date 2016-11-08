@@ -116,6 +116,41 @@ module.exports = function (locals) {
         }]
     };
 
+    survey = {
+        name: 'Example',
+        sections: [{
+            name: 'Demographics',
+            indices: [1, 2]
+        }, {
+            name: 'Health',
+            indices: [0, 3]
+        }],
+        meta: {
+            displayAsWizard: true,
+            saveProgress: false
+        },
+        questions: [{
+            required: false,
+            id: textQxId
+        }, {
+            required: true,
+            id: boolQxId
+        }, {
+            text: 'What is your hair color?',
+            required: true,
+            type: 'choice',
+            choices: [
+                { text: 'Black' },
+                { text: 'Brown' },
+                { text: 'Blonde' },
+                { text: 'Other' }
+            ]
+        }, {
+            required: false,
+            id: choicesQxId
+        }]
+    };
+
     let surveyId = null;
     return request
         .post('http://localhost:9005/api/v1.0/surveys')

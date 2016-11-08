@@ -301,7 +301,7 @@ survey = {
 };
 ```
 
-Questions can be grouped into sections.  Currenly only one level sections are possible
+Questions can be grouped into sections.  Currenly only one level deep sections are possible
 
 ```js
 survey = {
@@ -337,6 +337,47 @@ survey = {
 ```
 
 This API only stores and retrieves section information and this information is not used in any business logic elsewhere.
+
+In addition this API supports a client specific `meta` property which can be used to store any settings that relates to user interface or any other client setting
+
+```js
+survey = {
+    name: 'Example',
+    sections: [{
+        name: 'Demographics',
+        indices: [1, 2]
+    }, {
+        name: 'Health',
+        indices: [0, 3]
+    }],
+    meta: {
+        displayAsWizard: true,
+        saveProgress: false
+    },
+    questions: [{
+        required: false,
+        id: textQxId
+    }, {
+        required: true,
+        id: boolQxId
+    }, {
+        text: 'What is your hair color?',
+        required: true,
+        type: 'choice',
+        choices: [
+            { text: 'Black' },
+            { text: 'Brown' },
+            { text: 'Blonde' },
+            { text: 'Other' }
+        ]
+    }, {
+        required: false,
+        id: choicesQxId
+    }]
+};
+```
+
+Survey `meta` property is stored as a JSON object and subproperties are not validated and fullu client specific.  this property is not used in any business logic elsewhere.
 
 Surveys are created using `/surveys` resource
 
@@ -1222,6 +1263,10 @@ Server responds with all the survey details and in particular its questions
 ```js
 {
     "id": 1,
+    meta: {
+        displayAsWizard: true,
+        saveProgress: false
+    },
     "name": "Example",
     "questions": [
         {
@@ -1442,6 +1487,10 @@ Survey responds with the survey details in the response body.  Survey details is
 {
     "id": 1,
     "name": "Example",
+    meta: {
+        displayAsWizard: true,
+        saveProgress: false
+    },
     "questions": [
         {
             "id": 1,
@@ -2133,6 +2182,10 @@ responds with the Turkish translation in the body
 ```js
 {
     "id": 1,
+    meta: {
+        displayAsWizard: true,
+        saveProgress: false
+    },
     "name": "Örnek",
     "questions": [
         {
