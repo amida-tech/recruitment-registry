@@ -43,11 +43,15 @@ export default (options) => {
     initialState = {},
     Layout = NOOP,
     loggerOptions = {},
-    middleware = [dataService, routerMiddleware(browserHistory)],
+    middleware = [thunk, dataService],
     enhancers = {},
     routes = [],
     reducers = {}
   } = options;
+
+  const persistedAuthState = JSON.parse(localStorage.getItem('rec-reg'));
+
+  initialState.loggedIn = persistedAuthState || initialState.loggedIn;
 
 
   const frozen = Immutable.fromJS(initialState);
@@ -59,26 +63,19 @@ export default (options) => {
   };
 
   const initialMiddleware = [createLogger(loggerOptions)];
-  const createStoreWithMiddleware = applyMiddleware(thunk)(createStore);
 
-  const appReducer = combineReducers({...reducers, routing});
-
-  const rootReducer = (state, action) => {
-    if (action.type === 'LOGOUT') {
-      state = frozen
-    }
-
-    return appReducer(state, action)
-  }
-
-  const store = createStoreWithMiddleware(
-    rootReducer,
+  const store = createStore(
+    combineReducers({...reducers, routing}),
     frozen,
     compose(
-      applyMiddleware(...initialMiddleware, ...middleware),
+      applyMiddleware(routerMiddleware(browserHistory), ...initialMiddleware, ...middleware),
       ...initialEnhancers,
       ...enhancers
     ));
+
+  store.subscribe(() => {
+    localStorage.setItem('rec-reg', JSON.stringify(store.getState().get('loggedIn')));
+  });
 
   const history = syncHistoryWithStore(browserHistory, store, {
     selectLocationState: state => state.has('routing') ? state.get('routing').toJS() : null
