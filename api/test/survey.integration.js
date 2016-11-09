@@ -464,7 +464,7 @@ describe('survey integration', function () {
 
     it('get answered survey', function (done) {
         store.server
-            .get('/api/v1.0/surveys/answered/name/Example')
+            .get(`/api/v1.0/answered-surveys/${serverSurvey.id}`)
             .set('Authorization', store.auth)
             .expect(200)
             .end(function (err, res) {
@@ -479,7 +479,7 @@ describe('survey integration', function () {
 
     it('get answered translated survey', function (done) {
         store.server
-            .get('/api/v1.0/surveys/answered/name/Example')
+            .get(`/api/v1.0/answered-surveys/${serverSurvey.id}`)
             .set('Authorization', store.auth)
             .query({ language: 'es' })
             .expect(200)
@@ -494,4 +494,35 @@ describe('survey integration', function () {
             });
     });
 
+    it('get answered survey by name', function (done) {
+        store.server
+            .get('/api/v1.0/answered-surveys/name/Example')
+            .set('Authorization', store.auth)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                const expected = helper.formAnsweredSurvey(serverSurvey, answers);
+                expect(res.body).to.deep.equal(expected);
+                done();
+            });
+    });
+
+    it('get answered translated survey by name', function (done) {
+        store.server
+            .get('/api/v1.0/answered-surveys/name/Example')
+            .set('Authorization', store.auth)
+            .query({ language: 'es' })
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                const expected = helper.formAnsweredSurvey(serverSurvey, answers);
+                expected.name = 'puenno';
+                expect(res.body).to.deep.equal(expected);
+                done();
+            });
+    });
 });

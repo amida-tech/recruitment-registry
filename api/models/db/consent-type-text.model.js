@@ -5,7 +5,7 @@ module.exports = function (sequelize, DataTypes) {
         consentTypeId: {
             type: DataTypes.INTEGER,
             allowNull: false,
-            fieldName: 'consent_type_id',
+            field: 'consent_type_id',
             references: {
                 model: 'consent_type',
                 key: 'id'
@@ -14,7 +14,7 @@ module.exports = function (sequelize, DataTypes) {
         language: {
             type: DataTypes.TEXT,
             allowNull: false,
-            fieldName: 'language_code',
+            field: 'language_code',
             references: {
                 model: 'language',
                 key: 'code'

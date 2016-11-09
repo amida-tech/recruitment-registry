@@ -5,7 +5,7 @@ module.exports = function (sequelize, DataTypes) {
         surveyId: {
             type: DataTypes.INTEGER,
             allowNull: false,
-            fieldName: 'survey_id',
+            field: 'survey_id',
             references: {
                 model: 'survey',
                 key: 'id'
@@ -14,7 +14,7 @@ module.exports = function (sequelize, DataTypes) {
         language: {
             type: DataTypes.TEXT,
             allowNull: false,
-            fieldName: 'language_code',
+            field: 'language_code',
             references: {
                 model: 'language',
                 key: 'code'

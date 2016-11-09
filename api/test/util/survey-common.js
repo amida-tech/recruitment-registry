@@ -42,6 +42,7 @@ exports.formAnsweredSurvey = function (survey, answers) {
     const result = _.cloneDeep(survey);
     result.questions.forEach(function (question, index) {
         question.answer = answers[index].answer;
+        question.language = answers.language || 'en';
     });
     return result;
 };

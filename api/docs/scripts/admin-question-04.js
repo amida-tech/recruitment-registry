@@ -6,7 +6,7 @@ module.exports = function (locals) {
     console.log(`------ start ${module.filename}`);
     const jwt = locals.jwt;
 
-    const choicesQx = {
+    let choicesQx = {
         type: 'choices',
         text: 'What kind of exercises do you do?',
         choices: [
@@ -15,6 +15,24 @@ module.exports = function (locals) {
             { text: 'Cycling', type: 'bool' },
             { text: 'Please specify other', type: 'text' }
         ],
+    };
+
+    choicesQx = {
+        type: 'choices',
+        text: 'What kind of exercises do you do?',
+        choices: [
+            { text: 'Walking' },
+            { text: 'Jogging', type: 'bool' },
+            { text: 'Cycling', type: 'bool' },
+            { text: 'Please specify other', type: 'text' }
+        ],
+        actions: [{
+            type: 'true',
+            text: 'Confirm'
+        }, {
+            type: 'false',
+            text: 'I don\'t exercise.'
+        }]
     };
 
     let choicesQxId = null;

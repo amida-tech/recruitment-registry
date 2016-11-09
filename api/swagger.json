@@ -404,7 +404,41 @@
                 }
             }
         },
-        "/surveys/answered/name/{name}": {
+        "/answered-surveys/{id}": {
+            "x-swagger-router-controller": "survey.controller",
+            "get": {
+                "summary": "Get survey with answers",
+                "operationId": "getAnsweredSurvey",
+                "security": [{
+                    "participant": []
+                }],
+                "parameters": [{
+                    "name": "id",
+                    "in": "path",
+                    "required": true,
+                    "type": "integer"
+                }, {
+                    "name": "language",
+                    "in": "query",
+                    "description": "Language code",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 2
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successul response",
+                        "schema": {
+                            "$ref": "#/definitions/survey"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/answered-surveys/name/{name}": {
             "x-swagger-router-controller": "survey.controller",
             "get": {
                 "summary": "Get survey with answers by name",
@@ -586,17 +620,22 @@
             "post": {
                 "summary": "Creates registry user profile",
                 "operationId": "createProfile",
-                "parameters": [
-                    {
-                        "name": "newUserProfile",
-                        "in": "body",
-                        "description": "Registration information of new user",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/newUserProfile"
-                        }
+                "parameters": [{
+                    "name": "newUserProfile",
+                    "in": "body",
+                    "description": "Registration information of new user",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/newUserProfile"
                     }
-                ],
+                }, {
+                    "name": "language",
+                    "in": "query",
+                    "description": "Language code",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 2
+                }],
                 "responses": {
                     "201": {
                         "description": "Successful response",
@@ -615,17 +654,22 @@
                 "security": [{
                     "participant": []
                 }],
-                "parameters": [
-                    {
-                        "name": "updateUserProfile",
-                        "in": "body",
-                        "description": "Update information of user",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/updateUserProfile"
-                        }
+                "parameters": [{
+                    "name": "updateUserProfile",
+                    "in": "body",
+                    "description": "Update information of user",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/updateUserProfile"
                     }
-                ],
+                }, {
+                    "name": "language",
+                    "in": "query",
+                    "description": "Language code",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 2
+                }],
                 "responses": {
                     "204": {
                         "description": "Successful response"
@@ -665,14 +709,7 @@
                     "description": "User email for password reset",
                     "required": true,
                     "schema": {
-                        "type": "object",
-                        "required": ["email"],
-                        "properties": {
-                            "email": {
-                                "type": "string",
-                                "format": "email"
-                            }
-                        }
+                        "$ref": "#/definitions/resetTokenRecipient"
                     }
                 }],
                 "responses": {
@@ -756,7 +793,7 @@
                 "summary": "Gets question",
                 "operationId": "getQuestion",
                 "security": [{
-                    "admin": []
+                    "participant": []
                 }],
                 "parameters": [{
                     "name": "language",
@@ -1581,7 +1618,7 @@
                 "summary": "Gets all languages",
                 "operationId": "listLanguages",
                 "security": [{
-                    "admin": []
+                    "participant": []
                 }],
                 "responses": {
                     "200": {
@@ -1608,7 +1645,7 @@
                 "summary": "Gets language",
                 "operationId": "getLanguage",
                 "security": [{
-                    "admin": []
+                    "participant": []
                 }],
                 "responses": {
                     "200": {
@@ -2056,6 +2093,10 @@
                  },
                 "answer": {
                     "$ref": "#/definitions/answer"
+                },
+                "language": {
+                    "type": "string",
+                    "minLength": 2
                 }
             },
             "additionalProperties": false
@@ -2315,7 +2356,8 @@
                     }
                  }
             },
-            "additionalProperties": false
+            "additionalProperties": false,
+            "minProperties": 2
         },
         "newChoice": {
             "type": "object",
@@ -2953,6 +2995,21 @@
                 "subject": {
                     "type": "string",
                     "minLength": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "resetTokenRecipient": {
+            "type": "object",
+            "required": ["email"],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "format": "email"
+                },
+                "language": {
+                    "type": "string",
+                    "minLength": 2
                 }
             },
             "additionalProperties": false
