@@ -5,7 +5,7 @@ module.exports = function (sequelize, DataTypes) {
         sectionId: {
             type: DataTypes.INTEGER,
             allowNull: false,
-            fieldName: 'section_id',
+            field: 'section_id',
             references: {
                 model: 'rr_section',
                 key: 'id'
@@ -14,7 +14,7 @@ module.exports = function (sequelize, DataTypes) {
         language: {
             type: DataTypes.TEXT,
             allowNull: false,
-            fieldName: 'language_code',
+            field: 'language_code',
             references: {
                 model: 'language',
                 key: 'code'
