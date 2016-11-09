@@ -32,8 +32,9 @@ installing the needed components for node-gyp. And all users will probably have 
 
 ## Configuration
 
-1. Use `export NODE_ENV='development` (or `production` or `test`) to set node environment
-2. A minimal sample `.env` file is below.  Change according to your database
+Use `export NODE_ENV='development` (or `production` or `test`) to set node environment.
+
+A minimal sample `.env` file is below.  Change according to your database
 ```
 RECREG_DB_DATABASE=recreg
 RECREG_DB_USER=foouser
@@ -42,6 +43,27 @@ RECREG_DB_HOST=localhost
 RECREG_DB_PORT=5432
 RECREG_DB_DIALECT=postgres
 ```
+
+A list of full environment variable settings is below.  They can be either manually set in the shell or can be included in the `.env` file.  Defaults indicated in paranthesis.
+
+- RECREG_CLIENT_SECRET: Secret for JWT encryption ('this is a secret' for development and test).
+- RECREG_PORT: Port for the API server (5432).
+- RECREG_DB_NAME: Database name (recreg for development and production, recregtest for test).
+- RECREG_DB_USER: Database user (no default).
+- RECREG_DB_PASS: Database password (no default).
+- RECREG_DB_HOST: Database host ip (localhost).
+- RECREG_DB_PORT: Database host port (5432).
+- RECREG_DB_DIALECT: Database dialect (postgres only, see [here](#postgredepend)).
+- RECREG_SUPER_USER_USERNAME: Super user username (super).
+- RECREG_SUPER_USER_PASSWORD: Super user password (Am!d@2017PW).
+- RECREG_SUPER_USER_EMAIL: Super user email (rr_demo@amida.com).
+- RECREG_LOGGING_LEVEL: Logging level (info).
+- RECREG_CRYPT_HASHROUNDS: Number of rounds for hashing user passwords (10).
+- RECREG_CRYPT_RESET_TOKEN_LENGTH: Length for reset password token (20).
+- RECREG_CRYPT_RESET_PASSWORD_LENGTH: Length for temporary random password during reset (10).
+- RECREG_CRYPT_RESET_EXPIRES: Reset password expires value in seconds (3600).
+- RECREG_CLIENT_BASE_URL: Base client url for password reset (no default).
+
 ## Commands
 
 `npm start`
@@ -75,18 +97,22 @@ $ mocha test/survey.model.spec.js --bail
 Each test in a file may depend on some of the previous tests so using flag `bail` is recommended.
 
 ## Postgres specific functionality
+<a name="postgresdepend"/>
 
 Although this project uses Sequelize it does not support other Sequelize compatible relational databases such as MySql and MSSql out of the box.  The following are the Postgres only functionalities that need to be replaced to be able to use other databases.
 
-* `smtp` table includes a JSON type column named `other_options`.  This column can be replaced with a string type and string to/from JSON conversion can be done manually done in the code.
+* `survey` table includes a JSON type column named `meta`. Type can be changed to Text and JSON to string and vice versa can be done manually in the code.
+* `smtp` table includes a JSON type column named `other_options`. Type can be changed to Text and JSON to string and vice versa can be done manually in the code.
 * `rr_section`table includes an integer array type column named `indices`.  A seperate table can be used instead.  Code need to be updated acccordingly.
 * `answer` data access object (answer.dao.js) uses Postgres `to_char` function in one of the queries.  This function needs to be replaced by equivalent.
 
 ## API
 
-File [swagger.json](./swagger.json) describes the API.  There are various [swagger](http://swagger.io/) tools such as [swagger-codegen](https://github.com/swagger-api/swagger-codegen) that can be used view or generate reports based on this file.  In addition when the recruitment-registry api server is running `/doc` path serves as the API user interface (`localhost:9005/docs` for default settings).
+File [swagger.json](./swagger.json) describes the API.  There are various [swagger](http://swagger.io/) tools such as [swagger-codegen](https://github.com/swagger-api/swagger-codegen) that can be used view or generate reports based on this file.
 
-Another detailed description of the API with working examples is provided in the [integration document](./docs/api.md).
+When the recruitment-registry api server is running `/docs` resource serves Swagger-UI as the API user interface (`localhost:9005/docs` for default settings).  However due to current limited support for JWT, Swagger-UI mostly works as documentation and resources that require authorization can not be run.
+
+Detailed description of the API with working examples is provided in the [integration document](./docs/api.md).
 
 ## Database Design
 
