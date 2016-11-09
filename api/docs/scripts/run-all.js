@@ -57,6 +57,9 @@ const consents05 = require('./consents-05');
 const consents06 = require('./consents-06');
 const consents07 = require('./consents-07');
 const consents08 = require('./consents-08');
+const consents09 = require('./consents-09');
+const consents10 = require('./consents-10');
+const consents11 = require('./consents-11');
 
 const locals = {};
 
@@ -121,6 +124,10 @@ models.sequelize.sync({ force: true })
     .then(consents01)
     .then(consents07)
     .then(consents08)
+    .then(consents09)
+    .then(consents10)
+    .then(consents11)
+    .then(consents10)
     .then(() => {
         console.log('success');
         process.exit(0);

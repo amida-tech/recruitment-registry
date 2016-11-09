@@ -2623,3 +2623,106 @@ request
         console.log(JSON.stringify(res.body, undefined, 4)); // full consent details with signature information
     });
 ```
+
+Updating Consent Document remains the same even when the document is a section of Consent
+
+```js
+const consentDocUpdate = {
+    typeId: 1,
+    content: 'This is an updated Terms of Use.',
+    updateComment: 'Updated TOU notice added'
+};
+
+request
+    .post('http://localhost:9005/api/v1.0/consent-documents')
+    .set('Authorization', 'Bearer ' + jwt)
+    .send(consentDocUpdate)
+    .then(res => {
+        console.log(res.status);  // 201
+        console.log(res.body.id); // id of the updated consent document
+    });
+```
+
+Resource `/consents/{id}/user-documents` or `/consents/name/{name}/user-documents` can be used to show the updated
+
+```js
+request
+    .get('http://localhost:9005/api/v1.0/consents/name/primary-consent/user-documents')
+    .set('Authorization', 'Bearer ' + jwtUser)
+    .then(res => {
+        console.log(res.status);  // 200
+        console.log(JSON.stringify(res.body, undefined, 4)); // full consent details with signature information
+    });
+```
+
+Server responds with the updated content and signature information
+
+```js
+{
+    "id": 1,
+    "name": "primary-consent",
+    "sections": [
+        {
+            "id": 4,
+            "content": "This is an updated Terms of Use.",
+            "updateComment": "Updated TOU notice added",
+            "name": "terms-of-use",
+            "type": "single",
+            "title": "Terms of Use",
+            "signature": false
+        },
+        {
+            "id": 3,
+            "content": "This is an updated Consent Form.",
+            "updateComment": "Updated notice added",
+            "name": "consent",
+            "type": "single",
+            "title": "Consent Form",
+            "signature": false
+        }
+    ]
+}
+```
+
+Since Consent sections are expected to be signed at the same time, an additional resource `/consent-signatures/bulk` is provided
+
+```js
+request
+    .post('http://localhost:9005/api/v1.0/consent-signatures/bulk')
+    .set('Authorization', 'Bearer ' + jwtUser)
+    .send([3, 4])
+    .then(res => {
+        console.log(res.status);  // 201
+    });
+```
+
+Changes in signature status can be shown again by using resource `/consents/{id}/user-documents` or `/consents/name/{name}/user-documents`
+
+```js
+{
+    "id": 1,
+    "name": "primary-consent",
+    "sections": [
+        {
+            "id": 4,
+            "content": "This is an updated Terms of Use.",
+            "updateComment": "Updated TOU notice added",
+            "name": "terms-of-use",
+            "type": "single",
+            "title": "Terms of Use",
+            "signature": true,
+            "language": "en"
+        },
+        {
+            "id": 3,
+            "content": "This is an updated Consent Form.",
+            "updateComment": "Updated notice added",
+            "name": "consent",
+            "type": "single",
+            "title": "Consent Form",
+            "signature": true,
+            "language": "en"
+        }
+    ]
+}
+```
