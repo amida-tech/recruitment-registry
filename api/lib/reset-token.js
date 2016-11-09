@@ -7,8 +7,8 @@ const models = require('../models');
 const RRError = require('./rr-error');
 const SPromise = require('./promise');
 
-module.exports = function (email) {
-    return models.smtp.getSmtp()
+module.exports = function (email, language) {
+    return models.smtp.getSmtp({ language })
         .then(smtp => {
             if (!smtp) {
                 return RRError.reject('smtpNotSpecified');

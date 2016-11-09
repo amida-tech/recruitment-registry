@@ -70,6 +70,16 @@ exports.listSurveys = function (req, res) {
         .catch(shared.handleError(res));
 };
 
+exports.getAnsweredSurvey = function (req, res) {
+    const userId = req.user.id;
+    const id = _.get(req, 'swagger.params.id.value');
+    const language = _.get(req, 'swagger.params.language.value');
+    const options = language ? { language } : {};
+    models.survey.getAnsweredSurvey(userId, id, options)
+        .then(survey => res.status(200).json(survey))
+        .catch(shared.handleError(res));
+};
+
 exports.getAnsweredSurveyByName = function (req, res) {
     const userId = req.user.id;
     const name = _.get(req, 'swagger.params.name.value');

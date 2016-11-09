@@ -106,7 +106,8 @@ module.exports = class {
                             const answerInput = {
                                 userId: user.id,
                                 surveyId: profileSurveyId,
-                                answers: input.answers
+                                answers: input.answers,
+                                language
                             };
                             return this.answer.createAnswersTx(answerInput, tx)
                                 .then(() => ({ token: tokener.createJWT(user) }));
@@ -115,7 +116,7 @@ module.exports = class {
         });
     }
 
-    updateProfile(id, input) {
+    updateProfile(id, input, language) {
         return this.getProfileSurveyId()
             .then(profileSurveyId => {
                 return sequelize.transaction(tx => {
@@ -126,7 +127,8 @@ module.exports = class {
                             const answerInput = {
                                 userId: id,
                                 surveyId: profileSurveyId,
-                                answers: input.answers
+                                answers: input.answers,
+                                language
                             };
                             return this.answer.createAnswersTx(answerInput, tx);
                         });

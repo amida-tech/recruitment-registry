@@ -7,11 +7,12 @@ module.exports = function (locals) {
     const jwtUser = locals.jwtUser;
 
     return request
-        .get('http://localhost:9005/api/v1.0/answered-surveys/1')
+        .post('http://localhost:9005/api/v1.0/consent-signatures/bulk')
         .set('Authorization', 'Bearer ' + jwtUser)
+        .send([3, 4])
         .then(res => {
-            console.log(res.status); // 200
-            console.log(JSON.stringify(res.body, undefined, 4)); // survey with answers
+            console.log(res.status); // 201
+            console.log(res.body.id); // id of the signature
         })
         .then(() => {
             console.log(`------ end ${module.filename}`);

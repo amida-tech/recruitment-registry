@@ -103,6 +103,7 @@ const comparator = {
         answers.forEach(({ questionId, answer }) => answerMap.set(questionId, answer));
         expected.questions.forEach((qx) => {
             qx.answer = answerMap.get(qx.id);
+            qx.language = 'en'; // TODO handle other languages
             if (qx.type === 'choices' && qx.answer.choices) {
                 qx.answer.choices.forEach((choice) => {
                     if (!choice.textValue && !choice.hasOwnProperty('boolValue')) {
