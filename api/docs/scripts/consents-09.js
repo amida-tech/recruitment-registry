@@ -17,7 +17,7 @@ module.exports = function (locals) {
         .set('Authorization', 'Bearer ' + jwt)
         .send(consentDocUpdate)
         .then(res => {
-            console.log(res.status);  // 201
+            console.log(res.status); // 201
             console.log(res.body.id); // id of the updated consent document
         })
         .then(() => {

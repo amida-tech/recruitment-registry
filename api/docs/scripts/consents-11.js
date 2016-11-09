@@ -11,7 +11,7 @@ module.exports = function (locals) {
         .set('Authorization', 'Bearer ' + jwtUser)
         .send([3, 4])
         .then(res => {
-            console.log(res.status);  // 201
+            console.log(res.status); // 201
             console.log(res.body.id); // id of the signature
         })
         .then(() => {
