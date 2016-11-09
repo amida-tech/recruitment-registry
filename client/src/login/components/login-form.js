@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { Link } from 'react-router';
 
 class Form extends Component {
   render() {
@@ -31,7 +32,7 @@ class Form extends Component {
         <div className="form__footer">
           <button className="buttonPrimary confirm" type="submit">
             {this.props.btnText}</button>
-          <a href="/">{this.props.vocab.get('FORGOT_USER_PASS')}</a>
+          <Link to="/">{this.props.vocab.get('FORGOT_USER_PASS')}</Link>
         </div>
       </form>
     );
