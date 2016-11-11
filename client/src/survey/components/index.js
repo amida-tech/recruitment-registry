@@ -17,7 +17,7 @@ export class SurveyContainer extends Component {
   }
 
   _changeAnswerText(questionId, answerId, value) {
-    this.props.dispatch(submit.actions.updateAnswer('choices.text', questionId,
+    this.props.dispatch(actions.updateAnswer('choices.text', questionId,
       answerId, value));
   }
 
