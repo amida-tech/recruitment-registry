@@ -180,6 +180,13 @@ class Generator {
         const surveyIndex = ++this.surveyIndex;
         const name = override.name || `name_${surveyIndex}`;
         const result = { name };
+        const metaIndex = surveyIndex % 3;
+        if (metaIndex > 0) {
+            result.meta = {
+                displayAsWizard: metaIndex === 1,
+                saveProgress: metaIndex === 2
+            };
+        }
         if (override.questions) {
             result.questions = override.questions;
             if (override.sections) {

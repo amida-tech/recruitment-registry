@@ -1,60 +1,106 @@
-import App from './app'
-import routes from './routes'
-import Layout from './layout/index'
-import Background from './background/index'
-import login from './login'
-import register from './register'
-import profile from './profile'
-import surveyBuilder from './surveyBuilder'
-import surveys from './surveys'
-import survey from './survey'
-import { browserHistory } from 'react-router'
-import Immutable from 'immutable'
-import { push } from 'react-router-redux'
+import App from './app';
+import routes from './routes';
+import Layout from './layout/index';
+import Background from './background/index';
+import { LoginReducer } from './login';
+import { RegisterReducer } from './register';
+import { ProfileReducer } from './profile';
+import surveyBuilder from './surveyBuilder';
+import { SurveyListReducer } from './surveylist';
+import { SurveyReducer } from './survey';
+import { browserHistory } from 'react-router';
+import i18n from './i18n/en.json';
 
 export const initialState = {
   title: "GAP",
   settings: {
     language: {
-      choice: localStorage.choice ? localStorage.choice : 'en',
-      vocabulary: localStorage.vocabulary ? localStorage.vocabulary : require('./i18n/en.json')
+      choice: localStorage.choice || 'en',
+      vocabulary: localStorage.vocabulary || i18n // this is redundant with the above value.
     }
   },
-  login: login.reducer.initialState,
-  register: register.reducer.initialState,
-  loggedIn: localStorage.token ? localStorage.token : false,
-  profile: profile.reducer.initialState,
+  login: {
+    formState: {
+      username: '',
+      password: '',
+    },
+    user: localStorage.user ? JSON.parse(localStorage.user) : {
+      username: "",
+      role: "",
+      id: ""
+    }
+  },
+  loggedIn: localStorage.token || false,
+  register: {
+    newUserProfile: {
+    user: {
+      username: '',
+      password: '',
+      role: 'participant',
+      email: ''
+    },
+    answers: []
+  },
+    survey: {
+      questions: []
+    },
+    availableEthnicities: [
+      "Caucasian",
+      "Hispanic",
+      "African",
+      "Asian"
+    ],
+    availableGenders: [
+      "male",
+      "female",
+      "other"
+    ]
+  },
+  profile: {
+    user: {
+      name: ""
+    },
+    survey: {
+      questions: []
+    }
+  },
   surveyBuilder: surveyBuilder.reducer.initialState,
-  surveys: surveys.reducer.initialState,
-  survey: survey.reducer.initialState
+  surveys: [],
+  survey: {
+    selectedSurvey: [],
+    surveyAnswers: {
+      'surveyId': 0,
+      'answers': []
+    }
+  }
 };
 
 export const reducers = {
-  [login.constants.NAME]: login.reducer,
-  [register.constants.NAME]: register.reducer,
-  [profile.constants.NAME]: profile.reducer,
-  [surveyBuilder.constants.NAME]: surveyBuilder.reducer,
-  [surveys.constants.NAME]: surveys.reducer,
-  [survey.constants.NAME]: survey.reducer,
+  login: LoginReducer,
+  register: RegisterReducer,
+  profile: ProfileReducer,
+  surveyBuilder: surveyBuilder.reducer,
+  surveys: SurveyListReducer,
+  survey: SurveyReducer,
   loggedIn: (state = initialState, action) => {
     switch (action.type) {
       case "LOGIN_SUCCESS":
-        localStorage.setItem("token", action.data.token)
-        return action.data.token
+        localStorage.setItem("token", action.data.token);
+        return action.data.token;
       case "LOGOUT":
-        localStorage.removeItem("token")
-        localStorage.removeItem("user")
-        return false
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        return false;
       default:
         return state
     }
   },
-  title: (state = initialState) => state,
+  title: state => state,
   settings: (state = initialState, action) => {
     switch (action.type) {
       case "CHANGE_LANGUAGE":
         var choice = state.getIn(['language','choice']) == 'en' ? 'es' : 'en';
-        return state.setIn(['language'], Immutable.fromJS({'choice': choice, 'vocabulary': require('./i18n/'+choice+'.json')}));
+        return state.setIn(['language'], {'choice': choice, 'vocabulary': require('./i18n/'+choice+'.json')});
       default:
         return state;
       }

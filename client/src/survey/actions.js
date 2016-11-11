@@ -3,8 +3,11 @@ import * as actionTypes from './actionTypes';
 export function updateAnswer(itype, id, value, subvalue) {
   return dispatch => dispatch({
     type: actionTypes.UPDATE_SURVEY_ANSWERS,
-    itype, id, value, subvalue
-  });
+    itype,
+    id,
+    value,
+    name
+  })
 }
 
 export function submitAnswers(surveyAnswers){

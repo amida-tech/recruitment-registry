@@ -151,9 +151,9 @@ describe('consent document/type/signature unit', function () {
             const userId = history.userId(userIndex);
             history.sign(typeIndex, userIndex, language);
             if (language) {
-                return models.consentSignature.createSignature(userId, consentDocumentId, language);
+                return models.consentSignature.createSignature({ userId, consentDocumentId, language });
             } else {
-                return models.consentSignature.createSignature(userId, consentDocumentId);
+                return models.consentSignature.createSignature({ userId, consentDocumentId });
             }
         };
     };
@@ -172,7 +172,7 @@ describe('consent document/type/signature unit', function () {
 
     it('error: invalid user signs already signed consent document of type 0 ', function () {
         const consentDocumentId = history.activeConsentDocuments[0].id;
-        return models.consentSignature.createSignature(999, consentDocumentId)
+        return models.consentSignature.createSignature({ userId: 999, consentDocumentId })
             .then(shared.throwingHandler, err => {
                 expect(err).is.instanceof(models.sequelize.ForeignKeyConstraintError);
             });
@@ -180,7 +180,7 @@ describe('consent document/type/signature unit', function () {
 
     it('error: user 0 signs invalid consent document', function () {
         const userId = history.userId(0);
-        return models.consentSignature.createSignature(userId, 999)
+        return models.consentSignature.createSignature({ userId, consentDocumentId: 999 })
             .then(shared.throwingHandler, err => {
                 expect(err).is.instanceof(models.sequelize.ForeignKeyConstraintError);
             });

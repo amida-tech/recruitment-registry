@@ -95,7 +95,8 @@ module.exports = class {
                         .then(user => {
                             if (input.signatures && input.signatures.length) {
                                 return SPromise.all(input.signatures.map(consentDocumentId => {
-                                        return this.consentSignature.createSignature(user.id, consentDocumentId, language, tx);
+                                        const userId = user.id;
+                                        return this.consentSignature.createSignature({ userId, consentDocumentId, language }, tx);
                                     }))
                                     .then(() => user);
                             }
@@ -105,7 +106,8 @@ module.exports = class {
                             const answerInput = {
                                 userId: user.id,
                                 surveyId: profileSurveyId,
-                                answers: input.answers
+                                answers: input.answers,
+                                language
                             };
                             return this.answer.createAnswersTx(answerInput, tx)
                                 .then(() => ({ token: tokener.createJWT(user) }));
@@ -114,7 +116,7 @@ module.exports = class {
         });
     }
 
-    updateProfile(id, input) {
+    updateProfile(id, input, language) {
         return this.getProfileSurveyId()
             .then(profileSurveyId => {
                 return sequelize.transaction(tx => {
@@ -125,7 +127,8 @@ module.exports = class {
                             const answerInput = {
                                 userId: id,
                                 surveyId: profileSurveyId,
-                                answers: input.answers
+                                answers: input.answers,
+                                language
                             };
                             return this.answer.createAnswersTx(answerInput, tx);
                         });

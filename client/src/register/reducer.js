@@ -2,34 +2,8 @@ import * as t from './actionTypes';
 import Immutable from 'immutable'
 import { browserHistory } from 'react-router';
 
-const initialState = {
-  newUserProfile: {
-    user: {
-      username: '',
-      password: '',
-      role: 'participant',
-      email: ''
-    },
-    answers: []
-  },
-  survey: {
-    questions: []
-  },
-  availableEthnicities: [
-     "Caucasian",
-     "Hispanic",
-     "African",
-     "Asian"
-   ],
-   availableGenders: [
-     "male",
-     "female",
-     "other"
-   ]
-};
 
-const immutableState = Immutable.fromJS(initialState)
-export default (state = immutableState, action) => {
+export default (state, action) => {
   switch (action.type) {
     case 'GET_SURVEY_SUCCESS':
       return state.merge({
@@ -50,7 +24,7 @@ export default (state = immutableState, action) => {
       var newAnswer = {
         'questionId': parseInt(action.id),
         'answer': {}
-        };
+      };
       switch(action.itype){
         case "text":
           newAnswer.answer = {'textValue': action.value};
@@ -79,7 +53,7 @@ export default (state = immutableState, action) => {
             if(answer.questionId == newAnswer.questionId){
                 answers.splice(index);
             }
-          })
+          });
         answers.push(newAnswer);
         return state.setIn(['newUserProfile', 'answers'], Immutable.fromJS(answers));
     case 'REGISTER_SUCCESS':

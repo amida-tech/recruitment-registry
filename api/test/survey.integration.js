@@ -91,6 +91,15 @@ describe('survey integration', function () {
         };
     };
 
+    const showSurveyMetaFn = function (index, update = {}) {
+        return function (done) {
+            if (history.client(index).meta === undefined) {
+                return done();
+            }
+            showSurveyFn(index, update)(done);
+        };
+    };
+
     const verifySurveyFn = function (index) {
         return function (done) {
             const server = history.server(index);
@@ -108,7 +117,22 @@ describe('survey integration', function () {
         };
     };
 
-    const updateSurveyFn = function (index, name) {
+    const updateSurveyFn = function (index, meta) {
+        return function (done) {
+            if (history.client(index).meta === undefined) {
+                return done();
+            }
+            const id = history.id(index);
+            meta = meta || history.client(index).meta;
+            store.server
+                .patch(`/api/v1.0/surveys/${id}`)
+                .set('Authorization', store.auth)
+                .send({ meta })
+                .expect(204, done);
+        };
+    };
+
+    const updateSurveyTextFn = function (index, name) {
         return function (done) {
             const id = history.id(index);
             name = name || history.client(index).name;
@@ -185,10 +209,16 @@ describe('survey integration', function () {
     for (let i = 0; i < surveyCount; ++i) {
         it(`create survey ${i}`, createSurveyFn());
         it(`verify survey ${i}`, showSurveyFn(i));
-        const name = `updated_name_${i}`;
-        it(`update survey ${i}`, updateSurveyFn(i, name));
-        it(`verify survey ${i}`, showSurveyFn(i, { name }));
+        const meta = {
+            anyProperty: true
+        };
+        it(`update survey ${i}`, updateSurveyFn(i, meta));
+        it(`verify survey ${i}`, showSurveyMetaFn(i, { meta }));
         it(`update survey ${i}`, updateSurveyFn(i));
+        const name = `updated_name_${i}`;
+        it(`update survey text ${i}`, updateSurveyTextFn(i, name));
+        it(`verify survey ${i}`, showSurveyFn(i, { name }));
+        it(`update survey ${i}`, updateSurveyTextFn(i));
         it(`list surveys and verify`, listSurveysFn());
     }
 
@@ -434,7 +464,7 @@ describe('survey integration', function () {
 
     it('get answered survey', function (done) {
         store.server
-            .get('/api/v1.0/surveys/answered/name/Example')
+            .get(`/api/v1.0/answered-surveys/${serverSurvey.id}`)
             .set('Authorization', store.auth)
             .expect(200)
             .end(function (err, res) {
@@ -449,7 +479,7 @@ describe('survey integration', function () {
 
     it('get answered translated survey', function (done) {
         store.server
-            .get('/api/v1.0/surveys/answered/name/Example')
+            .get(`/api/v1.0/answered-surveys/${serverSurvey.id}`)
             .set('Authorization', store.auth)
             .query({ language: 'es' })
             .expect(200)
@@ -464,4 +494,35 @@ describe('survey integration', function () {
             });
     });
 
+    it('get answered survey by name', function (done) {
+        store.server
+            .get('/api/v1.0/answered-surveys/name/Example')
+            .set('Authorization', store.auth)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                const expected = helper.formAnsweredSurvey(serverSurvey, answers);
+                expect(res.body).to.deep.equal(expected);
+                done();
+            });
+    });
+
+    it('get answered translated survey by name', function (done) {
+        store.server
+            .get('/api/v1.0/answered-surveys/name/Example')
+            .set('Authorization', store.auth)
+            .query({ language: 'es' })
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                const expected = helper.formAnsweredSurvey(serverSurvey, answers);
+                expected.name = 'puenno';
+                expect(res.body).to.deep.equal(expected);
+                done();
+            });
+    });
 });

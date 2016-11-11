@@ -107,6 +107,10 @@ module.exports = class {
         });
     }
 
+    updateSurvey(id, surveyUpdate) {
+        return Survey.update(surveyUpdate, { where: { id } });
+    }
+
     replaceSurveyTx(id, replacement, tx) {
         return Survey.findById(id)
             .then(survey => {
@@ -183,7 +187,7 @@ module.exports = class {
     }
 
     getSurvey(id, options = {}) {
-        let _options = { where: { id }, raw: true, attributes: ['id'] };
+        let _options = { where: { id }, raw: true, attributes: ['id', 'meta'] };
         if (options.override) {
             _options = _.assign({}, _options, options.override);
         }
@@ -191,6 +195,9 @@ module.exports = class {
             .then(survey => {
                 if (!survey) {
                     return RRError.reject('surveyNotFound');
+                }
+                if (survey.meta === null) {
+                    delete survey.meta;
                 }
                 return textHandler.updateText(survey, options.language)
                     .then(() => SurveyQuestion.findAll({
@@ -200,7 +207,7 @@ module.exports = class {
                         })
                         .then(surveyQuestions => {
                             const questionIds = _.map(surveyQuestions, 'questionId');
-                            return this.question.listQuestions({ ids: questionIds })
+                            return this.question.listQuestions({ ids: questionIds, language: options.language })
                                 .then(questions => ({ questions, surveyQuestions }));
                         })
                         .then(({ questions, surveyQuestions }) => {
@@ -249,6 +256,7 @@ module.exports = class {
                         answers.forEach(answer => {
                             const qid = answer.questionId;
                             const question = qmap[qid];
+                            question.language = answer.language;
                             question.answer = answer.answer;
                         });
                         return survey;

@@ -13,13 +13,12 @@ class Home extends Component {
       <div className="home">
         <h1>{this.props.vocab.get('HOME')}</h1>
         <div>
-          { loggedIn ? (
-            <h6> <span style={{color: "#2196F3"}}>{ username }</span>, {this.props.vocab.get('WELCOME')} { title }, {this.props.vocab.get('LOGGED_IN_AS')} <span style={{color: "#2196F3"}}>{ role }</span>!</h6>
-          ) : (<div></div>)
+          { loggedIn &&
+            <h6><span style={{color: "#2196F3"}}>{ username }</span>, {this.props.vocab.get('WELCOME')} { title }, {this.props.vocab.get('LOGGED_IN_AS')} <span style={{color: "#2196F3"}}>{ role }</span>!</h6>
           }
 
         </div>
-        <form className="radioGroup"> 
+        <form className="radioGroup">
           <input type="radio" checked="checked" name="gender" id="male" value="male"/>
           <label htmlFor="male">Male</label>
           <input type="radio" name="gender" id="female" value="female"/>
@@ -27,7 +26,7 @@ class Home extends Component {
           <input type="radio" name="gender" id="other" value="other"/>
           <label htmlFor="other">Other</label>
         </form>
-        <form className="radioGroup light"> 
+        <form className="radioGroup light">
           <input type="radio" checked="checked" name="gender1" id="male1" value="male1"/>
           <label htmlFor="male1">Male</label>
           <input type="radio" name="gender1" id="female" value="female"/>
@@ -35,7 +34,7 @@ class Home extends Component {
           <input type="radio" name="gender1" id="other" value="other"/>
           <label htmlFor="other">Other</label>
         </form>
-        <form className="radioGroup success"> 
+        <form className="radioGroup success">
           <input type="radio" checked="checked" name="gender2" id="male2" value="male2"/>
           <label htmlFor="male2">Male</label>
           <input type="radio" name="gender2" id="female" value="female"/>
@@ -43,7 +42,7 @@ class Home extends Component {
           <input type="radio" name="gender2" id="other" value="other"/>
           <label htmlFor="other">Other</label>
         </form>
-        <form className="radioGroup confirm"> 
+        <form className="radioGroup confirm">
           <input type="radio" checked="checked" name="gender3" id="male3" value="male3"/>
           <label htmlFor="male3">Male</label>
           <input type="radio" name="gender3" id="female" value="female"/>
@@ -51,7 +50,7 @@ class Home extends Component {
           <input type="radio" name="gender3" id="other" value="other"/>
           <label htmlFor="other">Other</label>
         </form>
-        <form className="radioGroup alert"> 
+        <form className="radioGroup alert">
           <input type="radio" checked="checked" name="gender4" id="male4" value="male4"/>
           <label htmlFor="male4">Male</label>
           <input type="radio" name="gender4" id="female" value="female"/>
@@ -59,7 +58,7 @@ class Home extends Component {
           <input type="radio" name="gender4" id="other" value="other"/>
           <label htmlFor="other">Other</label>
         </form>
-        <form className="radioGroup warning"> 
+        <form className="radioGroup warning">
           <input type="radio" checked="checked" name="gender5" id="male5" value="male5"/>
           <label htmlFor="male5">Male</label>
           <input type="radio" name="gender5" id="female" value="female"/>
@@ -67,7 +66,7 @@ class Home extends Component {
           <input type="radio" name="gender5" id="other" value="other"/>
           <label htmlFor="other">Other</label>
         </form>
-        <form className="radioGroup info"> 
+        <form className="radioGroup info">
           <input type="radio" checked="checked" name="gender6" id="male6" value="male6"/>
           <label htmlFor="male6">Male</label>
           <input type="radio" name="gender6" id="female" value="female"/>
@@ -75,7 +74,7 @@ class Home extends Component {
           <input type="radio" name="gender6" id="other" value="other"/>
           <label htmlFor="other">Other</label>
         </form>
-        <form className="radioGroup system"> 
+        <form className="radioGroup system">
           <input type="radio" checked="checked" name="gender7" id="male7" value="male7"/>
           <label htmlFor="male7">Male</label>
           <input type="radio" name="gender7" id="female" value="female"/>
@@ -83,7 +82,7 @@ class Home extends Component {
           <input type="radio" name="gender7" id="other" value="other"/>
           <label htmlFor="other">Other</label>
         </form>
-        <form className="radioGroup dark"> 
+        <form className="radioGroup dark">
           <input type="radio" checked="checked" name="gender8" id="male8" value="male8"/>
           <label htmlFor="male8">Male</label>
           <input type="radio" name="gender8" id="female" value="female"/>

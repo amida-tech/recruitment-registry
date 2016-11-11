@@ -31,6 +31,13 @@ module.exports = function (sequelize, DataTypes) {
                 key: 'code'
             }
         },
+        ip: {
+            type: DataTypes.TEXT
+        },
+        userAgent: {
+            type: DataTypes.TEXT,
+            field: 'user_agent'
+        },
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',

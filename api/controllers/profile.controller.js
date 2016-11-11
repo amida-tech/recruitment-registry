@@ -1,18 +1,22 @@
 'use strict';
 
+const _ = require('lodash');
+
 const models = require('../models');
 const shared = require('./shared.js');
 
 const registry = models.registry;
 
 exports.createProfile = function (req, res) {
-    registry.createProfile(req.body)
+    const language = _.get(req, 'swagger.params.language.value');
+    registry.createProfile(req.body, language)
         .then(tokenObj => res.status(201).json(tokenObj))
         .catch(shared.handleError(res));
 };
 
 exports.updateProfile = function (req, res) {
-    registry.updateProfile(req.user.id, req.body)
+    const language = _.get(req, 'swagger.params.language.value');
+    registry.updateProfile(req.user.id, req.body, language)
         .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };

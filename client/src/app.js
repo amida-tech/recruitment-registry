@@ -1,7 +1,7 @@
 import ChartMonitor from 'redux-devtools-chart-monitor';
 import DockMonitor from 'redux-devtools-dock-monitor';
-import Immutable from 'immutable';
 import LogMonitor from 'redux-devtools-log-monitor';
+import Immutable from 'immutable';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import SliderMonitor from 'redux-slider-monitor';
@@ -18,7 +18,6 @@ import dataService from './utils/api';
 
 const IS_PROD = process.env.NODE_ENV !== 'development';
 const NOOP = () => null;
-var visible = false;
 
 let DevTools = IS_PROD ? NOOP : createDevTools(
   <DockMonitor
@@ -35,7 +34,7 @@ let DevTools = IS_PROD ? NOOP : createDevTools(
 );
 
 const initialEnhancers = IS_PROD ? [] : [
-  window.devToolsExtension ? window.devToolsExtension() : DevTools.instrument(),
+  DevTools.instrument(),
   persistState(location.href.match(/[?&]debug_session=([^&]+)\b/))
 ];
 
@@ -62,7 +61,7 @@ export default (options) => {
   const initialMiddleware = [createLogger(loggerOptions)];
   const createStoreWithMiddleware = applyMiddleware(thunk)(createStore);
 
-  const appReducer = combineReducers({...reducers, routing})
+  const appReducer = combineReducers({...reducers, routing});
 
   const rootReducer = (state, action) => {
     if (action.type === 'LOGOUT') {

@@ -10,6 +10,7 @@ const Generator = require('./util/entity-generator');
 const ConsentDocumentHistory = require('./util/consent-document-history');
 const config = require('../config');
 const RRError = require('../lib/rr-error');
+const models = require('../models');
 
 const expect = chai.expect;
 const generator = new Generator();
@@ -185,6 +186,7 @@ describe('consent document integration', function () {
     const signConsentTypeFn = function (userIndex, typeIndex, language) {
         return function (done) {
             const consentDocumentId = history.id(typeIndex);
+            const typeId = history.typeId(typeIndex);
             const query = {};
             if (language) {
                 query.language = language;
@@ -192,6 +194,8 @@ describe('consent document integration', function () {
             store.server
                 .post(`/api/v1.0/consent-signatures`)
                 .set('Authorization', store.auth)
+                .set('User-Agent', `Browser-${typeId}`)
+                .set('X-Forwarded-For', [`9848.3${typeId}.838`, `111.${typeId}0.999`])
                 .query(query)
                 .send({ consentDocumentId })
                 .expect(201)
@@ -380,4 +384,24 @@ describe('consent document integration', function () {
         it('verify signatures', verifySignaturesFn(i));
     }
     it('logout as super', shared.logoutFn(store));
+
+    it('check ip and browser (user-agent) of signature', function () {
+        const query = 'select consent_type.id as "typeId", ip, user_agent as "userAgent" from consent_signature, consent_type, consent_document where consent_signature.consent_document_id = consent_document.id and consent_type.id = consent_document.type_id';
+        return models.sequelize.query(query, { type: models.sequelize.QueryTypes.SELECT })
+            .then(result => {
+                const typeGroups = _.groupBy(result, 'typeId');
+                const typeIds = Object.keys(typeGroups);
+                expect(typeIds).to.have.length(3);
+                typeIds.forEach(typeId => {
+                    const expectedUserAgent = `Browser-${typeId}`;
+                    const expectedIp = `9848.3${typeId}.838`;
+                    const records = typeGroups[typeId];
+                    records.forEach(({ ip, userAgent }) => {
+                        expect(ip).to.equal(expectedIp);
+                        expect(userAgent).to.equal(expectedUserAgent);
+                    });
+                });
+
+            });
+    });
 });

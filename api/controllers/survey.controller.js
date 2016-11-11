@@ -48,6 +48,13 @@ exports.updateSurveyText = function (req, res) {
         .catch(shared.handleError(res));
 };
 
+exports.updateSurvey = function (req, res) {
+    const id = _.get(req, 'swagger.params.id.value');
+    models.survey.updateSurvey(id, req.body)
+        .then(() => res.status(204).end())
+        .catch(shared.handleError(res));
+};
+
 exports.deleteSurvey = function (req, res) {
     const id = _.get(req, 'swagger.params.id.value');
     models.survey.deleteSurvey(id)
@@ -60,6 +67,16 @@ exports.listSurveys = function (req, res) {
     const options = language ? { language } : {};
     models.survey.listSurveys(options)
         .then(surveys => res.status(200).json(surveys))
+        .catch(shared.handleError(res));
+};
+
+exports.getAnsweredSurvey = function (req, res) {
+    const userId = req.user.id;
+    const id = _.get(req, 'swagger.params.id.value');
+    const language = _.get(req, 'swagger.params.language.value');
+    const options = language ? { language } : {};
+    models.survey.getAnsweredSurvey(userId, id, options)
+        .then(survey => res.status(200).json(survey))
         .catch(shared.handleError(res));
 };
 

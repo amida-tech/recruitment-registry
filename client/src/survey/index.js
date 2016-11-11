@@ -1,7 +1,3 @@
-import * as actions from './actions';
-import * as components from './components';
-import * as constants from './constants';
-import reducer from './reducer';
-
-
-export default { actions, components, constants, reducer };
+export * as SurveyActions from './actions';
+export SurveyContainer from './components';
+export SurveyReducer from './reducer';

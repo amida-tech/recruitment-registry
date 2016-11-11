@@ -5,7 +5,7 @@ module.exports = function (sequelize, DataTypes) {
         language: {
             type: DataTypes.TEXT,
             allowNull: false,
-            fieldName: 'language_code',
+            field: 'language_code',
             references: {
                 model: 'language',
                 key: 'code'
