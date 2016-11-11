@@ -40,7 +40,7 @@ const apiProvider = store => next => action => {
             next({
               type: 'GET_USER'
             });
-            store.dispatch(push('/surveys'))
+            store.dispatch(push('/dashboard'))
           } else {
             return next({
               type: 'LOGIN_ERROR',
@@ -135,7 +135,7 @@ const apiProvider = store => next => action => {
               type: 'LOGIN_SUCCESS',
               data: response.body
             });
-            store.dispatch(push('/surveys'));
+            store.dispatch(push('/dashboard'));
             store.dispatch({type: 'GET_USER'});
           }
         });
