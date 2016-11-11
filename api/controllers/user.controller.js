@@ -5,6 +5,7 @@ const _ = require('lodash');
 const models = require('../models');
 const db = require('../models/db');
 const shared = require('./shared.js');
+const tokener = require('../lib/tokener');
 
 exports.createNewUser = function (req, res) {
     const username = req.body.username;
@@ -19,11 +20,7 @@ exports.createNewUser = function (req, res) {
                 newUser.role = 'participant';
                 return db.User.create(req.body)
                     .then(user => {
-                        return res.status(201).json({
-                            id: user.id,
-                            username: user.username,
-                            role: user.role
-                        });
+                        return res.status(201).json({ token: tokener.createJWT(user) });
                     });
             }
         })

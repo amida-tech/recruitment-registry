@@ -61,13 +61,42 @@ describe('user integration', function () {
             });
     });
 
+    it('logout as super', shared.logoutFn(store));
+
     it('create a new user', function (done) {
         store.server
             .post('/api/v1.0/users')
             .set('Authorization', store.auth)
             .send(user)
-            .expect(201, done);
+            .expect(201)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                store.auth = 'Bearer ' + res.body.token;
+                done();
+            });
     });
+
+    it('get new user', function (done) {
+        store.server
+            .get('/api/v1.0/users/me')
+            .set('Authorization', store.auth)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                delete res.body.id;
+                const expectedUser = _.cloneDeep(user);
+                expectedUser.role = 'participant';
+                delete expectedUser.password;
+                expect(res.body).to.deep.equal(expectedUser);
+                done();
+            });
+    });
+
+    it('logout s new user', shared.logoutFn(store));
 
     it('login as new user', shared.loginFn(store, user));
 

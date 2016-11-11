@@ -60,7 +60,10 @@
                 }],
                 "responses": {
                     "201": {
-                       "$ref": "#/responses/idSuccess"
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/token"
+                        }
                      },
                     "default": {
                         "$ref": "#/responses/genericError"
