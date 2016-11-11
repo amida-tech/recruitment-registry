@@ -55,16 +55,6 @@ describe('registry integration', function () {
 
     });
 
-    it('login as super', shared.loginFn(store, config.superUser));
-
-    for (let i = 0; i < 2; ++i) {
-        it(`create consent type ${i}`, shared.createConsentTypeFn(store, hxConsentDoc));
-    }
-
-    for (let i = 0; i < 2; ++i) {
-        it(`create consent document of type ${i}`, shared.createConsentDocumentFn(store, hxConsentDoc, i));
-    }
-
     const createProfileSurveyFn = function () {
         return function (done) {
             const clientSurvey = generator.newSurvey();
@@ -82,6 +72,16 @@ describe('registry integration', function () {
                 });
         };
     };
+
+    it('login as super', shared.loginFn(store, config.superUser));
+
+    for (let i = 0; i < 2; ++i) {
+        it(`create consent type ${i}`, shared.createConsentTypeFn(store, hxConsentDoc));
+    }
+
+    for (let i = 0; i < 2; ++i) {
+        it(`create consent document of type ${i}`, shared.createConsentDocumentFn(store, hxConsentDoc, i));
+    }
 
     it('create profile survey 0', createProfileSurveyFn());
 
@@ -125,6 +125,24 @@ describe('registry integration', function () {
         };
     };
 
+    const verifyNotTranslatedProfileSurveyFn = function (index, language) {
+        return function (done) {
+            store.server
+                .get(`/api/v1.0/profile-survey`)
+                .set('Authorization', store.auth)
+                .query({ language })
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    const survey = hxSurvey.server(index);
+                    expect(res.body).to.deep.equal(survey);
+                    done();
+                });
+        };
+    };
+
     const verifyTranslatedProfileSurveyFn = function (index, language) {
         return function (done) {
             store.server
@@ -146,22 +164,7 @@ describe('registry integration', function () {
 
     it(`get profile survey 0`, verifyProfileSurveyFn(0));
 
-    it('get profile survey 0 in spanish when no translation', function (done) {
-        const language = 'es';
-        store.server
-            .get(`/api/v1.0/profile-survey`)
-            .set('Authorization', store.auth)
-            .query({ language })
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-                const survey = hxSurvey.server(0);
-                expect(res.body).to.deep.equal(survey);
-                done();
-            });
-    });
+    it('get profile survey 0 in spanish when no translation', verifyNotTranslatedProfileSurveyFn(0, 'es'));
 
     it('login as super', shared.loginFn(store, config.superUser));
 
@@ -197,7 +200,34 @@ describe('registry integration', function () {
         };
     };
 
-    const verifyProfileFn = function (surveyIndex, userIndex) {
+    const createProfileLanguageFn = function (surveyIndex, signatures, language) {
+        return function (done) {
+            const survey = hxSurvey.server(surveyIndex);
+            const clientUser = generator.newUser();
+            clientUser.role = 'participant';
+            const answers = generator.answerQuestions(survey.questions);
+            hxAnswers.push(answers);
+            const input = { user: clientUser, answers };
+            if (signatures) {
+                input.signatures = signatures.map(sign => hxConsentDoc.id(sign));
+            }
+            store.server
+                .post('/api/v1.0/profiles')
+                .query({ language })
+                .send(input)
+                .expect(201)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    store.auth = 'Bearer ' + res.body.token;
+                    hxUser.push(clientUser, {});
+                    done();
+                });
+        };
+    };
+
+    const verifyProfileFn = function (surveyIndex, userIndex, language) {
         return function (done) {
             store.server
                 .get('/api/v1.0/profiles')
@@ -211,7 +241,7 @@ describe('registry integration', function () {
                     const survey = hxSurvey.server(surveyIndex);
 
                     comparator.user(hxUser.client(userIndex), result.user);
-                    comparator.answeredSurvey(survey, hxAnswers[userIndex], result.survey);
+                    comparator.answeredSurvey(survey, hxAnswers[userIndex], result.survey, language);
 
                     done();
                 });
@@ -239,7 +269,7 @@ describe('registry integration', function () {
         };
     };
 
-    const verifySignedDocumentFn = function (expected) {
+    const verifySignedDocumentFn = function (expected, language) {
         return function (done) {
             const server = hxConsentDoc.server(0);
             store.server
@@ -254,7 +284,7 @@ describe('registry integration', function () {
                     expect(result.content).to.equal(server.content);
                     expect(result.signature).to.equal(expected);
                     if (expected) {
-                        expect(result.language).to.equal('en');
+                        expect(result.language).to.equal(language || 'en');
                     }
                     done();
                 });
@@ -311,4 +341,20 @@ describe('registry integration', function () {
     it('logout as super', shared.logoutFn(store));
 
     it('get/verify profile survey 1', verifyProfileSurveyFn(1));
+
+    it('get profile survey 1 in spanish when no translation', verifyNotTranslatedProfileSurveyFn(1, 'es'));
+
+    it('login as super', shared.loginFn(store, config.superUser));
+
+    it('translate profile survey 1 to spanish', translateProfileSurveyFn(1, 'es'));
+
+    it('logout as super', shared.logoutFn(store));
+
+    it('get/verify translated profile survey 1 (spanish)', verifyTranslatedProfileSurveyFn(1, 'es'));
+
+    it('register user 2 with profile survey 1 and doc 0 signature in spanish', createProfileLanguageFn(1, [0], 'es'));
+
+    it('verify user 2 profile', verifyProfileFn(1, 2, 'es'));
+
+    it('verify document 0 is signed by user in spanish', verifySignedDocumentFn(true, 'es'));
 });

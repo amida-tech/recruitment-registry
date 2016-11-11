@@ -84,7 +84,7 @@ describe('answer integration', function () {
             const surveyId = hxSurvey.id(surveyIndex);
             store.server
                 .get('/api/v1.0/answers')
-                .query({ surveyId })
+                .query({ 'survey-id': surveyId })
                 .set('Authorization', store.auth)
                 .expect(200)
                 .end(function (err, res) {
