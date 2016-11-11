@@ -62,7 +62,7 @@ export class Input extends Component {
   render(){
     return(
       <div key={this.props.id} >
-        <p className='question'>{this.props.text}</p>
+        <label htmlFor={this.props.id}>{this.props.text}</label>
         <input
           id={this.props.id}
           type={this.props.type}
