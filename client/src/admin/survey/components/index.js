@@ -54,14 +54,25 @@ export class AdminSurveyContainer extends Component {
     }
     return (
       <div>
-        <h1>{name}</h1>
-        <div className="">
-          { this.props.data.get('hasErrors') ? (<p>{this.props.vocab.get('SUBMISSION_FAILURE')}</p>) : (<p></p>) }
+        <div className="columns">
+          <div className="column is-one-thirds has-text-right">
+            <h3 className="title is-3">Questionnaire</h3>
+            <h2 className="title is-2">Section 1:</h2>
+            <h1 className="title is-1">{name}</h1>
+            <p><b>Last Updated: 3/15/16</b></p>
+            <p><b className="gapRed">4 questions remaining</b></p>
+            <button className="button buttonSecondary">Save Progress</button>
+          </div>
+          <div className="column is-two-thirds">
+            <div className="">
+              { this.props.data.get('hasErrors') ? (<p>{this.props.vocab.get('SUBMISSION_FAILURE')}</p>) : (<p></p>) }
+            </div>
+            <form name="questionForm" onSubmit={(event) => this.submitAnswers(event)} key={id} className="">
+              {questionnaire}
+              <button>{this.props.vocab.get('SUBMIT')}</button>
+            </form>
+          </div>
         </div>
-        <form name="questionForm" onSubmit={(event) => this.submitAnswers(event)} key={id} className="">
-          {questionnaire}
-          <button>{this.props.vocab.get('SUBMIT')}</button>
-        </form>
       </div>
     )}
 
