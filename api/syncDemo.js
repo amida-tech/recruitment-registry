@@ -14,7 +14,7 @@ const survey = {
     }, {
         text: 'Date of Birth',
         required: true,
-        type: 'date',
+        type: 'text',
     }, {
         text: 'Sex',
         required: true,
