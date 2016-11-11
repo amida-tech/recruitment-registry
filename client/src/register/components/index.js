@@ -164,12 +164,11 @@ export class RegisterContainer extends Component {
     // Make this an actual action in actions.
     this.props.dispatch({
     type: 'REGISTER',
-    payload: {
-      user: this.props.data.getIn(['newUserProfile', 'user'])
+    payload: this.props.data.getIn(['newUserProfile', 'user'])
       // Get rid of the ones below this line.
       // registryName: 'Alzheimer',
       // answers: this.props.data.getIn(['newUserProfile', 'answers']),
-    }});
+    });
   }
 
   componentWillMount() {

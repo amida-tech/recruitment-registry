@@ -127,7 +127,7 @@ const apiProvider = store => next => action => {
       break;
     case 'REGISTER':
       request
-        .post(apiUrl + '/profiles')
+        .post(apiUrl + '/users')
         .send(action.payload)
         .end((error, response) => {
           if (!error) {
