@@ -8,8 +8,9 @@ class Layout extends Component {
   }
 
   render() {
+    const altClass = this.props.data.get("loggedIn") ? '' : 'alt-nav';
     return (
-      <div>
+      <div className={altClass}>
         <Nav />
         <main id="content" className="container">{this.props.children}</main>
       </div>
@@ -19,10 +20,11 @@ class Layout extends Component {
 
 Layout.displayName = 'Layout';
 
-function mapStateToProps(state) {
+function mapStateToProps(state, ownProps) {
   return {
     data: state,
-    vocab: state.getIn(['settings', 'language', 'vocabulary'])
+    vocab: state.getIn(['settings', 'language', 'vocabulary']),
+    ...ownProps
   };
 }
 

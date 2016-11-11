@@ -25,7 +25,7 @@ const apiProvider = store => next => action => {
         });
       break;
     case 'LOGOUT':
-      store.dispatch(push('/'));
+      store.dispatch(push('/login'));
       break;
     case 'LOGIN':
       request
@@ -97,7 +97,7 @@ const apiProvider = store => next => action => {
       break;
     case 'GET_PROFILE':
       request
-        .get(apiUrl + '/profiles')
+        .get(apiUrl + '/users/me')
         .set("Authorization", "Bearer " + store.getState().get('loggedIn'))
         .end((error, response) => {
           if (!error) {
@@ -130,13 +130,13 @@ const apiProvider = store => next => action => {
         .post(apiUrl + '/users')
         .send(action.payload)
         .end((error, response) => {
-          if (!error) {
+          if (response.body.token) {
             next({
               type: 'LOGIN_SUCCESS',
               data: response.body
             });
-            store.dispatch({type: 'GET_USER'});
             store.dispatch(push('/surveys'));
+            store.dispatch({type: 'GET_USER'});
           }
         });
       break;

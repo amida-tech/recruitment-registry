@@ -10,6 +10,8 @@ export default (state, action) => {
       return state.setIn(['formState', 'hasErrors'], false);
     case actionTypes.GET_USER_SUCCESS:
       return state.set('user', action.payload);
+    case actionTypes.LOGOUT:
+      return state.set('loggedIn', false);
     default:
       return state;
   }
