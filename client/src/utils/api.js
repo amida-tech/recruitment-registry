@@ -16,12 +16,12 @@ const apiProvider = store => next => action => {
             return next({
               type: 'GET_USER_ERROR',
               payload: error
-            })
+            });
           }
           next({
             type: 'GET_USER_SUCCESS',
             payload: response.body
-          })
+          });
         });
       break;
     case 'LOGOUT':
@@ -40,12 +40,12 @@ const apiProvider = store => next => action => {
             next({
               type: 'GET_USER'
             });
-            store.dispatch(push('/profile'))
+            store.dispatch(push('/surveys'))
           } else {
             return next({
               type: 'LOGIN_ERROR',
               error
-            })
+            });
           }
         });
       break;
@@ -58,12 +58,12 @@ const apiProvider = store => next => action => {
             next({
               type: 'ADD_USER_SUCCESS',
               data: response.body
-            })
+            });
           } else {
             return next({
               type: 'ADD_USER_ERROR',
               error
-            })
+            });
           }
         });
       break;
@@ -75,9 +75,9 @@ const apiProvider = store => next => action => {
             next({
               type: 'GET_ETHNICITIES_SUCCESS',
               payload: response.body
-            })
+            });
           } else {
-            next({type: 'GET_ETHNICITIES_ERROR'})
+            next({type: 'GET_ETHNICITIES_ERROR'});
           }
         });
       break;
@@ -89,9 +89,9 @@ const apiProvider = store => next => action => {
             next({
               type: 'GET_SURVEY_SUCCESS',
               payload: response.body
-            })
+            });
           } else {
-            next({type:'GET_SURVEY_ERROR'})
+            next({type:'GET_SURVEY_ERROR'});
           }
         })
       break;
@@ -106,7 +106,7 @@ const apiProvider = store => next => action => {
               payload: response.body
             })
           } else {
-            next({type:'GET_PROFILE_ERROR'})
+            next({type:'GET_PROFILE_ERROR'});
           }
         });
       break;
@@ -119,9 +119,9 @@ const apiProvider = store => next => action => {
           if (!error) {
             next({
               type: 'SAVE_PROFILE_SUCCESS'
-            })
+            });
           } else {
-            next({type:'SAVE_PROFILE_ERROR'})
+            next({type:'SAVE_PROFILE_ERROR'});
           }
         });
       break;
@@ -135,7 +135,8 @@ const apiProvider = store => next => action => {
               type: 'LOGIN_SUCCESS',
               data: response.body
             });
-            store.dispatch({type: 'GET_USER'}) //We used to send them to profile.
+            store.dispatch({type: 'GET_USER'});
+            store.dispatch(push('/surveys'));
           }
         });
       break;
@@ -148,11 +149,11 @@ const apiProvider = store => next => action => {
           if (!error) {
             next({
               type: 'SAVE_SURVEY_SUCCESS'
-            })
+            });
           } else {
             next({
               type: 'SAVE_SURVEY_ERROR'
-            })
+            });
           }
         });
       break;
@@ -165,9 +166,9 @@ const apiProvider = store => next => action => {
             next({
               type: 'GET_SURVEY_BY_ID_SUCCESS',
               payload: response.body
-            })
+            });
           } else {
-            next({type:'GET_SURVEY_BY_ID_ERROR'})
+            next({type:'GET_SURVEY_BY_ID_ERROR'});
           }
         });
       break;
@@ -180,9 +181,9 @@ const apiProvider = store => next => action => {
             next({
               type: 'GET_ALL_SURVEYS_SUCCESS',
               payload: response.body
-            })
+            });
           } else {
-            next({type:'GET_ALL_SURVEYS_ERROR'})
+            next({type:'GET_ALL_SURVEYS_ERROR'});
           }
         });
       break;
@@ -196,9 +197,9 @@ const apiProvider = store => next => action => {
             next({
               type: 'SUBMIT_SURVEY_SUCCESS',
               payload: response.body
-            })
+            });
           } else {
-            next({type:'SUBMIT_SURVEY_FAILURE'})
+            next({type:'SUBMIT_SURVEY_FAILURE'});
           }
         });
       break;
