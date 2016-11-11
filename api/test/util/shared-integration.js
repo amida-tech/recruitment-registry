@@ -4,6 +4,8 @@ const request = require('supertest');
 const chai = require('chai');
 const _ = require('lodash');
 
+const tokener = require('../../lib/tokener');
+
 const appgen = require('../../app-generator');
 const Generator = require('./entity-generator');
 const translator = require('./translator');
@@ -77,8 +79,14 @@ class SharedIntegration {
                     if (err) {
                         return done(err);
                     }
-                    history.push(user, res.body);
-                    done();
+                    tokener.verifyJWT(res.body.token)
+                        .then(result => {
+                            history.push(user, { id: result.id });
+                            done();
+                        })
+                        .catch(err => {
+                            done(err);
+                        });
                 });
         };
     }
