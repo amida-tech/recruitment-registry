@@ -22,6 +22,7 @@ const translator = {
         const result = _.cloneDeep(question);
         result.text = this._translate(result.text, language);
         delete result.type;
+        delete result.meta;
         if (result.choices) {
             result.choices.forEach(choice => {
                 choice.text = this._translate(choice.text, language);

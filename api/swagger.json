@@ -1918,7 +1918,10 @@
             "type": "string",
             "enum": ["text", "bool", "choice", "choices"]
         },
-
+        "questionMeta": {
+            "type": "object",
+            "properties": {}
+        },
         "newSurveyQuestion": {
             "type": "object",
             "description": "Describes either a brand new question (no 'id') or an existing question ('id' only with 'required').",
@@ -1936,6 +1939,9 @@
                 },
                 "type": {
                     "$ref": "#/definitions/questionType"
+                },
+                "meta": {
+                    "$ref": "#/definitions/questionMeta"
                 },
                 "oneOfChoices": {
                     "type": "array",
@@ -2074,6 +2080,9 @@
                 },
                 "type": {
                     "$ref": "#/definitions/questionType"
+                },
+                "meta": {
+                    "$ref": "#/definitions/questionMeta"
                 },
                 "required": {
                     "type": "boolean"
@@ -2305,6 +2314,9 @@
                 "type": {
                     "$ref": "#/definitions/questionType"
                 },
+                "meta": {
+                    "$ref": "#/definitions/questionMeta"
+                },
                 "choices": {
                     "type": "array",
                     "items": {
@@ -2383,6 +2395,9 @@
                 },
                 "type": {
                     "$ref": "#/definitions/questionType"
+                },
+                "meta": {
+                    "$ref": "#/definitions/questionMeta"
                 },
                 "oneOfChoices": {
                     "type": "array",
