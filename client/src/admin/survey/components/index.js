@@ -25,29 +25,61 @@ export class AdminSurveyContainer extends Component {
         switch(question.type) {
           case "text":
             return (
-              <SurveyFields.Input key={question.id} id={question.id}
-                changeForm={::this._changeAnswer} text={question.text}
-                 required={question.required}/>
+              <div className="box">
+                <article className="media">
+                  <div className="media-content">
+                    <div className="content">
+                      <SurveyFields.Input key={question.id} id={question.id}
+                        changeForm={::this._changeAnswer} text={question.text}
+                         required={question.required}/>
+                    </div>
+                  </div>
+                </article>
+              </div>
             );
           case "bool":
             return (
-              <SurveyFields.Bool key={question.id} id={question.id}
-                changeForm={::this._changeAnswer} text={question.text}
-                vocab={this.props.vocab} required={question.required}/>
+              <div className="box">
+                <article className="media">
+                  <div className="media-content">
+                    <div className="content">
+                      <SurveyFields.Bool key={question.id} id={question.id}
+                        changeForm={::this._changeAnswer} text={question.text}
+                        vocab={this.props.vocab} required={question.required}/>
+                    </div>
+                  </div>
+                </article>
+              </div>
             );
           case "choice":
             return (
-              <SurveyFields.Choice key={question.id} id={question.id}
-                changeForm={::this._changeAnswer} text={question.text}
-                vocab={this.props.vocab} choices={question.choices}
-                required={question.required} />
+              <div className="box">
+                <article className="media">
+                  <div className="media-content">
+                    <div className="content">
+                      <SurveyFields.Choice key={question.id} id={question.id}
+                        changeForm={::this._changeAnswer} text={question.text}
+                        vocab={this.props.vocab} choices={question.choices}
+                        required={question.required} />
+                    </div>
+                  </div>
+                </article>
+              </div>
             );
           case "choices":
             return (
-              <SurveyFields.Choices key={question.id} id={question.id}
-                changeForm={::this._changeAnswer} text={question.text}
-                vocab={this.props.vocab} choices={question.choices}
-                required={question.required}/>
+              <div className="box">
+                <article className="media">
+                  <div className="media-content">
+                    <div className="content">
+                      <SurveyFields.Choices key={question.id} id={question.id}
+                        changeForm={::this._changeAnswer} text={question.text}
+                        vocab={this.props.vocab} choices={question.choices}
+                        required={question.required}/>
+                    </div>
+                  </div>
+                </article>
+              </div>
             );
         }
       });
