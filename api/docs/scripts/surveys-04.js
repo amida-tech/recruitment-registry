@@ -9,7 +9,7 @@ module.exports = function (locals) {
     return request
         .get('http://localhost:9005/api/v1.0/answers')
         .set('Authorization', 'Bearer ' + jwtUser)
-        .query({ surveyId: 1 })
+        .query({ 'survey-id': 1 })
         .then(res => {
             console.log(res.status); // 200
             console.log(JSON.stringify(res.body, undefined, 4)); // answers

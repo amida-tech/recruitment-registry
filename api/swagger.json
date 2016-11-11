@@ -49,9 +49,6 @@
             "post": {
                 "operationId": "createNewUser",
                 "summary": "Creates new user",
-                "security": [{
-                    "admin": []
-                }],
                 "parameters": [{
                     "name": "user",
                     "in": "body",
@@ -513,7 +510,7 @@
                     "participant": []
                 }],
                 "parameters": [{
-                    "name": "surveyId",
+                    "name": "survey-id",
                     "in": "query",
                     "description": "Survey id",
                     "required": true,
