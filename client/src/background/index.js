@@ -8,9 +8,10 @@ class Background extends Component {
   }
 
   render() {
-    console.log("rendered");
-    document.getElementsByTagName('body')[0].className+=' alt-nav'
-    // document.getElementsByTagName('nav')[0].class+=' alt-nav';
+    //TODO: Move this to a React methodology. For now, this solves a spamming issue.
+    if(document.getElementsByTagName('body')[0].className.indexOf('alt-nav') <0){
+      document.getElementsByTagName('body')[0].className+=' alt-nav';
+    }
     return (
       <div id="utility--background" className="blue">
       </div>
