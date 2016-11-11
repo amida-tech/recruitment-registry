@@ -1,7 +1,6 @@
 import App from './app';
 import routes from './routes';
 import Layout from './layout/index';
-import Background from './background/index';
 import { LoginReducer } from './login';
 import { RegisterReducer } from './register';
 import { ProfileReducer } from './profile';
@@ -107,4 +106,4 @@ export const reducers = {
 
 import './styles/main.scss'
 
-App({ reducers, initialState, Layout, Background, routes }).render()
+App({ reducers, initialState, Layout, routes }).render()
