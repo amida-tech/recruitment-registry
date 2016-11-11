@@ -23,6 +23,8 @@ export class SurveyContainer extends Component {
 
   render() {
     const { id, name, questions } = this.props.selectedSurvey.toJS()
+    const surveyAnswers = this.props.surveyAnswers.get('answers');
+    const surveyQuestions = this.props.selectedSurvey.get('questions');
     var questionnaire = [];
     if(questions){
       questionnaire = questions.map(question => {
@@ -58,17 +60,28 @@ export class SurveyContainer extends Component {
       });
     }
     return (
-      <div>
-        <h1>{name}</h1>
-        <div className="">
-          { this.props.data.get('hasErrors') ? (<p>{this.props.vocab.get('SUBMISSION_FAILURE')}</p>) : (<p></p>) }
+      <div className="survey row end-xs">
+        <div className="col-xs-3 pull-right">
+          <div className="survey-meta">
+            <h3>Questionnaire</h3>
+            <h1>{name}</h1>
+            <span>{ surveyQuestions && (surveyQuestions.size - surveyAnswers.size) } Questions Remaining</span>
+            { this.props.data.get('hasErrors') &&
+            <div>
+                <p>{this.props.vocab.get('SUBMISSION_FAILURE')}</p>
+            </div>
+            }
+          </div>
         </div>
-        <form name="questionForm" onSubmit={(event) => this.submitAnswers(event)} key={id} className="">
-          {questionnaire}
-          <button>{this.props.vocab.get('SUBMIT')}</button>
-        </form>
+        <div className="col-xs-6 text-left">
+          <form name="questionForm" onSubmit={(event) => this.submitAnswers(event)} key={id} className="">
+            {questionnaire}
+            <button>{this.props.vocab.get('SUBMIT')}</button>
+          </form>
+        </div>
       </div>
-    )}
+    )
+  }
 
   componentWillMount() {
     this.props.dispatch({type: 'GET_SURVEY_BY_ID', payload: this.props.params.id});
