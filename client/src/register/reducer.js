@@ -33,7 +33,7 @@ export default (state, action) => {
           newAnswer.answer = {'choice': parseInt(action.value)};
           break;
         case "bool":
-          newAnswer.answer = {'boolValue': action.value == 'true'}
+          newAnswer.answer = {'boolValue': action.value == 'true'};
           break;
         case "choices.bool":
           newAnswer.answer = {'choices': [{
@@ -41,13 +41,10 @@ export default (state, action) => {
             'boolValue': true}
           ]};
           break;
-        case "choices.text": //I am interested in a less craptastic way.
-          newAnswer.questionId =
-            parseInt(action.name.substring(0, action.name.indexOf('.')));
+        case 'choices.text': //I am interested in a less craptastic way.
           newAnswer.answer = {'choices': [{
-            'id': parseInt(action.id),
-            'boolValue': true,
-            'textValue': action.value}
+            'id': parseInt(action.value),
+            'textValue': action.subvalue}
           ]};
           break;
         }

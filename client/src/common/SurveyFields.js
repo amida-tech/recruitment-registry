@@ -79,17 +79,26 @@ export class Choices extends Component {
   constructor(props){
     super(props);
     this.handleChange = this.handleChange.bind(this);
+    this.handleChangeText = this.handleChangeText.bind(this);
   }
 
-  //This will have to be handled differently.
+  componentWillMount(){
+    this._textTriggered = false;
+    this._textId;
+  }
+
   handleChange(event) {
     this.props.changeForm(event);
     if (event.target.options[event.target.selectedIndex].getAttribute('type') == 'text'){
-      document.getElementById(this.props.id+'.textInput').className="";
-      document.getElementsByName(this.props.id+'.text')[0].setAttribute('id',event.target.value);
+      this._textId = event.target.value;
+      this._textTriggered = true;
     } else {
-      document.getElementById(this.props.id+'.textInput').className="invisible";
+      this._textTriggered = false;
     }
+  }
+
+  handleChangeText(event) {
+    this.props.changeFormChoices(this.props.id, this._textId, event.target.value);
   }
 
   render(){
@@ -100,26 +109,27 @@ export class Choices extends Component {
             id={this.props.id}
             onChange={this.handleChange}
             required={this.props.required}
-            data-itype="choices.bool"
+            data-itype='choices.bool'
             defaultValue={this.props.vocab.get('PLEASE_SELECT')}>
             <option
               key={this.props.id+'x'}
               disabled={true}>
               {this.props.vocab.get('PLEASE_SELECT')}
             </option>
-            {this.props.choices.map((choice, index) =>
+            {this.props.choices.map(choice =>
               <option key={choice.id}
               value={choice.id}
               type={choice.type}>
               {choice.text}</option>)}
           </select>
-          <div id={this.props.id+'.textInput'} className='invisible'>
+          {this._textTriggered &&
+          (<div id={this.props.id+'.textInput'}>
             <p className='question'>{this.props.vocab.get('PLEASE_ENTER_DATA')}</p>
             <input name={this.props.id+'.text'}
-              onChange={this.props.changeForm}
-              autoComplete="off"
+              onChange={this.handleChangeText}
+              autoComplete='off'
               data-itype="choices.text"/>
-          </div>
+          </div>)}
       </div>
     )
   }

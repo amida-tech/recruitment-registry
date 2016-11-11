@@ -70,7 +70,7 @@ export class RegisterContainer extends Component {
                 <SurveyFields.Choices key={question.id} id={question.id}
                   changeForm={::this._changeAnswer} text={question.text}
                   vocab={this.props.vocab} choices={question.choices}
-                  required={question.required}/>
+                  changeFormChoices={::this._changeAnswerText} required={question.required}/>
               );
               break;
           }
@@ -108,13 +108,12 @@ export class RegisterContainer extends Component {
       accessibility: false,
       useCSS: false,
       beforeChange: (currentSlide, nextSlide) => {
-        console.log(currentSlide + " : " + nextSlide)
+        console.log(currentSlide + " : " + nextSlide);
         if (nextSlide === (survey.questions.length+3)) {
           this._submitRegister()
         }
       }
     };
-    console.log(slides);
     return(
       <div className="register">
           <Background/>
@@ -139,22 +138,26 @@ export class RegisterContainer extends Component {
     if(!given.checkValidity() || given.value == 'x' || given.value == undefined){
       alert("Please enter a valid value for this.")
     } else {
-      this.refs.slider.slickNext()
+      this.refs.slider.slickNext();
     }
   }
   _previous() {
-
-    this.refs.slider.slickPrev()
+    this.refs.slider.slickPrev();
   }
 
   _changeUser(event){
     this.props.dispatch(actions.updateUser(event.target.id,
-    event.target.value))
+    event.target.value));
   }
 
   _changeAnswer(event) {
     this.props.dispatch(actions.updateAnswer(event.target.dataset.itype,
-      event.target.id, event.target.value, event.target.name))
+      event.target.id, event.target.value, event.target.name));
+  }
+
+  _changeAnswerText(questionId, answerId, value) {
+    this.props.dispatch(actions.updateAnswer('choices.text', questionId,
+      answerId, value));
   }
 
   _submitRegister(){
@@ -174,7 +177,7 @@ const mapStateToProps = function(store) {
   return {
     data: store.get('register'),
     vocab: store.getIn(['settings', 'language', 'vocabulary'])
-  }
+  };
 };
 
 export default connect(mapStateToProps)(RegisterContainer)
