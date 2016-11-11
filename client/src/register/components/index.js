@@ -29,7 +29,7 @@ export class RegisterContainer extends Component {
             key={'regNav.'+ field}
             id={'regNav.'+ field}
             location={field}
-            final={survey.questions.length}
+            final={slides.length}
             vocab={this.props.vocab}
             next={::this._next}
             previous={::this._previous}
@@ -39,63 +39,64 @@ export class RegisterContainer extends Component {
       );
     });
 
-    if(survey.questions){
-      survey.questions.forEach(question => {
-          var inputField;
-          switch(question.type) {
-            case "text":
-              inputField = (
-                <SurveyFields.Input key={question.id} id={question.id}
-                  changeForm={::this._changeAnswer} text={question.text}
-                   required={question.required}/>
-              );
-              break;
-            case "bool":
-              inputField = (
-                <SurveyFields.Bool key={question.id} id={question.id}
-                  changeForm={::this._changeAnswer} text={question.text}
-                  vocab={this.props.vocab} required={question.required}/>
-              );
-              break;
-            case "choice":
-              inputField = (
-                <SurveyFields.Choice key={question.id} id={question.id}
-                  changeForm={::this._changeAnswer} text={question.text}
-                  vocab={this.props.vocab} choices={question.choices}
-                  required={question.required} />
-              );
-              break;
-            case "choices":
-              inputField = (
-                <SurveyFields.Choices key={question.id} id={question.id}
-                  changeForm={::this._changeAnswer} text={question.text}
-                  vocab={this.props.vocab} choices={question.choices}
-                  changeFormChoices={::this._changeAnswerText} required={question.required}/>
-              );
-              break;
-          }
-          slides.push(
-            <div key={'slick' + question.id}>
-              <SurveyNavigator
-              key={'regNav' + question.id}
-              id={'regNav' + question.id}
-              location={question.id}
-              final={survey.questions.length}
-              vocab={this.props.vocab}
-              next={::this._next}
-              previous={::this._previous}
-              surveyField={inputField}>
-              </SurveyNavigator>
-            </div>);
-        }); //End of question mapping.
-    }
+    // if(survey.questions){
+    //   survey.questions.forEach(question => {
+    //       var inputField;
+    //       switch(question.type) {
+    //         case "text":
+    //           inputField = (
+    //             <SurveyFields.Input key={question.id} id={question.id}
+    //               changeForm={::this._changeAnswer} text={question.text}
+    //                required={question.required}/>
+    //           );
+    //           break;
+    //         case "bool":
+    //           inputField = (
+    //             <SurveyFields.Bool key={question.id} id={question.id}
+    //               changeForm={::this._changeAnswer} text={question.text}
+    //               vocab={this.props.vocab} required={question.required}/>
+    //           );
+    //           break;
+    //         case "choice":
+    //           inputField = (
+    //             <SurveyFields.Choice key={question.id} id={question.id}
+    //               changeForm={::this._changeAnswer} text={question.text}
+    //               vocab={this.props.vocab} choices={question.choices}
+    //               required={question.required} />
+    //           );
+    //           break;
+    //         case "choices":
+    //           inputField = (
+    //             <SurveyFields.Choices key={question.id} id={question.id}
+    //               changeForm={::this._changeAnswer} text={question.text}
+    //               vocab={this.props.vocab} choices={question.choices}
+    //               changeFormChoices={::this._changeAnswerText} required={question.required}/>
+    //           );
+    //           break;
+    //       }
+    //       slides.push(
+    //         <div key={'slick' + question.id}>
+    //           <SurveyNavigator
+    //           key={'regNav' + question.id}
+    //           id={'regNav' + question.id}
+    //           location={question.id}
+    //           final={survey.questions.length}
+    //           vocab={this.props.vocab}
+    //           next={::this._next}
+    //           previous={::this._previous}
+    //           surveyField={inputField}>
+    //           </SurveyNavigator>
+    //         </div>);
+    //     }); //End of question mapping.
+    // }
 
     slides.push(
       <div key="final">
         <p>Thanks</p>
         <p>Your account is created</p>
         <Link to="/profile">Go to My Dashboard</Link>
-      </div>);
+      </div>
+    );
 
     var settings = {
       dots: false,
@@ -108,8 +109,8 @@ export class RegisterContainer extends Component {
       accessibility: false,
       useCSS: false,
       beforeChange: (currentSlide, nextSlide) => {
-        console.log(currentSlide + " : " + nextSlide);
-        if (nextSlide === (survey.questions.length+3)) {
+        console.log(nextSlide);
+        if (nextSlide === 3) {
           this._submitRegister()
         }
       }
@@ -121,7 +122,7 @@ export class RegisterContainer extends Component {
           <div className="register--inputContainer">
             <form className="form" autoComplete="off">
               {
-                survey.questions.length > 0 ? (
+                slides.length > 0 ? (
                   <Slider ref='slider' {...settings}>
                     {slides}
                   </Slider>
@@ -146,8 +147,7 @@ export class RegisterContainer extends Component {
   }
 
   _changeUser(event){
-    this.props.dispatch(actions.updateUser(event.target.id,
-    event.target.value));
+    this.props.dispatch(actions.updateUser(event.target.id, event.target.value));
   }
 
   _changeAnswer(event) {
@@ -161,11 +161,14 @@ export class RegisterContainer extends Component {
   }
 
   _submitRegister(){
-    this.props.dispatch({type: 'REGISTER', payload: {
-      user: this.props.data.getIn(['newUserProfile', 'user']),
-      registryName: 'Alzheimer',
-      answers: this.props.data.getIn(['newUserProfile', 'answers']),
-    }})
+    // Make this an actual action in actions.
+    this.props.dispatch({
+    type: 'REGISTER',
+    payload: this.props.data.getIn(['newUserProfile', 'user'])
+      // Get rid of the ones below this line.
+      // registryName: 'Alzheimer',
+      // answers: this.props.data.getIn(['newUserProfile', 'answers']),
+    });
   }
 
   componentWillMount() {
