@@ -117,19 +117,19 @@ export class RegisterContainer extends Component {
     };
     return(
       <div className="register">
-          <Background/>
-          <p className="subtitle">{this.props.vocab.get('LETS_CREATE')}</p>
-          <div className="register--inputContainer">
-            <form className="form" autoComplete="off">
-              {
-                slides.length > 0 ? (
-                  <Slider ref='slider' {...settings}>
-                    {slides}
-                  </Slider>
-                ) : (<div>{this.props.vocab.get('LOADING')}...</div>)
-              }
-            </form>
-          </div>
+        <div id="utility--background" className="blue"></div>
+        <p className="subtitle">{this.props.vocab.get('LETS_CREATE')}</p>
+        <div className="register--inputContainer">
+          <form className="form" autoComplete="off">
+            {
+              slides.length > 0 ? (
+                <Slider ref='slider' {...settings}>
+                  {slides}
+                </Slider>
+              ) : (<div>{this.props.vocab.get('LOADING')}...</div>)
+            }
+          </form>
+        </div>
       </div>
     );
   }

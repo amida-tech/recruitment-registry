@@ -9,7 +9,7 @@ export class LoginContainer extends Component {
     const formState = this.props.data.get('formState');
     return (
       <div className="login">
-        <Background/>
+        <div id="utility--background" className="blue"></div>
         <div className="login--inputContainer">
         <Form data={formState}
                 location={location}

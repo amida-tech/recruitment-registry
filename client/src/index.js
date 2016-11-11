@@ -30,7 +30,7 @@ export const initialState = {
       id: ""
     }
   },
-  loggedIn: localStorage.getItem("rec-reg") || false,
+  loggedIn: false,
   register: {
     newUserProfile: {
     user: {

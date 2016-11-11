@@ -1,28 +1,25 @@
-import * as actionTypes from './actionTypes'
+import * as actionTypes from './actionTypes';
 
 export function login(username, password) {
-  return (dispatch) => {
-    dispatch({
-      type: actionTypes.LOGIN,
-      payload: {
-        username: username,
-        password: password
-      }
-    })
+  return {
+    type: actionTypes.LOGIN,
+    payload: {
+      username,
+      password
+    }
   }
 }
 
 export function logout() {
-  return (dispatch) => {
-    dispatch({
-      type: actionTypes.LOGOUT
-    })
+  return {
+    type: actionTypes.LOGOUT
   }
 }
 
 export function update(name, value) {
-  return dispatch => dispatch({
+  return {
     type: actionTypes.UPDATE_CREDENTIALS,
-    name, value
-  })
+    name,
+    value
+  }
 }

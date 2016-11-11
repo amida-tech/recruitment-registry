@@ -8,7 +8,6 @@ import { changeLanguage } from '../profile/actions';
 class Nav extends Component {
   render() {
     const loggedIn = this.props.data.get('loggedIn');
-    const role = this.props.user.get('role');
     return (
       <nav className="dd">
         <Link className="logo" to="/">{ this.props.data.get('title') } Net</Link>
@@ -18,7 +17,7 @@ class Nav extends Component {
             <li><Link to="/">Dashboard</Link></li>
           }
           { loggedIn &&
-            <li><a id="nav--userSettings" onClick={::this._logout}>{ this.props.user.get('email') }</a></li>
+            <li><button id="nav--userSettings" onClick={::this._logout}>{ this.props.user.get('email') }</button></li>
           }
           { !loggedIn &&
             <li><Link id="nav--login" to="/login">Log In</Link></li>
