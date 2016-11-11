@@ -2,7 +2,6 @@ import React, { Component} from 'react';
 import { connect } from 'react-redux';
 import Form from './login-form';
 import * as actions from '../actions';
-import Background from '../../Background'
 
 export class LoginContainer extends Component {
   render() {

@@ -6,7 +6,6 @@ import Slider from 'react-slick';
 import '../../../node_modules/slick-carousel/slick/slick.scss';
 import * as SurveyFields from '../../common/SurveyFields';
 import { SurveyNavigator } from '../../common/SurveyNavigation';
-import Background from '../../Background'
 
 export class RegisterContainer extends Component {
   render() {
