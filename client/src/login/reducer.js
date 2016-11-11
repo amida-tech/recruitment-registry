@@ -9,7 +9,6 @@ export default (state, action) => {
     case actionTypes.LOGIN_SUCCESS:
       return state.setIn(['formState', 'hasErrors'], false);
     case actionTypes.GET_USER_SUCCESS:
-      localStorage.user = JSON.stringify(action.payload);
       return state.set('user', action.payload);
     default:
       return state;

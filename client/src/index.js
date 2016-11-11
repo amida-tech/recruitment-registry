@@ -15,8 +15,8 @@ export const initialState = {
   title: "GAP",
   settings: {
     language: {
-      choice: localStorage.choice || 'en',
-      vocabulary: localStorage.vocabulary || i18n // this is redundant with the above value.
+      choice: 'en',
+      vocabulary: i18n
     }
   },
   login: {
@@ -24,13 +24,13 @@ export const initialState = {
       username: '',
       password: '',
     },
-    user: localStorage.user ? JSON.parse(localStorage.user) : {
+    user: {
       username: "",
       role: "",
       id: ""
     }
   },
-  loggedIn: localStorage.token || false,
+  loggedIn: localStorage.getItem("rec-reg") || false,
   register: {
     newUserProfile: {
     user: {
@@ -85,11 +85,9 @@ export const reducers = {
   loggedIn: (state = initialState, action) => {
     switch (action.type) {
       case "LOGIN_SUCCESS":
-        localStorage.setItem("token", action.data.token);
         return action.data.token;
       case "LOGOUT":
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
+        localStorage.removeItem("rec-reg");
         return false;
       default:
         return state
