@@ -110,10 +110,13 @@ module.exports = class {
 
     getQuestion(id, options = {}) {
         const language = options.language;
-        return Question.findById(id, { raw: true, attributes: ['id', 'type'] })
+        return Question.findById(id, { raw: true, attributes: ['id', 'type', 'meta'] })
             .then(question => {
                 if (!question) {
                     return RRError.reject('qxNotFound');
+                }
+                if (question.meta === null) {
+                    delete question.meta;
                 }
                 return question;
             })
@@ -198,7 +201,7 @@ module.exports = class {
     _listQuestions(options = {}) {
         const _options = {
             raw: true,
-            attributes: ['id', 'type'],
+            attributes: ['id', 'type', 'meta'],
             order: 'id'
         };
         const ids = options.ids;
@@ -211,6 +214,11 @@ module.exports = class {
                 if (!questions.length) {
                     return { questions, map: {} };
                 }
+                questions.forEach(question => {
+                    if (question.meta === null) {
+                        delete question.meta;
+                    }
+                });
                 const map = _.keyBy(questions, 'id');
                 const qtOptions = {
                     raw: true,

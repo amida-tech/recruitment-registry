@@ -77,7 +77,15 @@ class QuestionGenerator {
 
     _body(type) {
         const index = ++this.index;
-        return { text: `text_${index}`, type };
+        const result = { text: `text_${index}`, type };
+        const metaIndex = index % 3;
+        if (metaIndex > 0) {
+            result.meta = {
+                someBool: metaIndex === 1,
+                someOtherBool: metaIndex === 2
+            };
+        }
+        return result;
     }
 
     _choices() {
