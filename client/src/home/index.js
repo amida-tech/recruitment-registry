@@ -138,6 +138,32 @@ class Home extends Component {
           <option value="B">Banana</option>
           <option value="C">Cranberry</option>
         </select>
+        <input type="checkbox" id="checkbox1" name="checkbox1" value="1" />
+        <label htmlFor="checkbox1">Checkbox</label>
+
+        <input type="checkbox" className="light" id="checkbox2" name="checkbox2" value="2" />
+        <label htmlFor="checkbox2">Checkbox</label>
+
+        <input type="checkbox" id="checkbox3" name="checkbox3" value="3" />
+        <label htmlFor="checkbox3">Checkbox</label>
+
+        <input type="checkbox" id="checkbox4" name="checkbox4" value="4" />
+        <label htmlFor="checkbox4">Checkbox</label>
+
+        <input type="checkbox" id="checkbox5" name="checkbox5" value="5" />
+        <label htmlFor="checkbox5">Checkbox</label>
+
+        <input type="checkbox" id="checkbox6" name="checkbox6" value="6" />
+        <label htmlFor="checkbox6">Checkbox</label>
+
+        <input type="checkbox" id="checkbox7" name="checkbox7" value="7" />
+        <label htmlFor="checkbox7">Checkbox</label>
+
+        <input type="checkbox" id="checkbox8" name="checkbox8" value="8" />
+        <label htmlFor="checkbox8">Checkbox</label>
+
+        <input type="checkbox" id="checkbox9" name="checkbox9" value="9" />
+        <label htmlFor="checkbox9">Checkbox</label>
       </div>
     );
   }
