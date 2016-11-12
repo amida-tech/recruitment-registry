@@ -621,13 +621,6 @@
                     "schema": {
                         "$ref": "#/definitions/newUserProfile"
                     }
-                }, {
-                    "name": "language",
-                    "in": "query",
-                    "description": "Language code",
-                    "required": false,
-                    "type": "string",
-                    "minLength": 2
                 }],
                 "responses": {
                     "201": {
@@ -655,13 +648,6 @@
                     "schema": {
                         "$ref": "#/definitions/updateUserProfile"
                     }
-                }, {
-                    "name": "language",
-                    "in": "query",
-                    "description": "Language code",
-                    "required": false,
-                    "type": "string",
-                    "minLength": 2
                 }],
                 "responses": {
                     "204": {
@@ -2434,8 +2420,20 @@
                     "items": {
                         "$ref": "#/definitions/linkedAnswer"
                     }
+                },
+                "signatures": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer",
+                        "minimum": 1
+                    }
+                },
+                "language": {
+                    "type": "string",
+                    "minLength": 2
                 }
-            }
+            },
+            "additionalProperties": false
         },
         "updateUserProfile": {
             "type": "object",
@@ -2449,8 +2447,13 @@
                     "items": {
                         "$ref": "#/definitions/linkedAnswer"
                     }
+                },
+                "language": {
+                    "type": "string",
+                    "minLength": 2
                 }
-            }
+            },
+            "additionalProperties": false
         },
         "surveyAnswers": {
             "type": "object",

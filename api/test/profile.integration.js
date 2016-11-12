@@ -82,9 +82,11 @@ describe('profile integration', function () {
             if (signatures) {
                 input.signatures = signatures.map(sign => hxConsentDoc.id(sign));
             }
+            if (language) {
+                input.language = language;
+            }
             store.server
                 .post('/api/v1.0/profiles')
-                .query({ language })
                 .send(input)
                 .expect(201)
                 .end(function (err, res) {
@@ -185,6 +187,40 @@ describe('profile integration', function () {
         };
     };
 
+    const patchProfileFn = function (surveyIndex, userIndex, language) {
+        return function (done) {
+            const survey = hxSurvey.server(surveyIndex);
+            const answers = generator.answerQuestions(survey.questions);
+            expect(answers.length).to.be.above(2);
+            const userUpdates = {
+                email: `updated${userIndex}@example.com`,
+                password: `newPassword${userIndex}`
+            };
+            hxUser.client(userIndex).email = userUpdates.email;
+            hxUser.client(userIndex).password = userUpdates.password;
+            const updateObj = {
+                user: userUpdates,
+                answers: [answers[0], answers[1]],
+                language
+            };
+            const answerQxMap = new Map(updateObj.answers.map(answer => [answer.questionId, answer]));
+            const newAnswers = hxAnswers[userIndex].map(hxAnswer => {
+                if (answerQxMap.has(hxAnswer.questionId)) {
+                    const { questionId, answer } = answerQxMap.get(hxAnswer.questionId);
+                    return { questionId, answer, language };
+                } else {
+                    return hxAnswer;
+                }
+            });
+            hxAnswers[userIndex] = newAnswers;
+            store.server
+                .patch('/api/v1.0/profiles')
+                .set('Authorization', store.auth)
+                .send(updateObj)
+                .expect(204, done);
+        };
+    };
+
     it('register user 0 with profile survey 0', createProfileFn(0));
 
     it('verify user 0 profile', verifyProfileFn(0, 0));
@@ -210,4 +246,14 @@ describe('profile integration', function () {
     it('verify user 2 profile', verifyProfileFn(0, 2, 'es'));
 
     it('verify document 0 is signed by user in spanish', verifySignedDocumentFn(true, 'es'));
+
+    it('register user 3 with profile survey 1 and doc 0 signature in english', createProfileLanguageFn(0, [0], 'en'));
+
+    it('verify user 3 profile', verifyProfileFn(0, 3, 'en'));
+
+    it('verify document 0 is signed by user in english', verifySignedDocumentFn(true, 'en'));
+
+    it('update user 3 profile', patchProfileFn(0, 3, 'es'));
+
+    it('verify user 0 profile', verifyProfileFn(0, 3));
 });

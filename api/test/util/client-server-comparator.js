@@ -100,10 +100,10 @@ const comparator = {
     answeredSurvey(survey, answers, server, language) {
         const expected = _.cloneDeep(survey);
         const answerMap = new Map();
-        answers.forEach(({ questionId, answer }) => answerMap.set(questionId, answer));
+        answers.forEach(({ questionId, answer, language }) => answerMap.set(questionId, { answer, language }));
         expected.questions.forEach((qx) => {
-            qx.answer = answerMap.get(qx.id);
-            qx.language = language || 'en';
+            qx.answer = answerMap.get(qx.id).answer;
+            qx.language = answerMap.get(qx.id).language || language || 'en';
             if (qx.type === 'choices' && qx.answer.choices) {
                 qx.answer.choices.forEach((choice) => {
                     if (!choice.textValue && !choice.hasOwnProperty('boolValue')) {
