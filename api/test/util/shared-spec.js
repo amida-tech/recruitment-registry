@@ -9,6 +9,7 @@ const db = require('../../models/db');
 const RRError = require('../../lib/rr-error');
 const Generator = require('./entity-generator');
 const translator = require('./translator');
+const comparator = require('./client-server-comparator');
 
 const expect = chai.expect;
 
@@ -35,6 +36,26 @@ class SharedSpec {
             return User.create(clientUser)
                 .then(function (user) {
                     hxUser.push(clientUser, user);
+                });
+        };
+    }
+
+    createProfileSurveyFn(hxSurvey) {
+        const clientSurvey = this.generator.newSurvey();
+        return function () {
+            return models.registry.createProfileSurvey(clientSurvey)
+                .then(idOnlyServer => hxSurvey.push(clientSurvey, idOnlyServer));
+        };
+    }
+
+    verifyProfileSurveyFn(hxSurvey, index) {
+        return function () {
+            return models.registry.getProfileSurvey()
+                .then(server => {
+                    const id = hxSurvey.id(index);
+                    expect(server.id).to.equal(id);
+                    hxSurvey.updateServer(index, server);
+                    return comparator.survey(hxSurvey.client(index), server);
                 });
         };
     }

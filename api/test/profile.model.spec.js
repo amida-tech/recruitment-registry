@@ -10,14 +10,13 @@ const tokener = require('../lib/tokener');
 const History = require('./util/entity-history');
 const Generator = require('./util/entity-generator');
 const comparator = require('./util/client-server-comparator');
-const translator = require('./util/translator');
 const ConsentDocumentHistory = require('./util/consent-document-history');
 
 const expect = chai.expect;
 const generator = new Generator();
 const shared = new SharedSpec(generator);
 
-describe('registry unit', function () {
+describe('profile unit', function () {
     before(shared.setUpFn());
 
     const hxSurvey = new History(['id', 'name']);
@@ -30,67 +29,15 @@ describe('registry unit', function () {
             .then(shared.throwingHandler, shared.expectedErrorHandler('registryNoProfileSurvey'));
     });
 
-    const createProfileSurveyFn = function () {
-        const clientSurvey = generator.newSurvey();
-        return function () {
-            return models.registry.createProfileSurvey(clientSurvey)
-                .then(idOnlyServer => hxSurvey.push(clientSurvey, idOnlyServer));
-        };
-    };
+    it('create profile survey', shared.createProfileSurveyFn(hxSurvey));
 
-    const verifyProfileSurveyFn = function (index) {
-        return function () {
-            return models.registry.getProfileSurvey()
-                .then(server => {
-                    const id = hxSurvey.id(index);
-                    expect(server.id).to.equal(id);
-                    hxSurvey.updateServer(index, server);
-                    return comparator.survey(hxSurvey.client(index), server);
-                });
-        };
-    };
-
-    const translateProfileSurveyFn = function (index, language) {
-        return function () {
-            const survey = hxSurvey.server(index);
-            const translation = translator.translateSurvey(survey, language);
-            delete translation.id;
-            return models.registry.updateProfileSurveyText(translation, language)
-                .then(() => {
-                    hxSurvey.translate(index, language, translation);
-                });
-        };
-    };
-
-    const verifyTranslatedProfileSurveyFn = function (index, language) {
-        return function () {
-            return models.registry.getProfileSurvey({ language })
-                .then(result => {
-                    translator.isSurveyTranslated(result, language);
-                    const expected = hxSurvey.translatedServer(index, language);
-                    expect(result).to.deep.equal(expected);
-                });
-        };
-    };
-
-    it('create profile survey 0', createProfileSurveyFn());
-    it('get/verify profile survey 0', verifyProfileSurveyFn(0));
+    it('get/verify profile survey', shared.verifyProfileSurveyFn(hxSurvey, 0));
 
     it('check soft sync does not reset registry', function () {
         return models.sequelize.sync({ force: false });
     });
-    it('get/verify profile survey 0', verifyProfileSurveyFn(0));
 
-    it('get profile survey 0 in spanish when no translation', function () {
-        return models.registry.getProfileSurvey({ language: 'es' })
-            .then(result => {
-                const survey = hxSurvey.server(0);
-                expect(result).to.deep.equal(survey);
-            });
-    });
-
-    it('translate profile survey 0 to spanish', translateProfileSurveyFn(0, 'es'));
-    it('get/verify translated profile survey 0 (spanish)', verifyTranslatedProfileSurveyFn(0, 'es'));
+    it('get/verify profile survey', shared.verifyProfileSurveyFn(hxSurvey, 0));
 
     for (let i = 0; i < 2; ++i) {
         it(`create consent type ${i}`, shared.createConsentTypeFn(hxConsentDoc));
@@ -100,7 +47,7 @@ describe('registry unit', function () {
         it(`create consent document of type ${i}`, shared.createConsentDocumentFn(hxConsentDoc, i));
     }
 
-    const createProfileFn = function (surveyIndex, signatures) {
+    const createProfileFn = function (surveyIndex, signatures, language) {
         return function () {
             const survey = hxSurvey.server(surveyIndex);
             const clientUser = generator.newUser();
@@ -110,20 +57,20 @@ describe('registry unit', function () {
             if (signatures) {
                 input.signatures = signatures.map(sign => hxConsentDoc.id(sign));
             }
-            return models.registry.createProfile(input)
+            return models.registry.createProfile(input, language)
                 .then(({ token }) => tokener.verifyJWT(token))
                 .then(({ id }) => hxUser.push(clientUser, { id }));
         };
     };
 
-    const verifyProfileFn = function (surveyIndex, userIndex) {
+    const verifyProfileFn = function (surveyIndex, userIndex, language) {
         return function () {
             const survey = hxSurvey.server(surveyIndex);
             const userId = hxUser.id(userIndex);
             return models.registry.getProfile({ userId })
                 .then(function (result) {
                     comparator.user(hxUser.client(userIndex), result.user);
-                    comparator.answeredSurvey(survey, hxAnswers[userIndex], result.survey);
+                    comparator.answeredSurvey(survey, hxAnswers[userIndex], result.survey, language);
                 });
         };
     };
@@ -146,7 +93,8 @@ describe('registry unit', function () {
         };
     };
 
-    const verifySignedDocumentFn = function (userIndex, expected) {
+    const verifySignedDocumentFn = function (userIndex, expected, language) {
+        language = language || 'en';
         return function () {
             const server = hxConsentDoc.server(0);
             const userId = hxUser.id(userIndex);
@@ -155,13 +103,14 @@ describe('registry unit', function () {
                     expect(result.content).to.equal(server.content);
                     expect(result.signature).to.equal(expected);
                     if (expected) {
-                        expect(result.language).to.equal('en');
+                        expect(result.language).to.equal(language);
                     }
                 });
         };
     };
 
-    const verifySignedDocumentByTypeNameFn = function (userIndex, expected) {
+    const verifySignedDocumentByTypeNameFn = function (userIndex, expected, language) {
+        language = language || 'en';
         return function () {
             const server = hxConsentDoc.server(0);
             const typeName = hxConsentDoc.type(0).name;
@@ -171,11 +120,12 @@ describe('registry unit', function () {
                     expect(result.content).to.equal(server.content);
                     expect(result.signature).to.equal(expected);
                     if (expected) {
-                        expect(result.language).to.equal('en');
+                        expect(result.language).to.equal(language);
                     }
                 });
         };
     };
+
     it('register user 0 with profile survey 0', createProfileFn(0));
 
     it('verify user 0 profile', verifyProfileFn(0, 0));
@@ -196,6 +146,11 @@ describe('registry unit', function () {
 
     it('verify document 0 is signed by user 1 (type name)', verifySignedDocumentByTypeNameFn(1, true));
 
-    it('create profile survey 1', createProfileSurveyFn());
-    it('get/verify profile survey 1', verifyProfileSurveyFn(1));
+    it('register user 2 with profile survey 1 and doc 0 signature in spanish', createProfileFn(0, [0], 'es'));
+
+    it('verify user 2 profile', verifyProfileFn(0, 2, 'es'));
+
+    it('verify document 0 is signed by user in spanish', verifySignedDocumentFn(2, true, 'es'));
+
+    it('verify document 0 is signed by user 2 (type name)', verifySignedDocumentByTypeNameFn(2, true, 'es'));
 });

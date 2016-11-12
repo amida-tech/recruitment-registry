@@ -9,6 +9,7 @@ const tokener = require('../../lib/tokener');
 const appgen = require('../../app-generator');
 const Generator = require('./entity-generator');
 const translator = require('./translator');
+const comparator = require('./client-server-comparator');
 
 const expect = chai.expect;
 
@@ -65,6 +66,43 @@ class SharedIntegration {
                 .get('/api/v1.0/auth/basic')
                 .auth(login.username, login.password)
                 .expect(401, done);
+        };
+    }
+
+    createProfileSurveyFn(store, hxSurvey) {
+        const generator = this.generator;
+        return function (done) {
+            const clientSurvey = generator.newSurvey();
+            store.server
+                .post('/api/v1.0/profile-survey')
+                .set('Authorization', store.auth)
+                .send(clientSurvey)
+                .expect(201)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    hxSurvey.push(clientSurvey, res.body);
+                    done();
+                });
+        };
+    }
+
+    verifyProfileSurveyFn(store, hxSurvey, index) {
+        return function (done) {
+            store.server
+                .get('/api/v1.0/profile-survey')
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    const id = hxSurvey.id(index);
+                    expect(res.body.id).to.equal(id);
+                    hxSurvey.updateServer(index, res.body);
+                    comparator.survey(hxSurvey.client(index), res.body)
+                        .then(done, done);
+                });
         };
     }
 
