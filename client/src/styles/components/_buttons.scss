@@ -17,7 +17,9 @@
 // .dark - use only for system / admin messages
 
 .btn, button {
-	padding: auto 18px;
+	padding: auto 18px; 
+	padding-left: 18px;
+	padding-right: 18px;
 	height: 36px;
 	border-radius: $button-radius;
 	min-width: 145px;
@@ -36,6 +38,7 @@
 
 .buttonPrimary {
 	@extend .btn;
+	@extend button;
 	border: $button-border-width solid $color-key-medium;
 	background-color: $color-key-medium;
 	color: $color-white;
