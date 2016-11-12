@@ -15,27 +15,27 @@ const expect = chai.expect;
 const generator = new Generator();
 const shared = new SharedSpec(generator);
 
-describe('registry unit', function () {
+describe('profile survey unit', function () {
     before(shared.setUpFn());
 
     const hxSurvey = new History(['id', 'name']);
 
     it('error: get profile survey when none created', function () {
-        return models.registry.getProfileSurvey()
+        return models.profileSurvey.getProfileSurvey()
             .then(shared.throwingHandler, shared.expectedErrorHandler('registryNoProfileSurvey'));
     });
 
     const createProfileSurveyFn = function () {
         const clientSurvey = generator.newSurvey();
         return function () {
-            return models.registry.createProfileSurvey(clientSurvey)
+            return models.profileSurvey.createProfileSurvey(clientSurvey)
                 .then(idOnlyServer => hxSurvey.push(clientSurvey, idOnlyServer));
         };
     };
 
     const verifyProfileSurveyFn = function (index) {
         return function () {
-            return models.registry.getProfileSurvey()
+            return models.profileSurvey.getProfileSurvey()
                 .then(server => {
                     const id = hxSurvey.id(index);
                     expect(server.id).to.equal(id);
@@ -50,7 +50,7 @@ describe('registry unit', function () {
             const survey = hxSurvey.server(index);
             const translation = translator.translateSurvey(survey, language);
             delete translation.id;
-            return models.registry.updateProfileSurveyText(translation, language)
+            return models.profileSurvey.updateProfileSurveyText(translation, language)
                 .then(() => {
                     hxSurvey.translate(index, language, translation);
                 });
@@ -59,7 +59,7 @@ describe('registry unit', function () {
 
     const verifyNotTranslatedProfileSurveyFn = function (index, language) {
         return function () {
-            return models.registry.getProfileSurvey({ language })
+            return models.profileSurvey.getProfileSurvey({ language })
                 .then(result => {
                     const expected = hxSurvey.server(index);
                     expect(result).to.deep.equal(expected);
@@ -69,7 +69,7 @@ describe('registry unit', function () {
 
     const verifyTranslatedProfileSurveyFn = function (index, language) {
         return function () {
-            return models.registry.getProfileSurvey({ language })
+            return models.profileSurvey.getProfileSurvey({ language })
                 .then(result => {
                     translator.isSurveyTranslated(result, language);
                     const expected = hxSurvey.translatedServer(index, language);

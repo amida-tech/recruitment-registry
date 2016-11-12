@@ -17,7 +17,7 @@ const expect = chai.expect;
 const generator = new Generator();
 const shared = new SharedIntegration(generator);
 
-describe('registry integration', function () {
+describe('profile survey integration', function () {
     const store = {
         server: null,
         auth: null

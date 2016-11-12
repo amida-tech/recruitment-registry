@@ -11,7 +11,8 @@ const ConsentDocument = require('./consent-document.dao');
 const ConsentSignature = require('./consent-signature.dao');
 const Consent = require('./consent.dao');
 const SurveyConsentType = require('./survey-consent-type.dao');
-const Registry = require('./registry.dao');
+const ProfileSurvey = require('./profile-survey.dao');
+const Profile = require('./profile.dao');
 const Language = require('./language.dao');
 const Section = require('./section.dao');
 const Smtp = require('./smtp.dao');
@@ -28,7 +29,8 @@ const question = new Question({ questionChoice, questionAction });
 const answer = new Answer({ surveyConsentType });
 const survey = new Survey({ answer, section, question });
 const consent = new Consent({ consentDocument });
-const registry = new Registry({ survey, consentDocument, answer, user, consentSignature });
+const profileSurvey = new ProfileSurvey({ survey, consentDocument, answer });
+const profile = new Profile({ profileSurvey, survey, answer, user, consentSignature });
 const language = new Language();
 const smtp = new Smtp();
 
@@ -45,7 +47,8 @@ module.exports = {
     consentSignature,
     consent,
     surveyConsentType,
-    registry,
+    profileSurvey,
+    profile,
     language,
     smtp
 };

@@ -25,7 +25,7 @@ describe('profile unit', function () {
     const hxConsentDoc = new ConsentDocumentHistory(2);
 
     it('error: get profile survey when none created', function () {
-        return models.registry.getProfileSurvey()
+        return models.profileSurvey.getProfileSurvey()
             .then(shared.throwingHandler, shared.expectedErrorHandler('registryNoProfileSurvey'));
     });
 
@@ -57,7 +57,7 @@ describe('profile unit', function () {
             if (signatures) {
                 input.signatures = signatures.map(sign => hxConsentDoc.id(sign));
             }
-            return models.registry.createProfile(input, language)
+            return models.profile.createProfile(input, language)
                 .then(({ token }) => tokener.verifyJWT(token))
                 .then(({ id }) => hxUser.push(clientUser, { id }));
         };
@@ -67,7 +67,7 @@ describe('profile unit', function () {
         return function () {
             const survey = hxSurvey.server(surveyIndex);
             const userId = hxUser.id(userIndex);
-            return models.registry.getProfile({ userId })
+            return models.profile.getProfile({ userId })
                 .then(function (result) {
                     comparator.user(hxUser.client(userIndex), result.user);
                     comparator.answeredSurvey(survey, hxAnswers[userIndex], result.survey, language);
@@ -89,7 +89,7 @@ describe('profile unit', function () {
             };
             const userId = hxUser.id(userIndex);
             hxAnswers[userIndex] = answers;
-            return models.registry.updateProfile(userId, updateObj);
+            return models.profile.updateProfile(userId, updateObj);
         };
     };
 

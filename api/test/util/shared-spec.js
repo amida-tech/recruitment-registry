@@ -43,14 +43,14 @@ class SharedSpec {
     createProfileSurveyFn(hxSurvey) {
         const clientSurvey = this.generator.newSurvey();
         return function () {
-            return models.registry.createProfileSurvey(clientSurvey)
+            return models.profileSurvey.createProfileSurvey(clientSurvey)
                 .then(idOnlyServer => hxSurvey.push(clientSurvey, idOnlyServer));
         };
     }
 
     verifyProfileSurveyFn(hxSurvey, index) {
         return function () {
-            return models.registry.getProfileSurvey()
+            return models.profileSurvey.getProfileSurvey()
                 .then(server => {
                     const id = hxSurvey.id(index);
                     expect(server.id).to.equal(id);
