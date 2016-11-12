@@ -25,128 +25,128 @@ input[type="checkbox"]:checked + label {
 }
 
 
-&.light, &.white {
-    color: $color-white;
-    border:1px solid $color-white;
-}
+// &.light, &.white {
+//     color: $color-white;
+//     border:1px solid $color-white;
+// }
 
 
 
-&.light, &.white {
-  input[type="checkbox"] + label {
-    color:             $color-white;
-    border:            1px solid $color-white;
-    &:first-of-type {
-      border-left:     1px solid $color-white;
-    }
-  }
-  input[type="checkbox"]:checked + label {
-    background-color:  $color-white;
-    color:             $color-key-medium;
-  }
-}
-&.success, &.green {
-  input[type="checkbox"] + label {
-    color:             $color-success;
-    border-bottom:     1px solid $color-success;
-    border-top:        1px solid $color-success;
-    border-right:      1px solid $color-success;
-    &:first-of-type {
-      border-left:     1px solid $color-success;
-    }
-  }
-  input[type="checkbox"]:checked + label {
-    background-color:  $color-success;
-    color:             $color-white;
-  }
-}
-&.confirm, &.lightGreen {
-  input[type="checkbox"] + label {
-    color:             $color-confirm;
-    border-bottom:     1px solid $color-confirm;
-    border-top:        1px solid $color-confirm;
-    border-right:      1px solid $color-confirm;
-    &:first-of-type {
-      border-left:     1px solid $color-confirm;
-    }
-  }
-  input[type="checkbox"]:checked + label {
-    background-color:  $color-confirm;
-    color:             $color-white;
-  }
-}
-&.alert, &.yellow {
-  input[type="checkbox"] + label {
-    color:             $color-alert;
-    border-bottom:     1px solid $color-alert;
-    border-top:        1px solid $color-alert;
-    border-right:      1px solid $color-alert;
-    &:first-of-type {
-      border-left:     1px solid $color-alert;
-    }
-  }
-  input[type="checkbox"]:checked + label {
-    background-color:  $color-alert;
-    color:             $color-white;
-  }
-}
-&.warning, &.red {
-  input[type="checkbox"] + label {
-    color:             $color-warning;
-    border-bottom:     1px solid $color-warning;
-    border-top:        1px solid $color-warning;
-    border-right:      1px solid $color-warning;
-    &:first-of-type {
-      border-left:     1px solid $color-warning;
-    }
-  }
-  input[type="checkbox"]:checked + label {
-    background-color:  $color-warning;
-    color:             $color-white;
-  }
-}
-&.info, &.purple {
-  input[type="checkbox"] + label {
-    color:             $color-info;
-    border-bottom:     1px solid $color-info;
-    border-top:        1px solid $color-info;
-    border-right:      1px solid $color-info;
-    &:first-of-type {
-      border-left:     1px solid $color-info;
-    }
-  }
-  input[type="checkbox"]:checked + label {
-    background-color:  $color-info;
-    color:             $color-white;
-  }
-}
-&.system, &.navy {
-  input[type="checkbox"] + label {
-    color:             $color-key-dark;
-    border-bottom:     1px solid $color-key-dark;
-    border-top:        1px solid $color-key-dark;
-    border-right:      1px solid $color-key-dark;
-    &:first-of-type {
-      border-left:     1px solid $color-key-dark;
-    }
-  }
-  input[type="checkbox"]:checked + label {
-    background-color:  $color-key-dark;
-    color:             $color-white;
-  }
-}
-&.dark {
-  input[type="checkbox"] + label {
-    color:             $color-black;
-    border-bottom:     1px solid $color-black;
-    border-top:        1px solid $color-black;
-    border-right:      1px solid $color-black;
-    &:first-of-type {
-      border-left:     1px solid $color-black;
-    }
-  }
-  input[type="checkbox"]:checked + label {
-    background-color:  $color-black;
-    color:             $color-white;
-  }
-}
+// &.light, &.white {
+//   input[type="checkbox"] + label {
+//     color:             $color-white;
+//     border:            1px solid $color-white;
+//     &:first-of-type {
+//       border-left:     1px solid $color-white;
+//     }
+//   }
+//   input[type="checkbox"]:checked + label {
+//     background-color:  $color-white;
+//     color:             $color-key-medium;
+//   }
+// }
+// &.success, &.green {
+//   input[type="checkbox"] + label {
+//     color:             $color-success;
+//     border-bottom:     1px solid $color-success;
+//     border-top:        1px solid $color-success;
+//     border-right:      1px solid $color-success;
+//     &:first-of-type {
+//       border-left:     1px solid $color-success;
+//     }
+//   }
+//   input[type="checkbox"]:checked + label {
+//     background-color:  $color-success;
+//     color:             $color-white;
+//   }
+// }
+// &.confirm, &.lightGreen {
+//   input[type="checkbox"] + label {
+//     color:             $color-confirm;
+//     border-bottom:     1px solid $color-confirm;
+//     border-top:        1px solid $color-confirm;
+//     border-right:      1px solid $color-confirm;
+//     &:first-of-type {
+//       border-left:     1px solid $color-confirm;
+//     }
+//   }
+//   input[type="checkbox"]:checked + label {
+//     background-color:  $color-confirm;
+//     color:             $color-white;
+//   }
+// }
+// &.alert, &.yellow {
+//   input[type="checkbox"] + label {
+//     color:             $color-alert;
+//     border-bottom:     1px solid $color-alert;
+//     border-top:        1px solid $color-alert;
+//     border-right:      1px solid $color-alert;
+//     &:first-of-type {
+//       border-left:     1px solid $color-alert;
+//     }
+//   }
+//   input[type="checkbox"]:checked + label {
+//     background-color:  $color-alert;
+//     color:             $color-white;
+//   }
+// }
+// &.warning, &.red {
+//   input[type="checkbox"] + label {
+//     color:             $color-warning;
+//     border-bottom:     1px solid $color-warning;
+//     border-top:        1px solid $color-warning;
+//     border-right:      1px solid $color-warning;
+//     &:first-of-type {
+//       border-left:     1px solid $color-warning;
+//     }
+//   }
+//   input[type="checkbox"]:checked + label {
+//     background-color:  $color-warning;
+//     color:             $color-white;
+//   }
+// }
+// &.info, &.purple {
+//   input[type="checkbox"] + label {
+//     color:             $color-info;
+//     border-bottom:     1px solid $color-info;
+//     border-top:        1px solid $color-info;
+//     border-right:      1px solid $color-info;
+//     &:first-of-type {
+//       border-left:     1px solid $color-info;
+//     }
+//   }
+//   input[type="checkbox"]:checked + label {
+//     background-color:  $color-info;
+//     color:             $color-white;
+//   }
+// }
+// &.system, &.navy {
+//   input[type="checkbox"] + label {
+//     color:             $color-key-dark;
+//     border-bottom:     1px solid $color-key-dark;
+//     border-top:        1px solid $color-key-dark;
+//     border-right:      1px solid $color-key-dark;
+//     &:first-of-type {
+//       border-left:     1px solid $color-key-dark;
+//     }
+//   }
+//   input[type="checkbox"]:checked + label {
+//     background-color:  $color-key-dark;
+//     color:             $color-white;
+//   }
+// }
+// &.dark {
+//   input[type="checkbox"] + label {
+//     color:             $color-black;
+//     border-bottom:     1px solid $color-black;
+//     border-top:        1px solid $color-black;
+//     border-right:      1px solid $color-black;
+//     &:first-of-type {
+//       border-left:     1px solid $color-black;
+//     }
+//   }
+//   input[type="checkbox"]:checked + label {
+//     background-color:  $color-black;
+//     color:             $color-white;
+//   }
+// }
