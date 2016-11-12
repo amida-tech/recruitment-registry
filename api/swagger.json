@@ -1252,13 +1252,6 @@
                     "schema": {
                         "$ref": "#/definitions/signedConsentDocument"
                     }
-                }, {
-                    "name": "language",
-                    "in": "query",
-                    "description": "Language when document signed",
-                    "required": false,
-                    "type": "string",
-                    "minLength": 1
                 }],
                 "responses": {
                     "201": {
@@ -1286,13 +1279,6 @@
                     "schema": {
                         "$ref": "#/definitions/signedConsentDocuments"
                     }
-                }, {
-                    "name": "language",
-                    "in": "query",
-                    "description": "Language when documents signed",
-                    "required": false,
-                    "type": "string",
-                    "minLength": 1
                 }],
                 "responses": {
                     "201": {
@@ -2648,16 +2634,31 @@
                 "consentDocumentId": {
                     "type": "integer",
                     "minimum": 1
+                },
+                "language": {
+                    "type": "string",
+                    "minLength": 2
                 }
             },
             "additionalProperties": false
         },
         "signedConsentDocuments": {
-            "type": "array",
-            "items": {
-                "type": "integer",
-                "minimum": 1
-            }
+            "type": "object",
+            "required": ["consentDocumentIds"],
+            "properties": {
+                "consentDocumentIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer",
+                        "minimum": 1
+                    }
+                },
+                "language": {
+                    "type": "string",
+                    "minLength": 2
+                }
+            },
+            "additionalProperties": false
         },
         "consentSectionDocument": {
             "type": "object",

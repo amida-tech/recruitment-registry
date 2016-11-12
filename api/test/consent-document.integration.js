@@ -186,18 +186,17 @@ describe('consent document integration', function () {
     const signConsentTypeFn = function (userIndex, typeIndex, language) {
         return function (done) {
             const consentDocumentId = history.id(typeIndex);
+            const input = { consentDocumentId };
             const typeId = history.typeId(typeIndex);
-            const query = {};
             if (language) {
-                query.language = language;
+                input.language = language;
             }
             store.server
                 .post(`/api/v1.0/consent-signatures`)
                 .set('Authorization', store.auth)
                 .set('User-Agent', `Browser-${typeId}`)
                 .set('X-Forwarded-For', [`9848.3${typeId}.838`, `111.${typeId}0.999`])
-                .query(query)
-                .send({ consentDocumentId })
+                .send(input)
                 .expect(201)
                 .end(function (err) {
                     if (err) {
