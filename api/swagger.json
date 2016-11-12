@@ -858,23 +858,7 @@
                     "description": "New consent type.",
                     "required": true,
                     "schema": {
-                        "type": "object",
-                        "required": ["name", "title", "type"],
-                        "properties": {
-                            "name": {
-                                "type": "string",
-                                "minLength": 1
-                            },
-                            "title": {
-                                "type": "string",
-                                "minLength": 1
-                            },
-                            "type": {
-                                "type": "string",
-                                "minLength": 1
-                            }
-                        },
-                        "additionalProperties": false
+                        "$ref": "#/definitions/newConsentType"
                     }
                 }],
                 "responses": {
@@ -2702,6 +2686,25 @@
                 "language": {
                     "type": "string",
                     "minLength": 2
+                }
+            },
+            "additionalProperties": false
+        },
+        "newConsentType": {
+            "type": "object",
+            "required": ["name", "title", "type"],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "title": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "type": {
+                    "type": "string",
+                    "minLength": 1
                 }
             },
             "additionalProperties": false
