@@ -66,14 +66,12 @@ describe('answer integration', function () {
                 surveyId: hxSurvey.id(surveyIndex),
                 answers
             };
-            const query = {};
             if (language) {
-                query.language = language;
+                input.language = language;
             }
             store.server
                 .post('/api/v1.0/answers')
                 .set('Authorization', store.auth)
-                .query(query)
                 .send(input)
                 .expect(204, done);
         };

@@ -489,13 +489,6 @@
                     "schema": {
                         "$ref": "#/definitions/surveyAnswers"
                     }
-                }, {
-                    "name": "language",
-                    "in": "query",
-                    "description": "Language code",
-                    "required": false,
-                    "type": "string",
-                    "minLength": 2
                 }],
                 "responses": {
                     "204": {
@@ -2490,8 +2483,13 @@
                         "$ref": "#/definitions/linkedAnswer"
                     },
                     "minItems": 1
+                },
+                "language": {
+                    "type": "string",
+                    "minLength": 2
                 }
-            }
+            },
+            "additionalProperties": false
         },
         "userProfile": {
             "type": "object",
