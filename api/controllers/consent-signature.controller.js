@@ -29,7 +29,7 @@ exports.bulkCreateSignatures = function (req, res) {
 };
 
 exports.getSignatureHistory = function (req, res) {
-    const userId = _.get(req, 'swagger.params.id.value');
+    const userId = _.get(req, 'swagger.params.user-id.value');
     consentSignature.getSignatureHistory(userId)
         .then((result) => res.status(200).json(result))
         .catch(shared.handleError(res));

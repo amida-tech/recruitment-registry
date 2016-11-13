@@ -486,7 +486,7 @@ describe('consent integration', function () {
     it('update history for type 2', function (done) {
         const typeId = history.typeId(2);
         store.server
-            .get(`/api/v1.0/consent-documents/update-comments/${typeId}`)
+            .get(`/api/v1.0/consent-documents/type-id/${typeId}/update-comments`)
             .expect(200)
             .end(function (err, res) {
                 if (err) {
@@ -502,7 +502,7 @@ describe('consent integration', function () {
     it('translated update history for type 2', function (done) {
         const typeId = history.typeId(2);
         store.server
-            .get(`/api/v1.0/consent-documents/update-comments/${typeId}`)
+            .get(`/api/v1.0/consent-documents/type-id/${typeId}/update-comments`)
             .query({ language: 'es' })
             .expect(200)
             .end(function (err, res) {

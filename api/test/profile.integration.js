@@ -146,7 +146,7 @@ describe('profile integration', function () {
         return function (done) {
             const server = hxConsentDoc.server(0);
             store.server
-                .get(`/api/v1.0/consent-documents/${server.id}/with-signature`)
+                .get(`/api/v1.0/user-consent-documents/${server.id}`)
                 .set('Authorization', store.auth)
                 .expect(200)
                 .end(function (err, res) {
@@ -169,7 +169,7 @@ describe('profile integration', function () {
             const server = hxConsentDoc.server(0);
             const typeName = hxConsentDoc.type(0).name;
             store.server
-                .get(`/api/v1.0/consent-documents/type-name/${typeName}/with-signature`)
+                .get(`/api/v1.0/user-consent-documents/type-name/${typeName}`)
                 .set('Authorization', store.auth)
                 .expect(200)
                 .end(function (err, res) {

@@ -140,35 +140,6 @@
                 }
             }
         },
-        "/users/consent-documents": {
-            "x-swagger-router-controller": "user.controller",
-            "get": {
-                "operationId": "listConsentDocuments",
-                "summary": "Lists consent documents (section)",
-                "security": [{
-                    "participant": []
-                }],
-                "parameters": [{
-                    "name": "language",
-                    "in": "query",
-                    "description": "Language code",
-                    "required": false,
-                    "type": "string",
-                    "minLength": 2
-                }],
-                "responses": {
-                    "200": {
-                        "description": "Successul response",
-                        "schema": {
-                            "$ref": "#/definitions/consentDocumentDashboard"
-                        }
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
         "/surveys": {
             "x-swagger-router-controller": "survey.controller",
             "post": {
@@ -1059,77 +1030,7 @@
                 }
             }
         },
-        "/consent-documents/{id}/with-signature": {
-            "x-swagger-router-controller": "consent-document.controller",
-            "parameters": [{
-                "name": "id",
-                "in": "path",
-                "required": true,
-                "type": "integer"
-            }],
-            "get": {
-                "summary": "Gets consent document/signature (section)",
-                "operationId": "getSignedConsentDocument",
-                "security": [{
-                    "participant": []
-                }],
-                "parameters": [{
-                    "name": "language",
-                    "in": "query",
-                    "description": "Language code",
-                    "required": false,
-                    "type": "string",
-                    "minLength": 2
-                }],
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "schema": {
-                            "$ref": "#/definitions/consentDocumentWithSignature"
-                        }
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
-        "/consent-documents/type-name/{typeName}/with-signature": {
-            "x-swagger-router-controller": "consent-document.controller",
-            "parameters": [{
-                "name": "typeName",
-                "in": "path",
-                "required": true,
-                "type": "string"
-            }],
-            "get": {
-                "summary": "Gets consent document (section)/signature by type name",
-                "operationId": "getSignedConsentDocumentByTypeName",
-                "security": [{
-                    "participant": []
-                }],
-                "parameters": [{
-                    "name": "language",
-                    "in": "query",
-                    "description": "Language code",
-                    "required": false,
-                    "type": "string",
-                    "minLength": 2
-                }],
-                "responses": {
-                    "200": {
-                        "description": "Successful response",
-                        "schema": {
-                            "$ref": "#/definitions/consentDocumentWithSignature"
-                        }
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
-        "/consent-documents/update-comments/{typeId}": {
+        "/consent-documents/type-id/{typeId}/update-comments": {
             "x-swagger-router-controller": "consent-document.controller",
             "parameters": [{
                 "name": "typeId",
@@ -1219,6 +1120,32 @@
                         "$ref": "#/responses/genericError"
                     }
                 }
+            },
+            "get": {
+                "summary": "Gets history of consent signatures",
+                "operationId": "getSignatureHistory",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "user-id",
+                    "in": "query",
+                    "description": "User id",
+                    "required": true,
+                    "type": "integer",
+                    "minimum": 1
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/consentSignatureHistory"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
             }
         },
         "/consent-signatures/bulk": {
@@ -1248,27 +1175,97 @@
                 }
             }
         },
-        "/consent-signatures/users/{id}/history": {
-            "x-swagger-router-controller": "consent-signature.controller",
+        "/user-consent-documents": {
+            "x-swagger-router-controller": "user-consent-document.controller",
             "get": {
-                "summary": "Gets history of consent signatures",
-                "operationId": "getSignatureHistory",
+                "operationId": "listConsentDocuments",
+                "summary": "Lists consent documents (section)",
                 "security": [{
-                    "admin": []
+                    "participant": []
                 }],
                 "parameters": [{
-                    "name": "id",
-                    "in": "path",
-                    "description": "User id",
-                    "required": true,
-                    "type": "integer",
-                    "minimum": 1
+                    "name": "language",
+                    "in": "query",
+                    "description": "Language code",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 2
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successul response",
+                        "schema": {
+                            "$ref": "#/definitions/consentDocumentDashboard"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/user-consent-documents/{id}": {
+            "x-swagger-router-controller": "user-consent-document.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
+            "get": {
+                "summary": "Gets consent document/signature (section)",
+                "operationId": "getSignedConsentDocument",
+                "security": [{
+                    "participant": []
+                }],
+                "parameters": [{
+                    "name": "language",
+                    "in": "query",
+                    "description": "Language code",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 2
                 }],
                 "responses": {
                     "200": {
                         "description": "Successful response",
                         "schema": {
-                            "$ref": "#/definitions/consentSignatureHistory"
+                            "$ref": "#/definitions/consentDocumentWithSignature"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/user-consent-documents/type-name/{typeName}": {
+            "x-swagger-router-controller": "user-consent-document.controller",
+            "parameters": [{
+                "name": "typeName",
+                "in": "path",
+                "required": true,
+                "type": "string"
+            }],
+            "get": {
+                "summary": "Gets consent document (section)/signature by type name",
+                "operationId": "getSignedConsentDocumentByTypeName",
+                "security": [{
+                    "participant": []
+                }],
+                "parameters": [{
+                    "name": "language",
+                    "in": "query",
+                    "description": "Language code",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 2
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/consentDocumentWithSignature"
                         }
                     },
                     "default": {
