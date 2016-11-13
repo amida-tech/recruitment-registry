@@ -1,6 +1,7 @@
 import React, { Component} from 'react';
 import { connect } from 'react-redux';
 import * as actions from '../actions';
+import './index.scss';
 import * as SurveyFields from '../../../common/SurveyFields';
 
 export class AdminSurveyContainer extends Component {
@@ -29,7 +30,7 @@ export class AdminSurveyContainer extends Component {
                 <article className="media">
                   <div className="media-content">
                     <div className="content">
-                      <h4 className="title is-5 is-marginless gapMediumGray">Question {question.id}</h4>
+                      <h4 className="title is-6 is-marginless gapMediumGray">Question {question.id}</h4>
                       <SurveyFields.Input key={question.id} id={question.id}
                         changeForm={::this._changeAnswer} text={question.text}
                          required={question.required}/>
@@ -44,7 +45,7 @@ export class AdminSurveyContainer extends Component {
                 <article className="media">
                   <div className="media-content">
                     <div className="content">
-                      <h4 className="title is-5 is-marginless gapMediumGray">Question {question.id}</h4>
+                      <h4 className="title is-6 is-marginless gapMediumGray">Question {question.id}</h4>
                       <SurveyFields.Bool key={question.id} id={question.id}
                         changeForm={::this._changeAnswer} text={question.text}
                         vocab={this.props.vocab} required={question.required}/>
@@ -59,7 +60,7 @@ export class AdminSurveyContainer extends Component {
                 <article className="media">
                   <div className="media-content">
                     <div className="content">
-                      <h4 className="title is-5 is-marginless gapMediumGray">Question {question.id}</h4>
+                      <h4 className="title is-6 is-marginless gapMediumGray">Question {question.id}</h4>
                       <SurveyFields.Choice key={question.id} id={question.id}
                         changeForm={::this._changeAnswer} text={question.text}
                         vocab={this.props.vocab} choices={question.choices}
@@ -75,7 +76,7 @@ export class AdminSurveyContainer extends Component {
                 <article className="media">
                   <div className="media-content">
                     <div className="content">
-                      <h4 className="title is-5 is-marginless gapMediumGray">Question {question.id}</h4>
+                      <h4 className="title is-6 is-marginless gapMediumGray">Question {question.id}</h4>
                       <SurveyFields.Choices key={question.id} id={question.id}
                         changeForm={::this._changeAnswer} text={question.text}
                         vocab={this.props.vocab} choices={question.choices}
@@ -103,16 +104,19 @@ export class AdminSurveyContainer extends Component {
             <h1 className="title is-1">{name}</h1>
             <p><b>Last Updated: 3/15/16</b></p>
             <p><b className="gapRed">4 questions remaining</b></p>
-            <button className="button buttonSecondary">Save Progress</button>
+            <p><button className="button buttonSecondary">Save Progress</button></p>
+            <p><button>Add New Questionnaire</button></p>
           </div>
           <div className="column is-two-thirds">
-            <div className="">
-              { this.props.data.get('hasErrors') ? (<p>{this.props.vocab.get('SUBMISSION_FAILURE')}</p>) : (<p></p>) }
+            {questionnaire}
+            <div className="control is-grouped">
+              <p className="control">
+                <button className="button buttonSecondary">Save Progress</button>
+              </p>
+              <p className="control">
+                <button>Add New Questionnaire</button>
+              </p>
             </div>
-            <form name="questionForm" onSubmit={(event) => this.submitAnswers(event)} key={id} className="">
-              {questionnaire}
-              <button>{this.props.vocab.get('SUBMIT')}</button>
-            </form>
           </div>
         </div>
       </div>
