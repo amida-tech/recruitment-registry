@@ -2684,7 +2684,7 @@
                     "minLength": 1
                 },
                 "updateComment": {
-                    "type": ["string", "null"]
+                    "type": "string"
                 },
                 "signature": {
                     "type": "boolean"
@@ -2756,7 +2756,7 @@
                     "minLength": 1
                 },
                 "updateComment": {
-                    "type": ["string", "null"]
+                    "type": "string"
                 }
             },
             "additionalProperties": false
@@ -2776,7 +2776,7 @@
                     "minLength": 1
                 },
                 "updateComment": {
-                    "type": ["string", "null"]
+                    "type": "string"
                 }
             },
             "additionalProperties": false
@@ -2796,7 +2796,7 @@
                     "minLength": 1
                 },
                 "updateComment": {
-                    "type": ["string", "null"]
+                    "type": "string"
                 },
                 "signature": {
                     "type": "boolean"
@@ -2811,7 +2811,7 @@
         "consentUpdateComments": {
             "type": "array",
             "items": {
-                "type": ["string", "null"]
+                "type": "string"
             }
         },
         "consentDocumentInfo": {
@@ -2871,8 +2871,7 @@
                     "minLength": 1
                 },
                 "updateComment": {
-                    "type": ["string", "null"],
-                    "minLength": 1
+                    "type": "string"
                 }
             },
             "additionalProperties": false
