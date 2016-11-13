@@ -35,7 +35,9 @@ describe('survey consent section unit', function () {
 
     it('get registry profile survey, verify no required consentDocuments', function () {
         return models.profileSurvey.getProfileSurvey()
-            .then(survey => {
+            .then(result => {
+                const { exists, survey } = result;
+                expect(exists).to.equal(true);
                 expect(survey.id).to.be.above(0);
                 expect(survey.consentDocument).to.equal(undefined);
                 profileSurvey = survey;
@@ -71,7 +73,9 @@ describe('survey consent section unit', function () {
 
     it('get registry profile survey with required consentDocuments', function () {
         return models.profileSurvey.getProfileSurvey()
-            .then(actual => {
+            .then(result => {
+                expect(result.exists).to.equal(true);
+                const actual = result.survey;
                 expect(actual.id).to.equal(profileSurvey.id);
                 const expected = history.serversInList([0, 1]);
                 expect(actual.consentDocument).to.deep.equal(expected);

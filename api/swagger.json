@@ -531,7 +531,7 @@
                     "200" : {
                         "description": "Successul response",
                         "schema": {
-                            "$ref": "#/definitions/survey"
+                            "$ref": "#/definitions/profileSurvey"
                         }
                     },
                     "default": {
@@ -2112,6 +2112,19 @@
                         "$ref": "#/definitions/sectionTextUpdate"
                     },
                     "minItems": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "profileSurvey": {
+            "type": "object",
+            "required": ["exists"],
+            "properties": {
+                "exists": {
+                    "type": "boolean"
+                },
+                "survey": {
+                    "$ref": "#/definitions/survey"
                 }
             },
             "additionalProperties": false

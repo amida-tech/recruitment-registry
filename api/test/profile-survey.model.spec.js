@@ -20,9 +20,11 @@ describe('profile survey unit', function () {
 
     const hxSurvey = new History(['id', 'name']);
 
-    it('error: get profile survey when none created', function () {
+    it('get profile survey when none created', function () {
         return models.profileSurvey.getProfileSurvey()
-            .then(shared.throwingHandler, shared.expectedErrorHandler('registryNoProfileSurvey'));
+            .then(result => {
+                expect(result.exists).to.equal(false);
+            });
     });
 
     const createProfileSurveyFn = function () {
@@ -36,7 +38,9 @@ describe('profile survey unit', function () {
     const verifyProfileSurveyFn = function (index) {
         return function () {
             return models.profileSurvey.getProfileSurvey()
-                .then(server => {
+                .then(result => {
+                    expect(result.exists).to.equal(true);
+                    const server = result.survey;
                     const id = hxSurvey.id(index);
                     expect(server.id).to.equal(id);
                     hxSurvey.updateServer(index, server);
@@ -61,8 +65,9 @@ describe('profile survey unit', function () {
         return function () {
             return models.profileSurvey.getProfileSurvey({ language })
                 .then(result => {
+                    expect(result.exists).to.equal(true);
                     const expected = hxSurvey.server(index);
-                    expect(result).to.deep.equal(expected);
+                    expect(result.survey).to.deep.equal(expected);
                 });
         };
     };
@@ -71,9 +76,10 @@ describe('profile survey unit', function () {
         return function () {
             return models.profileSurvey.getProfileSurvey({ language })
                 .then(result => {
-                    translator.isSurveyTranslated(result, language);
+                    expect(result.exists).to.equal(true);
+                    translator.isSurveyTranslated(result.survey, language);
                     const expected = hxSurvey.translatedServer(index, language);
-                    expect(result).to.deep.equal(expected);
+                    expect(result.survey).to.deep.equal(expected);
                 });
         };
     };

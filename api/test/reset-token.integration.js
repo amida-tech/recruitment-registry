@@ -100,7 +100,7 @@ describe('reset-token integration', function () {
                 if (err) {
                     return done(err);
                 }
-                survey = res.body;
+                survey = res.body.survey;
                 done();
             });
     });

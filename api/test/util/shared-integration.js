@@ -97,10 +97,12 @@ class SharedIntegration {
                     if (err) {
                         return done(err);
                     }
+                    expect(res.body.exists).to.equal(true);
+                    const survey = res.body.survey;
                     const id = hxSurvey.id(index);
-                    expect(res.body.id).to.equal(id);
-                    hxSurvey.updateServer(index, res.body);
-                    comparator.survey(hxSurvey.client(index), res.body)
+                    expect(survey.id).to.equal(id);
+                    hxSurvey.updateServer(index, survey);
+                    comparator.survey(hxSurvey.client(index), survey)
                         .then(done, done);
                 });
         };

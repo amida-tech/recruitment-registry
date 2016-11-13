@@ -80,10 +80,11 @@ module.exports = class {
                                     } else {
                                         return survey;
                                     }
-                                });
+                                })
+                                .then(survey => ({ exists: true, survey }));
                         });
                 } else {
-                    return RRError.reject('registryNoProfileSurvey');
+                    return { exists: false };
                 }
             });
     }

@@ -5,7 +5,6 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 
 const config = require('../config');
-const RRError = require('../lib/rr-error');
 
 const SharedIntegration = require('./util/shared-integration');
 const History = require('./util/entity-history');
@@ -36,16 +35,15 @@ describe('profile survey integration', function () {
             .end(done);
     });
 
-    it('error: get profile survey when none created', function (done) {
+    it('get profile survey when none created', function (done) {
         store.server
             .get('/api/v1.0/profile-survey')
-            .expect(400)
+            .expect(200)
             .end(function (err, res) {
                 if (err) {
                     done(err);
                 }
-                const message = RRError.message('registryNoProfileSurvey');
-                expect(res.body.message).to.equal(message);
+                expect(res.body.exists).to.equal(false);
                 done();
             });
 
@@ -84,10 +82,12 @@ describe('profile survey integration', function () {
                     if (err) {
                         return done(err);
                     }
+                    const { exists, survey } = res.body;
+                    expect(exists).to.equal(true);
                     const id = hxSurvey.id(index);
-                    expect(res.body.id).to.equal(id);
-                    hxSurvey.updateServer(index, res.body);
-                    comparator.survey(hxSurvey.client(index), res.body)
+                    expect(survey.id).to.equal(id);
+                    hxSurvey.updateServer(index, survey);
+                    comparator.survey(hxSurvey.client(index), survey)
                         .then(done, done);
                 });
         };
@@ -124,8 +124,10 @@ describe('profile survey integration', function () {
                     if (err) {
                         return done(err);
                     }
-                    const survey = hxSurvey.server(index);
-                    expect(res.body).to.deep.equal(survey);
+                    const { exists, survey } = res.body;
+                    expect(exists).to.equal(true);
+                    const previousSurvey = hxSurvey.server(index);
+                    expect(survey).to.deep.equal(previousSurvey);
                     done();
                 });
         };
@@ -142,9 +144,11 @@ describe('profile survey integration', function () {
                     if (err) {
                         return done(err);
                     }
-                    translator.isSurveyTranslated(res.body, language);
+                    const { exists, survey } = res.body;
+                    expect(exists).to.equal(true);
+                    translator.isSurveyTranslated(survey, language);
                     const expected = hxSurvey.translatedServer(index, language);
-                    expect(res.body).to.deep.equal(expected);
+                    expect(survey).to.deep.equal(expected);
                     done();
                 });
         };

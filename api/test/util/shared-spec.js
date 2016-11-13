@@ -51,7 +51,9 @@ class SharedSpec {
     verifyProfileSurveyFn(hxSurvey, index) {
         return function () {
             return models.profileSurvey.getProfileSurvey()
-                .then(server => {
+                .then(result => {
+                    expect(result.exists).to.equal(true);
+                    const server = result.survey;
                     const id = hxSurvey.id(index);
                     expect(server.id).to.equal(id);
                     hxSurvey.updateServer(index, server);
