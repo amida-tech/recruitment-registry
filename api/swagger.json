@@ -2934,39 +2934,49 @@
             "additionalProperties": false
        },
        "smtpSpec": {
-            "type": ["object", "null"],
-            "required": ["protocol", "username", "password", "host", "from", "otherOptions"],
+            "type": "object",
+            "required": ["exists"],
             "properties": {
-                "protocol": {
-                    "type": "string",
-                    "minLength": 1
+                "exists": {
+                    "type": "boolean"
                 },
-                "username": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "password": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "host": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "from": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "otherOptions": {
-                    "type": "object"
-                },
-                "content": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "subject": {
-                    "type": "string",
-                    "minLength": 1
+                "smtp": {
+                    "type": "object",
+                    "required": ["protocol", "username", "password", "host", "from", "otherOptions"],
+                    "properties": {
+                        "protocol": {
+                            "type": "string",
+                            "minLength": 1
+                        },
+                        "username": {
+                            "type": "string",
+                            "minLength": 1
+                        },
+                        "password": {
+                            "type": "string",
+                            "minLength": 1
+                        },
+                        "host": {
+                            "type": "string",
+                            "minLength": 1
+                        },
+                        "from": {
+                            "type": "string",
+                            "minLength": 1
+                        },
+                        "otherOptions": {
+                            "type": "object"
+                        },
+                        "content": {
+                            "type": "string",
+                            "minLength": 1
+                        },
+                        "subject": {
+                            "type": "string",
+                            "minLength": 1
+                        }
+                    },
+                    "additionalProperties": false
                 }
             },
             "additionalProperties": false
