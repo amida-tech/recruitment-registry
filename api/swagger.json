@@ -1178,7 +1178,7 @@
         "/user-consent-documents": {
             "x-swagger-router-controller": "user-consent-document.controller",
             "get": {
-                "operationId": "listConsentDocuments",
+                "operationId": "listUserConsentDocuments",
                 "summary": "Lists consent documents (section)",
                 "security": [{
                     "participant": []
@@ -1214,7 +1214,7 @@
             }],
             "get": {
                 "summary": "Gets consent document/signature (section)",
-                "operationId": "getSignedConsentDocument",
+                "operationId": "getUserConsentDocument",
                 "security": [{
                     "participant": []
                 }],
@@ -1249,7 +1249,7 @@
             }],
             "get": {
                 "summary": "Gets consent document (section)/signature by type name",
-                "operationId": "getSignedConsentDocumentByTypeName",
+                "operationId": "getUserConsentDocumentByTypeName",
                 "security": [{
                     "participant": []
                 }],

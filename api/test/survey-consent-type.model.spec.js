@@ -123,7 +123,7 @@ describe('survey consent section unit', function () {
             return models.profile.createProfile(response)
                 .then(({ token }) => tokener.verifyJWT(token))
                 .then(({ id }) => history.hxUser.push(response.user, { id }))
-                .then(() => models.user.listConsentDocuments(history.userId(index)))
+                .then(() => models.userConsentDocument.listUserConsentDocuments(history.userId(index)))
                 .then(consentDocuments => expect(consentDocuments).to.have.length(0));
         };
     };

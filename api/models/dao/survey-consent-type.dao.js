@@ -34,7 +34,7 @@ module.exports = class {
             .then(typeIds => {
                 if (typeIds.length) {
                     const options = { typeIds, transaction: tx };
-                    return this.user.listConsentDocuments(userId, options);
+                    return this.userConsentDocument.listUserConsentDocuments(userId, options);
                 }
             });
     }

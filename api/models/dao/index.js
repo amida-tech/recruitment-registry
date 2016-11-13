@@ -9,6 +9,7 @@ const Survey = require('./survey.dao');
 const ConsentType = require('./consent-type.dao');
 const ConsentDocument = require('./consent-document.dao');
 const ConsentSignature = require('./consent-signature.dao');
+const UserConsentDocument = require('./user-consent-document.dao');
 const Consent = require('./consent.dao');
 const SurveyConsentType = require('./survey-consent-type.dao');
 const ProfileSurvey = require('./profile-survey.dao');
@@ -20,8 +21,9 @@ const Smtp = require('./smtp.dao');
 const consentType = new ConsentType();
 const consentDocument = new ConsentDocument({ consentType });
 const consentSignature = new ConsentSignature();
+const userConsentDocument = new UserConsentDocument({ consentDocument });
 const user = new User({ consentDocument });
-const surveyConsentType = new SurveyConsentType({ user });
+const surveyConsentType = new SurveyConsentType({ userConsentDocument });
 const section = new Section();
 const questionChoice = new QuestionChoice();
 const questionAction = new QuestionAction();
@@ -45,6 +47,7 @@ module.exports = {
     consentType,
     consentDocument,
     consentSignature,
+    userConsentDocument,
     consent,
     surveyConsentType,
     profileSurvey,

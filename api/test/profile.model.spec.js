@@ -98,7 +98,7 @@ describe('profile unit', function () {
         return function () {
             const server = hxConsentDoc.server(0);
             const userId = hxUser.id(userIndex);
-            return models.consentDocument.getSignedConsentDocument(userId, server.id)
+            return models.userConsentDocument.getUserConsentDocument(userId, server.id)
                 .then(result => {
                     expect(result.content).to.equal(server.content);
                     expect(result.signature).to.equal(expected);
@@ -115,7 +115,7 @@ describe('profile unit', function () {
             const server = hxConsentDoc.server(0);
             const typeName = hxConsentDoc.type(0).name;
             const userId = hxUser.id(userIndex);
-            return models.consentDocument.getSignedConsentDocumentByTypeName(userId, typeName)
+            return models.userConsentDocument.getUserConsentDocumentByTypeName(userId, typeName)
                 .then(result => {
                     expect(result.content).to.equal(server.content);
                     expect(result.signature).to.equal(expected);
