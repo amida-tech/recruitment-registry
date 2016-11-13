@@ -25,13 +25,13 @@ exports.getSurveyByName = function (req, res) {
 };
 
 exports.createSurvey = function (req, res) {
-    const survey = req.body;
-    if (!jsonSchema('newSurvey', survey, res)) {
+    if (!jsonSchema('newSurvey', req.body, res)) {
         return;
     }
-    const parent = _.get(req, 'swagger.params.parent.value');
-    if (parent) {
-        models.survey.replaceSurvey(parent, survey)
+    const survey = _.omit(req.body, 'parentId');
+    const parentId = req.body.parentId;
+    if (parentId) {
+        models.survey.replaceSurvey(parentId, survey)
             .then(id => res.status(201).json({ id }))
             .catch(shared.handleError(res));
     } else {

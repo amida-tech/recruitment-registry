@@ -185,12 +185,6 @@
                     "schema": {
                         "$ref": "#/definitions/newSurvey"
                     }
-                }, {
-                    "name": "parent",
-                    "in": "query",
-                    "description": "Parent id",
-                    "required": false,
-                    "type": "integer"
                 }],
                 "responses": {
                     "201": {
@@ -717,12 +711,6 @@
                     "schema": {
                         "$ref": "#/definitions/newQuestion"
                     }
-                }, {
-                    "name": "parent",
-                    "in": "query",
-                    "description": "Parent id",
-                    "required": false,
-                    "type": "integer"
                 }],
                 "responses": {
                     "201": {
@@ -1996,6 +1984,10 @@
                 "meta": {
                     "$ref": "#/definitions/surveyMeta"
                 },
+                "parentId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
                 "sections": {
                     "type": "array",
                     "items": {
@@ -2350,6 +2342,10 @@
                 },
                 "meta": {
                     "$ref": "#/definitions/questionMeta"
+                },
+                "parentId": {
+                    "type": "integer",
+                    "minimum": 1
                 },
                 "oneOfChoices": {
                     "type": "array",

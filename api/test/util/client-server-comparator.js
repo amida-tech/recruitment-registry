@@ -23,6 +23,7 @@ const comparator = {
         if (!expected.id) {
             expected.id = id;
         }
+        delete expected.parentId;
         return models.questionChoice.findChoicesPerQuestion(id)
             .then(choices => {
                 return choices.reduce(function (r, choice) {
@@ -87,6 +88,7 @@ const comparator = {
         const expected = _.cloneDeep(client);
         const actual = _.cloneDeep(server);
         expected.id = actual.id;
+        delete expected.parentId;
         return this.questions(expected.questions, actual.questions)
             .then(() => {
                 delete expected.questions;

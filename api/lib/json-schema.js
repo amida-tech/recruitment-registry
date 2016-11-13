@@ -130,6 +130,10 @@ _.set(schema, 'definitions.newQuestion', {
             meta: {
                 $ref: '#/definitions/questionMeta'
             },
+            parentId: {
+                type: 'integer',
+                minimum: 1
+            },
             actions: {
                 $ref: '#/definitions/newActions'
             }
@@ -143,6 +147,10 @@ _.set(schema, 'definitions.newQuestion', {
             type: { type: 'string', enum: ['choice'] },
             meta: {
                 $ref: '#/definitions/questionMeta'
+            },
+            parentId: {
+                type: 'integer',
+                minimum: 1
             },
             choices: {
                 type: 'array',
@@ -169,6 +177,10 @@ _.set(schema, 'definitions.newQuestion', {
             meta: {
                 $ref: '#/definitions/questionMeta'
             },
+            parentId: {
+                type: 'integer',
+                minimum: 1
+            },
             oneOfChoices: {
                 type: 'array',
                 items: { type: 'string', minLength: 1 }
@@ -186,6 +198,10 @@ _.set(schema, 'definitions.newQuestion', {
             type: { type: 'string', enum: ['choices'] },
             meta: {
                 $ref: '#/definitions/questionMeta'
+            },
+            parentId: {
+                type: 'integer',
+                minimum: 1
             },
             choices: {
                 type: 'array',

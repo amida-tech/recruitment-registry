@@ -355,10 +355,9 @@ describe('survey integration', function () {
     const replaceSurveyFn = function (index) {
         return function (done) {
             const replacement = generator.newSurvey();
-            const id = history.id(index);
+            replacement.parentId = history.id(index);
             store.server
                 .post(`/api/v1.0/surveys`)
-                .query({ parent: id })
                 .set('Authorization', store.auth)
                 .send(replacement)
                 .expect(201)
