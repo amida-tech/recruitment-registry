@@ -30,15 +30,19 @@ module.exports = class {
                             return user;
                         })
                         .then(user => {
-                            const answerInput = {
-                                userId: user.id,
-                                surveyId: profileSurveyId,
-                                answers: input.answers,
-                                language
-                            };
-                            return this.answer.createAnswersTx(answerInput, tx)
-                                .then(() => ({ token: tokener.createJWT(user) }));
-                        });
+                            if (profileSurveyId) {
+                                const answerInput = {
+                                    userId: user.id,
+                                    surveyId: profileSurveyId,
+                                    answers: input.answers,
+                                    language
+                                };
+                                return this.answer.createAnswersTx(answerInput, tx)
+                                    .then(() => user);
+                            }
+                            return user;
+                        })
+                        .then(user => ({ token: tokener.createJWT(user) }));
                 });
         });
     }
@@ -46,20 +50,24 @@ module.exports = class {
     updateProfile(id, input, language) {
         return this.profileSurvey.getProfileSurveyId()
             .then(profileSurveyId => {
-                return sequelize.transaction(tx => {
-                    return this.user.updateUser(id, input.user, {
-                            transaction: tx
-                        })
-                        .then(() => {
-                            const answerInput = {
-                                userId: id,
-                                surveyId: profileSurveyId,
-                                answers: input.answers,
-                                language
-                            };
-                            return this.answer.createAnswersTx(answerInput, tx);
-                        });
-                });
+                if (profileSurveyId) {
+                    return sequelize.transaction(tx => {
+                        return this.user.updateUser(id, input.user, {
+                                transaction: tx
+                            })
+                            .then(() => {
+                                const answerInput = {
+                                    userId: id,
+                                    surveyId: profileSurveyId,
+                                    answers: input.answers,
+                                    language
+                                };
+                                return this.answer.createAnswersTx(answerInput, tx);
+                            });
+                    });
+                } else {
+                    return this.user.updateUser(id, input.user);
+                }
             });
     }
 
@@ -68,13 +76,17 @@ module.exports = class {
             .then(profileSurveyId => {
                 return this.user.getUser(input.userId)
                     .then(user => {
-                        return this.survey.getAnsweredSurvey(user.id, profileSurveyId)
-                            .then(survey => {
-                                return {
-                                    user,
-                                    survey
-                                };
-                            });
+                        if (profileSurveyId) {
+                            return this.survey.getAnsweredSurvey(user.id, profileSurveyId)
+                                .then(survey => {
+                                    return {
+                                        user,
+                                        survey
+                                    };
+                                });
+                        } else {
+                            return { user };
+                        }
                     });
             });
     }

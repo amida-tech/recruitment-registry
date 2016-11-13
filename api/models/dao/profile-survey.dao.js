@@ -20,12 +20,7 @@ module.exports = class {
                 raw: true,
                 attributes: ['profileSurveyId']
             })
-            .then(({ profileSurveyId }) => {
-                if (!profileSurveyId) {
-                    return RRError.reject('registryNoProfileSurvey');
-                }
-                return profileSurveyId;
-            });
+            .then(({ profileSurveyId }) => profileSurveyId ? profileSurveyId : null);
     }
 
     createProfileSurvey(survey) {
@@ -51,35 +46,45 @@ module.exports = class {
     updateProfileSurveyText({ name, sections }, language) {
         return sequelize.transaction(tx => {
             return this.getProfileSurveyId()
-                .then(id => this.survey.updateSurveyTextTx({ id, name, sections }, language, tx));
+                .then(id => {
+                    if (id) {
+                        return this.survey.updateSurveyTextTx({ id, name, sections }, language, tx);
+                    } else {
+                        return RRError.reject('registryNoProfileSurvey');
+                    }
+                });
         });
     }
 
     getProfileSurvey(options = {}) {
         return this.getProfileSurveyId()
             .then(profileSurveyId => {
-                return this.survey.getSurvey(profileSurveyId, options)
-                    .then(survey => {
-                        const surveyId = survey.id;
-                        const action = 'create';
-                        return SurveyConsentType.findAll({
-                                where: { surveyId, action },
-                                raw: true,
-                                attributes: ['consentTypeId']
-                            })
-                            .then(rawTypeIds => _.map(rawTypeIds, 'consentTypeId'))
-                            .then(typeIds => {
-                                if (typeIds.length) {
-                                    return this.consentDocument.listConsentDocuments({ summary: true, typeIds })
-                                        .then(consentDocuments => {
-                                            survey.consentDocument = consentDocuments;
-                                            return survey;
-                                        });
-                                } else {
-                                    return survey;
-                                }
-                            });
-                    });
+                if (profileSurveyId) {
+                    return this.survey.getSurvey(profileSurveyId, options)
+                        .then(survey => {
+                            const surveyId = survey.id;
+                            const action = 'create';
+                            return SurveyConsentType.findAll({
+                                    where: { surveyId, action },
+                                    raw: true,
+                                    attributes: ['consentTypeId']
+                                })
+                                .then(rawTypeIds => _.map(rawTypeIds, 'consentTypeId'))
+                                .then(typeIds => {
+                                    if (typeIds.length) {
+                                        return this.consentDocument.listConsentDocuments({ summary: true, typeIds })
+                                            .then(consentDocuments => {
+                                                survey.consentDocument = consentDocuments;
+                                                return survey;
+                                            });
+                                    } else {
+                                        return survey;
+                                    }
+                                });
+                        });
+                } else {
+                    return RRError.reject('registryNoProfileSurvey');
+                }
             });
     }
 };

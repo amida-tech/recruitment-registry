@@ -29,6 +29,69 @@ describe('profile integration', function () {
 
     before(shared.setUpFn(store));
 
+    const createProfileFn = function () {
+        return function (done) {
+            const user = generator.newUser();
+            user.role = 'participant';
+            const input = { user };
+            store.server
+                .post('/api/v1.0/profiles')
+                .send(input)
+                .expect(201)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    store.auth = 'Bearer ' + res.body.token;
+                    hxUser.push(user, {});
+                    hxAnswers.push(null);
+                    done();
+                });
+        };
+    };
+
+    const verifyProfileFn = function (userIndex) {
+        return function (done) {
+            store.server
+                .get('/api/v1.0/profiles')
+                .set('Authorization', store.auth)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    const result = res.body;
+                    comparator.user(hxUser.client(userIndex), result.user);
+                    done();
+                });
+        };
+    };
+
+    const updateProfileFn = function (userIndex) {
+        return function (done) {
+            const userUpdates = {
+                email: `updated${userIndex}@example.com`
+            };
+            hxUser.client(userIndex).email = userUpdates.email;
+            const updateObj = {
+                user: userUpdates
+            };
+            store.server
+                .patch('/api/v1.0/profiles')
+                .set('Authorization', store.auth)
+                .send(updateObj)
+                .expect(204, done);
+        };
+    };
+
+    it('register user 0 with profile survey', createProfileFn());
+
+    it('verify user 0 profile', verifyProfileFn(0));
+
+    it('update user 0 profile', updateProfileFn(0));
+
+    it('verify user 0 profile', verifyProfileFn(0));
+
     it('login as super', shared.loginFn(store, config.superUser));
 
     for (let i = 0; i < 2; ++i) {
@@ -45,7 +108,7 @@ describe('profile integration', function () {
 
     it(`get/verify profile survey`, shared.verifyProfileSurveyFn(store, hxSurvey, 0));
 
-    const createProfileFn = function (surveyIndex, signatures) {
+    const createProfileWithSurveyFn = function (surveyIndex, signatures) {
         return function (done) {
             const survey = hxSurvey.server(surveyIndex);
             const clientUser = generator.newUser();
@@ -71,7 +134,7 @@ describe('profile integration', function () {
         };
     };
 
-    const createProfileLanguageFn = function (surveyIndex, signatures, language) {
+    const createProfileWithSurveyLanguageFn = function (surveyIndex, signatures, language) {
         return function (done) {
             const survey = hxSurvey.server(surveyIndex);
             const clientUser = generator.newUser();
@@ -100,7 +163,7 @@ describe('profile integration', function () {
         };
     };
 
-    const verifyProfileFn = function (surveyIndex, userIndex, language) {
+    const verifyProfileWithSurveyFn = function (surveyIndex, userIndex, language) {
         return function (done) {
             store.server
                 .get('/api/v1.0/profiles')
@@ -121,7 +184,7 @@ describe('profile integration', function () {
         };
     };
 
-    const updateProfileFn = function (surveyIndex, userIndex) {
+    const updateProfileWithSurveyFn = function (surveyIndex, userIndex) {
         return function (done) {
             const survey = hxSurvey.server(surveyIndex);
             const answers = generator.answerQuestions(survey.questions);
@@ -221,39 +284,39 @@ describe('profile integration', function () {
         };
     };
 
-    it('register user 0 with profile survey 0', createProfileFn(0));
+    it('register user 1 with profile survey', createProfileWithSurveyFn(0));
 
-    it('verify user 0 profile', verifyProfileFn(0, 0));
+    it('verify user 1 profile', verifyProfileWithSurveyFn(0, 1));
 
-    it('verify document 0 is not signed by user 0', verifySignedDocumentFn(false));
+    it('verify document 0 is not signed by user 1', verifySignedDocumentFn(false));
 
-    it('verify document 0 is not signed by user 0 (type name)', verifySignedDocumentByTypeNameFn(false));
+    it('verify document 0 is not signed by user 1 (type name)', verifySignedDocumentByTypeNameFn(false));
 
-    it('update user 0 profile', updateProfileFn(0, 0));
+    it('update user 1 profile', updateProfileWithSurveyFn(0, 1));
 
-    it('verify user 0 profile', verifyProfileFn(0, 0));
+    it('verify user 1 profile', verifyProfileWithSurveyFn(0, 1));
 
-    it('register user 1 with profile survey 0 and doc 0 signature', createProfileFn(0, [0]));
+    it('register user 2 with profile survey 0 and doc 0 signature', createProfileWithSurveyFn(0, [0]));
 
-    it('verify user 1 profile', verifyProfileFn(0, 1));
+    it('verify user 2 profile', verifyProfileWithSurveyFn(0, 2));
 
-    it('verify document 0 is signed by user 1', verifySignedDocumentFn(true));
+    it('verify document 0 is signed by user 2', verifySignedDocumentFn(true));
 
-    it('verify document 0 is not signed by user 1 (type name)', verifySignedDocumentByTypeNameFn(true));
+    it('verify document 0 is not signed by user 2 (type name)', verifySignedDocumentByTypeNameFn(true));
 
-    it('register user 2 with profile survey 1 and doc 0 signature in spanish', createProfileLanguageFn(0, [0], 'es'));
+    it('register user 3 with profile survey 1 and doc 0 signature in spanish', createProfileWithSurveyLanguageFn(0, [0], 'es'));
 
-    it('verify user 2 profile', verifyProfileFn(0, 2, 'es'));
+    it('verify user 3 profile', verifyProfileWithSurveyFn(0, 3, 'es'));
 
     it('verify document 0 is signed by user in spanish', verifySignedDocumentFn(true, 'es'));
 
-    it('register user 3 with profile survey 1 and doc 0 signature in english', createProfileLanguageFn(0, [0], 'en'));
+    it('register user 4 with profile survey 1 and doc 0 signature in english', createProfileWithSurveyLanguageFn(0, [0], 'en'));
 
-    it('verify user 3 profile', verifyProfileFn(0, 3, 'en'));
+    it('verify user 4 profile', verifyProfileWithSurveyFn(0, 4, 'en'));
 
     it('verify document 0 is signed by user in english', verifySignedDocumentFn(true, 'en'));
 
-    it('update user 3 profile', patchProfileFn(0, 3, 'es'));
+    it('update user 4 profile', patchProfileFn(0, 4, 'es'));
 
-    it('verify user 0 profile', verifyProfileFn(0, 3));
+    it('verify user 0 profile', verifyProfileWithSurveyFn(0, 4));
 });

@@ -24,10 +24,48 @@ describe('profile unit', function () {
     const hxAnswers = [];
     const hxConsentDoc = new ConsentDocumentHistory(2);
 
-    it('error: get profile survey when none created', function () {
-        return models.profileSurvey.getProfileSurvey()
-            .then(shared.throwingHandler, shared.expectedErrorHandler('registryNoProfileSurvey'));
-    });
+    const createProfileFn = function () {
+        return function () {
+            const user = generator.newUser();
+            const input = { user };
+            return models.profile.createProfile(input)
+                .then(({ token }) => tokener.verifyJWT(token))
+                .then(({ id }) => hxUser.push(user, { id }))
+                .then(() => hxAnswers.push(null));
+        };
+    };
+
+    const verifyProfileFn = function (userIndex) {
+        return function () {
+            const userId = hxUser.id(userIndex);
+            return models.profile.getProfile({ userId })
+                .then(function (result) {
+                    comparator.user(hxUser.client(userIndex), result.user);
+                });
+        };
+    };
+
+    const updateProfileFn = function (userIndex) {
+        return function () {
+            const userUpdates = {
+                email: `updated${userIndex}@example.com`
+            };
+            hxUser.client(userIndex).email = userUpdates.email;
+            const updateObj = {
+                user: userUpdates,
+            };
+            const userId = hxUser.id(userIndex);
+            return models.profile.updateProfile(userId, updateObj);
+        };
+    };
+
+    it('register user 0 with profile survey', createProfileFn());
+
+    it('verify user 0 profile', verifyProfileFn(0));
+
+    it('update user 0 profile', updateProfileFn(0));
+
+    it('verify user 0 profile', verifyProfileFn(0));
 
     it('create profile survey', shared.createProfileSurveyFn(hxSurvey));
 
@@ -47,7 +85,7 @@ describe('profile unit', function () {
         it(`create consent document of type ${i}`, shared.createConsentDocumentFn(hxConsentDoc, i));
     }
 
-    const createProfileFn = function (surveyIndex, signatures, language) {
+    const createProfileWithSurveyFn = function (surveyIndex, signatures, language) {
         return function () {
             const survey = hxSurvey.server(surveyIndex);
             const clientUser = generator.newUser();
@@ -63,7 +101,7 @@ describe('profile unit', function () {
         };
     };
 
-    const verifyProfileFn = function (surveyIndex, userIndex, language) {
+    const verifyProfileWithSurveyFn = function (surveyIndex, userIndex, language) {
         return function () {
             const survey = hxSurvey.server(surveyIndex);
             const userId = hxUser.id(userIndex);
@@ -75,7 +113,7 @@ describe('profile unit', function () {
         };
     };
 
-    const updateProfileFn = function (surveyIndex, userIndex) {
+    const updateProfileWithSurveyFn = function (surveyIndex, userIndex) {
         return function () {
             const survey = hxSurvey.server(surveyIndex);
             const answers = generator.answerQuestions(survey.questions);
@@ -126,31 +164,31 @@ describe('profile unit', function () {
         };
     };
 
-    it('register user 0 with profile survey 0', createProfileFn(0));
+    it('register user 1 with profile survey', createProfileWithSurveyFn(0));
 
-    it('verify user 0 profile', verifyProfileFn(0, 0));
+    it('verify user 1 profile', verifyProfileWithSurveyFn(0, 1));
 
-    it('verify document 0 is not signed by user 0', verifySignedDocumentFn(0, false));
+    it('verify document 1 is not signed by user 0', verifySignedDocumentFn(1, false));
 
-    it('verify document 0 is not signed by user 0 (type name)', verifySignedDocumentByTypeNameFn(0, false));
+    it('verify document 1 is not signed by user 0 (type name)', verifySignedDocumentByTypeNameFn(1, false));
 
-    it('update user 0 profile', updateProfileFn(0, 0));
+    it('update user 1 profile', updateProfileWithSurveyFn(0, 1));
 
-    it('verify user 0 profile', verifyProfileFn(0, 0));
+    it('verify user 1 profile', verifyProfileWithSurveyFn(0, 1));
 
-    it('register user 1 with profile survey 0 and doc 0 signature', createProfileFn(0, [0]));
+    it('register user 2 with profile survey 0 and doc 0 signature', createProfileWithSurveyFn(0, [0]));
 
-    it('verify user 1 profile', verifyProfileFn(0, 1));
+    it('verify user 2 profile', verifyProfileWithSurveyFn(0, 2));
 
-    it('verify document 0 is signed by user 1', verifySignedDocumentFn(1, true));
+    it('verify document 0 is signed by user 2', verifySignedDocumentFn(2, true));
 
-    it('verify document 0 is signed by user 1 (type name)', verifySignedDocumentByTypeNameFn(1, true));
+    it('verify document 0 is signed by user 2 (type name)', verifySignedDocumentByTypeNameFn(2, true));
 
-    it('register user 2 with profile survey 1 and doc 0 signature in spanish', createProfileFn(0, [0], 'es'));
+    it('register user 3 with profile survey 1 and doc 0 signature in spanish', createProfileWithSurveyFn(0, [0], 'es'));
 
-    it('verify user 2 profile', verifyProfileFn(0, 2, 'es'));
+    it('verify user 3 profile', verifyProfileWithSurveyFn(0, 3, 'es'));
 
-    it('verify document 0 is signed by user in spanish', verifySignedDocumentFn(2, true, 'es'));
+    it('verify document 0 is signed by user 3 in spanish', verifySignedDocumentFn(3, true, 'es'));
 
-    it('verify document 0 is signed by user 2 (type name)', verifySignedDocumentByTypeNameFn(2, true, 'es'));
+    it('verify document 0 is signed by user 3 in spanish (type name)', verifySignedDocumentByTypeNameFn(3, true, 'es'));
 });
