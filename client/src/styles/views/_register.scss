@@ -7,7 +7,7 @@
 	@extend .row;
 	.subtitle {
 		position:absolute;
-		top: 20%;
+		top: 150px;
 		left: 50%;
 		transform: translate(-50% ,-50%);
 		font-weight: bold;
@@ -15,7 +15,7 @@
 	}
 	.register--inputContainer {
 		position: absolute;
-		top: 55%;
+		top: 280px;
 		left: 50%;
 		transform: translate(-50% ,-50%);
 		margin: 0 auto;
@@ -50,6 +50,13 @@
 				clear: none;
 				width: 5%;
 				margin: 2px 0 0 2px;
+			},
+			input[type=text],
+			input[type=password],
+			input[type=email],
+			input.text{
+				top:20px;
+				margin-bottom:22px;
 			}
 			.controls {
 			}

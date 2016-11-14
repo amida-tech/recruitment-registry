@@ -16,6 +16,8 @@
 				@extend .utility--shadow-text-1;
 			}
 			a {
+				@extend .btn;
+				@extend .buttonFix;
 				@extend .buttonPrimary;
 				@extend .light;
 				@extend .utility--shadow-2;
@@ -23,8 +25,7 @@
 				text-align: center;
 				position: relative;
 				margin: 0 auto;
-				max-width: 260px;
-				display:block;
+				display: inline-block;
 			}
 		}
 	}

@@ -13,11 +13,11 @@ export class SurveyContainer extends Component {
 
   _changeAnswer(event) {
     this.props.dispatch(actions.updateAnswer(event.target.dataset.itype,
-      event.target.id, event.target.value, event.target.name))
+      event.target.name, event.target.value, null))
   }
 
-  _changeAnswerText(questionId, answerId, value) {
-    this.props.dispatch(actions.updateAnswer('choices.text', questionId,
+  _changeAnswerChoices(itype, questionId, answerId, value) {
+    this.props.dispatch(actions.updateAnswer(itype, questionId,
       answerId, value));
   }
 
@@ -27,34 +27,56 @@ export class SurveyContainer extends Component {
     const surveyQuestions = this.props.selectedSurvey.get('questions');
     var questionnaire = [];
     if(questions){
-      questionnaire = questions.map(question => {
+      questionnaire = questions.map((question, index) => {
         switch(question.type) {
           case "text":
             return (
-              <SurveyFields.Input key={question.id} id={question.id}
-                changeForm={::this._changeAnswer} text={question.text}
-                 required={question.required}/>
+              <div key={question.id} className="container">
+                <label className="special">Question {index+1}:</label>
+                <SurveyFields.Input
+                  id={question.id}
+                  changeForm={::this._changeAnswer}
+                  text={question.text}
+                  required={question.required}/>
+              </div>
             );
           case "bool":
             return (
-              <SurveyFields.Bool key={question.id} id={question.id}
-                changeForm={::this._changeAnswer} text={question.text}
-                vocab={this.props.vocab} required={question.required}/>
+              <div key={question.id} className="container">
+                <label className="special">Question {index+1}:</label>
+                <SurveyFields.Bool
+                  id={question.id}
+                  changeForm={::this._changeAnswer}
+                  text={question.text}
+                  vocab={this.props.vocab}
+                  required={question.required}/>
+              </div>
             );
           case "choice":
             return (
-              <SurveyFields.Choice key={question.id} id={question.id}
-                changeForm={::this._changeAnswer} text={question.text}
-                vocab={this.props.vocab} choices={question.choices}
-                required={question.required} />
+              <div key={question.id} className="container">
+                <label className="special">Question {index+1}:</label>
+                <SurveyFields.Choice
+                  id={question.id}
+                  changeForm={::this._changeAnswer}
+                  text={question.text}
+                  vocab={this.props.vocab}
+                  choices={question.choices} />
+              </div>
             );
           case "choices":
             return (
-              <SurveyFields.Choices key={question.id} id={question.id}
-                changeForm={::this._changeAnswer} text={question.text}
-                vocab={this.props.vocab} choices={question.choices}
-                changeFormChoices={::this._changeAnswerText}
-                required={question.required}/>
+              <div key={question.id} className="container">
+                <label className="special">Question {index+1}:</label>
+                <SurveyFields.Choices
+                  id={question.id}
+                  changeForm={::this._changeAnswer}
+                  text={question.text}
+                  vocab={this.props.vocab}
+                  choices={question.choices}
+                  changeFormChoices={::this._changeAnswerChoices}
+                  required={question.required}/>
+              </div>
             );
         }
       });
@@ -75,7 +97,9 @@ export class SurveyContainer extends Component {
         </div>
         <div className="col-xs-6 text-left">
           <form name="questionForm" onSubmit={(event) => this.submitAnswers(event)} key={id} className="">
-            {questionnaire}
+            <ol>
+              {questionnaire}
+            </ol>
             <button>{this.props.vocab.get('SUBMIT')}</button>
           </form>
         </div>
