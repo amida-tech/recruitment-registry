@@ -351,23 +351,22 @@ describe('consent integration', function () {
         return function (userIndex, index, newSignatureIndices, language) {
             return function (done) {
                 language = language || 'en';
-                const query = {};
+                const consentDocumentIds = newSignatureIndices.map(i => history.id(i));
+                const input = { consentDocumentIds };
                 if (language) {
-                    query.language = language;
+                    input.language = language;
                 }
-                const documentIds = newSignatureIndices.map(i => history.id(i));
                 ++browserIndex;
                 const userAgent = `Browser-${browserIndex}`;
                 const ip = `9848.3${browserIndex}.838`;
                 const userId = history.hxUser.id(userIndex);
-                documentIds.forEach(documentId => browserMap.set(`${userId}.${documentId}`, { userAgent, ip }));
+                consentDocumentIds.forEach(documentId => browserMap.set(`${userId}.${documentId}`, { userAgent, ip }));
                 store.server
                     .post(`/api/v1.0/consent-signatures/bulk`)
                     .set('Authorization', store.auth)
                     .set('User-Agent', userAgent)
                     .set('X-Forwarded-For', [ip, `111.${browserIndex}0.999`])
-                    .query(query)
-                    .send(documentIds)
+                    .send(input)
                     .expect(201, done);
             };
         };
@@ -487,7 +486,7 @@ describe('consent integration', function () {
     it('update history for type 2', function (done) {
         const typeId = history.typeId(2);
         store.server
-            .get(`/api/v1.0/consent-documents/update-comments/${typeId}`)
+            .get(`/api/v1.0/consent-documents/type-id/${typeId}/update-comments`)
             .expect(200)
             .end(function (err, res) {
                 if (err) {
@@ -503,7 +502,7 @@ describe('consent integration', function () {
     it('translated update history for type 2', function (done) {
         const typeId = history.typeId(2);
         store.server
-            .get(`/api/v1.0/consent-documents/update-comments/${typeId}`)
+            .get(`/api/v1.0/consent-documents/type-id/${typeId}/update-comments`)
             .query({ language: 'es' })
             .expect(200)
             .end(function (err, res) {

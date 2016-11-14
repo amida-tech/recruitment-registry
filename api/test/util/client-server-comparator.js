@@ -23,6 +23,7 @@ const comparator = {
         if (!expected.id) {
             expected.id = id;
         }
+        delete expected.parentId;
         return models.questionChoice.findChoicesPerQuestion(id)
             .then(choices => {
                 return choices.reduce(function (r, choice) {
@@ -87,6 +88,7 @@ const comparator = {
         const expected = _.cloneDeep(client);
         const actual = _.cloneDeep(server);
         expected.id = actual.id;
+        delete expected.parentId;
         return this.questions(expected.questions, actual.questions)
             .then(() => {
                 delete expected.questions;
@@ -100,10 +102,10 @@ const comparator = {
     answeredSurvey(survey, answers, server, language) {
         const expected = _.cloneDeep(survey);
         const answerMap = new Map();
-        answers.forEach(({ questionId, answer }) => answerMap.set(questionId, answer));
+        answers.forEach(({ questionId, answer, language }) => answerMap.set(questionId, { answer, language }));
         expected.questions.forEach((qx) => {
-            qx.answer = answerMap.get(qx.id);
-            qx.language = language || 'en';
+            qx.answer = answerMap.get(qx.id).answer;
+            qx.language = answerMap.get(qx.id).language || language || 'en';
             if (qx.type === 'choices' && qx.answer.choices) {
                 qx.answer.choices.forEach((choice) => {
                     if (!choice.textValue && !choice.hasOwnProperty('boolValue')) {

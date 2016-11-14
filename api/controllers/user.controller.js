@@ -43,10 +43,3 @@ exports.resetPassword = function (req, res) {
         .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };
-
-exports.listConsentDocuments = function (req, res) {
-    const language = _.get(req, 'swagger.params.language.value');
-    models.user.listConsentDocuments(req.user.id, { language })
-        .then(consentDocuments => res.status(200).json(consentDocuments))
-        .catch(shared.handleError(res));
-};

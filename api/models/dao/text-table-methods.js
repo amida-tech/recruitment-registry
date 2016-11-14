@@ -52,7 +52,7 @@ module.exports = function (sequelize, tableName, parentIdField, textFields = ['t
         updateText(parent, language) {
             return this.getText(parent.id, language)
                 .then(result => {
-                    textFields.forEach(field => (parent[field] = result[field]));
+                    textFields.forEach(field => (parent[field] = result[field] || ''));
                     return parent;
                 });
         },
@@ -88,7 +88,7 @@ module.exports = function (sequelize, tableName, parentIdField, textFields = ['t
                 .then(map => {
                     parents.forEach(parent => {
                         const r = map[parent.id];
-                        textFields.forEach(field => (parent[field] = r[field]));
+                        textFields.forEach(field => (parent[field] = r[field] || ''));
                     });
                     return parents;
                 });

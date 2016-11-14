@@ -1,12 +1,12 @@
 import * as actionTypes from './actionTypes';
 
-export function updateAnswer(itype, id, value, subvalue) {
+export function updateAnswer(itype, questionId, choice, choicesValue) {
   return dispatch => dispatch({
     type: actionTypes.UPDATE_SURVEY_ANSWERS,
     itype,
-    id,
-    value,
-    name
+    questionId,
+    choice,
+    choicesValue
   })
 }
 

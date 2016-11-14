@@ -7,13 +7,13 @@ const shared = require('./shared.js');
 const jsonSchema = require('../lib/json-schema');
 
 exports.createQuestion = function (req, res) {
-    const question = req.body;
-    if (!jsonSchema('newQuestion', question, res)) {
+    if (!jsonSchema('newQuestion', req.body, res)) {
         return;
     }
-    const parent = _.get(req, 'swagger.params.parent.value');
-    if (parent) {
-        models.question.replaceQuestion(parent, question)
+    const question = _.omit(req.body, 'parentId');
+    const parentId = req.body.parentId;
+    if (parentId) {
+        models.question.replaceQuestion(parentId, question)
             .then(result => res.status(201).json(result))
             .catch(shared.handleError(res));
     } else {

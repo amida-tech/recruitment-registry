@@ -12,12 +12,6 @@ const apiProvider = store => next => action => {
         .set("Authorization", "Bearer " + store.getState().get('loggedIn'))
         .send({})
         .end((error, response) => {
-          if (error) {
-            return next({
-              type: 'GET_USER_ERROR',
-              payload: error
-            });
-          }
           next({
             type: 'GET_USER_SUCCESS',
             payload: response.body
@@ -37,10 +31,7 @@ const apiProvider = store => next => action => {
               type: 'LOGIN_SUCCESS',
               data: response.body
             });
-            next({
-              type: 'GET_USER'
-            });
-            store.dispatch(push('/dashboard'))
+            store.dispatch(push('/dashboard'));
           } else {
             return next({
               type: 'LOGIN_ERROR',

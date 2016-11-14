@@ -396,9 +396,9 @@ describe('question integration', function () {
 
     it(`error: replace a non-existent question`, function (done) {
         const replacement = generator.newQuestion();
+        replacement.parentId = 999;
         store.server
             .post('/api/v1.0/questions')
-            .query({ parent: 999 })
             .set('Authorization', store.auth)
             .send(replacement)
             .expect(400)
@@ -422,10 +422,10 @@ describe('question integration', function () {
     const replaceQxOnSurvey = function (questionIndex) {
         return function (done) {
             const replacement = generator.newQuestion();
-            const parent = hxQuestion.id(questionIndex);
+            const parentId = hxQuestion.id(questionIndex);
+            replacement.parentId = parentId;
             store.server
                 .post('/api/v1.0/questions')
-                .query({ parent })
                 .set('Authorization', store.auth)
                 .send(replacement)
                 .expect(400)
@@ -455,10 +455,10 @@ describe('question integration', function () {
     const replaceQxFn = function (questionIndex) {
         return function (done) {
             const replacement = generator.newQuestion();
-            const parent = hxQuestion.id(questionIndex);
+            const parentId = hxQuestion.id(questionIndex);
+            replacement.parentId = parentId;
             store.server
                 .post('/api/v1.0/questions')
-                .query({ parent })
                 .set('Authorization', store.auth)
                 .send(replacement)
                 .expect(201)

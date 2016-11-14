@@ -49,7 +49,7 @@ describe('user set-up and login use-case', function () {
                 if (err) {
                     return done(err);
                 }
-                survey = res.body;
+                survey = res.body.survey;
                 done();
             });
     });

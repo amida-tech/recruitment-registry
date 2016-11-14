@@ -46,7 +46,7 @@ class ConsentDocumentHistory {
     push(typeIndex, client, server) {
         const fullServer = Object.assign({}, client, server);
         if (!fullServer.updateComment) {
-            fullServer.updateComment = null;
+            fullServer.updateComment = '';
         }
         this.hxDocument.push(client, fullServer);
         this.activeConsentDocuments[typeIndex] = fullServer;

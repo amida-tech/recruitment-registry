@@ -34,7 +34,7 @@ describe('smtp integration', function () {
                 if (err) {
                     return done(err);
                 }
-                expect(res.body).to.equal(null);
+                expect(res.body.exists).to.equal(false);
                 done();
             });
     };
@@ -119,7 +119,8 @@ describe('smtp integration', function () {
                     if (smtpText) {
                         Object.assign(expected, smtpText);
                     }
-                    expect(res.body).to.deep.equal(expected);
+                    expect(res.body.exists).to.equal(true);
+                    expect(res.body.smtp).to.deep.equal(expected);
                     done();
                 });
         };
@@ -142,10 +143,12 @@ describe('smtp integration', function () {
                         translation = smtpText;
                     }
                     Object.assign(expected, translation);
-                    expect(res.body).to.deep.equal(expected);
+                    expect(res.body.exists).to.equal(true);
+                    const smtpr = res.body.smtp;
+                    expect(smtpr).to.deep.equal(expected);
                     if (checkFields) { // sanity check
                         ['subject', 'content'].forEach(property => {
-                            const text = res.body[property];
+                            const text = smtpr[property];
                             const location = text.indexOf(`(${language})`);
                             expect(location).to.be.above(0);
                         });
