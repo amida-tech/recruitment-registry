@@ -36,6 +36,12 @@
 	outline: none;
 }
 
+a.buttonFix {
+	text-decoration: none;
+	margin-top: -17px;
+	padding-top: 7px;
+}
+
 .buttonPrimary {
 	@extend .btn;
 	@extend button;
