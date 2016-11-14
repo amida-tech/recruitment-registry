@@ -12,7 +12,7 @@ class Layout extends Component {
     return (
       <div className={altClass}>
         <Nav />
-        <main id="content" className="container">{this.props.children}</main>
+        <main id="content" className="">{this.props.children}</main>
       </div>
     );
   }

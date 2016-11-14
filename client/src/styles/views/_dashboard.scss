@@ -1,0 +1,30 @@
+#dashboard {
+	#dashboardHeader {
+		#surveyStepsNeeded {
+			margin-top: 35px;
+			position: relative;
+			@extend .col-xs-10;
+			@extend .col-xs-offset-1;
+			@extend .col-md-8;
+			@extend .col-md-offset-2;
+			@extend .col-lg-6;
+			@extend .col-lg-offset-3;
+			span {
+				color: $color-white;
+				display: block;
+				margin-bottom: 21px;
+				@extend .utility--shadow-text-1;
+			}
+			button {
+				@extend .buttonPrimary;
+				@extend .light;
+				@extend .utility--shadow-2;
+				@extend .hover;
+				text-align: center;
+				position: relative;
+				margin: 0 auto;
+				display:block;
+			}
+		}
+	}
+}
