@@ -157,6 +157,16 @@ module.exports = class {
         });
     }
 
+    createOrReplaceSurvey(input) {
+        const survey = _.omit(input, 'parentId');
+        const parentId = input.parentId;
+        if (parentId) {
+            return this.replaceSurvey(parentId, survey);
+        } else {
+            return this.createSurvey(survey);
+        }
+    }
+
     deleteSurvey(id) {
         return sequelize.transaction(tx => {
             return Survey.destroy({ where: { id }, transaction: tx })

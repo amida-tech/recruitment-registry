@@ -5,10 +5,10 @@ const _ = require('lodash');
 const models = require('../models');
 const shared = require('./shared.js');
 
-const registry = models.registry;
+const profileSurvey = models.profileSurvey;
 
 exports.createProfileSurvey = function (req, res) {
-    registry.createProfileSurvey(req.body)
+    profileSurvey.createProfileSurvey(req.body)
         .then(result => res.status(201).json(result))
         .catch(shared.handleError(res));
 };
@@ -16,14 +16,14 @@ exports.createProfileSurvey = function (req, res) {
 exports.getProfileSurvey = function (req, res) {
     const language = _.get(req, 'swagger.params.language.value');
     const options = language ? { language } : {};
-    registry.getProfileSurvey(options)
+    profileSurvey.getProfileSurvey(options)
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };
 
 exports.updateProfileSurveyText = function (req, res) {
     const language = _.get(req, 'swagger.params.language.value');
-    registry.updateProfileSurveyText(req.body, language)
+    profileSurvey.updateProfileSurveyText(req.body, language)
         .then(result => res.status(204).json(result))
         .catch(shared.handleError(res));
 };

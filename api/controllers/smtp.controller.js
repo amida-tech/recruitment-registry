@@ -15,7 +15,13 @@ exports.getSmtp = function (req, res) {
     const language = _.get(req, 'swagger.params.language.value');
     const options = language ? { language } : {};
     models.smtp.getSmtp(options)
-        .then(result => res.status(200).json(result))
+        .then(smtp => {
+            if (smtp) {
+                res.status(200).json({ exists: true, smtp });
+            } else {
+                res.status(200).json({ exists: false });
+            }
+        })
         .catch(shared.handleError(res));
 };
 

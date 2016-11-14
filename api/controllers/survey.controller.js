@@ -25,20 +25,12 @@ exports.getSurveyByName = function (req, res) {
 };
 
 exports.createSurvey = function (req, res) {
-    const survey = req.body;
-    if (!jsonSchema('newSurvey', survey, res)) {
+    if (!jsonSchema('newSurvey', req.body, res)) {
         return;
     }
-    const parent = _.get(req, 'swagger.params.parent.value');
-    if (parent) {
-        models.survey.replaceSurvey(parent, survey)
-            .then(id => res.status(201).json({ id }))
-            .catch(shared.handleError(res));
-    } else {
-        models.survey.createSurvey(survey)
-            .then(id => res.status(201).json({ id }))
-            .catch(shared.handleError(res));
-    }
+    models.survey.createOrReplaceSurvey(req.body)
+        .then(id => res.status(201).json({ id }))
+        .catch(shared.handleError(res));
 };
 
 exports.updateSurveyText = function (req, res) {

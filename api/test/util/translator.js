@@ -67,8 +67,6 @@ const translator = {
         result.content = this._translate(result.content, language);
         if (result.updateComment) {
             result.updateComment = this._translate(result.updateComment, language);
-        } else {
-            result.updateComment = null;
         }
         return result;
     },
@@ -77,7 +75,7 @@ const translator = {
         consentDocument.sections.forEach(section => {
             ['title', 'content', 'updateComment'].forEach(property => {
                 const text = section[property];
-                if (text !== null) {
+                if (text) {
                     const location = text.indexOf(languageText);
                     expect(location).to.be.above(0, `is not translated to ${language}`);
                 }

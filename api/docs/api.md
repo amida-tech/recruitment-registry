@@ -1638,11 +1638,11 @@ Same response is also available using the name of the survey and resource `/answ
 
 Participant have to sign registry specific Consent Documents to be able to get access to various functionality. Currently this API does not enforce any requirement on consent documents itself and leaves any requirement enforcement to clients.  Consent Document API stores and provides content and signature status of consent documents.
 
-All consent documents that has to be signed for a user is shown by resource `/users/consent-documents`
+All consent documents that has to be signed for a user is shown by resource `/user-consent-documents`
 
 ```js
 request
-	.get('http://localhost:9005/api/v1.0/users/consent-documents')
+	.get('http://localhost:9005/api/v1.0/user-consent-documents')
 	.set('Authorization', 'Bearer ' + jwtUser)
 	.then(res => {
 		console.log(res.status);  // 200
@@ -1754,7 +1754,7 @@ request
     });
 ```
 
-Server responds with the id of the updated consent document.  Once a Consent Document is updated, it is added to the list of documents that has to be signed by the participant.  The list is shown by `/users/consent-documents` as discussed before
+Server responds with the id of the updated consent document.  Once a Consent Document is updated, it is added to the list of documents that has to be signed by the participant.  The list is shown by `/user-consent-documents` as discussed before
 
 ```js
 [
@@ -1770,7 +1770,7 @@ Resource `/consent-documents/{id}/with-signature` shows the content and the new 
 
 ```js
 request
-    .get('http://localhost:9005/api/v1.0/consent-documents/3/with-signature')
+    .get('http://localhost:9005/api/v1.0/user-consent-documents/3')
     .set('Authorization', 'Bearer ' + jwtUser)
     .then(res => {
         console.log(res.status);  // 200
@@ -2690,7 +2690,7 @@ Since Consent sections are expected to be signed at the same time, an additional
 request
     .post('http://localhost:9005/api/v1.0/consent-signatures/bulk')
     .set('Authorization', 'Bearer ' + jwtUser)
-    .send([3, 4])
+    .send({ consentDocumentIds: [3, 4] })
     .then(res => {
         console.log(res.status);  // 201
     });

@@ -51,7 +51,7 @@ describe('consent document/type/signature unit', function () {
     }
 
     it('error: no consent documents of existing types', function () {
-        return models.user.listConsentDocuments(history.userId(0))
+        return models.userConsentDocument.listUserConsentDocuments(history.userId(0))
             .then(shared.throwingHandler, shared.expectedErrorHandler('noSystemConsentDocuments'));
     });
 
@@ -102,7 +102,7 @@ describe('consent document/type/signature unit', function () {
 
     const verifyConsentDocumentsFn = function (userIndex, expectedIndices) {
         return function () {
-            return models.user.listConsentDocuments(history.userId(userIndex))
+            return models.userConsentDocument.listUserConsentDocuments(history.userId(userIndex))
                 .then(consentDocuments => {
                     const expected = history.serversInList(expectedIndices);
                     expect(consentDocuments).to.deep.equal(expected);
@@ -122,7 +122,7 @@ describe('consent document/type/signature unit', function () {
 
     const verifyTranslatedConsentDocumentsFn = function (userIndex, expectedIndices, language) {
         return function () {
-            return models.user.listConsentDocuments(history.userId(userIndex), { language })
+            return models.userConsentDocument.listUserConsentDocuments(history.userId(userIndex), { language })
                 .then(consentDocuments => {
                     const expected = history.translatedServersInList(expectedIndices, language);
                     expect(consentDocuments).to.deep.equal(expected);

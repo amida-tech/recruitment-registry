@@ -8,10 +8,6 @@ const shared = require('./shared.js');
 exports.createAnswers = function (req, res) {
     const answers = req.body;
     answers.userId = req.user.id;
-    const language = _.get(req, 'swagger.params.language.value');
-    if (language) {
-        answers.language = language;
-    }
     models.answer.createAnswers(answers)
         .then(() => res.status(204).end())
         .catch(shared.handleError(res));

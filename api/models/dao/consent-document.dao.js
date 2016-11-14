@@ -11,7 +11,6 @@ const textTableMethods = require('./text-table-methods');
 const sequelize = db.sequelize;
 const ConsentType = db.ConsentType;
 const ConsentDocument = db.ConsentDocument;
-const ConsentSignature = db.ConsentSignature;
 
 const textHandler = textTableMethods(sequelize, 'consent_document_text', 'consentDocumentId', ['content', 'updateComment']);
 
@@ -134,33 +133,6 @@ module.exports = class {
                     return RRError.reject('consentTypeNotFound');
                 }
             });
-    }
-
-    _fillSignature(result, userId, id) {
-        return ConsentSignature.findOne({
-                where: { userId, consentDocumentId: id },
-                raw: true,
-                attributes: ['language']
-            })
-            .then(signature => {
-                if (signature) {
-                    result.signature = true;
-                    result.language = signature.language;
-                } else {
-                    result.signature = false;
-                }
-                return result;
-            });
-    }
-
-    getSignedConsentDocument(userId, id, options) {
-        return this.getConsentDocument(id, options)
-            .then(result => this._fillSignature(result, userId, id));
-    }
-
-    getSignedConsentDocumentByTypeName(userId, typeName, options = {}) {
-        return this.getConsentDocumentByTypeName(typeName, options)
-            .then(result => this._fillSignature(result, userId, result.id));
     }
 
     getUpdateCommentHistory(typeId, language) {

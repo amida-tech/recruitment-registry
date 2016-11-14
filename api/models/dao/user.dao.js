@@ -1,6 +1,5 @@
 'use strict';
 
-const _ = require('lodash');
 const util = require('util');
 const moment = require('moment');
 
@@ -8,7 +7,6 @@ const db = require('../db');
 const SPromise = require('../../lib/promise');
 
 const sequelize = db.sequelize;
-const ConsentSignature = db.ConsentSignature;
 const User = db.User;
 
 const clientUpdatableFields = ['email', 'password'].reduce((r, p) => {
@@ -93,34 +91,5 @@ module.exports = class {
                 }
             }
         });
-    }
-
-    listConsentDocuments(userId, options = {}) {
-        const _options = { summary: true };
-        const typeIds = options.typeIds;
-        if (typeIds && typeIds.length) {
-            _options.typeIds = typeIds;
-        }
-        if (options.transaction) {
-            _options.transaction = options.transaction;
-        }
-        if (options.language) {
-            _options.language = options.language;
-        }
-        return this.consentDocument.listConsentDocuments(_options)
-            .then(activeDocs => {
-                const query = {
-                    where: { userId },
-                    raw: true,
-                    attributes: ['consentDocumentId'],
-                    order: 'consent_document_id'
-                };
-                if (options.transaction) {
-                    query.transaction = options.transaction;
-                }
-                return ConsentSignature.findAll(query)
-                    .then(signedDocs => _.map(signedDocs, 'consentDocumentId'))
-                    .then(signedDocIds => activeDocs.filter(activeDoc => signedDocIds.indexOf(activeDoc.id) < 0));
-            });
     }
 };

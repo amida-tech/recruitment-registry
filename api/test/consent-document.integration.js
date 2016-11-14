@@ -62,7 +62,7 @@ describe('consent document integration', function () {
     it('login as user 0', shared.loginIndexFn(store, history.hxUser, 0));
     it('error: no consent documents of existing types', function (done) {
         store.server
-            .get(`/api/v1.0/users/consent-documents`)
+            .get(`/api/v1.0/user-consent-documents`)
             .set('Authorization', store.auth)
             .expect(400)
             .end(function (err, res) {
@@ -140,7 +140,7 @@ describe('consent document integration', function () {
     const getUserConsentDocumentsFn = function (expectedIndices) {
         return function (done) {
             store.server
-                .get('/api/v1.0/users/consent-documents')
+                .get('/api/v1.0/user-consent-documents')
                 .set('Authorization', store.auth)
                 .expect(200)
                 .end(function (err, res) {
@@ -157,7 +157,7 @@ describe('consent document integration', function () {
     const getTranslatedUserConsentDocumentsFn = function (expectedIndices, language) {
         return function (done) {
             store.server
-                .get('/api/v1.0/users/consent-documents')
+                .get('/api/v1.0/user-consent-documents')
                 .set('Authorization', store.auth)
                 .query({ language })
                 .expect(200)
@@ -186,18 +186,17 @@ describe('consent document integration', function () {
     const signConsentTypeFn = function (userIndex, typeIndex, language) {
         return function (done) {
             const consentDocumentId = history.id(typeIndex);
+            const input = { consentDocumentId };
             const typeId = history.typeId(typeIndex);
-            const query = {};
             if (language) {
-                query.language = language;
+                input.language = language;
             }
             store.server
                 .post(`/api/v1.0/consent-signatures`)
                 .set('Authorization', store.auth)
                 .set('User-Agent', `Browser-${typeId}`)
                 .set('X-Forwarded-For', [`9848.3${typeId}.838`, `111.${typeId}0.999`])
-                .query(query)
-                .send({ consentDocumentId })
+                .send(input)
                 .expect(201)
                 .end(function (err) {
                     if (err) {
@@ -365,8 +364,9 @@ describe('consent document integration', function () {
         return function (done) {
             const userId = history.userId(userIndex);
             store.server
-                .get(`/api/v1.0/consent-signatures/users/${userId}/history`)
+                .get(`/api/v1.0/consent-signatures`)
                 .set('Authorization', store.auth)
+                .query({ 'user-id': userId })
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {

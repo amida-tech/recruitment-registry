@@ -38,7 +38,7 @@ describe('consent demo simpler', function () {
     before(shared.setUpFn(store));
 
     it('create Terms of Use and Consent Form records', function () {
-        return models.registry.createProfileSurvey(surveyExample.survey);
+        return models.profileSurvey.createProfileSurvey(surveyExample.survey);
     });
 
     it('create Terms of Use and Consent Form records', function () {
@@ -89,7 +89,7 @@ describe('consent demo simpler', function () {
                 if (err) {
                     return done(err);
                 }
-                survey = res.body;
+                survey = res.body.survey;
                 done();
             });
     });
@@ -127,7 +127,7 @@ describe('consent demo simpler', function () {
 
     it('get the Terms of Use document with signature', function (done) {
         store.server
-            .get('/api/v1.0/consent-documents/type-name/terms-of-use/with-signature')
+            .get('/api/v1.0/user-consent-documents/type-name/terms-of-use')
             .set('Authorization', store.auth)
             .expect(200)
             .end(function (err, res) {
@@ -152,7 +152,7 @@ describe('consent demo simpler', function () {
 
     it('get the Consents document', function (done) {
         store.server
-            .get('/api/v1.0/consent-documents/type-name/consent/with-signature')
+            .get('/api/v1.0/user-consent-documents/type-name/consent')
             .set('Authorization', store.auth)
             .expect(200)
             .end(function (err, res) {
@@ -195,7 +195,7 @@ describe('consent demo simpler', function () {
 
     it('get the Consents document', function (done) {
         store.server
-            .get(`/api/v1.0/consent-documents/type-name/consent/with-signature`)
+            .get(`/api/v1.0/user-consent-documents/type-name/consent`)
             .set('Authorization', store.auth)
             .expect(200)
             .end(function (err, res) {

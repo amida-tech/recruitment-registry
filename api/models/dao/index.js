@@ -9,9 +9,11 @@ const Survey = require('./survey.dao');
 const ConsentType = require('./consent-type.dao');
 const ConsentDocument = require('./consent-document.dao');
 const ConsentSignature = require('./consent-signature.dao');
+const UserConsentDocument = require('./user-consent-document.dao');
 const Consent = require('./consent.dao');
 const SurveyConsentType = require('./survey-consent-type.dao');
-const Registry = require('./registry.dao');
+const ProfileSurvey = require('./profile-survey.dao');
+const Profile = require('./profile.dao');
 const Language = require('./language.dao');
 const Section = require('./section.dao');
 const Smtp = require('./smtp.dao');
@@ -19,8 +21,9 @@ const Smtp = require('./smtp.dao');
 const consentType = new ConsentType();
 const consentDocument = new ConsentDocument({ consentType });
 const consentSignature = new ConsentSignature();
+const userConsentDocument = new UserConsentDocument({ consentDocument });
 const user = new User({ consentDocument });
-const surveyConsentType = new SurveyConsentType({ user });
+const surveyConsentType = new SurveyConsentType({ userConsentDocument });
 const section = new Section();
 const questionChoice = new QuestionChoice();
 const questionAction = new QuestionAction();
@@ -28,7 +31,8 @@ const question = new Question({ questionChoice, questionAction });
 const answer = new Answer({ surveyConsentType });
 const survey = new Survey({ answer, section, question });
 const consent = new Consent({ consentDocument });
-const registry = new Registry({ survey, consentDocument, answer, user, consentSignature });
+const profileSurvey = new ProfileSurvey({ survey, consentDocument, answer });
+const profile = new Profile({ profileSurvey, survey, answer, user, consentSignature });
 const language = new Language();
 const smtp = new Smtp();
 
@@ -43,9 +47,11 @@ module.exports = {
     consentType,
     consentDocument,
     consentSignature,
+    userConsentDocument,
     consent,
     surveyConsentType,
-    registry,
+    profileSurvey,
+    profile,
     language,
     smtp
 };

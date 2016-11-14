@@ -15,12 +15,12 @@ const helper = require('./test/util/survey-common');
 models.sequelize.sync({
     force: true
 }).then(function () {
-    return models.registry.createProfileSurvey(sample.survey);
+    return models.profileSurvey.createProfileSurvey(sample.survey);
 }).then(function () {
-    return models.registry.getProfileSurvey();
-}).then(function (survey) {
-    const answers = helper.formAnswersToPost(survey, sample.answer);
-    return models.registry.createProfile({
+    return models.profileSurvey.getProfileSurvey();
+}).then(function (profileSurvey) {
+    const answers = helper.formAnswersToPost(profileSurvey.survey, sample.answer);
+    return models.profile.createProfile({
         user: userExample,
         answers
     });
