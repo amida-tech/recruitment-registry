@@ -13,11 +13,11 @@ export class SurveyContainer extends Component {
 
   _changeAnswer(event) {
     this.props.dispatch(actions.updateAnswer(event.target.dataset.itype,
-      event.target.id, event.target.value, event.target.name))
+      event.target.name, event.target.value, null))
   }
 
-  _changeAnswerText(questionId, answerId, value) {
-    this.props.dispatch(actions.updateAnswer('choices.text', questionId,
+  _changeAnswerChoices(itype, questionId, answerId, value) {
+    this.props.dispatch(actions.updateAnswer(itype, questionId,
       answerId, value));
   }
 
@@ -31,30 +31,40 @@ export class SurveyContainer extends Component {
         switch(question.type) {
           case "text":
             return (
-              <SurveyFields.Input key={question.id} id={question.id}
-                changeForm={::this._changeAnswer} text={question.text}
-                 required={question.required}/>
+              <SurveyFields.Input key={question.id}
+              id={question.id}
+              changeForm={::this._changeAnswer}
+              text={question.text}
+              required={question.required}/>
             );
           case "bool":
             return (
-              <SurveyFields.Bool key={question.id} id={question.id}
-                changeForm={::this._changeAnswer} text={question.text}
-                vocab={this.props.vocab} required={question.required}/>
+              <SurveyFields.Bool key={question.id}
+              id={question.id}
+              changeForm={::this._changeAnswer}
+              text={question.text}
+              vocab={this.props.vocab}
+              required={question.required}/>
             );
           case "choice":
             return (
-              <SurveyFields.Choice key={question.id} id={question.id}
-                changeForm={::this._changeAnswer} text={question.text}
-                vocab={this.props.vocab} choices={question.choices}
-                required={question.required} />
+              <SurveyFields.Choice key={question.id}
+              id={question.id}
+              changeForm={::this._changeAnswer}
+              text={question.text}
+              vocab={this.props.vocab}
+              choices={question.choices} />
             );
           case "choices":
             return (
-              <SurveyFields.Choices key={question.id} id={question.id}
-                changeForm={::this._changeAnswer} text={question.text}
-                vocab={this.props.vocab} choices={question.choices}
-                changeFormChoices={::this._changeAnswerText}
-                required={question.required}/>
+              <SurveyFields.Choices key={question.id}
+              id={question.id}
+              changeForm={::this._changeAnswer}
+              text={question.text}
+              vocab={this.props.vocab}
+              choices={question.choices}
+              changeFormChoices={::this._changeAnswerChoices}
+              required={question.required}/>
             );
         }
       });
