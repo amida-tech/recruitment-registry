@@ -28,17 +28,9 @@ exports.createSurvey = function (req, res) {
     if (!jsonSchema('newSurvey', req.body, res)) {
         return;
     }
-    const survey = _.omit(req.body, 'parentId');
-    const parentId = req.body.parentId;
-    if (parentId) {
-        models.survey.replaceSurvey(parentId, survey)
-            .then(id => res.status(201).json({ id }))
-            .catch(shared.handleError(res));
-    } else {
-        models.survey.createSurvey(survey)
-            .then(id => res.status(201).json({ id }))
-            .catch(shared.handleError(res));
-    }
+    models.survey.createOrReplaceSurvey(req.body)
+        .then(id => res.status(201).json({ id }))
+        .catch(shared.handleError(res));
 };
 
 exports.updateSurveyText = function (req, res) {

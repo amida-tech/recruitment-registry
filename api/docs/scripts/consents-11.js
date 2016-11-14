@@ -9,7 +9,7 @@ module.exports = function (locals) {
     return request
         .post('http://localhost:9005/api/v1.0/consent-signatures/bulk')
         .set('Authorization', 'Bearer ' + jwtUser)
-        .send([3, 4])
+        .send({ consentDocumentIds: [3, 4] })
         .then(res => {
             console.log(res.status); // 201
             console.log(res.body.id); // id of the signature

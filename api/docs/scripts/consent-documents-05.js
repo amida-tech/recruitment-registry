@@ -7,7 +7,7 @@ module.exports = function (locals) {
     const jwtUser = locals.jwtUser;
 
     return request
-        .get('http://localhost:9005/api/v1.0/consent-documents/type-name/consent/with-signature')
+        .get('http://localhost:9005/api/v1.0/user-consent-documents/type-name/consent')
         .set('Authorization', 'Bearer ' + jwtUser)
         .then(res => {
             console.log(res.status); // 200'
