@@ -13,11 +13,11 @@ export class SurveyContainer extends Component {
 
   _changeAnswer(event) {
     this.props.dispatch(actions.updateAnswer(event.target.dataset.itype,
-      event.target.id, event.target.value, event.target.name))
+      event.target.name, event.target.value, null))
   }
 
-  _changeAnswerText(questionId, answerId, value) {
-    this.props.dispatch(actions.updateAnswer('choices.text', questionId,
+  _changeAnswerChoices(itype, questionId, answerId, value) {
+    this.props.dispatch(actions.updateAnswer(itype, questionId,
       answerId, value));
   }
 
@@ -51,7 +51,7 @@ export class SurveyContainer extends Component {
               <SurveyFields.Choices key={question.id} id={question.id}
                 changeForm={::this._changeAnswer} text={question.text}
                 vocab={this.props.vocab} choices={question.choices}
-                changeFormChoices={::this._changeAnswerText}
+                changeFormChoices={::this._changeAnswerChoices}
                 required={question.required}/>
             );
         }
