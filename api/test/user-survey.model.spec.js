@@ -122,6 +122,49 @@ describe('user survey unit', function () {
         };
     };
 
+    const answerSurveyMissingPlusCompletedFn = function (userIndex, surveyIndex) {
+        return function () {
+            const survey = hxSurvey.server(surveyIndex);
+            const requiredQuestions = survey.questions.filter(question => question.required);
+            expect(requiredQuestions).to.have.length.above(0);
+            const notRequiredQuestions = survey.questions.filter(question => !question.required);
+            expect(notRequiredQuestions).to.have.length.above(0);
+            const questions = [...requiredQuestions, notRequiredQuestions[0]];
+            const answers = generator.answerQuestions(questions);
+            const input = {
+                answers,
+                status: 'completed'
+            };
+            const userId = hxUser.id(userIndex);
+            const key = _key(userIndex, surveyIndex);
+            return models.survey.answerSurvey(userId, survey.id, input)
+                .then(() => {
+                    const qxIdsNewlyAnswered = new Set(answers.map(answer => answer.questionId));
+                    const previousAnswers = mapAnswers.get(key, answers).filter(answer => !qxIdsNewlyAnswered.has(answer.questionId));
+                    mapAnswers.set(key, [...previousAnswers, ...answers]);
+                })
+                .then(() => mapStatus.set(key, 'completed'));
+        };
+    };
+
+    const answerSurveyPartialCompletedFn = function (userIndex, surveyIndex) {
+        return function () {
+            const survey = hxSurvey.server(surveyIndex);
+            const requiredQuestions = survey.questions.filter(question => question.required);
+            expect(requiredQuestions).to.have.length.above(0);
+            const questions = survey.questions.filter(question => !question.required);
+            const answers = generator.answerQuestions(questions);
+            const input = {
+                answers,
+                status: 'completed'
+            };
+            const userId = hxUser.id(userIndex);
+            return models.survey.answerSurvey(userId, survey.id, input)
+                .then(shared.throwingHandler, shared.expectedErrorHandler('answerRequiredMissing'));
+        };
+
+    };
+
     it('user 0 answers survey 0 all completed', answerSurveyFullFn(0, 0, 'completed'));
     it('verify user 0 survey 0 answers', verifySurveyAnswersFn(0, 0));
     it('verify user 0 survey 0 status', verifyStatusFn(0, 0, 'completed'));
@@ -130,83 +173,14 @@ describe('user survey unit', function () {
     it('verify user 1 survey 1 answers', verifySurveyAnswersFn(1, 1));
     it('verify user 1 survey 1 status', verifyStatusFn(1, 1, 'in-progress'));
 
-    it('user 0 answers survey 0 partial in-progress', answerSurveyPartialFn(0, 0));
-    //it('verify user 0 survey 0 answers', verifySurveyAnswersFn(0, 0));
-    it('verify user 0 survey 0 status', verifyStatusFn(0, 0, 'in-progress'));
+    it('user 0 answers survey 1 partial in-progress', answerSurveyPartialFn(0, 1));
+    it('verify user 0 survey 1 answers', verifySurveyAnswersFn(0, 1));
+    it('verify user 0 survey 1 status', verifyStatusFn(0, 1, 'in-progress'));
 
-    /*
+    it('user 1 answers survey 0 partial completed', answerSurveyPartialCompletedFn(1, 0));
+    it('verify user 1 survey 0 status', verifyStatusFn(1, 0, 'new'));
 
-    [1, 2, 7, 10, 11, 12].forEach(index => {
-        it(`answer survey ${index} and get/verify answered`, answerVerifySurveyFn(index));
-    });
-
-    it('error: answer without required questions', function () {
-        const survey = hxSurvey.server(4);
-        const qxs = survey.questions;
-        const answers = generator.answerQuestions(qxs);
-        const input = {
-            userId: hxUser.id(0),
-            surveyId: survey.id,
-            answers
-        };
-        const requiredIndices = _.range(qxs.length).filter(index => qxs[index].required);
-        expect(requiredIndices).to.have.length.above(0);
-        const removedAnswers = _.pullAt(answers, requiredIndices);
-        let px = models.answer.createAnswers(input)
-            .then(shared.throwingHandler, shared.expectedErrorHandler('answerRequiredMissing'));
-        _.range(1, removedAnswers.length).forEach(index => {
-            px = px
-                .then(() => answers.push(removedAnswers[index]))
-                .then(() => models.answer.createAnswers(input))
-                .then(shared.throwingHandler, shared.expectedErrorHandler('answerRequiredMissing'));
-        });
-        px = px.then(() => {
-            answers.push(removedAnswers[0]);
-            return auxAnswerVerifySurvey(survey, input);
-        });
-        return px;
-    });
-
-    it('reanswer without all required questions', function () {
-        const survey = hxSurvey.server(4);
-        const userId = hxUser.id(0);
-        return models.survey.getAnsweredSurvey(userId, survey.id)
-            .then(answeredSurvey => {
-                const qxs = survey.questions;
-                const answers = generator.answerQuestions(qxs);
-                const input = {
-                    userId: hxUser.id(0),
-                    surveyId: survey.id,
-                    answers
-                };
-                const requiredIndices = _.range(qxs.length).filter(index => qxs[index].required);
-                expect(requiredIndices).to.have.length.above(1);
-                _.pullAt(answers, requiredIndices[0]);
-                return models.answer.createAnswers(input)
-                    .then(() => {
-                        const removedQxId = qxs[requiredIndices[0]].id;
-                        const removedAnswer = answeredSurvey.questions.find(qx => (qx.id === removedQxId)).answer;
-                        answers.push({ questionId: removedQxId, answer: removedAnswer });
-                        return models.survey.getAnsweredSurvey(input.userId, input.surveyId)
-                            .then(answeredSurvey => {
-                                comparator.answeredSurvey(survey, answers, answeredSurvey);
-                            });
-                    });
-            });
-    });
-
-    it('error: answer with invalid question id', function () {
-        const survey = hxSurvey.server(6);
-        const qxs = survey.questions;
-        const answers = generator.answerQuestions(qxs);
-        const input = {
-            userId: hxUser.id(0),
-            surveyId: survey.id,
-            answers
-        };
-        answers[0].questionId = 999;
-        return models.answer.createAnswers(input)
-            .then(shared.throwingHandler, shared.expectedErrorHandler('answerQxNotInSurvey'));
-    });
-    */
+    it('user 0 reanswers survey 1 required plus completed', answerSurveyMissingPlusCompletedFn(0, 1));
+    it('verify user 0 survey 1 answers', verifySurveyAnswersFn(0, 1));
+    it('verify user 0 survey 1 status', verifyStatusFn(0, 1, 'completed'));
 });
