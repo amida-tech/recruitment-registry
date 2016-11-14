@@ -115,7 +115,6 @@ export class Choices extends Component {
                 id={choice.id}
                 value={choice.id}
                 data-itype={'choices.'+choice.type}
-                required={this.props.required}
                 onChange={this.handleChange}/>,
               <label htmlFor={choice.id}>
                 {choice.text}

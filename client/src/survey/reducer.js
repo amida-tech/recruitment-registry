@@ -27,13 +27,13 @@ export default (state = immutableState, action) => {
           newAnswer.answer = {'choice': parseInt(action.choice)};
           break;
         case "bool":
-          newAnswer.answer = {'boolValue': action.choice}
+          newAnswer.answer = {'boolValue': action.choice == true}
           break;
         case "choices.bool":
           simpleAnswer = false;
           newAnswer.answer = {
             'id': parseInt(action.choice),
-            'boolValue': action.choicesValue};
+            'boolValue': action.choicesValue == true};
           break;
         case "choices.text":
           simpleAnswer = false;
