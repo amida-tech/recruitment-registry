@@ -13,6 +13,7 @@ nav {
 			margin: 0;
 			line-height: 2em;
 			text-transform: capitalize;
+			margin-bottom: 0 !important;
 		}
 	}
 	ul {
@@ -28,7 +29,7 @@ nav {
 			font-size: 14px;
 			#nav--userSettings {
 				@extend .buttonPrimary;
-				padding: 6px 20px 0;
+				padding: 0px 20px 0;
 				&:after {
 					content: " ▾";
 				}
