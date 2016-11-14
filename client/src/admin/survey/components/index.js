@@ -3,13 +3,13 @@ import { connect } from 'react-redux';
 import * as actions from '../actions';
 import './index.scss';
 import * as SurveyFields from '../../../common/SurveyFields';
+import AdminAddQuestionModal from './question.js';
 
 export class AdminSurveyContainer extends Component {
   //Form submit seems to be such a good way to get what you need that I'm not
   //certain redux is the best call. However I'm doing it the redux way to learn.
-  submitAnswers(event){
-    event.preventDefault();
-      this.props.dispatch(actions.submitAnswers(this.props.surveyAnswers));
+  showModal(){
+    this.setState({modalStatus: true});
   }
 
   _changeAnswer(event) {
@@ -19,7 +19,7 @@ export class AdminSurveyContainer extends Component {
 
   render() {
     console.log(this.props);
-    const { id, name, questions } = this.props.selectedSurvey.toJS()
+    const { id, name, questions } = this.props.selectedSurvey.toJS();
     var questionnaire = [];
     if(questions){
       questionnaire = questions.map(question => {
@@ -91,6 +91,7 @@ export class AdminSurveyContainer extends Component {
     }
     return (
       <div>
+        <AdminAddQuestionModal modalStatus={this.state.modalStatus}/>
         <div className="columns">
           <div className="column is-one-thirds has-text-right">
             <h3 className="title is-3">Questionnaire</h3>
@@ -105,7 +106,7 @@ export class AdminSurveyContainer extends Component {
             <p><b>Last Updated: 3/15/16</b></p>
             <p><b className="gapRed">4 questions remaining</b></p>
             <p><button className="button buttonSecondary">Save Progress</button></p>
-            <p><button>Add New Questionnaire</button></p>
+            <p><button onClick={() => this.showModal()} >Add New Questionnaire</button></p>
           </div>
           <div className="column is-two-thirds">
             {questionnaire}
@@ -122,6 +123,12 @@ export class AdminSurveyContainer extends Component {
       </div>
     )}
 
+  constructor(props) {
+    super(props);
+    this.state  = {
+      modalStatus: false
+    }
+  }
   componentWillMount() {
     this.props.dispatch({type: 'GET_SURVEY_BY_ID', payload: this.props.params.id});
   }
@@ -131,8 +138,8 @@ export class AdminSurveyContainer extends Component {
 const mapStateToProps = function(state, ownProps) {
   return {
     data: state.get('survey'),
-    selectedSurvey: state.getIn(['survey', 'selectedSurvey']),
-    surveyAnswers: state.getIn(['survey', 'surveyAnswers']),
+    selectedSurvey: state.getIn(['adminSurvey', 'selectedSurvey']),
+    surveyAnswers: state.getIn(['adminSurvey', 'surveyAnswers']),
     vocab: state.getIn(['settings', 'language', 'vocabulary']),
     ...ownProps
   };

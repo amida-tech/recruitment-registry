@@ -91,34 +91,27 @@ export class SurveyContainer extends Component {
     }
 
     return (
-      <div id="survey" className="container">
-        <div className="survey row end-xs">
-          <div className="col-xs-12 col-md-4 pull-right">
-            <div className="survey-meta">
-              <h3>Questionnaire</h3>
-              <h1>{name}</h1>
-              <span className="questions-remaining">
-                { surveyQuestions && (surveyQuestions.size - surveyAnswers.size) } questions remaining
-              </span>
-
+      <div id="survey" className="survey columns">
+        <div className="column is-3 pull-right">
+          <div className="survey-meta">
+            <h3>Questionnaire</h3>
+            <h1>{name}</h1>
+            <span>{ surveyQuestions && (surveyQuestions.size - surveyAnswers.size) } Questions Remaining</span>
               { this.props.data.get('hasErrors') &&
               <div>
                   <p>{this.props.vocab.get('SUBMISSION_FAILURE')}</p>
               </div>
               }
-            </div>
           </div>
-          <div className="col-xs-12 col-md-7 text-left">
-            <form
-                name="questionForm"
-                onSubmit={(event) => this.submitAnswers(event)} key={id} className=""
-            >
-              <ol>
+        </div>
+        <div className="column is-6 text-left">
+          <form name="questionForm" onSubmit={(event) => this.submitAnswers(event)} key={id} className="">
+            {questionnaire}
+                <ol>
                 {questionnaire}
-              </ol>
-              <button className="submit">{this.props.vocab.get('SUBMIT')}</button>
-            </form>
-          </div>
+                </ol>
+            <button className="submit">{this.props.vocab.get('SUBMIT')}</button>
+          </form>
         </div>
       </div>
     )
