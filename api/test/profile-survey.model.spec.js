@@ -6,9 +6,8 @@ const chai = require('chai');
 
 const models = require('../models');
 const SharedSpec = require('./util/shared-spec.js');
-const History = require('./util/entity-history');
+const SurveyHistory = require('./util/survey-history');
 const Generator = require('./util/entity-generator');
-const comparator = require('./util/client-server-comparator');
 const translator = require('./util/translator');
 
 const expect = chai.expect;
@@ -18,33 +17,41 @@ const shared = new SharedSpec(generator);
 describe('profile survey unit', function () {
     before(shared.setUpFn());
 
-    const hxSurvey = new History(['id', 'name']);
+    const hxSurvey = new SurveyHistory();
 
-    it('get profile survey when none created', function () {
+    const emptyProfileSurvey = function () {
         return models.profileSurvey.getProfileSurvey()
             .then(result => {
                 expect(result.exists).to.equal(false);
             });
-    });
+    };
 
-    const createProfileSurveyFn = function () {
-        const clientSurvey = generator.newSurvey();
+    const emptyProfileSurveyId = function () {
+        return models.profileSurvey.getProfileSurveyId()
+            .then(id => expect(id).to.equal(0));
+    };
+
+    it('get profile survey when none created', emptyProfileSurvey);
+
+    it('get profile survey id when none created', emptyProfileSurveyId);
+
+    const createProfileSurveyIdFn = function () {
+        const survey = generator.newSurvey();
         return function () {
-            return models.profileSurvey.createProfileSurvey(clientSurvey)
-                .then(idOnlyServer => hxSurvey.push(clientSurvey, idOnlyServer));
+            return models.survey.createSurvey(survey)
+                .then(id => {
+                    hxSurvey.push(survey, { id });
+                    return models.profileSurvey.createProfileSurveyId(id);
+                });
         };
     };
 
-    const verifyProfileSurveyFn = function (index) {
+    const verifyProfileSurveyIdFn = function (index) {
         return function () {
-            return models.profileSurvey.getProfileSurvey()
-                .then(result => {
-                    expect(result.exists).to.equal(true);
-                    const server = result.survey;
+            return models.profileSurvey.getProfileSurveyId()
+                .then(profileSurveyId => {
                     const id = hxSurvey.id(index);
-                    expect(server.id).to.equal(id);
-                    hxSurvey.updateServer(index, server);
-                    return comparator.survey(hxSurvey.client(index), server);
+                    expect(profileSurveyId).to.equal(id);
                 });
         };
     };
@@ -53,21 +60,18 @@ describe('profile survey unit', function () {
         return function () {
             const survey = hxSurvey.server(index);
             const translation = translator.translateSurvey(survey, language);
-            delete translation.id;
-            return models.profileSurvey.updateProfileSurveyText(translation, language)
-                .then(() => {
-                    hxSurvey.translate(index, language, translation);
-                });
+            return models.survey.updateSurveyText(translation, language)
+                .then(() => hxSurvey.translate(index, language, translation));
         };
     };
 
     const verifyNotTranslatedProfileSurveyFn = function (index, language) {
         return function () {
             return models.profileSurvey.getProfileSurvey({ language })
-                .then(result => {
-                    expect(result.exists).to.equal(true);
+                .then(profileSurvey => {
+                    expect(profileSurvey.exists).to.equal(true);
                     const expected = hxSurvey.server(index);
-                    expect(result.survey).to.deep.equal(expected);
+                    expect(profileSurvey.survey).to.deep.equal(expected);
                 });
         };
     };
@@ -75,36 +79,91 @@ describe('profile survey unit', function () {
     const verifyTranslatedProfileSurveyFn = function (index, language) {
         return function () {
             return models.profileSurvey.getProfileSurvey({ language })
-                .then(result => {
-                    expect(result.exists).to.equal(true);
-                    translator.isSurveyTranslated(result.survey, language);
+                .then(profileSurvey => {
+                    expect(profileSurvey.exists).to.equal(true);
+                    translator.isSurveyTranslated(profileSurvey.survey, language);
                     const expected = hxSurvey.translatedServer(index, language);
-                    expect(result.survey).to.deep.equal(expected);
+                    expect(profileSurvey.survey).to.deep.equal(expected);
                 });
         };
     };
 
-    it('create profile survey 0', createProfileSurveyFn());
-    it('get/verify profile survey 0', verifyProfileSurveyFn(0));
+    const deleteProfileSurveyId = function () {
+        return models.profileSurvey.deleteProfileSurveyId();
+    };
 
-    it('check soft sync does not reset registry', function () {
-        return models.sequelize.sync({ force: false });
-    });
-    it('get/verify profile survey 0', verifyProfileSurveyFn(0));
+    it('create profile survey 0 using id', createProfileSurveyIdFn());
+
+    it('get/verify profile survey 0', shared.verifyProfileSurveyFn(hxSurvey, 0));
+
+    it('get/verify profile survey 0 id', verifyProfileSurveyIdFn(0));
 
     it('get profile survey 0 in spanish when no translation', verifyNotTranslatedProfileSurveyFn(0, 'es'));
 
     it('translate profile survey 0 to spanish', translateProfileSurveyFn(0, 'es'));
 
-    it('get/verify translated profile survey 0 (spanish)', verifyTranslatedProfileSurveyFn(0, 'es'));
+    it('get/verify translated profile survey 0 in spanish', verifyTranslatedProfileSurveyFn(0, 'es'));
 
-    it('create profile survey 1', createProfileSurveyFn());
 
-    it('get/verify profile survey 1', verifyProfileSurveyFn(1));
+    it('create profile survey 1 using id', createProfileSurveyIdFn());
+
+    it('get/verify profile survey 1 id', verifyProfileSurveyIdFn(1));
+
+    it('get/verify profile survey 1', shared.verifyProfileSurveyFn(hxSurvey, 1));
 
     it('get profile survey 1 in spanish when no translation', verifyNotTranslatedProfileSurveyFn(1, 'es'));
 
     it('translate profile survey 1 to spanish', translateProfileSurveyFn(1, 'es'));
 
-    it('get/verify translated profile survey 1 (spanish)', verifyTranslatedProfileSurveyFn(1, 'es'));
+    it('get/verify translated profile survey 1 in spanish', verifyTranslatedProfileSurveyFn(1, 'es'));
+
+
+    it('create profile survey 2', shared.createProfileSurveyFn(hxSurvey));
+
+    it('get/verify profile survey 2', shared.verifyProfileSurveyFn(hxSurvey, 2));
+
+    it('get/verify profile survey 2 id', verifyProfileSurveyIdFn(2));
+
+
+    it('delete profile survey', deleteProfileSurveyId);
+
+    it('verify empty profile survey', emptyProfileSurvey);
+
+    it('verify empty profile survey id', emptyProfileSurveyId);
+
+
+    it('create profile survey 3', shared.createProfileSurveyFn(hxSurvey));
+
+    it('get/verify profile survey 3', shared.verifyProfileSurveyFn(hxSurvey, 3));
+
+    it('get/verify profile survey 3 id', verifyProfileSurveyIdFn(3));
+
+    it('delete survey 3', function() {
+        const id = hxSurvey.id(3);
+        return models.survey.deleteSurvey(id);
+    });
+
+    it('verify empty profile survey', emptyProfileSurvey);
+
+    it('verify empty profile survey id', emptyProfileSurveyId);
+
+
+    it('create profile survey 4', shared.createProfileSurveyFn(hxSurvey));
+
+    it('get/verify profile survey 4', shared.verifyProfileSurveyFn(hxSurvey, 4));
+
+    it('get/verify profile survey 4 id', verifyProfileSurveyIdFn(4));
+
+    it('replace survey 4', function() {
+        const id = hxSurvey.id(4);
+        const replacementSurvey = generator.newSurvey();
+        return models.survey.replaceSurvey(id, replacementSurvey)
+            .then((id) => {
+                hxSurvey.push(replacementSurvey, { id });
+            });
+    });
+
+    it('get/verify profile survey 5 (replaced 4)', shared.verifyProfileSurveyFn(hxSurvey, 5));
+
+    it('get/verify profile survey 5 (replaced 4) id', verifyProfileSurveyIdFn(5));
 });

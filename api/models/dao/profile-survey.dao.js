@@ -4,10 +4,8 @@ const _ = require('lodash');
 
 const db = require('../db');
 
-const RRError = require('../../lib/rr-error');
-
 const sequelize = db.sequelize;
-const Registry = db.Registry;
+const ProfileSurvey = db.ProfileSurvey;
 const SurveyConsentType = db.SurveyConsentType;
 
 module.exports = class {
@@ -16,42 +14,38 @@ module.exports = class {
     }
 
     getProfileSurveyId() {
-        return Registry.findOne({
+        return ProfileSurvey.findOne({
                 raw: true,
-                attributes: ['profileSurveyId']
+                attributes: ['surveyId']
             })
-            .then(({ profileSurveyId }) => profileSurveyId ? profileSurveyId : null);
+            .then(record => {
+                if (record) {
+                    return record.surveyId;
+                } else {
+                    return 0;
+                }
+            });
+    }
+
+    createProfileSurveyIdTx(surveyId, transaction) {
+        return ProfileSurvey.destroy({where: {}, transaction })
+            .then(() => ProfileSurvey.create({ surveyId }, { transaction }));
+    }
+
+    createProfileSurveyId(surveyId) {
+        return sequelize.transaction(transaction => this.createProfileSurveyIdTx(surveyId, transaction));
+    }
+
+    deleteProfileSurveyId() {
+        return ProfileSurvey.destroy({ where: {} });
     }
 
     createProfileSurvey(survey) {
-        return sequelize.transaction(tx => {
-            return Registry.findOne()
-                .then(registry => {
-                    if (registry.profileSurveyId) {
-                        const id = registry.profileSurveyId;
-                        return this.survey.replaceSurveyTx(id, survey, tx)
-                            .then(id => ({ id }));
-                    } else {
-                        return this.survey.createSurveyTx(survey, tx)
-                            .then((id) => {
-                                registry.profileSurveyId = id;
-                                return registry.save({ transaction: tx })
-                                    .then(() => ({ id }));
-                            });
-                    }
-                });
-        });
-    }
-
-    updateProfileSurveyText({ name, sections }, language) {
-        return sequelize.transaction(tx => {
-            return this.getProfileSurveyId()
-                .then(id => {
-                    if (id) {
-                        return this.survey.updateSurveyTextTx({ id, name, sections }, language, tx);
-                    } else {
-                        return RRError.reject('registryNoProfileSurvey');
-                    }
+        return sequelize.transaction(transaction => {
+            return this.survey.createOrReplaceSurvey(survey)
+                .then(surveyId => {
+                    return this.createProfileSurveyIdTx(surveyId, transaction)
+                        .then(() => ({ id: surveyId }));
                 });
         });
     }
