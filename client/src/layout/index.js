@@ -10,7 +10,6 @@ class Layout extends Component {
   render() {
     const displayClass = displayAltClass(this.props.location.pathname);
     const altClass = displayClass ? 'alt-nav' : '';
-    console.log(this.props.location.pathname);
     return (
       <div className={altClass}>
         <Nav />
