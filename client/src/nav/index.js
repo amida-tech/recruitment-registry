@@ -14,7 +14,7 @@ class Nav extends Component {
           <ul>
             <li><Link to="/contact">Contact Us</Link></li>
             { loggedIn &&
-              <li><Link to="/">Dashboard</Link></li>
+              <li><Link to="/dashboard">Dashboard</Link></li>
             }
             { loggedIn &&
               <li><button id="nav--userSettings" onClick={::this._logout}>{this.props.data.getIn(['login', 'user', 'email'])}</button></li>
