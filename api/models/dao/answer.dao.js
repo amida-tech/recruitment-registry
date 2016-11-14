@@ -107,7 +107,7 @@ module.exports = class {
         Object.assign(this, dependencies);
     }
 
-    createAnswersTx({ userId, surveyId, language = 'en', answers }, tx) {
+    createAnswersTx({ userId, surveyId, answers, language = 'en', status = 'completed' }, transaction) {
         const ids = _.map(answers, 'questionId');
         return SurveyQuestion.findAll({
                 where: { surveyId },
@@ -125,29 +125,31 @@ module.exports = class {
                         qx.required = false;
                     }
                 });
-                const remainingRequired = new Set();
-                _.values(qxMap).forEach(qx => {
-                    if (qx.required) {
-                        remainingRequired.add(qx.questionId);
-                    }
-                });
-                return remainingRequired;
+                return qxMap;
             })
-            .then(remainingRequired => {
-                if (remainingRequired.size) {
-                    const ids = [...remainingRequired];
-                    return Answer.findAll({
-                            raw: true,
-                            where: { userId, surveyId, questionId: { $in: ids } },
-                            attributes: ['questionId']
-                        })
-                        .then(records => {
-                            const questionIds = records.map(record => record.questionId);
-                            const existingRequired = new Set(questionIds);
-                            if (existingRequired.size !== remainingRequired.size) {
-                                throw new RRError('answerRequiredMissing');
-                            }
-                        });
+            .then(qxMap => {
+                if (status === 'completed') {
+                    const remainingRequired = new Set();
+                    _.values(qxMap).forEach(qx => {
+                        if (qx.required) {
+                            remainingRequired.add(qx.questionId);
+                        }
+                    });
+                    if (remainingRequired.size) {
+                        const ids = [...remainingRequired];
+                        return Answer.findAll({
+                                raw: true,
+                                where: { userId, surveyId, questionId: { $in: ids } },
+                                attributes: ['questionId']
+                            })
+                            .then(records => {
+                                const questionIds = records.map(record => record.questionId);
+                                const existingRequired = new Set(questionIds);
+                                if (existingRequired.size !== remainingRequired.size) {
+                                    throw new RRError('answerRequiredMissing');
+                                }
+                            });
+                    }
                 }
             })
             .then(() => Answer.destroy({
@@ -156,18 +158,18 @@ module.exports = class {
                     surveyId,
                     userId
                 },
-                transaction: tx
+                transaction
             }))
             .then(() => this.surveyConsentType.listSurveyConsentTypes({
                 userId,
                 surveyId,
                 action: 'create'
-            }, tx))
+            }, transaction))
             .then(missingConsentDocumentHandler())
             .then(() => {
                 answers = _.filter(answers, answer => answer.answer);
                 if (answers.length) {
-                    return fileAnswer({ userId, surveyId, language, answers }, tx);
+                    return fileAnswer({ userId, surveyId, language, answers }, transaction);
                 }
             });
     }

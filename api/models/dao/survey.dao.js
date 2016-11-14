@@ -14,6 +14,7 @@ const Survey = db.Survey;
 const SurveyQuestion = db.SurveyQuestion;
 const ProfileSurvey = db.ProfileSurvey;
 const SurveyText = db.SurveyText;
+const UserSurvey = db.UserSurvey;
 
 const textHandler = textTableMethods(sequelize, 'survey_text', 'surveyId', ['name']);
 
@@ -275,5 +276,27 @@ module.exports = class {
     getAnsweredSurveyByName(userId, name, options) {
         const p = this.getSurveyByName(name, options);
         return this._getAnsweredSurvey(p, userId);
+    }
+
+    answerSurvey(userId, surveyId, input) {
+        const { status, language, answers } = input;
+        return sequelize.transaction(transaction => {
+            return UserSurvey.findOne({
+                    where: { userId, surveyId },
+                    raw: true,
+                    attributes: ['status'],
+                    transaction
+                })
+                .then(userSurvey => {
+                    if (!userSurvey) {
+                        return UserSurvey.create({ userId, surveyId, status }, { transaction });
+                    } else if (userSurvey.status !== status) {
+                        return UserSurvey.destroy({ where: { userId, surveyId } }, { transaction })
+                            .then(() => UserSurvey.create({ userId, surveyId, status }, { transaction }));
+                    }
+                })
+                .then(() => this.answer.createAnswers({ userId, surveyId, answers, language, status }, transaction));
+        });
+
     }
 };
