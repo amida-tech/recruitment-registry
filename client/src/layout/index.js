@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import Nav from '../nav/index';
+import Nav from '../nav';
 import { connect } from 'react-redux';
 
 class Layout extends Component {
@@ -8,11 +8,12 @@ class Layout extends Component {
   }
 
   render() {
-    const altClass = this.props.data.get("loggedIn") ? '' : 'alt-nav';
+    const displayClass = displayAltClass(this.props.location.pathname);
+    const altClass = displayClass ? 'alt-nav' : '';
     return (
       <div className={altClass}>
         <Nav />
-        <main id="content" className="">{this.props.children}</main>
+        <main id="content">{this.props.children}</main>
       </div>
     );
   }
@@ -26,6 +27,15 @@ function mapStateToProps(state, ownProps) {
     vocab: state.getIn(['settings', 'language', 'vocabulary']),
     ...ownProps
   };
+}
+
+function displayAltClass(pathName) {
+  const paths = ['/login', '/register', '/dashboard'];
+  if (paths.indexOf(pathName) >= 0) {
+    return true;
+  } else {
+    return false;
+  }
 }
 
 export default connect(mapStateToProps)(Layout);
