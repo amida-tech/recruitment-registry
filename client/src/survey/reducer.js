@@ -80,7 +80,6 @@ export default (state = immutableState, action) => {
     case actionTypes.SUBMIT_SURVEY_FAILURE:
       return state.set('hasErrors', true);
     case actionTypes.SUBMIT_SURVEY_SUCCESS:
-      alert("You did it MacGuyver!");
       return state.set('hasErrors', false);
     default:
       return state;
