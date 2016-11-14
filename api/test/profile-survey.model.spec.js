@@ -104,7 +104,6 @@ describe('profile survey unit', function () {
 
     it('get/verify translated profile survey 0 in spanish', verifyTranslatedProfileSurveyFn(0, 'es'));
 
-
     it('create profile survey 1 using id', createProfileSurveyIdFn());
 
     it('get/verify profile survey 1 id', verifyProfileSurveyIdFn(1));
@@ -117,13 +116,11 @@ describe('profile survey unit', function () {
 
     it('get/verify translated profile survey 1 in spanish', verifyTranslatedProfileSurveyFn(1, 'es'));
 
-
     it('create profile survey 2', shared.createProfileSurveyFn(hxSurvey));
 
     it('get/verify profile survey 2', shared.verifyProfileSurveyFn(hxSurvey, 2));
 
     it('get/verify profile survey 2 id', verifyProfileSurveyIdFn(2));
-
 
     it('delete profile survey', deleteProfileSurveyId);
 
@@ -131,14 +128,13 @@ describe('profile survey unit', function () {
 
     it('verify empty profile survey id', emptyProfileSurveyId);
 
-
     it('create profile survey 3', shared.createProfileSurveyFn(hxSurvey));
 
     it('get/verify profile survey 3', shared.verifyProfileSurveyFn(hxSurvey, 3));
 
     it('get/verify profile survey 3 id', verifyProfileSurveyIdFn(3));
 
-    it('delete survey 3', function() {
+    it('delete survey 3', function () {
         const id = hxSurvey.id(3);
         return models.survey.deleteSurvey(id);
     });
@@ -147,14 +143,13 @@ describe('profile survey unit', function () {
 
     it('verify empty profile survey id', emptyProfileSurveyId);
 
-
     it('create profile survey 4', shared.createProfileSurveyFn(hxSurvey));
 
     it('get/verify profile survey 4', shared.verifyProfileSurveyFn(hxSurvey, 4));
 
     it('get/verify profile survey 4 id', verifyProfileSurveyIdFn(4));
 
-    it('replace survey 4', function() {
+    it('replace survey 4', function () {
         const id = hxSurvey.id(4);
         const replacementSurvey = generator.newSurvey();
         return models.survey.replaceSurvey(id, replacementSurvey)

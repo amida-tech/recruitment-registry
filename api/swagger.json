@@ -493,7 +493,7 @@
         "/profile-survey": {
             "x-swagger-router-controller": "profile-survey.controller",
             "post": {
-                "summary": "Creates/replaces profile survey",
+                "summary": "Creates survey as profile survey",
                 "operationId": "createProfileSurvey",
                 "security": [{
                     "admin": []
@@ -540,31 +540,52 @@
                 }
             }
         },
-        "/profile-survey/text/{language}": {
+        "/profile-survey-id": {
             "x-swagger-router-controller": "profile-survey.controller",
-            "patch": {
-                "summary": "Updates or translates profile survey text fields",
-                "operationId": "updateProfileSurveyText",
+            "post": {
+                "summary": "Assigns survey as profile survey",
+                "operationId": "createProfileSurveyId",
                 "security": [{
                     "admin": []
                 }],
                 "parameters": [{
-                    "name": "language",
-                    "in": "path",
-                    "description": "Language code",
-                    "required": true,
-                    "type": "string",
-                    "minLength": 2
-                }, {
-                    "name": "textUpdate",
+                    "name": "surveyId",
                     "in": "body",
+                    "description": "Profile survey",
                     "required": true,
                     "schema": {
-                        "$ref": "#/definitions/profileSurveyTextUpdate"
+                        "$ref": "#/definitions/newProfileSurveyId"
                     }
                 }],
                 "responses": {
-                    "204": {
+                    "201" : {
+                        "$ref": "#/responses/idSuccess"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "get": {
+                "summary": "Gets profile survey id",
+                "operationId": "getProfileSurveyId",
+                "responses": {
+                    "200" : {
+                        "description": "Successul response",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Remove profile survey",
+                "operationId": "deleteProfileSurveyId",
+                "responses": {
+                    "204" : {
                         "description": "Successul response"
                     },
                     "default": {
@@ -2129,20 +2150,13 @@
             },
             "additionalProperties": false
         },
-        "profileSurveyTextUpdate": {
+        "newProfileSurveyId": {
             "type": "object",
-            "required": ["name"],
+            "required": ["profileSurveyId"],
             "properties": {
-               "name": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "sections": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/sectionTextUpdate"
-                    },
-                    "minItems": 1
+                "profileSurveyId": {
+                    "type": "integer",
+                    "minimum": 1
                 }
             },
             "additionalProperties": false

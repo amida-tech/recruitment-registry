@@ -7,7 +7,7 @@ const chai = require('chai');
 const config = require('../config');
 
 const SharedIntegration = require('./util/shared-integration');
-const History = require('./util/entity-history');
+const SurveyHistory = require('./util/survey-history');
 const Generator = require('./util/entity-generator');
 const comparator = require('./util/client-server-comparator');
 const translator = require('./util/translator');
@@ -22,7 +22,7 @@ describe('profile survey integration', function () {
         auth: null
     };
 
-    const hxSurvey = new History(['id', 'name']);
+    const hxSurvey = new SurveyHistory();
 
     before(shared.setUpFn(store));
 
@@ -35,7 +35,7 @@ describe('profile survey integration', function () {
             .end(done);
     });
 
-    it('get profile survey when none created', function (done) {
+    const emptyProfileSurvey = function (done) {
         store.server
             .get('/api/v1.0/profile-survey')
             .expect(200)
@@ -46,8 +46,52 @@ describe('profile survey integration', function () {
                 expect(res.body.exists).to.equal(false);
                 done();
             });
+    };
 
-    });
+    const emptyProfileSurveyId = function (done) {
+        store.server
+            .get('/api/v1.0/profile-survey-id')
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    done(err);
+                }
+                expect(res.body).to.equal(0);
+                done();
+            });
+    };
+
+    it('get profile survey when none created', emptyProfileSurvey);
+
+    it('get profile survey id when none created', emptyProfileSurveyId);
+
+    const createSurvey = function (done) {
+        const clientSurvey = generator.newSurvey();
+        store.server
+            .post('/api/v1.0/surveys')
+            .set('Authorization', store.auth)
+            .send(clientSurvey)
+            .expect(201)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                hxSurvey.push(clientSurvey, res.body);
+                done();
+            });
+    };
+
+    const createProfileSurveyIdFn = function (index) {
+        return function (done) {
+            const id = hxSurvey.id(index);
+            store.server
+                .post('/api/v1.0/profile-survey-id')
+                .set('Authorization', store.auth)
+                .send({ profileSurveyId: id })
+                .expect(201)
+                .end(done);
+        };
+    };
 
     const createProfileSurveyFn = function () {
         return function (done) {
@@ -66,12 +110,6 @@ describe('profile survey integration', function () {
                 });
         };
     };
-
-    it('login as super', shared.loginFn(store, config.superUser));
-
-    it('create profile survey 0', createProfileSurveyFn());
-
-    it('logout as super', shared.logoutFn(store));
 
     const verifyProfileSurveyFn = function (index) {
         return function (done) {
@@ -93,13 +131,35 @@ describe('profile survey integration', function () {
         };
     };
 
-    const translateProfileSurveyFn = function (index, language) {
+    const verifyProfileSurveyIdFn = function (index) {
+        return function (done) {
+            store.server
+                .get('/api/v1.0/profile-survey-id')
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    const id = hxSurvey.id(index);
+                    expect(id).to.equal(res.body);
+                    done();
+                });
+        };
+    };
+
+    const deleteProfileSurveyId = function (done) {
+        store.server
+            .delete('/api/v1.0/profile-survey-id')
+            .expect(204)
+            .end(done);
+    };
+
+    const translateSurveyFn = function (index, language) {
         return function (done) {
             const survey = hxSurvey.server(index);
             const translation = translator.translateSurvey(survey, language);
-            delete translation.id;
             store.server
-                .patch(`/api/v1.0/profile-survey/text/${language}`)
+                .patch(`/api/v1.0/surveys/text/${language}`)
                 .set('Authorization', store.auth)
                 .send(translation)
                 .expect(204)
@@ -154,17 +214,27 @@ describe('profile survey integration', function () {
         };
     };
 
-    it(`get profile survey 0`, verifyProfileSurveyFn(0));
+    it('login as super', shared.loginFn(store, config.superUser));
+
+    it('create survey 0', createSurvey);
+
+    it('create profile survey 0 using id', createProfileSurveyIdFn(0));
+
+    it('logout as super', shared.logoutFn(store));
+
+    it(`get/verify profile survey 0`, verifyProfileSurveyFn(0));
+
+    it(`get/verify profile survey 0 id`, verifyProfileSurveyIdFn(0));
 
     it('get profile survey 0 in spanish when no translation', verifyNotTranslatedProfileSurveyFn(0, 'es'));
 
     it('login as super', shared.loginFn(store, config.superUser));
 
-    it('translate profile survey 0 to spanish', translateProfileSurveyFn(0, 'es'));
+    it('translate profile survey 0 to spanish', translateSurveyFn(0, 'es'));
 
     it('logout as super', shared.logoutFn(store));
 
-    it('get/verify translated profile survey 0 (spanish)', verifyTranslatedProfileSurveyFn(0, 'es'));
+    it('get/verify translated profile survey 0 in spanish', verifyTranslatedProfileSurveyFn(0, 'es'));
 
     it('login as super', shared.loginFn(store, config.superUser));
 
@@ -172,15 +242,97 @@ describe('profile survey integration', function () {
 
     it('logout as super', shared.logoutFn(store));
 
+    it(`get/verify profile survey 1 id`, verifyProfileSurveyIdFn(1));
+
     it('get/verify profile survey 1', verifyProfileSurveyFn(1));
 
     it('get profile survey 1 in spanish when no translation', verifyNotTranslatedProfileSurveyFn(1, 'es'));
 
     it('login as super', shared.loginFn(store, config.superUser));
 
-    it('translate profile survey 1 to spanish', translateProfileSurveyFn(1, 'es'));
+    it('translate profile survey 1 to spanish', translateSurveyFn(1, 'es'));
 
     it('logout as super', shared.logoutFn(store));
 
-    it('get/verify translated profile survey 1 (spanish)', verifyTranslatedProfileSurveyFn(1, 'es'));
+    it('get/verify translated profile survey 1 in spanish', verifyTranslatedProfileSurveyFn(1, 'es'));
+
+    it('login as super', shared.loginFn(store, config.superUser));
+
+    it('create profile survey 2', createProfileSurveyFn());
+
+    it('logout as super', shared.logoutFn(store));
+
+    it(`get/verify profile survey 2 id`, verifyProfileSurveyIdFn(2));
+
+    it('get/verify profile survey 2', verifyProfileSurveyFn(2));
+
+    it('delete profile survey', deleteProfileSurveyId);
+
+    it('verify empty profile survey', emptyProfileSurvey);
+
+    it('verify empty profile survey id', emptyProfileSurveyId);
+
+    it('login as super', shared.loginFn(store, config.superUser));
+
+    it('create profile survey 3', createProfileSurveyFn());
+
+    it('logout as super', shared.logoutFn(store));
+
+    it('get/verify profile survey 3', verifyProfileSurveyFn(3));
+
+    it('get/verify profile survey 3 id', verifyProfileSurveyIdFn(3));
+
+    it('login as super', shared.loginFn(store, config.superUser));
+
+    it('delete survey 3', function (done) {
+        const id = hxSurvey.id(3);
+        store.server
+            .delete(`/api/v1.0/surveys/${id}`)
+            .set('Authorization', store.auth)
+            .expect(204)
+            .end(done);
+    });
+
+    it('logout as super', shared.logoutFn(store));
+
+    it('verify empty profile survey', emptyProfileSurvey);
+
+    it('verify empty profile survey id', emptyProfileSurveyId);
+
+    it('login as super', shared.loginFn(store, config.superUser));
+
+    it('create profile survey 4', createProfileSurveyFn());
+
+    it('logout as super', shared.logoutFn(store));
+
+    it('get/verify profile survey 4', verifyProfileSurveyFn(4));
+
+    it('get/verify profile survey 4 id', verifyProfileSurveyIdFn(4));
+
+    it('login as super', shared.loginFn(store, config.superUser));
+
+    it('replace survey 4', function (done) {
+        const id = hxSurvey.id(4);
+        const replacementSurvey = generator.newSurvey();
+        replacementSurvey.parentId = id;
+        store.server
+            .post(`/api/v1.0/surveys`)
+            .set('Authorization', store.auth)
+            .send(replacementSurvey)
+            .expect(201)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                delete replacementSurvey.parentId;
+                hxSurvey.push(replacementSurvey, res.body);
+                done();
+            });
+    });
+
+    it('logout as super', shared.logoutFn(store));
+
+    it('get/verify profile survey 5 (replaced 4)', verifyProfileSurveyFn(5));
+
+    it('get/verify profile survey 5 (replaced 4) id', verifyProfileSurveyIdFn(5));
 });

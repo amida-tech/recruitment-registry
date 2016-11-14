@@ -136,8 +136,8 @@ module.exports = class {
                     .then((id) => {
                         return survey.destroy({ transaction })
                             .then(() => SurveyQuestion.destroy({ where: { surveyId: survey.id }, transaction }))
-                            .then(() => ProfileSurvey.destroy({ where: {surveyId: survey.id}, transaction }))
-                            .then(() => ProfileSurvey.create({ surveyId: id }, { transaction } ))
+                            .then(() => ProfileSurvey.destroy({ where: { surveyId: survey.id }, transaction }))
+                            .then(() => ProfileSurvey.create({ surveyId: id }, { transaction }))
                             .then(() => id);
                     });
             });
@@ -166,7 +166,7 @@ module.exports = class {
         return sequelize.transaction(transaction => {
             return Survey.destroy({ where: { id }, transaction })
                 .then(() => SurveyQuestion.destroy({ where: { surveyId: id }, transaction }))
-                .then(() => ProfileSurvey.destroy({ where: {surveyId: id}, transaction }));
+                .then(() => ProfileSurvey.destroy({ where: { surveyId: id }, transaction }));
         });
     }
 
