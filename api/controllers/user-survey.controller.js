@@ -45,3 +45,12 @@ exports.getUserSurvey = function (req, res) {
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };
+
+exports.listUserSurveys = function (req, res) {
+    const userId = req.user.id;
+    const language = _.get(req, 'swagger.params.language.value');
+    const options = { language };
+    models.userSurvey.listUserSurveys(userId, options)
+        .then(result => res.status(200).json(result))
+        .catch(shared.handleError(res));
+};

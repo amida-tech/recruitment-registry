@@ -35,6 +35,18 @@ describe('user survey unit', function () {
         it(`create user ${i}`, shared.createUser(hxUser));
     }
 
+    const verifyNoUserSurveys = function (userIndex) {
+        return function () {
+            const userId = hxUser.id(userIndex);
+            return models.userSurvey.listUserSurveys(userId)
+                .then(result => expect(result.length).to.equal(0));
+        };
+    };
+
+    for (let i = 0; i < userCount; ++i) {
+        it(`verify no surveys for user ${i}`, verifyNoUserSurveys(i));
+    }
+
     const createSurveyFn = function () {
         return function () {
             const survey = generator.newSurvey();
@@ -72,6 +84,20 @@ describe('user survey unit', function () {
     it('verify user 0 survey 1 status', verifyStatusFn(0, 0, 'new'));
     it('verify user 1 survey 0 status', verifyStatusFn(0, 0, 'new'));
     it('verify user 1 survey 1 status', verifyStatusFn(0, 0, 'new'));
+
+    const verifyUserSurveyListFn = function (userIndex, statusList) {
+        return function () {
+            const userId = hxUser.id(userIndex);
+            return models.userSurvey.listUserSurveys(userId)
+                .then(userSurveys => {
+                    const expected = hxSurvey.listServers().map(({ id, name }, index) => ({ id, name, status: statusList[index] }));
+                    expect(userSurveys).to.deep.equal(expected);
+                });
+        };
+    };
+
+    it('verify user 0 user survey list', verifyUserSurveyListFn(0, ['new', 'new', 'new']));
+    it('verify user 1 user survey list', verifyUserSurveyListFn(1, ['new', 'new', 'new']));
 
     const verifyUserSurveyFn = function (userIndex, surveyIndex, status) {
         return function () {
@@ -211,11 +237,15 @@ describe('user survey unit', function () {
     it('verify user 0 survey 0 answers', verifyUserSurveyAnswersFn(0, 0, 'completed'));
     it('verify user 0 survey 0 answers (with survey)', verifyUserSurveyAnswersFn(0, 0, 'completed', true));
 
+    it('verify user 0 user survey list', verifyUserSurveyListFn(0, ['completed', 'new', 'new']));
+
     it('user 1 answers survey 1 all in-progress', answerSurveyFullFn(1, 1, 'in-progress'));
     it('verify user 1 survey 1', verifyUserSurveyFn(1, 1, 'in-progress'));
     it('verify user 1 survey 1 status', verifyStatusFn(1, 1, 'in-progress'));
     it('verify user 1 survey 1 answers', verifyUserSurveyAnswersFn(1, 1, 'in-progress'));
     it('verify user 1 survey 1 answers (with survey)', verifyUserSurveyAnswersFn(1, 1, 'in-progress', true));
+
+    it('verify user 1 user survey list', verifyUserSurveyListFn(1, ['new', 'in-progress', 'new']));
 
     it('user 1 reanswers survey 1 all in-progress', answerSurveyFullFn(1, 1, 'in-progress'));
     it('verify user 1 survey 1', verifyUserSurveyFn(1, 1, 'in-progress'));
@@ -223,11 +253,15 @@ describe('user survey unit', function () {
     it('verify user 1 survey 1 answers', verifyUserSurveyAnswersFn(1, 1, 'in-progress'));
     it('verify user 1 survey 1 answers (with survey)', verifyUserSurveyAnswersFn(1, 1, 'in-progress', true));
 
+    it('verify user 1 user survey list', verifyUserSurveyListFn(1, ['new', 'in-progress', 'new']));
+
     it('user 0 answers survey 1 partial in-progress', answerSurveyPartialFn(0, 1));
     it('verify user 0 survey 1', verifyUserSurveyFn(0, 1, 'in-progress'));
     it('verify user 0 survey 1 status', verifyStatusFn(0, 1, 'in-progress'));
     it('verify user 0 survey 1 answers', verifyUserSurveyAnswersFn(0, 1, 'in-progress'));
     it('verify user 0 survey 1 answers (with survey)', verifyUserSurveyAnswersFn(0, 1, 'in-progress', true));
+
+    it('verify user 0 user survey list', verifyUserSurveyListFn(0, ['completed', 'in-progress', 'new']));
 
     it('user 1 answers survey 0 partial completed', answerSurveyPartialCompletedFn(1, 0));
     it('verify user 1 survey 0', verifyUserSurveyFn(1, 0, 'new'));
@@ -235,9 +269,13 @@ describe('user survey unit', function () {
     it('verify user 1 survey 0 answers', verifyUserSurveyAnswersFn(1, 0, 'new'));
     it('verify user 1 survey 0 answers (with survey)', verifyUserSurveyAnswersFn(1, 0, 'new', true));
 
+    it('verify user 1 user survey list', verifyUserSurveyListFn(1, ['new', 'in-progress', 'new']));
+
     it('user 0 reanswers survey 1 required plus completed', answerSurveyMissingPlusCompletedFn(0, 1));
     it('verify user 0 survey 1', verifyUserSurveyFn(0, 1, 'completed'));
     it('verify user 0 survey 1 status', verifyStatusFn(0, 1, 'completed'));
     it('verify user 0 survey 1 answers', verifyUserSurveyAnswersFn(0, 1, 'completed'));
     it('verify user 0 survey 1 answers (with survey)', verifyUserSurveyAnswersFn(0, 1, 'completed', true));
+
+    it('verify user 0 user survey list', verifyUserSurveyListFn(0, ['completed', 'completed', 'new']));
 });

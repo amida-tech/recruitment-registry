@@ -1755,6 +1755,36 @@
                 }
             }
         },
+        "/user-surveys": {
+            "x-swagger-router-controller": "user-survey.controller",
+            "get": {
+                "summary": "Lists user surveys",
+                "description": "Only returns id, name and status fields.",
+                "operationId": "listUserSurveys",
+                "security": [{
+                    "participant": []
+                }],
+                "parameters": [{
+                    "name": "language",
+                    "in": "query",
+                    "description": "Language code",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 2
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response.",
+                        "schema": {
+                            "$ref": "#/definitions/userSurveyDashboard"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
         "/user-surveys/{id}": {
             "x-swagger-router-controller": "user-survey.controller",
             "parameters": [{
@@ -2315,7 +2345,31 @@
             "type": "array",
             "items": {
                 "$ref": "#/definitions/surveyInfo"
-            }
+            },
+            "additionalProperties": false
+        },
+        "userSurveyInfo": {
+            "type": "object",
+            "required": ["id", "name", "status"],
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/surveyStatus"
+                }
+            },
+            "additionalProperties": false
+        },
+        "userSurveyDashboard": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/userSurveyInfo"
+            },
+            "additionalProperties": false
         },
         "choiceType": {
             "type": "string",
