@@ -15,7 +15,9 @@
 				margin-bottom: 21px;
 				@extend .utility--shadow-text-1;
 			}
-			button {
+			a {
+				@extend .btn;
+				@extend .buttonFix;
 				@extend .buttonPrimary;
 				@extend .light;
 				@extend .utility--shadow-2;
@@ -23,7 +25,7 @@
 				text-align: center;
 				position: relative;
 				margin: 0 auto;
-				display:block;
+				display: inline-block;
 			}
 		}
 	}

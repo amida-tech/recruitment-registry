@@ -21,5 +21,19 @@
     }
   }
 
+  .container{
+    margin-bottom: 10px;
+    border: 1px solid $gap-medium-grey;
+    padding: 0px 10px 20px 10px;
+    border-radius: 4px;
+    max-width: 650px;
+    @extend .utility--shadow-1;
+    background-color: $gap-white;
+  }
+
+  .special{
+    position: relative;
+    top: 20px;
+  }
 
 }
