@@ -493,8 +493,8 @@
                     }
                 }],
                 "responses": {
-                    "201" : {
-                        "$ref": "#/responses/idSuccess"
+                    "204" : {
+                        "description": "Successul response"
                     },
                     "default": {
                         "$ref": "#/responses/genericError"

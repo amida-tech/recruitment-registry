@@ -88,7 +88,7 @@ describe('profile survey integration', function () {
                 .post('/api/v1.0/profile-survey-id')
                 .set('Authorization', store.auth)
                 .send({ profileSurveyId: id })
-                .expect(201)
+                .expect(204)
                 .end(done);
         };
     };

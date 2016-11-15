@@ -57,7 +57,7 @@ JWT needs to be stored on the client and is used in other API calls for [authori
 ### Authorization
 <a name="authorization"/>
 
-For all API resources that require authorization, the JWT ([authentication](#authentication)) has to be specified in the HTTP Authorization header
+For all API resources that require authorization, the JWT has to be specified in the HTTP Authorization header
 
 ```js
 request
@@ -83,22 +83,22 @@ In the case of error the following error codes are used
 - 401 (Unauthorized): Indicates JWT specified in the Authorization header is invalid or does not correspond to an active user.
 - 403 (Forbidden): Indicates JWT specified in the Authorization header is valid and corresponds to a user but that user does not have permission to access to the resource requested.
 - 404 (Not Found): Indicates resource does not exist.
-- 500 (Internal Server Error): Indicates an unexpected run time errors.
+- 500 (Internal Server Error): Indicates an unexpected run time error.
 
 When server responds with an error status, an error object is always included in the response body and minimally contains `message` property.
 
 ### System Administration
 <a name="system-administration"/>
 
-Before any participant can use system, questions and surveys that are to be answered by the participants must be created in the system.  In particular one of the surveys must be specified as a profile survey.  If the registry requires consent documents they must also be created.
+Before any participant can use the system, questions and surveys that are to be answered by the participants must be created.  If use cases involve consent documents and/or profile survey (asurvey that needs to be answered during registration), those artifacts need to be created as well.
 
-This section administrative API to achieve these tasks.  Majority of these tasks can also be done during installation with registry specific system initialization scripts.  In addition the input format of resources (questions, surveys, consent documents) are also examplified.
+This section administrative API to achieve these tasks.  Majority of these tasks can also be done during installation with registry specific system initialization scripts.  In addition the input format of resources (questions, surveys, consent documents, etc.) are examplified.
 
 All API requests in this section requires `admin` authorization.
 
 ##### Questions
 
-Questions can be created either individually or as part of a [survey](#admin-surveys).  Either way they are stored independently than surveys and can be shared by multiple surveys.
+Questions can be created either individually or as part of a [survey](#admin-surveys).  Either way they are stored independently than surveys and can be shared.
 
 There are four types of questions: `text`, `bool`, `choice` and `choices`.
 
@@ -402,7 +402,45 @@ Surveys can be soft deleted by `/surveys/{id}` resource.  It is also possible re
 ##### Profile Survey
 <a name="admin-profile-survey"/>
 
-Recruitment Registries are required to have one special survey called profile survey.  This special survey is used during registration of participants.  JSON definition of this survey does not have any difference from other surveys as desribed in [survey administration](#admin-surveys).  Profile survey is created using `/profile-survey` resource
+Recruitment Registries can have a special survey called profile survey that can be used during registration of participants. Profile surveys are optional but if one is specified, answers are required during registration.
+
+Any existing survey can be assigned to be the profile survey using `/profile-survey-id` resource
+
+```
+request
+    .post('http://localhost:9005/api/v1.0/profile-survey-id')
+    .set('Authorization', 'Bearer ' + jwt)
+    .send({ profileSurveyId: 1})
+    .then(res => {
+        console.log(res.status);  // 201
+        console.log(res.body);    // id of the survey
+    });
+```
+
+The id of the survey that is assigned to be the profile survey is available using `/profile-survey-id` resource
+
+```
+request
+    .get('http://localhost:9005/api/v1.0/profile-survey-id')
+    .set('Authorization', 'Bearer ' + jwt)
+    .then(res => {
+        console.log(res.status);  // 200
+        console.log(res.body);    // id of the profile survey
+    });
+```
+
+Profile survey assignment can be removed in case your modified use case does not require it anymore
+
+```
+request
+    .delete('http://localhost:9005/api/v1.0/profile-survey-id')
+    .set('Authorization', 'Bearer ' + jwt)
+    .then(res => {
+        console.log(res.status);  // 204
+    });
+```
+
+An additional resource `/profile-survey` is available to create a new survey and assign it as the profile survey with one call. JSON definition of the input survey is as described in [survey administration](#admin-surveys)
 
 ```
 const profileSurvey = {
@@ -511,7 +549,9 @@ This API does not provide a resource to delete Consent Documents since there is 
 ### Registration
 <a name="registration"/>
 
-This section describes the resources that are needed to register a participant.  During registration participants are expected to specify their account details `username`, `password` and `email` and answer the profile survey that has been created in [Profile Survey Administration](#admin-profile-survey).  The profile survey is available without authorization using `/profile-survey` resource
+This section describes the resources that are needed to register a participant.  During registration participants are expected to specify their account details `username`, `password` and `email`. If a profile server has been specified as in [Profile Survey Administration](#admin-profile-survey) then answers to the profile survey have to be specifed specified as well.
+
+The profile survey is available without authorization using `/profile-survey` resource
 
 ```js
 let profileSurvey;
@@ -524,97 +564,102 @@ request
 	});
 ```
 
-Server responds with a profile survey in response body which also includes survey, question and choice id's that are needed to create answers
+Server responds with the profile survey in response body and includes survey, question and choice id's that are needed to create answers.
 
 ```js
 // content of profileSurvey
 {
-    "id": 2,
-    "name": "Alzheimer",
-    "questions": [
-        {
-            "id": 6,
-            "type": "choice",
-            "text": "Gender",
-            "choices": [
-                {
-                    "id": 13,
-                    "text": "male"
-                },
-                {
-                    "id": 14,
-                    "text": "female"
-                },
-                {
-                    "id": 15,
-                    "text": "other"
-                }
-            ],
-            "required": true
-        },
-        {
-            "id": 7,
-            "type": "text",
-            "text": "Zip code",
-            "required": false
-        },
-        {
-            "id": 8,
-            "type": "bool",
-            "text": "Family history of memory disorders/AD/dementia?",
-            "required": true
-        },
-        {
-            "id": 9,
-            "type": "choices",
-            "text": "How did you hear about us?",
-            "choices": [
-                {
-                    "id": 16,
-                    "type": "bool",
-                    "text": "TV"
-                },
-                {
-                    "id": 17,
-                    "type": "bool",
-                    "text": "Radio"
-                },
-                {
-                    "id": 18,
-                    "type": "bool",
-                    "text": "Newspaper"
-                },
-                {
-                    "id": 19,
-                    "type": "bool",
-                    "text": "Facebook/Google Ad/OtherInternet ad"
-                },
-                {
-                    "id": 20,
-                    "type": "bool",
-                    "text": "Physician/nurse/healthcare professional"
-                },
-                {
-                    "id": 21,
-                    "type": "bool",
-                    "text": "Caregiver"
-                },
-                {
-                    "id": 22,
-                    "type": "bool",
-                    "text": "Friend/Family member"
-                },
-                {
-                    "id": 23,
-                    "type": "text",
-                    "text": "Other source"
-                }
-            ],
-            "required": false
-        }
-    ]
+    "exists": true,
+    "survey": {
+        "id": 2,
+        "name": "Alzheimer",
+        "questions": [
+            {
+                "id": 6,
+                "type": "choice",
+                "text": "Gender",
+                "choices": [
+                    {
+                        "id": 13,
+                        "text": "male"
+                    },
+                    {
+                        "id": 14,
+                        "text": "female"
+                    },
+                    {
+                        "id": 15,
+                        "text": "other"
+                    }
+                ],
+                "required": true
+            },
+            {
+                "id": 7,
+                "type": "text",
+                "text": "Zip code",
+                "required": false
+            },
+            {
+                "id": 8,
+                "type": "bool",
+                "text": "Family history of memory disorders/AD/dementia?",
+                "required": true
+            },
+            {
+                "id": 9,
+                "type": "choices",
+                "text": "How did you hear about us?",
+                "choices": [
+                    {
+                        "id": 16,
+                        "type": "bool",
+                        "text": "TV"
+                    },
+                    {
+                        "id": 17,
+                        "type": "bool",
+                        "text": "Radio"
+                    },
+                    {
+                        "id": 18,
+                        "type": "bool",
+                        "text": "Newspaper"
+                    },
+                    {
+                        "id": 19,
+                        "type": "bool",
+                        "text": "Facebook/Google Ad/OtherInternet ad"
+                    },
+                    {
+                        "id": 20,
+                        "type": "bool",
+                        "text": "Physician/nurse/healthcare professional"
+                    },
+                    {
+                        "id": 21,
+                        "type": "bool",
+                        "text": "Caregiver"
+                    },
+                    {
+                        "id": 22,
+                        "type": "bool",
+                        "text": "Friend/Family member"
+                    },
+                    {
+                        "id": 23,
+                        "type": "text",
+                        "text": "Other source"
+                    }
+                ],
+                "required": false
+            }
+        ]
+    }
 }
 ```
+
+If no profile survey is specified for the system, `exists` flag is set to false and no answers is required.
 
 Based on use-cases clients can require consent documents of certain types to be signed during registration.  As an example Terms Of Use ( see [Consent Document Administration](#admin-consent-document)) is available without authorization
 
@@ -642,7 +687,7 @@ Server responds with the consent document content in the response body
 
 Consent Document `id` is needed to sign the document during registration.  Property `updateComment` is optional and collected when a consent document is updated.
 
-There are three seperate pieces of information required for participant registration.  First is the account information which consists of username, email, and password
+There are three seperate pieces of information that might be required for participant registration.  First is the account information which consists of username, email, and password and is always required
 
 ```js
 const user = {
@@ -652,7 +697,7 @@ const user = {
 };
 ```
 
-Second is the answers to profile survey questions.  JSON desription of answers is an array where each element includes the question id and the answer
+Second is the answers to profile survey questions if a profile survey is specifed.  JSON desription of answers is an array where each element includes the question id and the answer
 
 ```js
 const answers = [{
@@ -861,6 +906,8 @@ Server responds with the profile in the response body.  Profile contains account
     }
 }
 ```
+
+Answers are only returned for systems where a profile survey is required.
 
 Once profile is created only email and password can be updated for account information.  Any profile survey answer can be resubmitted.  Answers will be updated only for resubmitted questions.  For each resubmitted question all the old answers will be soft deleted.  If a `questionId` is specified without any answer the old answer will be removed for questions that are not required
 
@@ -2299,10 +2346,6 @@ responds with the Turkish translation in the body
 ```
 
 Note that all questions that are not yet translated is shown in English.
-
-###### Profile Survey
-
-A special resource `/profile-survey/text/{language}` is available to translate the profile survey.  This shows little difference from the survey translations except translation object does not contain an `id` property.
 
 ###### Consent Types
 

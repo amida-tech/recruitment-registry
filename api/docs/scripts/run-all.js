@@ -10,6 +10,9 @@ const adminQuestion03 = require('./admin-question-03');
 const adminQuestion04 = require('./admin-question-04');
 const adminSurvey01 = require('./admin-survey-01');
 const adminProfileSurvey01 = require('./admin-profile-survey-01');
+const adminProfileSurvey02 = require('./admin-profile-survey-02');
+const adminProfileSurvey03 = require('./admin-profile-survey-03');
+const adminProfileSurvey04 = require('./admin-profile-survey-04');
 const adminConsentDocument01 = require('./admin-consent-document-01');
 const adminConsentDocument02 = require('./admin-consent-document-02');
 const adminConsentDocument03 = require('./admin-consent-document-03');
@@ -73,6 +76,9 @@ models.sequelize.sync({ force: true })
     .then(adminQuestion04)
     .then(adminSurvey01)
     .then(adminProfileSurvey01)
+    .then(adminProfileSurvey02)
+    .then(adminProfileSurvey03)
+    .then(adminProfileSurvey04)
     .then(adminConsentDocument01)
     .then(adminConsentDocument02)
     .then(adminConsentDocument03)
