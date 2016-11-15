@@ -1481,7 +1481,7 @@ Server responds with answers in the the response body and the format is identica
 ]
 ```
 
-A survey can also be shown using resource `/surveys/name/{name}`.  Server responds identically to resource `surveys/{id}`.  In addition it is possible to show a survey with its answers using resource `/answered-surveys/{id}`
+It is possible to show a survey with its answers using resource `/answered-surveys/{id}`
 
 ```js
 	.get('http://localhost:9005/api/v1.0/answered-surveys/1')
@@ -1629,9 +1629,6 @@ Survey responds with the survey details in the response body.  Survey details is
     ]
 }
 ```
-
-Same response is also available using the name of the survey and resource `/answered-surveys/name/{name}`.
-
 
 ### Consent Documents
 <a name="consent-document"/>
