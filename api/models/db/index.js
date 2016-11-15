@@ -45,6 +45,7 @@ const SectionText = sequelize.import('./section-text.model');
 const Section = sequelize.import('./section.model');
 const SmtpText = sequelize.import('./smtp-text.model');
 const Smtp = sequelize.import('./smtp.model');
+const UserSurvey = sequelize.import('./user-survey.model');
 
 Answer.belongsTo(Question, {
     as: 'question',
@@ -89,5 +90,6 @@ module.exports = {
     SurveyConsentType,
     Language,
     SmtpText,
-    Smtp
+    Smtp,
+    UserSurvey
 };

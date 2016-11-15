@@ -1,40 +1,42 @@
 'use strict';
 
-const User = require('./user.dao');
-const QuestionChoice = require('./question-choice.dao');
-const QuestionAction = require('./question-action.dao');
-const Question = require('./question.dao');
-const Answer = require('./answer.dao');
-const Survey = require('./survey.dao');
-const ConsentType = require('./consent-type.dao');
-const ConsentDocument = require('./consent-document.dao');
-const ConsentSignature = require('./consent-signature.dao');
-const UserConsentDocument = require('./user-consent-document.dao');
-const Consent = require('./consent.dao');
-const SurveyConsentType = require('./survey-consent-type.dao');
-const ProfileSurvey = require('./profile-survey.dao');
-const Profile = require('./profile.dao');
-const Language = require('./language.dao');
-const Section = require('./section.dao');
-const Smtp = require('./smtp.dao');
+const UserDAO = require('./user.dao');
+const QuestionChoiceDAO = require('./question-choice.dao');
+const QuestionActionDAO = require('./question-action.dao');
+const QuestionDAO = require('./question.dao');
+const AnswerDAO = require('./answer.dao');
+const SurveyDAO = require('./survey.dao');
+const ConsentTypeDAO = require('./consent-type.dao');
+const ConsentDocumentDAO = require('./consent-document.dao');
+const ConsentSignatureDAO = require('./consent-signature.dao');
+const UserConsentDocumentDAO = require('./user-consent-document.dao');
+const ConsentDAO = require('./consent.dao');
+const SurveyConsentTypeDAO = require('./survey-consent-type.dao');
+const ProfileSurveyDAO = require('./profile-survey.dao');
+const ProfileDAO = require('./profile.dao');
+const LanguageDAO = require('./language.dao');
+const SectionDAO = require('./section.dao');
+const SmtpDAO = require('./smtp.dao');
+const UserSurveyDAO = require('./user-survey.dao');
 
-const consentType = new ConsentType();
-const consentDocument = new ConsentDocument({ consentType });
-const consentSignature = new ConsentSignature();
-const userConsentDocument = new UserConsentDocument({ consentDocument });
-const user = new User({ consentDocument });
-const surveyConsentType = new SurveyConsentType({ userConsentDocument });
-const section = new Section();
-const questionChoice = new QuestionChoice();
-const questionAction = new QuestionAction();
-const question = new Question({ questionChoice, questionAction });
-const answer = new Answer({ surveyConsentType });
-const survey = new Survey({ answer, section, question });
-const consent = new Consent({ consentDocument });
-const profileSurvey = new ProfileSurvey({ survey, consentDocument, answer });
-const profile = new Profile({ profileSurvey, survey, answer, user, consentSignature });
-const language = new Language();
-const smtp = new Smtp();
+const consentType = new ConsentTypeDAO();
+const consentDocument = new ConsentDocumentDAO({ consentType });
+const consentSignature = new ConsentSignatureDAO();
+const userConsentDocument = new UserConsentDocumentDAO({ consentDocument });
+const user = new UserDAO({ consentDocument });
+const surveyConsentType = new SurveyConsentTypeDAO({ userConsentDocument });
+const section = new SectionDAO();
+const questionChoice = new QuestionChoiceDAO();
+const questionAction = new QuestionActionDAO();
+const question = new QuestionDAO({ questionChoice, questionAction });
+const answer = new AnswerDAO({ surveyConsentType });
+const survey = new SurveyDAO({ answer, section, question });
+const userSurvey = new UserSurveyDAO({ survey, answer });
+const consent = new ConsentDAO({ consentDocument });
+const profileSurvey = new ProfileSurveyDAO({ survey, consentDocument, answer });
+const profile = new ProfileDAO({ profileSurvey, survey, answer, user, consentSignature });
+const language = new LanguageDAO();
+const smtp = new SmtpDAO();
 
 module.exports = {
     user,
@@ -44,6 +46,7 @@ module.exports = {
     question,
     answer,
     survey,
+    userSurvey,
     consentType,
     consentDocument,
     consentSignature,

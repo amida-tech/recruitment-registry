@@ -1754,6 +1754,143 @@
                     }
                 }
             }
+        },
+        "/user-surveys/{id}": {
+            "x-swagger-router-controller": "user-survey.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer",
+                "minimum": 1
+            }],
+            "get": {
+                "summary": "Gets answered survey and its status",
+                "operationId": "getUserSurvey",
+                "security": [{
+                    "participant": []
+                }],
+                "parameters": [{
+                    "name": "language",
+                    "in": "query",
+                    "description": "Language requested",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 1
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/userSurvey"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/user-surveys/{id}/status": {
+            "x-swagger-router-controller": "user-survey.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer",
+                "minimum": 1
+            }],
+            "get": {
+                "summary": "Gets survey status",
+                "operationId": "getUserSurveyStatus",
+                "security": [{
+                    "participant": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "object",
+                            "required": ["status"],
+                            "properties": {
+                                "status": {
+                                    "$ref": "#/definitions/surveyStatus"
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/user-surveys/{id}/answers": {
+            "x-swagger-router-controller": "user-survey.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer",
+                "minimum": 1
+            }],
+            "post": {
+                "summary": "Create answers and set status for survey",
+                "operationId": "createUserSurveyAnswers",
+                "security": [{
+                    "participant": []
+                }],
+                "parameters": [{
+                    "name": "userSurveyAnswers",
+                    "in": "body",
+                    "description": "Survey answers and status",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/newUserSurveyAnswers"
+                    }
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successful response"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "get": {
+                "summary": "Gets survey answers and status",
+                "operationId": "getUserSurveyAnswers",
+                "security": [{
+                    "participant": []
+                }],
+                "parameters": [{
+                    "name": "language",
+                    "in": "query",
+                    "description": "Language requested",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 1
+                }, {
+                    "name": "include-survey",
+                    "in": "query",
+                    "description": "Include survey",
+                    "required": false,
+                    "type": "boolean"
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/userSurveyAnswers"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
         }
     },
     "securityDefinitions": {
@@ -3059,6 +3196,56 @@
                 "language": {
                     "type": "string",
                     "minLength": 2
+                }
+            },
+            "additionalProperties": false
+        },
+        "surveyStatus": {
+            "type": "string",
+            "enum": ["new", "in-progress", "completed"]
+        },
+        "userSurvey": {
+            "type": "object",
+            "required": ["status", "survey"],
+            "properties": {
+                "status": {
+                    "$ref": "#/definitions/surveyStatus"
+                },
+                "survey": {
+                    "$ref": "#/definitions/survey"
+                }
+            },
+            "additionalProperties": false
+        },
+        "newUserSurveyAnswers": {
+            "type": "object",
+            "required": ["status", "answers"],
+            "properties": {
+                "status": {
+                    "$ref": "#/definitions/surveyStatus"
+                },
+                "answers": {
+                    "$ref": "#/definitions/linkedAnswers"
+                },
+                "language": {
+                    "type": "string",
+                    "minLength": 2
+                }
+            },
+            "additionalProperties": false
+        },
+        "userSurveyAnswers": {
+            "type": "object",
+            "required": ["status", "answers"],
+            "properties": {
+                "status": {
+                    "$ref": "#/definitions/surveyStatus"
+                },
+                "answers": {
+                    "$ref": "#/definitions/linkedAnswers"
+                },
+                "survey": {
+                    "$ref": "#/definitions/survey"
                 }
             },
             "additionalProperties": false
