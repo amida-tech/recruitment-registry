@@ -12,7 +12,7 @@ const textTableMethods = require('./text-table-methods');
 const sequelize = db.sequelize;
 const Survey = db.Survey;
 const SurveyQuestion = db.SurveyQuestion;
-const Registry = db.Registry;
+const ProfileSurvey = db.ProfileSurvey;
 const SurveyText = db.SurveyText;
 
 const textHandler = textTableMethods(sequelize, 'survey_text', 'surveyId', ['name']);
@@ -111,7 +111,7 @@ module.exports = class {
         return Survey.update(surveyUpdate, { where: { id } });
     }
 
-    replaceSurveyTx(id, replacement, tx) {
+    replaceSurveyTx(id, replacement, transaction) {
         return Survey.findById(id)
             .then(survey => {
                 if (!survey) {
@@ -125,24 +125,19 @@ module.exports = class {
                     version: version + 1,
                     groupId: survey.groupId || survey.id
                 }, replacement);
-                return this.createSurveyTx(newSurvey, tx)
+                return this.createSurveyTx(newSurvey, transaction)
                     .then((id) => {
                         if (!survey.version) {
-                            return survey.update({ version: 1, groupId: survey.id }, { transaction: tx })
+                            return survey.update({ version: 1, groupId: survey.id }, { transaction })
                                 .then(() => id);
                         }
                         return id;
                     })
                     .then((id) => {
-                        return survey.destroy({ transaction: tx })
-                            .then(() => id);
-                    })
-                    .then((id) => {
-                        return SurveyQuestion.destroy({ where: { surveyId: survey.id }, transaction: tx })
-                            .then(() => id);
-                    })
-                    .then((id) => {
-                        return Registry.update({ profileSurveyId: id }, { where: { profileSurveyId: survey.id }, transaction: tx })
+                        return survey.destroy({ transaction })
+                            .then(() => SurveyQuestion.destroy({ where: { surveyId: survey.id }, transaction }))
+                            .then(() => ProfileSurvey.destroy({ where: { surveyId: survey.id }, transaction }))
+                            .then(() => ProfileSurvey.create({ surveyId: id }, { transaction }))
                             .then(() => id);
                     });
             });
@@ -168,12 +163,10 @@ module.exports = class {
     }
 
     deleteSurvey(id) {
-        return sequelize.transaction(tx => {
-            return Survey.destroy({ where: { id }, transaction: tx })
-                .then(() => {
-                    return SurveyQuestion.destroy({ where: { surveyId: id }, transaction: tx })
-                        .then(() => id);
-                });
+        return sequelize.transaction(transaction => {
+            return Survey.destroy({ where: { id }, transaction })
+                .then(() => SurveyQuestion.destroy({ where: { surveyId: id }, transaction }))
+                .then(() => ProfileSurvey.destroy({ where: { surveyId: id }, transaction }));
         });
     }
 

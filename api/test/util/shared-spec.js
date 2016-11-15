@@ -41,23 +41,24 @@ class SharedSpec {
     }
 
     createProfileSurveyFn(hxSurvey) {
-        const clientSurvey = this.generator.newSurvey();
+        const generator = this.generator;
         return function () {
-            return models.profileSurvey.createProfileSurvey(clientSurvey)
-                .then(idOnlyServer => hxSurvey.push(clientSurvey, idOnlyServer));
+            const survey = generator.newSurvey();
+            return models.profileSurvey.createProfileSurvey(survey)
+                .then(({ id }) => hxSurvey.push(survey, { id }));
         };
     }
 
     verifyProfileSurveyFn(hxSurvey, index) {
         return function () {
             return models.profileSurvey.getProfileSurvey()
-                .then(result => {
-                    expect(result.exists).to.equal(true);
-                    const server = result.survey;
+                .then(profileSurvey => {
+                    expect(profileSurvey.exists).to.equal(true);
+                    const survey = profileSurvey.survey;
                     const id = hxSurvey.id(index);
-                    expect(server.id).to.equal(id);
-                    hxSurvey.updateServer(index, server);
-                    return comparator.survey(hxSurvey.client(index), server);
+                    expect(survey.id).to.equal(id);
+                    hxSurvey.updateServer(index, survey);
+                    return comparator.survey(hxSurvey.client(index), survey);
                 });
         };
     }
