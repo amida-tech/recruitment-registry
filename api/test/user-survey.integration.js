@@ -306,6 +306,14 @@ describe('user survey integration', function () {
     it('verify user 1 survey 1 answers (with survey)', verifyUserSurveyAnswersFn(1, 1, 'in-progress', true));
     it('logout as user 1', shared.logoutFn(store));
 
+    it('login as user 1', shared.loginIndexFn(store, hxUser, 1));
+    it('user 1 reanswers survey 1 all in-progress', answerSurveyFullFn(1, 1, 'in-progress'));
+    it('verify user 1 survey 1', verifyUserSurveyFn(1, 1, 'in-progress'));
+    it('verify user 1 survey 1 status', verifyStatusFn(1, 'in-progress'));
+    it('verify user 1 survey 1 answers', verifyUserSurveyAnswersFn(1, 1, 'in-progress'));
+    it('verify user 1 survey 1 answers (with survey)', verifyUserSurveyAnswersFn(1, 1, 'in-progress', true));
+    it('logout as user 1', shared.logoutFn(store));
+
     it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
     it('user 0 answers survey 1 partial in-progress', answerSurveyPartialFn(0, 1));
     it('verify user 0 survey 1', verifyUserSurveyFn(0, 1, 'in-progress'));

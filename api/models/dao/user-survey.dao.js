@@ -42,25 +42,25 @@ module.exports = class UserSurveyDAO {
     }
 
     getUserSurveyAnswers(userId, surveyId, options) {
-    	const result = {};
-    	return this.getUserSurveyStatus(userId, surveyId)
-    		.then(status => result.status = status)
-    		.then(() => this.answer.getAnswers({ userId, surveyId }))
-    		.then(answers => result.answers = answers || [])
-    		.then(() => {
-    			if (options.includeSurvey) {
-    				return this.survey.getSurvey(surveyId, options)
-    					.then(survey => result.survey = survey);
-    			}
-    		})
-    		.then(() => result);
+        const result = {};
+        return this.getUserSurveyStatus(userId, surveyId)
+            .then(status => result.status = status)
+            .then(() => this.answer.getAnswers({ userId, surveyId }))
+            .then(answers => result.answers = answers)
+            .then(() => {
+                if (options.includeSurvey) {
+                    return this.survey.getSurvey(surveyId, options)
+                        .then(survey => result.survey = survey);
+                }
+            })
+            .then(() => result);
     }
 
     getUserSurvey(userId, surveyId, options) {
-    	return this.getUserSurveyStatus(userId, surveyId)
-    		.then(status => {
-    			return this.survey.getAnsweredSurvey(userId, surveyId, options)
-    				.then(survey => ({ status, survey }));
-    		});
+        return this.getUserSurveyStatus(userId, surveyId)
+            .then(status => {
+                return this.survey.getAnsweredSurvey(userId, surveyId, options)
+                    .then(survey => ({ status, survey }));
+            });
     }
 };

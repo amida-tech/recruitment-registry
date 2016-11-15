@@ -111,7 +111,7 @@ class SharedIntegration {
     createUserFn(store, history, user) {
         const generator = this.generator;
         return function (done) {
-            if (! user) {
+            if (!user) {
                 user = generator.newUser();
             }
             store.server
