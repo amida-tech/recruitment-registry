@@ -4,7 +4,7 @@ export class Bool extends Component {
   render(){
     return(
         <div id={this.props.id+'bool'}>
-          <label>{this.props.text}</label>
+          <p className='question'>{this.props.text}</p>
           <div className='radioGroup'>
             <input name={this.props.id}
               id={this.props.id+'t'}
@@ -35,7 +35,7 @@ export class Choice extends Component {
   render(){
     return(
       <div key={this.props.id}>
-        <label>{this.props.text}</label>
+        <p className='question'>{this.props.text}</p>
         <div className='radioGroup'>
         {this.props.choices.map(choice => {
           return ([
@@ -61,7 +61,7 @@ export class Input extends Component {
   render(){
     return(
       <div key={this.props.id} >
-        <label htmlFor={this.props.id}>{this.props.text}</label>
+        <p className='question' htmlFor={this.props.id}>{this.props.text}</p>
         <input
           name={this.props.id}
           id={this.props.id}
@@ -105,8 +105,8 @@ export class Choices extends Component {
 
   render(){
     return (
-      <div key={this.props.id} >
-        <label>{this.props.text}</label>
+      <div className='' key={this.props.id} >
+        <p className='question'>{this.props.text}</p>
         <div className='checkboxes'>
           {this.props.choices.map(choice => {
             return ([

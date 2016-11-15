@@ -189,6 +189,7 @@ const apiProvider = store => next => action => {
               type: 'SUBMIT_SURVEY_SUCCESS',
               payload: response.body
             });
+            store.dispatch(push('/surveys'));
           } else {
             next({type:'SUBMIT_SURVEY_FAILURE'});
           }
