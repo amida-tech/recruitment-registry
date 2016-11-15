@@ -38,9 +38,30 @@ describe('user survey integration', function () {
     };
 
     it('login as super', shared.loginFn(store, config.superUser));
-
     for (let i = 0; i < userCount; ++i) {
         it(`create user ${i}`, shared.createUserFn(store, hxUser));
+    }
+    it('logout as super', shared.logoutFn(store));
+
+    const verifyNoUserSurveys = function (done) {
+        store.server
+            .get(`/api/v1.0/user-surveys`)
+            .set('Authorization', store.auth)
+            .expect(200)
+            .end(function (err, res) {
+                if (err) {
+                    return done(err);
+                }
+                const userSurveys = res.body;
+                expect(userSurveys.length).to.equal(0);
+                done();
+            });
+    };
+
+    for (let i = 0; i < userCount; ++i) {
+        it(`login as user ${i}`, shared.loginIndexFn(store, hxUser, i));
+        it(`verify no surveys for user ${i}`, verifyNoUserSurveys);
+        it(`logout as user ${i}`, shared.logoutFn(store));
     }
 
     const verifySurveyFn = function (index) {
@@ -62,11 +83,11 @@ describe('user survey integration', function () {
         };
     };
 
+    it('login as super', shared.loginFn(store, config.superUser));
     for (let i = 0; i < surveyCount; ++i) {
         it(`create survey ${i}`, shared.createSurveyFn(store, hxSurvey));
         it(`get/verify survey ${i}`, verifySurveyFn(i));
     }
-
     it('logout as super', shared.logoutFn(store));
 
     const verifyStatusFn = function (surveyIndex, expectedStatus) {
@@ -94,6 +115,31 @@ describe('user survey integration', function () {
     it('login as user 1', shared.loginIndexFn(store, hxUser, 1));
     it('verify user 1 survey 0 status', verifyStatusFn(0, 'new'));
     it('verify user 1 survey 1 status', verifyStatusFn(1, 'new'));
+    it('logout as user 1', shared.logoutFn(store));
+
+    const verifyUserSurveyListFn = function (statusList) {
+        return function (done) {
+            store.server
+                .get(`/api/v1.0/user-surveys`)
+                .set('Authorization', store.auth)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    const userSurveys = res.body;
+                    const expected = hxSurvey.listServers().map(({ id, name }, index) => ({ id, name, status: statusList[index] }));
+                    expect(userSurveys).to.deep.equal(expected);
+                    done();
+                });
+        };
+    };
+
+    it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
+    it('verify user 0 user survey list', verifyUserSurveyListFn(['new', 'new', 'new']));
+    it('logout as user 0', shared.logoutFn(store));
+    it('login as user 1', shared.loginIndexFn(store, hxUser, 1));
+    it('verify user 1 user survey list', verifyUserSurveyListFn(['new', 'new', 'new']));
     it('logout as user 1', shared.logoutFn(store));
 
     const verifyUserSurveyFn = function (userIndex, surveyIndex, status) {
@@ -296,6 +342,7 @@ describe('user survey integration', function () {
     it('verify user 0 survey 0 status', verifyStatusFn(0, 'completed'));
     it('verify user 0 survey 0 answers', verifyUserSurveyAnswersFn(0, 0, 'completed'));
     it('verify user 0 survey 0 answers (with survey)', verifyUserSurveyAnswersFn(0, 0, 'completed', true));
+    it('verify user 0 user survey list', verifyUserSurveyListFn(['completed', 'new', 'new']));
     it('logout as user 0', shared.logoutFn(store));
 
     it('login as user 1', shared.loginIndexFn(store, hxUser, 1));
@@ -304,6 +351,7 @@ describe('user survey integration', function () {
     it('verify user 1 survey 1 status', verifyStatusFn(1, 'in-progress'));
     it('verify user 1 survey 1 answers', verifyUserSurveyAnswersFn(1, 1, 'in-progress'));
     it('verify user 1 survey 1 answers (with survey)', verifyUserSurveyAnswersFn(1, 1, 'in-progress', true));
+    it('verify user 1 user survey list', verifyUserSurveyListFn(['new', 'in-progress', 'new']));
     it('logout as user 1', shared.logoutFn(store));
 
     it('login as user 1', shared.loginIndexFn(store, hxUser, 1));
@@ -312,6 +360,7 @@ describe('user survey integration', function () {
     it('verify user 1 survey 1 status', verifyStatusFn(1, 'in-progress'));
     it('verify user 1 survey 1 answers', verifyUserSurveyAnswersFn(1, 1, 'in-progress'));
     it('verify user 1 survey 1 answers (with survey)', verifyUserSurveyAnswersFn(1, 1, 'in-progress', true));
+    it('verify user 1 user survey list', verifyUserSurveyListFn(['new', 'in-progress', 'new']));
     it('logout as user 1', shared.logoutFn(store));
 
     it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
@@ -320,6 +369,7 @@ describe('user survey integration', function () {
     it('verify user 0 survey 1 status', verifyStatusFn(1, 'in-progress'));
     it('verify user 0 survey 1 answers', verifyUserSurveyAnswersFn(0, 1, 'in-progress'));
     it('verify user 0 survey 1 answers (with survey)', verifyUserSurveyAnswersFn(0, 1, 'in-progress', true));
+    it('verify user 0 user survey list', verifyUserSurveyListFn(['completed', 'in-progress', 'new']));
     it('logout as user 0', shared.logoutFn(store));
 
     it('login as user 1', shared.loginIndexFn(store, hxUser, 1));
@@ -328,6 +378,7 @@ describe('user survey integration', function () {
     it('verify user 1 survey 0 status', verifyStatusFn(0, 'new'));
     it('verify user 1 survey 0 answers', verifyUserSurveyAnswersFn(1, 0, 'new'));
     it('verify user 1 survey 0 answers (with survey)', verifyUserSurveyAnswersFn(1, 0, 'new', true));
+    it('verify user 1 user survey list', verifyUserSurveyListFn(['new', 'in-progress', 'new']));
     it('logout as user 1', shared.logoutFn(store));
 
     it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
@@ -336,5 +387,6 @@ describe('user survey integration', function () {
     it('verify user 0 survey 1 status', verifyStatusFn(1, 'completed'));
     it('verify user 0 survey 1 answers', verifyUserSurveyAnswersFn(0, 1, 'completed'));
     it('verify user 0 survey 1 answers (with survey)', verifyUserSurveyAnswersFn(0, 1, 'completed', true));
+    it('verify user 0 user survey list', verifyUserSurveyListFn(['completed', 'completed', 'new']));
     it('logout as user 0', shared.logoutFn(store));
 });
