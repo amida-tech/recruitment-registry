@@ -109,7 +109,11 @@ class SharedIntegration {
     }
 
     createUserFn(store, history, user) {
+        const generator = this.generator;
         return function (done) {
+            if (! user) {
+                user = generator.newUser();
+            }
             store.server
                 .post('/api/v1.0/users')
                 .set('Authorization', store.auth)
@@ -194,10 +198,12 @@ class SharedIntegration {
         const generator = this.generator;
         return function (done) {
             const inputSurvey = generator.newSurvey();
-            inputSurvey.questions = qxIndices.map(index => ({
-                id: hxQuestion.server(index).id,
-                required: false
-            }));
+            if (hxQuestion) {
+                inputSurvey.questions = qxIndices.map(index => ({
+                    id: hxQuestion.server(index).id,
+                    required: false
+                }));
+            }
             store.server
                 .post('/api/v1.0/surveys')
                 .set('Authorization', store.auth)
