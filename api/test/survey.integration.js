@@ -12,6 +12,7 @@ const config = require('../config');
 const SharedIntegration = require('./util/shared-integration');
 const Generator = require('./util/entity-generator');
 const History = require('./util/entity-history');
+const SurveyHistory = require('./util/survey-history');
 const userExamples = require('./fixtures/example/user');
 const surveyExamples = require('./fixtures/example/survey');
 const comparator = require('./util/client-server-comparator');
@@ -305,25 +306,6 @@ describe('survey integration', function () {
         };
     };
 
-    const verifyTranslatedSurveyByNameFn = function (index, language) {
-        return function (done) {
-            const name = history.server(index).name;
-            store.server
-                .get(`/api/v1.0/surveys/name/${name}`)
-                .set('Authorization', store.auth)
-                .query({ language })
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    const expected = history.translatedServer(index, language);
-                    expect(res.body).to.deep.equal(expected);
-                    done();
-                });
-        };
-    };
-
     const listTranslatedSurveysFn = function (language) {
         return function (done) {
             store.server
@@ -345,7 +327,6 @@ describe('survey integration', function () {
     for (let i = 0; i < surveyCount; i += 2) {
         it(`add translation (es) to survey ${i}`, translateTextFn(i, 'es'));
         it(`get and verify translated (es) survey ${i}`, verifyTranslatedSurveyFn(i, 'es'));
-        it(`get and verify translated (es) survey ${i} by name`, verifyTranslatedSurveyByNameFn(i, 'es'));
     }
 
     it('list and verify translated surveys', listTranslatedSurveysFn('es'));
@@ -406,13 +387,17 @@ describe('survey integration', function () {
 
     it('login as super', shared.loginFn(store, config.superUser));
 
-    it('create example survey', shared.postSurveyFn(store, example.survey));
+    const hxSurveyExample = new SurveyHistory();
+
+    it('create example survey', shared.postSurveyFn(store, example.survey, hxSurveyExample));
 
     let serverSurvey;
 
     it('get empty survey', function (done) {
+        const id = hxSurveyExample.id(0);
         store.server
-            .get('/api/v1.0/surveys/name/Example')
+            .get(`/api/v1.0/surveys/${id}`)
+            .set('Authorization', store.auth)
             .expect(200)
             .expect(function (res) {
                 expect(!!res.body.id).to.equal(true);
@@ -421,6 +406,7 @@ describe('survey integration', function () {
                 if (err) {
                     return done(err);
                 }
+                hxSurveyExample.updateServer(0, res.body);
                 serverSurvey = res.body;
                 comparator.survey(example.survey, res.body)
                     .then(done, done);
@@ -479,38 +465,6 @@ describe('survey integration', function () {
     it('get answered translated survey', function (done) {
         store.server
             .get(`/api/v1.0/answered-surveys/${serverSurvey.id}`)
-            .set('Authorization', store.auth)
-            .query({ language: 'es' })
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-                const expected = helper.formAnsweredSurvey(serverSurvey, answers);
-                expected.name = 'puenno';
-                expect(res.body).to.deep.equal(expected);
-                done();
-            });
-    });
-
-    it('get answered survey by name', function (done) {
-        store.server
-            .get('/api/v1.0/answered-surveys/name/Example')
-            .set('Authorization', store.auth)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-                const expected = helper.formAnsweredSurvey(serverSurvey, answers);
-                expect(res.body).to.deep.equal(expected);
-                done();
-            });
-    });
-
-    it('get answered translated survey by name', function (done) {
-        store.server
-            .get('/api/v1.0/answered-surveys/name/Example')
             .set('Authorization', store.auth)
             .query({ language: 'es' })
             .expect(200)

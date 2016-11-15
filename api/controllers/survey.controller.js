@@ -15,15 +15,6 @@ exports.getSurvey = function (req, res) {
         .catch(shared.handleError(res));
 };
 
-exports.getSurveyByName = function (req, res) {
-    const name = _.get(req, 'swagger.params.name.value');
-    const language = _.get(req, 'swagger.params.language.value');
-    const options = language ? { language } : {};
-    models.survey.getSurveyByName(name, options)
-        .then(survey => res.status(200).json(survey))
-        .catch(shared.handleError(res));
-};
-
 exports.createSurvey = function (req, res) {
     if (!jsonSchema('newSurvey', req.body, res)) {
         return;
@@ -68,16 +59,6 @@ exports.getAnsweredSurvey = function (req, res) {
     const language = _.get(req, 'swagger.params.language.value');
     const options = language ? { language } : {};
     models.survey.getAnsweredSurvey(userId, id, options)
-        .then(survey => res.status(200).json(survey))
-        .catch(shared.handleError(res));
-};
-
-exports.getAnsweredSurveyByName = function (req, res) {
-    const userId = req.user.id;
-    const name = _.get(req, 'swagger.params.name.value');
-    const language = _.get(req, 'swagger.params.language.value');
-    const options = language ? { language } : {};
-    models.survey.getAnsweredSurveyByName(userId, name, options)
         .then(survey => res.status(200).json(survey))
         .catch(shared.handleError(res));
 };

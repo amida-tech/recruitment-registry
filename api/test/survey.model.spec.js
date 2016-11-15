@@ -49,8 +49,11 @@ describe('survey unit', function () {
                             return serverSurvey.id;
                         });
                 })
-                .then(id => models.survey.updateSurvey(id, updatedMeta))
-                .then(() => models.survey.getSurveyByName(clientSurvey.name))
+                .then(id => {
+                    return models.survey.updateSurvey(id, updatedMeta)
+                        .then(() => id);
+                })
+                .then(id => models.survey.getSurvey(id))
                 .then((serverSurvey) => {
                     const updatedSurvey = Object.assign({}, clientSurvey, updatedMeta);
                     return comparator.survey(updatedSurvey, serverSurvey)
@@ -65,8 +68,11 @@ describe('survey unit', function () {
                         .then(() => id);
 
                 })
-                .then(id => models.survey.updateSurveyText({ id, name: updatedName }))
-                .then(() => models.survey.getSurveyByName(updatedName))
+                .then(id => {
+                    return models.survey.updateSurveyText({ id, name: updatedName })
+                        .then(() => id);
+                })
+                .then(id => models.survey.getSurvey(id))
                 .then(serverSurvey => {
                     const updatedSurvey = Object.assign({}, clientSurvey, { name: updatedName });
                     return comparator.survey(updatedSurvey, serverSurvey)
@@ -124,11 +130,6 @@ describe('survey unit', function () {
 
     it('error: show a non-existent survey', function () {
         return models.survey.getSurvey(999)
-            .then(shared.throwingHandler, shared.expectedErrorHandler('surveyNotFound'));
-    });
-
-    it('error: show a non-existent survey by name', function () {
-        return models.survey.getSurveyByName('NotHere')
             .then(shared.throwingHandler, shared.expectedErrorHandler('surveyNotFound'));
     });
 
@@ -357,10 +358,6 @@ describe('survey unit', function () {
                 return models.survey.getAnsweredSurvey(input.userId, input.surveyId)
                     .then(answeredSurvey => {
                         comparator.answeredSurvey(survey, input.answers, answeredSurvey);
-                        return models.survey.getAnsweredSurveyByName(input.userId, survey.name)
-                            .then(answeredSurveyByName => {
-                                expect(answeredSurveyByName).to.deep.equal(answeredSurvey);
-                            });
                     });
             });
     };

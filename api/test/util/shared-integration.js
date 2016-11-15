@@ -180,17 +180,23 @@ class SharedIntegration {
         };
     }
 
-    postSurveyFn(store, survey) {
+    postSurveyFn(store, survey, hxSurvey) {
         return function (done) {
             store.server
                 .post('/api/v1.0/surveys')
                 .set('Authorization', store.auth)
                 .send(survey)
                 .expect(201)
-                .expect(function (res) {
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
                     expect(!!res.body.id).to.equal(true);
-                })
-                .end(done);
+                    if (hxSurvey) {
+                        hxSurvey.push(survey, res.body);
+                    }
+                    done();
+                });
         };
     }
 
