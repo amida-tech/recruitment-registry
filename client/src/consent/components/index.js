@@ -4,11 +4,14 @@ import Consent from './Consent';
 import * as actions from './actions';
 
 class ConsentContainer extends Component {
+  componentWillMount() {
+    this._getConsentDocs();
+  }
   render() {
     return <Consent />
   }
   _getConsentDocs() {
-    this.props.dispatch(actions.getConsentDocs);
+    this.props.dispatch(actions.getConsentDocs());
   }
   _signConsentDoc(consentId) {
     this.props.dispatch(actions.signConsent(consentId));
