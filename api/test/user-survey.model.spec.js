@@ -73,16 +73,41 @@ describe('user survey unit', function () {
     it('verify user 1 survey 0 status', verifyStatusFn(0, 0, 'new'));
     it('verify user 1 survey 1 status', verifyStatusFn(0, 0, 'new'));
 
-    const verifySurveyAnswersFn = function (userIndex, surveyIndex) {
+    const verifyUserSurveyFn = function (userIndex, surveyIndex, status) {
         return function () {
             const userId = hxUser.id(userIndex);
             const surveyId = hxSurvey.id(surveyIndex);
-            return models.survey.getAnsweredSurvey(userId, surveyId)
-                .then(answeredSurvey => {
+            return models.userSurvey.getUserSurvey(userId, surveyId)
+                .then(userSurvey => {
                     const survey = hxSurvey.server(surveyIndex);
                     const key = _key(userIndex, surveyIndex);
-                    const answers = mapAnswers.get(key);
-                    comparator.answeredSurvey(survey, answers, answeredSurvey);
+                    const answers = mapAnswers.get(key) || [];
+                    expect(userSurvey.status).to.equal(status);
+                    comparator.answeredSurvey(survey, answers, userSurvey.survey);
+                });
+        };
+    };
+
+    const verifyUserSurveyAnswersFn = function (userIndex, surveyIndex, status, includeSurvey) {
+        return function () {
+            const userId = hxUser.id(userIndex);
+            const surveyId = hxSurvey.id(surveyIndex);
+            const options = {};
+            if (includeSurvey) {
+                options.includeSurvey = true;
+            }
+            return models.userSurvey.getUserSurveyAnswers(userId, surveyId, options)
+                .then(userSurveyAnswers => {
+                    if (includeSurvey) {
+                        const survey = hxSurvey.server(surveyIndex);
+                        expect(userSurveyAnswers.survey).to.deep.equal(survey);
+                    } else {
+                        expect(userSurveyAnswers.survey).to.equal(undefined);
+                    }
+                    const key = _key(userIndex, surveyIndex);
+                    const answers = mapAnswers.get(key) || [];
+                    expect(userSurveyAnswers.status).to.equal(status);
+                    comparator.answers(answers, userSurveyAnswers.answers);
                 });
         };
     };
@@ -97,7 +122,7 @@ describe('user survey unit', function () {
             };
             const userId = hxUser.id(userIndex);
             const key = _key(userIndex, surveyIndex);
-            return models.survey.answerSurvey(userId, survey.id, input)
+            return models.userSurvey.createUserSurveyAnswers(userId, survey.id, input)
                 .then(() => mapAnswers.set(key, answers))
                 .then(() => mapStatus.set(key, status));
         };
@@ -116,7 +141,7 @@ describe('user survey unit', function () {
             };
             const userId = hxUser.id(userIndex);
             const key = _key(userIndex, surveyIndex);
-            return models.survey.answerSurvey(userId, survey.id, input)
+            return models.userSurvey.createUserSurveyAnswers(userId, survey.id, input)
                 .then(() => mapAnswers.set(key, answers))
                 .then(() => mapStatus.set(key, 'in-progress'));
         };
@@ -137,7 +162,7 @@ describe('user survey unit', function () {
             };
             const userId = hxUser.id(userIndex);
             const key = _key(userIndex, surveyIndex);
-            return models.survey.answerSurvey(userId, survey.id, input)
+            return models.userSurvey.createUserSurveyAnswers(userId, survey.id, input)
                 .then(() => {
                     const qxIdsNewlyAnswered = new Set(answers.map(answer => answer.questionId));
                     const previousAnswers = mapAnswers.get(key, answers).filter(answer => !qxIdsNewlyAnswered.has(answer.questionId));
@@ -159,28 +184,54 @@ describe('user survey unit', function () {
                 status: 'completed'
             };
             const userId = hxUser.id(userIndex);
-            return models.survey.answerSurvey(userId, survey.id, input)
+            return models.userSurvey.createUserSurveyAnswers(userId, survey.id, input)
                 .then(shared.throwingHandler, shared.expectedErrorHandler('answerRequiredMissing'));
         };
 
     };
 
+    it('verify user 0 survey 0', verifyUserSurveyFn(0, 0, 'new'));
+    it('verify user 0 survey 1', verifyUserSurveyFn(0, 1, 'new'));
+    it('verify user 1 survey 0', verifyUserSurveyFn(1, 0, 'new'));
+    it('verify user 1 survey 1', verifyUserSurveyFn(1, 1, 'new'));
+
+    it('verify user 0 survey 0 answers', verifyUserSurveyAnswersFn(0, 0, 'new'));
+    it('verify user 0 survey 1 answers', verifyUserSurveyAnswersFn(0, 1, 'new'));
+    it('verify user 1 survey 0 answers', verifyUserSurveyAnswersFn(1, 0, 'new'));
+    it('verify user 1 survey 1 answers', verifyUserSurveyAnswersFn(1, 1, 'new'));
+
+    it('verify user 0 survey 0 answers (with survey)', verifyUserSurveyAnswersFn(0, 0, 'new', true));
+    it('verify user 0 survey 1 answers (with survey)', verifyUserSurveyAnswersFn(0, 1, 'new', true));
+    it('verify user 1 survey 0 answers (with survey)', verifyUserSurveyAnswersFn(1, 0, 'new', true));
+    it('verify user 1 survey 1 answers (with survey)', verifyUserSurveyAnswersFn(1, 1, 'new', true));
+
     it('user 0 answers survey 0 all completed', answerSurveyFullFn(0, 0, 'completed'));
-    it('verify user 0 survey 0 answers', verifySurveyAnswersFn(0, 0));
+    it('verify user 0 survey 0', verifyUserSurveyFn(0, 0, 'completed'));
     it('verify user 0 survey 0 status', verifyStatusFn(0, 0, 'completed'));
+    it('verify user 0 survey 0 answers', verifyUserSurveyAnswersFn(0, 0, 'completed'));
+    it('verify user 0 survey 0 answers (with survey)', verifyUserSurveyAnswersFn(0, 0, 'completed', true));
 
     it('user 1 answers survey 1 all in-progress', answerSurveyFullFn(1, 1, 'in-progress'));
-    it('verify user 1 survey 1 answers', verifySurveyAnswersFn(1, 1));
+    it('verify user 1 survey 1', verifyUserSurveyFn(1, 1, 'in-progress'));
     it('verify user 1 survey 1 status', verifyStatusFn(1, 1, 'in-progress'));
+    it('verify user 1 survey 1 answers', verifyUserSurveyAnswersFn(1, 1, 'in-progress'));
+    it('verify user 1 survey 1 answers (with survey)', verifyUserSurveyAnswersFn(1, 1, 'in-progress', true));
 
     it('user 0 answers survey 1 partial in-progress', answerSurveyPartialFn(0, 1));
-    it('verify user 0 survey 1 answers', verifySurveyAnswersFn(0, 1));
+    it('verify user 0 survey 1', verifyUserSurveyFn(0, 1, 'in-progress'));
     it('verify user 0 survey 1 status', verifyStatusFn(0, 1, 'in-progress'));
+    it('verify user 0 survey 1 answers', verifyUserSurveyAnswersFn(0, 1, 'in-progress'));
+    it('verify user 0 survey 1 answers (with survey)', verifyUserSurveyAnswersFn(0, 1, 'in-progress', true));
 
     it('user 1 answers survey 0 partial completed', answerSurveyPartialCompletedFn(1, 0));
+    it('verify user 1 survey 0', verifyUserSurveyFn(1, 0, 'new'));
     it('verify user 1 survey 0 status', verifyStatusFn(1, 0, 'new'));
+    it('verify user 1 survey 0 answers', verifyUserSurveyAnswersFn(1, 0, 'new'));
+    it('verify user 1 survey 0 answers (with survey)', verifyUserSurveyAnswersFn(1, 0, 'new', true));
 
     it('user 0 reanswers survey 1 required plus completed', answerSurveyMissingPlusCompletedFn(0, 1));
-    it('verify user 0 survey 1 answers', verifySurveyAnswersFn(0, 1));
+    it('verify user 0 survey 1', verifyUserSurveyFn(0, 1, 'completed'));
     it('verify user 0 survey 1 status', verifyStatusFn(0, 1, 'completed'));
+    it('verify user 0 survey 1 answers', verifyUserSurveyAnswersFn(0, 1, 'completed'));
+    it('verify user 0 survey 1 answers (with survey)', verifyUserSurveyAnswersFn(0, 1, 'completed', true));
 });

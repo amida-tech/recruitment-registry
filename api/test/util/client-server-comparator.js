@@ -119,6 +119,22 @@ const comparator = {
         });
         expect(serverAnsweredSurvey).to.deep.equal(expected);
     },
+    answers(answers, serverAnswers, language) {
+        const expected = _.cloneDeep(answers);
+        expected.forEach(answer => {
+            answer.language = answer.language || language || 'en';
+            if (answer.answer.choices) {
+                answer.answer.choices.forEach((choice) => {
+                    if (!choice.textValue && !choice.hasOwnProperty('boolValue')) {
+                        choice.boolValue = true;
+                    }
+                });
+            }
+        });
+        const orderedExpected = _.sortBy(expected, 'questionId');
+        const orderedActual = _.sortBy(serverAnswers, 'questionId');
+        expect(orderedActual).to.deep.equal(orderedExpected);
+    },
     user(client, server) {
         const expected = _.cloneDeep(client);
         expected.id = server.id;
