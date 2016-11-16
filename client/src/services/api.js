@@ -3,8 +3,8 @@ import 'whatwg-fetch';
 
 const apiService = {
   getUserConsentDocs: (typeName, callback) => {
-    const relativePath = `/users/me`;
-    return apiGetRequest(getFullPath(relativePath), callback);
+    const path = getFullPath('/users/me');
+    return apiGetRequest(path, callback);
   }
 }
 
@@ -18,10 +18,23 @@ function apiGetRequest(fullURI, callback) {
     }
   })
   .then(res => {
-    res.json()
-    .then(data => callback(data));
+    res.json().then(data => callback(data));
   });
 }
 
+function apiPostRequest(fullURI, requestBody, callback) {
+  fetch(fullURI, {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer token'
+    },
+    body: JSON.stringify(requestBody)
+  })
+  .then(res => {
+    res.json().then(data => callback(data));
+  });
+}
 
 export default apiService;
