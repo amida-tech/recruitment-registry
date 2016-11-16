@@ -182,7 +182,9 @@ There can be multiple `question_action` records for a question.  Order is preser
 
 - `survey_consent_type`: Each record represents a consent section (column `consent_type_id`) that needs to signed by a user before a survey (column `survey_id`) can be read, submitted or edited (column `action`).  Functionality related to this table is not currently activated.
 
-- `registry`: This table stores registry level settings and contains only one record.  Currenly only data is the survey that is being used in user registration (column `profile_survey_id`).
+- `profile_survey`: This table stores profile survey; a survey which is can be used during registration to collect information from participants.  At any time only one active record exists.
+
+- `user_survey`: This table stores status of a survey for a participant.  The status can be `in-progress` or `completed`.
 
 - `smtp`: This table stores email service specifics that are used for password reset functionality.  At any point it only contains one active record.  The subject and content of password reset email are stored in `smtp_text`.
 

@@ -1066,6 +1066,29 @@ Server does not return any content after updates.  Updated profile is available 
 }
 ```
 
+### User Management
+
+Participants are expected to use `/profiles` resource to register. But a `admin` only `/users` resource is also provided and can be used to create a new user
+
+```js
+const user = {
+    username: 'test2participant',
+    password: 'test2password',
+    email: 'test2@example.com'
+};
+
+let jwtUser2 = null;
+request
+    .post('http://localhost:9005/api/v1.0/users')
+    .set('Authorization', 'Bearer ' + jwt)
+    .send(user)
+    .then(res => {
+        console.log(res.status);  // 201
+        console.log(res.body);    // {token: ...}
+        jwtUser2 = res.body.token;
+    });
+```
+
 ### Questions
 
 A list of all questions is available to admins using resource `/questions`
@@ -1531,6 +1554,7 @@ Server responds with answers in the the response body and the format is identica
 It is possible to show a survey with its answers using resource `/answered-surveys/{id}`
 
 ```js
+request
 	.get('http://localhost:9005/api/v1.0/answered-surveys/1')
 	.set('Authorization', 'Bearer ' + jwtUser)
 	.then(res => {
@@ -1674,6 +1698,290 @@ Survey responds with the survey details in the response body.  Survey details is
             "name": "Health"
         }
     ]
+}
+```
+
+### User Surveys
+
+This API supports use cases where a survey has a status for each participant. Possible status values are `new`, `in-progress` and `completed`. It is clients responsibility to assign status.  To mark a survey `completed` each required question has to be answered; status `in-progress` status allows partial answers where required questions might be left unanswered.
+
+Resource `/user-surveys` is used to list surveys and their status for a user
+
+```js
+request
+    .get('http://localhost:9005/api/v1.0/user-surveys')
+    .set('Authorization', 'Bearer ' + jwtUser2)
+    .then(res => {
+        console.log(res.status);  // 200
+        console.log(JSON.stringify(res.body, undefined, 4)); // survey list with status with answers
+    });
+```
+
+Server responds with the list of user surveys in the body
+
+```js
+[
+    {
+        "id": 1,
+        "name": "Example",
+        "status": "new"
+    },
+    {
+        "id": 2,
+        "name": "Alzheimer",
+        "status": "new"
+    }
+]
+
+```
+
+Status can be changed when answering the survey using resource `/user-surveys/{id}/answers`.  If status is set to `in-progress` required questions can be left unanswered
+
+```js
+const answers = [{
+    questionId: 2,
+    answer: { boolValue: true }
+}, {
+    questionId: 5,
+    answer: { choice: 6 }
+}];
+
+request
+    .post('http://localhost:9005/api/v1.0/user-surveys/1/answers')
+    .set('Authorization', 'Bearer ' + jwtUser2)
+    .send({ status: 'in-progress', answers })
+    .then(res => {
+        console.log(res.status);  // 204
+    });
+```
+
+Answers and status are available using resource `/user-surveys/{id}/answers`
+
+```js
+request
+    .get('http://localhost:9005/api/v1.0/user-surveys/1/answers')
+    .set('Authorization', 'Bearer ' + jwtUser2)
+    .then(res => {
+        console.log(res.status);  // 200
+        console.log(JSON.stringify(res.body, undefined, 4)); // answers with status
+    });
+```
+
+Server responds with the answers in the body
+
+```js
+{
+    "status": "in-progress",
+    "answers": [
+        {
+            "questionId": 2,
+            "language": "en",
+            "answer": {
+                "boolValue": true
+            }
+        },
+        {
+            "questionId": 5,
+            "language": "en",
+            "answer": {
+                "choice": 6
+            }
+        }
+    ]
+}
+```
+
+List of user surveys reflect to status change
+
+```
+[
+    {
+        "id": 1,
+        "name": "Example",
+        "status": "in-progress"
+    },
+    {
+        "id": 2,
+        "name": "Alzheimer",
+        "status": "new"
+    }
+]
+```
+
+Additional answers can be added and status can be changed to `completed`
+
+```js
+const answers = [{
+    questionId: 1,
+    answer: { textValue: 'Try another medicine' }
+}, {
+    questionId: 4,
+    answer: {
+        choices: [{
+            id: 5,
+            boolValue: true
+        }, {
+            id: 8,
+            textValue: 'Basketball'
+        }]
+    }
+}];
+
+request
+    .post('http://localhost:9005/api/v1.0/user-surveys/1/answers')
+    .set('Authorization', 'Bearer ' + jwtUser2)
+    .send({ status: 'completed', answers })
+    .then(res => {
+        console.log(res.status);  // 204
+    });
+```
+
+Answers and status are also available using resource `/user-surveys/{id}`.  This resource responds with answers as parts of questions
+
+```js
+request
+    .get('http://localhost:9005/api/v1.0/user-surveys/1')
+    .set('Authorization', 'Bearer ' + jwtUser2)
+    .then(res => {
+        console.log(res.status);  // 200
+        console.log(JSON.stringify(res.body, undefined, 4)); // answers with status
+    });
+```
+
+Server responds with the answered survey and the status in the body
+
+```js
+{
+    "status": "completed",
+    "survey": {
+        "id": 1,
+        "meta": {
+            "displayAsWizard": true,
+            "saveProgress": false
+        },
+        "name": "Example",
+        "questions": [
+            {
+                "id": 1,
+                "type": "text",
+                "text": "Please describe reason for your enrollment?",
+                "required": false,
+                "language": "en",
+                "answer": {
+                    "textValue": "Try another medicine"
+                }
+            },
+            {
+                "id": 2,
+                "type": "bool",
+                "text": "Do you own a pet?",
+                "required": true,
+                "language": "en",
+                "answer": {
+                    "boolValue": true
+                }
+            },
+            {
+                "id": 5,
+                "type": "choice",
+                "text": "What is your hair color?",
+                "choices": [
+                    {
+                        "id": 9,
+                        "text": "Black"
+                    },
+                    {
+                        "id": 10,
+                        "text": "Brown"
+                    },
+                    {
+                        "id": 11,
+                        "text": "Blonde"
+                    },
+                    {
+                        "id": 12,
+                        "text": "Other"
+                    }
+                ],
+                "required": true,
+                "language": "en",
+                "answer": {
+                    "choice": 6
+                }
+            },
+            {
+                "id": 4,
+                "type": "choices",
+                "text": "What kind of exercises do you do?",
+                "actions": [
+                    {
+                        "id": 1,
+                        "type": "true",
+                        "text": "Confirm"
+                    },
+                    {
+                        "id": 2,
+                        "type": "false",
+                        "text": "I don't exercise."
+                    }
+                ],
+                "choices": [
+                    {
+                        "id": 5,
+                        "type": "bool",
+                        "text": "Walking"
+                    },
+                    {
+                        "id": 6,
+                        "type": "bool",
+                        "text": "Jogging"
+                    },
+                    {
+                        "id": 7,
+                        "type": "bool",
+                        "text": "Cycling"
+                    },
+                    {
+                        "id": 8,
+                        "type": "text",
+                        "text": "Please specify other"
+                    }
+                ],
+                "required": false,
+                "language": "en",
+                "answer": {
+                    "choices": [
+                        {
+                            "id": 5,
+                            "boolValue": true
+                        },
+                        {
+                            "id": 8,
+                            "textValue": "Basketball"
+                        }
+                    ]
+                }
+            }
+        ],
+        "sections": [
+            {
+                "id": 1,
+                "indices": [
+                    1,
+                    2
+                ],
+                "name": "Demographics"
+            },
+            {
+                "id": 2,
+                "indices": [
+                    0,
+                    3
+                ],
+                "name": "Health"
+            }
+        ]
+    }
 }
 ```
 
