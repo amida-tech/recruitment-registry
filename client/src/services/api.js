@@ -8,6 +8,12 @@ const apiService = {
   }
 }
 
+/**
+ * Executes a GET request on the given URI
+ * @param {String} fullURI
+ * @param {Function} callback
+ * @return {Any} handled by callback. Generally the response data. 
+**/
 function apiGetRequest(fullURI, callback) {
   fetch(fullURI, {
     method: 'GET',
@@ -22,6 +28,13 @@ function apiGetRequest(fullURI, callback) {
   });
 }
 
+/**
+ * Executes a POST request on the given URI
+ * @param {String} fullURI
+ * @param {Object} requestBody
+ * @param {Function} callback
+ * @return {Any} handled by callback.
+**/
 function apiPostRequest(fullURI, requestBody, callback) {
   fetch(fullURI, {
     method: 'POST',
