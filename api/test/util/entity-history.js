@@ -54,6 +54,14 @@ class History {
         return this.history[this.history.length - 1].id;
     }
 
+    lastServer() {
+        return this.history[this.history.length - 1];
+    }
+
+    lastIndex() {
+        return this.history.length - 1;
+    }
+
     client(index) {
         const currentIndex = this.currentIndex[index];
         return this.clients[currentIndex];
@@ -85,6 +93,10 @@ class History {
         const currentIndex = this.currentIndex[index];
         this.servers[currentIndex] = server;
         this.history[index] = server;
+    }
+
+    updateLastServer(server) {
+        this.updateServer(this.history.length - 1, server);
     }
 
     reloadServer(server) {
