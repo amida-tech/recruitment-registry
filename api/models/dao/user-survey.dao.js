@@ -2,8 +2,6 @@
 
 const db = require('../db');
 
-const sequelize = db.sequelize;
-
 const UserSurvey = db.UserSurvey;
 
 module.exports = class UserSurveyDAO {
@@ -22,23 +20,7 @@ module.exports = class UserSurveyDAO {
 
     createUserSurveyAnswers(userId, surveyId, input) {
         const { status, language, answers } = input;
-        return sequelize.transaction(transaction => {
-            return UserSurvey.findOne({
-                    where: { userId, surveyId },
-                    raw: true,
-                    attributes: ['status'],
-                    transaction
-                })
-                .then(userSurvey => {
-                    if (!userSurvey) {
-                        return UserSurvey.create({ userId, surveyId, status }, { transaction });
-                    } else if (userSurvey.status !== status) {
-                        return UserSurvey.destroy({ where: { userId, surveyId } }, { transaction })
-                            .then(() => UserSurvey.create({ userId, surveyId, status }, { transaction }));
-                    }
-                })
-                .then(() => this.answer.createAnswers({ userId, surveyId, answers, language, status }, transaction));
-        });
+        return this.answer.createAnswers({ userId, surveyId, answers, language, status });
     }
 
     getUserSurveyAnswers(userId, surveyId, options) {

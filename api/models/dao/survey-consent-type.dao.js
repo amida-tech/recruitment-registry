@@ -33,7 +33,10 @@ module.exports = class {
             .then(result => _.map(result, 'consentTypeId'))
             .then(typeIds => {
                 if (typeIds.length) {
-                    const options = { typeIds, transaction: tx };
+                    const options = { typeIds };
+                    if (tx) {
+                        options.transaction = tx;
+                    }
                     return this.userConsentDocument.listUserConsentDocuments(userId, options);
                 }
             });
