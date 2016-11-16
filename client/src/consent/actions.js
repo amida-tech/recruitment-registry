@@ -1,4 +1,19 @@
 import * as actionTypes from './actionTypes';
+import apiService from '../services/api';
+
+export function requestConsentDocuments() {
+  return dispatch => {
+    dispatch(getConsentDocs());
+    apiService.getUserConsentDocs('consent',
+    function(data) {
+      if (data) {
+        dispatch(getConsentDocsSuccess(data));
+      } else {
+        dispatch(getConsentDocsFailure());
+      }
+    });
+  }
+}
 
 export function getConsentDocs() {
   return {
@@ -6,21 +21,16 @@ export function getConsentDocs() {
   }
 }
 
-export function getConsentDocsFailure(error) {
+export function getConsentDocsFailure() {
   return {
-    type: actionTypes.GET_CONSENT_DOCS_FAILURE,
-    payload: {
-      error
-    }
+    type: actionTypes.GET_CONSENT_DOCS_FAILURE
   }
 }
 
 export function getConsentDocsSuccess(docs) {
   return {
     type: actionTypes.GET_CONSENT_DOCS_SUCCESS,
-    payload: {
-      docs
-    }
+    payload: docs
   }
 }
 

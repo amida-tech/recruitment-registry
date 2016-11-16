@@ -1,17 +1,20 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import Consent from './Consent';
-import * as actions from './actions';
+import * as actions from '../actions';
 
 class ConsentContainer extends Component {
-  componentWillMount() {
+  componentDidMount() {
+
     this._getConsentDocs();
   }
   render() {
-    return <Consent />
+    return <Consent
+      signConsent={this._signConsentDoc}
+    />
   }
   _getConsentDocs() {
-    this.props.dispatch(actions.getConsentDocs());
+    this.props.dispatch(actions.requestConsentDocuments());
   }
   _signConsentDoc(consentId) {
     this.props.dispatch(actions.signConsent(consentId));
@@ -20,7 +23,7 @@ class ConsentContainer extends Component {
 
 const mapStateToProps = (state, ownProps) => {
   return {
-    data: state,
+    ...state,
     ...ownProps
   }
 };
