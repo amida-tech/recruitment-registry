@@ -30,8 +30,7 @@ module.exports = class {
     createProfileSurveyIdTx(surveyId, transaction) {
         return ProfileSurvey.destroy({ where: {}, transaction })
             .then(() => {
-                return ProfileSurvey.create({ surveyId }, { transaction })
-                    .then(({ id }) => ({ id }));
+                return ProfileSurvey.create({ surveyId }, { transaction });
             });
     }
 

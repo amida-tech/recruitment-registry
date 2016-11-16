@@ -13,7 +13,6 @@ const sequelize = db.sequelize;
 const Survey = db.Survey;
 const SurveyQuestion = db.SurveyQuestion;
 const ProfileSurvey = db.ProfileSurvey;
-const SurveyText = db.SurveyText;
 
 const textHandler = textTableMethods(sequelize, 'survey_text', 'surveyId', ['name']);
 
@@ -232,23 +231,8 @@ module.exports = class {
             });
     }
 
-    getSurveyByName(name, options) {
-        return SurveyText.findOne({
-                where: { name },
-                raw: true,
-                attributes: ['surveyId']
-            })
-            .then(result => {
-                if (result) {
-                    return this.getSurvey(result.surveyId, options);
-                } else {
-                    return RRError.reject('surveyNotFound');
-                }
-            });
-    }
-
-    _getAnsweredSurvey(surveyPromise, userId) {
-        return surveyPromise
+    getAnsweredSurvey(userId, id, options) {
+        return this.getSurvey(id, options)
             .then(survey => {
                 return this.answer.getAnswers({
                         userId,
@@ -265,15 +249,5 @@ module.exports = class {
                         return survey;
                     });
             });
-    }
-
-    getAnsweredSurvey(userId, id, options) {
-        const p = this.getSurvey(id, options);
-        return this._getAnsweredSurvey(p, userId);
-    }
-
-    getAnsweredSurveyByName(userId, name, options) {
-        const p = this.getSurveyByName(name, options);
-        return this._getAnsweredSurvey(p, userId);
     }
 };

@@ -4,15 +4,14 @@ const request = require('superagent');
 
 module.exports = function (locals) {
     console.log(`------ start ${module.filename}`);
-    const jwt = locals.jwt;
+    const jwtUser2 = locals.jwtUser2;
 
     return request
-        .post('http://localhost:9005/api/v1.0/profile-survey-id')
-        .set('Authorization', 'Bearer ' + jwt)
-        .send({ profileSurveyId: 1 })
+        .get('http://localhost:9005/api/v1.0/user-surveys/1')
+        .set('Authorization', 'Bearer ' + jwtUser2)
         .then(res => {
-            console.log(res.status); // 201
-            console.log(res.body); // id of the survey
+            console.log(res.status); // 200
+            console.log(JSON.stringify(res.body, undefined, 4)); // answers with status
         })
         .then(() => {
             console.log(`------ end ${module.filename}`);

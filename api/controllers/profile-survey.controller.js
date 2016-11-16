@@ -23,7 +23,7 @@ exports.getProfileSurvey = function (req, res) {
 
 exports.createProfileSurveyId = function (req, res) {
     profileSurvey.createProfileSurveyId(req.body.profileSurveyId)
-        .then(result => res.status(201).json(result))
+        .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };
 
