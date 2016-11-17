@@ -8,21 +8,19 @@ const stream = require('stream');
 const chai = require('chai');
 const smtpServer = require('smtp-server');
 
-const helper = require('./util/survey-common');
-
 const SharedIntegration = require('./util/shared-integration');
-const userExamples = require('./fixtures/example/user');
-const surveyExamples = require('./fixtures/example/survey');
+const Generator = require('./util/entity-generator');
 
 const config = require('../config');
 const RRError = require('../lib/rr-error');
 
 const expect = chai.expect;
-const shared = new SharedIntegration();
+const generator = new Generator();
+const shared = new SharedIntegration(generator);
 
 describe('reset-token integration', function () {
-    const userExample = userExamples.Alzheimer;
-    const surveyExample = surveyExamples.Alzheimer;
+    const userExample = generator.newUser();
+    const surveyExample = generator.newSurvey();
 
     // -------- set up system (syncAndLoadAlzheimer)
 
@@ -82,7 +80,7 @@ describe('reset-token integration', function () {
 
     it('login as super user', shared.loginFn(store, config.superUser));
 
-    it('create registry', shared.createSurveyProfileFn(store, surveyExample.survey));
+    it('create registry', shared.createSurveyProfileFn(store, surveyExample));
 
     it('logout as super user', shared.logoutFn(store));
 
@@ -110,7 +108,7 @@ describe('reset-token integration', function () {
     let answers;
 
     it('fill user profile and submit', function (done) {
-        answers = helper.formAnswersToPost(survey, surveyExample.answer);
+        answers = generator.answerQuestions(survey.questions);
 
         store.server
             .post('/api/v1.0/profiles')

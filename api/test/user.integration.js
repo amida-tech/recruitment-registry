@@ -5,16 +5,16 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 const _ = require('lodash');
 
-const userExamples = require('./fixtures/example/user');
-
 const config = require('../config');
 const SharedIntegration = require('./util/shared-integration');
+const Generator = require('./util/entity-generator');
 
 const expect = chai.expect;
-const shared = new SharedIntegration();
+const generator = new Generator();
+const shared = new SharedIntegration(generator);
 
 describe('user integration', function () {
-    const user = userExamples.Example;
+    const user = generator.newUser();
     const store = {
         server: null,
         auth: null

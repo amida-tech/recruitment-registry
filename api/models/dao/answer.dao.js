@@ -10,16 +10,7 @@ const sequelize = db.sequelize;
 const Answer = db.Answer;
 const Question = db.Question;
 const SurveyQuestion = db.SurveyQuestion;
-
-const missingConsentDocumentHandler = function () {
-    return function (consentDocuments) {
-        if (consentDocuments && consentDocuments.length > 0) {
-            const err = new RRError('profileSignaturesMissing');
-            err.consentDocument = consentDocuments;
-            return SPromise.reject(err);
-        }
-    };
-};
+const UserSurvey = db.UserSurvey;
 
 const uiToDbAnswer = function (answer) {
     let result = [];
@@ -102,13 +93,44 @@ const fileAnswer = function ({ userId, surveyId, language, answers }, tx) {
     }));
 };
 
+const updateStatus = function (userId, surveyId, status, transaction) {
+    return UserSurvey.findOne({
+            where: { userId, surveyId },
+            raw: true,
+            attributes: ['status'],
+            transaction
+        })
+        .then(userSurvey => {
+            if (!userSurvey) {
+                return UserSurvey.create({ userId, surveyId, status }, { transaction });
+            } else if (userSurvey.status !== status) {
+                return UserSurvey.destroy({ where: { userId, surveyId } }, { transaction })
+                    .then(() => UserSurvey.create({ userId, surveyId, status }, { transaction }));
+            }
+        });
+};
+
 module.exports = class {
     constructor(dependencies) {
         Object.assign(this, dependencies);
     }
 
-    createAnswersTx({ userId, surveyId, answers, language = 'en', status = 'completed' }, transaction) {
-        const ids = _.map(answers, 'questionId');
+    validateConsent(userId, surveyId, action, transaction) {
+        return this.surveyConsentType.listSurveyConsentTypes({
+                userId,
+                surveyId,
+                action
+            }, transaction)
+            .then(consentDocuments => {
+                if (consentDocuments && consentDocuments.length > 0) {
+                    const err = new RRError('profileSignaturesMissing');
+                    err.consentDocument = consentDocuments;
+                    return SPromise.reject(err);
+                }
+            });
+    }
+
+    validateAnswers(userId, surveyId, answers, status) {
         return SurveyQuestion.findAll({
                 where: { surveyId },
                 raw: true,
@@ -151,21 +173,22 @@ module.exports = class {
                             });
                     }
                 }
+            });
+    }
+
+    validateCreate(userId, surveyId, answers, status, transaction) {
+        return this.validateAnswers(userId, surveyId, answers, status)
+            .then(() => this.validateConsent(userId, surveyId, 'create', transaction));
+    }
+
+    createAnswersTx({ userId, surveyId, answers, language = 'en', status = 'completed' }, transaction) {
+        return this.validateCreate(userId, surveyId, answers, status, transaction)
+            .then(() => updateStatus(userId, surveyId, status, transaction))
+            .then(() => {
+                const ids = _.map(answers, 'questionId');
+                const where = { questionId: { $in: ids }, surveyId, userId };
+                return Answer.destroy({ where }, { transaction });
             })
-            .then(() => Answer.destroy({
-                where: {
-                    questionId: { $in: ids },
-                    surveyId,
-                    userId
-                },
-                transaction
-            }))
-            .then(() => this.surveyConsentType.listSurveyConsentTypes({
-                userId,
-                surveyId,
-                action: 'create'
-            }, transaction))
-            .then(missingConsentDocumentHandler())
             .then(() => {
                 answers = _.filter(answers, answer => answer.answer);
                 if (answers.length) {
@@ -181,12 +204,7 @@ module.exports = class {
     }
 
     getAnswers({ userId, surveyId }) {
-        return this.surveyConsentType.listSurveyConsentTypes({
-                userId,
-                surveyId,
-                action: 'read'
-            })
-            .then(missingConsentDocumentHandler())
+        return this.validateConsent(userId, surveyId, 'read')
             .then(() => {
                 return Answer.findAll({
                         raw: true,

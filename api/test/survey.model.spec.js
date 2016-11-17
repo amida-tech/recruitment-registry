@@ -9,6 +9,7 @@ const models = require('../models');
 
 const Generator = require('./util/entity-generator');
 const History = require('./util/entity-history');
+const SurveyHistory = require('./util/survey-history');
 const SharedSpec = require('./util/shared-spec');
 const comparator = require('./util/client-server-comparator');
 const translator = require('./util/translator');
@@ -23,7 +24,7 @@ describe('survey unit', function () {
     const userCount = 1;
     let surveyCount = 8;
 
-    const history = new History(['id', 'name']);
+    const hxSurvey = new SurveyHistory();
     const hxUser = new History();
 
     it('verify no surveys', function () {
@@ -33,56 +34,85 @@ describe('survey unit', function () {
             });
     });
 
-    const createVerifySurveyFn = function (index) {
+    const createSurveyFn = function () {
         return function () {
-            const clientSurvey = generator.newSurvey();
-            const updatedName = clientSurvey.name + 'xyz';
-            let updatedMeta = {
-                meta: { anyProperty: 2 }
-            };
-            return models.survey.createSurvey(clientSurvey)
-                .then(id => models.survey.getSurvey(id))
-                .then((serverSurvey) => {
-                    return comparator.survey(clientSurvey, serverSurvey)
-                        .then(() => {
-                            history.push(clientSurvey, serverSurvey);
-                            return serverSurvey.id;
-                        });
-                })
-                .then(id => {
-                    return models.survey.updateSurvey(id, updatedMeta)
-                        .then(() => id);
-                })
-                .then(id => models.survey.getSurvey(id))
-                .then((serverSurvey) => {
-                    const updatedSurvey = Object.assign({}, clientSurvey, updatedMeta);
-                    return comparator.survey(updatedSurvey, serverSurvey)
-                        .then(() => serverSurvey.id);
-                })
-                .then(id => {
-                    let { meta } = clientSurvey;
-                    if (meta === undefined) {
-                        meta = null;
-                    }
-                    return models.survey.updateSurvey(id, { meta })
-                        .then(() => id);
+            const survey = generator.newSurvey();
+            return models.survey.createSurvey(survey)
+                .then(id => hxSurvey.push(survey, { id }));
+        };
+    };
 
-                })
-                .then(id => {
-                    return models.survey.updateSurveyText({ id, name: updatedName })
-                        .then(() => id);
-                })
-                .then(id => models.survey.getSurvey(id))
-                .then(serverSurvey => {
-                    const updatedSurvey = Object.assign({}, clientSurvey, { name: updatedName });
-                    return comparator.survey(updatedSurvey, serverSurvey)
-                        .then(() => serverSurvey.id);
-                })
-                .then((id) => models.survey.updateSurveyText({ id, name: clientSurvey.name }))
-                .then(() => models.survey.listSurveys())
+    const verifySurveyFn = function (index) {
+        return function () {
+            const surveyId = hxSurvey.id(index);
+            return models.survey.getSurvey(surveyId)
+                .then(survey => {
+                    return comparator.survey(hxSurvey.client(index), survey)
+                        .then(() => hxSurvey.updateServer(index, survey));
+                });
+        };
+    };
+
+    const verifyUpdatedSurveyFn = function (index) {
+        return function () {
+            const expected = hxSurvey.server(index);
+            const surveyId = hxSurvey.id(index);
+            return models.survey.getSurvey(surveyId)
+                .then(survey => expect(survey).to.deep.equal(expected));
+        };
+    };
+
+    const updateSurveyFn = function (index) {
+        return function () {
+            const surveyId = hxSurvey.id(index);
+            const survey = hxSurvey.server(index);
+            const update = { meta: { anyProperty: 2 } };
+            Object.assign(survey, update);
+            return models.survey.updateSurvey(surveyId, update);
+        };
+    };
+
+    const revertUpdateSurveyFn = function (index) {
+        return function () {
+            const surveyId = hxSurvey.id(index);
+            const survey = hxSurvey.server(index);
+            let { meta } = hxSurvey.client(index);
+            if (!meta) {
+                delete survey.meta;
+                meta = null;
+            } else {
+                Object.assign(survey, { meta });
+            }
+            return models.survey.updateSurvey(surveyId, { meta });
+        };
+    };
+
+    const updateSurveyTextFn = function (index) {
+        return function () {
+            const id = hxSurvey.id(index);
+            const survey = hxSurvey.server(index);
+            survey.name = survey.name + 'xyz';
+            const update = { id, name: survey.name };
+            return models.survey.updateSurveyText(update);
+        };
+    };
+
+    const revertUpdateSurveyTextFn = function (index) {
+        return function () {
+            const id = hxSurvey.id(index);
+            const survey = hxSurvey.server(index);
+            let { name } = hxSurvey.client(index);
+            survey.name = name;
+            return models.survey.updateSurveyText({ id, name });
+        };
+    };
+
+    const listSurveysFn = function (index) {
+        return function () {
+            return models.survey.listSurveys()
                 .then(surveys => {
                     expect(surveys).to.have.length(index + 1);
-                    const expected = history.listServers().map(({ id, name }) => ({ id, name }));
+                    const expected = hxSurvey.listServers();
                     expect(surveys).to.deep.equal(expected);
                 });
         };
@@ -94,12 +124,22 @@ describe('survey unit', function () {
     });
 
     for (let i = 0; i < surveyCount; ++i) {
-        it(`create/get/verify/update survey ${i} and list all`, createVerifySurveyFn(i));
+        it(`create survey ${i}`, createSurveyFn());
+        it(`get/verify survey ${i}`, verifySurveyFn(i));
+        it(`update survey ${i}`, updateSurveyFn(i));
+        it(`get/verify survey ${i}`, verifyUpdatedSurveyFn(i));
+        it(`revert updated survey back ${i}`, revertUpdateSurveyFn(i));
+        it(`get/verify survey ${i}`, verifyUpdatedSurveyFn(i));
+        it(`update survey text ${i}`, updateSurveyTextFn(i));
+        it(`get/verify survey ${i}`, verifyUpdatedSurveyFn(i));
+        it(`revert updated survey text back ${i}`, revertUpdateSurveyTextFn(i));
+        it(`get/verify survey ${i}`, verifyUpdatedSurveyFn(i));
+        it(`list surveys ${i}`, listSurveysFn(i));
     }
 
     it('replace sections of first survey with sections', function () {
-        const index = _.findIndex(history.listClients(), client => client.sections);
-        const survey = history.server(index);
+        const index = _.findIndex(hxSurvey.listClients(), client => client.sections);
+        const survey = hxSurvey.server(index);
         const count = survey.questions.length;
         const newSectionCount = (count - count % 2) / 2;
         const newSections = [{
@@ -109,21 +149,21 @@ describe('survey unit', function () {
             name: 'new_section_1',
             indices: _.rangeRight(newSectionCount, newSectionCount * 2)
         }];
-        const clientSurvey = history.client(index);
+        const clientSurvey = hxSurvey.client(index);
         clientSurvey.sections = newSections;
-        history.updateClient(index, clientSurvey);
+        hxSurvey.updateClient(index, clientSurvey);
         return models.survey.replaceSurveySections(survey.id, newSections);
     });
 
     it('get/verify sections of first survey with sections', function () {
-        const index = _.findIndex(history.listClients(), client => client.sections);
-        const id = history.id(index);
+        const index = _.findIndex(hxSurvey.listClients(), client => client.sections);
+        const id = hxSurvey.id(index);
         return models.survey.getSurvey(id)
             .then(survey => {
-                const clientSurvey = history.client(index);
+                const clientSurvey = hxSurvey.client(index);
                 return comparator.survey(clientSurvey, survey)
                     .then(() => {
-                        history.updateServer(index, survey);
+                        hxSurvey.updateServer(index, survey);
                     });
             });
     });
@@ -134,7 +174,7 @@ describe('survey unit', function () {
     });
 
     it('error: replace with a survey with no questions', function () {
-        const survey = history.server(1);
+        const survey = hxSurvey.server(1);
         const replacementSurvey = generator.newSurvey();
         delete replacementSurvey.questions;
         return models.survey.replaceSurvey(survey.id, replacementSurvey)
@@ -148,7 +188,7 @@ describe('survey unit', function () {
     });
 
     it('get survey 3 in spanish when no name translation', function () {
-        const survey = history.server(3);
+        const survey = hxSurvey.server(3);
         return models.survey.getSurvey(survey.id, { language: 'es' })
             .then(result => {
                 expect(result).to.deep.equal(survey);
@@ -158,29 +198,29 @@ describe('survey unit', function () {
     it('list surveys in spanish when no translation', function () {
         return models.survey.listSurveys({ language: 'es' })
             .then(result => {
-                const list = history.listServers();
+                const list = hxSurvey.listServers();
                 expect(result).to.deep.equal(list);
             });
     });
 
     const translateTextFn = function (index, language) {
         return function () {
-            const survey = history.server(index);
+            const survey = hxSurvey.server(index);
             const translation = translator.translateSurvey(survey, language);
             return models.survey.updateSurveyText(translation, language)
                 .then(() => {
-                    history.translate(index, language, translation);
+                    hxSurvey.translate(index, language, translation);
                 });
         };
     };
 
     const getTranslatedFn = function (index, language) {
         return function () {
-            const id = history.id(index);
+            const id = hxSurvey.id(index);
             return models.survey.getSurvey(id, { language })
                 .then(result => {
                     translator.isSurveyTranslated(result, language);
-                    const expected = history.translatedServer(index, language);
+                    const expected = hxSurvey.translatedServer(index, language);
                     expect(result).to.deep.equal(expected);
                 });
         };
@@ -190,7 +230,7 @@ describe('survey unit', function () {
         return function () {
             return models.survey.listSurveys({ language })
                 .then(result => {
-                    const expected = history.listTranslatedServers(language);
+                    const expected = hxSurvey.listTranslatedServers(language);
                     expect(result).to.deep.equal(expected);
                 });
         };
@@ -206,27 +246,27 @@ describe('survey unit', function () {
     it('list surveys in english (original)', function () {
         return models.survey.listSurveys({ language: 'en' })
             .then(result => {
-                const list = history.listServers();
+                const list = hxSurvey.listServers();
                 expect(result).to.deep.equal(list);
             });
     });
 
     const replaceSurveyFn = function (index) {
         return function () {
-            const id = history.id(index);
+            const id = hxSurvey.id(index);
             const clientSurvey = generator.newSurvey();
             return models.survey.replaceSurvey(id, clientSurvey)
                 .then(id => models.survey.getSurvey(id))
                 .then((serverSurvey) => {
                     return comparator.survey(clientSurvey, serverSurvey)
                         .then(() => {
-                            history.replace(index, clientSurvey, serverSurvey);
+                            hxSurvey.replace(index, clientSurvey, serverSurvey);
                             return serverSurvey.id;
                         });
                 })
                 .then(() => models.survey.listSurveys())
                 .then(surveys => {
-                    const expected = history.listServers();
+                    const expected = hxSurvey.listServers();
                     expect(surveys).to.deep.equal(expected);
                 });
         };
@@ -234,7 +274,7 @@ describe('survey unit', function () {
 
     const dbVersionCompareFn = function (index, count) {
         return function () {
-            const id = history.id(index);
+            const id = hxSurvey.id(index);
             return models.survey.getSurvey(id, { override: { attributes: ['id', 'version', 'groupId'] } })
                 .then(surveyWithGroupId => {
                     const groupId = surveyWithGroupId.groupId;
@@ -263,7 +303,7 @@ describe('survey unit', function () {
 
     const dbVersionParentlessCompareFn = function (index, replaced) {
         return function () {
-            const id = history.id(index);
+            const id = hxSurvey.id(index);
             return models.survey.getSurvey(id, { override: { attributes: ['id', 'version', 'groupId'], paranoid: false } })
                 .then(survey => {
                     if (replaced) {
@@ -296,29 +336,29 @@ describe('survey unit', function () {
                 expect(list).to.have.length(1);
                 const { name, version } = list[0];
                 expect(version).to.equal(3);
-                const expected = history.server(10).name;
+                const expected = hxSurvey.server(10).name;
                 expect(name).to.equal(expected);
             });
     });
 
     it('delete survey 5', function () {
-        const id = history.id(5);
-        history.remove(5);
+        const id = hxSurvey.id(5);
+        hxSurvey.remove(5);
         return models.survey.deleteSurvey(id)
             .then(() => models.survey.listSurveys())
             .then(surveys => {
-                const expected = history.listServers();
+                const expected = hxSurvey.listServers();
                 expect(surveys).to.deep.equal(expected);
             });
     });
 
     it('extract existing questions', function () {
-        history.questions = _.flatten(_.map(history.listServers('questions'), 'questions'));
+        hxSurvey.questions = _.flatten(_.map(hxSurvey.listServers('questions'), 'questions'));
     });
 
     it('create survey by existing questions only', function () {
         const survey = generator.newSurvey();
-        const questions = history.questions.slice(0, 10);
+        const questions = hxSurvey.questions.slice(0, 10);
         survey.questions = questions.map(({ id, required }) => ({ id, required }));
         return models.survey.createSurvey(survey)
             .then(id => models.survey.getSurvey(id))
@@ -326,7 +366,7 @@ describe('survey unit', function () {
                 survey.questions = questions;
                 return comparator.survey(survey, serverSurvey)
                     .then(() => {
-                        history.push(survey, serverSurvey);
+                        hxSurvey.push(survey, serverSurvey);
                         ++surveyCount;
                     });
             });
@@ -334,16 +374,16 @@ describe('survey unit', function () {
 
     it('create survey by existing/new questions', function () {
         const survey = generator.newSurvey();
-        const fn = index => ({ id: history.questions[index].id, required: history.questions[index].required });
+        const fn = index => ({ id: hxSurvey.questions[index].id, required: hxSurvey.questions[index].required });
         const additionalIds = [10, 11].map(fn);
         survey.questions.splice(1, 0, ...additionalIds);
         return models.survey.createSurvey(survey)
             .then(id => models.survey.getSurvey(id))
             .then((serverSurvey) => {
                 ++surveyCount;
-                survey.questions[1] = history.questions[10];
-                survey.questions[2] = history.questions[11];
-                history.push(survey, serverSurvey);
+                survey.questions[1] = hxSurvey.questions[10];
+                survey.questions[2] = hxSurvey.questions[11];
+                hxSurvey.push(survey, serverSurvey);
                 return comparator.survey(survey, serverSurvey);
             });
     });
@@ -364,7 +404,7 @@ describe('survey unit', function () {
 
     const answerVerifySurveyFn = function (surveyIndex) {
         return function () {
-            const survey = history.server(surveyIndex);
+            const survey = hxSurvey.server(surveyIndex);
             const answers = generator.answerQuestions(survey.questions);
             const input = {
                 userId: hxUser.id(0),
@@ -380,7 +420,7 @@ describe('survey unit', function () {
     });
 
     it('error: answer without required questions', function () {
-        const survey = history.server(4);
+        const survey = hxSurvey.server(4);
         const qxs = survey.questions;
         const answers = generator.answerQuestions(qxs);
         const input = {
@@ -407,7 +447,7 @@ describe('survey unit', function () {
     });
 
     it('reanswer without all required questions', function () {
-        const survey = history.server(4);
+        const survey = hxSurvey.server(4);
         const userId = hxUser.id(0);
         return models.survey.getAnsweredSurvey(userId, survey.id)
             .then(answeredSurvey => {
@@ -435,7 +475,7 @@ describe('survey unit', function () {
     });
 
     it('error: answer with invalid question id', function () {
-        const survey = history.server(6);
+        const survey = hxSurvey.server(6);
         const qxs = survey.questions;
         const answers = generator.answerQuestions(qxs);
         const input = {

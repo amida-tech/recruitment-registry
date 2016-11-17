@@ -14,22 +14,20 @@ const models = require('../models');
 const db = require('../models/db');
 const Generator = require('./util/entity-generator');
 
-const userExamples = require('./fixtures/example/user');
-
 const expect = chai.expect;
-const entityGen = new Generator();
-const shared = new SharedSpec();
+const generator = new Generator();
+const shared = new SharedSpec(generator);
 
 const User = db.User;
 
 describe('user unit', function () {
-    const example = userExamples.Example;
+    const example = generator.newUser();
 
     before(shared.setUpFn());
 
     describe('username', function () {
         it('create and update', function () {
-            const inputUser = entityGen.newUser();
+            const inputUser = generator.newUser();
             return User.create(inputUser).then(function (user) {
                     expect(user.username).to.equal(inputUser.username);
                     return user;
@@ -58,13 +56,13 @@ describe('user unit', function () {
         });
 
         it('reject non unique username', function () {
-            const inputUser = entityGen.newUser();
+            const inputUser = generator.newUser();
             return User.create(inputUser).then(function (user) {
                     expect(user.username).to.equal(inputUser.username);
                     return user;
                 })
                 .then(function () {
-                    const nextInputUser = entityGen.newUser();
+                    const nextInputUser = generator.newUser();
                     nextInputUser.username = inputUser.username;
                     return User.create(nextInputUser).then(function () {
                             throw new Error('unique username accepted');
@@ -76,7 +74,7 @@ describe('user unit', function () {
         });
 
         it('reject null/undefined/missing/empty', function () {
-            let p = SPromise.resolve(entityGen.newUser());
+            let p = SPromise.resolve(generator.newUser());
             [null, undefined, '--', ''].forEach(function (value) {
                 p = p.then(function (inputUser) {
                     if (value === '--') {
@@ -99,7 +97,7 @@ describe('user unit', function () {
 
     describe('password', function () {
         it('create, update and authenticate', function () {
-            const inputUser = entityGen.newUser();
+            const inputUser = generator.newUser();
             return User.create(inputUser)
                 .then(function (user) {
                     return User.findOne({
@@ -135,7 +133,7 @@ describe('user unit', function () {
         });
 
         it('reject null/undefined/missing/empty', function () {
-            let p = SPromise.resolve(entityGen.newUser());
+            let p = SPromise.resolve(generator.newUser());
             [null, undefined, '--', ''].forEach(function (value) {
                 p = p.then(function (inputUser) {
                     if (value === '--') {
@@ -158,7 +156,7 @@ describe('user unit', function () {
         });
 
         it('reject update with null/undefined/empty', function () {
-            const inputValue = entityGen.newUser();
+            const inputValue = generator.newUser();
             let p = User.create(inputValue).then(function (user) {
                 return user.id;
             });
@@ -183,7 +181,7 @@ describe('user unit', function () {
 
     describe('e-mail', function () {
         it('normal set/get', function () {
-            const inputUser = entityGen.newUser();
+            const inputUser = generator.newUser();
             return User.create(inputUser)
                 .then(function (user) {
                     expect(user.email).to.equal(inputUser.email);
@@ -204,14 +202,14 @@ describe('user unit', function () {
         });
 
         it('reject non unique e-mail', function () {
-            const inputUser = entityGen.newUser();
+            const inputUser = generator.newUser();
             return User.create(inputUser)
                 .then(function (user) {
                     expect(user.email).to.equal(inputUser.email);
                     return user;
                 })
                 .then(function () {
-                    const nextInputUser = entityGen.newUser();
+                    const nextInputUser = generator.newUser();
                     nextInputUser.email = inputUser.email;
                     return User.create(nextInputUser)
                         .then(function () {
@@ -223,7 +221,7 @@ describe('user unit', function () {
         });
 
         it('lowercase emails with capital letters', function () {
-            const inputUser = entityGen.newUser({
+            const inputUser = generator.newUser({
                 email: 'CamelCase@EXAMPLE.COM'
             });
             return User.create(inputUser)
@@ -246,7 +244,7 @@ describe('user unit', function () {
         });
 
         it('reject create invalid/null/undefined/missing/empty', function () {
-            let p = SPromise.resolve(entityGen.newUser());
+            let p = SPromise.resolve(generator.newUser());
             ['noatemail', null, undefined, '--', ''].forEach(function (value) {
                 p = p.then(function (inputUser) {
                     if (value === '--') {
@@ -269,7 +267,7 @@ describe('user unit', function () {
         });
 
         it('reject update with invalid/null/undefined/empty', function () {
-            const inputValue = entityGen.newUser();
+            const inputValue = generator.newUser();
             let p = User.create(inputValue).then(function (user) {
                 return user.id;
             });
@@ -326,7 +324,7 @@ describe('user unit', function () {
 
     describe('update users', function () {
         it('normal flow', function () {
-            const inputUser = entityGen.newUser();
+            const inputUser = generator.newUser();
             return User.create(inputUser).then(function (user) {
                 const id = user.id;
                 const attributes = ['email'];
@@ -354,7 +352,7 @@ describe('user unit', function () {
 
     describe('reset password', function () {
         it('normal flow', function () {
-            const inputUser = entityGen.newUser();
+            const inputUser = generator.newUser();
             return User.create(inputUser)
                 .then(function (user) {
                     let token;
@@ -428,7 +426,7 @@ describe('user unit', function () {
                 m.add(250, 'ms');
                 return m.toISOString();
             });
-            const inputUser = entityGen.newUser();
+            const inputUser = generator.newUser();
             return User.create(inputUser)
                 .then(function (user) {
                     return models.user.resetPasswordToken(user.email);

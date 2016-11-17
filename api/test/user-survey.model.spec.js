@@ -11,6 +11,7 @@ const History = require('./util/entity-history');
 const SurveyHistory = require('./util/survey-history');
 const SharedSpec = require('./util/shared-spec');
 const comparator = require('./util/client-server-comparator');
+const translator = require('./util/translator');
 
 const expect = chai.expect;
 const generator = new Generator();
@@ -278,4 +279,115 @@ describe('user survey unit', function () {
     it('verify user 0 survey 1 answers (with survey)', verifyUserSurveyAnswersFn(0, 1, 'completed', true));
 
     it('verify user 0 user survey list', verifyUserSurveyListFn(0, ['completed', 'completed', 'new']));
+
+    const verifyTranslatedUserSurveyListFn = function (userIndex, statusList, language, notTranslated) {
+        return function () {
+            const userId = hxUser.id(userIndex);
+            return models.userSurvey.listUserSurveys(userId, { language })
+                .then(userSurveys => {
+                    if (!notTranslated) {
+                        translator.isSurveyListTranslated(userSurveys, language);
+                    }
+                    const list = hxSurvey.listTranslatedServers(language);
+                    const expected = list.map(({ id, name }, index) => ({ id, name, status: statusList[index] }));
+                    expect(userSurveys).to.deep.equal(expected);
+                });
+        };
+    };
+
+    const verifyTranslatedUserSurveyFn = function (userIndex, surveyIndex, status, language, notTranslated) {
+        return function () {
+            const userId = hxUser.id(userIndex);
+            const surveyId = hxSurvey.id(surveyIndex);
+            return models.userSurvey.getUserSurvey(userId, surveyId, { language })
+                .then(userSurvey => {
+                    const survey = hxSurvey.translatedServer(surveyIndex, language);
+                    if (!notTranslated) {
+                        translator.isSurveyTranslated(userSurvey.survey, language);
+                    }
+                    const key = _key(userIndex, surveyIndex);
+                    const answers = mapAnswers.get(key) || [];
+                    expect(userSurvey.status).to.equal(status);
+                    comparator.answeredSurvey(survey, answers, userSurvey.survey);
+                });
+        };
+    };
+
+    const verifyTranslatedUserSurveyAnswersFn = function (userIndex, surveyIndex, status, language, notTranslated) {
+        return function () {
+            const userId = hxUser.id(userIndex);
+            const surveyId = hxSurvey.id(surveyIndex);
+            const options = { includeSurvey: true, language };
+            return models.userSurvey.getUserSurveyAnswers(userId, surveyId, options)
+                .then(userSurveyAnswers => {
+                    const survey = hxSurvey.translatedServer(surveyIndex, language);
+                    if (!notTranslated) {
+                        translator.isSurveyTranslated(userSurveyAnswers.survey, language);
+                    }
+                    expect(userSurveyAnswers.survey).to.deep.equal(survey);
+                    const key = _key(userIndex, surveyIndex);
+                    const answers = mapAnswers.get(key) || [];
+                    expect(userSurveyAnswers.status).to.equal(status);
+                    comparator.answers(answers, userSurveyAnswers.answers);
+                });
+        };
+    };
+
+    it('verify user 2 user survey list in spanish (no translation)', verifyTranslatedUserSurveyListFn(2, ['new', 'new', 'new'], 'es', true));
+
+    it('verify user 2 survey 0 in spanish (no translation)', verifyTranslatedUserSurveyFn(2, 0, 'new', 'es', true));
+    it('verify user 2 survey 1 in spanish (no translation)', verifyTranslatedUserSurveyFn(2, 1, 'new', 'es', true));
+
+    it('verify user 2 survey 0 answers in spanish (no translation)', verifyTranslatedUserSurveyAnswersFn(2, 0, 'new', 'es', true));
+    it('verify user 2 survey 1 answers in spanish (no transaltion)', verifyTranslatedUserSurveyAnswersFn(2, 1, 'new', 'es', true));
+
+    const translateSurveyFn = function (index, language) {
+        return function () {
+            const survey = hxSurvey.server(index);
+            const translation = translator.translateSurvey(survey, language);
+            return models.survey.updateSurveyText(translation, language)
+                .then(() => {
+                    hxSurvey.translate(index, language, translation);
+                });
+        };
+    };
+
+    for (let i = 0; i < surveyCount; ++i) {
+        it(`translate survey ${i}`, translateSurveyFn(i, 'es'));
+    }
+
+    it('verify user 2 user survey list in spanish', verifyTranslatedUserSurveyListFn(2, ['new', 'new', 'new'], 'es'));
+
+    it('verify user 2 survey 0 in spanish', verifyTranslatedUserSurveyFn(2, 0, 'new', 'es'));
+    it('verify user 2 survey 1 in spanish', verifyTranslatedUserSurveyFn(2, 1, 'new', 'es'));
+
+    it('verify user 2 survey 0 answers in spanish', verifyTranslatedUserSurveyAnswersFn(2, 0, 'new', 'es'));
+    it('verify user 2 survey 1 answers in spanish', verifyTranslatedUserSurveyAnswersFn(2, 1, 'new', 'es'));
+
+    const answerTranslatedSurveyFullFn = function (userIndex, surveyIndex, status, language) {
+        return function () {
+            const survey = hxSurvey.server(surveyIndex);
+            const answers = generator.answerQuestions(survey.questions);
+            const input = {
+                answers,
+                status,
+                language
+            };
+            const userId = hxUser.id(userIndex);
+            const key = _key(userIndex, surveyIndex);
+            mapAnswers.set(key, answers);
+            mapStatus.set(key, status);
+            return models.userSurvey.createUserSurveyAnswers(userId, survey.id, input)
+                .then(() => answers.forEach(answer => answer.language = language));
+        };
+    };
+
+    it('user 2 answers survey 0 all completed', answerTranslatedSurveyFullFn(2, 0, 'completed', 'es'));
+    it('user 2 answers survey 1 all in-progress', answerTranslatedSurveyFullFn(2, 1, 'in-progress', 'es'));
+
+    it('verify user 2 survey 0 in spanish', verifyTranslatedUserSurveyFn(2, 0, 'completed', 'es'));
+    it('verify user 2 survey 1 in spanish', verifyTranslatedUserSurveyFn(2, 1, 'in-progress', 'es'));
+
+    it('verify user 2 survey 0 answers in spanish', verifyTranslatedUserSurveyAnswersFn(2, 0, 'completed', 'es'));
+    it('verify user 2 survey 1 answers in spanish', verifyTranslatedUserSurveyAnswersFn(2, 1, 'in-progress', 'es'));
 });

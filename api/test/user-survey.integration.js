@@ -12,6 +12,7 @@ const SurveyHistory = require('./util/survey-history');
 const Shared = require('./util/shared-integration');
 const RRError = require('../lib/rr-error');
 const comparator = require('./util/client-server-comparator');
+const translator = require('./util/translator');
 
 const expect = chai.expect;
 const generator = new Generator();
@@ -388,5 +389,169 @@ describe('user survey integration', function () {
     it('verify user 0 survey 1 answers', verifyUserSurveyAnswersFn(0, 1, 'completed'));
     it('verify user 0 survey 1 answers (with survey)', verifyUserSurveyAnswersFn(0, 1, 'completed', true));
     it('verify user 0 user survey list', verifyUserSurveyListFn(['completed', 'completed', 'new']));
+    it('logout as user 0', shared.logoutFn(store));
+
+    const verifyTranslatedUserSurveyListFn = function (userIndex, statusList, language, notTranslated) {
+        return function (done) {
+            store.server
+                .get(`/api/v1.0/user-surveys`)
+                .set('Authorization', store.auth)
+                .query({ language })
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    const userSurveys = res.body;
+                    if (!notTranslated) {
+                        translator.isSurveyListTranslated(userSurveys, language);
+                    }
+                    const list = hxSurvey.listTranslatedServers(language);
+                    const expected = list.map(({ id, name }, index) => ({ id, name, status: statusList[index] }));
+                    expect(userSurveys).to.deep.equal(expected);
+                    done();
+                });
+        };
+    };
+
+    const verifyTranslatedUserSurveyFn = function (userIndex, surveyIndex, status, language, notTranslated) {
+        return function (done) {
+            const surveyId = hxSurvey.id(surveyIndex);
+            store.server
+                .get(`/api/v1.0/user-surveys/${surveyId}`)
+                .set('Authorization', store.auth)
+                .query({ language })
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    const userSurvey = res.body;
+                    const survey = hxSurvey.translatedServer(surveyIndex, language);
+                    if (!notTranslated) {
+                        translator.isSurveyTranslated(userSurvey.survey, language);
+                    }
+                    const key = _key(userIndex, surveyIndex);
+                    const answers = mapAnswers.get(key) || [];
+                    expect(userSurvey.status).to.equal(status);
+                    comparator.answeredSurvey(survey, answers, userSurvey.survey);
+                    done();
+                });
+        };
+    };
+
+    const verifyTranslatedUserSurveyAnswersFn = function (userIndex, surveyIndex, status, language, notTranslated) {
+        return function (done) {
+            const surveyId = hxSurvey.id(surveyIndex);
+            const query = { 'include-survey': true, language };
+            store.server
+                .get(`/api/v1.0/user-surveys/${surveyId}/answers`)
+                .set('Authorization', store.auth)
+                .query(query)
+                .expect(200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    const userSurveyAnswers = res.body;
+                    const survey = hxSurvey.translatedServer(surveyIndex, language);
+                    if (!notTranslated) {
+                        translator.isSurveyTranslated(userSurveyAnswers.survey, language);
+                    }
+                    expect(userSurveyAnswers.survey).to.deep.equal(survey);
+                    const key = _key(userIndex, surveyIndex);
+                    const answers = mapAnswers.get(key) || [];
+                    expect(userSurveyAnswers.status).to.equal(status);
+                    comparator.answers(answers, userSurveyAnswers.answers);
+                    done();
+                });
+        };
+    };
+
+    it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
+
+    it('verify user 2 user survey list in spanish (no translation)', verifyTranslatedUserSurveyListFn(2, ['new', 'new', 'new'], 'es', true));
+
+    it('verify user 2 survey 0 in spanish (no translation)', verifyTranslatedUserSurveyFn(2, 0, 'new', 'es', true));
+    it('verify user 2 survey 1 in spanish (no translation)', verifyTranslatedUserSurveyFn(2, 1, 'new', 'es', true));
+
+    it('verify user 2 survey 0 answers in spanish (no translation)', verifyTranslatedUserSurveyAnswersFn(2, 0, 'new', 'es', true));
+    it('verify user 2 survey 1 answers in spanish (no transaltion)', verifyTranslatedUserSurveyAnswersFn(2, 1, 'new', 'es', true));
+
+    it('logout as user 2', shared.logoutFn(store));
+
+    const translateSurveyFn = function (index, language) {
+        return function (done) {
+            const survey = hxSurvey.server(index);
+            const translation = translator.translateSurvey(survey, language);
+            store.server
+                .patch(`/api/v1.0/surveys/text/${language}`)
+                .set('Authorization', store.auth)
+                .send(translation)
+                .expect(204)
+                .end(function (err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    hxSurvey.translate(index, language, translation);
+                    done();
+                });
+        };
+    };
+
+    it('login as super', shared.loginFn(store, config.superUser));
+
+    for (let i = 0; i < surveyCount; ++i) {
+        it(`translate survey ${i}`, translateSurveyFn(i, 'es'));
+    }
+
+    it('logout as super', shared.logoutFn(store));
+
+    it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
+
+    it('verify user 2 user survey list in spanish', verifyTranslatedUserSurveyListFn(2, ['new', 'new', 'new'], 'es'));
+
+    it('verify user 2 survey 0 in spanish', verifyTranslatedUserSurveyFn(2, 0, 'new', 'es'));
+    it('verify user 2 survey 1 in spanish', verifyTranslatedUserSurveyFn(2, 1, 'new', 'es'));
+
+    it('verify user 2 survey 0 answers in spanish', verifyTranslatedUserSurveyAnswersFn(2, 0, 'new', 'es'));
+    it('verify user 2 survey 1 answers in spanish', verifyTranslatedUserSurveyAnswersFn(2, 1, 'new', 'es'));
+
+    const answerTranslatedSurveyFullFn = function (userIndex, surveyIndex, status, language) {
+        return function (done) {
+            const survey = hxSurvey.server(surveyIndex);
+            const answers = generator.answerQuestions(survey.questions);
+            const input = {
+                answers,
+                status,
+                language
+            };
+            const key = _key(userIndex, surveyIndex);
+            store.server
+                .post(`/api/v1.0/user-surveys/${survey.id}/answers`)
+                .set('Authorization', store.auth)
+                .send(input)
+                .expect(204)
+                .end(function (err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    mapAnswers.set(key, answers);
+                    mapStatus.set(key, status);
+                    answers.forEach(answer => answer.language = language);
+                    done();
+                });
+        };
+    };
+
+    it('user 2 answers survey 0 all completed', answerTranslatedSurveyFullFn(2, 0, 'completed', 'es'));
+    it('user 2 answers survey 1 all in-progress', answerTranslatedSurveyFullFn(2, 1, 'in-progress', 'es'));
+
+    it('verify user 2 survey 0 in spanish', verifyTranslatedUserSurveyFn(2, 0, 'completed', 'es'));
+    it('verify user 2 survey 1 in spanish', verifyTranslatedUserSurveyFn(2, 1, 'in-progress', 'es'));
+
+    it('verify user 2 survey 0 answers in spanish', verifyTranslatedUserSurveyAnswersFn(2, 0, 'completed', 'es'));
+    it('verify user 2 survey 1 answers in spanish', verifyTranslatedUserSurveyAnswersFn(2, 1, 'in-progress', 'es'));
+
     it('logout as user 0', shared.logoutFn(store));
 });
