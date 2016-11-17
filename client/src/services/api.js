@@ -5,9 +5,9 @@ const apiService = {
   getUserConsentDocsByType: (typeName, callback) => {
     const path = getFullPath(`/user-consent-documents/type-name/${typeName}`);
     return apiGetRequest(path, callback);
-  }
+  },
   postConsent: (requestBody, callback) => {
-    const path = getFullpath('/consent-signatures');
+    const path = getFullPath('/consent-signatures');
     return apiPostRequest(path, requestBody, callback);
   }
 }

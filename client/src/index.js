@@ -29,7 +29,9 @@ export const initialState = {
       id: ""
     }
   },
-  loggedIn: false,
+  auth: {
+    isAuthenticated: false
+  },
   register: {
     newUserProfile: {
     user: {
