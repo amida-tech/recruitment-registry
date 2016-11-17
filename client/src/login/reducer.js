@@ -11,7 +11,7 @@ export default (state, action) => {
     case actionTypes.GET_USER_SUCCESS:
       return state.merge(state, {user: action.payload});
     case actionTypes.LOGOUT:
-      return state.set('loggedIn', false);
+      return state.merge(state, {isAuthenticated: false});
     default:
       return state;
   }
