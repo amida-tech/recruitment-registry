@@ -2,9 +2,13 @@ import getFullPath from '../utils/getFullPath';
 import 'whatwg-fetch';
 
 const apiService = {
-  getUserConsentDocs: (typeName, callback) => {
-    const path = getFullPath('/users/me');
+  getUserConsentDocsByType: (typeName, callback) => {
+    const path = getFullPath(`/user-consent-documents/type-name/${typeName}`);
     return apiGetRequest(path, callback);
+  }
+  postConsent: (requestBody, callback) => {
+    const path = getFullpath('/consent-signatures');
+    return apiPostRequest(path, requestBody, callback);
   }
 }
 
@@ -12,7 +16,7 @@ const apiService = {
  * Executes a GET request on the given URI
  * @param {String} fullURI
  * @param {Function} callback
- * @return {Any} handled by callback. Generally the response data. 
+ * @return {Any} handled by callback. Generally the response data.
 **/
 function apiGetRequest(fullURI, callback) {
   fetch(fullURI, {

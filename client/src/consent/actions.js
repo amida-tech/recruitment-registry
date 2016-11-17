@@ -3,8 +3,8 @@ import apiService from '../services/api';
 
 export function requestConsentDocuments() {
   return dispatch => {
-    dispatch(getConsentDocs());
-    apiService.getUserConsentDocs('consent', data => {
+    dispatch(getUserConsentDocs());
+    apiService.getUserConsentDocsByType('consent', data => {
       if (data) {
         dispatch(getConsentDocsSuccess(data));
       } else {
@@ -14,7 +14,7 @@ export function requestConsentDocuments() {
   }
 }
 
-export function getConsentDocs() {
+export function getUserConsentDocs() {
   return {
     type: actionTypes.GET_CONSENT_DOCS
   }
