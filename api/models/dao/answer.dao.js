@@ -44,6 +44,12 @@ const uiToDbAnswer = function (answer) {
             type: 'bool'
         });
     }
+    if (answer.hasOwnProperty('dateValue')) {
+        result.push({
+            value: answer.dateValue,
+            type: 'date'
+        });
+    }
     if (answer.hasOwnProperty('textValue')) {
         result.push({
             value: answer.textValue,
@@ -55,6 +61,7 @@ const uiToDbAnswer = function (answer) {
 
 const generateAnswer = {
     text: entries => ({ textValue: entries[0].value }),
+    date: entries => ({ dateValue: entries[0].value }),
     bool: entries => ({ boolValue: entries[0].value === 'true' }),
     choice: entries => ({ choice: entries[0].questionChoiceId }),
     choices: entries => {
