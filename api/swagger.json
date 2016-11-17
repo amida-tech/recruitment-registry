@@ -3,6 +3,12 @@
     "info": {
         "version": "1.0",
         "title": "Recruitment Registry",
+        "description": "Survey Based Match of Participants to Clinical Trials",
+        "contact": {
+            "name": "Amida Technology Solutions",
+            "url": "http://www.amida.com",
+            "email": "hello@amida-tech.com"
+        },
         "license": {
             "name": "Apache 2.0"
         }
