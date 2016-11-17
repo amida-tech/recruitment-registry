@@ -3,6 +3,7 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 const passport = require('passport');
 const expressWinston = require('express-winston');
 
@@ -23,6 +24,7 @@ app.use(expressWinston.logger({
 }));
 
 app.use(cors());
+app.use(cookieParser);
 app.use(jsonParser);
 app.enable('trust proxy');
 app.use(passport.initialize());
