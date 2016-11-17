@@ -285,7 +285,7 @@ describe('user survey unit', function () {
             const userId = hxUser.id(userIndex);
             return models.userSurvey.listUserSurveys(userId, { language })
                 .then(userSurveys => {
-                    if (! notTranslated) {
+                    if (!notTranslated) {
                         translator.isSurveyListTranslated(userSurveys, language);
                     }
                     const list = hxSurvey.listTranslatedServers(language);
@@ -302,7 +302,7 @@ describe('user survey unit', function () {
             return models.userSurvey.getUserSurvey(userId, surveyId, { language })
                 .then(userSurvey => {
                     const survey = hxSurvey.translatedServer(surveyIndex, language);
-                    if (! notTranslated) {
+                    if (!notTranslated) {
                         translator.isSurveyTranslated(userSurvey.survey, language);
                     }
                     const key = _key(userIndex, surveyIndex);
@@ -321,7 +321,7 @@ describe('user survey unit', function () {
             return models.userSurvey.getUserSurveyAnswers(userId, surveyId, options)
                 .then(userSurveyAnswers => {
                     const survey = hxSurvey.translatedServer(surveyIndex, language);
-                    if (! notTranslated) {
+                    if (!notTranslated) {
                         translator.isSurveyTranslated(userSurveyAnswers.survey, language);
                     }
                     expect(userSurveyAnswers.survey).to.deep.equal(survey);
@@ -390,12 +390,4 @@ describe('user survey unit', function () {
 
     it('verify user 2 survey 0 answers in spanish', verifyTranslatedUserSurveyAnswersFn(2, 0, 'completed', 'es'));
     it('verify user 2 survey 1 answers in spanish', verifyTranslatedUserSurveyAnswersFn(2, 1, 'in-progress', 'es'));
-
-
-
-
-
-
-
-
 });
