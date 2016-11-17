@@ -338,37 +338,6 @@
                 }
             }
         },
-        "/surveys/name/{name}": {
-            "x-swagger-router-controller": "survey.controller",
-            "get": {
-                "summary": "Gets survey by name",
-                "operationId": "getSurveyByName",
-                "parameters": [{
-                    "name": "name",
-                    "in": "path",
-                    "required": true,
-                    "type": "string"
-                }, {
-                    "name": "language",
-                    "in": "query",
-                    "description": "Language code",
-                    "required": false,
-                    "type": "string",
-                    "minLength": 2
-                }],
-                "responses": {
-                    "200": {
-                        "description": "Successul response",
-                        "schema": {
-                            "$ref": "#/definitions/survey"
-                        }
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
         "/answered-surveys/{id}": {
             "x-swagger-router-controller": "survey.controller",
             "get": {
@@ -382,40 +351,6 @@
                     "in": "path",
                     "required": true,
                     "type": "integer"
-                }, {
-                    "name": "language",
-                    "in": "query",
-                    "description": "Language code",
-                    "required": false,
-                    "type": "string",
-                    "minLength": 2
-                }],
-                "responses": {
-                    "200": {
-                        "description": "Successul response",
-                        "schema": {
-                            "$ref": "#/definitions/survey"
-                        }
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
-        "/answered-surveys/name/{name}": {
-            "x-swagger-router-controller": "survey.controller",
-            "get": {
-                "summary": "Get survey with answers by name",
-                "operationId": "getAnsweredSurveyByName",
-                "security": [{
-                    "participant": []
-                }],
-                "parameters": [{
-                    "name": "name",
-                    "in": "path",
-                    "required": true,
-                    "type": "string"
                 }, {
                     "name": "language",
                     "in": "query",
@@ -493,7 +428,7 @@
         "/profile-survey": {
             "x-swagger-router-controller": "profile-survey.controller",
             "post": {
-                "summary": "Creates/replaces profile survey",
+                "summary": "Creates survey as profile survey",
                 "operationId": "createProfileSurvey",
                 "security": [{
                     "admin": []
@@ -540,31 +475,52 @@
                 }
             }
         },
-        "/profile-survey/text/{language}": {
+        "/profile-survey-id": {
             "x-swagger-router-controller": "profile-survey.controller",
-            "patch": {
-                "summary": "Updates or translates profile survey text fields",
-                "operationId": "updateProfileSurveyText",
+            "post": {
+                "summary": "Assigns survey as profile survey",
+                "operationId": "createProfileSurveyId",
                 "security": [{
                     "admin": []
                 }],
                 "parameters": [{
-                    "name": "language",
-                    "in": "path",
-                    "description": "Language code",
-                    "required": true,
-                    "type": "string",
-                    "minLength": 2
-                }, {
-                    "name": "textUpdate",
+                    "name": "surveyId",
                     "in": "body",
+                    "description": "Profile survey",
                     "required": true,
                     "schema": {
-                        "$ref": "#/definitions/profileSurveyTextUpdate"
+                        "$ref": "#/definitions/newProfileSurveyId"
                     }
                 }],
                 "responses": {
-                    "204": {
+                    "204" : {
+                        "description": "Successul response"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "get": {
+                "summary": "Gets profile survey id",
+                "operationId": "getProfileSurveyId",
+                "responses": {
+                    "200" : {
+                        "description": "Successul response",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Remove profile survey",
+                "operationId": "deleteProfileSurveyId",
+                "responses": {
+                    "204" : {
                         "description": "Successul response"
                     },
                     "default": {
@@ -1733,6 +1689,173 @@
                     }
                 }
             }
+        },
+        "/user-surveys": {
+            "x-swagger-router-controller": "user-survey.controller",
+            "get": {
+                "summary": "Lists user surveys",
+                "description": "Only returns id, name and status fields.",
+                "operationId": "listUserSurveys",
+                "security": [{
+                    "participant": []
+                }],
+                "parameters": [{
+                    "name": "language",
+                    "in": "query",
+                    "description": "Language code",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 2
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response.",
+                        "schema": {
+                            "$ref": "#/definitions/userSurveyDashboard"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/user-surveys/{id}": {
+            "x-swagger-router-controller": "user-survey.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer",
+                "minimum": 1
+            }],
+            "get": {
+                "summary": "Gets answered survey and its status",
+                "operationId": "getUserSurvey",
+                "security": [{
+                    "participant": []
+                }],
+                "parameters": [{
+                    "name": "language",
+                    "in": "query",
+                    "description": "Language requested",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 1
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/userSurvey"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/user-surveys/{id}/status": {
+            "x-swagger-router-controller": "user-survey.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer",
+                "minimum": 1
+            }],
+            "get": {
+                "summary": "Gets survey status",
+                "operationId": "getUserSurveyStatus",
+                "security": [{
+                    "participant": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "object",
+                            "required": ["status"],
+                            "properties": {
+                                "status": {
+                                    "$ref": "#/definitions/surveyStatus"
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/user-surveys/{id}/answers": {
+            "x-swagger-router-controller": "user-survey.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer",
+                "minimum": 1
+            }],
+            "post": {
+                "summary": "Create answers and set status for survey",
+                "operationId": "createUserSurveyAnswers",
+                "security": [{
+                    "participant": []
+                }],
+                "parameters": [{
+                    "name": "userSurveyAnswers",
+                    "in": "body",
+                    "description": "Survey answers and status",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/newUserSurveyAnswers"
+                    }
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successful response"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "get": {
+                "summary": "Gets survey answers and status",
+                "operationId": "getUserSurveyAnswers",
+                "security": [{
+                    "participant": []
+                }],
+                "parameters": [{
+                    "name": "language",
+                    "in": "query",
+                    "description": "Language requested",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 1
+                }, {
+                    "name": "include-survey",
+                    "in": "query",
+                    "description": "Include survey",
+                    "required": false,
+                    "type": "boolean"
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/userSurveyAnswers"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
         }
     },
     "securityDefinitions": {
@@ -1853,7 +1976,7 @@
         },
         "questionType": {
             "type": "string",
-            "enum": ["text", "bool", "choice", "choices"]
+            "enum": ["text", "bool", "choice", "choices", "date"]
         },
         "questionMeta": {
             "type": "object",
@@ -2129,20 +2252,13 @@
             },
             "additionalProperties": false
         },
-        "profileSurveyTextUpdate": {
+        "newProfileSurveyId": {
             "type": "object",
-            "required": ["name"],
+            "required": ["profileSurveyId"],
             "properties": {
-               "name": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "sections": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/sectionTextUpdate"
-                    },
-                    "minItems": 1
+                "profileSurveyId": {
+                    "type": "integer",
+                    "minimum": 1
                 }
             },
             "additionalProperties": false
@@ -2164,7 +2280,31 @@
             "type": "array",
             "items": {
                 "$ref": "#/definitions/surveyInfo"
-            }
+            },
+            "additionalProperties": false
+        },
+        "userSurveyInfo": {
+            "type": "object",
+            "required": ["id", "name", "status"],
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/surveyStatus"
+                }
+            },
+            "additionalProperties": false
+        },
+        "userSurveyDashboard": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/userSurveyInfo"
+            },
+            "additionalProperties": false
         },
         "choiceType": {
             "type": "string",
@@ -2244,10 +2384,15 @@
                 },
                 "boolValue": {
                     "type": "boolean"
+                },
+                "dateValue": {
+                    "type": "string",
+                    "format": "date"
                 }
             },
             "minProperties": 1,
-            "maxProperties": 1
+            "maxProperties": 1,
+            "additionalProperties": false
         },
         "question": {
             "type": "object",
@@ -3045,6 +3190,56 @@
                 "language": {
                     "type": "string",
                     "minLength": 2
+                }
+            },
+            "additionalProperties": false
+        },
+        "surveyStatus": {
+            "type": "string",
+            "enum": ["new", "in-progress", "completed"]
+        },
+        "userSurvey": {
+            "type": "object",
+            "required": ["status", "survey"],
+            "properties": {
+                "status": {
+                    "$ref": "#/definitions/surveyStatus"
+                },
+                "survey": {
+                    "$ref": "#/definitions/survey"
+                }
+            },
+            "additionalProperties": false
+        },
+        "newUserSurveyAnswers": {
+            "type": "object",
+            "required": ["status", "answers"],
+            "properties": {
+                "status": {
+                    "$ref": "#/definitions/surveyStatus"
+                },
+                "answers": {
+                    "$ref": "#/definitions/linkedAnswers"
+                },
+                "language": {
+                    "type": "string",
+                    "minLength": 2
+                }
+            },
+            "additionalProperties": false
+        },
+        "userSurveyAnswers": {
+            "type": "object",
+            "required": ["status", "answers"],
+            "properties": {
+                "status": {
+                    "$ref": "#/definitions/surveyStatus"
+                },
+                "answers": {
+                    "$ref": "#/definitions/linkedAnswers"
+                },
+                "survey": {
+                    "$ref": "#/definitions/survey"
                 }
             },
             "additionalProperties": false

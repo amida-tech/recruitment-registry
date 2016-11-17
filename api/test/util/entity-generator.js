@@ -18,6 +18,19 @@ class Answerer {
         };
     }
 
+    date(question) {
+        const answerIndex = ++this.answerIndex;
+        const month = answerIndex % 8 + 1;
+        const day = answerIndex % 13 + 10;
+        const year = answerIndex % 34 + 1970;
+        return {
+            questionId: question.id,
+            answer: {
+                dateValue: `${year}-0${month}-${day}`
+            }
+        };
+    }
+
     bool(question) {
         const answerIndex = ++this.answerIndex;
         return {
@@ -65,7 +78,7 @@ class Answerer {
 
 class QuestionGenerator {
     constructor() {
-        this.types = ['text', 'choice', 'choices', 'bool'];
+        this.types = ['text', 'choice', 'choices', 'bool', 'date'];
         this.index = -1;
 
         this.choiceIndex = 0;
@@ -97,6 +110,10 @@ class QuestionGenerator {
 
     text() {
         return this._body('text');
+    }
+
+    date() {
+        return this._body('date');
     }
 
     bool() {
@@ -144,11 +161,9 @@ class QuestionGenerator {
     newQuestion() {
         const type = this.types[(this.index + 1) % this.types.length];
         const result = this[type]();
-        if (type !== 'group') {
-            const actionCount = (this.index % 3) - 1;
-            if (actionCount > 0) {
-                result.actions = this.newActions(this.index, actionCount);
-            }
+        const actionCount = (this.index % 3) - 1;
+        if (actionCount > 0) {
+            result.actions = this.newActions(this.index, actionCount);
         }
         return result;
     }
@@ -202,7 +217,7 @@ class Generator {
             }
         } else {
             const sectionType = this.surveyIndex % 3;
-            const count = sectionType ? 9 + sectionType - 1 : 5;
+            const count = sectionType ? 9 + sectionType - 1 : 6;
             result.questions = _.range(count).map(() => this.newQuestion());
             result.questions.forEach((qx, surveyIndex) => (qx.required = Boolean(surveyIndex % 2)));
             if (sectionType) {

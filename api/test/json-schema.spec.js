@@ -11,7 +11,7 @@ const js = require('../lib/json-schema');
 
 describe('json schema validations', function () {
     const objectTypes = [
-        'newSurvey', 'newQuestion'
+        'newSurvey', 'newQuestion', 'answer'
     ];
 
     let lastErr = {};

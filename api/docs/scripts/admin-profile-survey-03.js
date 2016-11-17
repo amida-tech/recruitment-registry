@@ -7,12 +7,10 @@ module.exports = function (locals) {
     const jwt = locals.jwt;
 
     return request
-        .post('http://localhost:9005/api/v1.0/profile-survey-id')
+        .delete('http://localhost:9005/api/v1.0/profile-survey-id')
         .set('Authorization', 'Bearer ' + jwt)
-        .send({ profileSurveyId: 1 })
         .then(res => {
-            console.log(res.status); // 201
-            console.log(res.body); // id of the survey
+            console.log(res.status); // 204
         })
         .then(() => {
             console.log(`------ end ${module.filename}`);

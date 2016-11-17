@@ -99,22 +99,41 @@ const comparator = {
                 expect(actual).to.deep.equal(expected);
             });
     },
-    answeredSurvey(survey, answers, server, language) {
+    answeredSurvey(survey, answers, serverAnsweredSurvey, language) {
         const expected = _.cloneDeep(survey);
         const answerMap = new Map();
         answers.forEach(({ questionId, answer, language }) => answerMap.set(questionId, { answer, language }));
-        expected.questions.forEach((qx) => {
-            qx.answer = answerMap.get(qx.id).answer;
-            qx.language = answerMap.get(qx.id).language || language || 'en';
-            if (qx.type === 'choices' && qx.answer.choices) {
-                qx.answer.choices.forEach((choice) => {
+        expected.questions.forEach(qx => {
+            const clientAnswers = answerMap.get(qx.id);
+            if (clientAnswers) {
+                qx.answer = answerMap.get(qx.id).answer;
+                qx.language = answerMap.get(qx.id).language || language || 'en';
+                if (qx.type === 'choices' && qx.answer.choices) {
+                    qx.answer.choices.forEach((choice) => {
+                        if (!choice.textValue && !choice.hasOwnProperty('boolValue')) {
+                            choice.boolValue = true;
+                        }
+                    });
+                }
+            }
+        });
+        expect(serverAnsweredSurvey).to.deep.equal(expected);
+    },
+    answers(answers, serverAnswers, language) {
+        const expected = _.cloneDeep(answers);
+        expected.forEach(answer => {
+            answer.language = answer.language || language || 'en';
+            if (answer.answer.choices) {
+                answer.answer.choices.forEach((choice) => {
                     if (!choice.textValue && !choice.hasOwnProperty('boolValue')) {
                         choice.boolValue = true;
                     }
                 });
             }
         });
-        expect(server).to.deep.equal(expected);
+        const orderedExpected = _.sortBy(expected, 'questionId');
+        const orderedActual = _.sortBy(serverAnswers, 'questionId');
+        expect(orderedActual).to.deep.equal(orderedExpected);
     },
     user(client, server) {
         const expected = _.cloneDeep(client);

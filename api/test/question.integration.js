@@ -8,7 +8,6 @@ const _ = require('lodash');
 const config = require('../config');
 
 const SharedIntegration = require('./util/shared-integration');
-const userExamples = require('./fixtures/example/user');
 const Generator = require('./util/entity-generator');
 const comparator = require('./util/client-server-comparator');
 const History = require('./util/entity-history');
@@ -20,10 +19,10 @@ const invalidQuestionsSwagger = require('./fixtures/swagger-invalid/new-question
 
 const expect = chai.expect;
 const generator = new Generator();
-const shared = new SharedIntegration();
+const shared = new SharedIntegration(generator);
 
 describe('question integration', function () {
-    const user = userExamples.Example;
+    const user = generator.newUser();
     const hxUser = new History();
 
     const store = {

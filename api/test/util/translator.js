@@ -57,6 +57,10 @@ const translator = {
         }
         this._isTranslated(texts, language);
     },
+    isSurveyListTranslated(surveys, language) {
+        const texts = surveys.map(survey => survey.name);
+        this._isTranslated(texts, language);
+    },
     translateConsentType(consentType, language) {
         const result = _.pick(consentType, ['id', 'title']);
         result.title = this._translate(result.title, language);

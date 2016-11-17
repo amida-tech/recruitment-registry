@@ -21,9 +21,20 @@ exports.getProfileSurvey = function (req, res) {
         .catch(shared.handleError(res));
 };
 
-exports.updateProfileSurveyText = function (req, res) {
-    const language = _.get(req, 'swagger.params.language.value');
-    profileSurvey.updateProfileSurveyText(req.body, language)
-        .then(result => res.status(204).json(result))
+exports.createProfileSurveyId = function (req, res) {
+    profileSurvey.createProfileSurveyId(req.body.profileSurveyId)
+        .then(() => res.status(204).end())
+        .catch(shared.handleError(res));
+};
+
+exports.getProfileSurveyId = function (req, res) {
+    profileSurvey.getProfileSurveyId()
+        .then(result => res.status(200).json(result))
+        .catch(shared.handleError(res));
+};
+
+exports.deleteProfileSurveyId = function (req, res) {
+    profileSurvey.deleteProfileSurveyId()
+        .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };

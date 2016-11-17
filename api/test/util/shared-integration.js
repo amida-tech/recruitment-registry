@@ -109,7 +109,11 @@ class SharedIntegration {
     }
 
     createUserFn(store, history, user) {
+        const generator = this.generator;
         return function (done) {
+            if (!user) {
+                user = generator.newUser();
+            }
             store.server
                 .post('/api/v1.0/users')
                 .set('Authorization', store.auth)
@@ -176,17 +180,23 @@ class SharedIntegration {
         };
     }
 
-    postSurveyFn(store, survey) {
+    postSurveyFn(store, survey, hxSurvey) {
         return function (done) {
             store.server
                 .post('/api/v1.0/surveys')
                 .set('Authorization', store.auth)
                 .send(survey)
                 .expect(201)
-                .expect(function (res) {
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
                     expect(!!res.body.id).to.equal(true);
-                })
-                .end(done);
+                    if (hxSurvey) {
+                        hxSurvey.push(survey, res.body);
+                    }
+                    done();
+                });
         };
     }
 
@@ -194,10 +204,12 @@ class SharedIntegration {
         const generator = this.generator;
         return function (done) {
             const inputSurvey = generator.newSurvey();
-            inputSurvey.questions = qxIndices.map(index => ({
-                id: hxQuestion.server(index).id,
-                required: false
-            }));
+            if (hxQuestion) {
+                inputSurvey.questions = qxIndices.map(index => ({
+                    id: hxQuestion.server(index).id,
+                    required: false
+                }));
+            }
             store.server
                 .post('/api/v1.0/surveys')
                 .set('Authorization', store.auth)

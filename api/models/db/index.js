@@ -29,6 +29,7 @@ const SurveyQuestion = sequelize.import('./survey-question.model');
 const AnswerType = sequelize.import('./answer-type.model');
 const Answer = sequelize.import('./answer.model');
 const Survey = sequelize.import('./survey.model');
+const ProfileSurvey = sequelize.import('./profile-survey.model');
 const SurveyText = sequelize.import('./survey-text.model');
 const ConsentType = sequelize.import('./consent-type.model');
 const ConsentTypeText = sequelize.import('./consent-type-text.model');
@@ -38,13 +39,13 @@ const ConsentSignature = sequelize.import('./consent-signature.model');
 const ConsentSection = sequelize.import('./consent-section.model');
 const Consent = sequelize.import('./consent.model');
 const SurveyConsentType = sequelize.import('./survey-consent-type.model');
-const Registry = sequelize.import('./registry.model');
 const Language = sequelize.import('./language.model');
 const SurveySection = sequelize.import('./survey-section.model');
 const SectionText = sequelize.import('./section-text.model');
 const Section = sequelize.import('./section.model');
 const SmtpText = sequelize.import('./smtp-text.model');
 const Smtp = sequelize.import('./smtp.model');
+const UserSurvey = sequelize.import('./user-survey.model');
 
 Answer.belongsTo(Question, {
     as: 'question',
@@ -78,6 +79,7 @@ module.exports = {
     Answer,
     Survey,
     SurveyText,
+    ProfileSurvey,
     ConsentType,
     ConsentTypeText,
     ConsentDocument,
@@ -86,8 +88,8 @@ module.exports = {
     ConsentSection,
     Consent,
     SurveyConsentType,
-    Registry,
     Language,
     SmtpText,
-    Smtp
+    Smtp,
+    UserSurvey
 };

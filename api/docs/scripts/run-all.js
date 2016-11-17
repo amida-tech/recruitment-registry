@@ -10,6 +10,9 @@ const adminQuestion03 = require('./admin-question-03');
 const adminQuestion04 = require('./admin-question-04');
 const adminSurvey01 = require('./admin-survey-01');
 const adminProfileSurvey01 = require('./admin-profile-survey-01');
+const adminProfileSurvey02 = require('./admin-profile-survey-02');
+const adminProfileSurvey03 = require('./admin-profile-survey-03');
+const adminProfileSurvey04 = require('./admin-profile-survey-04');
 const adminConsentDocument01 = require('./admin-consent-document-01');
 const adminConsentDocument02 = require('./admin-consent-document-02');
 const adminConsentDocument03 = require('./admin-consent-document-03');
@@ -20,6 +23,7 @@ const registration03 = require('./registration-03');
 const registration04 = require('./registration-04');
 const profile01 = require('./profile-01');
 const profile02 = require('./profile-02');
+const userManagement01 = require('./user-management-01');
 const questions01 = require('./questions-01');
 const questions02 = require('./questions-02');
 const surveys01 = require('./surveys-01');
@@ -60,6 +64,11 @@ const consents08 = require('./consents-08');
 const consents09 = require('./consents-09');
 const consents10 = require('./consents-10');
 const consents11 = require('./consents-11');
+const userSurvey01 = require('./user-survey-01');
+const userSurvey02 = require('./user-survey-02');
+const userSurvey03 = require('./user-survey-03');
+const userSurvey04 = require('./user-survey-04');
+const userSurvey05 = require('./user-survey-05');
 
 const locals = {};
 
@@ -73,6 +82,9 @@ models.sequelize.sync({ force: true })
     .then(adminQuestion04)
     .then(adminSurvey01)
     .then(adminProfileSurvey01)
+    .then(adminProfileSurvey02)
+    .then(adminProfileSurvey03)
+    .then(adminProfileSurvey04)
     .then(adminConsentDocument01)
     .then(adminConsentDocument02)
     .then(adminConsentDocument03)
@@ -84,6 +96,7 @@ models.sequelize.sync({ force: true })
     .then(profile01)
     .then(profile02)
     .then(profile01)
+    .then(userManagement01)
     .then(questions01)
     .then(questions02)
     .then(surveys01)
@@ -91,6 +104,12 @@ models.sequelize.sync({ force: true })
     .then(surveys03)
     .then(surveys04)
     .then(surveys05)
+    .then(userSurvey01)
+    .then(userSurvey02)
+    .then(userSurvey03)
+    .then(userSurvey01)
+    .then(userSurvey04)
+    .then(userSurvey05)
     .then(consentDocuments01)
     .then(consentDocuments02)
     .then(consentDocuments03)

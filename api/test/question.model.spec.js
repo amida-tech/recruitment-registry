@@ -16,7 +16,7 @@ const translator = require('./util/translator');
 
 const expect = chai.expect;
 const generator = new Generator();
-const shared = new SharedSpec();
+const shared = new SharedSpec(generator);
 
 const Question = db.Question;
 

@@ -10,16 +10,7 @@ const sequelize = db.sequelize;
 const Answer = db.Answer;
 const Question = db.Question;
 const SurveyQuestion = db.SurveyQuestion;
-
-const missingConsentDocumentHandler = function () {
-    return function (consentDocuments) {
-        if (consentDocuments && consentDocuments.length > 0) {
-            const err = new RRError('profileSignaturesMissing');
-            err.consentDocument = consentDocuments;
-            return SPromise.reject(err);
-        }
-    };
-};
+const UserSurvey = db.UserSurvey;
 
 const uiToDbAnswer = function (answer) {
     let result = [];
@@ -53,6 +44,12 @@ const uiToDbAnswer = function (answer) {
             type: 'bool'
         });
     }
+    if (answer.hasOwnProperty('dateValue')) {
+        result.push({
+            value: answer.dateValue,
+            type: 'date'
+        });
+    }
     if (answer.hasOwnProperty('textValue')) {
         result.push({
             value: answer.textValue,
@@ -64,6 +61,7 @@ const uiToDbAnswer = function (answer) {
 
 const generateAnswer = {
     text: entries => ({ textValue: entries[0].value }),
+    date: entries => ({ dateValue: entries[0].value }),
     bool: entries => ({ boolValue: entries[0].value === 'true' }),
     choice: entries => ({ choice: entries[0].questionChoiceId }),
     choices: entries => {
@@ -102,13 +100,44 @@ const fileAnswer = function ({ userId, surveyId, language, answers }, tx) {
     }));
 };
 
+const updateStatus = function (userId, surveyId, status, transaction) {
+    return UserSurvey.findOne({
+            where: { userId, surveyId },
+            raw: true,
+            attributes: ['status'],
+            transaction
+        })
+        .then(userSurvey => {
+            if (!userSurvey) {
+                return UserSurvey.create({ userId, surveyId, status }, { transaction });
+            } else if (userSurvey.status !== status) {
+                return UserSurvey.destroy({ where: { userId, surveyId } }, { transaction })
+                    .then(() => UserSurvey.create({ userId, surveyId, status }, { transaction }));
+            }
+        });
+};
+
 module.exports = class {
     constructor(dependencies) {
         Object.assign(this, dependencies);
     }
 
-    createAnswersTx({ userId, surveyId, language = 'en', answers }, tx) {
-        const ids = _.map(answers, 'questionId');
+    validateConsent(userId, surveyId, action, transaction) {
+        return this.surveyConsentType.listSurveyConsentTypes({
+                userId,
+                surveyId,
+                action
+            }, transaction)
+            .then(consentDocuments => {
+                if (consentDocuments && consentDocuments.length > 0) {
+                    const err = new RRError('profileSignaturesMissing');
+                    err.consentDocument = consentDocuments;
+                    return SPromise.reject(err);
+                }
+            });
+    }
+
+    validateAnswers(userId, surveyId, answers, status) {
         return SurveyQuestion.findAll({
                 where: { surveyId },
                 raw: true,
@@ -125,49 +154,52 @@ module.exports = class {
                         qx.required = false;
                     }
                 });
-                const remainingRequired = new Set();
-                _.values(qxMap).forEach(qx => {
-                    if (qx.required) {
-                        remainingRequired.add(qx.questionId);
+                return qxMap;
+            })
+            .then(qxMap => {
+                if (status === 'completed') {
+                    const remainingRequired = new Set();
+                    _.values(qxMap).forEach(qx => {
+                        if (qx.required) {
+                            remainingRequired.add(qx.questionId);
+                        }
+                    });
+                    if (remainingRequired.size) {
+                        const ids = [...remainingRequired];
+                        return Answer.findAll({
+                                raw: true,
+                                where: { userId, surveyId, questionId: { $in: ids } },
+                                attributes: ['questionId']
+                            })
+                            .then(records => {
+                                const questionIds = records.map(record => record.questionId);
+                                const existingRequired = new Set(questionIds);
+                                if (existingRequired.size !== remainingRequired.size) {
+                                    throw new RRError('answerRequiredMissing');
+                                }
+                            });
                     }
-                });
-                return remainingRequired;
-            })
-            .then(remainingRequired => {
-                if (remainingRequired.size) {
-                    const ids = [...remainingRequired];
-                    return Answer.findAll({
-                            raw: true,
-                            where: { userId, surveyId, questionId: { $in: ids } },
-                            attributes: ['questionId']
-                        })
-                        .then(records => {
-                            const questionIds = records.map(record => record.questionId);
-                            const existingRequired = new Set(questionIds);
-                            if (existingRequired.size !== remainingRequired.size) {
-                                throw new RRError('answerRequiredMissing');
-                            }
-                        });
                 }
+            });
+    }
+
+    validateCreate(userId, surveyId, answers, status, transaction) {
+        return this.validateAnswers(userId, surveyId, answers, status)
+            .then(() => this.validateConsent(userId, surveyId, 'create', transaction));
+    }
+
+    createAnswersTx({ userId, surveyId, answers, language = 'en', status = 'completed' }, transaction) {
+        return this.validateCreate(userId, surveyId, answers, status, transaction)
+            .then(() => updateStatus(userId, surveyId, status, transaction))
+            .then(() => {
+                const ids = _.map(answers, 'questionId');
+                const where = { questionId: { $in: ids }, surveyId, userId };
+                return Answer.destroy({ where }, { transaction });
             })
-            .then(() => Answer.destroy({
-                where: {
-                    questionId: { $in: ids },
-                    surveyId,
-                    userId
-                },
-                transaction: tx
-            }))
-            .then(() => this.surveyConsentType.listSurveyConsentTypes({
-                userId,
-                surveyId,
-                action: 'create'
-            }, tx))
-            .then(missingConsentDocumentHandler())
             .then(() => {
                 answers = _.filter(answers, answer => answer.answer);
                 if (answers.length) {
-                    return fileAnswer({ userId, surveyId, language, answers }, tx);
+                    return fileAnswer({ userId, surveyId, language, answers }, transaction);
                 }
             });
     }
@@ -179,12 +211,7 @@ module.exports = class {
     }
 
     getAnswers({ userId, surveyId }) {
-        return this.surveyConsentType.listSurveyConsentTypes({
-                userId,
-                surveyId,
-                action: 'read'
-            })
-            .then(missingConsentDocumentHandler())
+        return this.validateConsent(userId, surveyId, 'read')
             .then(() => {
                 return Answer.findAll({
                         raw: true,

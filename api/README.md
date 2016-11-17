@@ -32,7 +32,7 @@ installing the needed components for node-gyp. And all users will probably have 
 
 ## Configuration
 
-Use `export NODE_ENV='development` (or `production` or `test`) to set node environment.
+Use `export NODE_ENV=development` (or `production` or `test`) to set node environment in Bash compatible shells or equivalent in others.
 
 A minimal sample `.env` file is below.  Change according to your database
 ```
@@ -101,12 +101,15 @@ Most API resources are documented in snippets in the [integration document](./do
 ## Postgres specific functionality
 <a name="postgresdepend"/>
 
-Although this project uses Sequelize it does not support other Sequelize compatible relational databases such as MySql and MSSql out of the box.  The following are the Postgres only functionalities that need to be replaced to be able to use other databases.
+Although this project uses [Sequelize](http://docs.sequelizejs.com/en/v3/), it does not support other Sequelize compatible relational databases such as [MySQL](https://www.mysql.com/) and [MSSql](https://www.microsoft.com/en-us/sql-server/sql-server-2016) out of the box.  The following are the Postgres only fconstructs that need to be replaced to be able to use other databases
 
-* `survey` table includes a JSON type column named `meta`. Type can be changed to Text and JSON to string and vice versa can be done manually in the code.
-* `smtp` table includes a JSON type column named `other_options`. Type can be changed to Text and JSON to string and vice versa can be done manually in the code.
-* `rr_section`table includes an integer array type column named `indices`.  A seperate table can be used instead.  Code need to be updated acccordingly.
-* `answer` data access object (answer.dao.js) uses Postgres `to_char` function in one of the queries.  This function needs to be replaced by equivalent.
+* `survey` table includes a JSON type column named `meta`.
+* `question` table includes a JSON type column named `meta`.
+* `smtp` table includes a JSON type column named `other_options`.
+* `rr_section`table includes an integer array type column named `indices`.
+* `answer` data access object (answer.dao.js) uses Postgres `to_char` function in one of the queries.
+
+JSON columns can be changed to Text and Text to/from JSON conversions can be done manually in the code.  For array columns a seperate table can be used.  Postgres `to_char` function needs to be replaced by equivalent.
 
 ## API
 
@@ -179,7 +182,9 @@ There can be multiple `question_action` records for a question.  Order is preser
 
 - `survey_consent_type`: Each record represents a consent section (column `consent_type_id`) that needs to signed by a user before a survey (column `survey_id`) can be read, submitted or edited (column `action`).  Functionality related to this table is not currently activated.
 
-- `registry`: This table stores registry level settings and contains only one record.  Currenly only data is the survey that is being used in user registration (column `profile_survey_id`).
+- `profile_survey`: This table stores profile survey; a survey which is can be used during registration to collect information from participants.  At any time only one active record exists.
+
+- `user_survey`: This table stores status of a survey for a participant.  The status can be `in-progress` or `completed`.
 
 - `smtp`: This table stores email service specifics that are used for password reset functionality.  At any point it only contains one active record.  The subject and content of password reset email are stored in `smtp_text`.
 
