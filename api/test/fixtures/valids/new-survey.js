@@ -13,6 +13,10 @@ module.exports = [{
         text: 'What is it?',
         required: false,
         type: 'text'
+    }, {
+        text: 'What is date?',
+        required: false,
+        type: 'date'
     }]
 }, {
     name: 'name',

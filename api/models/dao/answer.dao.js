@@ -55,6 +55,7 @@ const uiToDbAnswer = function (answer) {
 
 const generateAnswer = {
     text: entries => ({ textValue: entries[0].value }),
+    date: entries => ({ textValue: entries[0].value }),
     bool: entries => ({ boolValue: entries[0].value === 'true' }),
     choice: entries => ({ choice: entries[0].questionChoiceId }),
     choices: entries => {

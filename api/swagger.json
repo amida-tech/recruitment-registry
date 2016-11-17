@@ -1976,7 +1976,7 @@
         },
         "questionType": {
             "type": "string",
-            "enum": ["text", "bool", "choice", "choices"]
+            "enum": ["text", "bool", "choice", "choices", "date"]
         },
         "questionMeta": {
             "type": "object",
