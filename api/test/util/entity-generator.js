@@ -26,7 +26,7 @@ class Answerer {
         return {
             questionId: question.id,
             answer: {
-                textValue: `0${month}${day}${year}`
+                dateValue: `${year}-0${month}-${day}`
             }
         };
     }

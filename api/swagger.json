@@ -2384,10 +2384,15 @@
                 },
                 "boolValue": {
                     "type": "boolean"
+                },
+                "dateValue": {
+                    "type": "string",
+                    "format": "date"
                 }
             },
             "minProperties": 1,
-            "maxProperties": 1
+            "maxProperties": 1,
+            "additionalProperties": false
         },
         "question": {
             "type": "object",
