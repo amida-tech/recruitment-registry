@@ -13,10 +13,8 @@ const importFile = function (filepaths, result, key) {
 
 const importFiles = function (filepaths) {
     const result = {};
-    return SPromise.all([
-            importFile(filepaths, result, 'answer')
-        ])
-        .then(() => result);
+    const pxs = Object.keys(filepaths).map(key => importFile(filepaths, result, key));
+    return SPromise.all(pxs).then(() => result);
 };
 
 module.exports = {
