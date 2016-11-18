@@ -128,7 +128,7 @@ describe('consent demo simpler', function () {
     it('get the Terms of Use document with signature', function (done) {
         store.server
             .get('/api/v1.0/user-consent-documents/type-name/terms-of-use')
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
             .end(function (err, res) {
                 if (err) {
@@ -153,7 +153,7 @@ describe('consent demo simpler', function () {
     it('get the Consents document', function (done) {
         store.server
             .get('/api/v1.0/user-consent-documents/type-name/consent')
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
             .end(function (err, res) {
                 if (err) {
@@ -175,7 +175,7 @@ describe('consent demo simpler', function () {
     it('sign the Consents document', function (done) {
         store.server
             .post(`/api/v1.0/consent-signatures`)
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .send({ consentDocumentId: consents.id })
             .expect(201)
             .end(function (err) {
@@ -196,7 +196,7 @@ describe('consent demo simpler', function () {
     it('get the Consents document', function (done) {
         store.server
             .get(`/api/v1.0/user-consent-documents/type-name/consent`)
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
             .end(function (err, res) {
                 if (err) {

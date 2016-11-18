@@ -1,54 +1,55 @@
 {
-  "name": "recruitment-registry-api",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "start": "node --harmony index.js",
-    "test": "NODE_ENV=test mocha test/*.js test/use-cases/*.js",
-    "coverage": "NODE_ENV=test istanbul cover ./node_modules/mocha/bin/_mocha -- -R spec --recursive -t 2000"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/amida-tech/recruitment-registry.git"
-  },
-  "author": "Amida",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/amida-tech/recruitment-registry/issues"
-  },
-  "homepage": "https://github.com/amida-tech/recruitment-registry#readme",
-  "dependencies": {
-    "ajv": "^4.7.6",
-    "bcrypt": "^0.8.7",
-    "body-parser": "^1.15.2",
-    "cookie-parser": "^1.4.3",
-    "cors": "^2.8.0",
-    "dotenv": "^2.0.0",
-    "express": "^4.14.0",
-    "express-winston": "^2.0.0",
-    "jsonwebtoken": "^7.1.9",
-    "moment": "^2.15.0",
-    "nodemailer": "^2.6.0",
-    "passport": "^0.3.2",
-    "passport-http": "^0.3.0",
-    "pg": "^6.1.0",
-    "sequelize": "^3.24.2",
-    "swagger-tools": "^0.10.1",
-    "winston": "^2.2.0"
-  },
-  "devDependencies": {
-    "chai": "^3.5.0",
-    "grunt-contrib-jshint": "^1.0.0",
-    "grunt-contrib-watch": "^1.0.0",
-    "grunt-eslint": "^19.0.0",
-    "grunt-jsbeautifier": "^0.2.13",
-    "grunt-mocha-test": "^0.12.7",
-    "grunt-shell": "^1.3.1",
-    "mocha": "^3.0.2",
-    "sinon": "^1.17.5",
-    "smtp-server": "^1.16.1",
-    "superagent": "^2.3.0",
-    "supertest": "^2.0.0"
-  }
+    "name": "recruitment-registry-api",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "start": "node --harmony index.js",
+        "test": "NODE_ENV=test mocha test/*.js test/use-cases/*.js",
+        "coverage": "NODE_ENV=test istanbul cover ./node_modules/mocha/bin/_mocha -- -R spec --recursive -t 2000"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/amida-tech/recruitment-registry.git"
+    },
+    "author": "Amida",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/amida-tech/recruitment-registry/issues"
+    },
+    "homepage": "https://github.com/amida-tech/recruitment-registry#readme",
+    "dependencies": {
+        "ajv": "^4.7.6",
+        "bcrypt": "^0.8.7",
+        "body-parser": "^1.15.2",
+        "cookie-parser": "^1.4.3",
+        "cors": "^2.8.0",
+        "dotenv": "^2.0.0",
+        "express": "^4.14.0",
+        "express-winston": "^2.0.0",
+        "jsonwebtoken": "^7.1.9",
+        "moment": "^2.15.0",
+        "nodemailer": "^2.6.0",
+        "passport": "^0.3.2",
+        "passport-http": "^0.3.0",
+        "pg": "^6.1.0",
+        "sequelize": "^3.24.2",
+        "swagger-tools": "^0.10.1",
+        "winston": "^2.2.0"
+    },
+    "devDependencies": {
+        "chai": "^3.5.0",
+        "grunt-contrib-jshint": "^1.0.0",
+        "grunt-contrib-watch": "^1.0.0",
+        "grunt-eslint": "^19.0.0",
+        "grunt-jsbeautifier": "^0.2.13",
+        "grunt-mocha-test": "^0.12.7",
+        "grunt-shell": "^1.3.1",
+        "mocha": "^3.0.2",
+        "sinon": "^1.17.5",
+        "smtp-server": "^1.16.1",
+        "superagent": "^2.3.0",
+        "supertest": "^2.0.0"
+    }
+>>>>>>> feature/RR-use-cookie-auth
 }

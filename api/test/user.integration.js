@@ -47,7 +47,7 @@ describe('user integration', function () {
     it('get super user', function (done) {
         store.server
             .get('/api/v1.0/users/me')
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
             .end(function (err, res) {
                 if (err) {
@@ -66,14 +66,14 @@ describe('user integration', function () {
     it('create a new user', function (done) {
         store.server
             .post('/api/v1.0/users')
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .send(user)
             .expect(201)
             .end(function (err, res) {
                 if (err) {
                     return done(err);
                 }
-                store.auth = 'Bearer ' + res.body.token;
+                shared.updateStoreFromCookie(store, res);
                 done();
             });
     });
@@ -81,7 +81,7 @@ describe('user integration', function () {
     it('get new user', function (done) {
         store.server
             .get('/api/v1.0/users/me')
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
             .end(function (err, res) {
                 if (err) {
@@ -103,7 +103,7 @@ describe('user integration', function () {
     it('get new user', function (done) {
         store.server
             .get('/api/v1.0/users/me')
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
             .end(function (err, res) {
                 if (err) {
@@ -126,7 +126,7 @@ describe('user integration', function () {
         userEmailErr.username = user.username + '1';
         store.server
             .post('/api/v1.0/users')
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .send(userEmailErr)
             .expect(400)
             .end(done);
@@ -135,7 +135,7 @@ describe('user integration', function () {
     it('error: create the same user', function (done) {
         store.server
             .post('/api/v1.0/users')
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .send(user)
             .expect(400)
             .end(done);
@@ -151,7 +151,7 @@ describe('user integration', function () {
     it('update all user fields including password', function (done) {
         store.server
             .patch('/api/v1.0/users/me')
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .send(userUpdate)
             .expect(204, done);
     });
@@ -166,7 +166,7 @@ describe('user integration', function () {
     it('verify updated user fields', function (done) {
         store.server
             .get('/api/v1.0/users/me')
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
             .end(function (err, res) {
                 if (err) {
@@ -185,7 +185,7 @@ describe('user integration', function () {
     it('verify updated user fields', function (done) {
         store.server
             .get('/api/v1.0/users/me')
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
             .end(function (err, res) {
                 if (err) {

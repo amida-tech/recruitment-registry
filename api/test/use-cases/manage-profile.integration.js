@@ -72,7 +72,7 @@ describe('user set-up and login use-case', function () {
                 if (err) {
                     return done(err);
                 }
-                store.auth = 'Bearer ' + res.body.token;
+                shared.updateStoreFromCookie(store, res);
                 done();
             });
     });
@@ -82,7 +82,7 @@ describe('user set-up and login use-case', function () {
     it('verify user profile', function (done) {
         store.server
             .get('/api/v1.0/profiles')
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
             .end(function (err, res) {
                 if (err) {
@@ -114,7 +114,7 @@ describe('user set-up and login use-case', function () {
         };
         store.server
             .patch('/api/v1.0/profiles')
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .send({
                 user: userUpdates,
                 answers
@@ -125,7 +125,7 @@ describe('user set-up and login use-case', function () {
     it('verify user profile', function (done) {
         store.server
             .get('/api/v1.0/profiles')
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
             .end(function (err, res) {
                 if (err) {

@@ -82,7 +82,7 @@ describe('consent demo', function () {
     it('sign the Terms of Use document', function (done) {
         store.server
             .post(`/api/v1.0/consent-signatures`)
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .send({ consentDocumentId: termsOfUse.sections[0].id })
             .expect(201)
             .end(function (err) {
@@ -103,7 +103,7 @@ describe('consent demo', function () {
     it('get the Terms of Use document with signature', function (done) {
         store.server
             .get(`/api/v1.0/consents/name/terms-of-use/user-documents`)
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
             .end(function (err, res) {
                 if (err) {
@@ -128,7 +128,7 @@ describe('consent demo', function () {
     it('get the Consents document', function (done) {
         store.server
             .get(`/api/v1.0/consents/name/consent/user-documents`)
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
             .end(function (err, res) {
                 if (err) {
@@ -151,7 +151,7 @@ describe('consent demo', function () {
     it('sign the Consents document', function (done) {
         store.server
             .post(`/api/v1.0/consent-signatures`)
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .send({ consentDocumentId: consents.sections[0].id })
             .expect(201)
             .end(function (err) {
@@ -172,7 +172,7 @@ describe('consent demo', function () {
     it('get the Consents document', function (done) {
         store.server
             .get(`/api/v1.0/consents/name/consent/user-documents`)
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
             .end(function (err, res) {
                 if (err) {

@@ -32,7 +32,7 @@ describe('shared integration', function () {
         });
         store.server
             .get('/api/v1.0/languages')
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(500)
             .end(function (err, res) {
                 if (err) {
@@ -47,7 +47,7 @@ describe('shared integration', function () {
     it('unknown end point', function (done) {
         store.server
             .get('/api/v1.0/unknown')
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(404, done);
     });
 

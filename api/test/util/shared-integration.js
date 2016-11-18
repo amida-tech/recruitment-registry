@@ -4,8 +4,6 @@ const request = require('supertest');
 const chai = require('chai');
 const _ = require('lodash');
 
-const tokener = require('../../lib/tokener');
-
 const appgen = require('../../app-generator');
 const Generator = require('./entity-generator');
 const translator = require('./translator');
@@ -30,7 +28,21 @@ class SharedIntegration {
         };
     }
 
+    updateStoreFromCookie(store, res) {
+        const cookies = _.get(res, 'header.set-cookie');
+        if (cookies) {
+            const cookie = cookies.find(cookie => cookie.indexOf('rr-jwt-token=') >= 0);
+            if (cookie) {
+                const token = cookie.split(';')[0].split('=')[1];
+                if (token) {
+                    store.auth = token;
+                }
+            }
+        }
+    }
+
     loginFn(store, login) {
+        const shared = this;
         return function (done) {
             store.server
                 .get('/api/v1.0/auth/basic')
@@ -40,7 +52,7 @@ class SharedIntegration {
                     if (err) {
                         return done(err);
                     }
-                    store.auth = 'Bearer ' + res.body.token;
+                    shared.updateStoreFromCookie(store, res);
                     done();
                 });
         };
@@ -75,7 +87,7 @@ class SharedIntegration {
             const clientSurvey = generator.newSurvey();
             store.server
                 .post('/api/v1.0/profile-survey')
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(clientSurvey)
                 .expect(201)
                 .end(function (err, res) {
@@ -116,21 +128,15 @@ class SharedIntegration {
             }
             store.server
                 .post('/api/v1.0/users')
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(user)
                 .expect(201)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
                     }
-                    tokener.verifyJWT(res.body.token)
-                        .then(result => {
-                            history.push(user, { id: result.id });
-                            done();
-                        })
-                        .catch(err => {
-                            done(err);
-                        });
+                    history.push(user, { id: res.body.id });
+                    done();
                 });
         };
     }
@@ -141,7 +147,7 @@ class SharedIntegration {
             const clientQuestion = generator.newQuestion();
             store.server
                 .post('/api/v1.0/questions')
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(clientQuestion)
                 .expect(201)
                 .end(function (err, res) {
@@ -159,7 +165,7 @@ class SharedIntegration {
             const id = hxQuestions.lastId();
             store.server
                 .get(`/api/v1.0/questions/${id}`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -184,7 +190,7 @@ class SharedIntegration {
         return function (done) {
             store.server
                 .post('/api/v1.0/surveys')
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(survey)
                 .expect(201)
                 .end(function (err, res) {
@@ -212,7 +218,7 @@ class SharedIntegration {
             }
             store.server
                 .post('/api/v1.0/surveys')
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(inputSurvey)
                 .expect(201)
                 .end(function (err, res) {
@@ -229,7 +235,7 @@ class SharedIntegration {
         return function (done) {
             store.server
                 .post('/api/v1.0/profile-survey')
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(survey)
                 .expect(201)
                 .expect(function (res) {
@@ -245,7 +251,7 @@ class SharedIntegration {
             const cst = generator.newConsentType();
             store.server
                 .post('/api/v1.0/consent-types')
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(cst)
                 .expect(201)
                 .end(function (err, res) {
@@ -265,7 +271,7 @@ class SharedIntegration {
             const cs = generator.newConsentDocument({ typeId });
             store.server
                 .post(`/api/v1.0/consent-documents`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(cs)
                 .expect(201)
                 .end(function (err, res) {
@@ -284,7 +290,7 @@ class SharedIntegration {
             const translation = translator.translateConsentType(server, language);
             store.server
                 .patch(`/api/v1.0/consent-types/text/${language}`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(translation)
                 .expect(204)
                 .end(function (err) {
@@ -303,7 +309,7 @@ class SharedIntegration {
             const translation = translator.translateConsentDocument(server, language);
             store.server
                 .patch(`/api/v1.0/consent-documents/text/${language}`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(translation)
                 .expect(204)
                 .end(function (err) {

@@ -71,7 +71,7 @@ describe('answer integration', function () {
             }
             store.server
                 .post('/api/v1.0/answers')
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(input)
                 .expect(204, done);
         };
@@ -83,7 +83,7 @@ describe('answer integration', function () {
             store.server
                 .get('/api/v1.0/answers')
                 .query({ 'survey-id': surveyId })
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {

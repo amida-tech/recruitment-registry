@@ -52,7 +52,7 @@ describe('survey integration', function () {
             const clientSurvey = generator.newSurvey();
             store.server
                 .post('/api/v1.0/surveys')
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(clientSurvey)
                 .expect(201)
                 .end(function (err, res) {
@@ -73,7 +73,7 @@ describe('survey integration', function () {
             const id = hxSurvey.id(index);
             store.server
                 .get(`/api/v1.0/surveys/${id}`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -104,7 +104,7 @@ describe('survey integration', function () {
             const server = hxSurvey.server(index);
             store.server
                 .get(`/api/v1.0/surveys/${server.id}`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -125,7 +125,7 @@ describe('survey integration', function () {
             meta = meta || hxSurvey.client(index).meta;
             store.server
                 .patch(`/api/v1.0/surveys/${id}`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send({ meta })
                 .expect(204, done);
         };
@@ -137,7 +137,7 @@ describe('survey integration', function () {
             name = name || hxSurvey.client(index).name;
             store.server
                 .patch(`/api/v1.0/surveys/text/en`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send({ id, name })
                 .expect(204, done);
         };
@@ -147,7 +147,7 @@ describe('survey integration', function () {
         return function (done) {
             store.server
                 .get('/api/v1.0/surveys')
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -166,7 +166,7 @@ describe('survey integration', function () {
             const survey = invalidSurveysJSON[index];
             store.server
                 .post('/api/v1.0/surveys')
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(survey)
                 .expect(400)
                 .end(function (err, res) {
@@ -188,7 +188,7 @@ describe('survey integration', function () {
             const survey = invalidSurveysSwagger[index];
             store.server
                 .post('/api/v1.0/surveys')
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(survey)
                 .expect(400)
                 .end(function (err, res) {
@@ -238,7 +238,7 @@ describe('survey integration', function () {
         hxSurvey.updateClient(index, clientSurvey);
         store.server
             .patch(`/api/v1.0/surveys/${survey.id}/sections`)
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .send(newSections)
             .expect(204, done);
     });
@@ -248,7 +248,7 @@ describe('survey integration', function () {
         const id = hxSurvey.id(index);
         store.server
             .get(`/api/v1.0/surveys/${id}`)
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
             .end(function (err, res) {
                 if (err) {
@@ -271,7 +271,7 @@ describe('survey integration', function () {
             const translation = translator.translateSurvey(survey, language);
             store.server
                 .patch(`/api/v1.0/surveys/text/${language}`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(translation)
                 .expect(204)
                 .end(function (err) {
@@ -289,7 +289,7 @@ describe('survey integration', function () {
             const id = hxSurvey.id(index);
             store.server
                 .get(`/api/v1.0/surveys/${id}`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .query({ language })
                 .expect(200)
                 .end(function (err, res) {
@@ -308,7 +308,7 @@ describe('survey integration', function () {
         return function (done) {
             store.server
                 .get('/api/v1.0/surveys')
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .query({ language })
                 .expect(200)
                 .end(function (err, res) {
@@ -337,7 +337,7 @@ describe('survey integration', function () {
             replacement.parentId = hxSurvey.id(index);
             store.server
                 .post(`/api/v1.0/surveys`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(replacement)
                 .expect(201)
                 .end(function (err, res) {
@@ -360,7 +360,7 @@ describe('survey integration', function () {
             const id = hxSurvey.id(index);
             store.server
                 .delete(`/api/v1.0/surveys/${id}`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(204, done);
         };
     };
@@ -379,7 +379,7 @@ describe('survey integration', function () {
         const survey = generator.newSurvey();
         store.server
             .post('/api/v1.0/surveys')
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .send(survey)
             .expect(403, done);
     });
@@ -394,7 +394,7 @@ describe('survey integration', function () {
         const id = hxSurvey.lastId();
         store.server
             .patch(`/api/v1.0/surveys/text/es`)
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .send({ id, name })
             .expect(204)
             .end(function (err) {
@@ -414,7 +414,7 @@ describe('survey integration', function () {
         const id = hxSurvey.lastId();
         store.server
             .post('/api/v1.0/answers')
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .send({
                 surveyId: id,
                 answers
@@ -427,7 +427,7 @@ describe('survey integration', function () {
         const server = hxSurvey.lastServer();
         store.server
             .get(`/api/v1.0/answered-surveys/${server.id}`)
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
             .end(function (err, res) {
                 if (err) {
@@ -442,7 +442,7 @@ describe('survey integration', function () {
         const id = hxSurvey.lastId();
         store.server
             .get(`/api/v1.0/answered-surveys/${id}`)
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .query({ language: 'es' })
             .expect(200)
             .end(function (err, res) {

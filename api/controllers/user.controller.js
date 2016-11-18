@@ -20,7 +20,9 @@ exports.createNewUser = function (req, res) {
                 newUser.role = 'participant';
                 return db.User.create(req.body)
                     .then(user => {
-                        return res.status(201).json({ token: tokener.createJWT(user) });
+                        const token = tokener.createJWT(user);
+                        res.cookie('rr-jwt-token', token);
+                        res.status(201).json({ id: user.id });
                     });
             }
         })
