@@ -3,8 +3,10 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 const passport = require('passport');
 const expressWinston = require('express-winston');
+const _ = require('lodash');
 
 const logger = require('./logger');
 
@@ -23,9 +25,19 @@ app.use(expressWinston.logger({
 }));
 
 app.use(cors());
+app.use(cookieParser());
 app.use(jsonParser);
 app.enable('trust proxy');
 app.use(passport.initialize());
 app.use(passport.session());
+
+/* jshint unused:vars */
+app.use(function (req, res, next) {
+    const token = _.get(req, 'cookies.rr-jwt-token');
+    if (token) {
+        _.set(req, 'headers.authorization', 'Bearer ' + token);
+    }
+    next();
+});
 
 module.exports = app;

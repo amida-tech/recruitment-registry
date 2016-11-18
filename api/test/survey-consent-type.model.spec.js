@@ -8,7 +8,6 @@ const _ = require('lodash');
 const SharedSpec = require('./util/shared-spec');
 const models = require('../models');
 const Generator = require('./util/entity-generator');
-const tokener = require('../lib/tokener');
 
 const expect = chai.expect;
 const generator = new Generator();
@@ -125,7 +124,6 @@ describe('survey consent section unit', function () {
             let signObj = Object.assign({}, profileResponses[index], { signatures });
             const response = Object.assign({}, profileResponses[index], signObj);
             return models.profile.createProfile(response)
-                .then(({ token }) => tokener.verifyJWT(token))
                 .then(({ id }) => history.hxUser.push(response.user, { id }))
                 .then(() => models.userConsentDocument.listUserConsentDocuments(history.userId(index)))
                 .then(consentDocuments => expect(consentDocuments).to.have.length(0));

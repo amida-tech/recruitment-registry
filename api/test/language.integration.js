@@ -25,7 +25,7 @@ describe('language integration', function () {
     const listLanguagesFn = function (done) {
         store.server
             .get('/api/v1.0/languages')
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
             .end(function (err, res) {
                 if (err) {
@@ -41,7 +41,7 @@ describe('language integration', function () {
     it('list existing languages', function (done) {
         store.server
             .get('/api/v1.0/languages')
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
             .end(function (err, res) {
                 if (err) {
@@ -62,7 +62,7 @@ describe('language integration', function () {
     it('create language', function (done) {
         store.server
             .post('/api/v1.0/languages')
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .send(example)
             .expect(201)
             .end(function (err) {
@@ -78,7 +78,7 @@ describe('language integration', function () {
     it('get language', function (done) {
         store.server
             .get(`/api/v1.0/languages/${example.code}`)
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
             .end(function (err, res) {
                 if (err) {
@@ -94,7 +94,7 @@ describe('language integration', function () {
     it('delete language', function (done) {
         store.server
             .delete(`/api/v1.0/languages/fr`)
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(204)
             .end(function (err) {
                 if (err) {
@@ -111,7 +111,7 @@ describe('language integration', function () {
         const languageUpdate = { name: 'Turk', nativeName: 'Türk' };
         store.server
             .patch(`/api/v1.0/languages/tr`)
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .send(languageUpdate)
             .expect(204)
             .end(function (err) {

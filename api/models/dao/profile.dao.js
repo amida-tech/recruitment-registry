@@ -2,7 +2,6 @@
 
 const db = require('../db');
 
-const tokener = require('../../lib/tokener');
 const SPromise = require('../../lib/promise');
 
 const sequelize = db.sequelize;
@@ -41,8 +40,7 @@ module.exports = class {
                                     .then(() => user);
                             }
                             return user;
-                        })
-                        .then(user => ({ token: tokener.createJWT(user) }));
+                        });
                 });
         });
     }

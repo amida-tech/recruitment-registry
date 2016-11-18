@@ -42,7 +42,7 @@ describe('profile integration', function () {
                     if (err) {
                         return done(err);
                     }
-                    store.auth = 'Bearer ' + res.body.token;
+                    shared.updateStoreFromCookie(store, res);
                     hxUser.push(user, {});
                     hxAnswers.push(null);
                     done();
@@ -54,7 +54,7 @@ describe('profile integration', function () {
         return function (done) {
             store.server
                 .get('/api/v1.0/profiles')
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -78,7 +78,7 @@ describe('profile integration', function () {
             };
             store.server
                 .patch('/api/v1.0/profiles')
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(updateObj)
                 .expect(204, done);
         };
@@ -127,7 +127,7 @@ describe('profile integration', function () {
                     if (err) {
                         return done(err);
                     }
-                    store.auth = 'Bearer ' + res.body.token;
+                    shared.updateStoreFromCookie(store, res);
                     hxUser.push(clientUser, {});
                     done();
                 });
@@ -156,7 +156,7 @@ describe('profile integration', function () {
                     if (err) {
                         return done(err);
                     }
-                    store.auth = 'Bearer ' + res.body.token;
+                    shared.updateStoreFromCookie(store, res);
                     hxUser.push(clientUser, {});
                     done();
                 });
@@ -167,7 +167,7 @@ describe('profile integration', function () {
         return function (done) {
             store.server
                 .get('/api/v1.0/profiles')
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -199,7 +199,7 @@ describe('profile integration', function () {
             hxAnswers[userIndex] = answers;
             store.server
                 .patch('/api/v1.0/profiles')
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(updateObj)
                 .expect(204, done);
         };
@@ -210,7 +210,7 @@ describe('profile integration', function () {
             const server = hxConsentDoc.server(0);
             store.server
                 .get(`/api/v1.0/user-consent-documents/${server.id}`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -233,7 +233,7 @@ describe('profile integration', function () {
             const typeName = hxConsentDoc.type(0).name;
             store.server
                 .get(`/api/v1.0/user-consent-documents/type-name/${typeName}`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -278,7 +278,7 @@ describe('profile integration', function () {
             hxAnswers[userIndex] = newAnswers;
             store.server
                 .patch('/api/v1.0/profiles')
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(updateObj)
                 .expect(204, done);
         };

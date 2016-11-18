@@ -40,7 +40,7 @@ describe('create-show-survey use case', function () {
     it('list surveys to see Alzheimers for users profile', function (done) {
         store.server
             .get('/api/v1.0/surveys')
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
             .end(function (err, res) {
                 if (err) {
@@ -58,7 +58,7 @@ describe('create-show-survey use case', function () {
     it('create a new survey', function (done) {
         store.server
             .post('/api/v1.0/surveys')
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .send(surveyExamples.Example.survey)
             .expect(201, done);
     });
@@ -68,7 +68,7 @@ describe('create-show-survey use case', function () {
     it('list surveys to see the new survey', function (done) {
         store.server
             .get('/api/v1.0/surveys')
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
             .end(function (err, res) {
                 if (err) {
@@ -86,7 +86,7 @@ describe('create-show-survey use case', function () {
     it('show the new survey', function (done) {
         store.server
             .get(`/api/v1.0/surveys/${store.lastId}`)
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
             .end(function (err, res) {
                 if (err) {

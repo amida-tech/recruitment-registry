@@ -58,7 +58,7 @@ describe('consent integration', function () {
             const clientConsent = generator.newConsent({ sections });
             store.server
                 .post('/api/v1.0/consents')
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(clientConsent)
                 .expect(201)
                 .end(function (err, res) {
@@ -76,7 +76,7 @@ describe('consent integration', function () {
             const id = hxConsent.id(index);
             store.server
                 .get(`/api/v1.0/consents/${id}`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -94,7 +94,7 @@ describe('consent integration', function () {
             const name = hxConsent.client(index).name;
             store.server
                 .get(`/api/v1.0/consents/name/${name}`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -110,7 +110,7 @@ describe('consent integration', function () {
     const listConsentsFn = function (done) {
         store.server
             .get(`/api/v1.0/consents`)
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
             .end(function (err, res) {
                 if (err) {
@@ -128,7 +128,7 @@ describe('consent integration', function () {
         const id = hxConsent.id(2);
         store.server
             .delete(`/api/v1.0/consents/${id}`)
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(204)
             .end(function (err) {
                 if (err) {
@@ -148,7 +148,7 @@ describe('consent integration', function () {
             const id = hxConsent.id(index);
             store.server
                 .get(`/api/v1.0/consents/${id}/user-documents`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -175,7 +175,7 @@ describe('consent integration', function () {
             const id = hxConsent.id(index);
             store.server
                 .get(`/api/v1.0/consents/${id}/user-documents`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .query({ language })
                 .expect(200)
                 .end(function (err, res) {
@@ -204,7 +204,7 @@ describe('consent integration', function () {
             const name = hxConsent.server(index).name;
             store.server
                 .get(`/api/v1.0/consents/name/${name}/user-documents`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -231,7 +231,7 @@ describe('consent integration', function () {
             const name = hxConsent.server(index).name;
             store.server
                 .get(`/api/v1.0/consents/name/${name}/user-documents`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .query({ language })
                 .expect(200)
                 .end(function (err, res) {
@@ -267,7 +267,7 @@ describe('consent integration', function () {
             const id = hxConsent.id(consentIndex);
             store.server
                 .get(`/api/v1.0/consents/${id}/documents`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -284,7 +284,7 @@ describe('consent integration', function () {
             const id = hxConsent.id(consentIndex);
             store.server
                 .get(`/api/v1.0/consents/${id}/documents`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .query({ language: 'es' })
                 .expect(200)
                 .end(function (err, res) {
@@ -303,7 +303,7 @@ describe('consent integration', function () {
             const name = hxConsent.server(consentIndex).name;
             store.server
                 .get(`/api/v1.0/consents/name/${name}/documents`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -320,7 +320,7 @@ describe('consent integration', function () {
             const name = hxConsent.server(consentIndex).name;
             store.server
                 .get(`/api/v1.0/consents/name/${name}/documents`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .query({ language: 'es' })
                 .expect(200)
                 .end(function (err, res) {
@@ -363,7 +363,7 @@ describe('consent integration', function () {
                 consentDocumentIds.forEach(documentId => browserMap.set(`${userId}.${documentId}`, { userAgent, ip }));
                 store.server
                     .post(`/api/v1.0/consent-signatures/bulk`)
-                    .set('Authorization', store.auth)
+                    .set('Cookie', `rr-jwt-token=${store.auth}`)
                     .set('User-Agent', userAgent)
                     .set('X-Forwarded-For', [ip, `111.${browserIndex}0.999`])
                     .send(input)

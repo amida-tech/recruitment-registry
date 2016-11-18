@@ -2,13 +2,18 @@
 
 const models = require('../models');
 const shared = require('./shared.js');
+const tokener = require('../lib/tokener');
 
 const profile = models.profile;
 
 exports.createProfile = function (req, res) {
     const { user, answers, signatures, language } = req.body;
     profile.createProfile({ user, answers, signatures }, language)
-        .then(tokenObj => res.status(201).json(tokenObj))
+        .then(user => {
+            const token = tokener.createJWT(user);
+            res.cookie('rr-jwt-token', token);
+            res.status(201).json({ id: user.id });
+        })
         .catch(shared.handleError(res));
 };
 
