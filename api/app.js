@@ -29,7 +29,6 @@ app.use(cookieParser());
 app.use(jsonParser);
 app.enable('trust proxy');
 app.use(passport.initialize());
-app.use(passport.session());
 
 /* jshint unused:vars */
 app.use(function (req, res, next) {
