@@ -45,13 +45,10 @@ describe('user set-up and login use-case', function () {
         store.server
             .get('/api/v1.0/profile-survey')
             .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function (res) {
                 survey = res.body.survey;
-                done();
-            });
+            })
+            .end(done);
     });
 
     // --------- set up account
@@ -68,13 +65,10 @@ describe('user set-up and login use-case', function () {
                 answers
             })
             .expect(201)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function (res) {
                 shared.updateStoreFromCookie(store, res);
-                done();
-            });
+            })
+            .end(done);
     });
 
     // -------- verification
@@ -84,10 +78,7 @@ describe('user set-up and login use-case', function () {
             .get('/api/v1.0/profiles')
             .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function (res) {
                 const result = res.body;
 
                 const expectedUser = _.cloneDeep(userExample);
@@ -101,8 +92,8 @@ describe('user set-up and login use-case', function () {
                 const expectedSurvey = helper.formAnsweredSurvey(survey, answers);
                 expect(actualSurvey).to.deep.equal(expectedSurvey);
 
-                done();
-            });
+            })
+            .end(done);
     });
 
     // --------
@@ -127,10 +118,7 @@ describe('user set-up and login use-case', function () {
             .get('/api/v1.0/profiles')
             .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function (res) {
                 const result = res.body;
 
                 const expectedUser = _.cloneDeep(userExample);
@@ -145,7 +133,7 @@ describe('user set-up and login use-case', function () {
                 const expectedSurvey = helper.formAnsweredSurvey(survey, answers);
                 expect(actualSurvey).to.deep.equal(expectedSurvey);
 
-                done();
-            });
+            })
+            .end(done);
     });
 });

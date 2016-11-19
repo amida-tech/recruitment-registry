@@ -27,13 +27,10 @@ describe('language integration', function () {
             .get('/api/v1.0/languages')
             .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function (res) {
                 expect(res.body).to.deep.equal(languages);
-                done();
-            });
+            })
+            .end(done);
     };
 
     it('login as super', shared.loginFn(store, config.superUser));
@@ -43,14 +40,11 @@ describe('language integration', function () {
             .get('/api/v1.0/languages')
             .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function (res) {
                 languages = res.body;
                 expect(languages).to.have.length.above(0);
-                done();
-            });
+            })
+            .end(done);
     });
 
     const example = {
@@ -65,14 +59,11 @@ describe('language integration', function () {
             .set('Cookie', `rr-jwt-token=${store.auth}`)
             .send(example)
             .expect(201)
-            .end(function (err) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function () {
                 languages.push(example);
                 _.sortBy(languages, 'code');
-                done();
-            });
+            })
+            .end(done);
     });
 
     it('get language', function (done) {
@@ -80,13 +71,10 @@ describe('language integration', function () {
             .get(`/api/v1.0/languages/${example.code}`)
             .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function (res) {
                 expect(res.body).to.deep.equal(example);
-                done();
-            });
+            })
+            .end(done);
     });
 
     it('list existing languages', listLanguagesFn);
@@ -96,13 +84,10 @@ describe('language integration', function () {
             .delete(`/api/v1.0/languages/fr`)
             .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(204)
-            .end(function (err) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function () {
                 _.remove(languages, { code: 'fr' });
-                done();
-            });
+            })
+            .end(done);
     });
 
     it('list existing languages', listLanguagesFn);
@@ -114,14 +99,11 @@ describe('language integration', function () {
             .set('Cookie', `rr-jwt-token=${store.auth}`)
             .send(languageUpdate)
             .expect(204)
-            .end(function (err) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function () {
                 const language = _.find(languages, { code: 'tr' });
                 Object.assign(language, languageUpdate);
-                done();
-            });
+            })
+            .end(done);
     });
 
     it('list existing languages', listLanguagesFn);

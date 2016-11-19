@@ -70,13 +70,10 @@ describe('question integration', function () {
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(question)
                 .expect(400)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     expect(res.body.message).to.equal(RRError.message('jsonSchemaFailed', 'newQuestion'));
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -92,13 +89,10 @@ describe('question integration', function () {
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(question)
                 .expect(400)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     expect(Boolean(res.body.message)).to.equal(true);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -213,13 +207,10 @@ describe('question integration', function () {
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(translation)
                 .expect(204)
-                .end(function (err) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function () {
                     hxQuestion.translate(index, language, translation);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -231,14 +222,11 @@ describe('question integration', function () {
                 .query({ language })
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const expected = hxQuestion.translatedServer(index, language);
                     expect(res.body).to.deep.equal(expected);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -249,14 +237,11 @@ describe('question integration', function () {
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .query({ language })
                 .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const expected = hxQuestion.listTranslatedServers(language);
                     expect(res.body).to.deep.equal(expected);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -287,13 +272,10 @@ describe('question integration', function () {
                 .delete(`/api/v1.0/questions/${id}`)
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(204)
-                .end(function (err) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function () {
                     hxQuestion.remove(index);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -320,13 +302,10 @@ describe('question integration', function () {
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(clientSurvey)
                 .expect(201)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     hxSurvey.push(clientSurvey, res.body);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -345,14 +324,11 @@ describe('question integration', function () {
                 .delete(`/api/v1.0/questions/${id}`)
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(400)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const message = RRError.message('qxReplaceWhenActiveSurveys');
                     expect(res.body.message).to.equal(message);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -367,13 +343,10 @@ describe('question integration', function () {
                 .delete(`/api/v1.0/surveys/${id}`)
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(204)
-                .end(function (err) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function () {
                     hxSurvey.remove(index);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -401,14 +374,11 @@ describe('question integration', function () {
             .set('Cookie', `rr-jwt-token=${store.auth}`)
             .send(replacement)
             .expect(400)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function (res) {
                 const message = RRError.message('qxNotFound');
                 expect(res.body.message).to.equal(message);
-                done();
-            });
+            })
+            .end(done);
     });
 
     [
@@ -428,14 +398,11 @@ describe('question integration', function () {
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(replacement)
                 .expect(400)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const message = RRError.message('qxReplaceWhenActiveSurveys');
                     expect(res.body.message).to.equal(message);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -461,13 +428,10 @@ describe('question integration', function () {
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(replacement)
                 .expect(201)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     hxQuestion.replace(questionIndex, replacement, res.body);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 

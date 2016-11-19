@@ -72,13 +72,10 @@ describe('profile survey integration', function () {
             .set('Cookie', `rr-jwt-token=${store.auth}`)
             .send(clientSurvey)
             .expect(201)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function (res) {
                 hxSurvey.push(clientSurvey, res.body);
-                done();
-            });
+            })
+            .end(done);
     };
 
     const createProfileSurveyIdFn = function (index) {
@@ -101,13 +98,10 @@ describe('profile survey integration', function () {
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(clientSurvey)
                 .expect(201)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     hxSurvey.push(clientSurvey, res.body);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -136,14 +130,11 @@ describe('profile survey integration', function () {
             store.server
                 .get('/api/v1.0/profile-survey-id')
                 .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const id = hxSurvey.id(index);
                     expect(id).to.equal(res.body);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -163,13 +154,10 @@ describe('profile survey integration', function () {
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(translation)
                 .expect(204)
-                .end(function (err) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function () {
                     hxSurvey.translate(index, language, translation);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -180,16 +168,13 @@ describe('profile survey integration', function () {
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .query({ language })
                 .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const { exists, survey } = res.body;
                     expect(exists).to.equal(true);
                     const previousSurvey = hxSurvey.server(index);
                     expect(survey).to.deep.equal(previousSurvey);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -200,17 +185,14 @@ describe('profile survey integration', function () {
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .query({ language })
                 .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const { exists, survey } = res.body;
                     expect(exists).to.equal(true);
                     translator.isSurveyTranslated(survey, language);
                     const expected = hxSurvey.translatedServer(index, language);
                     expect(survey).to.deep.equal(expected);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -320,14 +302,11 @@ describe('profile survey integration', function () {
             .set('Cookie', `rr-jwt-token=${store.auth}`)
             .send(replacementSurvey)
             .expect(201)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function (res) {
                 delete replacementSurvey.parentId;
                 hxSurvey.push(replacementSurvey, res.body);
-                done();
-            });
+            })
+            .end(done);
     });
 
     it('logout as super', shared.logoutFn(store));

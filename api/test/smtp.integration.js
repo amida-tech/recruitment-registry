@@ -30,13 +30,10 @@ describe('smtp integration', function () {
             .get('/api/v1.0/smtp')
             .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function (res) {
                 expect(res.body.exists).to.equal(false);
-                done();
-            });
+            })
+            .end(done);
     };
 
     const createNewSmtp = function (index) {
@@ -72,17 +69,14 @@ describe('smtp integration', function () {
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(newSmtp)
                 .expect(204)
-                .end(function (err) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function () {
                     smtp = newSmtp;
                     if (withText) {
                         smtpText = newSmtpText;
                         smtpTextTranslation = {};
                     }
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -95,13 +89,10 @@ describe('smtp integration', function () {
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(text)
                 .expect(204)
-                .end(function (err) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function () {
                     smtpText = text;
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -111,18 +102,15 @@ describe('smtp integration', function () {
                 .get('/api/v1.0/smtp')
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     let expected = _.cloneDeep(smtp);
                     if (smtpText) {
                         Object.assign(expected, smtpText);
                     }
                     expect(res.body.exists).to.equal(true);
                     expect(res.body.smtp).to.deep.equal(expected);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -174,13 +162,10 @@ describe('smtp integration', function () {
                     .set('Cookie', `rr-jwt-token=${store.auth}`)
                     .send(translation)
                     .expect(204)
-                    .end(function (err) {
-                        if (err) {
-                            return done(err);
-                        }
+                    .expect(function () {
                         smtpTextTranslation[language] = translation;
-                        done();
-                    });
+                    })
+                    .end(done);
             };
         };
     })();

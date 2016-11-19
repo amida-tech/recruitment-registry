@@ -33,14 +33,11 @@ describe('consent document integration', function () {
                 .get('/api/v1.0/consent-types')
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const types = history.listTypes();
                     expect(res.body).to.deep.equal(types);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -65,13 +62,10 @@ describe('consent document integration', function () {
             .get(`/api/v1.0/user-consent-documents`)
             .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(400)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function (res) {
                 expect(res.body.message).to.equal(RRError.message('noSystemConsentDocuments'));
-                done();
-            });
+            })
+            .end(done);
     });
     it('logout as user 0', shared.logoutFn(store));
 
@@ -83,14 +77,11 @@ describe('consent document integration', function () {
             store.server
                 .get(`/api/v1.0/consent-documents/${id}`)
                 .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const expected = history.server(typeIndex);
                     expect(res.body).to.deep.equal(expected);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -100,14 +91,11 @@ describe('consent document integration', function () {
             store.server
                 .get(`/api/v1.0/consent-documents/type-name/${typeName}`)
                 .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const expected = history.server(typeIndex);
                     expect(res.body).to.deep.equal(expected);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -118,14 +106,11 @@ describe('consent document integration', function () {
                 .get(`/api/v1.0/consent-documents/${id}`)
                 .query({ language })
                 .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const expected = history.hxDocument.translatedServer(typeIndex, language);
                     expect(res.body).to.deep.equal(expected);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -143,14 +128,11 @@ describe('consent document integration', function () {
                 .get('/api/v1.0/user-consent-documents')
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const expected = history.serversInList(expectedIndices);
                     expect(res.body).to.deep.equal(expected);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -161,14 +143,11 @@ describe('consent document integration', function () {
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .query({ language })
                 .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const expected = history.translatedServersInList(expectedIndices, language);
                     expect(res.body).to.deep.equal(expected);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -198,13 +177,10 @@ describe('consent document integration', function () {
                 .set('X-Forwarded-For', [`9848.3${typeId}.838`, `111.${typeId}0.999`])
                 .send(input)
                 .expect(201)
-                .end(function (err) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function () {
                     history.sign(typeIndex, userIndex, language);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -340,13 +316,10 @@ describe('consent document integration', function () {
                 .delete(`/api/v1.0/consent-types/${id}`)
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(204)
-                .end(function (err) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function () {
                     history.deleteType(index);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -368,14 +341,11 @@ describe('consent document integration', function () {
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .query({ 'user-id': userId })
                 .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const expected = _.sortBy(history.signatures[userIndex], 'id');
                     expect(res.body).to.deep.equal(expected);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 

@@ -61,13 +61,10 @@ describe('consent integration', function () {
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(clientConsent)
                 .expect(201)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     hxConsent.pushWithId(clientConsent, res.body.id);
-                    done();
-                });
+                })
+                .end(done);
         });
     });
 
@@ -78,14 +75,11 @@ describe('consent integration', function () {
                 .get(`/api/v1.0/consents/${id}`)
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const expected = hxConsent.server(index);
                     expect(res.body).to.deep.equal(expected);
-                    done();
-                });
+                })
+                .end(done);
         });
     });
 
@@ -96,14 +90,11 @@ describe('consent integration', function () {
                 .get(`/api/v1.0/consents/name/${name}`)
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const expected = hxConsent.server(index);
                     expect(res.body).to.deep.equal(expected);
-                    done();
-                });
+                })
+                .end(done);
         });
     });
 
@@ -112,14 +103,11 @@ describe('consent integration', function () {
             .get(`/api/v1.0/consents`)
             .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function (res) {
                 const expected = hxConsent.listServers();
                 expect(res.body).to.deep.equal(expected);
-                done();
-            });
+            })
+            .end(done);
     };
 
     it('list/verify consents', listConsentsFn);
@@ -130,13 +118,10 @@ describe('consent integration', function () {
             .delete(`/api/v1.0/consents/${id}`)
             .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(204)
-            .end(function (err) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function () {
                 hxConsent.remove(2);
-                done();
-            });
+            })
+            .end(done);
     });
 
     it('list/verify consents', listConsentsFn);
@@ -150,10 +135,7 @@ describe('consent integration', function () {
                 .get(`/api/v1.0/consents/${id}/user-documents`)
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const typeIndices = consentSpecs[index];
                     const signatures = signatureIndices.reduce((r, i) => {
                         if (Array.isArray(i)) {
@@ -165,8 +147,8 @@ describe('consent integration', function () {
                     }, {});
                     const expected = consentCommon.formExpectedConsent(index, typeIndices, signatures);
                     expect(res.body).to.deep.equal(expected);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -178,10 +160,7 @@ describe('consent integration', function () {
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .query({ language })
                 .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const typeIndices = consentSpecs[index];
                     const signatures = signatureIndices.reduce((r, i) => {
                         if (Array.isArray(i)) {
@@ -194,8 +173,8 @@ describe('consent integration', function () {
                     const expected = consentCommon.formTranslatedExpectedConsent(index, typeIndices, signatures, language);
                     expect(res.body).to.deep.equal(expected);
                     translator.isConsentDocumentTranslated(res.body, language);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -206,10 +185,7 @@ describe('consent integration', function () {
                 .get(`/api/v1.0/consents/name/${name}/user-documents`)
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const typeIndices = consentSpecs[index];
                     const signatures = signatureIndices.reduce((r, i) => {
                         if (Array.isArray(i)) {
@@ -221,8 +197,8 @@ describe('consent integration', function () {
                     }, {});
                     const expected = consentCommon.formExpectedConsent(index, typeIndices, signatures);
                     expect(res.body).to.deep.equal(expected);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -234,10 +210,7 @@ describe('consent integration', function () {
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .query({ language })
                 .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const typeIndices = consentSpecs[index];
                     const signatures = signatureIndices.reduce((r, i) => {
                         if (Array.isArray(i)) {
@@ -250,8 +223,8 @@ describe('consent integration', function () {
                     const expected = consentCommon.formTranslatedExpectedConsent(index, typeIndices, signatures, language);
                     expect(res.body).to.deep.equal(expected);
                     translator.isConsentDocumentTranslated(res.body, language);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -269,15 +242,12 @@ describe('consent integration', function () {
                 .get(`/api/v1.0/consents/${id}/documents`)
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const typeIndices = consentSpecs[consentIndex];
                     const expected = consentCommon.formExpectedConsent(consentIndex, typeIndices);
                     expect(res.body).to.deep.equal(expected);
-                    done();
-                });
+                })
+                .end(done);
         });
 
         it(`get/verify translated (es) consent ${consentIndex} documents`, function (done) {
@@ -287,16 +257,13 @@ describe('consent integration', function () {
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .query({ language: 'es' })
                 .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const typeIndices = consentSpecs[consentIndex];
                     const expected = consentCommon.formTranslatedExpectedConsent(consentIndex, typeIndices, undefined, 'es');
                     expect(res.body).to.deep.equal(expected);
                     translator.isConsentDocumentTranslated(res.body, 'es');
-                    done();
-                });
+                })
+                .end(done);
         });
 
         it(`get/verify consent ${consentIndex} documents by name`, function (done) {
@@ -305,15 +272,12 @@ describe('consent integration', function () {
                 .get(`/api/v1.0/consents/name/${name}/documents`)
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const typeIndices = consentSpecs[consentIndex];
                     const expected = consentCommon.formExpectedConsent(consentIndex, typeIndices);
                     expect(res.body).to.deep.equal(expected);
-                    done();
-                });
+                })
+                .end(done);
         });
 
         it(`get/verify translated (es) consent ${consentIndex} documents by name`, function (done) {
@@ -323,16 +287,13 @@ describe('consent integration', function () {
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .query({ language: 'es' })
                 .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const typeIndices = consentSpecs[consentIndex];
                     const expected = consentCommon.formTranslatedExpectedConsent(consentIndex, typeIndices, undefined, 'es');
                     expect(res.body).to.deep.equal(expected);
                     translator.isConsentDocumentTranslated(res.body, 'es');
-                    done();
-                });
+                })
+                .end(done);
         });
 
         _.range(userCount).forEach(userIndex => {
@@ -488,15 +449,12 @@ describe('consent integration', function () {
         store.server
             .get(`/api/v1.0/consent-documents/type-id/${typeId}/update-comments`)
             .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function (res) {
                 const servers = history.serversHistory().filter(h => (h.typeId === typeId));
                 const comments = _.map(servers, 'updateComment');
                 expect(res.body).to.deep.equal(comments);
-                done();
-            });
+            })
+            .end(done);
     });
 
     it('translated update history for type 2', function (done) {
@@ -505,15 +463,12 @@ describe('consent integration', function () {
             .get(`/api/v1.0/consent-documents/type-id/${typeId}/update-comments`)
             .query({ language: 'es' })
             .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function (res) {
                 const servers = history.translatedServersHistory('es').filter(h => (h.typeId === typeId));
                 const comments = _.map(servers, 'updateComment');
                 expect(res.body).to.deep.equal(comments);
-                done();
-            });
+            })
+            .end(done);
     });
 
     it('check ip and browser (user-agent) of signature', function () {

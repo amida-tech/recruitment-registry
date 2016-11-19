@@ -38,15 +38,12 @@ describe('profile integration', function () {
                 .post('/api/v1.0/profiles')
                 .send(input)
                 .expect(201)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     shared.updateStoreFromCookie(store, res);
                     hxUser.push(user, {});
                     hxAnswers.push(null);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -56,14 +53,11 @@ describe('profile integration', function () {
                 .get('/api/v1.0/profiles')
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const result = res.body;
                     comparator.user(hxUser.client(userIndex), result.user);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -123,14 +117,11 @@ describe('profile integration', function () {
                 .post('/api/v1.0/profiles')
                 .send(input)
                 .expect(201)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     shared.updateStoreFromCookie(store, res);
                     hxUser.push(clientUser, {});
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -152,14 +143,11 @@ describe('profile integration', function () {
                 .post('/api/v1.0/profiles')
                 .send(input)
                 .expect(201)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     shared.updateStoreFromCookie(store, res);
                     hxUser.push(clientUser, {});
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -169,18 +157,15 @@ describe('profile integration', function () {
                 .get('/api/v1.0/profiles')
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const result = res.body;
                     const survey = hxSurvey.server(surveyIndex);
 
                     comparator.user(hxUser.client(userIndex), result.user);
                     comparator.answeredSurvey(survey, hxAnswers[userIndex], result.survey, language);
 
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -212,18 +197,15 @@ describe('profile integration', function () {
                 .get(`/api/v1.0/user-consent-documents/${server.id}`)
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const result = res.body;
                     expect(result.content).to.equal(server.content);
                     expect(result.signature).to.equal(expected);
                     if (expected) {
                         expect(result.language).to.equal(language || 'en');
                     }
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -235,18 +217,15 @@ describe('profile integration', function () {
                 .get(`/api/v1.0/user-consent-documents/type-name/${typeName}`)
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const result = res.body;
                     expect(result.content).to.equal(server.content);
                     expect(result.signature).to.equal(expected);
                     if (expected) {
                         expect(result.language).to.equal('en');
                     }
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 

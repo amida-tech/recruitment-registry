@@ -34,14 +34,11 @@ describe('shared integration', function () {
             .get('/api/v1.0/languages')
             .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(500)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function (res) {
                 expect(res.body.message).to.deep.equal('unexpected error');
                 language.listLanguages.restore();
-                done();
-            });
+            })
+            .end(done);
     });
 
     it('unknown end point', function (done) {

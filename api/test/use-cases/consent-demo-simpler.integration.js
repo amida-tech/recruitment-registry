@@ -59,16 +59,13 @@ describe('consent demo simpler', function () {
         store.server
             .get('/api/v1.0/consent-documents/type-name/terms-of-use')
             .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function (res) {
                 const result = res.body;
                 expect(!!result.content).to.equal(true);
                 termsOfUse = res.body;
                 //console.log(res.body);
-                done();
-            });
+            })
+            .end(done);
 
     });
 
@@ -85,13 +82,10 @@ describe('consent demo simpler', function () {
         store.server
             .get('/api/v1.0/profile-survey')
             .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function (res) {
                 survey = res.body.survey;
-                done();
-            });
+            })
+            .end(done);
     });
 
     let answers;
@@ -107,13 +101,10 @@ describe('consent demo simpler', function () {
                 signatures: [termsOfUse.id] // HERE IS THE SIGNATURE
             })
             .expect(201)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function (res) {
                 store.auth = 'Bearer ' + res.body.token;
-                done();
-            });
+            })
+            .end(done);
     });
 
     //****** END 3
@@ -130,15 +121,12 @@ describe('consent demo simpler', function () {
             .get('/api/v1.0/user-consent-documents/type-name/terms-of-use')
             .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function (res) {
                 expect(res.body.content).to.equal(termsOfUse.content);
                 expect(res.body.signature).to.equal(true);
                 //console.log(res.body);
-                done();
-            });
+            })
+            .end(done);
     });
 
     //****** END 4
@@ -155,15 +143,12 @@ describe('consent demo simpler', function () {
             .get('/api/v1.0/user-consent-documents/type-name/consent')
             .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function (res) {
                 consents = res.body;
                 expect(res.body.signature).to.equal(false);
                 //console.log(res.body);
-                done();
-            });
+            })
+            .end(done);
     });
 
     //****** END 5
@@ -178,12 +163,8 @@ describe('consent demo simpler', function () {
             .set('Cookie', `rr-jwt-token=${store.auth}`)
             .send({ consentDocumentId: consents.id })
             .expect(201)
-            .end(function (err) {
-                if (err) {
-                    return done(err);
-                }
-                done();
-            });
+            .expect(function () {})
+            .end(done);
     });
 
     //****** END 6
@@ -198,15 +179,12 @@ describe('consent demo simpler', function () {
             .get(`/api/v1.0/user-consent-documents/type-name/consent`)
             .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function (res) {
                 consents = res.body;
                 expect(res.body.signature).to.equal(true);
                 //console.log(res.body);
-                done();
-            });
+            })
+            .end(done);
     });
 
     //****** END 7

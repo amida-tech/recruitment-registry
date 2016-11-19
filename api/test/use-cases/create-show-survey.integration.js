@@ -42,15 +42,12 @@ describe('create-show-survey use case', function () {
             .get('/api/v1.0/surveys')
             .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function (res) {
                 const surveys = res.body;
                 expect(surveys).to.have.length(1);
                 expect(surveys[0].name).to.equal(surveyExample.name);
-                done();
-            });
+            })
+            .end(done);
     });
 
     //-------- create another survey
@@ -70,17 +67,14 @@ describe('create-show-survey use case', function () {
             .get('/api/v1.0/surveys')
             .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function (res) {
                 const surveys = res.body;
                 expect(surveys).to.have.length(2);
                 expect(surveys[0].name).to.equal(surveyExample.name);
                 expect(surveys[1].name).to.equal(surveyExamples.Example.survey.name);
                 store.lastId = surveys[1].id;
-                done();
-            });
+            })
+            .end(done);
     });
 
     it('show the new survey', function (done) {

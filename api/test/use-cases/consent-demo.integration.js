@@ -46,16 +46,13 @@ describe('consent demo', function () {
         store.server
             .get('/api/v1.0/consents/name/terms-of-use/documents')
             .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function (res) {
                 const result = res.body;
                 expect(result.name).to.equal('terms-of-use');
                 termsOfUse = res.body;
                 //console.log(res.body);
-                done();
-            });
+            })
+            .end(done);
 
     });
 
@@ -85,12 +82,8 @@ describe('consent demo', function () {
             .set('Cookie', `rr-jwt-token=${store.auth}`)
             .send({ consentDocumentId: termsOfUse.sections[0].id })
             .expect(201)
-            .end(function (err) {
-                if (err) {
-                    return done(err);
-                }
-                done();
-            });
+            .expect(function () {})
+            .end(done);
     });
 
     //****** END 3
@@ -105,15 +98,12 @@ describe('consent demo', function () {
             .get(`/api/v1.0/consents/name/terms-of-use/user-documents`)
             .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function (res) {
                 expect(res.body.name).to.equal('terms-of-use');
                 expect(res.body.sections[0].signature).to.equal(true);
                 //console.log(res.body);
-                done();
-            });
+            })
+            .end(done);
     });
 
     //****** END 4
@@ -130,16 +120,13 @@ describe('consent demo', function () {
             .get(`/api/v1.0/consents/name/consent/user-documents`)
             .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function (res) {
                 consents = res.body;
                 expect(res.body.name).to.equal('consent');
                 expect(res.body.sections[0].signature).to.equal(false);
                 //console.log(res.body);
-                done();
-            });
+            })
+            .end(done);
     });
 
     //****** END 5
@@ -154,12 +141,8 @@ describe('consent demo', function () {
             .set('Cookie', `rr-jwt-token=${store.auth}`)
             .send({ consentDocumentId: consents.sections[0].id })
             .expect(201)
-            .end(function (err) {
-                if (err) {
-                    return done(err);
-                }
-                done();
-            });
+            .expect(function () {})
+            .end(done);
     });
 
     //****** END 6
@@ -174,16 +157,13 @@ describe('consent demo', function () {
             .get(`/api/v1.0/consents/name/consent/user-documents`)
             .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function (res) {
                 consents = res.body;
                 expect(res.body.name).to.equal('consent');
                 expect(res.body.sections[0].signature).to.equal(true);
                 //console.log(res.body);
-                done();
-            });
+            })
+            .end(done);
     });
 
     //****** END 7

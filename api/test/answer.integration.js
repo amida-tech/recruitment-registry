@@ -85,15 +85,12 @@ describe('answer integration', function () {
                 .query({ 'survey-id': surveyId })
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const expected = hxAnswer.expectedAnswers(userIndex, surveyIndex, seqIndex);
                     const actual = _.sortBy(res.body, 'questionId');
                     expect(actual).to.deep.equal(expected);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 

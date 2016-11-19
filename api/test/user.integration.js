@@ -49,16 +49,13 @@ describe('user integration', function () {
             .get('/api/v1.0/users/me')
             .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function (res) {
                 const user = res.body;
                 expect(!user).to.equal(false);
                 expect(user.username).to.equal(config.superUser.username);
                 expect(user.role).to.equal('admin');
-                done();
-            });
+            })
+            .end(done);
     });
 
     it('logout as super', shared.logoutFn(store));
@@ -69,13 +66,10 @@ describe('user integration', function () {
             .set('Cookie', `rr-jwt-token=${store.auth}`)
             .send(user)
             .expect(201)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function (res) {
                 shared.updateStoreFromCookie(store, res);
-                done();
-            });
+            })
+            .end(done);
     });
 
     it('get new user', function (done) {
@@ -83,17 +77,14 @@ describe('user integration', function () {
             .get('/api/v1.0/users/me')
             .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function (res) {
                 delete res.body.id;
                 const expectedUser = _.cloneDeep(user);
                 expectedUser.role = 'participant';
                 delete expectedUser.password;
                 expect(res.body).to.deep.equal(expectedUser);
-                done();
-            });
+            })
+            .end(done);
     });
 
     it('logout s new user', shared.logoutFn(store));
@@ -105,17 +96,14 @@ describe('user integration', function () {
             .get('/api/v1.0/users/me')
             .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function (res) {
                 delete res.body.id;
                 const expectedUser = _.cloneDeep(user);
                 expectedUser.role = 'participant';
                 delete expectedUser.password;
                 expect(res.body).to.deep.equal(expectedUser);
-                done();
-            });
+            })
+            .end(done);
     });
 
     it('login as super', shared.loginFn(store, config.superUser));
@@ -168,18 +156,15 @@ describe('user integration', function () {
             .get('/api/v1.0/users/me')
             .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function (res) {
                 const expected = _.cloneDeep(userUpdate);
                 expected.role = 'participant';
                 expected.id = res.body.id;
                 delete expected.password;
                 expected.username = user.username;
                 expect(res.body).to.deep.equal(expected);
-                done();
-            });
+            })
+            .end(done);
     });
 
     it('verify updated user fields', function (done) {
@@ -187,14 +172,11 @@ describe('user integration', function () {
             .get('/api/v1.0/users/me')
             .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function (res) {
                 const expected = _.pick(userUpdate, ['email']);
                 const actual = _.omit(res.body, ['id', 'role', 'username']);
                 expect(actual).to.deep.equal(expected);
-                done();
-            });
+            })
+            .end(done);
     });
 });

@@ -35,13 +35,10 @@ describe('consent section integration', function () {
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(cst)
                 .expect(201)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     hxType.pushWithId(cst, res.body.id);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -52,13 +49,10 @@ describe('consent section integration', function () {
                 .get(`/api/v1.0/consent-types/${consentType.id}`)
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     expect(res.body).to.deep.equal(consentType);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -68,14 +62,11 @@ describe('consent section integration', function () {
                 .get('/api/v1.0/consent-types')
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const expected = hxType.listServers();
                     expect(res.body).to.deep.equal(expected);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -94,14 +85,11 @@ describe('consent section integration', function () {
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .query({ language })
                 .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const expected = hxType.translatedServer(index, language);
                     expect(res.body).to.deep.equal(expected);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -112,14 +100,11 @@ describe('consent section integration', function () {
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .query({ language })
                 .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const expected = hxType.listTranslatedServers(language);
                     expect(res.body).to.deep.equal(expected);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 

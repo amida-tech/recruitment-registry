@@ -94,13 +94,10 @@ describe('reset-token integration', function () {
         store.server
             .get('/api/v1.0/profile-survey')
             .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function (res) {
                 survey = res.body.survey;
-                done();
-            });
+            })
+            .end(done);
     });
 
     // --------- set up account
@@ -132,13 +129,10 @@ describe('reset-token integration', function () {
                 email: userExample.email
             })
             .expect(400)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function (res) {
                 expect(res.body.message).to.equal(RRError.message('smtpNotSpecified'));
-                done();
-            });
+            })
+            .end(done);
     });
 
     it('login as super', shared.loginFn(store, config.superUser));
@@ -169,14 +163,11 @@ describe('reset-token integration', function () {
                 email: userExample.email
             })
             .expect(400)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function (res) {
                 expect(res.body.message).to.not.equal(RRError.message('unknown'));
                 expect(res.body.message).to.equal(RRError.message('smtpTextNotSpecified'));
-                done();
-            });
+            })
+            .end(done);
     });
 
     it('login as super', shared.loginFn(store, config.superUser));
@@ -203,12 +194,8 @@ describe('reset-token integration', function () {
                 email: userExample.email
             })
             .expect(500)
-            .end(function (err) {
-                if (err) {
-                    return done(err);
-                }
-                done();
-            });
+            .expect(function () {})
+            .end(done);
     });
 
     it('login as super', shared.loginFn(store, config.superUser));
@@ -231,12 +218,8 @@ describe('reset-token integration', function () {
                 email: userExample.email
             })
             .expect(204)
-            .end(function (err) {
-                if (err) {
-                    return done(err);
-                }
-                done();
-            });
+            .expect(function () {})
+            .end(done);
     });
 
     it('verify user can not login', shared.badLoginFn(store, userExample));

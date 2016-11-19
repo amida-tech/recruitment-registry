@@ -61,14 +61,11 @@ describe('auth integration', function () {
             .get('/api/v1.0/auth/basic')
             .auth(testUser.username + 'a', testUser.password)
             .expect(401)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function (res) {
                 expect(typeof res.body).to.equal('object');
                 expect(Boolean(res.body.message)).to.equal(true);
-                done();
-            });
+            })
+            .end(done);
     });
 
     it('wrong password', function (done) {
@@ -76,14 +73,11 @@ describe('auth integration', function () {
             .get('/api/v1.0/auth/basic')
             .auth(testUser.username, testUser.password + 'a')
             .expect(401)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function (res) {
                 expect(typeof res.body).to.equal('object');
                 expect(Boolean(res.body.message)).to.equal(true);
-                done();
-            });
+            })
+            .end(done);
     });
 
     it('token creation throws', function (done) {

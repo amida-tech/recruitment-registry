@@ -49,14 +49,11 @@ describe('user survey integration', function () {
             .get(`/api/v1.0/user-surveys`)
             .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function (res) {
                 const userSurveys = res.body;
                 expect(userSurveys.length).to.equal(0);
-                done();
-            });
+            })
+            .end(done);
     };
 
     for (let i = 0; i < userCount; ++i) {
@@ -98,14 +95,11 @@ describe('user survey integration', function () {
                 .get(`/api/v1.0/user-surveys/${surveyId}/status`)
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const status = res.body.status;
                     expect(status).to.equal(expectedStatus);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -124,15 +118,12 @@ describe('user survey integration', function () {
                 .get(`/api/v1.0/user-surveys`)
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const userSurveys = res.body;
                     const expected = hxSurvey.listServers().map(({ id, name }, index) => ({ id, name, status: statusList[index] }));
                     expect(userSurveys).to.deep.equal(expected);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -150,18 +141,15 @@ describe('user survey integration', function () {
                 .get(`/api/v1.0/user-surveys/${surveyId}`)
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const userSurvey = res.body;
                     const survey = hxSurvey.server(surveyIndex);
                     const key = _key(userIndex, surveyIndex);
                     const answers = mapAnswers.get(key) || [];
                     expect(userSurvey.status).to.equal(status);
                     comparator.answeredSurvey(survey, answers, userSurvey.survey);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -177,10 +165,7 @@ describe('user survey integration', function () {
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .query(query)
                 .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const userSurveyAnswers = res.body;
                     if (includeSurvey) {
                         const survey = hxSurvey.server(surveyIndex);
@@ -192,8 +177,8 @@ describe('user survey integration', function () {
                     const answers = mapAnswers.get(key) || [];
                     expect(userSurveyAnswers.status).to.equal(status);
                     comparator.answers(answers, userSurveyAnswers.answers);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -211,14 +196,11 @@ describe('user survey integration', function () {
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(input)
                 .expect(204)
-                .end(function (err) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function () {
                     mapAnswers.set(key, answers);
                     mapStatus.set(key, status);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -239,14 +221,11 @@ describe('user survey integration', function () {
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(input)
                 .expect(204)
-                .end(function (err) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function () {
                     mapAnswers.set(key, answers);
                     mapStatus.set(key, 'in-progress');
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -269,16 +248,13 @@ describe('user survey integration', function () {
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(input)
                 .expect(204)
-                .end(function (err) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function () {
                     const qxIdsNewlyAnswered = new Set(answers.map(answer => answer.questionId));
                     const previousAnswers = mapAnswers.get(key, answers).filter(answer => !qxIdsNewlyAnswered.has(answer.questionId));
                     mapAnswers.set(key, [...previousAnswers, ...answers]);
                     mapStatus.set(key, 'completed');
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -298,14 +274,11 @@ describe('user survey integration', function () {
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(input)
                 .expect(400)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const message = RRError.message('answerRequiredMissing');
                     expect(res.body.message).to.equal(message);
-                    done();
-                });
+                })
+                .end(done);
         };
 
     };
@@ -398,10 +371,7 @@ describe('user survey integration', function () {
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .query({ language })
                 .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const userSurveys = res.body;
                     if (!notTranslated) {
                         translator.isSurveyListTranslated(userSurveys, language);
@@ -409,8 +379,8 @@ describe('user survey integration', function () {
                     const list = hxSurvey.listTranslatedServers(language);
                     const expected = list.map(({ id, name }, index) => ({ id, name, status: statusList[index] }));
                     expect(userSurveys).to.deep.equal(expected);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -422,10 +392,7 @@ describe('user survey integration', function () {
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .query({ language })
                 .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const userSurvey = res.body;
                     const survey = hxSurvey.translatedServer(surveyIndex, language);
                     if (!notTranslated) {
@@ -435,8 +402,8 @@ describe('user survey integration', function () {
                     const answers = mapAnswers.get(key) || [];
                     expect(userSurvey.status).to.equal(status);
                     comparator.answeredSurvey(survey, answers, userSurvey.survey);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -449,10 +416,7 @@ describe('user survey integration', function () {
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .query(query)
                 .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const userSurveyAnswers = res.body;
                     const survey = hxSurvey.translatedServer(surveyIndex, language);
                     if (!notTranslated) {
@@ -463,8 +427,8 @@ describe('user survey integration', function () {
                     const answers = mapAnswers.get(key) || [];
                     expect(userSurveyAnswers.status).to.equal(status);
                     comparator.answers(answers, userSurveyAnswers.answers);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -489,13 +453,10 @@ describe('user survey integration', function () {
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(translation)
                 .expect(204)
-                .end(function (err) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function () {
                     hxSurvey.translate(index, language, translation);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -532,15 +493,12 @@ describe('user survey integration', function () {
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(input)
                 .expect(204)
-                .end(function (err) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function () {
                     mapAnswers.set(key, answers);
                     mapStatus.set(key, status);
                     answers.forEach(answer => answer.language = language);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
