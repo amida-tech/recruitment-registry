@@ -32,7 +32,7 @@ const Accumulator = class Accumulator {
     }
 
     add(root, name) {
-        const match = name.match(/^.+\.integration\.js$/);
+        const match = name.match(/^.+integration\.js$/);
         if (match) {
             this.results.push({ root, name });
         }
@@ -54,42 +54,115 @@ const classifyFiles = function (baseDirectory, callback) {
 const baseDirectory = path.join(__dirname, '../test');
 
 const findRes = function (lines, index) {
-    if (lines[index].trim() !== '.end(function (err, res) {') {
+    if (lines[index].trim() !== 'store.server') {
         return null;
     }
-    if (lines[index + 1].trim() !== 'if (err) {') {
-        console.log('break 1');
-        return null;
-    }
-    if (lines[index + 2].trim() !== 'done(err);') {
-        console.log('break 2');
-        return null;
-    }
-    if (lines[index + 3].trim() !== '}') {
-        console.log('break 3');
-        return null;
-    }
-    let subIndex = index + 4;
-    let found = false;
-    const spaces = lines[index + 1].split('if')[0];
+    let subIndex = index + 1;
+    let found = null;
+    const result = { lines: [] };
     while (subIndex < lines.length) {
-        if (lines[subIndex] === spaces + 'done();') {
+        if (lines[subIndex].trim() === '.end(done);') {
             found = true;
+            result.lines.push(lines[subIndex]);
+            result.nextIndex = subIndex + 1;
             break;
         }
-        if (lines[subIndex].trim() === '});') {
-            found = false;
+        if (lines[subIndex].trim().startsWith('.end(')) {
+            found = true;
+            result.lines.push(lines[subIndex]);
+            result.nextIndex = subIndex + 1;
             break;
         }
+        if (lines[subIndex].trim() === '};') {
+            break;
+        }
+        const line = lines[subIndex];
         ++subIndex;
+        let matches;
+        matches = line.match(/^\s*\.get\(\`\/api\/v1\.0([^\`]+)\`\)$/);
+        if (matches) {
+            result.operation = 'get';
+            result.endpoint = matches[1];
+            result.delimiter = '`';
+            continue;
+        }
+        matches = line.match(/^\s*\.get\(\'\/api\/v1\.0([^\']+)\'\)$/);
+        if (matches) {
+            result.operation = 'get';
+            result.endpoint = matches[1];
+            result.delimiter = '\'';
+            continue;
+        }
+        matches = line.match(/^\s*\.post\(\`\/api\/v1\.0([^\`]+)\`\)$/);
+        if (matches) {
+            result.operation = 'post';
+            result.endpoint = matches[1];
+            result.delimiter = '`';
+            continue;
+        }
+        matches = line.match(/^\s*\.post\(\'\/api\/v1\.0([^\']+)\'\)$/);
+        if (matches) {
+            result.operation = 'post';
+            result.endpoint = matches[1];
+            result.delimiter = '\'';
+            continue;
+        }
+        matches = line.match(/^\s*\.patch\(\`\/api\/v1\.0([^\`]+)\`\)$/);
+        if (matches) {
+            result.operation = 'patch';
+            result.endpoint = matches[1];
+            result.delimiter = '`';
+            continue;
+        }
+        matches = line.match(/^\s*\.patch\(\'\/api\/v1\.0([^\']+)\'\)$/);
+        if (matches) {
+            result.operation = 'patch';
+            result.endpoint = matches[1];
+            result.delimiter = '\'';
+            continue;
+        }
+        matches = line.match(/^\s*\.delete\(\`\/api\/v1\.0([^\`]+)\`\)$/);
+        if (matches) {
+            result.operation = 'delete';
+            result.endpoint = matches[1];
+            result.delimiter = '`';
+            continue;
+        }
+        matches = line.match(/^\s*\.delete\(\'\/api\/v1\.0([^\']+)\'\)$/);
+        if (matches) {
+            result.operation = 'delete';
+            result.endpoint = matches[1];
+            result.delimiter = '\'';
+            continue;
+        }
+        if (!result.endpoint) {
+            console.log(line);
+        }
+        matches = line.match(/^\s*\.expect\((\d+)\)$/);
+        if (matches) {
+            result.status = matches[1];
+            continue;
+        }
+        matches = line.match(/^\s*\.query\(([^\)]+)\)$/);
+        if (matches) {
+            result.query = matches[1];
+            continue;
+        }
+        if (line.trim().startsWith('.set(\'Cookie')) {
+            result.auth = true;
+            continue;
+        }
+        matches = line.match(/^\s*\.send\(([^\)]+)\)$/);
+        if (matches) {
+            result.send = matches[1];
+            continue;
+        }
+        result.lines.push(line);
     }
-    if (!found) {
-        console.log('break 4');
-        return null;
+    if (found) {
+        return result;
     }
-    const newLines = lines.slice(index + 4, subIndex);
-    const nextIndex = subIndex + 2;
-    return { newLines, nextIndex };
+    return null;
 };
 
 const transformFile = function ({ root, name }) {
@@ -106,14 +179,46 @@ const transformFile = function ({ root, name }) {
             newLines.push(lines[index]);
             ++index;
         } else {
-            console.log('INSERT');
-            const spaces = lines[index].split('.end')[0];
-            newLines.push(spaces + '.expect(function (res) {');
-            res.newLines.forEach(fn);
-            newLines.push(spaces + '})');
-            newLines.push(spaces + '.end(done);');
-            index = res.nextIndex;
-            found = true;
+            const spaces = lines[index].split('store.server')[0];
+            let cmd = spaces + 'store.' + res.operation + '(';
+            let innerFound = false;
+            //console.log(res);
+            if (!res.endpoint) {
+                console.log(res);
+            }
+            if (res.endpoint.indexOf('$') >= 0) {
+                cmd += '`' + res.endpoint + '`';
+            } else {
+                cmd += '\'' + res.endpoint + '\'';
+            }
+
+            if (res.operation === 'deletex') {
+                if (res.status !== '204') {
+                    throw new Error('NO DELETE');
+                }
+                cmd += ').end();';
+                newLines.push(cmd);
+                index = res.nextIndex + 1;
+                innerFound = true;
+            } else if (res.operation === 'post' || res.operation === 'patch') {
+                cmd += ', ' + res.send + ', ' + res.status + ')';
+                newLines.push(cmd);
+                res.lines.forEach(fn);
+                index = res.nextIndex;
+                innerFound = true;
+            } else if (res.operation === 'getx') {
+                cmd += ', ' + res.auth ? 'true' : 'false' + ', ' + res.status + ')';
+                newLines.push(cmd);
+                res.lines.forEach(fn);
+                index = res.nextIndex;
+                innerFound = true;
+            }
+            if (!innerFound) {
+                newLines.push(lines[index]);
+                ++index;
+            } else {
+                found = true;
+            }
         }
     }
     if (found) {

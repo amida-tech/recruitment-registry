@@ -26,10 +26,7 @@ describe('profile survey integration', function () {
 
     it('error: create profile survey unauthorized', function (done) {
         const clientSurvey = generator.newSurvey();
-        store.server
-            .post('/api/v1.0/profile-survey')
-            .send(clientSurvey)
-            .expect(401)
+        store.post('/profile-survey', clientSurvey, 401)
             .end(done);
     });
 
@@ -59,11 +56,7 @@ describe('profile survey integration', function () {
 
     const createSurvey = function (done) {
         const clientSurvey = generator.newSurvey();
-        store.server
-            .post('/api/v1.0/surveys')
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .send(clientSurvey)
-            .expect(201)
+        store.post('/surveys', clientSurvey, 201)
             .expect(function (res) {
                 hxSurvey.push(clientSurvey, res.body);
             })
@@ -73,11 +66,7 @@ describe('profile survey integration', function () {
     const createProfileSurveyIdFn = function (index) {
         return function (done) {
             const id = hxSurvey.id(index);
-            store.server
-                .post('/api/v1.0/profile-survey-id')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send({ profileSurveyId: id })
-                .expect(204)
+            store.post('/profile-survey-id', { profileSurveyId: id }, 204)
                 .end(done);
         };
     };
@@ -85,11 +74,7 @@ describe('profile survey integration', function () {
     const createProfileSurveyFn = function () {
         return function (done) {
             const clientSurvey = generator.newSurvey();
-            store.server
-                .post('/api/v1.0/profile-survey')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(clientSurvey)
-                .expect(201)
+            store.post('/profile-survey', clientSurvey, 201)
                 .expect(function (res) {
                     hxSurvey.push(clientSurvey, res.body);
                 })
@@ -141,11 +126,7 @@ describe('profile survey integration', function () {
         return function (done) {
             const survey = hxSurvey.server(index);
             const translation = translator.translateSurvey(survey, language);
-            store.server
-                .patch(`/api/v1.0/surveys/text/${language}`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(translation)
-                .expect(204)
+            store.patch(`/surveys/text/${language}`, translation, 204)
                 .expect(function () {
                     hxSurvey.translate(index, language, translation);
                 })
@@ -289,11 +270,7 @@ describe('profile survey integration', function () {
         const id = hxSurvey.id(4);
         const replacementSurvey = generator.newSurvey();
         replacementSurvey.parentId = id;
-        store.server
-            .post(`/api/v1.0/surveys`)
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .send(replacementSurvey)
-            .expect(201)
+        store.post('/surveys', replacementSurvey, 201)
             .expect(function (res) {
                 delete replacementSurvey.parentId;
                 hxSurvey.push(replacementSurvey, res.body);

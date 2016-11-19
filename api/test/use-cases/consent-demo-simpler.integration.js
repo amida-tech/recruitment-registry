@@ -90,19 +90,12 @@ describe('consent demo simpler', function () {
 
     it('fill user profile and submit', function (done) {
         answers = helper.formAnswersToPost(survey, surveyExample.answer);
-
-        store.server
-            .post('/api/v1.0/profiles')
-            .send({
-                user: userExample,
-                answers,
-                signatures: [termsOfUse.id] // HERE IS THE SIGNATURE
-            })
-            .expect(201)
-            .expect(function (res) {
-                store.auth = 'Bearer ' + res.body.token;
-            })
-            .end(done);
+        const input = {
+            user: userExample,
+            answers,
+            signatures: [termsOfUse.id] // HERE IS THE SIGNATURE
+        };
+        store.post('/profiles', input, 201).end(done);
     });
 
     //****** END 3
@@ -156,13 +149,7 @@ describe('consent demo simpler', function () {
     //****** START 6
 
     it('sign the Consents document', function (done) {
-        store.server
-            .post(`/api/v1.0/consent-signatures`)
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .send({ consentDocumentId: consents.id })
-            .expect(201)
-            .expect(function () {})
-            .end(done);
+        store.post('/consent-signatures', { consentDocumentId: consents.id }, 201).end(done);
     });
 
     //****** END 6

@@ -189,11 +189,7 @@ describe('user survey integration', function () {
                 status
             };
             const key = _key(userIndex, surveyIndex);
-            store.server
-                .post(`/api/v1.0/user-surveys/${survey.id}/answers`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(input)
-                .expect(204)
+            store.post(`/user-surveys/${survey.id}/answers`, input, 204)
                 .expect(function () {
                     mapAnswers.set(key, answers);
                     mapStatus.set(key, status);
@@ -214,11 +210,7 @@ describe('user survey integration', function () {
                 status: 'in-progress'
             };
             const key = _key(userIndex, surveyIndex);
-            store.server
-                .post(`/api/v1.0/user-surveys/${survey.id}/answers`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(input)
-                .expect(204)
+            store.post(`/user-surveys/${survey.id}/answers`, input, 204)
                 .expect(function () {
                     mapAnswers.set(key, answers);
                     mapStatus.set(key, 'in-progress');
@@ -241,11 +233,7 @@ describe('user survey integration', function () {
                 status: 'completed'
             };
             const key = _key(userIndex, surveyIndex);
-            store.server
-                .post(`/api/v1.0/user-surveys/${survey.id}/answers`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(input)
-                .expect(204)
+            store.post(`/user-surveys/${survey.id}/answers`, input, 204)
                 .expect(function () {
                     const qxIdsNewlyAnswered = new Set(answers.map(answer => answer.questionId));
                     const previousAnswers = mapAnswers.get(key, answers).filter(answer => !qxIdsNewlyAnswered.has(answer.questionId));
@@ -267,11 +255,7 @@ describe('user survey integration', function () {
                 answers,
                 status: 'completed'
             };
-            store.server
-                .post(`/api/v1.0/user-surveys/${survey.id}/answers`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(input)
-                .expect(400)
+            store.post(`/user-surveys/${survey.id}/answers`, input, 400)
                 .expect(function (res) {
                     const message = RRError.message('answerRequiredMissing');
                     expect(res.body.message).to.equal(message);
@@ -446,11 +430,7 @@ describe('user survey integration', function () {
         return function (done) {
             const survey = hxSurvey.server(index);
             const translation = translator.translateSurvey(survey, language);
-            store.server
-                .patch(`/api/v1.0/surveys/text/${language}`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(translation)
-                .expect(204)
+            store.patch(`/surveys/text/${language}`, translation, 204)
                 .expect(function () {
                     hxSurvey.translate(index, language, translation);
                 })
@@ -486,11 +466,7 @@ describe('user survey integration', function () {
                 language
             };
             const key = _key(userIndex, surveyIndex);
-            store.server
-                .post(`/api/v1.0/user-surveys/${survey.id}/answers`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(input)
-                .expect(204)
+            store.post(`/user-surveys/${survey.id}/answers`, input, 204)
                 .expect(function () {
                     mapAnswers.set(key, answers);
                     mapStatus.set(key, status);

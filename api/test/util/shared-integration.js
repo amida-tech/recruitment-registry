@@ -85,11 +85,7 @@ class SharedIntegration {
         const generator = this.generator;
         return function (done) {
             const clientSurvey = generator.newSurvey();
-            store.server
-                .post('/api/v1.0/profile-survey')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(clientSurvey)
-                .expect(201)
+            store.post('/profile-survey', clientSurvey, 201)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
@@ -126,11 +122,7 @@ class SharedIntegration {
             if (!user) {
                 user = generator.newUser();
             }
-            store.server
-                .post('/api/v1.0/users')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(user)
-                .expect(201)
+            store.post('/users', user, 201)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
@@ -145,11 +137,7 @@ class SharedIntegration {
         const generator = this.generator;
         return function (done) {
             const clientQuestion = generator.newQuestion();
-            store.server
-                .post('/api/v1.0/questions')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(clientQuestion)
-                .expect(201)
+            store.post('/questions', clientQuestion, 201)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
@@ -188,11 +176,7 @@ class SharedIntegration {
 
     postSurveyFn(store, survey, hxSurvey) {
         return function (done) {
-            store.server
-                .post('/api/v1.0/surveys')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(survey)
-                .expect(201)
+            store.post('/surveys', survey, 201)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
@@ -216,11 +200,7 @@ class SharedIntegration {
                     required: false
                 }));
             }
-            store.server
-                .post('/api/v1.0/surveys')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(inputSurvey)
-                .expect(201)
+            store.post('/surveys', inputSurvey, 201)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
@@ -233,11 +213,7 @@ class SharedIntegration {
 
     createSurveyProfileFn(store, survey) {
         return function (done) {
-            store.server
-                .post('/api/v1.0/profile-survey')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(survey)
-                .expect(201)
+            store.post('/profile-survey', survey, 201)
                 .expect(function (res) {
                     expect(!!res.body.id).to.equal(true);
                 })
@@ -249,11 +225,7 @@ class SharedIntegration {
         const generator = this.generator;
         return function (done) {
             const cst = generator.newConsentType();
-            store.server
-                .post('/api/v1.0/consent-types')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(cst)
-                .expect(201)
+            store.post('/consent-types', cst, 201)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
@@ -269,11 +241,7 @@ class SharedIntegration {
         return function (done) {
             const typeId = history.typeId(typeIndex);
             const cs = generator.newConsentDocument({ typeId });
-            store.server
-                .post(`/api/v1.0/consent-documents`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(cs)
-                .expect(201)
+            store.post('/consent-documents', cs, 201)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
@@ -288,11 +256,7 @@ class SharedIntegration {
         return function (done) {
             const server = hxType.server(index);
             const translation = translator.translateConsentType(server, language);
-            store.server
-                .patch(`/api/v1.0/consent-types/text/${language}`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(translation)
-                .expect(204)
+            store.patch(`/consent-types/text/${language}`, translation, 204)
                 .end(function (err) {
                     if (err) {
                         return done(err);
@@ -307,11 +271,7 @@ class SharedIntegration {
         return function (done) {
             const server = history.server(index);
             const translation = translator.translateConsentDocument(server, language);
-            store.server
-                .patch(`/api/v1.0/consent-documents/text/${language}`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(translation)
-                .expect(204)
+            store.patch(`/consent-documents/text/${language}`, translation, 204)
                 .end(function (err) {
                     if (err) {
                         return done(err);

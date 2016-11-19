@@ -55,14 +55,8 @@ describe('user set-up and login use-case', function () {
 
     it('fill user profile and submit', function (done) {
         answers = helper.formAnswersToPost(survey, surveyExample.answer);
-
-        store.server
-            .post('/api/v1.0/profiles')
-            .send({
-                user: userExample,
-                answers
-            })
-            .expect(201)
+        const user = userExample;
+        store.post('/profiles', { user, answers }, 201)
             .expect(function (res) {
                 shared.updateStoreFromCookie(store, res);
             })
@@ -101,14 +95,12 @@ describe('user set-up and login use-case', function () {
         const userUpdates = {
             email: 'updated@example.com'
         };
-        store.server
-            .patch('/api/v1.0/profiles')
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
+        const user = userUpdates;
+        store.patch('/profiles', { user, answers }, 204)
             .send({
                 user: userUpdates,
                 answers
             })
-            .expect(204)
             .end(done);
     });
 

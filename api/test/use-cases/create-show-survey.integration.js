@@ -51,12 +51,7 @@ describe('create-show-survey use case', function () {
     //-------- create another survey
 
     it('create a new survey', function (done) {
-        store.server
-            .post('/api/v1.0/surveys')
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .send(surveyExamples.Example.survey)
-            .expect(201)
-            .end(done);
+        store.post('/surveys', surveyExamples.Example.survey, 201).end(done);
     });
 
     //------- list surveys and select one to shoe

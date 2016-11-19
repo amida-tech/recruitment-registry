@@ -32,10 +32,7 @@ describe('profile integration', function () {
             const user = generator.newUser();
             user.role = 'participant';
             const input = { user };
-            store.server
-                .post('/api/v1.0/profiles')
-                .send(input)
-                .expect(201)
+            store.post('/profiles', input, 201)
                 .expect(function (res) {
                     shared.updateStoreFromCookie(store, res);
                     hxUser.push(user, {});
@@ -68,11 +65,7 @@ describe('profile integration', function () {
             const updateObj = {
                 user: userUpdates
             };
-            store.server
-                .patch('/api/v1.0/profiles')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(updateObj)
-                .expect(204)
+            store.patch('/profiles', updateObj, 204)
                 .end(done);
         };
     };
@@ -112,10 +105,7 @@ describe('profile integration', function () {
             if (signatures) {
                 input.signatures = signatures.map(sign => hxConsentDoc.id(sign));
             }
-            store.server
-                .post('/api/v1.0/profiles')
-                .send(input)
-                .expect(201)
+            store.post('/profiles', input, 201)
                 .expect(function (res) {
                     shared.updateStoreFromCookie(store, res);
                     hxUser.push(clientUser, {});
@@ -138,10 +128,7 @@ describe('profile integration', function () {
             if (language) {
                 input.language = language;
             }
-            store.server
-                .post('/api/v1.0/profiles')
-                .send(input)
-                .expect(201)
+            store.post('/profiles', input, 201)
                 .expect(function (res) {
                     shared.updateStoreFromCookie(store, res);
                     hxUser.push(clientUser, {});
@@ -181,12 +168,7 @@ describe('profile integration', function () {
                 answers
             };
             hxAnswers[userIndex] = answers;
-            store.server
-                .patch('/api/v1.0/profiles')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(updateObj)
-                .expect(204)
-                .end(done);
+            store.patch('/profiles', updateObj, 204).end(done);
         };
     };
 
@@ -255,12 +237,7 @@ describe('profile integration', function () {
                 }
             });
             hxAnswers[userIndex] = newAnswers;
-            store.server
-                .patch('/api/v1.0/profiles')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(updateObj)
-                .expect(204)
-                .end(done);
+            store.patch('/profiles', updateObj, 204).end(done);
         };
     };
 

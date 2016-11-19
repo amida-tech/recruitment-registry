@@ -54,11 +54,7 @@ describe('consent integration', function () {
         it(`create consent ${index}`, function (done) {
             const sections = typeIndices.map(typeIndex => history.typeId(typeIndex));
             const clientConsent = generator.newConsent({ sections });
-            store.server
-                .post('/api/v1.0/consents')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(clientConsent)
-                .expect(201)
+            store.post('/consents', clientConsent, 201)
                 .expect(function (res) {
                     hxConsent.pushWithId(clientConsent, res.body.id);
                 })
@@ -320,14 +316,11 @@ describe('consent integration', function () {
                 const ip = `9848.3${browserIndex}.838`;
                 const userId = history.hxUser.id(userIndex);
                 consentDocumentIds.forEach(documentId => browserMap.set(`${userId}.${documentId}`, { userAgent, ip }));
-                store.server
-                    .post(`/api/v1.0/consent-signatures/bulk`)
-                    .set('Cookie', `rr-jwt-token=${store.auth}`)
-                    .set('User-Agent', userAgent)
-                    .set('X-Forwarded-For', [ip, `111.${browserIndex}0.999`])
-                    .send(input)
-                    .expect(201)
-                    .end(done);
+                const header = {
+                    'User-Agent': userAgent,
+                    'X-Forwarded-For': [ip, `111.${browserIndex}0.999`]
+                };
+                store.post('/consent-signatures/bulk', input, 201, header).end(done);
             };
         };
     })();

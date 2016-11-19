@@ -22,7 +22,7 @@ describe('user integration', function () {
 
     it('invalid path', function (done) {
         store.server
-            .get('/xxxxxxx')
+            .get('/api/v1.0/xxxxxxx')
             .expect(404)
             .end(done);
     });
@@ -59,11 +59,7 @@ describe('user integration', function () {
     it('logout as super', shared.logoutFn(store));
 
     it('create a new user', function (done) {
-        store.server
-            .post('/api/v1.0/users')
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .send(user)
-            .expect(201)
+        store.post('/users', user, 201)
             .expect(function (res) {
                 shared.updateStoreFromCookie(store, res);
             })
@@ -110,21 +106,11 @@ describe('user integration', function () {
         const userEmailErr = _.cloneDeep(user);
         userEmailErr.email = 'notanemail';
         userEmailErr.username = user.username + '1';
-        store.server
-            .post('/api/v1.0/users')
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .send(userEmailErr)
-            .expect(400)
-            .end(done);
+        store.post('/users', userEmailErr, 400).end(done);
     });
 
     it('error: create the same user', function (done) {
-        store.server
-            .post('/api/v1.0/users')
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .send(user)
-            .expect(400)
-            .end(done);
+        store.post('/users', user, 400).end(done);
     });
 
     it('login as new user', shared.loginFn(store, user));
@@ -135,12 +121,7 @@ describe('user integration', function () {
     };
 
     it('update all user fields including password', function (done) {
-        store.server
-            .patch('/api/v1.0/users/me')
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .send(userUpdate)
-            .expect(204)
-            .end(done);
+        store.patch('/users/me', userUpdate, 204).end(done);
     });
 
     it('error: bad login with old password', shared.badLoginFn(store, user));

@@ -52,11 +52,7 @@ describe('language integration', function () {
     };
 
     it('create language', function (done) {
-        store.server
-            .post('/api/v1.0/languages')
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .send(example)
-            .expect(201)
+        store.post('/languages', example, 201)
             .expect(function () {
                 languages.push(example);
                 _.sortBy(languages, 'code');
@@ -92,11 +88,7 @@ describe('language integration', function () {
 
     it('patch language', function (done) {
         const languageUpdate = { name: 'Turk', nativeName: 'Türk' };
-        store.server
-            .patch(`/api/v1.0/languages/tr`)
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .send(languageUpdate)
-            .expect(204)
+        store.patch('/languages/tr', languageUpdate, 204)
             .expect(function () {
                 const language = _.find(languages, { code: 'tr' });
                 Object.assign(language, languageUpdate);

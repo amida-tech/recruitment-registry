@@ -168,13 +168,11 @@ describe('consent document integration', function () {
             if (language) {
                 input.language = language;
             }
-            store.server
-                .post(`/api/v1.0/consent-signatures`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .set('User-Agent', `Browser-${typeId}`)
-                .set('X-Forwarded-For', [`9848.3${typeId}.838`, `111.${typeId}0.999`])
-                .send(input)
-                .expect(201)
+            const header = {
+                'User-Agent': `Browser-${typeId}`,
+                'X-Forwarded-For': [`9848.3${typeId}.838`, `111.${typeId}0.999`]
+            };
+            store.post('/consent-signatures', input, 201, header)
                 .expect(function () {
                     history.sign(typeIndex, userIndex, language);
                 })

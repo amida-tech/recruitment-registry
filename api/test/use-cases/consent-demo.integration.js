@@ -75,11 +75,7 @@ describe('consent demo', function () {
     // This us the actual signing of the terms of use document
 
     it('sign the Terms of Use document', function (done) {
-        store.server
-            .post(`/api/v1.0/consent-signatures`)
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .send({ consentDocumentId: termsOfUse.sections[0].id })
-            .expect(201)
+        store.post('/consent-signatures', { consentDocumentId: termsOfUse.sections[0].id }, 201)
             .expect(function () {})
             .end(done);
     });
@@ -134,11 +130,7 @@ describe('consent demo', function () {
     //****** START 6
 
     it('sign the Consents document', function (done) {
-        store.server
-            .post(`/api/v1.0/consent-signatures`)
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .send({ consentDocumentId: consents.sections[0].id })
-            .expect(201)
+        store.post('/consent-signatures', { consentDocumentId: consents.sections[0].id }, 201)
             .expect(function () {})
             .end(done);
     });

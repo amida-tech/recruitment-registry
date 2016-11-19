@@ -62,11 +62,7 @@ describe('smtp integration', function () {
             if (withText) {
                 Object.assign(newSmtp, newSmtpText);
             }
-            store.server
-                .post('/api/v1.0/smtp')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(newSmtp)
-                .expect(204)
+            store.post('/smtp', newSmtp, 204)
                 .expect(function () {
                     smtp = newSmtp;
                     if (withText) {
@@ -82,11 +78,7 @@ describe('smtp integration', function () {
         return function (done) {
             const text = createNewSmtpText(index);
             language = language || 'en';
-            store.server
-                .patch(`/api/v1.0/smtp/text/${language}`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(text)
-                .expect(204)
+            store.patch(`/smtp/text/${language}`, text, 204)
                 .expect(function () {
                     smtpText = text;
                 })
@@ -155,11 +147,7 @@ describe('smtp integration', function () {
         return function (language) {
             return function (done) {
                 const translation = translateSmtp(smtpText, language);
-                store.server
-                    .patch(`/api/v1.0/smtp/text/${language}`)
-                    .set('Cookie', `rr-jwt-token=${store.auth}`)
-                    .send(translation)
-                    .expect(204)
+                store.patch(`/smtp/text/${language}`, translation, 204)
                     .expect(function () {
                         smtpTextTranslation[language] = translation;
                     })

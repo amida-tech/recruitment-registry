@@ -28,11 +28,7 @@ describe('consent section integration', function () {
     const createConsentTypeFn = function () {
         return function (done) {
             const cst = generator.newConsentType();
-            store.server
-                .post('/api/v1.0/consent-types')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(cst)
-                .expect(201)
+            store.post('/consent-types', cst, 201)
                 .expect(function (res) {
                     hxType.pushWithId(cst, res.body.id);
                 })

@@ -67,12 +67,7 @@ describe('answer integration', function () {
             if (language) {
                 input.language = language;
             }
-            store.server
-                .post('/api/v1.0/answers')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(input)
-                .expect(204)
-                .end(done);
+            store.post('/answers', input, 204).end(done);
         };
     };
 

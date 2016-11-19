@@ -32,11 +32,7 @@ describe('question integration', function () {
 
     it('error: create question unauthorized', function (done) {
         const question = generator.newQuestion();
-        store.server
-            .post('/api/v1.0/questions')
-            .send(question)
-            .expect(401)
-            .end(done);
+        store.post('/questions', question, 401).end(done);
     });
 
     it('login as super', shared.loginFn(store, config.superUser));
@@ -49,11 +45,7 @@ describe('question integration', function () {
 
     it('error: create question as non admin', function (done) {
         const question = generator.newQuestion();
-        store.server
-            .post('/api/v1.0/questions')
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .send(question)
-            .expect(403, done);
+        store.post('/questions', question, 403).end(done);
     });
 
     it('logout as user', shared.logoutFn(store));
@@ -63,11 +55,7 @@ describe('question integration', function () {
     const invalidQuestionJSONFn = function (index) {
         return function (done) {
             const question = invalidQuestionsJSON[index];
-            store.server
-                .post('/api/v1.0/questions')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(question)
-                .expect(400)
+            store.post('/questions', question, 400)
                 .expect(function (res) {
                     expect(res.body.message).to.equal(RRError.message('jsonSchemaFailed', 'newQuestion'));
                 })
@@ -82,11 +70,7 @@ describe('question integration', function () {
     const invalidQuestionSwaggerFn = function (index) {
         return function (done) {
             const question = invalidQuestionsSwagger[index];
-            store.server
-                .post('/api/v1.0/questions')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(question)
-                .expect(400)
+            store.post('/questions', question, 400)
                 .expect(function (res) {
                     expect(Boolean(res.body.message)).to.equal(true);
                 })
@@ -132,12 +116,7 @@ describe('question integration', function () {
             const id = hxQuestion.id(index);
             const clientQuestion = hxQuestion.client(index);
             const text = `Updated ${clientQuestion.text}`;
-            store.server
-                .patch(`/api/v1.0/questions/text/en`)
-                .send({ id, text })
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(204)
-                .end(done);
+            store.patch('/questions/text/en', { id, text }, 204).end(done);
         };
     };
 
@@ -166,12 +145,7 @@ describe('question integration', function () {
             const id = hxQuestion.id(index);
             const clientQuestion = hxQuestion.client(index);
             const text = clientQuestion.text;
-            store.server
-                .patch(`/api/v1.0/questions/text/en`)
-                .send({ id, text })
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(204)
-                .end(done);
+            store.patch('/questions/text/en', { id, text }, 204).end(done);
         };
     };
 
@@ -202,11 +176,7 @@ describe('question integration', function () {
         return function (done) {
             const server = hxQuestion.server(index);
             const translation = translator.translateQuestion(server, language);
-            store.server
-                .patch(`/api/v1.0/questions/text/${language}`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(translation)
-                .expect(204)
+            store.patch(`/questions/text/${language}`, translation, 204)
                 .expect(function () {
                     hxQuestion.translate(index, language, translation);
                 })
@@ -297,11 +267,7 @@ describe('question integration', function () {
         return function (done) {
             const questionIds = questionIndices.map(index => hxQuestion.id(index));
             const clientSurvey = generator.newSurveyQuestionIds(questionIds);
-            store.server
-                .post('/api/v1.0/surveys')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(clientSurvey)
-                .expect(201)
+            store.post('/surveys', clientSurvey, 201)
                 .expect(function (res) {
                     hxSurvey.push(clientSurvey, res.body);
                 })
@@ -369,11 +335,7 @@ describe('question integration', function () {
     it(`error: replace a non-existent question`, function (done) {
         const replacement = generator.newQuestion();
         replacement.parentId = 999;
-        store.server
-            .post('/api/v1.0/questions')
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .send(replacement)
-            .expect(400)
+        store.post('/questions', replacement, 400)
             .expect(function (res) {
                 const message = RRError.message('qxNotFound');
                 expect(res.body.message).to.equal(message);
@@ -393,11 +355,7 @@ describe('question integration', function () {
             const replacement = generator.newQuestion();
             const parentId = hxQuestion.id(questionIndex);
             replacement.parentId = parentId;
-            store.server
-                .post('/api/v1.0/questions')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(replacement)
-                .expect(400)
+            store.post('/questions', replacement, 400)
                 .expect(function (res) {
                     const message = RRError.message('qxReplaceWhenActiveSurveys');
                     expect(res.body.message).to.equal(message);
@@ -423,11 +381,7 @@ describe('question integration', function () {
             const replacement = generator.newQuestion();
             const parentId = hxQuestion.id(questionIndex);
             replacement.parentId = parentId;
-            store.server
-                .post('/api/v1.0/questions')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(replacement)
-                .expect(201)
+            store.post('/questions', replacement, 201)
                 .expect(function (res) {
                     hxQuestion.replace(questionIndex, replacement, res.body);
                 })
