@@ -5,6 +5,7 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 
 const SharedIntegration = require('./util/shared-integration');
+const RRSuperTest = require('./util/rr-super-test');
 const Generator = require('./util/entity-generator');
 const config = require('../config');
 const History = require('./util/entity-history');
@@ -16,10 +17,7 @@ const shared = new SharedIntegration(generator);
 describe('consent section integration', function () {
     const typeCount = 12;
 
-    const store = {
-        server: null,
-        auth: null
-    };
+    const store = new RRSuperTest();
 
     const hxType = new History();
 

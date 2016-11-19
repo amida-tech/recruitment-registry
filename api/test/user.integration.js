@@ -7,6 +7,7 @@ const _ = require('lodash');
 
 const config = require('../config');
 const SharedIntegration = require('./util/shared-integration');
+const RRSuperTest = require('./util/rr-super-test');
 const Generator = require('./util/entity-generator');
 
 const expect = chai.expect;
@@ -15,10 +16,7 @@ const shared = new SharedIntegration(generator);
 
 describe('user integration', function () {
     const user = generator.newUser();
-    const store = {
-        server: null,
-        auth: null
-    };
+    const store = new RRSuperTest();
 
     before(shared.setUpFn(store));
 
@@ -141,7 +139,8 @@ describe('user integration', function () {
             .patch('/api/v1.0/users/me')
             .set('Cookie', `rr-jwt-token=${store.auth}`)
             .send(userUpdate)
-            .expect(204, done);
+            .expect(204)
+            .end(done);
     });
 
     it('error: bad login with old password', shared.badLoginFn(store, user));

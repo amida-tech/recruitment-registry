@@ -5,6 +5,7 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 
 const SharedIntegration = require('../util/shared-integration');
+const RRSuperTest = require('../util/rr-super-test');
 const Generator = require('../util/entity-generator');
 const consentSeed = require('../util/consent-seed');
 const consentExample = require('../fixtures/example/consent-demo');
@@ -24,10 +25,7 @@ describe('consent demo simpler', function () {
     const userExample = userExamples.Alzheimer;
     const surveyExample = surveyExamples.Alzheimer;
 
-    const store = {
-        server: null,
-        auth: null
-    };
+    const store = new RRSuperTest();
 
     //*******
     // Sync and seed the database.  This is part of syncAndLoadAlzheimer.js script.  It creates the consent documents.

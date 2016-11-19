@@ -6,6 +6,7 @@ const chai = require('chai');
 const sinon = require('sinon');
 
 const SharedIntegration = require('./util/shared-integration.js');
+const RRSuperTest = require('./util/rr-super-test');
 
 const models = require('../models');
 const config = require('../config');
@@ -17,10 +18,7 @@ const expect = chai.expect;
 const shared = new SharedIntegration();
 
 describe('shared integration', function () {
-    const store = {
-        server: null,
-        auth: null
-    };
+    const store = new RRSuperTest();
 
     before(shared.setUpFn(store));
 

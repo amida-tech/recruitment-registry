@@ -5,19 +5,17 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 const _ = require('lodash');
 
-const Shared = require('./util/shared-integration');
+const SharedIntegration = require('./util/shared-integration');
+const RRSuperTest = require('./util/rr-super-test');
 
 const config = require('../config');
 
 const expect = chai.expect;
 
-const shared = new Shared();
+const shared = new SharedIntegration();
 
 describe('smtp integration', function () {
-    const store = {
-        server: null,
-        auth: null
-    };
+    const store = new RRSuperTest();
 
     before(shared.setUpFn(store));
 
@@ -175,7 +173,8 @@ describe('smtp integration', function () {
             store.server
                 .delete(`/api/v1.0/smtp`)
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(204, done);
+                .expect(204)
+                .end(done);
         };
     };
 

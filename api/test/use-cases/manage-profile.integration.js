@@ -8,6 +8,7 @@ const chai = require('chai');
 const helper = require('../util/survey-common');
 
 const SharedIntegration = require('../util/shared-integration');
+const RRSuperTest = require('../util/rr-super-test');
 const userExamples = require('../fixtures/example/user');
 const surveyExamples = require('../fixtures/example/survey');
 
@@ -22,10 +23,7 @@ describe('user set-up and login use-case', function () {
 
     // -------- set up system (syncAndLoadAlzheimer)
 
-    const store = {
-        server: null,
-        auth: null
-    };
+    const store = new RRSuperTest();
 
     before(shared.setUpFn(store));
 
@@ -110,7 +108,8 @@ describe('user set-up and login use-case', function () {
                 user: userUpdates,
                 answers
             })
-            .expect(204, done);
+            .expect(204)
+            .end(done);
     });
 
     it('verify user profile', function (done) {

@@ -6,6 +6,7 @@ const chai = require('chai');
 const _ = require('lodash');
 
 const SharedIntegration = require('./util/shared-integration.js');
+const RRSuperTest = require('./util/rr-super-test');
 
 const config = require('../config');
 
@@ -13,10 +14,7 @@ const expect = chai.expect;
 const shared = new SharedIntegration();
 
 describe('language integration', function () {
-    const store = {
-        server: null,
-        auth: null
-    };
+    const store = new RRSuperTest();
 
     before(shared.setUpFn(store));
 

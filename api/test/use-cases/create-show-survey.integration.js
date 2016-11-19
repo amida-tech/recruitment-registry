@@ -5,6 +5,7 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 
 const SharedIntegration = require('../util/shared-integration');
+const RRSuperTest = require('../util/rr-super-test');
 const surveyExamples = require('../fixtures/example/survey');
 const comparator = require('../util/client-server-comparator');
 
@@ -18,10 +19,7 @@ describe('create-show-survey use case', function () {
 
     // -------- set up system (syncAndLoadAlzheimer)
 
-    const store = {
-        server: null,
-        auth: null
-    };
+    const store = new RRSuperTest();
 
     before(shared.setUpFn(store));
 
@@ -57,7 +55,8 @@ describe('create-show-survey use case', function () {
             .post('/api/v1.0/surveys')
             .set('Cookie', `rr-jwt-token=${store.auth}`)
             .send(surveyExamples.Example.survey)
-            .expect(201, done);
+            .expect(201)
+            .end(done);
     });
 
     //------- list surveys and select one to shoe

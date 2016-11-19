@@ -7,6 +7,7 @@ const chai = require('chai');
 const config = require('../config');
 
 const SharedIntegration = require('./util/shared-integration');
+const RRSuperTest = require('./util/rr-super-test');
 const SurveyHistory = require('./util/survey-history');
 const Generator = require('./util/entity-generator');
 const comparator = require('./util/client-server-comparator');
@@ -17,10 +18,7 @@ const generator = new Generator();
 const shared = new SharedIntegration(generator);
 
 describe('profile survey integration', function () {
-    const store = {
-        server: null,
-        auth: null
-    };
+    const store = new RRSuperTest();
 
     const hxSurvey = new SurveyHistory();
 
@@ -39,26 +37,20 @@ describe('profile survey integration', function () {
         store.server
             .get('/api/v1.0/profile-survey')
             .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    done(err);
-                }
+            .expect(function (res) {
                 expect(res.body.exists).to.equal(false);
-                done();
-            });
+            })
+            .end(done);
     };
 
     const emptyProfileSurveyId = function (done) {
         store.server
             .get('/api/v1.0/profile-survey-id')
             .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    done(err);
-                }
+            .expect(function (res) {
                 expect(res.body).to.equal(0);
-                done();
-            });
+            })
+            .end(done);
     };
 
     it('get profile survey when none created', emptyProfileSurvey);

@@ -8,6 +8,7 @@ const _ = require('lodash');
 const config = require('../config');
 
 const SharedIntegration = require('./util/shared-integration');
+const RRSuperTest = require('./util/rr-super-test');
 const Generator = require('./util/entity-generator');
 const comparator = require('./util/client-server-comparator');
 const History = require('./util/entity-history');
@@ -25,10 +26,7 @@ describe('question integration', function () {
     const user = generator.newUser();
     const hxUser = new History();
 
-    const store = {
-        server: null,
-        auth: null
-    };
+    const store = new RRSuperTest();
 
     before(shared.setUpFn(store));
 
@@ -138,7 +136,8 @@ describe('question integration', function () {
                 .patch(`/api/v1.0/questions/text/en`)
                 .send({ id, text })
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(204, done);
+                .expect(204)
+                .end(done);
         };
     };
 
@@ -171,7 +170,8 @@ describe('question integration', function () {
                 .patch(`/api/v1.0/questions/text/en`)
                 .send({ id, text })
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(204, done);
+                .expect(204)
+                .end(done);
         };
     };
 

@@ -5,7 +5,8 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 const _ = require('lodash');
 
-const SharedSpec = require('./util/shared-integration');
+const SharedIntegration = require('./util/shared-integration');
+const RRSuperTest = require('./util/rr-super-test');
 const Generator = require('./util/entity-generator');
 const History = require('./util/entity-history');
 const ConsentDocumentHistory = require('./util/consent-document-history');
@@ -16,16 +17,13 @@ const models = require('../models');
 
 const expect = chai.expect;
 const generator = new Generator();
-const shared = new SharedSpec(generator);
+const shared = new SharedIntegration(generator);
 
 describe('consent integration', function () {
     const userCount = 4;
     const typeCount = 12;
 
-    const store = {
-        server: null,
-        auth: null
-    };
+    const store = new RRSuperTest();
     const history = new ConsentDocumentHistory(userCount);
     const hxConsent = new History();
     const consentCommon = new ConsentCommon(hxConsent, history);
@@ -328,7 +326,8 @@ describe('consent integration', function () {
                     .set('User-Agent', userAgent)
                     .set('X-Forwarded-For', [ip, `111.${browserIndex}0.999`])
                     .send(input)
-                    .expect(201, done);
+                    .expect(201)
+                    .end(done);
             };
         };
     })();

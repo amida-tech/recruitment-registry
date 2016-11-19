@@ -9,6 +9,7 @@ const chai = require('chai');
 const smtpServer = require('smtp-server');
 
 const SharedIntegration = require('./util/shared-integration');
+const RRSuperTest = require('./util/rr-super-test');
 const Generator = require('./util/entity-generator');
 
 const config = require('../config');
@@ -24,10 +25,7 @@ describe('reset-token integration', function () {
 
     // -------- set up system (syncAndLoadAlzheimer)
 
-    const store = {
-        server: null,
-        auth: null
-    };
+    const store = new RRSuperTest();
 
     const receivedEmail = {
         auth: null,
@@ -113,7 +111,8 @@ describe('reset-token integration', function () {
                 user: userExample,
                 answers
             })
-            .expect(201, done);
+            .expect(201)
+            .end(done);
     });
 
     // --------- login
@@ -151,7 +150,8 @@ describe('reset-token integration', function () {
             .post('/api/v1.0/smtp')
             .set('Cookie', `rr-jwt-token=${store.auth}`)
             .send(smtpSpec)
-            .expect(204, done);
+            .expect(204)
+            .end(done);
     });
 
     it('logout as super', shared.logoutFn(store));
@@ -182,7 +182,8 @@ describe('reset-token integration', function () {
             .patch('/api/v1.0/smtp/text/en')
             .set('Cookie', `rr-jwt-token=${store.auth}`)
             .send(smtpText)
-            .expect(204, done);
+            .expect(204)
+            .end(done);
     });
 
     it('logout as super', shared.logoutFn(store));
@@ -206,7 +207,8 @@ describe('reset-token integration', function () {
             .post('/api/v1.0/smtp')
             .set('Cookie', `rr-jwt-token=${store.auth}`)
             .send(smtpSpec)
-            .expect(204, done);
+            .expect(204)
+            .end(done);
     });
 
     it('logout as super', shared.logoutFn(store));
@@ -256,7 +258,8 @@ describe('reset-token integration', function () {
                 token,
                 password: 'newPassword'
             })
-            .expect(204, done);
+            .expect(204)
+            .end(done);
     });
 
     it('verify user can not login with old password', shared.badLoginFn(store, userExample));

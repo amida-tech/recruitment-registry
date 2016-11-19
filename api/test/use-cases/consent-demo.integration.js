@@ -7,6 +7,7 @@ const chai = require('chai');
 const config = require('../../config');
 
 const SharedIntegration = require('../util/shared-integration');
+const RRSuperTest = require('../util/rr-super-test');
 const Generator = require('../util/entity-generator');
 const History = require('../util/entity-history');
 const consentSeed = require('../util/consent-seed');
@@ -17,10 +18,7 @@ const generator = new Generator();
 const shared = new SharedIntegration(generator);
 
 describe('consent demo', function () {
-    const store = {
-        server: null,
-        auth: null
-    };
+    const store = new RRSuperTest();
     const hxUser = new History();
 
     //*******

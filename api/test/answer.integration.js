@@ -8,6 +8,7 @@ const _ = require('lodash');
 const config = require('../config');
 
 const SharedIntegration = require('./util/shared-integration');
+const RRSuperTest = require('./util/rr-super-test');
 const Generator = require('./util/entity-generator');
 const AnswerHistory = require('./util/answer-history');
 const answerCommon = require('./util/answer-common');
@@ -18,10 +19,7 @@ describe('answer integration', function () {
     const generator = new Generator();
     const shared = new SharedIntegration(generator);
 
-    const store = {
-        server: null,
-        auth: null
-    };
+    const store = new RRSuperTest();
 
     const testQuestions = answerCommon.testQuestions;
     const hxAnswer = new AnswerHistory(testQuestions);
@@ -73,7 +71,8 @@ describe('answer integration', function () {
                 .post('/api/v1.0/answers')
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(input)
-                .expect(204, done);
+                .expect(204)
+                .end(done);
         };
     };
 

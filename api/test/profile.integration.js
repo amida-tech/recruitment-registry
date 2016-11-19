@@ -7,6 +7,7 @@ const chai = require('chai');
 const config = require('../config');
 
 const SharedIntegration = require('./util/shared-integration');
+const RRSuperTest = require('./util/rr-super-test');
 const History = require('./util/entity-history');
 const Generator = require('./util/entity-generator');
 const comparator = require('./util/client-server-comparator');
@@ -17,10 +18,7 @@ const generator = new Generator();
 const shared = new SharedIntegration(generator);
 
 describe('profile integration', function () {
-    const store = {
-        server: null,
-        auth: null
-    };
+    const store = new RRSuperTest();
 
     const hxSurvey = new History(['id', 'name']);
     const hxUser = new History();
@@ -74,7 +72,8 @@ describe('profile integration', function () {
                 .patch('/api/v1.0/profiles')
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(updateObj)
-                .expect(204, done);
+                .expect(204)
+                .end(done);
         };
     };
 
@@ -186,7 +185,8 @@ describe('profile integration', function () {
                 .patch('/api/v1.0/profiles')
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(updateObj)
-                .expect(204, done);
+                .expect(204)
+                .end(done);
         };
     };
 
@@ -259,7 +259,8 @@ describe('profile integration', function () {
                 .patch('/api/v1.0/profiles')
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(updateObj)
-                .expect(204, done);
+                .expect(204)
+                .end(done);
         };
     };
 

@@ -54,14 +54,14 @@ const classifyFiles = function (baseDirectory, callback) {
 const baseDirectory = path.join(__dirname, '../test');
 
 const findRes = function (lines, index) {
-    if (lines[index].trim() !== '.end(function (err) {') {
+    if (lines[index].trim() !== '.end(function (err, res) {') {
         return null;
     }
     if (lines[index + 1].trim() !== 'if (err) {') {
         console.log('break 1');
         return null;
     }
-    if (lines[index + 2].trim() !== 'return done(err);') {
+    if (lines[index + 2].trim() !== 'done(err);') {
         console.log('break 2');
         return null;
     }
@@ -108,7 +108,7 @@ const transformFile = function ({ root, name }) {
         } else {
             console.log('INSERT');
             const spaces = lines[index].split('.end')[0];
-            newLines.push(spaces + '.expect(function () {');
+            newLines.push(spaces + '.expect(function (res) {');
             res.newLines.forEach(fn);
             newLines.push(spaces + '})');
             newLines.push(spaces + '.end(done);');

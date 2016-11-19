@@ -8,6 +8,7 @@ const _ = require('lodash');
 const config = require('../config');
 
 const SharedIntegration = require('./util/shared-integration');
+const RRSuperTest = require('./util/rr-super-test');
 const Generator = require('./util/entity-generator');
 const History = require('./util/entity-history');
 const SurveyHistory = require('./util/survey-history');
@@ -29,10 +30,7 @@ describe('survey integration', function () {
     const surveyCount = 8;
     const hxSurvey = new SurveyHistory();
 
-    const store = {
-        server: null,
-        auth: null
-    };
+    const store = new RRSuperTest();
 
     before(shared.setUpFn(store));
 
@@ -121,7 +119,8 @@ describe('survey integration', function () {
                 .patch(`/api/v1.0/surveys/${id}`)
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send({ meta })
-                .expect(204, done);
+                .expect(204)
+                .end(done);
         };
     };
 
@@ -133,7 +132,8 @@ describe('survey integration', function () {
                 .patch(`/api/v1.0/surveys/text/en`)
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send({ id, name })
-                .expect(204, done);
+                .expect(204)
+                .end(done);
         };
     };
 
@@ -225,7 +225,8 @@ describe('survey integration', function () {
             .patch(`/api/v1.0/surveys/${survey.id}/sections`)
             .set('Cookie', `rr-jwt-token=${store.auth}`)
             .send(newSections)
-            .expect(204, done);
+            .expect(204)
+            .end(done);
     });
 
     it('get/verify sections of first survey with sections', function (done) {
@@ -334,7 +335,8 @@ describe('survey integration', function () {
             store.server
                 .delete(`/api/v1.0/surveys/${id}`)
                 .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(204, done);
+                .expect(204)
+                .end(done);
         };
     };
 

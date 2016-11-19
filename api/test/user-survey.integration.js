@@ -6,6 +6,7 @@ const chai = require('chai');
 
 const config = require('../config');
 
+const RRSuperTest = require('./util/rr-super-test');
 const Generator = require('./util/entity-generator');
 const History = require('./util/entity-history');
 const SurveyHistory = require('./util/survey-history');
@@ -27,10 +28,7 @@ describe('user survey integration', function () {
     const mapAnswers = new Map();
     const mapStatus = new Map();
 
-    const store = {
-        server: null,
-        auth: null
-    };
+    const store = new RRSuperTest();
 
     before(shared.setUpFn(store));
 

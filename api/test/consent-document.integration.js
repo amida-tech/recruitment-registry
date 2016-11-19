@@ -6,6 +6,7 @@ const chai = require('chai');
 const _ = require('lodash');
 
 const SharedIntegration = require('./util/shared-integration');
+const RRSuperTest = require('./util/rr-super-test');
 const Generator = require('./util/entity-generator');
 const ConsentDocumentHistory = require('./util/consent-document-history');
 const config = require('../config');
@@ -19,10 +20,7 @@ const shared = new SharedIntegration(generator);
 describe('consent document integration', function () {
     const userCount = 4;
 
-    const store = {
-        server: null,
-        auth: null
-    };
+    const store = new RRSuperTest();
     const history = new ConsentDocumentHistory(userCount);
 
     before(shared.setUpFn(store));
