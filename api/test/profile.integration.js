@@ -32,9 +32,8 @@ describe('profile integration', function () {
             const user = generator.newUser();
             user.role = 'participant';
             const input = { user };
-            store.post('/profiles', input, 201)
-                .expect(function (res) {
-                    shared.updateStoreFromCookie(store, res);
+            store.authPost('/profiles', input, 201)
+                .expect(function () {
                     hxUser.push(user, {});
                     hxAnswers.push(null);
                 })
@@ -102,9 +101,8 @@ describe('profile integration', function () {
             if (signatures) {
                 input.signatures = signatures.map(sign => hxConsentDoc.id(sign));
             }
-            store.post('/profiles', input, 201)
-                .expect(function (res) {
-                    shared.updateStoreFromCookie(store, res);
+            store.authPost('/profiles', input, 201)
+                .expect(function () {
                     hxUser.push(clientUser, {});
                 })
                 .end(done);
@@ -125,9 +123,8 @@ describe('profile integration', function () {
             if (language) {
                 input.language = language;
             }
-            store.post('/profiles', input, 201)
-                .expect(function (res) {
-                    shared.updateStoreFromCookie(store, res);
+            store.authPost('/profiles', input, 201)
+                .expect(function () {
                     hxUser.push(clientUser, {});
                 })
                 .end(done);

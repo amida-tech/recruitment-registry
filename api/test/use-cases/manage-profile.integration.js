@@ -54,11 +54,7 @@ describe('user set-up and login use-case', function () {
     it('fill user profile and submit', function (done) {
         answers = helper.formAnswersToPost(survey, surveyExample.answer);
         const user = userExample;
-        store.post('/profiles', { user, answers }, 201)
-            .expect(function (res) {
-                shared.updateStoreFromCookie(store, res);
-            })
-            .end(done);
+        store.authPost('/profiles', { user, answers }, 201).end(done);
     });
 
     // -------- verification

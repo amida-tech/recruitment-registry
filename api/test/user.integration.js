@@ -49,11 +49,7 @@ describe('user integration', function () {
     it('logout as super', shared.logoutFn(store));
 
     it('create a new user', function (done) {
-        store.post('/users', user, 201)
-            .expect(function (res) {
-                shared.updateStoreFromCookie(store, res);
-            })
-            .end(done);
+        store.authPost('/users', user, 201).end(done);
     });
 
     it('get new user', function (done) {

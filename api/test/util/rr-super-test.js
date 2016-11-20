@@ -13,10 +13,36 @@ module.exports = class RRSupertest {
         this.server = server;
     }
 
-    post(resource, payload, status, header) {
+    updateStoreFromCookie(res) {
+        const cookie = _.get(res, 'header.set-cookie.0');
+        if (cookie) {
+            const token = cookie.split(';')[0].split('=')[1];
+            if (token) {
+                this.auth = token;
+            }
+        }
+    }
+
+    authBasic(credentials, status = 200) {
+        return this.server
+            .get(this.baseUrl + '/auth/basic')
+            .auth(credentials.username, credentials.password)
+            .expect(status)
+            .expect(res => {
+                if (status < 400) {
+                    this.updateStoreFromCookie(res);
+                }
+            });
+    }
+
+    resetAuth() {
+        this.auth = null;
+    }
+
+    update(operation, resource, payload, status, header) {
         const endpoint = this.baseUrl + resource;
         const token = this.auth;
-        let r = this.server.post(endpoint);
+        let r = this.server[operation](endpoint);
         r = r.set('Cookie', `rr-jwt-token=${token}`);
         if (header) {
             _.toPairs(header).forEach(([key, value]) => r.set(key, value));
@@ -24,15 +50,21 @@ module.exports = class RRSupertest {
         return r.send(payload).expect(status);
     }
 
+    post(resource, payload, status, header) {
+        return this.update('post', resource, payload, status, header);
+    }
+
     patch(resource, payload, status, header) {
-        const endpoint = this.baseUrl + resource;
-        const token = this.auth;
-        let r = this.server.patch(endpoint);
-        r = r.set('Cookie', `rr-jwt-token=${token}`);
-        if (header) {
-            _.toPairs(header).forEach(([key, value]) => r.set(key, value));
-        }
-        return r.send(payload).expect(status);
+        return this.update('patch', resource, payload, status, header);
+    }
+
+    authPost(resource, payload, status, header) {
+        return this.update('post', resource, payload, status, header)
+            .expect(res => {
+                if (status < 400) {
+                    this.updateStoreFromCookie(res);
+                }
+            });
     }
 
     delete(resource, status) {
@@ -54,5 +86,9 @@ module.exports = class RRSupertest {
             r = r.query(query);
         }
         return r.expect(status);
+    }
+
+    jwt() {
+        return this.auth;
     }
 };

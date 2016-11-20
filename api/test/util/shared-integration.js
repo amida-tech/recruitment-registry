@@ -28,31 +28,9 @@ class SharedIntegration {
         };
     }
 
-    updateStoreFromCookie(store, res) {
-        const cookies = _.get(res, 'header.set-cookie');
-        if (cookies) {
-            const cookie = cookies.find(cookie => cookie.indexOf('rr-jwt-token=') >= 0);
-            if (cookie) {
-                const token = cookie.split(';')[0].split('=')[1];
-                if (token) {
-                    store.auth = token;
-                }
-            }
-        }
-    }
-
     loginFn(store, login) {
-        const shared = this;
         return function (done) {
-            store.get('/auth/basic', false, 200)
-                .auth(login.username, login.password)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    shared.updateStoreFromCookie(store, res);
-                    done();
-                });
+            store.authBasic(login).end(done);
         };
     }
 
@@ -66,15 +44,13 @@ class SharedIntegration {
 
     logoutFn(store) {
         return function () {
-            store.auth = null;
+            store.resetAuth();
         };
     }
 
     badLoginFn(store, login) {
         return function (done) {
-            store.get('/auth/basic', false, 401)
-                .auth(login.username, login.password)
-                .end(done);
+            store.authBasic(login, 401).end(done);
         };
     }
 

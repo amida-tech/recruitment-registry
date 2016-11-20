@@ -33,15 +33,12 @@ describe('auth integration', function () {
     });
 
     it('successfull login', function (done) {
-        store.get('/auth/basic', false, 200)
-            .auth(testUser.username, testUser.password)
-            .end(function (err, res) {
+        store.authBasic(testUser)
+            .end(function (err) {
                 if (err) {
                     return done(err);
                 }
-                const store = {};
-                shared.updateStoreFromCookie(store, res);
-                const token = store.auth;
+                const token = store.jwt();
                 jwt.verify(token, config.jwt.secret, {}, function (err, jwtObject) {
                     if (err) {
                         return done(err);
@@ -54,8 +51,11 @@ describe('auth integration', function () {
     });
 
     it('wrong username', function (done) {
-        store.get('/auth/basic', false, 401)
-            .auth(testUser.username + 'a', testUser.password)
+        const credentials = {
+            username: testUser.username + 'a',
+            password: testUser.password
+        };
+        store.authBasic(credentials, 401)
             .expect(function (res) {
                 expect(typeof res.body).to.equal('object');
                 expect(Boolean(res.body.message)).to.equal(true);
@@ -64,8 +64,11 @@ describe('auth integration', function () {
     });
 
     it('wrong password', function (done) {
-        store.get('/auth/basic', false, 401)
-            .auth(testUser.username, testUser.password + 'a')
+        const credentials = {
+            username: testUser.username,
+            password: testUser.password + 'a'
+        };
+        store.authBasic(credentials, 401)
             .expect(function (res) {
                 expect(typeof res.body).to.equal('object');
                 expect(Boolean(res.body.message)).to.equal(true);
@@ -78,8 +81,7 @@ describe('auth integration', function () {
             throw new Error('stub error');
         });
 
-        store.get('/auth/basic', false, 401)
-            .auth(testUser.username, testUser.password)
+        store.authBasic(testUser, 401)
             .end(function (err, res) {
                 tokener.createJWT.restore();
                 if (err) {
