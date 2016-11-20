@@ -24,10 +24,7 @@ describe('smtp integration', function () {
     let smtpTextTranslation = {};
 
     const checkNull = function (done) {
-        store.server
-            .get('/api/v1.0/smtp')
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .expect(200)
+        store.get('/smtp', true, 200)
             .expect(function (res) {
                 expect(res.body.exists).to.equal(false);
             })
@@ -88,10 +85,7 @@ describe('smtp integration', function () {
 
     const getSmtpFn = function () {
         return function (done) {
-            store.server
-                .get('/api/v1.0/smtp')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(200)
+            store.get('/smtp', true, 200)
                 .expect(function (res) {
                     let expected = _.cloneDeep(smtp);
                     if (smtpText) {
@@ -106,11 +100,7 @@ describe('smtp integration', function () {
 
     const getTranslatedSmtpFn = function (language, checkFields) {
         return function (done) {
-            store.server
-                .get('/api/v1.0/smtp')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .query({ language })
-                .expect(200)
+            store.get('/smtp', true, 200, { language })
                 .end(function (err, res) {
                     if (err) {
                         return done(err);

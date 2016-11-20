@@ -89,9 +89,7 @@ describe('reset-token integration', function () {
     let survey;
 
     it('get profile survey', function (done) {
-        store.server
-            .get('/api/v1.0/profile-survey')
-            .expect(200)
+        store.get('/profile-survey', false, 200)
             .expect(function (res) {
                 survey = res.body.survey;
             })

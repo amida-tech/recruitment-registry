@@ -27,10 +27,7 @@ describe('consent document integration', function () {
 
     const listConsentTypesFn = function () {
         return function (done) {
-            store.server
-                .get('/api/v1.0/consent-types')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(200)
+            store.get('/consent-types', true, 200)
                 .expect(function (res) {
                     const types = history.listTypes();
                     expect(res.body).to.deep.equal(types);
@@ -56,10 +53,7 @@ describe('consent document integration', function () {
 
     it('login as user 0', shared.loginIndexFn(store, history.hxUser, 0));
     it('error: no consent documents of existing types', function (done) {
-        store.server
-            .get(`/api/v1.0/user-consent-documents`)
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .expect(400)
+        store.get('/user-consent-documents', true, 400)
             .expect(function (res) {
                 expect(res.body.message).to.equal(RRError.message('noSystemConsentDocuments'));
             })
@@ -72,9 +66,7 @@ describe('consent document integration', function () {
     const getConsentDocumentFn = function (typeIndex) {
         return function (done) {
             const id = history.id(typeIndex);
-            store.server
-                .get(`/api/v1.0/consent-documents/${id}`)
-                .expect(200)
+            store.get(`/consent-documents/${id}`, false, 200)
                 .expect(function (res) {
                     const expected = history.server(typeIndex);
                     expect(res.body).to.deep.equal(expected);
@@ -86,9 +78,7 @@ describe('consent document integration', function () {
     const getConsentDocumentByTypeNameFn = function (typeIndex) {
         return function (done) {
             const typeName = history.type(typeIndex).name;
-            store.server
-                .get(`/api/v1.0/consent-documents/type-name/${typeName}`)
-                .expect(200)
+            store.get(`/consent-documents/type-name/${typeName}`, false, 200)
                 .expect(function (res) {
                     const expected = history.server(typeIndex);
                     expect(res.body).to.deep.equal(expected);
@@ -100,10 +90,7 @@ describe('consent document integration', function () {
     const getTranslatedConsentDocumentFn = function (typeIndex, language) {
         return function (done) {
             const id = history.id(typeIndex);
-            store.server
-                .get(`/api/v1.0/consent-documents/${id}`)
-                .query({ language })
-                .expect(200)
+            store.get(`/consent-documents/${id}`, false, 200, { language })
                 .expect(function (res) {
                     const expected = history.hxDocument.translatedServer(typeIndex, language);
                     expect(res.body).to.deep.equal(expected);
@@ -122,10 +109,7 @@ describe('consent document integration', function () {
 
     const getUserConsentDocumentsFn = function (expectedIndices) {
         return function (done) {
-            store.server
-                .get('/api/v1.0/user-consent-documents')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(200)
+            store.get('/user-consent-documents', true, 200)
                 .expect(function (res) {
                     const expected = history.serversInList(expectedIndices);
                     expect(res.body).to.deep.equal(expected);
@@ -136,11 +120,7 @@ describe('consent document integration', function () {
 
     const getTranslatedUserConsentDocumentsFn = function (expectedIndices, language) {
         return function (done) {
-            store.server
-                .get('/api/v1.0/user-consent-documents')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .query({ language })
-                .expect(200)
+            store.get('/user-consent-documents', true, 200, { language })
                 .expect(function (res) {
                     const expected = history.translatedServersInList(expectedIndices, language);
                     expect(res.body).to.deep.equal(expected);
@@ -183,11 +163,7 @@ describe('consent document integration', function () {
     const signConsentTypeAgainFn = function (typeIndex) {
         return function (done) {
             const consentDocumentId = history.id(typeIndex);
-            store.server
-                .post(`/api/v1.0/consent-signatures`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send({ consentDocumentId })
-                .expect(400, done);
+            store.post('/consent-signatures', { consentDocumentId }, 400).end(done);
         };
     };
 
@@ -329,11 +305,7 @@ describe('consent document integration', function () {
     const verifySignaturesFn = function (userIndex) {
         return function (done) {
             const userId = history.userId(userIndex);
-            store.server
-                .get(`/api/v1.0/consent-signatures`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .query({ 'user-id': userId })
-                .expect(200)
+            store.get('/consent-signatures', true, 200, { 'user-id': userId })
                 .expect(function (res) {
                     const expected = _.sortBy(history.signatures[userIndex], 'id');
                     expect(res.body).to.deep.equal(expected);

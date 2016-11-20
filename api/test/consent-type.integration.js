@@ -39,10 +39,7 @@ describe('consent section integration', function () {
     const getConsentTypeFn = function (index) {
         return function (done) {
             const consentType = hxType.server(index);
-            store.server
-                .get(`/api/v1.0/consent-types/${consentType.id}`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(200)
+            store.get(`/consent-types/${consentType.id}`, true, 200)
                 .expect(function (res) {
                     expect(res.body).to.deep.equal(consentType);
                 })
@@ -52,10 +49,7 @@ describe('consent section integration', function () {
 
     const listConsentTypesFn = function () {
         return function (done) {
-            store.server
-                .get('/api/v1.0/consent-types')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(200)
+            store.get('/consent-types', true, 200)
                 .expect(function (res) {
                     const expected = hxType.listServers();
                     expect(res.body).to.deep.equal(expected);
@@ -74,11 +68,7 @@ describe('consent section integration', function () {
     const getTranslatedConsentTypeFn = function (index, language) {
         return function (done) {
             const id = hxType.id(index);
-            store.server
-                .get(`/api/v1.0/consent-types/${id}`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .query({ language })
-                .expect(200)
+            store.get(`/consent-types/${id}`, true, 200, { language })
                 .expect(function (res) {
                     const expected = hxType.translatedServer(index, language);
                     expect(res.body).to.deep.equal(expected);
@@ -89,11 +79,7 @@ describe('consent section integration', function () {
 
     const listTranslatedConsentTypesFn = function (language) {
         return function (done) {
-            store.server
-                .get('/api/v1.0/consent-types')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .query({ language })
-                .expect(200)
+            store.get('/consent-types', true, 200, { language })
                 .expect(function (res) {
                     const expected = hxType.listTranslatedServers(language);
                     expect(res.body).to.deep.equal(expected);

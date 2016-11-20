@@ -28,10 +28,7 @@ describe('shared integration', function () {
         sinon.stub(language, 'listLanguages', function () {
             return SPromise.reject(new Error('unexpected error'));
         });
-        store.server
-            .get('/api/v1.0/languages')
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .expect(500)
+        store.get('/languages', true, 500)
             .expect(function (res) {
                 expect(res.body.message).to.deep.equal('unexpected error');
                 language.listLanguages.restore();
@@ -40,10 +37,7 @@ describe('shared integration', function () {
     });
 
     it('unknown end point', function (done) {
-        store.server
-            .get('/api/v1.0/unknown')
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .expect(404, done);
+        store.get('/unknown', true, 404).end(done);
     });
 
     it('logout as super', shared.logoutFn(store));

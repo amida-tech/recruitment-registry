@@ -58,10 +58,7 @@ describe('survey integration', function () {
                 index = hxSurvey.lastIndex();
             }
             const id = hxSurvey.id(index);
-            store.server
-                .get(`/api/v1.0/surveys/${id}`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(200)
+            store.get(`/surveys/${id}`, true, 200)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
@@ -89,10 +86,7 @@ describe('survey integration', function () {
     const verifySurveyFn = function (index) {
         return function (done) {
             const server = hxSurvey.server(index);
-            store.server
-                .get(`/api/v1.0/surveys/${server.id}`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(200)
+            store.get(`/surveys/${server.id}`, true, 200)
                 .expect(function (res) {
                     expect(res.body).to.deep.equal(server);
                 })
@@ -123,10 +117,7 @@ describe('survey integration', function () {
 
     const listSurveysFn = function () {
         return function (done) {
-            store.server
-                .get('/api/v1.0/surveys')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(200)
+            store.get('/surveys', true, 200)
                 .expect(function (res) {
                     const surveys = res.body;
                     const expected = hxSurvey.listServers();
@@ -203,10 +194,7 @@ describe('survey integration', function () {
     it('get/verify sections of first survey with sections', function (done) {
         const index = _.findIndex(hxSurvey.listClients(), client => client.sections);
         const id = hxSurvey.id(index);
-        store.server
-            .get(`/api/v1.0/surveys/${id}`)
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .expect(200)
+        store.get(`/surveys/${id}`, true, 200)
             .end(function (err, res) {
                 if (err) {
                     return done(err);
@@ -237,11 +225,7 @@ describe('survey integration', function () {
     const verifyTranslatedSurveyFn = function (index, language) {
         return function (done) {
             const id = hxSurvey.id(index);
-            store.server
-                .get(`/api/v1.0/surveys/${id}`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .query({ language })
-                .expect(200)
+            store.get(`/surveys/${id}`, true, 200, { language })
                 .expect(function (res) {
                     translator.isSurveyTranslated(res.body, language);
                     const expected = hxSurvey.translatedServer(index, language);
@@ -253,11 +237,7 @@ describe('survey integration', function () {
 
     const listTranslatedSurveysFn = function (language) {
         return function (done) {
-            store.server
-                .get('/api/v1.0/surveys')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .query({ language })
-                .expect(200)
+            store.get('/surveys', true, 200, { language })
                 .expect(function (res) {
                     const expected = hxSurvey.listTranslatedServers(language);
                     expect(res.body).to.deep.equal(expected);
@@ -337,10 +317,7 @@ describe('survey integration', function () {
 
     it('get answered survey', function (done) {
         const server = hxSurvey.lastServer();
-        store.server
-            .get(`/api/v1.0/answered-surveys/${server.id}`)
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .expect(200)
+        store.get(`/answered-surveys/${server.id}`, true, 200)
             .expect(function (res) {
                 comparator.answeredSurvey(server, answers, res.body);
             })
@@ -349,11 +326,7 @@ describe('survey integration', function () {
 
     it('get answered translated survey', function (done) {
         const id = hxSurvey.lastId();
-        store.server
-            .get(`/api/v1.0/answered-surveys/${id}`)
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .query({ language: 'es' })
-            .expect(200)
+        store.get(`/answered-surveys/${id}`, true, 200, { language: 'es' })
             .expect(function (res) {
                 const server = hxSurvey.lastServer();
                 const survey = _.cloneDeep(server);

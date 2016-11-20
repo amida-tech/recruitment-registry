@@ -40,9 +40,7 @@ describe('user set-up and login use-case', function () {
     let survey;
 
     it('get profile survey', function (done) {
-        store.server
-            .get('/api/v1.0/profile-survey')
-            .expect(200)
+        store.get('/profile-survey', false, 200)
             .expect(function (res) {
                 survey = res.body.survey;
             })
@@ -66,10 +64,7 @@ describe('user set-up and login use-case', function () {
     // -------- verification
 
     it('verify user profile', function (done) {
-        store.server
-            .get('/api/v1.0/profiles')
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .expect(200)
+        store.get('/profiles', true, 200)
             .expect(function (res) {
                 const result = res.body;
 
@@ -105,10 +100,7 @@ describe('user set-up and login use-case', function () {
     });
 
     it('verify user profile', function (done) {
-        store.server
-            .get('/api/v1.0/profiles')
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .expect(200)
+        store.get('/profiles', true, 200)
             .expect(function (res) {
                 const result = res.body;
 

@@ -36,10 +36,7 @@ describe('create-show-survey use case', function () {
     // -------- see only Alzheimers in the survey list
 
     it('list surveys to see Alzheimers for users profile', function (done) {
-        store.server
-            .get('/api/v1.0/surveys')
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .expect(200)
+        store.get('/surveys', true, 200)
             .expect(function (res) {
                 const surveys = res.body;
                 expect(surveys).to.have.length(1);
@@ -57,10 +54,7 @@ describe('create-show-survey use case', function () {
     //------- list surveys and select one to shoe
 
     it('list surveys to see the new survey', function (done) {
-        store.server
-            .get('/api/v1.0/surveys')
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .expect(200)
+        store.get('/surveys', true, 200)
             .expect(function (res) {
                 const surveys = res.body;
                 expect(surveys).to.have.length(2);
@@ -72,10 +66,7 @@ describe('create-show-survey use case', function () {
     });
 
     it('show the new survey', function (done) {
-        store.server
-            .get(`/api/v1.0/surveys/${store.lastId}`)
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .expect(200)
+        store.get(`/surveys/${store.lastId}`, true, 200)
             .end(function (err, res) {
                 if (err) {
                     return done(err);

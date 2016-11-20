@@ -192,14 +192,12 @@ const transformFile = function ({ root, name }) {
                 cmd += '\'' + res.endpoint + '\'';
             }
 
-            if (res.operation === 'delete') {
-                cmd += ', ' + res.status + ')';
-                newLines.push(cmd);
-                res.lines.forEach(fn);
-                index = res.nextIndex;
-                innerFound = true;
-            } else if (res.operation === 'getx') {
-                cmd += ', ' + res.auth ? 'true' : 'false' + ', ' + res.status + ')';
+            if (res.operation === 'get') {
+                cmd += ', ' + (res.auth ? 'true' : 'false') + ', ' + res.status;
+                if (res.query) {
+                    cmd += ', ' + res.query;
+                }
+                cmd += ')';
                 newLines.push(cmd);
                 res.lines.forEach(fn);
                 index = res.nextIndex;

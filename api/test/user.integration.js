@@ -21,32 +21,22 @@ describe('user integration', function () {
     before(shared.setUpFn(store));
 
     it('invalid path', function (done) {
-        store.server
-            .get('/api/v1.0/xxxxxxx')
-            .expect(404)
-            .end(done);
+        store.get('/xxxxxxx', false, 404).end(done);
     });
 
     it('error: get user without previous authentication', function (done) {
-        store.server
-            .get('/api/v1.0/users/me')
-            .expect(401, done);
+        store.get('/users/me', true, 401).end(done);
     });
 
     it('login as super', shared.loginFn(store, config.superUser));
 
     it('error: get user with wrong jwt token', function (done) {
-        store.server
-            .get('/api/v1.0/users/me')
-            .set('Authorization', 'Bearer ' + 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwidXNlcm5hbWUiOiJ1ZXN0Iiwicm9sZSI6bnVsbCwiaWF0IjoxNDczNTAwNzE5LCJleHAiOjE0NzYwOTI3MTl9.e0ymr0xrDPuQEBmdQLjb5-WegNtYcqAcpKp_DtDRKo8')
-            .expect(401, done);
+        const jwt = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwidXNlcm5hbWUiOiJ1ZXN0Iiwicm9sZSI6bnVsbCwiaWF0IjoxNDczNTAwNzE5LCJleHAiOjE0NzYwOTI3MTl9.e0ymr0xrDPuQEBmdQLjb5-WegNtYcqAcpKp_DtDRKo8';
+        store.get('/users/me', jwt, 401).end(done);
     });
 
     it('get super user', function (done) {
-        store.server
-            .get('/api/v1.0/users/me')
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .expect(200)
+        store.get('/users/me', true, 200)
             .expect(function (res) {
                 const user = res.body;
                 expect(!user).to.equal(false);
@@ -67,10 +57,7 @@ describe('user integration', function () {
     });
 
     it('get new user', function (done) {
-        store.server
-            .get('/api/v1.0/users/me')
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .expect(200)
+        store.get('/users/me', true, 200)
             .expect(function (res) {
                 delete res.body.id;
                 const expectedUser = _.cloneDeep(user);
@@ -86,10 +73,7 @@ describe('user integration', function () {
     it('login as new user', shared.loginFn(store, user));
 
     it('get new user', function (done) {
-        store.server
-            .get('/api/v1.0/users/me')
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .expect(200)
+        store.get('/users/me', true, 200)
             .expect(function (res) {
                 delete res.body.id;
                 const expectedUser = _.cloneDeep(user);
@@ -132,10 +116,7 @@ describe('user integration', function () {
     }));
 
     it('verify updated user fields', function (done) {
-        store.server
-            .get('/api/v1.0/users/me')
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .expect(200)
+        store.get('/users/me', true, 200)
             .expect(function (res) {
                 const expected = _.cloneDeep(userUpdate);
                 expected.role = 'participant';
@@ -148,10 +129,7 @@ describe('user integration', function () {
     });
 
     it('verify updated user fields', function (done) {
-        store.server
-            .get('/api/v1.0/users/me')
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .expect(200)
+        store.get('/users/me', true, 200)
             .expect(function (res) {
                 const expected = _.pick(userUpdate, ['email']);
                 const actual = _.omit(res.body, ['id', 'role', 'username']);

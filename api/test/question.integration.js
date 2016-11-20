@@ -92,10 +92,7 @@ describe('question integration', function () {
     const getAndVerifyQxFn = function (index) {
         return function (done) {
             const id = hxQuestion.id(index);
-            store.server
-                .get(`/api/v1.0/questions/${id}`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(200)
+            store.get(`/questions/${id}`, true, 200)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
@@ -126,10 +123,7 @@ describe('question integration', function () {
             const clientQuestion = hxQuestion.client(index);
             const text = `Updated ${clientQuestion.text}`;
             const updatedQuestion = Object.assign({}, clientQuestion, { text });
-            store.server
-                .get(`/api/v1.0/questions/${id}`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(200)
+            store.get(`/questions/${id}`, true, 200)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
@@ -156,10 +150,7 @@ describe('question integration', function () {
     }
 
     const getAllAndVerify = function (done) {
-        store.server
-            .get('/api/v1.0/questions')
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .expect(200)
+        store.get('/questions', true, 200)
             .end(function (err, res) {
                 if (err) {
                     return done(err);
@@ -187,11 +178,7 @@ describe('question integration', function () {
     const getTranslatedQuestionFn = function (index, language) {
         return function (done) {
             const id = hxQuestion.id(index);
-            store.server
-                .get(`/api/v1.0/questions/${id}`)
-                .query({ language })
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(200)
+            store.get(`/questions/${id}`, true, 200, { language })
                 .expect(function (res) {
                     const expected = hxQuestion.translatedServer(index, language);
                     expect(res.body).to.deep.equal(expected);
@@ -202,11 +189,7 @@ describe('question integration', function () {
 
     const listTranslatedQuestionsFn = function (language) {
         return function (done) {
-            store.server
-                .get('/api/v1.0/questions')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .query({ language })
-                .expect(200)
+            store.get('/questions', true, 200, { language })
                 .expect(function (res) {
                     const expected = hxQuestion.listTranslatedServers(language);
                     expect(res.body).to.deep.equal(expected);

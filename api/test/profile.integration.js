@@ -44,10 +44,7 @@ describe('profile integration', function () {
 
     const verifyProfileFn = function (userIndex) {
         return function (done) {
-            store.server
-                .get('/api/v1.0/profiles')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(200)
+            store.get('/profiles', true, 200)
                 .expect(function (res) {
                     const result = res.body;
                     comparator.user(hxUser.client(userIndex), result.user);
@@ -139,10 +136,7 @@ describe('profile integration', function () {
 
     const verifyProfileWithSurveyFn = function (surveyIndex, userIndex, language) {
         return function (done) {
-            store.server
-                .get('/api/v1.0/profiles')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(200)
+            store.get('/profiles', true, 200)
                 .expect(function (res) {
                     const result = res.body;
                     const survey = hxSurvey.server(surveyIndex);
@@ -175,10 +169,7 @@ describe('profile integration', function () {
     const verifySignedDocumentFn = function (expected, language) {
         return function (done) {
             const server = hxConsentDoc.server(0);
-            store.server
-                .get(`/api/v1.0/user-consent-documents/${server.id}`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(200)
+            store.get(`/user-consent-documents/${server.id}`, true, 200)
                 .expect(function (res) {
                     const result = res.body;
                     expect(result.content).to.equal(server.content);
@@ -195,10 +186,7 @@ describe('profile integration', function () {
         return function (done) {
             const server = hxConsentDoc.server(0);
             const typeName = hxConsentDoc.type(0).name;
-            store.server
-                .get(`/api/v1.0/user-consent-documents/type-name/${typeName}`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(200)
+            store.get(`/user-consent-documents/type-name/${typeName}`, true, 200)
                 .expect(function (res) {
                     const result = res.body;
                     expect(result.content).to.equal(server.content);

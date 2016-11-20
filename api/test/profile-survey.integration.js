@@ -31,9 +31,7 @@ describe('profile survey integration', function () {
     });
 
     const emptyProfileSurvey = function (done) {
-        store.server
-            .get('/api/v1.0/profile-survey')
-            .expect(200)
+        store.get('/profile-survey', false, 200)
             .expect(function (res) {
                 expect(res.body.exists).to.equal(false);
             })
@@ -41,9 +39,7 @@ describe('profile survey integration', function () {
     };
 
     const emptyProfileSurveyId = function (done) {
-        store.server
-            .get('/api/v1.0/profile-survey-id')
-            .expect(200)
+        store.get('/profile-survey-id', false, 200)
             .expect(function (res) {
                 expect(res.body).to.equal(0);
             })
@@ -84,9 +80,7 @@ describe('profile survey integration', function () {
 
     const verifyProfileSurveyFn = function (index) {
         return function (done) {
-            store.server
-                .get('/api/v1.0/profile-survey')
-                .expect(200)
+            store.get('/profile-survey', false, 200)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
@@ -104,9 +98,7 @@ describe('profile survey integration', function () {
 
     const verifyProfileSurveyIdFn = function (index) {
         return function (done) {
-            store.server
-                .get('/api/v1.0/profile-survey-id')
-                .expect(200)
+            store.get('/profile-survey-id', false, 200)
                 .expect(function (res) {
                     const id = hxSurvey.id(index);
                     expect(id).to.equal(res.body);
@@ -134,11 +126,7 @@ describe('profile survey integration', function () {
 
     const verifyNotTranslatedProfileSurveyFn = function (index, language) {
         return function (done) {
-            store.server
-                .get(`/api/v1.0/profile-survey`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .query({ language })
-                .expect(200)
+            store.get('/profile-survey', true, 200, { language })
                 .expect(function (res) {
                     const { exists, survey } = res.body;
                     expect(exists).to.equal(true);
@@ -151,11 +139,7 @@ describe('profile survey integration', function () {
 
     const verifyTranslatedProfileSurveyFn = function (index, language) {
         return function (done) {
-            store.server
-                .get(`/api/v1.0/profile-survey`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .query({ language })
-                .expect(200)
+            store.get('/profile-survey', true, 200, { language })
                 .expect(function (res) {
                     const { exists, survey } = res.body;
                     expect(exists).to.equal(true);

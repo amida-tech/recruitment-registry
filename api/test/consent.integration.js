@@ -65,10 +65,7 @@ describe('consent integration', function () {
     _.range(consentSpecs.length).forEach(index => {
         it(`get/verify consent ${index}`, function (done) {
             const id = hxConsent.id(index);
-            store.server
-                .get(`/api/v1.0/consents/${id}`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(200)
+            store.get(`/consents/${id}`, true, 200)
                 .expect(function (res) {
                     const expected = hxConsent.server(index);
                     expect(res.body).to.deep.equal(expected);
@@ -80,10 +77,7 @@ describe('consent integration', function () {
     _.range(consentSpecs.length).forEach(index => {
         it(`get/verify consent by name ${index}`, function (done) {
             const name = hxConsent.client(index).name;
-            store.server
-                .get(`/api/v1.0/consents/name/${name}`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(200)
+            store.get(`/consents/name/${name}`, true, 200)
                 .expect(function (res) {
                     const expected = hxConsent.server(index);
                     expect(res.body).to.deep.equal(expected);
@@ -93,10 +87,7 @@ describe('consent integration', function () {
     });
 
     const listConsentsFn = function (done) {
-        store.server
-            .get(`/api/v1.0/consents`)
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .expect(200)
+        store.get('/consents', true, 200)
             .expect(function (res) {
                 const expected = hxConsent.listServers();
                 expect(res.body).to.deep.equal(expected);
@@ -122,10 +113,7 @@ describe('consent integration', function () {
     const getUserConsentDocumentsFn = function (userIndex, index, signatureIndices) {
         return function (done) {
             const id = hxConsent.id(index);
-            store.server
-                .get(`/api/v1.0/consents/${id}/user-documents`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(200)
+            store.get(`/consents/${id}/user-documents`, true, 200)
                 .expect(function (res) {
                     const typeIndices = consentSpecs[index];
                     const signatures = signatureIndices.reduce((r, i) => {
@@ -146,11 +134,7 @@ describe('consent integration', function () {
     const getTranslatedUserConsentDocumentsFn = function (userIndex, index, signatureIndices, language) {
         return function (done) {
             const id = hxConsent.id(index);
-            store.server
-                .get(`/api/v1.0/consents/${id}/user-documents`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .query({ language })
-                .expect(200)
+            store.get(`/consents/${id}/user-documents`, true, 200, { language })
                 .expect(function (res) {
                     const typeIndices = consentSpecs[index];
                     const signatures = signatureIndices.reduce((r, i) => {
@@ -172,10 +156,7 @@ describe('consent integration', function () {
     const getUserConsentDocumentsByNameFn = function (userIndex, index, signatureIndices) {
         return function (done) {
             const name = hxConsent.server(index).name;
-            store.server
-                .get(`/api/v1.0/consents/name/${name}/user-documents`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(200)
+            store.get(`/consents/name/${name}/user-documents`, true, 200)
                 .expect(function (res) {
                     const typeIndices = consentSpecs[index];
                     const signatures = signatureIndices.reduce((r, i) => {
@@ -196,11 +177,7 @@ describe('consent integration', function () {
     const getTranslatedUserConsentDocumentsByNameFn = function (userIndex, index, signatureIndices, language) {
         return function (done) {
             const name = hxConsent.server(index).name;
-            store.server
-                .get(`/api/v1.0/consents/name/${name}/user-documents`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .query({ language })
-                .expect(200)
+            store.get(`/consents/name/${name}/user-documents`, true, 200, { language })
                 .expect(function (res) {
                     const typeIndices = consentSpecs[index];
                     const signatures = signatureIndices.reduce((r, i) => {
@@ -229,10 +206,7 @@ describe('consent integration', function () {
     [0, 1, 3].forEach(consentIndex => {
         it(`get/verify consent ${consentIndex} documents`, function (done) {
             const id = hxConsent.id(consentIndex);
-            store.server
-                .get(`/api/v1.0/consents/${id}/documents`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(200)
+            store.get(`/consents/${id}/documents`, true, 200)
                 .expect(function (res) {
                     const typeIndices = consentSpecs[consentIndex];
                     const expected = consentCommon.formExpectedConsent(consentIndex, typeIndices);
@@ -243,11 +217,7 @@ describe('consent integration', function () {
 
         it(`get/verify translated (es) consent ${consentIndex} documents`, function (done) {
             const id = hxConsent.id(consentIndex);
-            store.server
-                .get(`/api/v1.0/consents/${id}/documents`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .query({ language: 'es' })
-                .expect(200)
+            store.get(`/consents/${id}/documents`, true, 200, { language: 'es' })
                 .expect(function (res) {
                     const typeIndices = consentSpecs[consentIndex];
                     const expected = consentCommon.formTranslatedExpectedConsent(consentIndex, typeIndices, undefined, 'es');
@@ -259,10 +229,7 @@ describe('consent integration', function () {
 
         it(`get/verify consent ${consentIndex} documents by name`, function (done) {
             const name = hxConsent.server(consentIndex).name;
-            store.server
-                .get(`/api/v1.0/consents/name/${name}/documents`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(200)
+            store.get(`/consents/name/${name}/documents`, true, 200)
                 .expect(function (res) {
                     const typeIndices = consentSpecs[consentIndex];
                     const expected = consentCommon.formExpectedConsent(consentIndex, typeIndices);
@@ -273,11 +240,7 @@ describe('consent integration', function () {
 
         it(`get/verify translated (es) consent ${consentIndex} documents by name`, function (done) {
             const name = hxConsent.server(consentIndex).name;
-            store.server
-                .get(`/api/v1.0/consents/name/${name}/documents`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .query({ language: 'es' })
-                .expect(200)
+            store.get(`/consents/name/${name}/documents`, true, 200, { language: 'es' })
                 .expect(function (res) {
                     const typeIndices = consentSpecs[consentIndex];
                     const expected = consentCommon.formTranslatedExpectedConsent(consentIndex, typeIndices, undefined, 'es');
@@ -435,9 +398,7 @@ describe('consent integration', function () {
 
     it('update history for type 2', function (done) {
         const typeId = history.typeId(2);
-        store.server
-            .get(`/api/v1.0/consent-documents/type-id/${typeId}/update-comments`)
-            .expect(200)
+        store.get(`/consent-documents/type-id/${typeId}/update-comments`, false, 200)
             .expect(function (res) {
                 const servers = history.serversHistory().filter(h => (h.typeId === typeId));
                 const comments = _.map(servers, 'updateComment');
@@ -448,10 +409,7 @@ describe('consent integration', function () {
 
     it('translated update history for type 2', function (done) {
         const typeId = history.typeId(2);
-        store.server
-            .get(`/api/v1.0/consent-documents/type-id/${typeId}/update-comments`)
-            .query({ language: 'es' })
-            .expect(200)
+        store.get(`/consent-documents/type-id/${typeId}/update-comments`, false, 200, { language: 'es' })
             .expect(function (res) {
                 const servers = history.translatedServersHistory('es').filter(h => (h.typeId === typeId));
                 const comments = _.map(servers, 'updateComment');

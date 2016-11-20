@@ -43,10 +43,7 @@ describe('user survey integration', function () {
     it('logout as super', shared.logoutFn(store));
 
     const verifyNoUserSurveys = function (done) {
-        store.server
-            .get(`/api/v1.0/user-surveys`)
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .expect(200)
+        store.get('/user-surveys', true, 200)
             .expect(function (res) {
                 const userSurveys = res.body;
                 expect(userSurveys.length).to.equal(0);
@@ -63,10 +60,7 @@ describe('user survey integration', function () {
     const verifySurveyFn = function (index) {
         return function (done) {
             const surveyId = hxSurvey.id(index);
-            store.server
-                .get(`/api/v1.0/surveys/${surveyId}`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(200)
+            store.get(`/surveys/${surveyId}`, true, 200)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
@@ -89,10 +83,7 @@ describe('user survey integration', function () {
     const verifyStatusFn = function (surveyIndex, expectedStatus) {
         return function (done) {
             const surveyId = hxSurvey.id(surveyIndex);
-            store.server
-                .get(`/api/v1.0/user-surveys/${surveyId}/status`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(200)
+            store.get(`/user-surveys/${surveyId}/status`, true, 200)
                 .expect(function (res) {
                     const status = res.body.status;
                     expect(status).to.equal(expectedStatus);
@@ -112,10 +103,7 @@ describe('user survey integration', function () {
 
     const verifyUserSurveyListFn = function (statusList) {
         return function (done) {
-            store.server
-                .get(`/api/v1.0/user-surveys`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(200)
+            store.get('/user-surveys', true, 200)
                 .expect(function (res) {
                     const userSurveys = res.body;
                     const expected = hxSurvey.listServers().map(({ id, name }, index) => ({ id, name, status: statusList[index] }));
@@ -135,10 +123,7 @@ describe('user survey integration', function () {
     const verifyUserSurveyFn = function (userIndex, surveyIndex, status) {
         return function (done) {
             const surveyId = hxSurvey.id(surveyIndex);
-            store.server
-                .get(`/api/v1.0/user-surveys/${surveyId}`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(200)
+            store.get(`/user-surveys/${surveyId}`, true, 200)
                 .expect(function (res) {
                     const userSurvey = res.body;
                     const survey = hxSurvey.server(surveyIndex);
@@ -158,11 +143,7 @@ describe('user survey integration', function () {
             if (includeSurvey) {
                 query['include-survey'] = true;
             }
-            store.server
-                .get(`/api/v1.0/user-surveys/${surveyId}/answers`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .query(query)
-                .expect(200)
+            store.get(`/user-surveys/${surveyId}/answers`, true, 200, query)
                 .expect(function (res) {
                     const userSurveyAnswers = res.body;
                     if (includeSurvey) {
@@ -348,11 +329,7 @@ describe('user survey integration', function () {
 
     const verifyTranslatedUserSurveyListFn = function (userIndex, statusList, language, notTranslated) {
         return function (done) {
-            store.server
-                .get(`/api/v1.0/user-surveys`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .query({ language })
-                .expect(200)
+            store.get('/user-surveys', true, 200, { language })
                 .expect(function (res) {
                     const userSurveys = res.body;
                     if (!notTranslated) {
@@ -369,11 +346,7 @@ describe('user survey integration', function () {
     const verifyTranslatedUserSurveyFn = function (userIndex, surveyIndex, status, language, notTranslated) {
         return function (done) {
             const surveyId = hxSurvey.id(surveyIndex);
-            store.server
-                .get(`/api/v1.0/user-surveys/${surveyId}`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .query({ language })
-                .expect(200)
+            store.get(`/user-surveys/${surveyId}`, true, 200, { language })
                 .expect(function (res) {
                     const userSurvey = res.body;
                     const survey = hxSurvey.translatedServer(surveyIndex, language);
@@ -393,11 +366,7 @@ describe('user survey integration', function () {
         return function (done) {
             const surveyId = hxSurvey.id(surveyIndex);
             const query = { 'include-survey': true, language };
-            store.server
-                .get(`/api/v1.0/user-surveys/${surveyId}/answers`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .query(query)
-                .expect(200)
+            store.get(`/user-surveys/${surveyId}/answers`, true, 200, query)
                 .expect(function (res) {
                     const userSurveyAnswers = res.body;
                     const survey = hxSurvey.translatedServer(surveyIndex, language);

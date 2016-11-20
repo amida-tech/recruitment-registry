@@ -22,7 +22,7 @@ class SharedIntegration {
                 if (err) {
                     return done(err);
                 }
-                store.server = request(app);
+                store.initialize(request(app));
                 done();
             });
         };
@@ -44,10 +44,8 @@ class SharedIntegration {
     loginFn(store, login) {
         const shared = this;
         return function (done) {
-            store.server
-                .get('/api/v1.0/auth/basic')
+            store.get('/auth/basic', false, 200)
                 .auth(login.username, login.password)
-                .expect(200)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
@@ -74,10 +72,9 @@ class SharedIntegration {
 
     badLoginFn(store, login) {
         return function (done) {
-            store.server
-                .get('/api/v1.0/auth/basic')
+            store.get('/auth/basic', false, 401)
                 .auth(login.username, login.password)
-                .expect(401, done);
+                .end(done);
         };
     }
 
@@ -98,9 +95,7 @@ class SharedIntegration {
 
     verifyProfileSurveyFn(store, hxSurvey, index) {
         return function (done) {
-            store.server
-                .get('/api/v1.0/profile-survey')
-                .expect(200)
+            store.get('/profile-survey', false, 200)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
@@ -151,10 +146,7 @@ class SharedIntegration {
     fillQxFn(store, hxQuestions) {
         return function (done) {
             const id = hxQuestions.lastId();
-            store.server
-                .get(`/api/v1.0/questions/${id}`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(200)
+            store.get(`/questions/${id}`, true, 200)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);

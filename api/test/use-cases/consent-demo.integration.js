@@ -41,9 +41,7 @@ describe('consent demo', function () {
     //****** START 2
 
     it('get Terms of Use before registration', function (done) {
-        store.server
-            .get('/api/v1.0/consents/name/terms-of-use/documents')
-            .expect(200)
+        store.get('/consents/name/terms-of-use/documents', false, 200)
             .expect(function (res) {
                 const result = res.body;
                 expect(result.name).to.equal('terms-of-use');
@@ -88,10 +86,7 @@ describe('consent demo', function () {
     //****** START 4
 
     it('get the Terms of Use document with signature', function (done) {
-        store.server
-            .get(`/api/v1.0/consents/name/terms-of-use/user-documents`)
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .expect(200)
+        store.get('/consents/name/terms-of-use/user-documents', true, 200)
             .expect(function (res) {
                 expect(res.body.name).to.equal('terms-of-use');
                 expect(res.body.sections[0].signature).to.equal(true);
@@ -110,10 +105,7 @@ describe('consent demo', function () {
     //****** START 5
 
     it('get the Consents document', function (done) {
-        store.server
-            .get(`/api/v1.0/consents/name/consent/user-documents`)
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .expect(200)
+        store.get('/consents/name/consent/user-documents', true, 200)
             .expect(function (res) {
                 consents = res.body;
                 expect(res.body.name).to.equal('consent');
@@ -143,10 +135,7 @@ describe('consent demo', function () {
     //****** START 7
 
     it('get the Consents document', function (done) {
-        store.server
-            .get(`/api/v1.0/consents/name/consent/user-documents`)
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .expect(200)
+        store.get('/consents/name/consent/user-documents', true, 200)
             .expect(function (res) {
                 consents = res.body;
                 expect(res.body.name).to.equal('consent');

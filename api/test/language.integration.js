@@ -21,10 +21,7 @@ describe('language integration', function () {
     let languages;
 
     const listLanguagesFn = function (done) {
-        store.server
-            .get('/api/v1.0/languages')
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .expect(200)
+        store.get('/languages', true, 200)
             .expect(function (res) {
                 expect(res.body).to.deep.equal(languages);
             })
@@ -34,10 +31,7 @@ describe('language integration', function () {
     it('login as super', shared.loginFn(store, config.superUser));
 
     it('list existing languages', function (done) {
-        store.server
-            .get('/api/v1.0/languages')
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .expect(200)
+        store.get('/languages', true, 200)
             .expect(function (res) {
                 languages = res.body;
                 expect(languages).to.have.length.above(0);
@@ -61,10 +55,7 @@ describe('language integration', function () {
     });
 
     it('get language', function (done) {
-        store.server
-            .get(`/api/v1.0/languages/${example.code}`)
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .expect(200)
+        store.get(`/languages/${example.code}`, true, 200)
             .expect(function (res) {
                 expect(res.body).to.deep.equal(example);
             })

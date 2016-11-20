@@ -74,11 +74,7 @@ describe('answer integration', function () {
     const getAndVerifyFn = function (userIndex, surveyIndex, seqIndex) {
         return function (done) {
             const surveyId = hxSurvey.id(surveyIndex);
-            store.server
-                .get('/api/v1.0/answers')
-                .query({ 'survey-id': surveyId })
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(200)
+            store.get('/answers', true, 200, { 'survey-id': surveyId })
                 .expect(function (res) {
                     const expected = hxAnswer.expectedAnswers(userIndex, surveyIndex, seqIndex);
                     const actual = _.sortBy(res.body, 'questionId');

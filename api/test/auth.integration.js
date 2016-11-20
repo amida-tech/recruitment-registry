@@ -11,14 +11,13 @@ const config = require('../config');
 const tokener = require('../lib/tokener');
 
 const SharedIntegration = require('./util/shared-integration');
+const RRSuperTest = require('./util/rr-super-test');
 
 const expect = chai.expect;
 const shared = new SharedIntegration();
 
 describe('auth integration', function () {
-    const store = {
-        server: null
-    };
+    const store = new RRSuperTest();
 
     const testUser = {
         username: 'testusername',
@@ -34,10 +33,8 @@ describe('auth integration', function () {
     });
 
     it('successfull login', function (done) {
-        store.server
-            .get('/api/v1.0/auth/basic')
+        store.get('/auth/basic', false, 200)
             .auth(testUser.username, testUser.password)
-            .expect(200)
             .end(function (err, res) {
                 if (err) {
                     return done(err);
@@ -57,10 +54,8 @@ describe('auth integration', function () {
     });
 
     it('wrong username', function (done) {
-        store.server
-            .get('/api/v1.0/auth/basic')
+        store.get('/auth/basic', false, 401)
             .auth(testUser.username + 'a', testUser.password)
-            .expect(401)
             .expect(function (res) {
                 expect(typeof res.body).to.equal('object');
                 expect(Boolean(res.body.message)).to.equal(true);
@@ -69,10 +64,8 @@ describe('auth integration', function () {
     });
 
     it('wrong password', function (done) {
-        store.server
-            .get('/api/v1.0/auth/basic')
+        store.get('/auth/basic', false, 401)
             .auth(testUser.username, testUser.password + 'a')
-            .expect(401)
             .expect(function (res) {
                 expect(typeof res.body).to.equal('object');
                 expect(Boolean(res.body.message)).to.equal(true);
@@ -85,10 +78,8 @@ describe('auth integration', function () {
             throw new Error('stub error');
         });
 
-        store.server
-            .get('/api/v1.0/auth/basic')
+        store.get('/auth/basic', false, 401)
             .auth(testUser.username, testUser.password)
-            .expect(401)
             .end(function (err, res) {
                 tokener.createJWT.restore();
                 if (err) {

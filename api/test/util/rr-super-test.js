@@ -9,6 +9,10 @@ module.exports = class RRSupertest {
         this.baseUrl = '/api/v1.0';
     }
 
+    initialize(server) {
+        this.server = server;
+    }
+
     post(resource, payload, status, header) {
         const endpoint = this.baseUrl + resource;
         const token = this.auth;
@@ -37,5 +41,18 @@ module.exports = class RRSupertest {
         return this.server.delete(endpoint)
             .set('Cookie', `rr-jwt-token=${token}`)
             .expect(status);
+    }
+
+    get(resource, auth, status, query) {
+        const endpoint = this.baseUrl + resource;
+        let r = this.server.get(endpoint);
+        if (auth) {
+            const token = (typeof auth === 'string') ? auth : this.auth;
+            r = r.set('Cookie', `rr-jwt-token=${token}`);
+        }
+        if (query) {
+            r = r.query(query);
+        }
+        return r.expect(status);
     }
 };

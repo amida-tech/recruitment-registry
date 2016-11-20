@@ -54,9 +54,7 @@ describe('consent demo simpler', function () {
     //****** START 2
 
     it('get Terms of Use before registration', function (done) {
-        store.server
-            .get('/api/v1.0/consent-documents/type-name/terms-of-use')
-            .expect(200)
+        store.get('/consent-documents/type-name/terms-of-use', false, 200)
             .expect(function (res) {
                 const result = res.body;
                 expect(!!result.content).to.equal(true);
@@ -77,9 +75,7 @@ describe('consent demo simpler', function () {
     let survey;
 
     it('get profile survey', function (done) {
-        store.server
-            .get('/api/v1.0/profile-survey')
-            .expect(200)
+        store.get('/profile-survey', false, 200)
             .expect(function (res) {
                 survey = res.body.survey;
             })
@@ -108,10 +104,7 @@ describe('consent demo simpler', function () {
     it('login as user', shared.loginFn(store, userExample));
 
     it('get the Terms of Use document with signature', function (done) {
-        store.server
-            .get('/api/v1.0/user-consent-documents/type-name/terms-of-use')
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .expect(200)
+        store.get('/user-consent-documents/type-name/terms-of-use', true, 200)
             .expect(function (res) {
                 expect(res.body.content).to.equal(termsOfUse.content);
                 expect(res.body.signature).to.equal(true);
@@ -130,10 +123,7 @@ describe('consent demo simpler', function () {
     //****** START 5
 
     it('get the Consents document', function (done) {
-        store.server
-            .get('/api/v1.0/user-consent-documents/type-name/consent')
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .expect(200)
+        store.get('/user-consent-documents/type-name/consent', true, 200)
             .expect(function (res) {
                 consents = res.body;
                 expect(res.body.signature).to.equal(false);
@@ -160,10 +150,7 @@ describe('consent demo simpler', function () {
     //****** START 7
 
     it('get the Consents document', function (done) {
-        store.server
-            .get(`/api/v1.0/user-consent-documents/type-name/consent`)
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .expect(200)
+        store.get('/user-consent-documents/type-name/consent', true, 200)
             .expect(function (res) {
                 consents = res.body;
                 expect(res.body.signature).to.equal(true);

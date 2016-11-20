@@ -34,9 +34,7 @@ describe('user set-up and login use-case', function () {
     let survey;
 
     it('get profile survey', function (done) {
-        store.server
-            .get('/api/v1.0/surveys/name/Alzheimer')
-            .expect(200)
+        store.get('surveys/name/Alzheimer', false, 200)
             .end(function (err, res) {
                 if (err) {
                     return done(err);
@@ -55,14 +53,12 @@ describe('user set-up and login use-case', function () {
         answers = helper.formAnswersToPost(survey, surveyExample.answer);
 
         userExample.email = config.resetPw.emailFrom; // send to self
-
-        store.server
-            .post('/api/v1.0/profiles')
-            .send({
-                user: userExample,
-                surveyId: survey.id,
-                answers
-            })
+        const payload = {
+            user: userExample,
+            surveyId: survey.id,
+            answers
+        };
+        store.post('/profiles', payload, 201)
             .expect(201)
             .end(function (err, res) {
                 if (err) {
@@ -77,14 +73,7 @@ describe('user set-up and login use-case', function () {
     // --------- login
 
     it('generate reset tokens', function (done) {
-        store.server
-            .post('/api/v1.0/reset-tokens')
-            .send({
-                email: userExample.email
-            })
-            .expect(201)
-            .end(function () {
-                done();
-            });
+        const payload = { email: userExample.email };
+        store.post('/reset-tokens', payload, 201).end(done);
     });
 });
