@@ -108,10 +108,7 @@ describe('consent integration', function () {
 
     it('delete consent 2', function (done) {
         const id = hxConsent.id(2);
-        store.server
-            .delete(`/api/v1.0/consents/${id}`)
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .expect(204)
+        store.delete(`/consents/${id}`, 204)
             .expect(function () {
                 hxConsent.remove(2);
             })

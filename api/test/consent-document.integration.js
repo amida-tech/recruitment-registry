@@ -308,10 +308,7 @@ describe('consent document integration', function () {
     const deleteConsentTypeFn = function (index) {
         return function (done) {
             const id = history.typeId(index);
-            store.server
-                .delete(`/api/v1.0/consent-types/${id}`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(204)
+            store.delete(`/consent-types/${id}`, 204)
                 .expect(function () {
                     history.deleteType(index);
                 })

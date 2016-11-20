@@ -238,10 +238,7 @@ describe('question integration', function () {
     const deleteQxFn = function (index) {
         return function (done) {
             const id = hxQuestion.id(index);
-            store.server
-                .delete(`/api/v1.0/questions/${id}`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(204)
+            store.delete(`/questions/${id}`, 204)
                 .expect(function () {
                     hxQuestion.remove(index);
                 })
@@ -286,10 +283,7 @@ describe('question integration', function () {
     const deleteQuestionWhenOnSurveyFn = function (index) {
         return function (done) {
             const id = hxQuestion.id(index);
-            store.server
-                .delete(`/api/v1.0/questions/${id}`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(400)
+            store.delete(`/questions/${id}`, 400)
                 .expect(function (res) {
                     const message = RRError.message('qxReplaceWhenActiveSurveys');
                     expect(res.body.message).to.equal(message);
@@ -305,10 +299,7 @@ describe('question integration', function () {
     const deleteSurveyFn = function (index) {
         return function (done) {
             const id = hxSurvey.id(index);
-            store.server
-                .delete(`/api/v1.0/surveys/${id}`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(204)
+            store.delete(`/surveys/${id}`, 204)
                 .expect(function () {
                     hxSurvey.remove(index);
                 })

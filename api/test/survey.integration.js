@@ -295,11 +295,7 @@ describe('survey integration', function () {
     const deleteSurveyFn = function (index) {
         return function (done) {
             const id = hxSurvey.id(index);
-            store.server
-                .delete(`/api/v1.0/surveys/${id}`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(204)
-                .end(done);
+            store.delete(`/surveys/${id}`, 204).end(done);
         };
     };
 

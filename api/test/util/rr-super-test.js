@@ -30,4 +30,12 @@ module.exports = class RRSupertest {
         }
         return r.send(payload).expect(status);
     }
+
+    delete(resource, status) {
+        const endpoint = this.baseUrl + resource;
+        const token = this.auth;
+        return this.server.delete(endpoint)
+            .set('Cookie', `rr-jwt-token=${token}`)
+            .expect(status);
+    }
 };

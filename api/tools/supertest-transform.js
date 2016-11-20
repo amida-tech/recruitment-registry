@@ -192,16 +192,8 @@ const transformFile = function ({ root, name }) {
                 cmd += '\'' + res.endpoint + '\'';
             }
 
-            if (res.operation === 'deletex') {
-                if (res.status !== '204') {
-                    throw new Error('NO DELETE');
-                }
-                cmd += ').end();';
-                newLines.push(cmd);
-                index = res.nextIndex + 1;
-                innerFound = true;
-            } else if (res.operation === 'post' || res.operation === 'patch') {
-                cmd += ', ' + res.send + ', ' + res.status + ')';
+            if (res.operation === 'delete') {
+                cmd += ', ' + res.status + ')';
                 newLines.push(cmd);
                 res.lines.forEach(fn);
                 index = res.nextIndex;

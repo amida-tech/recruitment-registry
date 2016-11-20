@@ -158,11 +158,7 @@ describe('smtp integration', function () {
 
     const deleteSmtpFn = function () {
         return function (done) {
-            store.server
-                .delete(`/api/v1.0/smtp`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(204)
-                .end(done);
+            store.delete('/smtp', 204).end(done);
         };
     };
 

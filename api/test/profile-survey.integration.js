@@ -116,9 +116,7 @@ describe('profile survey integration', function () {
     };
 
     const deleteProfileSurveyId = function (done) {
-        store.server
-            .delete('/api/v1.0/profile-survey-id')
-            .expect(204)
+        store.delete('/profile-survey-id', 204)
             .end(done);
     };
 
@@ -241,10 +239,7 @@ describe('profile survey integration', function () {
 
     it('delete survey 3', function (done) {
         const id = hxSurvey.id(3);
-        store.server
-            .delete(`/api/v1.0/surveys/${id}`)
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .expect(204)
+        store.delete(`/surveys/${id}`, 204)
             .end(done);
     });
 

@@ -74,10 +74,7 @@ describe('language integration', function () {
     it('list existing languages', listLanguagesFn);
 
     it('delete language', function (done) {
-        store.server
-            .delete(`/api/v1.0/languages/fr`)
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .expect(204)
+        store.delete('/languages/fr', 204)
             .expect(function () {
                 _.remove(languages, { code: 'fr' });
             })
