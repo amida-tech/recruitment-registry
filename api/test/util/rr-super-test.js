@@ -5,7 +5,7 @@ const _ = require('lodash');
 module.exports = class RRSupertest {
     constructor() {
         this.server = null;
-        this.auth = null;
+        this.jwt = null;
         this.baseUrl = '/api/v1.0';
     }
 
@@ -13,12 +13,12 @@ module.exports = class RRSupertest {
         this.server = server;
     }
 
-    updateStoreFromCookie(res) {
+    updateJWTFromCookie(res) {
         const cookie = _.get(res, 'header.set-cookie.0');
         if (cookie) {
             const token = cookie.split(';')[0].split('=')[1];
             if (token) {
-                this.auth = token;
+                this.jwt = token;
             }
         }
     }
@@ -30,20 +30,18 @@ module.exports = class RRSupertest {
             .expect(status)
             .expect(res => {
                 if (status < 400) {
-                    this.updateStoreFromCookie(res);
+                    this.updateJWTFromCookie(res);
                 }
             });
     }
 
     resetAuth() {
-        this.auth = null;
+        this.jwt = null;
     }
 
     update(operation, resource, payload, status, header) {
-        const endpoint = this.baseUrl + resource;
-        const token = this.auth;
-        let r = this.server[operation](endpoint);
-        r = r.set('Cookie', `rr-jwt-token=${token}`);
+        let r = this.server[operation](this.baseUrl + resource);
+        r = r.set('Cookie', `rr-jwt-token=${this.jwt}`);
         if (header) {
             _.toPairs(header).forEach(([key, value]) => r.set(key, value));
         }
@@ -62,33 +60,26 @@ module.exports = class RRSupertest {
         return this.update('post', resource, payload, status, header)
             .expect(res => {
                 if (status < 400) {
-                    this.updateStoreFromCookie(res);
+                    this.updateJWTFromCookie(res);
                 }
             });
     }
 
     delete(resource, status) {
-        const endpoint = this.baseUrl + resource;
-        const token = this.auth;
-        return this.server.delete(endpoint)
-            .set('Cookie', `rr-jwt-token=${token}`)
+        return this.server.delete(this.baseUrl + resource)
+            .set('Cookie', `rr-jwt-token=${this.jwt}`)
             .expect(status);
     }
 
     get(resource, auth, status, query) {
-        const endpoint = this.baseUrl + resource;
-        let r = this.server.get(endpoint);
+        let r = this.server.get(this.baseUrl + resource);
         if (auth) {
-            const token = (typeof auth === 'string') ? auth : this.auth;
+            const token = (typeof auth === 'string') ? auth : this.jwt;
             r = r.set('Cookie', `rr-jwt-token=${token}`);
         }
         if (query) {
             r = r.query(query);
         }
         return r.expect(status);
-    }
-
-    jwt() {
-        return this.auth;
     }
 };

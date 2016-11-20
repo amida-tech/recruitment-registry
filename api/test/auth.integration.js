@@ -38,8 +38,7 @@ describe('auth integration', function () {
                 if (err) {
                     return done(err);
                 }
-                const token = store.jwt();
-                jwt.verify(token, config.jwt.secret, {}, function (err, jwtObject) {
+                jwt.verify(store.jwt, config.jwt.secret, {}, function (err, jwtObject) {
                     if (err) {
                         return done(err);
                     }
