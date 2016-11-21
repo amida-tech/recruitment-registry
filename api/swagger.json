@@ -2093,6 +2093,9 @@
                     "type": "string",
                     "minLength": 1
                 },
+                "description": {
+                    "type": "string"
+                },
                 "meta": {
                     "$ref": "#/definitions/surveyMeta"
                 },
@@ -2179,6 +2182,9 @@
                     "type": "string",
                      "minLength": 1
                 },
+                "description": {
+                    "type": "string"
+                },
                 "meta": {
                     "$ref": "#/definitions/surveyMeta"
                 },
@@ -2220,6 +2226,9 @@
                 "name": {
                     "type": "string",
                     "minLength": 1
+                },
+                "description": {
+                    "type": "string"
                 },
                 "sections": {
                     "type": "array",
@@ -2264,6 +2273,9 @@
                 },
                 "name": {
                     "type": "string"
+                },
+                "description": {
+                    "type": "string"
                 }
             },
             "additionalProperties": false
@@ -2283,6 +2295,9 @@
                     "type": "integer"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "description": {
                     "type": "string"
                 },
                 "status": {

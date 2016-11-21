@@ -93,6 +93,11 @@ describe('survey unit', function () {
             const survey = hxSurvey.server(index);
             survey.name = survey.name + 'xyz';
             const update = { id, name: survey.name };
+            if (survey.description) {
+                const newDescription = survey.description + 'zyx';
+                survey.description = newDescription;
+                update.description = newDescription;
+            }
             return models.survey.updateSurveyText(update);
         };
     };
@@ -101,9 +106,12 @@ describe('survey unit', function () {
         return function () {
             const id = hxSurvey.id(index);
             const survey = hxSurvey.server(index);
-            let { name } = hxSurvey.client(index);
+            let { name, description } = hxSurvey.client(index);
             survey.name = name;
-            return models.survey.updateSurveyText({ id, name });
+            if (description) {
+                survey.description = description;
+            }
+            return models.survey.updateSurveyText({ id, name, description });
         };
     };
 

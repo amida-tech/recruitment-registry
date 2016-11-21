@@ -22,9 +22,9 @@ ccf.importFiles(filepaths)
         const answersByAssessment = _.groupBy(result.hb_answer, 'hb_assessment_id');
         const assessments = Object.keys(answersByAssessment);
         assessments.forEach(assessment => {
-        	const current = answersByAssessment[assessment];
-        	answersByAssessment[assessment] = _.groupBy(current, 'pillar_hash');
-		});
+            const current = answersByAssessment[assessment];
+            answersByAssessment[assessment] = _.groupBy(current, 'pillar_hash');
+        });
         console.log(JSON.stringify(answersByAssessment, undefined, 4));
         process.exit(0);
     })

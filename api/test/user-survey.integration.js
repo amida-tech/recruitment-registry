@@ -3,6 +3,7 @@
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
+const _ = require('lodash');
 
 const config = require('../config');
 
@@ -106,7 +107,13 @@ describe('user survey integration', function () {
             store.get('/user-surveys', true, 200)
                 .expect(function (res) {
                     const userSurveys = res.body;
-                    const expected = hxSurvey.listServers().map(({ id, name }, index) => ({ id, name, status: statusList[index] }));
+                    const expected = _.cloneDeep(hxSurvey.listServers());
+                    expected.forEach((userSurvey, index) => {
+                        userSurvey.status = statusList[index];
+                        if (userSurvey.description === undefined) {
+                            delete userSurvey.description;
+                        }
+                    });
                     expect(userSurveys).to.deep.equal(expected);
                 })
                 .end(done);
@@ -336,7 +343,13 @@ describe('user survey integration', function () {
                         translator.isSurveyListTranslated(userSurveys, language);
                     }
                     const list = hxSurvey.listTranslatedServers(language);
-                    const expected = list.map(({ id, name }, index) => ({ id, name, status: statusList[index] }));
+                    const expected = _.cloneDeep(list);
+                    expected.forEach((userSurvey, index) => {
+                        userSurvey.status = statusList[index];
+                        if (userSurvey.description === undefined) {
+                            delete userSurvey.description;
+                        }
+                    });
                     expect(userSurveys).to.deep.equal(expected);
                 })
                 .end(done);

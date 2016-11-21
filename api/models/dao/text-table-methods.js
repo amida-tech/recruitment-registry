@@ -4,7 +4,7 @@ const _ = require('lodash');
 
 const SPromise = require('../../lib/promise');
 
-module.exports = function (sequelize, tableName, parentIdField, textFields = ['text']) {
+module.exports = function (sequelize, tableName, parentIdField, textFields = ['text'], optionals = {}) {
     return {
         createTextTx(input, tx) {
             const Table = sequelize.models[tableName];
@@ -52,7 +52,16 @@ module.exports = function (sequelize, tableName, parentIdField, textFields = ['t
         updateText(parent, language) {
             return this.getText(parent.id, language)
                 .then(result => {
-                    textFields.forEach(field => (parent[field] = result[field] || ''));
+                    textFields.forEach(field => {
+                        const value = result[field];
+                        if (value !== null) {
+                            parent[field] = result[field];
+                        } else {
+                            if (!optionals[field]) {
+                                parent[field] = '';
+                            }
+                        }
+                    });
                     return parent;
                 });
         },
@@ -88,7 +97,16 @@ module.exports = function (sequelize, tableName, parentIdField, textFields = ['t
                 .then(map => {
                     parents.forEach(parent => {
                         const r = map[parent.id];
-                        textFields.forEach(field => (parent[field] = r[field] || ''));
+                        textFields.forEach(field => {
+                            const value = r[field];
+                            if (value !== null) {
+                                parent[field] = r[field];
+                            } else {
+                                if (!optionals[field]) {
+                                    parent[field] = '';
+                                }
+                            }
+                        });
                     });
                     return parents;
                 });

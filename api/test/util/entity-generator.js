@@ -203,6 +203,9 @@ class Generator {
         const surveyIndex = ++this.surveyIndex;
         const name = override.name || `name_${surveyIndex}`;
         const result = { name };
+        if (surveyIndex % 2 === 0) {
+            result.description = `description_${surveyIndex}`;
+        }
         const metaIndex = surveyIndex % 3;
         if (metaIndex > 0) {
             result.meta = {

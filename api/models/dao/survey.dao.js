@@ -14,7 +14,7 @@ const Survey = db.Survey;
 const SurveyQuestion = db.SurveyQuestion;
 const ProfileSurvey = db.ProfileSurvey;
 
-const textHandler = textTableMethods(sequelize, 'survey_text', 'surveyId', ['name']);
+const textHandler = textTableMethods(sequelize, 'survey_text', 'surveyId', ['name', 'description'], { description: true });
 
 module.exports = class {
     constructor(dependencies) {
@@ -62,9 +62,9 @@ module.exports = class {
         if (!(survey.questions && survey.questions.length)) {
             return RRError.reject('surveyNoQuestions');
         }
-        const fields = _.omit(survey, ['name', 'sections', 'questions']);
+        const fields = _.omit(survey, ['name', 'description', 'sections', 'questions']);
         return Survey.create(fields, { transaction: tx })
-            .then(({ id }) => textHandler.createTextTx({ id, name: survey.name }, tx))
+            .then(({ id }) => textHandler.createTextTx({ id, name: survey.name, description: survey.description }, tx))
             .then(({ id }) => {
                 return this.updateQuestionsTx(survey.questions, id, tx)
                     .then(() => id);
@@ -91,8 +91,8 @@ module.exports = class {
         });
     }
 
-    updateSurveyTextTx({ id, name, sections }, language, tx) {
-        return textHandler.createTextTx({ id, name, language }, tx)
+    updateSurveyTextTx({ id, name, description, sections }, language, tx) {
+        return textHandler.createTextTx({ id, name, description, language }, tx)
             .then(() => {
                 if (sections) {
                     return this.section.updateMultipleSectionNamesTx(sections, language, tx);
@@ -100,9 +100,9 @@ module.exports = class {
             });
     }
 
-    updateSurveyText({ id, name, sections }, language) {
+    updateSurveyText({ id, name, description, sections }, language) {
         return sequelize.transaction(tx => {
-            return this.updateSurveyTextTx({ id, name, sections }, language, tx);
+            return this.updateSurveyTextTx({ id, name, description, sections }, language, tx);
         });
     }
 

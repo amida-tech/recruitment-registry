@@ -40,6 +40,9 @@ const translator = {
     translateSurvey(survey, language) {
         const result = _.cloneDeep(survey);
         result.name = this._translate(result.name, language);
+        if (result.description) {
+            result.description = this._translate(result.description, language);
+        }
         delete result.meta;
         if (result.sections) {
             result.sections.forEach(section => {
@@ -52,6 +55,9 @@ const translator = {
     },
     isSurveyTranslated(survey, language) {
         const texts = [survey.name];
+        if (survey.description) {
+            texts.push(survey.description);
+        }
         if (survey.sections) {
             texts.push(...survey.sections.map(section => section.name));
         }
@@ -59,7 +65,8 @@ const translator = {
     },
     isSurveyListTranslated(surveys, language) {
         const texts = surveys.map(survey => survey.name);
-        this._isTranslated(texts, language);
+        const descriptions = surveys.filter(survey => survey.description).map(survey => survey.description);
+        this._isTranslated([...texts, ...descriptions], language);
     },
     translateConsentType(consentType, language) {
         const result = _.pick(consentType, ['id', 'title']);

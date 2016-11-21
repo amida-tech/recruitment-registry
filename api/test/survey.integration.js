@@ -106,11 +106,35 @@ describe('survey integration', function () {
         };
     };
 
-    const updateSurveyTextFn = function (index, name) {
+    const updateSurveyTextFn = function (index) {
         return function (done) {
-            const id = hxSurvey.id(index);
-            name = name || hxSurvey.client(index).name;
-            store.patch('/surveys/text/en', { id, name }, 204)
+            const survey = hxSurvey.server(index);
+            const name = hxSurvey.client(index).name + 'xyz';
+            const update = { id: survey.id, name };
+            survey.name = name;
+            const description = hxSurvey.client(index).description;
+            if (description) {
+                update.description = description + 'zyx';
+                survey.description = description + 'zyx';
+            }
+            store.patch('/surveys/text/en', update, 204)
+                .end(done);
+        };
+    };
+
+    const revertUpdateSurveyTextFn = function (index) {
+        return function (done) {
+            const survey = hxSurvey.server(index);
+            const { name, description } = hxSurvey.client(index);
+            const update = { id: survey.id, name };
+            survey.name = name;
+            if (description) {
+                update.description = description;
+                survey.description = description;
+            } else {
+                delete survey.description;
+            }
+            store.patch('/surveys/text/en', update, 204)
                 .end(done);
         };
     };
@@ -166,10 +190,10 @@ describe('survey integration', function () {
         it(`update survey ${i}`, updateSurveyFn(i, meta));
         it(`verify survey ${i}`, showSurveyMetaFn(i, { meta }));
         it(`update survey ${i}`, updateSurveyFn(i));
-        const name = `updated_name_${i}`;
-        it(`update survey text ${i}`, updateSurveyTextFn(i, name));
-        it(`verify survey ${i}`, showSurveyFn(i, { name }));
-        it(`update survey ${i}`, updateSurveyTextFn(i));
+        it(`update survey text ${i}`, updateSurveyTextFn(i));
+        it(`verify survey ${i}`, verifySurveyFn(i));
+        it(`revert update survey ${i}`, revertUpdateSurveyTextFn(i));
+        it(`verify survey ${i}`, verifySurveyFn(i));
         it(`list surveys and verify`, listSurveysFn());
     }
 
