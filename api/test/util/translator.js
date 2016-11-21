@@ -9,7 +9,7 @@ const translator = {
     _translate(text, language) {
         return `${text} (${language})`;
     },
-    _isTranslated(texts, language) {
+    isTranslated(texts, language) {
         const languageText = `(${language})`;
         texts.forEach(text => {
             if (text !== null) {
@@ -53,6 +53,19 @@ const translator = {
         delete result.questions;
         return result;
     },
+    isQuestionTranslated(question, language) {
+        const texts = question.choices ? [] : [question.text];
+        if (question.choices) {
+            question.choices.forEach(choice => texts.push(choice.text));
+        }
+        if (question.actions) {
+            question.actions.forEach(action => texts.push(action.text));
+        }
+        this.isTranslated(texts, language);
+    },
+    isQuestionListTranslated(questions, language) {
+        questions.forEach(question => this.isQuestionTranslated(question, language));
+    },
     isSurveyTranslated(survey, language) {
         const texts = [survey.name];
         if (survey.description) {
@@ -61,12 +74,12 @@ const translator = {
         if (survey.sections) {
             texts.push(...survey.sections.map(section => section.name));
         }
-        this._isTranslated(texts, language);
+        this.isTranslated(texts, language);
     },
     isSurveyListTranslated(surveys, language) {
         const texts = surveys.map(survey => survey.name);
         const descriptions = surveys.filter(survey => survey.description).map(survey => survey.description);
-        this._isTranslated([...texts, ...descriptions], language);
+        this.isTranslated([...texts, ...descriptions], language);
     },
     translateConsentType(consentType, language) {
         const result = _.pick(consentType, ['id', 'title']);

@@ -130,30 +130,36 @@ describe('question unit', function () {
         };
     };
 
-    const getTranslatedQuestionFn = function (index, language) {
+    const getTranslatedQuestionFn = function (index, language, notTranslated) {
         return function () {
             const id = hxQuestion.id(index);
             return models.question.getQuestion(id, { language })
                 .then(result => {
                     const expected = hxQuestion.translatedServer(index, language);
+                    if (!notTranslated) {
+                        translator.isQuestionTranslated(expected, language);
+                    }
                     expect(result).to.deep.equal(expected);
                 });
         };
     };
 
-    const listTranslatedQuestionsFn = function (language) {
+    const listTranslatedQuestionsFn = function (language, notTranslated) {
         return function () {
             return models.question.listQuestions({ language })
                 .then(result => {
                     const expected = hxQuestion.listTranslatedServers(language);
+                    if (!notTranslated) {
+                        translator.isQuestionListTranslated(expected, language);
+                    }
                     expect(result).to.deep.equal(expected);
                 });
         };
     };
 
-    it('get question 3 in spanish when no name translation', getTranslatedQuestionFn(3, 'es'));
+    it('get question 3 in spanish when no name translation', getTranslatedQuestionFn(3, 'es', true));
 
-    it('list questions in spanish when no translation', listTranslatedQuestionsFn('es'));
+    it('list questions in spanish when no translation', listTranslatedQuestionsFn('es', true));
 
     for (let i = 0; i < 10; ++i) {
         it(`add translated (es) question ${i}`, translateQuestionFn(i, 'es'));
@@ -167,9 +173,9 @@ describe('question unit', function () {
         it(`get and verify tanslated (fr) question ${i}`, getTranslatedQuestionFn(i, 'fr'));
     }
 
-    it('list and verify translated (fr) questions', listTranslatedQuestionsFn('fr'));
+    it('list and verify translated (fr) questions', listTranslatedQuestionsFn('fr', true));
 
-    it('list questions in english (original)', listTranslatedQuestionsFn('en'));
+    it('list questions in english (original)', listTranslatedQuestionsFn('en', true));
 
     const qxDeleteFn = function (index) {
         return function () {
