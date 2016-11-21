@@ -117,7 +117,7 @@ const updateStatus = function (userId, surveyId, status, transaction) {
         });
 };
 
-module.exports = class {
+module.exports = class AnswerDAO {
     constructor(dependencies) {
         Object.assign(this, dependencies);
     }

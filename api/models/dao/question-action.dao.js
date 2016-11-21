@@ -4,20 +4,19 @@ const db = require('../db');
 
 const SPromise = require('../../lib/promise');
 
-const textTableMethods = require('./text-table-methods');
+const Translatable = require('./translatable');
 
-const sequelize = db.sequelize;
 const QuestionAction = db.QuestionAction;
 
-const textHandler = textTableMethods(sequelize, 'question_action_text', 'questionActionId');
-
-module.exports = class {
-    constructor() {}
+module.exports = class QuestionActionDAO extends Translatable {
+    constructor() {
+        super('question_action_text', 'questionActionId');
+    }
 
     createActionPerQuestionTx(questionId, { text, type }, line, tx) {
         const r = { questionId, type, line };
         return QuestionAction.create(r, { transaction: tx })
-            .then(({ id }) => textHandler.createTextTx({ id, text }, tx));
+            .then(({ id }) => this.createTextTx({ id, text }, tx));
     }
 
     createActionsPerQuestionTx(questionId, actions, tx) {
@@ -33,7 +32,7 @@ module.exports = class {
                 attributes: ['id', 'type'],
                 order: 'line'
             })
-            .then(actions => textHandler.updateAllTexts(actions, language));
+            .then(actions => this.updateAllTexts(actions, language));
     }
 
     findActionsPerQuestions(ids, language) {
@@ -46,11 +45,11 @@ module.exports = class {
             options.where = { questionId: { $in: ids } };
         }
         return QuestionAction.findAll(options)
-            .then(actions => textHandler.updateAllTexts(actions, language));
+            .then(actions => this.updateAllTexts(actions, language));
     }
 
     updateMultipleActionTextsTx(actions, language, tx) {
         const inputs = actions.map(({ id, text }) => ({ id, text, language }));
-        return textHandler.createMultipleTextsTx(inputs, tx);
+        return this.createMultipleTextsTx(inputs, tx);
     }
 };

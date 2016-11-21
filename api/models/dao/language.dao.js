@@ -4,7 +4,7 @@ const db = require('../db');
 
 const Language = db.Language;
 
-module.exports = class {
+module.exports = class LanguageDAO {
     constructor() {}
 
     createLanguage(language) {

@@ -7,7 +7,7 @@ const SPromise = require('../../lib/promise');
 const sequelize = db.sequelize;
 const User = db.User;
 
-module.exports = class {
+module.exports = class ProfileDAO {
     constructor(dependencies) {
         Object.assign(this, dependencies);
     }

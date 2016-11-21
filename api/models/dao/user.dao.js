@@ -14,7 +14,7 @@ const clientUpdatableFields = ['email', 'password'].reduce((r, p) => {
     return r;
 }, {});
 
-module.exports = class {
+module.exports = class UserDAO {
     constructor(dependencies) {
         Object.assign(this, dependencies);
     }

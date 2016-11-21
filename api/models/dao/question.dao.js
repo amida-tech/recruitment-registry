@@ -6,16 +6,15 @@ const db = require('../db');
 
 const RRError = require('../../lib/rr-error');
 const SPromise = require('../../lib/promise');
-const textTableMethods = require('./text-table-methods');
+const Translatable = require('./translatable');
 
 const sequelize = db.sequelize;
 const SurveyQuestion = db.SurveyQuestion;
 const Question = db.Question;
 
-const textHandler = textTableMethods(sequelize, 'question_text', 'questionId');
-
-module.exports = class {
+module.exports = class QuestionDAO extends Translatable {
     constructor(dependencies) {
+        super('question_text', 'questionId');
         Object.assign(this, dependencies);
     }
 
@@ -34,7 +33,7 @@ module.exports = class {
             .then(created => {
                 const text = question.text;
                 const id = created.id;
-                return textHandler.createTextTx({ text, id }, tx)
+                return this.createTextTx({ text, id }, tx)
                     .then(() => created);
             })
             .then(created => {
@@ -120,7 +119,7 @@ module.exports = class {
                 }
                 return question;
             })
-            .then(question => textHandler.updateText(question, language))
+            .then(question => this.updateText(question, language))
             .then(question => {
                 return this.questionAction.findActionsPerQuestion(question.id, language)
                     .then(actions => {
@@ -156,7 +155,7 @@ module.exports = class {
 
     _updateQuestionTextTx({ id, text }, language, tx) {
         if (text) {
-            return textHandler.createTextTx({ id, text, language }, tx);
+            return this.createTextTx({ id, text, language }, tx);
         } else {
             return SPromise.resolve();
         }
@@ -228,7 +227,7 @@ module.exports = class {
                 if (ids) {
                     qtOptions.where = { questionId: { $in: ids } };
                 }
-                return textHandler.updateAllTexts(questions, language)
+                return this.updateAllTexts(questions, language)
                     .then(() => {
                         return this.questionAction.findActionsPerQuestions(ids, language)
                             .then(actions => {

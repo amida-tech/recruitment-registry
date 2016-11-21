@@ -7,7 +7,7 @@ const SPromise = require('../../lib/promise');
 const sequelize = db.sequelize;
 const ConsentSignature = db.ConsentSignature;
 
-module.exports = class {
+module.exports = class ConsentSignatureDAO {
     constructor() {}
 
     createSignature(input, tx) {

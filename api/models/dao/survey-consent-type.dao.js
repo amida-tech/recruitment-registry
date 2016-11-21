@@ -6,7 +6,7 @@ const db = require('../db');
 
 const SurveyConsentType = db.SurveyConsentType;
 
-module.exports = class {
+module.exports = class SurveyConsentTypeDAO {
     constructor(dependencies) {
         Object.assign(this, dependencies);
     }

@@ -4,17 +4,17 @@ const db = require('../db');
 
 const RRError = require('../../lib/rr-error');
 
-const textTableMethods = require('./text-table-methods');
+const Translatable = require('./translatable');
 
 const sequelize = db.sequelize;
 const ConsentType = db.ConsentType;
 const ConsentSection = db.ConsentSection;
 const ConsentDocument = db.ConsentDocument;
 
-const textHandler = textTableMethods(sequelize, 'consent_type_text', 'consentTypeId', ['title']);
-
-module.exports = class {
-    constructor() {}
+module.exports = class ConsentTypeDAO extends Translatable {
+    constructor() {
+        super('consent_type_text', 'consentTypeId', ['title']);
+    }
 
     getConsentType(id, options = {}) {
         const _options = {
@@ -22,11 +22,11 @@ module.exports = class {
             attributes: ['id', 'name', 'type']
         };
         return ConsentType.findById(id, _options)
-            .then(consentType => textHandler.updateText(consentType, options.language));
+            .then(consentType => this.updateText(consentType, options.language));
     }
 
     updateConsentTypeText({ id, title }, language) {
-        return textHandler.createText({ id, title, language });
+        return this.createText({ id, title, language });
     }
 
     listConsentTypes(options = {}) {
@@ -42,12 +42,12 @@ module.exports = class {
             query.transaction = options.transaction;
         }
         return ConsentType.findAll(query)
-            .then(types => textHandler.updateAllTexts(types, options.language));
+            .then(types => this.updateAllTexts(types, options.language));
     }
 
     createConsentType({ name, title, type }) {
         return ConsentType.create({ name, type })
-            .then(({ id }) => textHandler.createText({ id, title }))
+            .then(({ id }) => this.createText({ id, title }))
             .then(({ id }) => ({ id }));
     }
 
