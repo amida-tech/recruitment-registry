@@ -8,6 +8,7 @@ const _ = require('lodash');
 const config = require('../config');
 
 const SharedIntegration = require('./util/shared-integration');
+const RRSuperTest = require('./util/rr-super-test');
 const Generator = require('./util/entity-generator');
 const AnswerHistory = require('./util/answer-history');
 const answerCommon = require('./util/answer-common');
@@ -18,10 +19,7 @@ describe('answer integration', function () {
     const generator = new Generator();
     const shared = new SharedIntegration(generator);
 
-    const store = {
-        server: null,
-        auth: null
-    };
+    const store = new RRSuperTest();
 
     const testQuestions = answerCommon.testQuestions;
     const hxAnswer = new AnswerHistory(testQuestions);
@@ -69,31 +67,20 @@ describe('answer integration', function () {
             if (language) {
                 input.language = language;
             }
-            store.server
-                .post('/api/v1.0/answers')
-                .set('Authorization', store.auth)
-                .send(input)
-                .expect(204, done);
+            store.post('/answers', input, 204).end(done);
         };
     };
 
     const getAndVerifyFn = function (userIndex, surveyIndex, seqIndex) {
         return function (done) {
             const surveyId = hxSurvey.id(surveyIndex);
-            store.server
-                .get('/api/v1.0/answers')
-                .query({ 'survey-id': surveyId })
-                .set('Authorization', store.auth)
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.get('/answers', true, 200, { 'survey-id': surveyId })
+                .expect(function (res) {
                     const expected = hxAnswer.expectedAnswers(userIndex, surveyIndex, seqIndex);
                     const actual = _.sortBy(res.body, 'questionId');
                     expect(actual).to.deep.equal(expected);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 

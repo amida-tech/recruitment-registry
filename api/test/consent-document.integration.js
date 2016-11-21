@@ -6,6 +6,7 @@ const chai = require('chai');
 const _ = require('lodash');
 
 const SharedIntegration = require('./util/shared-integration');
+const RRSuperTest = require('./util/rr-super-test');
 const Generator = require('./util/entity-generator');
 const ConsentDocumentHistory = require('./util/consent-document-history');
 const config = require('../config');
@@ -19,28 +20,19 @@ const shared = new SharedIntegration(generator);
 describe('consent document integration', function () {
     const userCount = 4;
 
-    const store = {
-        server: null,
-        auth: null
-    };
+    const store = new RRSuperTest();
     const history = new ConsentDocumentHistory(userCount);
 
     before(shared.setUpFn(store));
 
     const listConsentTypesFn = function () {
         return function (done) {
-            store.server
-                .get('/api/v1.0/consent-types')
-                .set('Authorization', store.auth)
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.get('/consent-types', true, 200)
+                .expect(function (res) {
                     const types = history.listTypes();
                     expect(res.body).to.deep.equal(types);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -61,17 +53,11 @@ describe('consent document integration', function () {
 
     it('login as user 0', shared.loginIndexFn(store, history.hxUser, 0));
     it('error: no consent documents of existing types', function (done) {
-        store.server
-            .get(`/api/v1.0/user-consent-documents`)
-            .set('Authorization', store.auth)
-            .expect(400)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+        store.get('/user-consent-documents', true, 400)
+            .expect(function (res) {
                 expect(res.body.message).to.equal(RRError.message('noSystemConsentDocuments'));
-                done();
-            });
+            })
+            .end(done);
     });
     it('logout as user 0', shared.logoutFn(store));
 
@@ -80,52 +66,36 @@ describe('consent document integration', function () {
     const getConsentDocumentFn = function (typeIndex) {
         return function (done) {
             const id = history.id(typeIndex);
-            store.server
-                .get(`/api/v1.0/consent-documents/${id}`)
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.get(`/consent-documents/${id}`, false, 200)
+                .expect(function (res) {
                     const expected = history.server(typeIndex);
                     expect(res.body).to.deep.equal(expected);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
     const getConsentDocumentByTypeNameFn = function (typeIndex) {
         return function (done) {
             const typeName = history.type(typeIndex).name;
-            store.server
-                .get(`/api/v1.0/consent-documents/type-name/${typeName}`)
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.get(`/consent-documents/type-name/${typeName}`, false, 200)
+                .expect(function (res) {
                     const expected = history.server(typeIndex);
                     expect(res.body).to.deep.equal(expected);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
     const getTranslatedConsentDocumentFn = function (typeIndex, language) {
         return function (done) {
             const id = history.id(typeIndex);
-            store.server
-                .get(`/api/v1.0/consent-documents/${id}`)
-                .query({ language })
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.get(`/consent-documents/${id}`, false, 200, { language })
+                .expect(function (res) {
                     const expected = history.hxDocument.translatedServer(typeIndex, language);
                     expect(res.body).to.deep.equal(expected);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -139,36 +109,23 @@ describe('consent document integration', function () {
 
     const getUserConsentDocumentsFn = function (expectedIndices) {
         return function (done) {
-            store.server
-                .get('/api/v1.0/user-consent-documents')
-                .set('Authorization', store.auth)
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.get('/user-consent-documents', true, 200)
+                .expect(function (res) {
                     const expected = history.serversInList(expectedIndices);
                     expect(res.body).to.deep.equal(expected);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
     const getTranslatedUserConsentDocumentsFn = function (expectedIndices, language) {
         return function (done) {
-            store.server
-                .get('/api/v1.0/user-consent-documents')
-                .set('Authorization', store.auth)
-                .query({ language })
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.get('/user-consent-documents', true, 200, { language })
+                .expect(function (res) {
                     const expected = history.translatedServersInList(expectedIndices, language);
                     expect(res.body).to.deep.equal(expected);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -191,31 +148,22 @@ describe('consent document integration', function () {
             if (language) {
                 input.language = language;
             }
-            store.server
-                .post(`/api/v1.0/consent-signatures`)
-                .set('Authorization', store.auth)
-                .set('User-Agent', `Browser-${typeId}`)
-                .set('X-Forwarded-For', [`9848.3${typeId}.838`, `111.${typeId}0.999`])
-                .send(input)
-                .expect(201)
-                .end(function (err) {
-                    if (err) {
-                        return done(err);
-                    }
+            const header = {
+                'User-Agent': `Browser-${typeId}`,
+                'X-Forwarded-For': [`9848.3${typeId}.838`, `111.${typeId}0.999`]
+            };
+            store.post('/consent-signatures', input, 201, header)
+                .expect(function () {
                     history.sign(typeIndex, userIndex, language);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
     const signConsentTypeAgainFn = function (typeIndex) {
         return function (done) {
             const consentDocumentId = history.id(typeIndex);
-            store.server
-                .post(`/api/v1.0/consent-signatures`)
-                .set('Authorization', store.auth)
-                .send({ consentDocumentId })
-                .expect(400, done);
+            store.post('/consent-signatures', { consentDocumentId }, 400).end(done);
         };
     };
 
@@ -336,17 +284,11 @@ describe('consent document integration', function () {
     const deleteConsentTypeFn = function (index) {
         return function (done) {
             const id = history.typeId(index);
-            store.server
-                .delete(`/api/v1.0/consent-types/${id}`)
-                .set('Authorization', store.auth)
-                .expect(204)
-                .end(function (err) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.delete(`/consent-types/${id}`, 204)
+                .expect(function () {
                     history.deleteType(index);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -363,19 +305,12 @@ describe('consent document integration', function () {
     const verifySignaturesFn = function (userIndex) {
         return function (done) {
             const userId = history.userId(userIndex);
-            store.server
-                .get(`/api/v1.0/consent-signatures`)
-                .set('Authorization', store.auth)
-                .query({ 'user-id': userId })
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.get('/consent-signatures', true, 200, { 'user-id': userId })
+                .expect(function (res) {
                     const expected = _.sortBy(history.signatures[userIndex], 'id');
                     expect(res.body).to.deep.equal(expected);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 

@@ -6,6 +6,7 @@ const chai = require('chai');
 const _ = require('lodash');
 
 const SharedIntegration = require('./util/shared-integration.js');
+const RRSuperTest = require('./util/rr-super-test');
 
 const config = require('../config');
 
@@ -13,44 +14,29 @@ const expect = chai.expect;
 const shared = new SharedIntegration();
 
 describe('language integration', function () {
-    const store = {
-        server: null,
-        auth: null
-    };
+    const store = new RRSuperTest();
 
     before(shared.setUpFn(store));
 
     let languages;
 
     const listLanguagesFn = function (done) {
-        store.server
-            .get('/api/v1.0/languages')
-            .set('Authorization', store.auth)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+        store.get('/languages', true, 200)
+            .expect(function (res) {
                 expect(res.body).to.deep.equal(languages);
-                done();
-            });
+            })
+            .end(done);
     };
 
     it('login as super', shared.loginFn(store, config.superUser));
 
     it('list existing languages', function (done) {
-        store.server
-            .get('/api/v1.0/languages')
-            .set('Authorization', store.auth)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+        store.get('/languages', true, 200)
+            .expect(function (res) {
                 languages = res.body;
                 expect(languages).to.have.length.above(0);
-                done();
-            });
+            })
+            .end(done);
     });
 
     const example = {
@@ -60,68 +46,42 @@ describe('language integration', function () {
     };
 
     it('create language', function (done) {
-        store.server
-            .post('/api/v1.0/languages')
-            .set('Authorization', store.auth)
-            .send(example)
-            .expect(201)
-            .end(function (err) {
-                if (err) {
-                    return done(err);
-                }
+        store.post('/languages', example, 201)
+            .expect(function () {
                 languages.push(example);
                 _.sortBy(languages, 'code');
-                done();
-            });
+            })
+            .end(done);
     });
 
     it('get language', function (done) {
-        store.server
-            .get(`/api/v1.0/languages/${example.code}`)
-            .set('Authorization', store.auth)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+        store.get(`/languages/${example.code}`, true, 200)
+            .expect(function (res) {
                 expect(res.body).to.deep.equal(example);
-                done();
-            });
+            })
+            .end(done);
     });
 
     it('list existing languages', listLanguagesFn);
 
     it('delete language', function (done) {
-        store.server
-            .delete(`/api/v1.0/languages/fr`)
-            .set('Authorization', store.auth)
-            .expect(204)
-            .end(function (err) {
-                if (err) {
-                    return done(err);
-                }
+        store.delete('/languages/fr', 204)
+            .expect(function () {
                 _.remove(languages, { code: 'fr' });
-                done();
-            });
+            })
+            .end(done);
     });
 
     it('list existing languages', listLanguagesFn);
 
     it('patch language', function (done) {
         const languageUpdate = { name: 'Turk', nativeName: 'Türk' };
-        store.server
-            .patch(`/api/v1.0/languages/tr`)
-            .set('Authorization', store.auth)
-            .send(languageUpdate)
-            .expect(204)
-            .end(function (err) {
-                if (err) {
-                    return done(err);
-                }
+        store.patch('/languages/tr', languageUpdate, 204)
+            .expect(function () {
                 const language = _.find(languages, { code: 'tr' });
                 Object.assign(language, languageUpdate);
-                done();
-            });
+            })
+            .end(done);
     });
 
     it('list existing languages', listLanguagesFn);

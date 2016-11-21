@@ -5,19 +5,17 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 const _ = require('lodash');
 
-const Shared = require('./util/shared-integration');
+const SharedIntegration = require('./util/shared-integration');
+const RRSuperTest = require('./util/rr-super-test');
 
 const config = require('../config');
 
 const expect = chai.expect;
 
-const shared = new Shared();
+const shared = new SharedIntegration();
 
 describe('smtp integration', function () {
-    const store = {
-        server: null,
-        auth: null
-    };
+    const store = new RRSuperTest();
 
     before(shared.setUpFn(store));
 
@@ -26,17 +24,11 @@ describe('smtp integration', function () {
     let smtpTextTranslation = {};
 
     const checkNull = function (done) {
-        store.server
-            .get('/api/v1.0/smtp')
-            .set('Authorization', store.auth)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+        store.get('/smtp', true, 200)
+            .expect(function (res) {
                 expect(res.body.exists).to.equal(false);
-                done();
-            });
+            })
+            .end(done);
     };
 
     const createNewSmtp = function (index) {
@@ -67,22 +59,15 @@ describe('smtp integration', function () {
             if (withText) {
                 Object.assign(newSmtp, newSmtpText);
             }
-            store.server
-                .post('/api/v1.0/smtp')
-                .set('Authorization', store.auth)
-                .send(newSmtp)
-                .expect(204)
-                .end(function (err) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.post('/smtp', newSmtp, 204)
+                .expect(function () {
                     smtp = newSmtp;
                     if (withText) {
                         smtpText = newSmtpText;
                         smtpTextTranslation = {};
                     }
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -90,49 +75,32 @@ describe('smtp integration', function () {
         return function (done) {
             const text = createNewSmtpText(index);
             language = language || 'en';
-            store.server
-                .patch(`/api/v1.0/smtp/text/${language}`)
-                .set('Authorization', store.auth)
-                .send(text)
-                .expect(204)
-                .end(function (err) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.patch(`/smtp/text/${language}`, text, 204)
+                .expect(function () {
                     smtpText = text;
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
     const getSmtpFn = function () {
         return function (done) {
-            store.server
-                .get('/api/v1.0/smtp')
-                .set('Authorization', store.auth)
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.get('/smtp', true, 200)
+                .expect(function (res) {
                     let expected = _.cloneDeep(smtp);
                     if (smtpText) {
                         Object.assign(expected, smtpText);
                     }
                     expect(res.body.exists).to.equal(true);
                     expect(res.body.smtp).to.deep.equal(expected);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
     const getTranslatedSmtpFn = function (language, checkFields) {
         return function (done) {
-            store.server
-                .get('/api/v1.0/smtp')
-                .set('Authorization', store.auth)
-                .query({ language })
-                .expect(200)
+            store.get('/smtp', true, 200, { language })
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
@@ -169,28 +137,18 @@ describe('smtp integration', function () {
         return function (language) {
             return function (done) {
                 const translation = translateSmtp(smtpText, language);
-                store.server
-                    .patch(`/api/v1.0/smtp/text/${language}`)
-                    .set('Authorization', store.auth)
-                    .send(translation)
-                    .expect(204)
-                    .end(function (err) {
-                        if (err) {
-                            return done(err);
-                        }
+                store.patch(`/smtp/text/${language}`, translation, 204)
+                    .expect(function () {
                         smtpTextTranslation[language] = translation;
-                        done();
-                    });
+                    })
+                    .end(done);
             };
         };
     })();
 
     const deleteSmtpFn = function () {
         return function (done) {
-            store.server
-                .delete(`/api/v1.0/smtp`)
-                .set('Authorization', store.auth)
-                .expect(204, done);
+            store.delete('/smtp', 204).end(done);
         };
     };
 

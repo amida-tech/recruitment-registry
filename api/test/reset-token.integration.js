@@ -9,6 +9,7 @@ const chai = require('chai');
 const smtpServer = require('smtp-server');
 
 const SharedIntegration = require('./util/shared-integration');
+const RRSuperTest = require('./util/rr-super-test');
 const Generator = require('./util/entity-generator');
 
 const config = require('../config');
@@ -24,10 +25,7 @@ describe('reset-token integration', function () {
 
     // -------- set up system (syncAndLoadAlzheimer)
 
-    const store = {
-        server: null,
-        auth: null
-    };
+    const store = new RRSuperTest();
 
     const receivedEmail = {
         auth: null,
@@ -91,16 +89,11 @@ describe('reset-token integration', function () {
     let survey;
 
     it('get profile survey', function (done) {
-        store.server
-            .get('/api/v1.0/profile-survey')
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+        store.get('/profile-survey', false, 200)
+            .expect(function (res) {
                 survey = res.body.survey;
-                done();
-            });
+            })
+            .end(done);
     });
 
     // --------- set up account
@@ -109,14 +102,8 @@ describe('reset-token integration', function () {
 
     it('fill user profile and submit', function (done) {
         answers = generator.answerQuestions(survey.questions);
-
-        store.server
-            .post('/api/v1.0/profiles')
-            .send({
-                user: userExample,
-                answers
-            })
-            .expect(201, done);
+        const user = userExample;
+        store.post('/profiles', { user, answers }, 201).end(done);
     });
 
     // --------- login
@@ -126,19 +113,12 @@ describe('reset-token integration', function () {
     let token = null;
 
     it('error: no smtp settings is specified', function (done) {
-        store.server
-            .post(`/api/v1.0/reset-tokens`)
-            .send({
-                email: userExample.email
-            })
-            .expect(400)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+        const email = userExample.email;
+        store.post('/reset-tokens', { email }, 400)
+            .expect(function (res) {
                 expect(res.body.message).to.equal(RRError.message('smtpNotSpecified'));
-                done();
-            });
+            })
+            .end(done);
     });
 
     it('login as super', shared.loginFn(store, config.superUser));
@@ -153,30 +133,19 @@ describe('reset-token integration', function () {
     };
 
     it('setup server specifications', function (done) {
-        store.server
-            .post('/api/v1.0/smtp')
-            .set('Authorization', store.auth)
-            .send(smtpSpec)
-            .expect(204, done);
+        store.post('/smtp', smtpSpec, 204).end(done);
     });
 
     it('logout as super', shared.logoutFn(store));
 
     it('error: no email subject/content is specified', function (done) {
-        store.server
-            .post(`/api/v1.0/reset-tokens`)
-            .send({
-                email: userExample.email
-            })
-            .expect(400)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+        const email = userExample.email;
+        store.post('/reset-tokens', { email }, 400)
+            .expect(function (res) {
                 expect(res.body.message).to.not.equal(RRError.message('unknown'));
                 expect(res.body.message).to.equal(RRError.message('smtpTextNotSpecified'));
-                done();
-            });
+            })
+            .end(done);
     });
 
     it('login as super', shared.loginFn(store, config.superUser));
@@ -187,56 +156,28 @@ describe('reset-token integration', function () {
     };
 
     it('setup server specifications', function (done) {
-        store.server
-            .patch('/api/v1.0/smtp/text/en')
-            .set('Authorization', store.auth)
-            .send(smtpText)
-            .expect(204, done);
+        store.patch('/smtp/text/en', smtpText, 204).end(done);
     });
 
     it('logout as super', shared.logoutFn(store));
 
     it('error: generate reset tokens', function (done) {
-        store.server
-            .post('/api/v1.0/reset-tokens')
-            .send({
-                email: userExample.email
-            })
-            .expect(500)
-            .end(function (err) {
-                if (err) {
-                    return done(err);
-                }
-                done();
-            });
+        const email = userExample.email;
+        store.post('/reset-tokens', { email }, 500).end(done);
     });
 
     it('login as super', shared.loginFn(store, config.superUser));
 
     it('setup server specifications', function (done) {
         smtpSpec.from = 'smtp@rr.com';
-        store.server
-            .post('/api/v1.0/smtp')
-            .set('Authorization', store.auth)
-            .send(smtpSpec)
-            .expect(204, done);
+        store.post('/smtp', smtpSpec, 204).end(done);
     });
 
     it('logout as super', shared.logoutFn(store));
 
     it('generate reset tokens', function (done) {
-        store.server
-            .post('/api/v1.0/reset-tokens')
-            .send({
-                email: userExample.email
-            })
-            .expect(204)
-            .end(function (err) {
-                if (err) {
-                    return done(err);
-                }
-                done();
-            });
+        const email = userExample.email;
+        store.post('/reset-tokens', { email }, 204).end(done);
     });
 
     it('verify user can not login', shared.badLoginFn(store, userExample));
@@ -267,13 +208,8 @@ describe('reset-token integration', function () {
     });
 
     it('reset password', function (done) {
-        store.server
-            .post('/api/v1.0/users/password')
-            .send({
-                token,
-                password: 'newPassword'
-            })
-            .expect(204, done);
+        const password = 'newPassword';
+        store.post('/users/password', { token, password }, 204).end(done);
     });
 
     it('verify user can not login with old password', shared.badLoginFn(store, userExample));

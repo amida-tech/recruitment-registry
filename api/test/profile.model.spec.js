@@ -6,7 +6,6 @@ const chai = require('chai');
 
 const models = require('../models');
 const SharedSpec = require('./util/shared-spec.js');
-const tokener = require('../lib/tokener');
 const History = require('./util/entity-history');
 const Generator = require('./util/entity-generator');
 const comparator = require('./util/client-server-comparator');
@@ -29,7 +28,6 @@ describe('profile unit', function () {
             const user = generator.newUser();
             const input = { user };
             return models.profile.createProfile(input)
-                .then(({ token }) => tokener.verifyJWT(token))
                 .then(({ id }) => hxUser.push(user, { id }))
                 .then(() => hxAnswers.push(null));
         };
@@ -96,7 +94,6 @@ describe('profile unit', function () {
                 input.signatures = signatures.map(sign => hxConsentDoc.id(sign));
             }
             return models.profile.createProfile(input, language)
-                .then(({ token }) => tokener.verifyJWT(token))
                 .then(({ id }) => hxUser.push(clientUser, { id }));
         };
     };

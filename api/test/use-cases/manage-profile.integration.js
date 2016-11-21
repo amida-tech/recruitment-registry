@@ -8,6 +8,7 @@ const chai = require('chai');
 const helper = require('../util/survey-common');
 
 const SharedIntegration = require('../util/shared-integration');
+const RRSuperTest = require('../util/rr-super-test');
 const userExamples = require('../fixtures/example/user');
 const surveyExamples = require('../fixtures/example/survey');
 
@@ -22,10 +23,7 @@ describe('user set-up and login use-case', function () {
 
     // -------- set up system (syncAndLoadAlzheimer)
 
-    const store = {
-        server: null,
-        auth: null
-    };
+    const store = new RRSuperTest();
 
     before(shared.setUpFn(store));
 
@@ -42,16 +40,11 @@ describe('user set-up and login use-case', function () {
     let survey;
 
     it('get profile survey', function (done) {
-        store.server
-            .get('/api/v1.0/profile-survey')
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+        store.get('/profile-survey', false, 200)
+            .expect(function (res) {
                 survey = res.body.survey;
-                done();
-            });
+            })
+            .end(done);
     });
 
     // --------- set up account
@@ -60,34 +53,15 @@ describe('user set-up and login use-case', function () {
 
     it('fill user profile and submit', function (done) {
         answers = helper.formAnswersToPost(survey, surveyExample.answer);
-
-        store.server
-            .post('/api/v1.0/profiles')
-            .send({
-                user: userExample,
-                answers
-            })
-            .expect(201)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-                store.auth = 'Bearer ' + res.body.token;
-                done();
-            });
+        const user = userExample;
+        store.authPost('/profiles', { user, answers }, 201).end(done);
     });
 
     // -------- verification
 
     it('verify user profile', function (done) {
-        store.server
-            .get('/api/v1.0/profiles')
-            .set('Authorization', store.auth)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+        store.get('/profiles', true, 200)
+            .expect(function (res) {
                 const result = res.body;
 
                 const expectedUser = _.cloneDeep(userExample);
@@ -101,8 +75,8 @@ describe('user set-up and login use-case', function () {
                 const expectedSurvey = helper.formAnsweredSurvey(survey, answers);
                 expect(actualSurvey).to.deep.equal(expectedSurvey);
 
-                done();
-            });
+            })
+            .end(done);
     });
 
     // --------
@@ -112,25 +86,18 @@ describe('user set-up and login use-case', function () {
         const userUpdates = {
             email: 'updated@example.com'
         };
-        store.server
-            .patch('/api/v1.0/profiles')
-            .set('Authorization', store.auth)
+        const user = userUpdates;
+        store.patch('/profiles', { user, answers }, 204)
             .send({
                 user: userUpdates,
                 answers
             })
-            .expect(204, done);
+            .end(done);
     });
 
     it('verify user profile', function (done) {
-        store.server
-            .get('/api/v1.0/profiles')
-            .set('Authorization', store.auth)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+        store.get('/profiles', true, 200)
+            .expect(function (res) {
                 const result = res.body;
 
                 const expectedUser = _.cloneDeep(userExample);
@@ -145,7 +112,7 @@ describe('user set-up and login use-case', function () {
                 const expectedSurvey = helper.formAnsweredSurvey(survey, answers);
                 expect(actualSurvey).to.deep.equal(expectedSurvey);
 
-                done();
-            });
+            })
+            .end(done);
     });
 });

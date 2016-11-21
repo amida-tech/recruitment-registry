@@ -5,6 +5,7 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 
 const SharedIntegration = require('../util/shared-integration');
+const RRSuperTest = require('../util/rr-super-test');
 const Generator = require('../util/entity-generator');
 const consentSeed = require('../util/consent-seed');
 const consentExample = require('../fixtures/example/consent-demo');
@@ -24,10 +25,7 @@ describe('consent demo simpler', function () {
     const userExample = userExamples.Alzheimer;
     const surveyExample = surveyExamples.Alzheimer;
 
-    const store = {
-        server: null,
-        auth: null
-    };
+    const store = new RRSuperTest();
 
     //*******
     // Sync and seed the database.  This is part of syncAndLoadAlzheimer.js script.  It creates the consent documents.
@@ -56,19 +54,14 @@ describe('consent demo simpler', function () {
     //****** START 2
 
     it('get Terms of Use before registration', function (done) {
-        store.server
-            .get('/api/v1.0/consent-documents/type-name/terms-of-use')
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+        store.get('/consent-documents/type-name/terms-of-use', false, 200)
+            .expect(function (res) {
                 const result = res.body;
                 expect(!!result.content).to.equal(true);
                 termsOfUse = res.body;
                 //console.log(res.body);
-                done();
-            });
+            })
+            .end(done);
 
     });
 
@@ -82,38 +75,23 @@ describe('consent demo simpler', function () {
     let survey;
 
     it('get profile survey', function (done) {
-        store.server
-            .get('/api/v1.0/profile-survey')
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+        store.get('/profile-survey', false, 200)
+            .expect(function (res) {
                 survey = res.body.survey;
-                done();
-            });
+            })
+            .end(done);
     });
 
     let answers;
 
     it('fill user profile and submit', function (done) {
         answers = helper.formAnswersToPost(survey, surveyExample.answer);
-
-        store.server
-            .post('/api/v1.0/profiles')
-            .send({
-                user: userExample,
-                answers,
-                signatures: [termsOfUse.id] // HERE IS THE SIGNATURE
-            })
-            .expect(201)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-                store.auth = 'Bearer ' + res.body.token;
-                done();
-            });
+        const input = {
+            user: userExample,
+            answers,
+            signatures: [termsOfUse.id] // HERE IS THE SIGNATURE
+        };
+        store.post('/profiles', input, 201).end(done);
     });
 
     //****** END 3
@@ -126,19 +104,13 @@ describe('consent demo simpler', function () {
     it('login as user', shared.loginFn(store, userExample));
 
     it('get the Terms of Use document with signature', function (done) {
-        store.server
-            .get('/api/v1.0/user-consent-documents/type-name/terms-of-use')
-            .set('Authorization', store.auth)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+        store.get('/user-consent-documents/type-name/terms-of-use', true, 200)
+            .expect(function (res) {
                 expect(res.body.content).to.equal(termsOfUse.content);
                 expect(res.body.signature).to.equal(true);
                 //console.log(res.body);
-                done();
-            });
+            })
+            .end(done);
     });
 
     //****** END 4
@@ -151,19 +123,13 @@ describe('consent demo simpler', function () {
     //****** START 5
 
     it('get the Consents document', function (done) {
-        store.server
-            .get('/api/v1.0/user-consent-documents/type-name/consent')
-            .set('Authorization', store.auth)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+        store.get('/user-consent-documents/type-name/consent', true, 200)
+            .expect(function (res) {
                 consents = res.body;
                 expect(res.body.signature).to.equal(false);
                 //console.log(res.body);
-                done();
-            });
+            })
+            .end(done);
     });
 
     //****** END 5
@@ -173,17 +139,7 @@ describe('consent demo simpler', function () {
     //****** START 6
 
     it('sign the Consents document', function (done) {
-        store.server
-            .post(`/api/v1.0/consent-signatures`)
-            .set('Authorization', store.auth)
-            .send({ consentDocumentId: consents.id })
-            .expect(201)
-            .end(function (err) {
-                if (err) {
-                    return done(err);
-                }
-                done();
-            });
+        store.post('/consent-signatures', { consentDocumentId: consents.id }, 201).end(done);
     });
 
     //****** END 6
@@ -194,19 +150,13 @@ describe('consent demo simpler', function () {
     //****** START 7
 
     it('get the Consents document', function (done) {
-        store.server
-            .get(`/api/v1.0/user-consent-documents/type-name/consent`)
-            .set('Authorization', store.auth)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+        store.get('/user-consent-documents/type-name/consent', true, 200)
+            .expect(function (res) {
                 consents = res.body;
                 expect(res.body.signature).to.equal(true);
                 //console.log(res.body);
-                done();
-            });
+            })
+            .end(done);
     });
 
     //****** END 7
