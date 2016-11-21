@@ -1,5 +1,6 @@
-import request from 'superagent'
-import { push } from 'react-router-redux'
+import request from 'superagent';
+import { push } from 'react-router-redux';
+import cookie from 'react-cookie';
 
 var apiUrl = 'http://localhost:9005/api/v1.0';
 
@@ -19,6 +20,7 @@ const apiProvider = store => next => action => {
         });
       break;
     case 'LOGOUT':
+      cookie.remove('rr-jwt-token');
       store.dispatch(push('/login'));
       break;
     case 'LOGIN':
