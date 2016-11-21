@@ -9,7 +9,7 @@ const apiProvider = store => next => action => {
     case 'GET_USER':
       request
         .get(apiUrl + '/users/me')
-        .set("Authorization", "Bearer " + store.getState().get('loggedIn'))
+        //.set("Authorization", "Bearer " + store.getState().get('loggedIn'))
         .send({})
         .end((error, response) => {
           next({
@@ -25,6 +25,7 @@ const apiProvider = store => next => action => {
       request
         .get(apiUrl + '/auth/basic')
         .auth(action.payload.username, action.payload.password)
+        .withCredentials()
         .end((error, response) => {
           if (!error) {
             next({
@@ -166,7 +167,8 @@ const apiProvider = store => next => action => {
     case 'GET_ALL_SURVEYS':
       request
         .get(apiUrl + '/surveys')
-        .set("Authorization", "Bearer " + store.getState().get('loggedIn'))
+        .withCredentials()
+        //.set("Authorization", "Bearer " + store.getState().get('loggedIn'))
         .end((error, response) => {
           if (!error) {
             next({

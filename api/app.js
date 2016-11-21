@@ -1,5 +1,5 @@
 'use strict';
-
+const config = require('./config');
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -14,6 +14,18 @@ const app = express();
 
 const jsonParser = bodyParser.json();
 
+const corsOptions = {
+  credentials: true,
+  origin: config.cors.origin,
+  allowedheaders: [
+    'Accept',
+    'Content-Type',
+    'Authorization',
+    'X-Requested-With',
+    'X-HTTP-Allow-Override'
+  ]
+};
+
 expressWinston.requestWhitelist.push('body');
 expressWinston.responseWhitelist.push('body');
 
@@ -24,7 +36,7 @@ app.use(expressWinston.logger({
     colorize: true
 }));
 
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(jsonParser);
 app.enable('trust proxy');

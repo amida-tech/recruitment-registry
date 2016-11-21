@@ -51,5 +51,4 @@
         "superagent": "^2.3.0",
         "supertest": "^2.0.0"
     }
->>>>>>> feature/RR-use-cookie-auth
 }
