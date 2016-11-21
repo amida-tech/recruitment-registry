@@ -14,7 +14,7 @@ const Question = db.Question;
 
 module.exports = class QuestionDAO extends Translatable {
     constructor(dependencies) {
-        super('question_text', 'questionId');
+        super('question_text', 'questionId', ['text', 'instruction'], { instruction: true });
         Object.assign(this, dependencies);
     }
 
@@ -31,9 +31,9 @@ module.exports = class QuestionDAO extends Translatable {
         const qxFields = _.omit(question, ['oneOfChoices', 'choices', 'actions', 'questions']);
         return Question.create(qxFields, { transaction: tx })
             .then(created => {
-                const text = question.text;
+                const { text, instruction } = question;
                 const id = created.id;
-                return this.createTextTx({ text, id }, tx)
+                return this.createTextTx({ text, instruction, id }, tx)
                     .then(() => created);
             })
             .then(created => {
@@ -153,9 +153,9 @@ module.exports = class QuestionDAO extends Translatable {
             });
     }
 
-    _updateQuestionTextTx({ id, text }, language, tx) {
+    _updateQuestionTextTx({ id, text, instruction }, language, tx) {
         if (text) {
-            return this.createTextTx({ id, text, language }, tx);
+            return this.createTextTx({ id, text, instruction, language }, tx);
         } else {
             return SPromise.resolve();
         }
@@ -222,7 +222,7 @@ module.exports = class QuestionDAO extends Translatable {
                 const qtOptions = {
                     raw: true,
                     language,
-                    attributes: ['questionId', 'text']
+                    attributes: ['questionId', 'text', 'instruction']
                 };
                 if (ids) {
                     qtOptions.where = { questionId: { $in: ids } };

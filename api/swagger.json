@@ -1989,6 +1989,9 @@
                     "type": "string",
                     "minLength": 1
                 },
+                "instruction": {
+                    "type": "string"
+                },
                 "type": {
                     "$ref": "#/definitions/questionType"
                 },
@@ -2136,6 +2139,9 @@
                 "text": {
                     "type": "string",
                      "minLength": 1
+                },
+                "instruction": {
+                    "type": "string"
                 },
                 "type": {
                     "$ref": "#/definitions/questionType"
@@ -2417,6 +2423,9 @@
                     "type": "string",
                      "minLength": 1
                 },
+                "instruction": {
+                    "type": "string"
+                },
                 "type": {
                     "$ref": "#/definitions/questionType"
                 },
@@ -2458,6 +2467,9 @@
                     "type": "string",
                      "minLength": 1
                 },
+                "instruction": {
+                    "type": "string"
+                },
                 "choices": {
                     "type": "array",
                     "items": {
@@ -2498,6 +2510,9 @@
                 "text": {
                     "type": "string",
                     "minLength": 1
+                },
+                "instruction": {
+                    "type": "string"
                 },
                 "type": {
                     "$ref": "#/definitions/questionType"

@@ -113,7 +113,12 @@ describe('question integration', function () {
             const id = hxQuestion.id(index);
             const clientQuestion = hxQuestion.client(index);
             const text = `Updated ${clientQuestion.text}`;
-            store.patch('/questions/text/en', { id, text }, 204).end(done);
+            const update = { id, text };
+            const instruction = clientQuestion.instruction;
+            if (instruction) {
+                update.instruction = `Updated ${clientQuestion.instruction}`;
+            }
+            store.patch('/questions/text/en', update, 204).end(done);
         };
     };
 
@@ -122,7 +127,12 @@ describe('question integration', function () {
             const id = hxQuestion.id(index);
             const clientQuestion = hxQuestion.client(index);
             const text = `Updated ${clientQuestion.text}`;
-            const updatedQuestion = Object.assign({}, clientQuestion, { text });
+            const instruction = clientQuestion.instruction;
+            const cmp = { text };
+            if (instruction) {
+                cmp.instruction = `Updated ${clientQuestion.instruction}`;
+            }
+            const updatedQuestion = Object.assign({}, clientQuestion, cmp);
             store.get(`/questions/${id}`, true, 200)
                 .end(function (err, res) {
                     if (err) {
@@ -139,7 +149,12 @@ describe('question integration', function () {
             const id = hxQuestion.id(index);
             const clientQuestion = hxQuestion.client(index);
             const text = clientQuestion.text;
-            store.patch('/questions/text/en', { id, text }, 204).end(done);
+            const update = { id, text };
+            const instruction = clientQuestion.instruction;
+            if (instruction) {
+                update.instruction = instruction;
+            }
+            store.patch('/questions/text/en', update, 204).end(done);
         };
     };
 

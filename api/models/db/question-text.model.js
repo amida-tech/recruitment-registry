@@ -24,6 +24,9 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.TEXT,
             allowNull: false
         },
+        instruction: {
+            type: DataTypes.TEXT
+        },
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',

@@ -35,6 +35,7 @@ _.set(schema, 'definitions.newSurveyQuestion', {
         required: ['text', 'type', 'required'],
         properties: {
             text: { type: 'string' },
+            instruction: { type: 'string' },
             type: { type: 'string', enum: ['text', 'bool', 'date'] },
             meta: {
                 $ref: '#/definitions/questionMeta'
@@ -50,6 +51,7 @@ _.set(schema, 'definitions.newSurveyQuestion', {
         required: ['text', 'type', 'required', 'choices'],
         properties: {
             text: { type: 'string' },
+            instruction: { type: 'string' },
             required: { type: 'boolean' },
             type: { type: 'string', enum: ['choice'] },
             meta: {
@@ -76,6 +78,7 @@ _.set(schema, 'definitions.newSurveyQuestion', {
         required: ['text', 'type', 'required', 'oneOfChoices'],
         properties: {
             text: { type: 'string' },
+            instruction: { type: 'string' },
             required: { type: 'boolean' },
             type: { type: 'string', enum: ['choice'] },
             meta: {
@@ -95,6 +98,7 @@ _.set(schema, 'definitions.newSurveyQuestion', {
         required: ['text', 'type', 'required', 'choices'],
         properties: {
             text: { type: 'string' },
+            instruction: { type: 'string' },
             required: { type: 'boolean' },
             type: { type: 'string', enum: ['choices'] },
             meta: {
@@ -126,6 +130,7 @@ _.set(schema, 'definitions.newQuestion', {
         required: ['text', 'type'],
         properties: {
             text: { type: 'string' },
+            instruction: { type: 'string' },
             type: { type: 'string', enum: ['text', 'bool', 'date'] },
             meta: {
                 $ref: '#/definitions/questionMeta'
@@ -144,6 +149,7 @@ _.set(schema, 'definitions.newQuestion', {
         required: ['text', 'type', 'choices'],
         properties: {
             text: { type: 'string' },
+            instruction: { type: 'string' },
             type: { type: 'string', enum: ['choice'] },
             meta: {
                 $ref: '#/definitions/questionMeta'
@@ -173,6 +179,7 @@ _.set(schema, 'definitions.newQuestion', {
         required: ['text', 'type', 'oneOfChoices'],
         properties: {
             text: { type: 'string' },
+            instruction: { type: 'string' },
             type: { type: 'string', enum: ['choice'] },
             meta: {
                 $ref: '#/definitions/questionMeta'
@@ -195,6 +202,7 @@ _.set(schema, 'definitions.newQuestion', {
         required: ['text', 'type', 'choices'],
         properties: {
             text: { type: 'string' },
+            instruction: { type: 'string' },
             type: { type: 'string', enum: ['choices'] },
             meta: {
                 $ref: '#/definitions/questionMeta'

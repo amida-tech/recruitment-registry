@@ -55,7 +55,7 @@ describe('question unit', function () {
             const question = hxQuestion.server(index);
             return models.question.getQuestion(question.id)
                 .then(result => {
-                    expect(result).to.deep.equal(result);
+                    expect(result).to.deep.equal(question);
                 });
         };
     };
@@ -65,10 +65,14 @@ describe('question unit', function () {
             const clientQuestion = hxQuestion.client(index);
             const question = hxQuestion.server(index);
             const text = `Updated ${clientQuestion.text}`;
-            return models.question.updateQuestionText({ id: question.id, text })
-                .then(() => {
-                    question.text = text;
-                });
+            const instruction = clientQuestion.instruction;
+            const update = { id: question.id, text };
+            question.text = text;
+            if (instruction) {
+                update.instruction = `Updated ${instruction}`;
+                question.instruction = `Updated ${instruction}`;
+            }
+            return models.question.updateQuestionText(update);
         };
     };
 
@@ -77,10 +81,14 @@ describe('question unit', function () {
             const clientQuestion = hxQuestion.client(index);
             const question = hxQuestion.server(index);
             const text = clientQuestion.text;
-            return models.question.updateQuestionText({ id: question.id, text })
-                .then(() => {
-                    question.text = text;
-                });
+            question.text = text;
+            const update = { id: question.id, text };
+            const instruction = clientQuestion.instruction;
+            if (instruction) {
+                update.instruction = instruction;
+                question.instruction = instruction;
+            }
+            return models.question.updateQuestionText(update);
         };
     };
 

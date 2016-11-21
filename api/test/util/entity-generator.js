@@ -91,6 +91,9 @@ class QuestionGenerator {
     _body(type) {
         const index = ++this.index;
         const result = { text: `text_${index}`, type };
+        if (index % 2 === 0) {
+            result.instruction = `instruction_${index}`;
+        }
         const metaIndex = index % 3;
         if (metaIndex > 0) {
             result.meta = {
