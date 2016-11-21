@@ -32,7 +32,7 @@ export class SurveyContainer extends Component {
           case "text":
             return (
               <div key={question.id} className="container">
-                <label className="special">Question {index+1}:</label>
+                <label className="special questionNumber">Question {index+1}</label>
                 <SurveyFields.Input
                   id={question.id}
                   changeForm={::this._changeAnswer}
@@ -43,7 +43,7 @@ export class SurveyContainer extends Component {
           case "bool":
             return (
               <div key={question.id} className="container">
-                <label className="special">Question {index+1}:</label>
+                <label className="special questionNumber">Question {index+1}</label>
                 <SurveyFields.Bool
                   id={question.id}
                   changeForm={::this._changeAnswer}
@@ -55,7 +55,7 @@ export class SurveyContainer extends Component {
           case "choice":
             return (
               <div key={question.id} className="container">
-                <label className="special">Question {index+1}:</label>
+                <label className="special questionNumber">Question {index+1}</label>
                 <SurveyFields.Choice
                   id={question.id}
                   changeForm={::this._changeAnswer}
@@ -67,7 +67,7 @@ export class SurveyContainer extends Component {
           case "choices":
             return (
               <div key={question.id} className="container">
-                <label className="special">Question {index+1}:</label>
+                <label className="special questionNumber">Question {index+1}</label>
                 <SurveyFields.Choices
                   id={question.id}
                   changeForm={::this._changeAnswer}
@@ -82,26 +82,28 @@ export class SurveyContainer extends Component {
       });
     }
     return (
-      <div className="survey row end-xs">
-        <div className="col-xs-3 pull-right">
-          <div className="survey-meta">
-            <h3>Questionnaire</h3>
-            <h1>{name}</h1>
-            <span>{ surveyQuestions && (surveyQuestions.size - surveyAnswers.size) } Questions Remaining</span>
-            { this.props.data.get('hasErrors') &&
-            <div>
-                <p>{this.props.vocab.get('SUBMISSION_FAILURE')}</p>
+      <div id="survey" className="container">
+        <div className="survey row end-xs">
+          <div className="col-xs-12 col-md-4 pull-right">
+            <div className="survey-meta">
+              <h3>Questionnaire</h3>
+              <h1>{name}</h1>
+              <span>{ surveyQuestions && (surveyQuestions.size - surveyAnswers.size) } Questions Remaining</span>
+              { this.props.data.get('hasErrors') &&
+              <div>
+                  <p>{this.props.vocab.get('SUBMISSION_FAILURE')}</p>
+              </div>
+              }
             </div>
-            }
           </div>
-        </div>
-        <div className="col-xs-6 text-left">
-          <form name="questionForm" onSubmit={(event) => this.submitAnswers(event)} key={id} className="">
-            <ol>
-              {questionnaire}
-            </ol>
-            <button>{this.props.vocab.get('SUBMIT')}</button>
-          </form>
+          <div className="col-xs-12 col-md-7 text-left">
+            <form name="questionForm" onSubmit={(event) => this.submitAnswers(event)} key={id} className="">
+              <ol>
+                {questionnaire}
+              </ol>
+              <button>{this.props.vocab.get('SUBMIT')}</button>
+            </form>
+          </div>
         </div>
       </div>
     )
@@ -121,11 +123,11 @@ const mapStateToProps = function(state, ownProps) {
     vocab: state.getIn(['settings', 'language', 'vocabulary']),
     ...ownProps
   };
-}
+};
 
 SurveyContainer.propTypes = {
   selectedSurvey: React.PropTypes.object.isRequired,
   surveyAnswers: React.PropTypes.object.isRequired
-}
+};
 
 export default connect(mapStateToProps)(SurveyContainer);

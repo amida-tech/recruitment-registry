@@ -1,0 +1,20 @@
+// This is specific to the /survey/<id> view
+// code for styling the survey component itself
+// is location in styles/components/_survey.scss.
+
+#survey {
+
+  form[name=questionForm] {
+
+    .container {
+      width: 100%;
+
+      .questionNumber {
+        text-transform: uppercase;
+      }
+    }
+
+
+  }
+
+}
