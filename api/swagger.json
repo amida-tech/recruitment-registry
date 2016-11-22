@@ -1968,7 +1968,10 @@
         },
         "questionType": {
             "type": "string",
-            "enum": ["text", "bool", "choice", "choices", "date", "pounds"]
+            "enum": [
+                "text", "bool", "choice", "choices", "date",
+                "pounds", "zip"
+            ]
         },
         "questionMeta": {
             "type": "object",

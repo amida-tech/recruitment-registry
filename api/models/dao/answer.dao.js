@@ -67,6 +67,7 @@ const uiToDbAnswer = function (answer) {
 
 const generateAnswer = {
     text: entries => ({ textValue: entries[0].value }),
+    zip: entries => ({ textValue: entries[0].value }),
     date: entries => ({ dateValue: entries[0].value }),
     bool: entries => ({ boolValue: entries[0].value === 'true' }),
     pounds: entries => ({ numberValue: parseInt(entries[0].value) }),

@@ -18,6 +18,17 @@ class Answerer {
         };
     }
 
+    zip(question) {
+        const answerIndex = ++this.answerIndex;
+        const zip = ['20850', '53727', '76333', '74747'][answerIndex % 4];
+        return {
+            questionId: question.id,
+            answer: {
+                textValue: zip
+            }
+        };
+    }
+
     date(question) {
         const answerIndex = ++this.answerIndex;
         const month = answerIndex % 8 + 1;
@@ -89,7 +100,7 @@ class Answerer {
 
 class QuestionGenerator {
     constructor() {
-        this.types = ['text', 'choice', 'choices', 'bool', 'date', 'pounds'];
+        this.types = ['text', 'choice', 'choices', 'bool', 'date', 'pounds', 'zip'];
         this.index = -1;
 
         this.choiceIndex = 0;
@@ -120,22 +131,6 @@ class QuestionGenerator {
         const endIndex = this.choiceIndex + 5;
         this.choiceIndex = endIndex;
         return _.range(startIndex, endIndex).map(i => `choice_${i}`);
-    }
-
-    text() {
-        return this._body('text');
-    }
-
-    date() {
-        return this._body('date');
-    }
-
-    bool() {
-        return this._body('bool');
-    }
-
-    pounds() {
-        return this._body('pounds');
     }
 
     choice() {
@@ -178,7 +173,7 @@ class QuestionGenerator {
 
     newQuestion() {
         const type = this.types[(this.index + 1) % this.types.length];
-        const result = this[type]();
+        const result = this[type] ? this[type]() : this._body(type);
         const actionCount = (this.index % 3) - 1;
         if (actionCount > 0) {
             result.actions = this.newActions(this.index, actionCount);
@@ -238,7 +233,7 @@ class Generator {
             }
         } else {
             const sectionType = this.surveyIndex % 3;
-            const count = sectionType ? 9 + sectionType - 1 : 7;
+            const count = sectionType ? 9 + sectionType - 1 : 8;
             result.questions = _.range(count).map(() => this.newQuestion());
             result.questions.forEach((qx, surveyIndex) => (qx.required = Boolean(surveyIndex % 2)));
             if (sectionType) {
