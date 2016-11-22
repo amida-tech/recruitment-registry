@@ -68,6 +68,17 @@ class Answerer {
         };
     }
 
+    year(question) {
+        const answerIndex = ++this.answerIndex;
+        const year = answerIndex % 34 + 1980;
+        return {
+            questionId: question.id,
+            answer: {
+                yearValue: `${year}`
+            }
+        };
+    }
+
     pounds(question) {
         const answerIndex = ++this.answerIndex;
         const numberValue = 100 + answerIndex;
@@ -128,7 +139,7 @@ class QuestionGenerator {
     constructor() {
         this.types = [
             'text', 'choice', 'choices', 'bool', 'date', 'pounds',
-            'zip', 'feet-inches', 'blood-pressure'
+            'zip', 'year', 'feet-inches', 'blood-pressure'
         ];
         this.index = -1;
 

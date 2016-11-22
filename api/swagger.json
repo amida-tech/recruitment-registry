@@ -1969,7 +1969,7 @@
         "questionType": {
             "type": "string",
             "enum": [
-                "text", "bool", "choice", "choices", "date",
+                "text", "bool", "choice", "choices", "date", "year",
                 "pounds", "zip", "feet-inches", "blood-pressure"
             ]
         },
@@ -2433,6 +2433,10 @@
                         }
                     },
                     "additionalProperties": false
+                },
+                "yearValue": {
+                    "type": "string",
+                    "pattern": "\\d{4}"
                 }
             },
             "minProperties": 1,

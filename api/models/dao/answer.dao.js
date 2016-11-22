@@ -50,6 +50,12 @@ const uiToDbAnswer = function (answer) {
             type: 'date'
         });
     }
+    if (answer.hasOwnProperty('yearValue')) {
+        result.push({
+            value: answer.yearValue,
+            type: 'year'
+        });
+    }
     if (answer.hasOwnProperty('textValue')) {
         result.push({
             value: answer.textValue,
@@ -78,6 +84,7 @@ const uiToDbAnswer = function (answer) {
             type: 'dual-integers'
         });
     }
+
     return result;
 };
 
@@ -85,6 +92,7 @@ const generateAnswer = {
     text: entries => ({ textValue: entries[0].value }),
     zip: entries => ({ textValue: entries[0].value }),
     date: entries => ({ dateValue: entries[0].value }),
+    year: entries => ({ yearValue: entries[0].value }),
     bool: entries => ({ boolValue: entries[0].value === 'true' }),
     pounds: entries => ({ numberValue: parseInt(entries[0].value) }),
     choice: entries => ({ choice: entries[0].questionChoiceId }),

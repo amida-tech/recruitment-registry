@@ -31,7 +31,7 @@ _.set(schema, 'definitions.newSurvey.properties.questions.items', {
 
 const questionTypes = [
     'text', 'bool', 'date', 'pounds', 'zip',
-    'feet-inches', 'blood-pressure'
+    'year', 'feet-inches', 'blood-pressure'
 ];
 
 _.set(schema, 'definitions.newSurveyQuestion', {
