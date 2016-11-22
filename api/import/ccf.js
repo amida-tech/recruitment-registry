@@ -11,10 +11,53 @@ const options = {
 		ignoreEmpty: true,
 		headers: [
 			'id', 'key', 'text', 'instruction', 'skipCount', 'type',
-			'conditionalKey', 'choice', 'answerKey', 'tag', 'toggle'
+			'condition', 'choice', 'answerKey', 'tag', 'toggle'
 		]
 	},
 };
+
+const questionsPost = function(result, key, lines) {
+	if (! (result.pillars && result.pillarsTitleIndex)) {
+		throw new Error('Pillar records have to be read before questions.');
+	}
+	let activePillar = null;
+	let activeQuestion = null;
+	const questions = [];
+	lines.forEach(line => {
+		const objKeys = Object.keys(line);
+		if ((objKeys.length === 1) && (objKeys[0] === 'id')) {
+			const title = line.id;
+			activePillar = result.pillarsTitleIndex[title];
+			if (! activePillar) {
+				throw new Error(`Unknown pillar: ${title}`);
+			}
+			activePillar.questions = [];
+			return;
+		}
+		if (! activePillar) {
+			throw new Error('Unexpected line.  Pillar title expected');
+		}
+		if (line.key) {
+			activeQuestion = {
+				id: line.key,
+				text: line.text,
+				instruction: line.instruction,
+				type: line.type
+			};
+			const pillarQuestion = {
+				questionId: activeQuestion.id,
+			};
+			if (line.condition) {
+				pillarQuestion.condition = line.condition;
+				pillarQuestion.skipCount = line.skipCount;
+			}
+			activePillar.questions.push(pillarQuestion);
+			questions.push(activeQuestion);
+		}
+	});
+	result[key] = questions;
+};
+
 
 const transform = {
 	questions(input) {
@@ -25,9 +68,10 @@ const transform = {
 const postAction = {
 	pillars(result, key, json) {
 		result[key] = json;
-		result[`${key}_id_index`] = _.keyBy(json, 'id');
-		result[`${key}_title_index`] = _.keyBy(json, 'title');
-	}
+		result[`${key}IdIndex`] = _.keyBy(json, 'id');
+		result[`${key}TitleIndex`] = _.keyBy(json, 'title');
+	},
+	questions: questionsPost
 };
 
 const importFile = function (filepaths, result, key) {
