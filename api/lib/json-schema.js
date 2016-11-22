@@ -36,7 +36,7 @@ _.set(schema, 'definitions.newSurveyQuestion', {
         properties: {
             text: { type: 'string' },
             instruction: { type: 'string' },
-            type: { type: 'string', enum: ['text', 'bool', 'date'] },
+            type: { type: 'string', enum: ['text', 'bool', 'date', 'pounds'] },
             meta: {
                 $ref: '#/definitions/questionMeta'
             },
@@ -131,7 +131,7 @@ _.set(schema, 'definitions.newQuestion', {
         properties: {
             text: { type: 'string' },
             instruction: { type: 'string' },
-            type: { type: 'string', enum: ['text', 'bool', 'date'] },
+            type: { type: 'string', enum: ['text', 'bool', 'date', 'pounds'] },
             meta: {
                 $ref: '#/definitions/questionMeta'
             },

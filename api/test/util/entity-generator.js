@@ -31,6 +31,17 @@ class Answerer {
         };
     }
 
+    pounds(question) {
+        const answerIndex = ++this.answerIndex;
+        const numberValue = 100 + answerIndex;
+        return {
+            questionId: question.id,
+            answer: {
+                numberValue
+            }
+        };
+    }
+
     bool(question) {
         const answerIndex = ++this.answerIndex;
         return {
@@ -78,7 +89,7 @@ class Answerer {
 
 class QuestionGenerator {
     constructor() {
-        this.types = ['text', 'choice', 'choices', 'bool', 'date'];
+        this.types = ['text', 'choice', 'choices', 'bool', 'date', 'pounds'];
         this.index = -1;
 
         this.choiceIndex = 0;
@@ -121,6 +132,10 @@ class QuestionGenerator {
 
     bool() {
         return this._body('bool');
+    }
+
+    pounds() {
+        return this._body('pounds');
     }
 
     choice() {
@@ -223,7 +238,7 @@ class Generator {
             }
         } else {
             const sectionType = this.surveyIndex % 3;
-            const count = sectionType ? 9 + sectionType - 1 : 6;
+            const count = sectionType ? 9 + sectionType - 1 : 7;
             result.questions = _.range(count).map(() => this.newQuestion());
             result.questions.forEach((qx, surveyIndex) => (qx.required = Boolean(surveyIndex % 2)));
             if (sectionType) {

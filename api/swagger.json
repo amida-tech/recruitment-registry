@@ -1968,7 +1968,7 @@
         },
         "questionType": {
             "type": "string",
-            "enum": ["text", "bool", "choice", "choices", "date"]
+            "enum": ["text", "bool", "choice", "choices", "date", "pounds"]
         },
         "questionMeta": {
             "type": "object",
@@ -2401,6 +2401,9 @@
                 "dateValue": {
                     "type": "string",
                     "format": "date"
+                },
+                "numberValue": {
+                    "type": "number"
                 }
             },
             "minProperties": 1,
