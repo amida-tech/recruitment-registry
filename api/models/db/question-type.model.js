@@ -22,7 +22,7 @@ module.exports = function (sequelize, DataTypes) {
                 if (options.force) {
                     const names = [
                         'text', 'choice', 'choices', 'bool', 'date', 'pounds',
-                        'zip'
+                        'zip', 'feet-inches', 'blood-pressure'
                     ];
                     const ps = names.map(name => QuestionType.create({ name }));
                     return SPromise.all(ps);

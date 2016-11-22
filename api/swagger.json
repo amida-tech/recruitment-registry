@@ -1970,7 +1970,7 @@
             "type": "string",
             "enum": [
                 "text", "bool", "choice", "choices", "date",
-                "pounds", "zip"
+                "pounds", "zip", "feet-inches", "blood-pressure"
             ]
         },
         "questionMeta": {
@@ -2407,6 +2407,32 @@
                 },
                 "numberValue": {
                     "type": "number"
+                },
+                "feetInchesValue": {
+                    "type": "object",
+                    "properties": {
+                        "feet": {
+                            "type": "integer"
+                        },
+                        "inches": {
+                            "type": "integer"
+                        }
+                    },
+                    "minProperties": 1,
+                    "additionalProperties": false
+                },
+                "bloodPressureValue": {
+                    "type": "object",
+                    "required": ["systolic", "diastolic"],
+                    "properties": {
+                        "systolic": {
+                            "type": "integer"
+                        },
+                        "diastolic": {
+                            "type": "integer"
+                        }
+                    },
+                    "additionalProperties": false
                 }
             },
             "minProperties": 1,

@@ -29,6 +29,32 @@ class Answerer {
         };
     }
 
+    'blood-pressure' (question) {
+        const answerIndex = ++this.answerIndex;
+        return {
+            questionId: question.id,
+            answer: {
+                bloodPressureValue: {
+                    systolic: 100 + (answerIndex % 40),
+                    diastolic: 70 + (answerIndex % 20)
+                }
+            }
+        };
+    }
+
+    'feet-inches' (question) {
+        const answerIndex = ++this.answerIndex;
+        return {
+            questionId: question.id,
+            answer: {
+                feetInchesValue: {
+                    feet: 5 + (answerIndex % 2),
+                    inches: answerIndex % 12
+                }
+            }
+        };
+    }
+
     date(question) {
         const answerIndex = ++this.answerIndex;
         const month = answerIndex % 8 + 1;
@@ -100,7 +126,10 @@ class Answerer {
 
 class QuestionGenerator {
     constructor() {
-        this.types = ['text', 'choice', 'choices', 'bool', 'date', 'pounds', 'zip'];
+        this.types = [
+            'text', 'choice', 'choices', 'bool', 'date', 'pounds',
+            'zip', 'feet-inches', 'blood-pressure'
+        ];
         this.index = -1;
 
         this.choiceIndex = 0;
@@ -233,7 +262,7 @@ class Generator {
             }
         } else {
             const sectionType = this.surveyIndex % 3;
-            const count = sectionType ? 9 + sectionType - 1 : 8;
+            const count = sectionType ? 9 + sectionType - 1 : this.questionGenerator.types.length + 1;
             result.questions = _.range(count).map(() => this.newQuestion());
             result.questions.forEach((qx, surveyIndex) => (qx.required = Boolean(surveyIndex % 2)));
             if (sectionType) {

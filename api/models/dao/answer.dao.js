@@ -62,6 +62,22 @@ const uiToDbAnswer = function (answer) {
             type: 'number'
         });
     }
+    if (answer.hasOwnProperty('feetInchesValue')) {
+        const feet = _.get(answer, 'feetInchesValue.feet') || 0;
+        const inches = _.get(answer, 'feetInchesValue.inches') || 0;
+        result.push({
+            value: `${feet}-${inches}`,
+            type: 'dual-integers'
+        });
+    }
+    if (answer.hasOwnProperty('bloodPressureValue')) {
+        const systolic = _.get(answer, 'bloodPressureValue.systolic') || 0;
+        const diastolic = _.get(answer, 'bloodPressureValue.diastolic') || 0;
+        result.push({
+            value: `${systolic}-${diastolic}`,
+            type: 'dual-integers'
+        });
+    }
     return result;
 };
 
@@ -84,6 +100,26 @@ const generateAnswer = {
         });
         choices = _.sortBy(choices, 'id');
         return { choices };
+    },
+    'blood-pressure': entries => {
+        const value = entries[0].value;
+        const pieces = value.split('-');
+        return {
+            bloodPressureValue: {
+                systolic: parseInt(pieces[0]),
+                diastolic: parseInt(pieces[1])
+            }
+        };
+    },
+    'feet-inches': entries => {
+        const value = entries[0].value;
+        const pieces = value.split('-');
+        return {
+            feetInchesValue: {
+                feet: parseInt(pieces[0]),
+                inches: parseInt(pieces[1])
+            }
+        };
     }
 };
 

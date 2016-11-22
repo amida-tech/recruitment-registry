@@ -29,6 +29,11 @@ _.set(schema, 'definitions.newSurvey.properties.questions.items', {
     }]
 });
 
+const questionTypes = [
+    'text', 'bool', 'date', 'pounds', 'zip',
+    'feet-inches', 'blood-pressure'
+];
+
 _.set(schema, 'definitions.newSurveyQuestion', {
     oneOf: [{
         type: 'object',
@@ -36,7 +41,7 @@ _.set(schema, 'definitions.newSurveyQuestion', {
         properties: {
             text: { type: 'string' },
             instruction: { type: 'string' },
-            type: { type: 'string', enum: ['text', 'bool', 'date', 'pounds', 'zip'] },
+            type: { type: 'string', enum: questionTypes },
             meta: {
                 $ref: '#/definitions/questionMeta'
             },
@@ -131,7 +136,7 @@ _.set(schema, 'definitions.newQuestion', {
         properties: {
             text: { type: 'string' },
             instruction: { type: 'string' },
-            type: { type: 'string', enum: ['text', 'bool', 'date', 'pounds', 'zip'] },
+            type: { type: 'string', enum: questionTypes },
             meta: {
                 $ref: '#/definitions/questionMeta'
             },
