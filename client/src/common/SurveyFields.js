@@ -5,26 +5,31 @@ export class Bool extends Component {
     return(
         <div id={this.props.id+'bool'}>
           <p className='question'>{this.props.text}</p>
-          <div className='radioGroup'>
-            <input name={this.props.id}
-              id={this.props.id+'t'}
-              type='radio'
-              required={this.props.required}
-              onChange={ this.props.changeForm }
-              value={true}
-              data-itype='bool' />
-            <label htmlFor={this.props.id+'t'}>
-              {this.props.vocab.get('YES')}
-            </label>
-            <input name={this.props.id}
-              id={this.props.id+'f'}
-              type='radio'
-              onChange={this.props.changeForm}
-              value={false}
-              data-itype='bool'/>
-            <label htmlFor={this.props.id+'f'}>
-              {this.props.vocab.get('NO')}
-            </label>
+          <div className=''>
+              <input name={this.props.id}
+                id={this.props.id+'t'}
+                type='radio'
+                required={this.props.required}
+                onChange={ this.props.changeForm }
+                value={true}
+                data-itype='bool'
+              />
+              <label htmlFor={this.props.id+'t'}
+                     className="buttonPrimary green"
+              >
+                {this.props.vocab.get('YES')}
+              </label>
+              <input name={this.props.id}
+                id={this.props.id+'f'}
+                type='radio'
+                onChange={this.props.changeForm}
+                value={false}
+                data-itype='bool'/>
+              <label htmlFor={this.props.id+'f'}
+                     className="buttonPrimary red"
+              >
+                {this.props.vocab.get('NO')}
+              </label>
           </div>
       </div>
     )

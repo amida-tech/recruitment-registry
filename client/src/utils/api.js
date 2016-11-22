@@ -185,12 +185,15 @@ const apiProvider = store => next => action => {
         });
       break;
     case 'SUBMIT_SURVEY':
+        console.dir(store.getState());
       request
         .post(apiUrl + '/answers')
         .withCredentials()
         .send(action.payload.toJS())
         .end((error, response) => {
           if(!error) {
+           console.log("SURVEY SUBMITTED");
+
             next({
               type: 'SUBMIT_SURVEY_SUCCESS',
               payload: response.body

@@ -18,7 +18,7 @@ export default (state = immutableState, action) => {
       var newAnswer = {
         'questionId': parseInt(action.questionId),
         'answer': {}
-      }
+      };
       switch(action.itype){
         case "text":
           newAnswer.answer = {'textValue': action.choice};
@@ -27,7 +27,7 @@ export default (state = immutableState, action) => {
           newAnswer.answer = {'choice': parseInt(action.choice)};
           break;
         case "bool":
-          newAnswer.answer = {'boolValue': action.choice == true}
+          newAnswer.answer = {'boolValue': action.choice == true};
           break;
         case "choices.bool":
           simpleAnswer = false;
@@ -76,7 +76,7 @@ export default (state = immutableState, action) => {
           'surveyId': action.payload.id,
           'answers': []
         }
-      })
+      });
     case actionTypes.SUBMIT_SURVEY_FAILURE:
       return state.set('hasErrors', true);
     case actionTypes.SUBMIT_SURVEY_SUCCESS:
