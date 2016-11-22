@@ -21,7 +21,8 @@ ccf.importFiles(filepaths)
     .then(result => {
         console.log('Succcess:');
         console.log('========');
-        console.log(JSON.stringify(result.pillars, undefined, 4));
+        console.log(JSON.stringify(result.questions, undefined, 4));
+        console.log(JSON.stringify(result.answers, undefined, 4));
 
         //const answersByAssessment = _.groupBy(result.hb_answer, 'hb_assessment_id');
         //const assessments = Object.keys(answersByAssessment);

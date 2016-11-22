@@ -16,6 +16,56 @@ const options = {
 	},
 };
 
+const answerUpdateSingle = function (id, line, question) {
+	return {
+		id: id,
+		key: line.answerKey,
+		questionId: question.id,
+		tag: line.tag
+	};
+};
+
+const answerUpdateMultiple = function (id, line, question) {
+	return {
+		id: id,
+		choice: line.choice,
+		key: line.answerKey,
+		questionId: question.id,
+		tag: line.tag
+	};
+};
+
+const answerUpdateChoice = function(id, line, question, choices) {
+	if (! question.choices) {
+		question.choices = [];
+	}
+	const choice = {
+		id: choices.length + 1,
+		value: line.choice
+	};
+	question.choices.push(choice.id);
+	choices.push(choice);
+	return {
+		id: id,
+		choice: choice.id,
+		key: line.answerKey,
+		questionId: question.id,
+		tag: line.tag
+	};
+};
+
+const answerUpdate = {
+	1: answerUpdateChoice,
+	2: answerUpdateChoice,
+	3: answerUpdateChoice,
+	4: answerUpdateChoice,
+	5: answerUpdateSingle,
+	7: answerUpdateChoice,
+	8: answerUpdateSingle,
+	9: answerUpdateMultiple,
+	10: answerUpdateMultiple
+};
+
 const questionsPost = function(result, key, lines) {
 	if (! (result.pillars && result.pillarsTitleIndex)) {
 		throw new Error('Pillar records have to be read before questions.');
@@ -23,6 +73,9 @@ const questionsPost = function(result, key, lines) {
 	let activePillar = null;
 	let activeQuestion = null;
 	const questions = [];
+	const answers = [];
+	const choices = [];
+	const answersKeyIndex = {};
 	lines.forEach(line => {
 		const objKeys = Object.keys(line);
 		if ((objKeys.length === 1) && (objKeys[0] === 'id')) {
@@ -39,7 +92,8 @@ const questionsPost = function(result, key, lines) {
 		}
 		if (line.key) {
 			activeQuestion = {
-				id: line.key,
+				id: questions.length + 1,
+				key: line.key,
 				text: line.text,
 				instruction: line.instruction,
 				type: line.type
@@ -54,8 +108,22 @@ const questionsPost = function(result, key, lines) {
 			activePillar.questions.push(pillarQuestion);
 			questions.push(activeQuestion);
 		}
+		if (! activeQuestion) {
+			throw new Error('Unexpected line. Question key expected');
+		}
+		const fnAnswer = answerUpdate[activeQuestion.type];
+		if (fnAnswer) {
+			const answer = fnAnswer(answers.length+1, line, activeQuestion, choices);
+			answers.push(answer);
+			answersKeyIndex[answer.key] = answer;
+			return;
+		}
+		throw new Error(`Unexpected line.  Unsupported type: ${activeQuestion.type}`);
 	});
 	result[key] = questions;
+	result.answers = answers;
+	result.choices = choices;
+	result.answersKeyIndex = answersKeyIndex;
 };
 
 
