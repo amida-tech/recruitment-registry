@@ -50,8 +50,9 @@ export default (options) => {
   } = options;
 
   const persistedAuthState = JSON.parse(localStorage.getItem('rec-reg'));
+  
+  initialState.auth = persistedAuthState || initialState.auth;
 
-  initialState.loggedIn = persistedAuthState || initialState.loggedIn;
 
 
   const frozen = Immutable.fromJS(initialState);
@@ -74,7 +75,7 @@ export default (options) => {
     ));
 
   store.subscribe(() => {
-    localStorage.setItem('rec-reg', JSON.stringify(store.getState().get('loggedIn')));
+    localStorage.setItem('rec-reg', JSON.stringify(store.getState().get('auth')));
   });
 
   const history = syncHistoryWithStore(browserHistory, store, {

@@ -7,7 +7,7 @@ import { changeLanguage } from '../profile/actions';
 
 class Nav extends Component {
   render() {
-    const loggedIn = this.props.data.get('loggedIn');
+    const loggedIn = this.props.data.getIn(['auth', 'isAuthenticated']);
       return (
         <nav className="dd">
           <Link className="logo" to="/">{ this.props.data.get('title') } Net</Link>
@@ -48,8 +48,6 @@ class Nav extends Component {
 function mapStateToProps(state, ownProps) {
   return {
     data: state,
-    vocab: state.getIn(['settings', 'language', 'vocabulary']),
-    user: state.getIn(['login', 'user']),
     ...ownProps
   };
 }

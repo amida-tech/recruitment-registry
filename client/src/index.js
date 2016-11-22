@@ -29,7 +29,9 @@ export const initialState = {
       id: ""
     }
   },
-  loggedIn: false,
+  auth: {
+    isAuthenticated: false
+  },
   register: {
     newUserProfile: {
     user: {
@@ -81,19 +83,18 @@ export const reducers = {
   surveyBuilder: surveyBuilder.reducer,
   surveys: SurveyListReducer,
   survey: SurveyReducer,
-  loggedIn: (state = initialState, action) => {
+  auth: (state, action) => {
     switch (action.type) {
       case "LOGIN_SUCCESS":
-        return action.data.token;
+        return state.merge(state, {isAuthenticated: true});
       case "LOGOUT":
-        localStorage.removeItem("rec-reg");
-        return false;
+        return state.merge(state, {isAuthenticated: false});
       default:
         return state
     }
   },
   title: state => state,
-  settings: (state = initialState, action) => {
+  settings: (state, action) => {
     switch (action.type) {
       case "CHANGE_LANGUAGE":
         var choice = state.getIn(['language','choice']) == 'en' ? 'es' : 'en';

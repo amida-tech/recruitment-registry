@@ -5,7 +5,7 @@ class Home extends Component {
   render() {
 
     const title = this.props.data.get('title');
-    const loggedIn = this.props.data.get('loggedIn');
+    const loggedIn = this.props.data.getIn(['auth', 'isAuthenticated']);
     const role = this.props.user.get('role');
     const username = this.props.user.get('username');
     document.getElementsByTagName('body')[0].className+=' ';

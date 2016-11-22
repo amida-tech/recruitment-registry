@@ -1,5 +1,6 @@
-import request from 'superagent'
-import { push } from 'react-router-redux'
+import request from 'superagent';
+import { push } from 'react-router-redux';
+import cookie from 'react-cookie';
 
 var apiUrl = 'http://localhost:9005/api/v1.0';
 
@@ -9,7 +10,7 @@ const apiProvider = store => next => action => {
     case 'GET_USER':
       request
         .get(apiUrl + '/users/me')
-        .set("Authorization", "Bearer " + store.getState().get('loggedIn'))
+        .withCredentials()
         .send({})
         .end((error, response) => {
           next({
@@ -19,12 +20,14 @@ const apiProvider = store => next => action => {
         });
       break;
     case 'LOGOUT':
+      cookie.remove('rr-jwt-token');
       store.dispatch(push('/login'));
       break;
     case 'LOGIN':
       request
         .get(apiUrl + '/auth/basic')
         .auth(action.payload.username, action.payload.password)
+        .withCredentials()
         .end((error, response) => {
           if (!error) {
             next({
@@ -43,6 +46,7 @@ const apiProvider = store => next => action => {
     case 'ADD_USER':
       request
         .post(apiUrl + '/users')
+        .withCredentials()
         .send(action.user)
         .end((error, response) => {
           if (!error) {
@@ -61,6 +65,7 @@ const apiProvider = store => next => action => {
     case 'GET_ETHNICITIES':
       request
         .get(apiUrl + '/ethnicities')
+        .withCredentials()
         .end((error, response) => {
           if (!error) {
             next({
@@ -75,6 +80,7 @@ const apiProvider = store => next => action => {
     case 'GET_SURVEY':
       request
         .get(apiUrl + '/profile-survey/')
+        .withCredentials()
         .end((error, response) => {
           if (!error) {
             next({
@@ -89,7 +95,7 @@ const apiProvider = store => next => action => {
     case 'GET_PROFILE':
       request
         .get(apiUrl + '/users/me')
-        .set("Authorization", "Bearer " + store.getState().get('loggedIn'))
+        .withCredentials()
         .end((error, response) => {
           if (!error) {
             next({
@@ -134,7 +140,7 @@ const apiProvider = store => next => action => {
     case 'SAVE_SURVEY':
       request
         .post(apiUrl + '/surveys')
-        .set("Authorization", "Bearer " + store.getState().get('loggedIn'))
+        .withCredentials()
         .send(action.payload.toJS())
         .end((error) => {
           if (!error) {
@@ -151,7 +157,7 @@ const apiProvider = store => next => action => {
     case 'GET_SURVEY_BY_ID':
       request
         .get(apiUrl + '/surveys/' + action.payload)
-        .set("Authorization", "Bearer " + store.getState().get('loggedIn'))
+        .withCredentials()
         .end((error, response) => {
           if (!error) {
             next({
@@ -166,7 +172,7 @@ const apiProvider = store => next => action => {
     case 'GET_ALL_SURVEYS':
       request
         .get(apiUrl + '/surveys')
-        .set("Authorization", "Bearer " + store.getState().get('loggedIn'))
+        .withCredentials()
         .end((error, response) => {
           if (!error) {
             next({
@@ -181,7 +187,7 @@ const apiProvider = store => next => action => {
     case 'SUBMIT_SURVEY':
       request
         .post(apiUrl + '/answers')
-        .set("Authorization", "Bearer " + store.getState().get('loggedIn'))
+        .withCredentials()
         .send(action.payload.toJS())
         .end((error, response) => {
           if(!error) {
