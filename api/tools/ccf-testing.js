@@ -1,7 +1,5 @@
 'use strict';
 
-const _ = require('lodash');
-
 const ccf = require('../import/ccf');
 
 const filepaths = {

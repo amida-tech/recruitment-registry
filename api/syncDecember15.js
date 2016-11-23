@@ -8,23 +8,24 @@ const consentExample = require('./test/fixtures/example/consent-demo');
 const survey = {
     name: 'Alzheimer',
     questions: [{
-        text : 'First Name',
-        required: true,
-        type: 'text'
-    }, {
-        text : 'Last Name',
-        required: true,
-        type: 'text'
-    },
-    {
-        text: 'Zip Code',
-        required: true,
-        type: 'zip'
-    }, {
-        text: 'Year of Birth',
-        required: true,
-        type: 'year',
-    }]
+            text: 'First Name',
+            required: true,
+            type: 'text'
+        }, {
+            text: 'Last Name',
+            required: true,
+            type: 'text'
+        },
+        {
+            text: 'Zip Code',
+            required: true,
+            type: 'zip'
+        }, {
+            text: 'Year of Birth',
+            required: true,
+            type: 'year',
+        }
+    ]
 };
 
 models.sequelize.sync({
