@@ -25,16 +25,6 @@ const answerUpdateSingle = function (id, line, question) {
     };
 };
 
-const answerUpdateMultiple = function (id, line, question) {
-    return {
-        id: id,
-        choice: line.choice,
-        key: line.answerKey,
-        questionId: question.id,
-        tag: line.tag
-    };
-};
-
 const answerUpdateChoice = function (id, line, question, choices) {
     if (!question.choices) {
         question.choices = [];
@@ -61,9 +51,9 @@ const answerUpdate = {
     4: answerUpdateChoice,
     5: answerUpdateSingle,
     7: answerUpdateChoice,
-    8: answerUpdateSingle,
-    9: answerUpdateMultiple,
-    10: answerUpdateMultiple
+    8: answerUpdateChoice,
+    9: answerUpdateChoice,
+    10: answerUpdateChoice
 };
 
 const questionsPost = function (result, key, lines) {
@@ -114,6 +104,9 @@ const questionsPost = function (result, key, lines) {
         const fnAnswer = answerUpdate[activeQuestion.type];
         if (fnAnswer) {
             const answer = fnAnswer(answers.length + 1, line, activeQuestion, choices);
+            if (line.toggle) {
+                answer.toggle = line.toggle;
+            }
             answers.push(answer);
             answersKeyIndex[answer.key] = answer;
             return;

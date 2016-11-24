@@ -28,8 +28,17 @@ describe('ccf import-export ccf', function () {
             .then(result => jsonDB = result);
     });
 
+    let exportedJsonDB = null;
+
     it('export json db', function () {
-        const files = ccfExport.convertJsonDB(jsonDB);
-        fileCompare.contentToFile(files.pillars, filepaths.pillars);
+        exportedJsonDB = ccfExport.convertJsonDB(jsonDB);
+    });
+
+    it('compare pillars', function () {
+        fileCompare.contentToFile(exportedJsonDB.pillars, filepaths.pillars);
+    });
+
+    it('compare questions', function () {
+        fileCompare.contentToFile(exportedJsonDB.questions, filepaths.questions);
     });
 });
