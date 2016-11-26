@@ -77,7 +77,8 @@ const convertQuestions = function (pillars, questions, choices, answers) {
     pillars.forEach(pillar => {
         result.push({});
         result.push({
-            [cId]: pillar.title });
+            [cId]: pillar.title
+        });
         pillar.questions.forEach(({ questionId }) => {
             const question = questionMap.get(questionId);
             result.push({});
@@ -129,7 +130,7 @@ const convertJsonDB = function convertJsonDB(jsonDB) {
         fields: options.pillars.fields,
         quotes: ''
     });
-    const questions = convertQuestions(jsonDB.pillars, jsonDB.questions, jsonDB.choices, jsonDB.answers);
+    const questions = convertQuestions(jsonDB.pillars, jsonDB.questions, jsonDB.choices, jsonDB.qanswers);
     const questionsFile = json2csv({
         data: questions,
         fields: options.questions.fields,

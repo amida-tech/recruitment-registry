@@ -5,15 +5,25 @@ const _ = require('lodash');
 const SPromise = require('../lib/promise');
 
 const CSVConverter = require('./csv-converter');
+const XLSXConverter = require('./xlsx-converter');
 
-const options = {
-    questions: {
-        ignoreEmpty: true,
-        headers: [
-            'id', 'key', 'text', 'instruction', 'skipCount', 'type',
-            'condition', 'choice', 'answerKey', 'tag', 'toggle'
-        ]
+const converters = {
+    questions() {
+        const options = {
+            ignoreEmpty: true,
+            headers: [
+                'id', 'key', 'text', 'instruction', 'skipCount', 'type',
+                'condition', 'choice', 'answerKey', 'tag', 'toggle'
+            ]
+        };
+        return new CSVConverter(options);
     },
+    pillars() {
+        return new CSVConverter({});
+    },
+    answers() {
+        return new XLSXConverter();
+    }
 };
 
 const answerUpdateSingle = function (id, line, question) {
@@ -114,15 +124,55 @@ const questionsPost = function (result, key, lines) {
         throw new Error(`Unexpected line.  Unsupported type: ${activeQuestion.type}`);
     });
     result[key] = questions;
-    result.answers = answers;
+    result.qanswers = answers;
     result.choices = choices;
     result.answersKeyIndex = answersKeyIndex;
 };
 
-const transform = {
-    questions(input) {
-        return input;
-    },
+const answersPost = function (result, key, lines) {
+    lines.forEach(r => {
+        if (r.string_value === 'null') {
+            delete r.string_value;
+        }
+        if (r.boolean_value === 'null') {
+            delete r.boolean_value;
+        }
+    });
+
+    const answers = [];
+    const indexAnswers = {};
+    const jsonByAssessment = _.groupBy(lines, 'hb_assessment_id');
+    const assessments = Object.keys(jsonByAssessment);
+    assessments.forEach(assessment => {
+        const current = jsonByAssessment[assessment];
+        jsonByAssessment[assessment] = current.reduce((r, p) => {
+            delete p.hb_assessment_id;
+            const index = `${p.pillar_hash}\t${p.hb_user_id}\t${p.updated_at}`;
+            let record = indexAnswers[index];
+            if (!record) {
+                record = {
+                    user_id: p.hb_user_id,
+                    pillar_hash: p.pillar_hash,
+                    updated_at: p.updated_at,
+                    answers: []
+                };
+                answers.push(record);
+                indexAnswers[index] = record;
+                r.push(p.updated_at);
+                //console.log(p.pillar_hash + ' ' + p.updated_at);
+            }
+            const answer = { answer_hash: p.answer_hash };
+            if (p.hasOwnProperty('string_value')) {
+                answer.string_value = p.string_value;
+            } else if (p.hasOwnProperty('boolean_value')) {
+                answer.boolean_value = p.boolean_value;
+            }
+            record.answers.push(answer);
+            return r;
+        }, []);
+    });
+    result.answers = answers;
+    result.assesmentAnswers = jsonByAssessment;
 };
 
 const postAction = {
@@ -131,21 +181,14 @@ const postAction = {
         result[`${key}IdIndex`] = _.keyBy(json, 'id');
         result[`${key}TitleIndex`] = _.keyBy(json, 'title');
     },
-    questions: questionsPost
+    questions: questionsPost,
+    answers: answersPost
 };
 
 const importFile = function (filepaths, result, key) {
     const filepath = filepaths[key];
-    const keyOptions = options[key] || {};
-    const converter = new CSVConverter(keyOptions);
+    const converter = converters[key]();
     return converter.fileToRecords(filepath)
-        .then(json => {
-            const fn = transform[key];
-            if (fn) {
-                return fn(json);
-            }
-            return json;
-        })
         .then(json => {
             const fn = postAction[key];
             if (fn) {

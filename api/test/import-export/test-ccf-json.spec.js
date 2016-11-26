@@ -17,11 +17,18 @@ describe('ccf import-export ccf', function () {
 
     const filenames = {
         pillars: 'ccf-pillars.csv',
-        questions: 'ccf-questions.csv'
+        questions: 'ccf-questions.csv',
+        answers: '/Work/CCF/ExampleData/public_hb_answer.xlsx'
     };
 
     const filepaths = {};
-    _.forOwn(filenames, (name, key) => filepaths[key] = path.join(fixtureDir, name));
+    _.forOwn(filenames, (name, key) => {
+        if (name.charAt(0) === '/') {
+            filepaths[key] = name;
+        } else {
+            filepaths[key] = path.join(fixtureDir, name);
+        }
+    });
 
     it('import ccf files to json db', function () {
         return ccfImport.importFiles(filepaths)
@@ -40,5 +47,10 @@ describe('ccf import-export ccf', function () {
 
     it('compare questions', function () {
         fileCompare.contentToFile(exportedJsonDB.questions, filepaths.questions);
+    });
+
+    it('write out answers', function () {
+        console.log(JSON.stringify(jsonDB.assesmentAnswers, undefined, 4));
+        console.log(JSON.stringify(jsonDB.answers, undefined, 4));
     });
 });
