@@ -6,6 +6,7 @@ import * as SurveyFields from '../../common/SurveyFields';
 export class SurveyContainer extends Component {
   //Form submit seems to be such a good way to get what you need that I'm not
   //certain redux is the best call. However I'm doing it the redux way to learn.
+
   submitAnswers(event){
     event.preventDefault();
       this.props.dispatch(actions.submitAnswers(this.props.surveyAnswers));
@@ -95,7 +96,10 @@ export class SurveyContainer extends Component {
             <div className="survey-meta">
               <h3>Questionnaire</h3>
               <h1>{name}</h1>
-              <span>{ surveyQuestions && (surveyQuestions.size - surveyAnswers.size) } Questions Remaining</span>
+              <span>
+                { surveyQuestions && (surveyQuestions.size - surveyAnswers.size) } Questions Remaining
+              </span>
+
               { this.props.data.get('hasErrors') &&
               <div>
                   <p>{this.props.vocab.get('SUBMISSION_FAILURE')}</p>
@@ -104,7 +108,10 @@ export class SurveyContainer extends Component {
             </div>
           </div>
           <div className="col-xs-12 col-md-7 text-left">
-            <form name="questionForm" onSubmit={(event) => this.submitAnswers(event)} key={id} className="">
+            <form
+                name="questionForm"
+                onSubmit={(event) => this.submitAnswers(event)} key={id} className=""
+            >
               <ol>
                 {questionnaire}
               </ol>

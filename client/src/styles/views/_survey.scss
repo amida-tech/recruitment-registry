@@ -8,9 +8,25 @@
 
     .container {
       width: 100%;
+      position: relative;
 
       .questionNumber {
         text-transform: uppercase;
+      }
+
+      .bool {
+
+        .btn {
+          //position: absolute;
+
+          .buttonPrimary {
+            left: 10px;
+          }
+
+          .buttonSecondary {
+            text-align: right;
+          }
+        }
       }
     }
 
