@@ -8,6 +8,7 @@ const _ = require('lodash');
 const config = require('../config');
 
 const SharedIntegration = require('./util/shared-integration');
+const RRSuperTest = require('./util/rr-super-test');
 const Generator = require('./util/entity-generator');
 const comparator = require('./util/client-server-comparator');
 const History = require('./util/entity-history');
@@ -25,20 +26,13 @@ describe('question integration', function () {
     const user = generator.newUser();
     const hxUser = new History();
 
-    const store = {
-        server: null,
-        auth: null
-    };
+    const store = new RRSuperTest();
 
     before(shared.setUpFn(store));
 
     it('error: create question unauthorized', function (done) {
         const question = generator.newQuestion();
-        store.server
-            .post('/api/v1.0/questions')
-            .send(question)
-            .expect(401)
-            .end(done);
+        store.post('/questions', question, 401).end(done);
     });
 
     it('login as super', shared.loginFn(store, config.superUser));
@@ -51,11 +45,7 @@ describe('question integration', function () {
 
     it('error: create question as non admin', function (done) {
         const question = generator.newQuestion();
-        store.server
-            .post('/api/v1.0/questions')
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .send(question)
-            .expect(403, done);
+        store.post('/questions', question, 403).end(done);
     });
 
     it('logout as user', shared.logoutFn(store));
@@ -65,18 +55,11 @@ describe('question integration', function () {
     const invalidQuestionJSONFn = function (index) {
         return function (done) {
             const question = invalidQuestionsJSON[index];
-            store.server
-                .post('/api/v1.0/questions')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(question)
-                .expect(400)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.post('/questions', question, 400)
+                .expect(function (res) {
                     expect(res.body.message).to.equal(RRError.message('jsonSchemaFailed', 'newQuestion'));
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -87,18 +70,11 @@ describe('question integration', function () {
     const invalidQuestionSwaggerFn = function (index) {
         return function (done) {
             const question = invalidQuestionsSwagger[index];
-            store.server
-                .post('/api/v1.0/questions')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(question)
-                .expect(400)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.post('/questions', question, 400)
+                .expect(function (res) {
                     expect(Boolean(res.body.message)).to.equal(true);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -116,10 +92,7 @@ describe('question integration', function () {
     const getAndVerifyQxFn = function (index) {
         return function (done) {
             const id = hxQuestion.id(index);
-            store.server
-                .get(`/api/v1.0/questions/${id}`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(200)
+            store.get(`/questions/${id}`, true, 200)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
@@ -140,11 +113,7 @@ describe('question integration', function () {
             const id = hxQuestion.id(index);
             const clientQuestion = hxQuestion.client(index);
             const text = `Updated ${clientQuestion.text}`;
-            store.server
-                .patch(`/api/v1.0/questions/text/en`)
-                .send({ id, text })
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(204, done);
+            store.patch('/questions/text/en', { id, text }, 204).end(done);
         };
     };
 
@@ -154,10 +123,7 @@ describe('question integration', function () {
             const clientQuestion = hxQuestion.client(index);
             const text = `Updated ${clientQuestion.text}`;
             const updatedQuestion = Object.assign({}, clientQuestion, { text });
-            store.server
-                .get(`/api/v1.0/questions/${id}`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(200)
+            store.get(`/questions/${id}`, true, 200)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
@@ -173,11 +139,7 @@ describe('question integration', function () {
             const id = hxQuestion.id(index);
             const clientQuestion = hxQuestion.client(index);
             const text = clientQuestion.text;
-            store.server
-                .patch(`/api/v1.0/questions/text/en`)
-                .send({ id, text })
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(204, done);
+            store.patch('/questions/text/en', { id, text }, 204).end(done);
         };
     };
 
@@ -188,10 +150,7 @@ describe('question integration', function () {
     }
 
     const getAllAndVerify = function (done) {
-        store.server
-            .get('/api/v1.0/questions')
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .expect(200)
+        store.get('/questions', true, 200)
             .end(function (err, res) {
                 if (err) {
                     return done(err);
@@ -208,55 +167,34 @@ describe('question integration', function () {
         return function (done) {
             const server = hxQuestion.server(index);
             const translation = translator.translateQuestion(server, language);
-            store.server
-                .patch(`/api/v1.0/questions/text/${language}`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(translation)
-                .expect(204)
-                .end(function (err) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.patch(`/questions/text/${language}`, translation, 204)
+                .expect(function () {
                     hxQuestion.translate(index, language, translation);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
     const getTranslatedQuestionFn = function (index, language) {
         return function (done) {
             const id = hxQuestion.id(index);
-            store.server
-                .get(`/api/v1.0/questions/${id}`)
-                .query({ language })
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.get(`/questions/${id}`, true, 200, { language })
+                .expect(function (res) {
                     const expected = hxQuestion.translatedServer(index, language);
                     expect(res.body).to.deep.equal(expected);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
     const listTranslatedQuestionsFn = function (language) {
         return function (done) {
-            store.server
-                .get('/api/v1.0/questions')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .query({ language })
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.get('/questions', true, 200, { language })
+                .expect(function (res) {
                     const expected = hxQuestion.listTranslatedServers(language);
                     expect(res.body).to.deep.equal(expected);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -283,17 +221,11 @@ describe('question integration', function () {
     const deleteQxFn = function (index) {
         return function (done) {
             const id = hxQuestion.id(index);
-            store.server
-                .delete(`/api/v1.0/questions/${id}`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(204)
-                .end(function (err) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.delete(`/questions/${id}`, 204)
+                .expect(function () {
                     hxQuestion.remove(index);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -315,18 +247,11 @@ describe('question integration', function () {
         return function (done) {
             const questionIds = questionIndices.map(index => hxQuestion.id(index));
             const clientSurvey = generator.newSurveyQuestionIds(questionIds);
-            store.server
-                .post('/api/v1.0/surveys')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(clientSurvey)
-                .expect(201)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.post('/surveys', clientSurvey, 201)
+                .expect(function (res) {
                     hxSurvey.push(clientSurvey, res.body);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -341,18 +266,12 @@ describe('question integration', function () {
     const deleteQuestionWhenOnSurveyFn = function (index) {
         return function (done) {
             const id = hxQuestion.id(index);
-            store.server
-                .delete(`/api/v1.0/questions/${id}`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(400)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.delete(`/questions/${id}`, 400)
+                .expect(function (res) {
                     const message = RRError.message('qxReplaceWhenActiveSurveys');
                     expect(res.body.message).to.equal(message);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -363,17 +282,11 @@ describe('question integration', function () {
     const deleteSurveyFn = function (index) {
         return function (done) {
             const id = hxSurvey.id(index);
-            store.server
-                .delete(`/api/v1.0/surveys/${id}`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(204)
-                .end(function (err) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.delete(`/surveys/${id}`, 204)
+                .expect(function () {
                     hxSurvey.remove(index);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -396,19 +309,12 @@ describe('question integration', function () {
     it(`error: replace a non-existent question`, function (done) {
         const replacement = generator.newQuestion();
         replacement.parentId = 999;
-        store.server
-            .post('/api/v1.0/questions')
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .send(replacement)
-            .expect(400)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+        store.post('/questions', replacement, 400)
+            .expect(function (res) {
                 const message = RRError.message('qxNotFound');
                 expect(res.body.message).to.equal(message);
-                done();
-            });
+            })
+            .end(done);
     });
 
     [
@@ -423,19 +329,12 @@ describe('question integration', function () {
             const replacement = generator.newQuestion();
             const parentId = hxQuestion.id(questionIndex);
             replacement.parentId = parentId;
-            store.server
-                .post('/api/v1.0/questions')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(replacement)
-                .expect(400)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.post('/questions', replacement, 400)
+                .expect(function (res) {
                     const message = RRError.message('qxReplaceWhenActiveSurveys');
                     expect(res.body.message).to.equal(message);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -456,18 +355,11 @@ describe('question integration', function () {
             const replacement = generator.newQuestion();
             const parentId = hxQuestion.id(questionIndex);
             replacement.parentId = parentId;
-            store.server
-                .post('/api/v1.0/questions')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(replacement)
-                .expect(201)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.post('/questions', replacement, 201)
+                .expect(function (res) {
                     hxQuestion.replace(questionIndex, replacement, res.body);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 

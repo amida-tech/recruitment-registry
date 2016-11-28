@@ -7,6 +7,7 @@ const chai = require('chai');
 const config = require('../../config');
 
 const SharedIntegration = require('../util/shared-integration');
+const RRSuperTest = require('../util/rr-super-test');
 const Generator = require('../util/entity-generator');
 const History = require('../util/entity-history');
 const consentSeed = require('../util/consent-seed');
@@ -17,10 +18,7 @@ const generator = new Generator();
 const shared = new SharedIntegration(generator);
 
 describe('consent demo', function () {
-    const store = {
-        server: null,
-        auth: null
-    };
+    const store = new RRSuperTest();
     const hxUser = new History();
 
     //*******
@@ -43,19 +41,14 @@ describe('consent demo', function () {
     //****** START 2
 
     it('get Terms of Use before registration', function (done) {
-        store.server
-            .get('/api/v1.0/consents/name/terms-of-use/documents')
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+        store.get('/consents/name/terms-of-use/documents', false, 200)
+            .expect(function (res) {
                 const result = res.body;
                 expect(result.name).to.equal('terms-of-use');
                 termsOfUse = res.body;
                 //console.log(res.body);
-                done();
-            });
+            })
+            .end(done);
 
     });
 
@@ -80,17 +73,9 @@ describe('consent demo', function () {
     // This us the actual signing of the terms of use document
 
     it('sign the Terms of Use document', function (done) {
-        store.server
-            .post(`/api/v1.0/consent-signatures`)
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .send({ consentDocumentId: termsOfUse.sections[0].id })
-            .expect(201)
-            .end(function (err) {
-                if (err) {
-                    return done(err);
-                }
-                done();
-            });
+        store.post('/consent-signatures', { consentDocumentId: termsOfUse.sections[0].id }, 201)
+            .expect(function () {})
+            .end(done);
     });
 
     //****** END 3
@@ -101,19 +86,13 @@ describe('consent demo', function () {
     //****** START 4
 
     it('get the Terms of Use document with signature', function (done) {
-        store.server
-            .get(`/api/v1.0/consents/name/terms-of-use/user-documents`)
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+        store.get('/consents/name/terms-of-use/user-documents', true, 200)
+            .expect(function (res) {
                 expect(res.body.name).to.equal('terms-of-use');
                 expect(res.body.sections[0].signature).to.equal(true);
                 //console.log(res.body);
-                done();
-            });
+            })
+            .end(done);
     });
 
     //****** END 4
@@ -126,20 +105,14 @@ describe('consent demo', function () {
     //****** START 5
 
     it('get the Consents document', function (done) {
-        store.server
-            .get(`/api/v1.0/consents/name/consent/user-documents`)
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+        store.get('/consents/name/consent/user-documents', true, 200)
+            .expect(function (res) {
                 consents = res.body;
                 expect(res.body.name).to.equal('consent');
                 expect(res.body.sections[0].signature).to.equal(false);
                 //console.log(res.body);
-                done();
-            });
+            })
+            .end(done);
     });
 
     //****** END 5
@@ -149,17 +122,9 @@ describe('consent demo', function () {
     //****** START 6
 
     it('sign the Consents document', function (done) {
-        store.server
-            .post(`/api/v1.0/consent-signatures`)
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .send({ consentDocumentId: consents.sections[0].id })
-            .expect(201)
-            .end(function (err) {
-                if (err) {
-                    return done(err);
-                }
-                done();
-            });
+        store.post('/consent-signatures', { consentDocumentId: consents.sections[0].id }, 201)
+            .expect(function () {})
+            .end(done);
     });
 
     //****** END 6
@@ -170,20 +135,14 @@ describe('consent demo', function () {
     //****** START 7
 
     it('get the Consents document', function (done) {
-        store.server
-            .get(`/api/v1.0/consents/name/consent/user-documents`)
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+        store.get('/consents/name/consent/user-documents', true, 200)
+            .expect(function (res) {
                 consents = res.body;
                 expect(res.body.name).to.equal('consent');
                 expect(res.body.sections[0].signature).to.equal(true);
                 //console.log(res.body);
-                done();
-            });
+            })
+            .end(done);
     });
 
     //****** END 7

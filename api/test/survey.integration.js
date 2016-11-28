@@ -8,6 +8,7 @@ const _ = require('lodash');
 const config = require('../config');
 
 const SharedIntegration = require('./util/shared-integration');
+const RRSuperTest = require('./util/rr-super-test');
 const Generator = require('./util/entity-generator');
 const History = require('./util/entity-history');
 const SurveyHistory = require('./util/survey-history');
@@ -29,20 +30,13 @@ describe('survey integration', function () {
     const surveyCount = 8;
     const hxSurvey = new SurveyHistory();
 
-    const store = {
-        server: null,
-        auth: null
-    };
+    const store = new RRSuperTest();
 
     before(shared.setUpFn(store));
 
     it('error: create survey unauthorized', function (done) {
         const survey = generator.newSurvey();
-        store.server
-            .post('/api/v1.0/surveys')
-            .send(survey)
-            .expect(401)
-            .end(done);
+        store.post('/surveys', survey, 401).end(done);
     });
 
     it('login as super', shared.loginFn(store, config.superUser));
@@ -50,18 +44,11 @@ describe('survey integration', function () {
     const createSurveyFn = function () {
         return function (done) {
             const clientSurvey = generator.newSurvey();
-            store.server
-                .post('/api/v1.0/surveys')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(clientSurvey)
-                .expect(201)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.post('/surveys', clientSurvey, 201)
+                .expect(function (res) {
                     hxSurvey.push(clientSurvey, res.body);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -71,10 +58,7 @@ describe('survey integration', function () {
                 index = hxSurvey.lastIndex();
             }
             const id = hxSurvey.id(index);
-            store.server
-                .get(`/api/v1.0/surveys/${id}`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(200)
+            store.get(`/surveys/${id}`, true, 200)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
@@ -102,17 +86,11 @@ describe('survey integration', function () {
     const verifySurveyFn = function (index) {
         return function (done) {
             const server = hxSurvey.server(index);
-            store.server
-                .get(`/api/v1.0/surveys/${server.id}`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.get(`/surveys/${server.id}`, true, 200)
+                .expect(function (res) {
                     expect(res.body).to.deep.equal(server);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -123,11 +101,8 @@ describe('survey integration', function () {
             }
             const id = hxSurvey.id(index);
             meta = meta || hxSurvey.client(index).meta;
-            store.server
-                .patch(`/api/v1.0/surveys/${id}`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send({ meta })
-                .expect(204, done);
+            store.patch(`/surveys/${id}`, { meta }, 204)
+                .end(done);
         };
     };
 
@@ -135,47 +110,31 @@ describe('survey integration', function () {
         return function (done) {
             const id = hxSurvey.id(index);
             name = name || hxSurvey.client(index).name;
-            store.server
-                .patch(`/api/v1.0/surveys/text/en`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send({ id, name })
-                .expect(204, done);
+            store.patch('/surveys/text/en', { id, name }, 204)
+                .end(done);
         };
     };
 
     const listSurveysFn = function () {
         return function (done) {
-            store.server
-                .get('/api/v1.0/surveys')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.get('/surveys', true, 200)
+                .expect(function (res) {
                     const surveys = res.body;
                     const expected = hxSurvey.listServers();
                     expect(surveys).to.deep.equal(expected);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
     const invalidSurveyJSONFn = function (index) {
         return function (done) {
             const survey = invalidSurveysJSON[index];
-            store.server
-                .post('/api/v1.0/surveys')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(survey)
-                .expect(400)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.post('/surveys', survey, 400)
+                .expect(function (res) {
                     expect(res.body.message).to.equal(RRError.message('jsonSchemaFailed', 'newSurvey'));
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -186,18 +145,11 @@ describe('survey integration', function () {
     const invalidSurveySwaggerFn = function (index) {
         return function (done) {
             const survey = invalidSurveysSwagger[index];
-            store.server
-                .post('/api/v1.0/surveys')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(survey)
-                .expect(400)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.post('/surveys', survey, 400)
+                .expect(function (res) {
                     expect(Boolean(res.body.message)).to.equal(true);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -236,20 +188,13 @@ describe('survey integration', function () {
         const clientSurvey = hxSurvey.client(index);
         clientSurvey.sections = newSections;
         hxSurvey.updateClient(index, clientSurvey);
-        store.server
-            .patch(`/api/v1.0/surveys/${survey.id}/sections`)
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .send(newSections)
-            .expect(204, done);
+        store.patch(`/surveys/${survey.id}/sections`, newSections, 204).end(done);
     });
 
     it('get/verify sections of first survey with sections', function (done) {
         const index = _.findIndex(hxSurvey.listClients(), client => client.sections);
         const id = hxSurvey.id(index);
-        store.server
-            .get(`/api/v1.0/surveys/${id}`)
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .expect(200)
+        store.get(`/surveys/${id}`, true, 200)
             .end(function (err, res) {
                 if (err) {
                     return done(err);
@@ -269,56 +214,35 @@ describe('survey integration', function () {
         return function (done) {
             const survey = hxSurvey.server(index);
             const translation = translator.translateSurvey(survey, language);
-            store.server
-                .patch(`/api/v1.0/surveys/text/${language}`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(translation)
-                .expect(204)
-                .end(function (err) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.patch(`/surveys/text/${language}`, translation, 204)
+                .expect(function () {
                     hxSurvey.translate(index, language, translation);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
     const verifyTranslatedSurveyFn = function (index, language) {
         return function (done) {
             const id = hxSurvey.id(index);
-            store.server
-                .get(`/api/v1.0/surveys/${id}`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .query({ language })
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.get(`/surveys/${id}`, true, 200, { language })
+                .expect(function (res) {
                     translator.isSurveyTranslated(res.body, language);
                     const expected = hxSurvey.translatedServer(index, language);
                     expect(res.body).to.deep.equal(expected);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
     const listTranslatedSurveysFn = function (language) {
         return function (done) {
-            store.server
-                .get('/api/v1.0/surveys')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .query({ language })
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.get('/surveys', true, 200, { language })
+                .expect(function (res) {
                     const expected = hxSurvey.listTranslatedServers(language);
                     expect(res.body).to.deep.equal(expected);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -335,18 +259,11 @@ describe('survey integration', function () {
         return function (done) {
             const replacement = generator.newSurvey();
             replacement.parentId = hxSurvey.id(index);
-            store.server
-                .post(`/api/v1.0/surveys`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(replacement)
-                .expect(201)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.post('/surveys', replacement, 201)
+                .expect(function (res) {
                     hxSurvey.replace(index, replacement, res.body);
-                    done();
-                });
+                })
+                .end(done);
 
         };
     };
@@ -358,10 +275,7 @@ describe('survey integration', function () {
     const deleteSurveyFn = function (index) {
         return function (done) {
             const id = hxSurvey.id(index);
-            store.server
-                .delete(`/api/v1.0/surveys/${id}`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(204, done);
+            store.delete(`/surveys/${id}`, 204).end(done);
         };
     };
 
@@ -377,11 +291,7 @@ describe('survey integration', function () {
 
     it('error: create survey as non admin', function (done) {
         const survey = generator.newSurvey();
-        store.server
-            .post('/api/v1.0/surveys')
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .send(survey)
-            .expect(403, done);
+        store.post('/surveys', survey, 403).end(done);
     });
 
     it('login as super', shared.loginFn(store, config.superUser));
@@ -392,17 +302,7 @@ describe('survey integration', function () {
     it('translate survey', function (done) {
         const name = 'puenno';
         const id = hxSurvey.lastId();
-        store.server
-            .patch(`/api/v1.0/surveys/text/es`)
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .send({ id, name })
-            .expect(204)
-            .end(function (err) {
-                if (err) {
-                    return done(err);
-                }
-                done();
-            });
+        store.patch('/surveys/text/es', { id, name }, 204).end(done);
     });
 
     let answers;
@@ -411,49 +311,28 @@ describe('survey integration', function () {
 
     it('answer survey', function (done) {
         answers = generator.answerQuestions(hxSurvey.lastServer().questions);
-        const id = hxSurvey.lastId();
-        store.server
-            .post('/api/v1.0/answers')
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .send({
-                surveyId: id,
-                answers
-            })
-            .expect(204)
-            .end(done);
+        const surveyId = hxSurvey.lastId();
+        store.post('/answers', { surveyId, answers }, 204).end(done);
     });
 
     it('get answered survey', function (done) {
         const server = hxSurvey.lastServer();
-        store.server
-            .get(`/api/v1.0/answered-surveys/${server.id}`)
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+        store.get(`/answered-surveys/${server.id}`, true, 200)
+            .expect(function (res) {
                 comparator.answeredSurvey(server, answers, res.body);
-                done();
-            });
+            })
+            .end(done);
     });
 
     it('get answered translated survey', function (done) {
         const id = hxSurvey.lastId();
-        store.server
-            .get(`/api/v1.0/answered-surveys/${id}`)
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .query({ language: 'es' })
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+        store.get(`/answered-surveys/${id}`, true, 200, { language: 'es' })
+            .expect(function (res) {
                 const server = hxSurvey.lastServer();
                 const survey = _.cloneDeep(server);
                 survey.name = 'puenno';
                 comparator.answeredSurvey(survey, answers, res.body);
-                done();
-            });
+            })
+            .end(done);
     });
 });

@@ -7,6 +7,7 @@ const chai = require('chai');
 const config = require('../config');
 
 const SharedIntegration = require('./util/shared-integration');
+const RRSuperTest = require('./util/rr-super-test');
 const SurveyHistory = require('./util/survey-history');
 const Generator = require('./util/entity-generator');
 const comparator = require('./util/client-server-comparator');
@@ -17,10 +18,7 @@ const generator = new Generator();
 const shared = new SharedIntegration(generator);
 
 describe('profile survey integration', function () {
-    const store = {
-        server: null,
-        auth: null
-    };
+    const store = new RRSuperTest();
 
     const hxSurvey = new SurveyHistory();
 
@@ -28,37 +26,24 @@ describe('profile survey integration', function () {
 
     it('error: create profile survey unauthorized', function (done) {
         const clientSurvey = generator.newSurvey();
-        store.server
-            .post('/api/v1.0/profile-survey')
-            .send(clientSurvey)
-            .expect(401)
+        store.post('/profile-survey', clientSurvey, 401)
             .end(done);
     });
 
     const emptyProfileSurvey = function (done) {
-        store.server
-            .get('/api/v1.0/profile-survey')
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    done(err);
-                }
+        store.get('/profile-survey', false, 200)
+            .expect(function (res) {
                 expect(res.body.exists).to.equal(false);
-                done();
-            });
+            })
+            .end(done);
     };
 
     const emptyProfileSurveyId = function (done) {
-        store.server
-            .get('/api/v1.0/profile-survey-id')
-            .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    done(err);
-                }
+        store.get('/profile-survey-id', false, 200)
+            .expect(function (res) {
                 expect(res.body).to.equal(0);
-                done();
-            });
+            })
+            .end(done);
     };
 
     it('get profile survey when none created', emptyProfileSurvey);
@@ -67,28 +52,17 @@ describe('profile survey integration', function () {
 
     const createSurvey = function (done) {
         const clientSurvey = generator.newSurvey();
-        store.server
-            .post('/api/v1.0/surveys')
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .send(clientSurvey)
-            .expect(201)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+        store.post('/surveys', clientSurvey, 201)
+            .expect(function (res) {
                 hxSurvey.push(clientSurvey, res.body);
-                done();
-            });
+            })
+            .end(done);
     };
 
     const createProfileSurveyIdFn = function (index) {
         return function (done) {
             const id = hxSurvey.id(index);
-            store.server
-                .post('/api/v1.0/profile-survey-id')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send({ profileSurveyId: id })
-                .expect(204)
+            store.post('/profile-survey-id', { profileSurveyId: id }, 204)
                 .end(done);
         };
     };
@@ -96,26 +70,17 @@ describe('profile survey integration', function () {
     const createProfileSurveyFn = function () {
         return function (done) {
             const clientSurvey = generator.newSurvey();
-            store.server
-                .post('/api/v1.0/profile-survey')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(clientSurvey)
-                .expect(201)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.post('/profile-survey', clientSurvey, 201)
+                .expect(function (res) {
                     hxSurvey.push(clientSurvey, res.body);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
     const verifyProfileSurveyFn = function (index) {
         return function (done) {
-            store.server
-                .get('/api/v1.0/profile-survey')
-                .expect(200)
+            store.get('/profile-survey', false, 200)
                 .end(function (err, res) {
                     if (err) {
                         return done(err);
@@ -133,24 +98,17 @@ describe('profile survey integration', function () {
 
     const verifyProfileSurveyIdFn = function (index) {
         return function (done) {
-            store.server
-                .get('/api/v1.0/profile-survey-id')
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.get('/profile-survey-id', false, 200)
+                .expect(function (res) {
                     const id = hxSurvey.id(index);
                     expect(id).to.equal(res.body);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
     const deleteProfileSurveyId = function (done) {
-        store.server
-            .delete('/api/v1.0/profile-survey-id')
-            .expect(204)
+        store.delete('/profile-survey-id', 204)
             .end(done);
     };
 
@@ -158,59 +116,38 @@ describe('profile survey integration', function () {
         return function (done) {
             const survey = hxSurvey.server(index);
             const translation = translator.translateSurvey(survey, language);
-            store.server
-                .patch(`/api/v1.0/surveys/text/${language}`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(translation)
-                .expect(204)
-                .end(function (err) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.patch(`/surveys/text/${language}`, translation, 204)
+                .expect(function () {
                     hxSurvey.translate(index, language, translation);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
     const verifyNotTranslatedProfileSurveyFn = function (index, language) {
         return function (done) {
-            store.server
-                .get(`/api/v1.0/profile-survey`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .query({ language })
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.get('/profile-survey', true, 200, { language })
+                .expect(function (res) {
                     const { exists, survey } = res.body;
                     expect(exists).to.equal(true);
                     const previousSurvey = hxSurvey.server(index);
                     expect(survey).to.deep.equal(previousSurvey);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
     const verifyTranslatedProfileSurveyFn = function (index, language) {
         return function (done) {
-            store.server
-                .get(`/api/v1.0/profile-survey`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .query({ language })
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.get('/profile-survey', true, 200, { language })
+                .expect(function (res) {
                     const { exists, survey } = res.body;
                     expect(exists).to.equal(true);
                     translator.isSurveyTranslated(survey, language);
                     const expected = hxSurvey.translatedServer(index, language);
                     expect(survey).to.deep.equal(expected);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -286,10 +223,7 @@ describe('profile survey integration', function () {
 
     it('delete survey 3', function (done) {
         const id = hxSurvey.id(3);
-        store.server
-            .delete(`/api/v1.0/surveys/${id}`)
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .expect(204)
+        store.delete(`/surveys/${id}`, 204)
             .end(done);
     });
 
@@ -315,19 +249,12 @@ describe('profile survey integration', function () {
         const id = hxSurvey.id(4);
         const replacementSurvey = generator.newSurvey();
         replacementSurvey.parentId = id;
-        store.server
-            .post(`/api/v1.0/surveys`)
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .send(replacementSurvey)
-            .expect(201)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+        store.post('/surveys', replacementSurvey, 201)
+            .expect(function (res) {
                 delete replacementSurvey.parentId;
                 hxSurvey.push(replacementSurvey, res.body);
-                done();
-            });
+            })
+            .end(done);
     });
 
     it('logout as super', shared.logoutFn(store));

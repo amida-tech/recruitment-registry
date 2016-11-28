@@ -11,14 +11,13 @@ const config = require('../config');
 const tokener = require('../lib/tokener');
 
 const SharedIntegration = require('./util/shared-integration');
+const RRSuperTest = require('./util/rr-super-test');
 
 const expect = chai.expect;
 const shared = new SharedIntegration();
 
 describe('auth integration', function () {
-    const store = {
-        server: null
-    };
+    const store = new RRSuperTest();
 
     const testUser = {
         username: 'testusername',
@@ -34,18 +33,12 @@ describe('auth integration', function () {
     });
 
     it('successfull login', function (done) {
-        store.server
-            .get('/api/v1.0/auth/basic')
-            .auth(testUser.username, testUser.password)
-            .expect(200)
-            .end(function (err, res) {
+        store.authBasic(testUser)
+            .end(function (err) {
                 if (err) {
                     return done(err);
                 }
-                const store = {};
-                shared.updateStoreFromCookie(store, res);
-                const token = store.auth;
-                jwt.verify(token, config.jwt.secret, {}, function (err, jwtObject) {
+                jwt.verify(store.jwt, config.jwt.secret, {}, function (err, jwtObject) {
                     if (err) {
                         return done(err);
                     }
@@ -57,33 +50,29 @@ describe('auth integration', function () {
     });
 
     it('wrong username', function (done) {
-        store.server
-            .get('/api/v1.0/auth/basic')
-            .auth(testUser.username + 'a', testUser.password)
-            .expect(401)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+        const credentials = {
+            username: testUser.username + 'a',
+            password: testUser.password
+        };
+        store.authBasic(credentials, 401)
+            .expect(function (res) {
                 expect(typeof res.body).to.equal('object');
                 expect(Boolean(res.body.message)).to.equal(true);
-                done();
-            });
+            })
+            .end(done);
     });
 
     it('wrong password', function (done) {
-        store.server
-            .get('/api/v1.0/auth/basic')
-            .auth(testUser.username, testUser.password + 'a')
-            .expect(401)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+        const credentials = {
+            username: testUser.username,
+            password: testUser.password + 'a'
+        };
+        store.authBasic(credentials, 401)
+            .expect(function (res) {
                 expect(typeof res.body).to.equal('object');
                 expect(Boolean(res.body.message)).to.equal(true);
-                done();
-            });
+            })
+            .end(done);
     });
 
     it('token creation throws', function (done) {
@@ -91,10 +80,7 @@ describe('auth integration', function () {
             throw new Error('stub error');
         });
 
-        store.server
-            .get('/api/v1.0/auth/basic')
-            .auth(testUser.username, testUser.password)
-            .expect(401)
+        store.authBasic(testUser, 401)
             .end(function (err, res) {
                 tokener.createJWT.restore();
                 if (err) {

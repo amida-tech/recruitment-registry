@@ -7,6 +7,7 @@ const chai = require('chai');
 const config = require('../config');
 
 const SharedIntegration = require('./util/shared-integration');
+const RRSuperTest = require('./util/rr-super-test');
 const History = require('./util/entity-history');
 const Generator = require('./util/entity-generator');
 const comparator = require('./util/client-server-comparator');
@@ -17,10 +18,7 @@ const generator = new Generator();
 const shared = new SharedIntegration(generator);
 
 describe('profile integration', function () {
-    const store = {
-        server: null,
-        auth: null
-    };
+    const store = new RRSuperTest();
 
     const hxSurvey = new History(['id', 'name']);
     const hxUser = new History();
@@ -34,36 +32,23 @@ describe('profile integration', function () {
             const user = generator.newUser();
             user.role = 'participant';
             const input = { user };
-            store.server
-                .post('/api/v1.0/profiles')
-                .send(input)
-                .expect(201)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    shared.updateStoreFromCookie(store, res);
+            store.authPost('/profiles', input, 201)
+                .expect(function () {
                     hxUser.push(user, {});
                     hxAnswers.push(null);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
     const verifyProfileFn = function (userIndex) {
         return function (done) {
-            store.server
-                .get('/api/v1.0/profiles')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.get('/profiles', true, 200)
+                .expect(function (res) {
                     const result = res.body;
                     comparator.user(hxUser.client(userIndex), result.user);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -76,11 +61,8 @@ describe('profile integration', function () {
             const updateObj = {
                 user: userUpdates
             };
-            store.server
-                .patch('/api/v1.0/profiles')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(updateObj)
-                .expect(204, done);
+            store.patch('/profiles', updateObj, 204)
+                .end(done);
         };
     };
 
@@ -119,18 +101,11 @@ describe('profile integration', function () {
             if (signatures) {
                 input.signatures = signatures.map(sign => hxConsentDoc.id(sign));
             }
-            store.server
-                .post('/api/v1.0/profiles')
-                .send(input)
-                .expect(201)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    shared.updateStoreFromCookie(store, res);
+            store.authPost('/profiles', input, 201)
+                .expect(function () {
                     hxUser.push(clientUser, {});
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -148,39 +123,26 @@ describe('profile integration', function () {
             if (language) {
                 input.language = language;
             }
-            store.server
-                .post('/api/v1.0/profiles')
-                .send(input)
-                .expect(201)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    shared.updateStoreFromCookie(store, res);
+            store.authPost('/profiles', input, 201)
+                .expect(function () {
                     hxUser.push(clientUser, {});
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
     const verifyProfileWithSurveyFn = function (surveyIndex, userIndex, language) {
         return function (done) {
-            store.server
-                .get('/api/v1.0/profiles')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.get('/profiles', true, 200)
+                .expect(function (res) {
                     const result = res.body;
                     const survey = hxSurvey.server(surveyIndex);
 
                     comparator.user(hxUser.client(userIndex), result.user);
                     comparator.answeredSurvey(survey, hxAnswers[userIndex], result.survey, language);
 
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -197,33 +159,23 @@ describe('profile integration', function () {
                 answers
             };
             hxAnswers[userIndex] = answers;
-            store.server
-                .patch('/api/v1.0/profiles')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(updateObj)
-                .expect(204, done);
+            store.patch('/profiles', updateObj, 204).end(done);
         };
     };
 
     const verifySignedDocumentFn = function (expected, language) {
         return function (done) {
             const server = hxConsentDoc.server(0);
-            store.server
-                .get(`/api/v1.0/user-consent-documents/${server.id}`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.get(`/user-consent-documents/${server.id}`, true, 200)
+                .expect(function (res) {
                     const result = res.body;
                     expect(result.content).to.equal(server.content);
                     expect(result.signature).to.equal(expected);
                     if (expected) {
                         expect(result.language).to.equal(language || 'en');
                     }
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -231,22 +183,16 @@ describe('profile integration', function () {
         return function (done) {
             const server = hxConsentDoc.server(0);
             const typeName = hxConsentDoc.type(0).name;
-            store.server
-                .get(`/api/v1.0/user-consent-documents/type-name/${typeName}`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.get(`/user-consent-documents/type-name/${typeName}`, true, 200)
+                .expect(function (res) {
                     const result = res.body;
                     expect(result.content).to.equal(server.content);
                     expect(result.signature).to.equal(expected);
                     if (expected) {
                         expect(result.language).to.equal('en');
                     }
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -276,11 +222,7 @@ describe('profile integration', function () {
                 }
             });
             hxAnswers[userIndex] = newAnswers;
-            store.server
-                .patch('/api/v1.0/profiles')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(updateObj)
-                .expect(204, done);
+            store.patch('/profiles', updateObj, 204).end(done);
         };
     };
 

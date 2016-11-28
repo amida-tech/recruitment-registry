@@ -5,6 +5,7 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 
 const SharedIntegration = require('./util/shared-integration');
+const RRSuperTest = require('./util/rr-super-test');
 const Generator = require('./util/entity-generator');
 const config = require('../config');
 const History = require('./util/entity-history');
@@ -16,10 +17,7 @@ const shared = new SharedIntegration(generator);
 describe('consent section integration', function () {
     const typeCount = 12;
 
-    const store = {
-        server: null,
-        auth: null
-    };
+    const store = new RRSuperTest();
 
     const hxType = new History();
 
@@ -30,52 +28,33 @@ describe('consent section integration', function () {
     const createConsentTypeFn = function () {
         return function (done) {
             const cst = generator.newConsentType();
-            store.server
-                .post('/api/v1.0/consent-types')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .send(cst)
-                .expect(201)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.post('/consent-types', cst, 201)
+                .expect(function (res) {
                     hxType.pushWithId(cst, res.body.id);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
     const getConsentTypeFn = function (index) {
         return function (done) {
             const consentType = hxType.server(index);
-            store.server
-                .get(`/api/v1.0/consent-types/${consentType.id}`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.get(`/consent-types/${consentType.id}`, true, 200)
+                .expect(function (res) {
                     expect(res.body).to.deep.equal(consentType);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
     const listConsentTypesFn = function () {
         return function (done) {
-            store.server
-                .get('/api/v1.0/consent-types')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.get('/consent-types', true, 200)
+                .expect(function (res) {
                     const expected = hxType.listServers();
                     expect(res.body).to.deep.equal(expected);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
@@ -89,37 +68,23 @@ describe('consent section integration', function () {
     const getTranslatedConsentTypeFn = function (index, language) {
         return function (done) {
             const id = hxType.id(index);
-            store.server
-                .get(`/api/v1.0/consent-types/${id}`)
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .query({ language })
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.get(`/consent-types/${id}`, true, 200, { language })
+                .expect(function (res) {
                     const expected = hxType.translatedServer(index, language);
                     expect(res.body).to.deep.equal(expected);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 
     const listTranslatedConsentTypesFn = function (language) {
         return function (done) {
-            store.server
-                .get('/api/v1.0/consent-types')
-                .set('Cookie', `rr-jwt-token=${store.auth}`)
-                .query({ language })
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+            store.get('/consent-types', true, 200, { language })
+                .expect(function (res) {
                     const expected = hxType.listTranslatedServers(language);
                     expect(res.body).to.deep.equal(expected);
-                    done();
-                });
+                })
+                .end(done);
         };
     };
 

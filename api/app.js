@@ -15,15 +15,15 @@ const app = express();
 const jsonParser = bodyParser.json();
 
 const corsOptions = {
-  credentials: true,
-  origin: config.cors.origin,
-  allowedheaders: [
-    'Accept',
-    'Content-Type',
-    'Authorization',
-    'X-Requested-With',
-    'X-HTTP-Allow-Override'
-  ]
+    credentials: true,
+    origin: config.cors.origin,
+    allowedheaders: [
+        'Accept',
+        'Content-Type',
+        'Authorization',
+        'X-Requested-With',
+        'X-HTTP-Allow-Override'
+    ]
 };
 
 expressWinston.requestWhitelist.push('body');
@@ -41,7 +41,6 @@ app.use(cookieParser());
 app.use(jsonParser);
 app.enable('trust proxy');
 app.use(passport.initialize());
-app.use(passport.session());
 
 /* jshint unused:vars */
 app.use(function (req, res, next) {

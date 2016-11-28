@@ -6,6 +6,7 @@ const chai = require('chai');
 const sinon = require('sinon');
 
 const SharedIntegration = require('./util/shared-integration.js');
+const RRSuperTest = require('./util/rr-super-test');
 
 const models = require('../models');
 const config = require('../config');
@@ -17,10 +18,7 @@ const expect = chai.expect;
 const shared = new SharedIntegration();
 
 describe('shared integration', function () {
-    const store = {
-        server: null,
-        auth: null
-    };
+    const store = new RRSuperTest();
 
     before(shared.setUpFn(store));
 
@@ -30,25 +28,16 @@ describe('shared integration', function () {
         sinon.stub(language, 'listLanguages', function () {
             return SPromise.reject(new Error('unexpected error'));
         });
-        store.server
-            .get('/api/v1.0/languages')
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .expect(500)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+        store.get('/languages', true, 500)
+            .expect(function (res) {
                 expect(res.body.message).to.deep.equal('unexpected error');
                 language.listLanguages.restore();
-                done();
-            });
+            })
+            .end(done);
     });
 
     it('unknown end point', function (done) {
-        store.server
-            .get('/api/v1.0/unknown')
-            .set('Cookie', `rr-jwt-token=${store.auth}`)
-            .expect(404, done);
+        store.get('/unknown', true, 404).end(done);
     });
 
     it('logout as super', shared.logoutFn(store));
