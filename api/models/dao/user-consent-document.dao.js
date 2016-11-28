@@ -6,7 +6,7 @@ const db = require('../db');
 
 const ConsentSignature = db.ConsentSignature;
 
-module.exports = class {
+module.exports = class UserConsentDocumentDAO {
     constructor(dependencies) {
         Object.assign(this, dependencies);
     }

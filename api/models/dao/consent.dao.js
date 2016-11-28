@@ -25,7 +25,7 @@ const fillSections = function (result) {
         });
 };
 
-module.exports = class {
+module.exports = class ConsentDAO {
     constructor(dependencies) {
         Object.assign(this, dependencies);
     }

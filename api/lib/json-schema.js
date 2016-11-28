@@ -29,13 +29,19 @@ _.set(schema, 'definitions.newSurvey.properties.questions.items', {
     }]
 });
 
+const questionTypes = [
+    'text', 'bool', 'date', 'pounds', 'integer', 'zip',
+    'year', 'month', 'day', 'feet-inches', 'blood-pressure'
+];
+
 _.set(schema, 'definitions.newSurveyQuestion', {
     oneOf: [{
         type: 'object',
         required: ['text', 'type', 'required'],
         properties: {
             text: { type: 'string' },
-            type: { type: 'string', enum: ['text', 'bool', 'date'] },
+            instruction: { type: 'string' },
+            type: { type: 'string', enum: questionTypes },
             meta: {
                 $ref: '#/definitions/questionMeta'
             },
@@ -50,6 +56,7 @@ _.set(schema, 'definitions.newSurveyQuestion', {
         required: ['text', 'type', 'required', 'choices'],
         properties: {
             text: { type: 'string' },
+            instruction: { type: 'string' },
             required: { type: 'boolean' },
             type: { type: 'string', enum: ['choice'] },
             meta: {
@@ -76,6 +83,7 @@ _.set(schema, 'definitions.newSurveyQuestion', {
         required: ['text', 'type', 'required', 'oneOfChoices'],
         properties: {
             text: { type: 'string' },
+            instruction: { type: 'string' },
             required: { type: 'boolean' },
             type: { type: 'string', enum: ['choice'] },
             meta: {
@@ -95,6 +103,7 @@ _.set(schema, 'definitions.newSurveyQuestion', {
         required: ['text', 'type', 'required', 'choices'],
         properties: {
             text: { type: 'string' },
+            instruction: { type: 'string' },
             required: { type: 'boolean' },
             type: { type: 'string', enum: ['choices'] },
             meta: {
@@ -107,7 +116,7 @@ _.set(schema, 'definitions.newSurveyQuestion', {
                     required: ['text'],
                     properties: {
                         text: { type: 'string' },
-                        type: { type: 'string', enum: ['text', 'bool'] }
+                        type: { type: 'string', enum: ['text', 'bool', 'month', 'year', 'day', 'integer'] }
                     },
                     additionalProperties: false
                 }
@@ -126,7 +135,8 @@ _.set(schema, 'definitions.newQuestion', {
         required: ['text', 'type'],
         properties: {
             text: { type: 'string' },
-            type: { type: 'string', enum: ['text', 'bool', 'date'] },
+            instruction: { type: 'string' },
+            type: { type: 'string', enum: questionTypes },
             meta: {
                 $ref: '#/definitions/questionMeta'
             },
@@ -144,6 +154,7 @@ _.set(schema, 'definitions.newQuestion', {
         required: ['text', 'type', 'choices'],
         properties: {
             text: { type: 'string' },
+            instruction: { type: 'string' },
             type: { type: 'string', enum: ['choice'] },
             meta: {
                 $ref: '#/definitions/questionMeta'
@@ -173,6 +184,7 @@ _.set(schema, 'definitions.newQuestion', {
         required: ['text', 'type', 'oneOfChoices'],
         properties: {
             text: { type: 'string' },
+            instruction: { type: 'string' },
             type: { type: 'string', enum: ['choice'] },
             meta: {
                 $ref: '#/definitions/questionMeta'
@@ -195,6 +207,7 @@ _.set(schema, 'definitions.newQuestion', {
         required: ['text', 'type', 'choices'],
         properties: {
             text: { type: 'string' },
+            instruction: { type: 'string' },
             type: { type: 'string', enum: ['choices'] },
             meta: {
                 $ref: '#/definitions/questionMeta'
@@ -210,7 +223,7 @@ _.set(schema, 'definitions.newQuestion', {
                     required: ['text'],
                     properties: {
                         text: { type: 'string' },
-                        type: { type: 'string', enum: ['text', 'bool'] }
+                        type: { type: 'string', enum: ['text', 'bool', 'month', 'year', 'day', 'integer'] }
                     },
                     additionalProperties: false
                 }

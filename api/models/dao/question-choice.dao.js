@@ -2,21 +2,20 @@
 
 const db = require('../db');
 
-const textTableMethods = require('./text-table-methods');
+const Translatable = require('./translatable');
 
-const sequelize = db.sequelize;
 const QuestionChoice = db.QuestionChoice;
 
-const textHandler = textTableMethods(sequelize, 'question_choice_text', 'questionChoiceId');
-
-module.exports = class {
-    constructor() {}
+module.exports = class QuestionChoiceDAO extends Translatable {
+    constructor() {
+        super('question_choice_text', 'questionChoiceId');
+    }
 
     createQuestionChoiceTx(choice, tx) {
         return QuestionChoice.create(choice, { transaction: tx })
             .then(({ id }) => {
                 const input = { id, text: choice.text };
-                return textHandler.createTextTx(input, tx)
+                return this.createTextTx(input, tx)
                     .then(() => ({ id }));
             });
     }
@@ -27,7 +26,7 @@ module.exports = class {
                 where: { questionId },
                 attributes: ['id', 'type']
             })
-            .then(choices => textHandler.updateAllTexts(choices, language));
+            .then(choices => this.updateAllTexts(choices, language));
     }
 
     getAllQuestionChoices(questionIds, language) {
@@ -40,11 +39,11 @@ module.exports = class {
             options.where = { questionId: { $in: questionIds } };
         }
         return QuestionChoice.findAll(options)
-            .then(choices => textHandler.updateAllTexts(choices, language));
+            .then(choices => this.updateAllTexts(choices, language));
     }
 
     updateMultipleChoiceTextsTx(choices, language, tx) {
         const inputs = choices.map(({ id, text }) => ({ id, text, language }));
-        return textHandler.createMultipleTextsTx(inputs, tx);
+        return this.createMultipleTextsTx(inputs, tx);
     }
 };

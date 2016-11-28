@@ -11,16 +11,11 @@ const Generator = require('./util/entity-generator');
 const History = require('./util/entity-history');
 const ConsentDocumentHistory = require('./util/consent-document-history');
 const models = require('../models');
-const db = require('../models/db');
-const textTableMethods = require('../models/dao/text-table-methods');
 
 const expect = chai.expect;
 
 const generator = new Generator();
 const shared = new SharedSpec(generator);
-const ConsentDocument = db.ConsentDocument;
-
-const textHandler = textTableMethods(models.sequelize, 'consent_document_text', 'consentDocumentId', ['content', 'updateComment']);
 
 describe('consent document/type/signature unit', function () {
     const userCount = 4;
@@ -298,16 +293,12 @@ describe('consent document/type/signature unit', function () {
     }
 
     it('verify all consent documents still exists', function () {
-        const queryParams = { raw: true, attributes: ['id', 'typeId'], order: ['id'] };
-        const queryParamsAll = Object.assign({}, { paranoid: false }, queryParams);
-        return ConsentDocument.findAll(queryParamsAll)
-            .then(consentDocuments => textHandler.updateAllTexts(consentDocuments))
+        return models.consentDocument.listConsentDocuments({ noTypeExpand: true, paranoid: false })
             .then(consentDocuments => {
                 expect(consentDocuments).to.deep.equal(history.serversHistory());
             })
             .then(() => {
-                return ConsentDocument.findAll(queryParams)
-                    .then((consentDocuments => textHandler.updateAllTexts(consentDocuments)));
+                return models.consentDocument.listConsentDocuments({ noTypeExpand: true });
             })
             .then(consentDocuments => {
                 const expected = _.sortBy([history.server(0), history.server(2)], 'id');

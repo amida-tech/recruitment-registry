@@ -6,20 +6,19 @@ const db = require('../db');
 
 const RRError = require('../../lib/rr-error');
 
-const textTableMethods = require('./text-table-methods');
+const Translatable = require('./translatable');
 
 const sequelize = db.sequelize;
 const ConsentType = db.ConsentType;
 const ConsentDocument = db.ConsentDocument;
 
-const textHandler = textTableMethods(sequelize, 'consent_document_text', 'consentDocumentId', ['content', 'updateComment']);
-
-module.exports = class {
+module.exports = class ConsentDocumentDAO extends Translatable {
     constructor(dependencies) {
+        super('consent_document_text', 'consentDocumentId', ['content', 'updateComment']);
         Object.assign(this, dependencies);
     }
 
-    listConsentDocuments(options) {
+    listConsentDocuments(options = {}) {
         const typeIds = options.typeIds;
         const query = {
             raw: true,
@@ -32,15 +31,21 @@ module.exports = class {
         if (typeIds && typeIds.length) {
             query.where = { typeId: { $in: typeIds } };
         }
+        if (options.hasOwnProperty('paranoid')) {
+            query.paranoid = options.paranoid;
+        }
         return ConsentDocument.findAll(query)
             .then(documents => {
                 if (options.summary) {
                     return documents;
                 } else {
-                    return textHandler.updateAllTexts(documents, options.language);
+                    return this.updateAllTexts(documents, options.language);
                 }
             })
             .then(documents => {
+                if (options.noTypeExpand) {
+                    return documents;
+                }
                 const _options = {};
                 if (options.transaction) {
                     _options.transaction = options.transaction;
@@ -99,19 +104,19 @@ module.exports = class {
                     if (input.updateComment) {
                         textInput.updateComment = input.updateComment;
                     }
-                    return textHandler.createTextTx(textInput, tx)
+                    return this.createTextTx(textInput, tx)
                         .then(({ id }) => ({ id }));
                 });
         });
     }
 
     updateConsentDocumentText({ id, content, updateComment }, language) {
-        return textHandler.createText({ id, content, updateComment, language });
+        return this.createText({ id, content, updateComment, language });
     }
 
     getConsentDocument(id, options = {}) {
         return ConsentDocument.findById(id, { raw: true, attributes: ['id', 'typeId'] })
-            .then(result => textHandler.updateText(result, options.language));
+            .then(result => this.updateText(result, options.language));
     }
 
     getConsentDocumentByTypeName(typeName, options = {}) {
@@ -128,7 +133,7 @@ module.exports = class {
                             where: { typeId },
                             attributes: ['id', 'typeId']
                         })
-                        .then(result => textHandler.updateText(result, options.language));
+                        .then(result => this.updateText(result, options.language));
                 } else {
                     return RRError.reject('consentTypeNotFound');
                 }
@@ -143,7 +148,7 @@ module.exports = class {
                 order: 'id',
                 paranoid: false
             })
-            .then(documents => textHandler.updateAllTexts(documents, language))
+            .then(documents => this.updateAllTexts(documents, language))
             .then(documents => _.map(documents, 'updateComment'));
     }
 };

@@ -8,7 +8,7 @@ const sequelize = db.sequelize;
 const ProfileSurvey = db.ProfileSurvey;
 const SurveyConsentType = db.SurveyConsentType;
 
-module.exports = class {
+module.exports = class ProfileSurveyDAO {
     constructor(dependencies) {
         Object.assign(this, dependencies);
     }

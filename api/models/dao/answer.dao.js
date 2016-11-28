@@ -22,6 +22,18 @@ const uiToDbAnswer = function (answer) {
             if (choice.hasOwnProperty('textValue')) {
                 dbAnswer.value = choice.textValue;
                 dbAnswer.type = 'text';
+            } else if (choice.hasOwnProperty('yearValue')) {
+                dbAnswer.value = choice.yearValue;
+                dbAnswer.type = 'year';
+            } else if (choice.hasOwnProperty('monthValue')) {
+                dbAnswer.value = choice.monthValue;
+                dbAnswer.type = 'month';
+            } else if (choice.hasOwnProperty('dayValue')) {
+                dbAnswer.value = choice.dayValue;
+                dbAnswer.type = 'day';
+            } else if (choice.hasOwnProperty('integerValue')) {
+                dbAnswer.value = choice.integerValue.toString();
+                dbAnswer.type = 'integer';
             } else if (choice.hasOwnProperty('boolValue')) {
                 dbAnswer.value = choice.boolValue.toString();
                 dbAnswer.type = 'bool';
@@ -50,33 +62,112 @@ const uiToDbAnswer = function (answer) {
             type: 'date'
         });
     }
+    if (answer.hasOwnProperty('yearValue')) {
+        result.push({
+            value: answer.yearValue,
+            type: 'year'
+        });
+    }
+    if (answer.hasOwnProperty('monthValue')) {
+        result.push({
+            value: answer.monthValue,
+            type: 'month'
+        });
+    }
+    if (answer.hasOwnProperty('dayValue')) {
+        result.push({
+            value: answer.dayValue,
+            type: 'day'
+        });
+    }
     if (answer.hasOwnProperty('textValue')) {
         result.push({
             value: answer.textValue,
             type: 'text'
         });
     }
+    if (answer.hasOwnProperty('numberValue')) {
+        result.push({
+            value: answer.numberValue,
+            type: 'number'
+        });
+    }
+    if (answer.hasOwnProperty('integerValue')) {
+        result.push({
+            value: answer.integerValue,
+            type: 'integer'
+        });
+    }
+    if (answer.hasOwnProperty('feetInchesValue')) {
+        const feet = _.get(answer, 'feetInchesValue.feet') || 0;
+        const inches = _.get(answer, 'feetInchesValue.inches') || 0;
+        result.push({
+            value: `${feet}-${inches}`,
+            type: 'dual-integers'
+        });
+    }
+    if (answer.hasOwnProperty('bloodPressureValue')) {
+        const systolic = _.get(answer, 'bloodPressureValue.systolic') || 0;
+        const diastolic = _.get(answer, 'bloodPressureValue.diastolic') || 0;
+        result.push({
+            value: `${systolic}-${diastolic}`,
+            type: 'dual-integers'
+        });
+    }
+
     return result;
 };
 
-const generateAnswer = {
-    text: entries => ({ textValue: entries[0].value }),
-    date: entries => ({ dateValue: entries[0].value }),
-    bool: entries => ({ boolValue: entries[0].value === 'true' }),
+const generateAnswerSingleFn = {
+    text: value => ({ textValue: value }),
+    zip: value => ({ textValue: value }),
+    date: value => ({ dateValue: value }),
+    year: value => ({ yearValue: value }),
+    month: value => ({ monthValue: value }),
+    day: value => ({ dayValue: value }),
+    bool: value => ({ boolValue: value === 'true' }),
+    pounds: value => ({ numberValue: parseInt(value) }),
+    integer: value => ({ integerValue: parseInt(value) }),
+    'blood-pressure': value => {
+        const pieces = value.split('-');
+        return {
+            bloodPressureValue: {
+                systolic: parseInt(pieces[0]),
+                diastolic: parseInt(pieces[1])
+            }
+        };
+    },
+    'feet-inches': value => {
+        const pieces = value.split('-');
+        return {
+            feetInchesValue: {
+                feet: parseInt(pieces[0]),
+                inches: parseInt(pieces[1])
+            }
+        };
+    }
+};
+
+const generateAnswerChoices = {
     choice: entries => ({ choice: entries[0].questionChoiceId }),
     choices: entries => {
         let choices = entries.map(r => {
             const answer = { id: r.questionChoiceId };
-            if (r.type === 'text') {
-                answer.textValue = r.value;
-                return answer;
-            }
-            answer.boolValue = (r.value === 'true'); // type bool
-            return answer;
+            const fn = generateAnswerSingleFn[r.type];
+            return Object.assign(answer, fn(r.value));
         });
         choices = _.sortBy(choices, 'id');
         return { choices };
     }
+};
+
+const generateAnswer = function (type, entries) {
+    const fnChoices = generateAnswerChoices[type];
+    if (fnChoices) {
+        return fnChoices(entries);
+    }
+    const fn = generateAnswerSingleFn[type];
+    return fn(entries[0].value);
 };
 
 const fileAnswer = function ({ userId, surveyId, language, answers }, tx) {
@@ -117,7 +208,7 @@ const updateStatus = function (userId, surveyId, status, transaction) {
         });
 };
 
-module.exports = class {
+module.exports = class AnswerDAO {
     constructor(dependencies) {
         Object.assign(this, dependencies);
     }
@@ -230,7 +321,7 @@ module.exports = class {
                             const r = {
                                 questionId: v[0]['question.id'],
                                 language: v[0].language,
-                                answer: generateAnswer[v[0]['question.type']](v)
+                                answer: generateAnswer(v[0]['question.type'], v)
                             };
                             return r;
                         });
@@ -271,7 +362,7 @@ module.exports = class {
                                 return {
                                     questionId: parseInt(qid),
                                     language: qxGroup[0].language,
-                                    answer: generateAnswer[qxMap[qid].type](qxGroup)
+                                    answer: generateAnswer(qxMap[qid].type, qxGroup)
                                 };
                             });
                             r[date] = _.sortBy(newValue, 'questionId');

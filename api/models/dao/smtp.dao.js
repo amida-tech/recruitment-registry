@@ -8,7 +8,7 @@ const sequelize = db.sequelize;
 const Smtp = db.Smtp;
 const SmtpText = db.SmtpText;
 
-module.exports = class {
+module.exports = class SMTPDAO {
     constructor() {}
 
     createSmtpTx(smtp, tx) {

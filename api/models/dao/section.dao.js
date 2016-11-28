@@ -4,20 +4,19 @@ const db = require('../db');
 
 const SPromise = require('../../lib/promise');
 
-const textTableMethods = require('./text-table-methods');
+const Translatable = require('./translatable');
 
-const sequelize = db.sequelize;
 const Section = db.Section;
 const SurveySection = db.SurveySection;
 
-const textHandler = textTableMethods(sequelize, 'section_text', 'sectionId', ['name']);
-
-module.exports = class {
-    constructor() {}
+module.exports = class SectionDAO extends Translatable {
+    constructor() {
+        super('section_text', 'sectionId', ['name']);
+    }
 
     createSectionTx({ name, indices }, tx) {
         return Section.create({ indices }, { transaction: tx })
-            .then(({ id, indices }) => textHandler.createTextTx({ id, indices, name }, tx));
+            .then(({ id, indices }) => this.createTextTx({ id, indices, name }, tx));
     }
 
     bulkCreateSectionsForSurveyTx(surveyId, sections, tx) { // TODO: Use sequelize bulkCreate with 4.0
@@ -48,11 +47,11 @@ module.exports = class {
                     attributes: ['id', 'indices']
                 });
             })
-            .then(sections => textHandler.updateAllTexts(sections, language));
+            .then(sections => this.updateAllTexts(sections, language));
     }
 
     updateMultipleSectionNamesTx(sections, language, tx) {
         const inputs = sections.map(({ id, name }) => ({ id, name, language }));
-        return textHandler.createMultipleTextsTx(inputs, tx);
+        return this.createMultipleTextsTx(inputs, tx);
     }
 };

@@ -20,7 +20,10 @@ module.exports = function (sequelize, DataTypes) {
         hooks: {
             afterSync(options) {
                 if (options.force) {
-                    const names = ['choice', 'text', 'bool', 'date'];
+                    const names = [
+                        'choice', 'text', 'bool', 'date', 'number',
+                        'dual-integers', 'year', 'month', 'day', 'integer'
+                    ];
                     const ps = names.map(name => AnswerType.create({ name }));
                     return SPromise.all(ps);
                 }

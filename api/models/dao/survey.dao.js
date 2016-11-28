@@ -7,17 +7,16 @@ const db = require('../db');
 const RRError = require('../../lib/rr-error');
 const SPromise = require('../../lib/promise');
 
-const textTableMethods = require('./text-table-methods');
+const Translatable = require('./translatable');
 
 const sequelize = db.sequelize;
 const Survey = db.Survey;
 const SurveyQuestion = db.SurveyQuestion;
 const ProfileSurvey = db.ProfileSurvey;
 
-const textHandler = textTableMethods(sequelize, 'survey_text', 'surveyId', ['name']);
-
-module.exports = class {
+module.exports = class SurveyDAO extends Translatable {
     constructor(dependencies) {
+        super('survey_text', 'surveyId', ['name', 'description'], { description: true });
         Object.assign(this, dependencies);
     }
 
@@ -62,9 +61,9 @@ module.exports = class {
         if (!(survey.questions && survey.questions.length)) {
             return RRError.reject('surveyNoQuestions');
         }
-        const fields = _.omit(survey, ['name', 'sections', 'questions']);
+        const fields = _.omit(survey, ['name', 'description', 'sections', 'questions']);
         return Survey.create(fields, { transaction: tx })
-            .then(({ id }) => textHandler.createTextTx({ id, name: survey.name }, tx))
+            .then(({ id }) => this.createTextTx({ id, name: survey.name, description: survey.description }, tx))
             .then(({ id }) => {
                 return this.updateQuestionsTx(survey.questions, id, tx)
                     .then(() => id);
@@ -91,8 +90,8 @@ module.exports = class {
         });
     }
 
-    updateSurveyTextTx({ id, name, sections }, language, tx) {
-        return textHandler.createTextTx({ id, name, language }, tx)
+    updateSurveyTextTx({ id, name, description, sections }, language, tx) {
+        return this.createTextTx({ id, name, description, language }, tx)
             .then(() => {
                 if (sections) {
                     return this.section.updateMultipleSectionNamesTx(sections, language, tx);
@@ -100,9 +99,9 @@ module.exports = class {
             });
     }
 
-    updateSurveyText({ id, name, sections }, language) {
+    updateSurveyText({ id, name, description, sections }, language) {
         return sequelize.transaction(tx => {
-            return this.updateSurveyTextTx({ id, name, sections }, language, tx);
+            return this.updateSurveyTextTx({ id, name, description, sections }, language, tx);
         });
     }
 
@@ -185,7 +184,7 @@ module.exports = class {
             }
         }
         return Survey.findAll(_options)
-            .then(surveys => textHandler.updateAllTexts(surveys, options.language));
+            .then(surveys => this.updateAllTexts(surveys, options.language));
     }
 
     getSurvey(id, options = {}) {
@@ -201,7 +200,7 @@ module.exports = class {
                 if (survey.meta === null) {
                     delete survey.meta;
                 }
-                return textHandler.updateText(survey, options.language)
+                return this.updateText(survey, options.language)
                     .then(() => SurveyQuestion.findAll({
                             where: { surveyId: id },
                             raw: true,

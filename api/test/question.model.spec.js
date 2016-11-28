@@ -33,36 +33,72 @@ describe('question unit', function () {
             });
     });
 
-    const qxBasicFn = function () {
+    const createQx = function () {
+        const qx = generator.newQuestion();
+        return models.question.createQuestion(qx)
+            .then(id => hxQuestion.push(qx, { id }));
+    };
+
+    const showQxFn = function (index) {
         return function () {
-            const clientQuestion = generator.newQuestion();
-            return models.question.createQuestion(clientQuestion)
-                .then(id => models.question.getQuestion(id))
+            const id = hxQuestion.id(index);
+            return models.question.getQuestion(id)
                 .then(question => {
-                    return comparator.question(clientQuestion, question)
-                        .then(() => {
-                            hxQuestion.push(clientQuestion, question);
-                            return question;
-                        });
-                })
-                .then(question => {
-                    const text = `Updated ${clientQuestion.text}`;
-                    return models.question.updateQuestionText({ id: question.id, text })
-                        .then(() => question);
-                })
-                .then(question => models.question.getQuestion(question.id))
-                .then(updatedQuestion => {
-                    const updatedText = `Updated ${clientQuestion.text}`;
-                    const updatedInputQuestion = Object.assign({}, clientQuestion, { text: updatedText });
-                    comparator.question(updatedInputQuestion, updatedQuestion);
-                    const text = clientQuestion.text;
-                    return models.question.updateQuestionText({ id: updatedQuestion.id, text });
+                    hxQuestion.updateServer(index, question);
+                    return comparator.question(hxQuestion.client(index), question);
                 });
         };
     };
 
+    const verifyQxFn = function (index) {
+        return function () {
+            const question = hxQuestion.server(index);
+            return models.question.getQuestion(question.id)
+                .then(result => {
+                    expect(result).to.deep.equal(question);
+                });
+        };
+    };
+
+    const updateQuestionTextFn = function (index) {
+        return function () {
+            const clientQuestion = hxQuestion.client(index);
+            const question = hxQuestion.server(index);
+            const text = `Updated ${clientQuestion.text}`;
+            const instruction = clientQuestion.instruction;
+            const update = { id: question.id, text };
+            question.text = text;
+            if (instruction) {
+                update.instruction = `Updated ${instruction}`;
+                question.instruction = `Updated ${instruction}`;
+            }
+            return models.question.updateQuestionText(update);
+        };
+    };
+
+    const revertUpdateQuestionTextFn = function (index) {
+        return function () {
+            const clientQuestion = hxQuestion.client(index);
+            const question = hxQuestion.server(index);
+            const text = clientQuestion.text;
+            question.text = text;
+            const update = { id: question.id, text };
+            const instruction = clientQuestion.instruction;
+            if (instruction) {
+                update.instruction = instruction;
+                question.instruction = instruction;
+            }
+            return models.question.updateQuestionText(update);
+        };
+    };
+
     for (let i = 0; i < 10; ++i) {
-        it(`create/get/update question ${i}`, qxBasicFn());
+        it(`create question ${i}`, createQx);
+        it(`show/update question ${i}`, showQxFn(i));
+        it(`update question ${i}`, updateQuestionTextFn(i));
+        it(`verify question ${i}`, verifyQxFn(i));
+        it(`revert update question ${i}`, revertUpdateQuestionTextFn(i));
+        it(`verify question ${i}`, verifyQxFn(i));
     }
 
     it('error: get with non-existent id', function () {
@@ -102,30 +138,36 @@ describe('question unit', function () {
         };
     };
 
-    const getTranslatedQuestionFn = function (index, language) {
+    const getTranslatedQuestionFn = function (index, language, notTranslated) {
         return function () {
             const id = hxQuestion.id(index);
             return models.question.getQuestion(id, { language })
                 .then(result => {
                     const expected = hxQuestion.translatedServer(index, language);
+                    if (!notTranslated) {
+                        translator.isQuestionTranslated(expected, language);
+                    }
                     expect(result).to.deep.equal(expected);
                 });
         };
     };
 
-    const listTranslatedQuestionsFn = function (language) {
+    const listTranslatedQuestionsFn = function (language, notTranslated) {
         return function () {
             return models.question.listQuestions({ language })
                 .then(result => {
                     const expected = hxQuestion.listTranslatedServers(language);
+                    if (!notTranslated) {
+                        translator.isQuestionListTranslated(expected, language);
+                    }
                     expect(result).to.deep.equal(expected);
                 });
         };
     };
 
-    it('get question 3 in spanish when no name translation', getTranslatedQuestionFn(3, 'es'));
+    it('get question 3 in spanish when no name translation', getTranslatedQuestionFn(3, 'es', true));
 
-    it('list questions in spanish when no translation', listTranslatedQuestionsFn('es'));
+    it('list questions in spanish when no translation', listTranslatedQuestionsFn('es', true));
 
     for (let i = 0; i < 10; ++i) {
         it(`add translated (es) question ${i}`, translateQuestionFn(i, 'es'));
@@ -139,9 +181,9 @@ describe('question unit', function () {
         it(`get and verify tanslated (fr) question ${i}`, getTranslatedQuestionFn(i, 'fr'));
     }
 
-    it('list and verify translated (fr) questions', listTranslatedQuestionsFn('fr'));
+    it('list and verify translated (fr) questions', listTranslatedQuestionsFn('fr', true));
 
-    it('list questions in english (original)', listTranslatedQuestionsFn('en'));
+    it('list questions in english (original)', listTranslatedQuestionsFn('en', true));
 
     const qxDeleteFn = function (index) {
         return function () {
@@ -162,7 +204,12 @@ describe('question unit', function () {
     });
 
     for (let i = 10; i < 20; ++i) {
-        it(`create/get/update question ${i}`, qxBasicFn());
+        it(`create question ${i}`, createQx);
+        it(`show/update question ${i}`, showQxFn(i));
+        it(`update question ${i}`, updateQuestionTextFn(i));
+        it(`verify question ${i}`, verifyQxFn(i));
+        it(`revert update question ${i}`, revertUpdateQuestionTextFn(i));
+        it(`verify question ${i}`, verifyQxFn(i));
     }
 
     const createSurveyFn = function (questionIndices) {

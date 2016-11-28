@@ -18,6 +18,43 @@ class Answerer {
         };
     }
 
+    zip(question) {
+        const answerIndex = ++this.answerIndex;
+        const zip = ['20850', '53727', '76333', '74747'][answerIndex % 4];
+        return {
+            questionId: question.id,
+            answer: {
+                textValue: zip
+            }
+        };
+    }
+
+    'blood-pressure' (question) {
+        const answerIndex = ++this.answerIndex;
+        return {
+            questionId: question.id,
+            answer: {
+                bloodPressureValue: {
+                    systolic: 100 + (answerIndex % 40),
+                    diastolic: 70 + (answerIndex % 20)
+                }
+            }
+        };
+    }
+
+    'feet-inches' (question) {
+        const answerIndex = ++this.answerIndex;
+        return {
+            questionId: question.id,
+            answer: {
+                feetInchesValue: {
+                    feet: 5 + (answerIndex % 2),
+                    inches: answerIndex % 12
+                }
+            }
+        };
+    }
+
     date(question) {
         const answerIndex = ++this.answerIndex;
         const month = answerIndex % 8 + 1;
@@ -27,6 +64,60 @@ class Answerer {
             questionId: question.id,
             answer: {
                 dateValue: `${year}-0${month}-${day}`
+            }
+        };
+    }
+
+    year(question) {
+        const answerIndex = ++this.answerIndex;
+        const year = answerIndex % 34 + 1980;
+        return {
+            questionId: question.id,
+            answer: {
+                yearValue: `${year}`
+            }
+        };
+    }
+
+    month(question) {
+        const answerIndex = ++this.answerIndex;
+        const month = answerIndex % 8 + 1;
+        return {
+            questionId: question.id,
+            answer: {
+                monthValue: `0${month}`
+            }
+        };
+    }
+
+    day(question) {
+        const answerIndex = ++this.answerIndex;
+        const day = answerIndex % 13 + 10;
+        return {
+            questionId: question.id,
+            answer: {
+                dayValue: `${day}`
+            }
+        };
+    }
+
+    integer(question) {
+        const answerIndex = ++this.answerIndex;
+        return {
+            questionId: question.id,
+            answer: {
+                integerValue: answerIndex
+            }
+        };
+    }
+
+    pounds(question) {
+        const answerIndex = ++this.answerIndex;
+        const numberValue = 100 + answerIndex;
+        return {
+            questionId: question.id,
+            answer: {
+                numberValue
             }
         };
     }
@@ -64,6 +155,18 @@ class Answerer {
             if (choice.type === 'text') {
                 answer.textValue = `text_${answerIndex}`;
             }
+            if (choice.type === 'integer') {
+                answer.integerValue = answerIndex;
+            }
+            if (choice.type === 'year') {
+                answer.yearValue = `${answerIndex % 34 + 1980}`;
+            }
+            if (choice.type === 'month') {
+                answer.monthValue = `0${answerIndex % 8 + 1}`;
+            }
+            if (choice.type === 'day') {
+                answer.dayValue = `${answerIndex % 13 + 10}`;
+            }
             return answer;
         });
 
@@ -78,7 +181,12 @@ class Answerer {
 
 class QuestionGenerator {
     constructor() {
-        this.types = ['text', 'choice', 'choices', 'bool', 'date'];
+        this.types = [
+            'text', 'choice', 'choices', 'bool', 'integer',
+            'zip', 'date', 'year', 'month', 'day', 'pounds',
+            'feet-inches', 'blood-pressure',
+            'dateChoices', 'integerChoices'
+        ];
         this.index = -1;
 
         this.choiceIndex = 0;
@@ -91,6 +199,9 @@ class QuestionGenerator {
     _body(type) {
         const index = ++this.index;
         const result = { text: `text_${index}`, type };
+        if (index % 2 === 0) {
+            result.instruction = `instruction_${index}`;
+        }
         const metaIndex = index % 3;
         if (metaIndex > 0) {
             result.meta = {
@@ -106,18 +217,6 @@ class QuestionGenerator {
         const endIndex = this.choiceIndex + 5;
         this.choiceIndex = endIndex;
         return _.range(startIndex, endIndex).map(i => `choice_${i}`);
-    }
-
-    text() {
-        return this._body('text');
-    }
-
-    date() {
-        return this._body('date');
-    }
-
-    bool() {
-        return this._body('bool');
     }
 
     choice() {
@@ -150,6 +249,33 @@ class QuestionGenerator {
         return question;
     }
 
+    dateChoices() {
+        const question = this._body('choices');
+        question.choices = [{
+            text: 'year text',
+            type: 'year'
+        }, {
+            text: 'month text',
+            type: 'month'
+        }, {
+            text: 'day text',
+            type: 'day'
+        }];
+        return question;
+    }
+
+    integerChoices() {
+        const question = this._body('choices');
+        question.choices = [{
+            text: 'feet',
+            type: 'integer'
+        }, {
+            text: 'inches',
+            type: 'integer'
+        }];
+        return question;
+    }
+
     newActions(index, count) {
         return _.range(count).map(i => {
             const text = `text_${index}_${i}`;
@@ -160,7 +286,7 @@ class QuestionGenerator {
 
     newQuestion() {
         const type = this.types[(this.index + 1) % this.types.length];
-        const result = this[type]();
+        const result = this[type] ? this[type]() : this._body(type);
         const actionCount = (this.index % 3) - 1;
         if (actionCount > 0) {
             result.actions = this.newActions(this.index, actionCount);
@@ -203,6 +329,9 @@ class Generator {
         const surveyIndex = ++this.surveyIndex;
         const name = override.name || `name_${surveyIndex}`;
         const result = { name };
+        if (surveyIndex % 2 === 0) {
+            result.description = `description_${surveyIndex}`;
+        }
         const metaIndex = surveyIndex % 3;
         if (metaIndex > 0) {
             result.meta = {
@@ -217,7 +346,7 @@ class Generator {
             }
         } else {
             const sectionType = this.surveyIndex % 3;
-            const count = sectionType ? 9 + sectionType - 1 : 6;
+            const count = sectionType ? 9 + sectionType - 1 : this.questionGenerator.types.length + 1;
             result.questions = _.range(count).map(() => this.newQuestion());
             result.questions.forEach((qx, surveyIndex) => (qx.required = Boolean(surveyIndex % 2)));
             if (sectionType) {
