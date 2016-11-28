@@ -139,7 +139,7 @@ const answersJson = function (jsonDB) {
         const answersActiveIndex = {};
         let activeIndex = 0;
         const answers = jsonDB.answers.reduce((r, answer) => {
-            if (! assessment.deleted_at || (assessment.deleted_at > answer.updated_at)) {
+            if (!assessment.deleted_at || (assessment.deleted_at > answer.updated_at)) {
                 r.push(answer);
                 answersActiveIndex[answerKey(answer)] = activeIndex;
                 ++activeIndex;
