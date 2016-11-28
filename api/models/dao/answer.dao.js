@@ -106,16 +106,37 @@ const uiToDbAnswer = function (answer) {
     return result;
 };
 
-const generateAnswer = {
-    text: entries => ({ textValue: entries[0].value }),
-    zip: entries => ({ textValue: entries[0].value }),
-    date: entries => ({ dateValue: entries[0].value }),
-    year: entries => ({ yearValue: entries[0].value }),
-    month: entries => ({ monthValue: entries[0].value }),
-    day: entries => ({ dayValue: entries[0].value }),
-    bool: entries => ({ boolValue: entries[0].value === 'true' }),
-    pounds: entries => ({ numberValue: parseInt(entries[0].value) }),
-    integer: entries => ({ integerValue: parseInt(entries[0].value) }),
+const generateAnswerSingleFn = {
+    text: value => ({ textValue: value }),
+    zip: value => ({ textValue: value }),
+    date: value => ({ dateValue: value }),
+    year: value => ({ yearValue: value }),
+    month: value => ({ monthValue: value }),
+    day: value => ({ dayValue: value }),
+    bool: value => ({ boolValue: value === 'true' }),
+    pounds: value => ({ numberValue: parseInt(value) }),
+    integer: value => ({ integerValue: parseInt(value) }),
+    'blood-pressure': value => {
+        const pieces = value.split('-');
+        return {
+            bloodPressureValue: {
+                systolic: parseInt(pieces[0]),
+                diastolic: parseInt(pieces[1])
+            }
+        };
+    },
+    'feet-inches': value => {
+        const pieces = value.split('-');
+        return {
+            feetInchesValue: {
+                feet: parseInt(pieces[0]),
+                inches: parseInt(pieces[1])
+            }
+        };
+    }
+};
+
+const generateAnswerChoices = {
     choice: entries => ({ choice: entries[0].questionChoiceId }),
     choices: entries => {
         let choices = entries.map(r => {
@@ -129,27 +150,16 @@ const generateAnswer = {
         });
         choices = _.sortBy(choices, 'id');
         return { choices };
-    },
-    'blood-pressure': entries => {
-        const value = entries[0].value;
-        const pieces = value.split('-');
-        return {
-            bloodPressureValue: {
-                systolic: parseInt(pieces[0]),
-                diastolic: parseInt(pieces[1])
-            }
-        };
-    },
-    'feet-inches': entries => {
-        const value = entries[0].value;
-        const pieces = value.split('-');
-        return {
-            feetInchesValue: {
-                feet: parseInt(pieces[0]),
-                inches: parseInt(pieces[1])
-            }
-        };
     }
+};
+
+const generateAnswer = function (type, entries) {
+    const fnChoices = generateAnswerChoices[type];
+    if (fnChoices) {
+        return fnChoices(entries);
+    }
+    const fn = generateAnswerSingleFn[type];
+    return fn(entries[0].value);
 };
 
 const fileAnswer = function ({ userId, surveyId, language, answers }, tx) {
@@ -303,7 +313,7 @@ module.exports = class AnswerDAO {
                             const r = {
                                 questionId: v[0]['question.id'],
                                 language: v[0].language,
-                                answer: generateAnswer[v[0]['question.type']](v)
+                                answer: generateAnswer(v[0]['question.type'], v)
                             };
                             return r;
                         });
@@ -344,7 +354,7 @@ module.exports = class AnswerDAO {
                                 return {
                                     questionId: parseInt(qid),
                                     language: qxGroup[0].language,
-                                    answer: generateAnswer[qxMap[qid].type](qxGroup)
+                                    answer: generateAnswer(qxMap[qid].type, qxGroup)
                                 };
                             });
                             r[date] = _.sortBy(newValue, 'questionId');
