@@ -79,6 +79,38 @@ class Answerer {
         };
     }
 
+    month(question) {
+        const answerIndex = ++this.answerIndex;
+        const month = answerIndex % 8 + 1;
+        return {
+            questionId: question.id,
+            answer: {
+                monthValue: `0${month}`
+            }
+        };
+    }
+
+    day(question) {
+        const answerIndex = ++this.answerIndex;
+        const day = answerIndex % 13 + 10;
+        return {
+            questionId: question.id,
+            answer: {
+                dayValue: `${day}`
+            }
+        };
+    }
+
+    integer(question) {
+        const answerIndex = ++this.answerIndex;
+        return {
+            questionId: question.id,
+            answer: {
+                integerValue: answerIndex
+            }
+        };
+    }
+
     pounds(question) {
         const answerIndex = ++this.answerIndex;
         const numberValue = 100 + answerIndex;
@@ -138,8 +170,9 @@ class Answerer {
 class QuestionGenerator {
     constructor() {
         this.types = [
-            'text', 'choice', 'choices', 'bool', 'date', 'pounds',
-            'zip', 'year', 'feet-inches', 'blood-pressure'
+            'text', 'choice', 'choices', 'bool', 'integer',
+            'zip', 'date', 'year', 'month', 'day', 'pounds',
+            'feet-inches', 'blood-pressure'
         ];
         this.index = -1;
 

@@ -56,6 +56,18 @@ const uiToDbAnswer = function (answer) {
             type: 'year'
         });
     }
+    if (answer.hasOwnProperty('monthValue')) {
+        result.push({
+            value: answer.monthValue,
+            type: 'month'
+        });
+    }
+    if (answer.hasOwnProperty('dayValue')) {
+        result.push({
+            value: answer.dayValue,
+            type: 'day'
+        });
+    }
     if (answer.hasOwnProperty('textValue')) {
         result.push({
             value: answer.textValue,
@@ -66,6 +78,12 @@ const uiToDbAnswer = function (answer) {
         result.push({
             value: answer.numberValue,
             type: 'number'
+        });
+    }
+    if (answer.hasOwnProperty('integerValue')) {
+        result.push({
+            value: answer.integerValue,
+            type: 'integer'
         });
     }
     if (answer.hasOwnProperty('feetInchesValue')) {
@@ -93,8 +111,11 @@ const generateAnswer = {
     zip: entries => ({ textValue: entries[0].value }),
     date: entries => ({ dateValue: entries[0].value }),
     year: entries => ({ yearValue: entries[0].value }),
+    month: entries => ({ monthValue: entries[0].value }),
+    day: entries => ({ dayValue: entries[0].value }),
     bool: entries => ({ boolValue: entries[0].value === 'true' }),
     pounds: entries => ({ numberValue: parseInt(entries[0].value) }),
+    integer: entries => ({ integerValue: parseInt(entries[0].value) }),
     choice: entries => ({ choice: entries[0].questionChoiceId }),
     choices: entries => {
         let choices = entries.map(r => {

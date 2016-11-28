@@ -1969,7 +1969,8 @@
         "questionType": {
             "type": "string",
             "enum": [
-                "text", "bool", "choice", "choices", "date", "year",
+                "text", "bool", "integer", "choice", "choices",
+                "date", "year", "month", "day",
                 "pounds", "zip", "feet-inches", "blood-pressure"
             ]
         },
@@ -2408,6 +2409,9 @@
                 "numberValue": {
                     "type": "number"
                 },
+                "integerValue": {
+                    "type": "integer"
+                },
                 "feetInchesValue": {
                     "type": "object",
                     "properties": {
@@ -2437,6 +2441,14 @@
                 "yearValue": {
                     "type": "string",
                     "pattern": "\\d{4}"
+                },
+                "monthValue": {
+                    "type": "string",
+                    "pattern": "\\d{2}"
+                },
+                "dayValue": {
+                    "type": "string",
+                    "pattern": "\\d{2}"
                 }
             },
             "minProperties": 1,
