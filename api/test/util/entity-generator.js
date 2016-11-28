@@ -79,6 +79,38 @@ class Answerer {
         };
     }
 
+    month(question) {
+        const answerIndex = ++this.answerIndex;
+        const month = answerIndex % 8 + 1;
+        return {
+            questionId: question.id,
+            answer: {
+                monthValue: `0${month}`
+            }
+        };
+    }
+
+    day(question) {
+        const answerIndex = ++this.answerIndex;
+        const day = answerIndex % 13 + 10;
+        return {
+            questionId: question.id,
+            answer: {
+                dayValue: `${day}`
+            }
+        };
+    }
+
+    integer(question) {
+        const answerIndex = ++this.answerIndex;
+        return {
+            questionId: question.id,
+            answer: {
+                integerValue: answerIndex
+            }
+        };
+    }
+
     pounds(question) {
         const answerIndex = ++this.answerIndex;
         const numberValue = 100 + answerIndex;
@@ -123,6 +155,18 @@ class Answerer {
             if (choice.type === 'text') {
                 answer.textValue = `text_${answerIndex}`;
             }
+            if (choice.type === 'integer') {
+                answer.integerValue = answerIndex;
+            }
+            if (choice.type === 'year') {
+                answer.yearValue = `${answerIndex % 34 + 1980}`;
+            }
+            if (choice.type === 'month') {
+                answer.monthValue = `0${answerIndex % 8 + 1}`;
+            }
+            if (choice.type === 'day') {
+                answer.dayValue = `${answerIndex % 13 + 10}`;
+            }
             return answer;
         });
 
@@ -138,8 +182,10 @@ class Answerer {
 class QuestionGenerator {
     constructor() {
         this.types = [
-            'text', 'choice', 'choices', 'bool', 'date', 'pounds',
-            'zip', 'year', 'feet-inches', 'blood-pressure'
+            'text', 'choice', 'choices', 'bool', 'integer',
+            'zip', 'date', 'year', 'month', 'day', 'pounds',
+            'feet-inches', 'blood-pressure',
+            'dateChoices', 'integerChoices'
         ];
         this.index = -1;
 
@@ -200,6 +246,33 @@ class QuestionGenerator {
             }
         });
         question.choices = choices;
+        return question;
+    }
+
+    dateChoices() {
+        const question = this._body('choices');
+        question.choices = [{
+            text: 'year text',
+            type: 'year'
+        }, {
+            text: 'month text',
+            type: 'month'
+        }, {
+            text: 'day text',
+            type: 'day'
+        }];
+        return question;
+    }
+
+    integerChoices() {
+        const question = this._body('choices');
+        question.choices = [{
+            text: 'feet',
+            type: 'integer'
+        }, {
+            text: 'inches',
+            type: 'integer'
+        }];
         return question;
     }
 

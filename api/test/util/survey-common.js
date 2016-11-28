@@ -14,9 +14,14 @@ exports.formAnswersToPost = function (survey, answersSpec) {
                 entry.answer.choices = spec.choices.map(function (cindex) {
                     const { id } = questions[index].choices[cindex.index];
                     const result = { id };
-                    if (cindex.textValue) {
-                        result.textValue = cindex.textValue;
-                    } else {
+                    const numValues = ['textValue', 'monthValue', 'yearValue', 'dayValue', 'integerValue', 'boolValue'].reduce((r, p) => {
+                        if (cindex.hasOwnProperty(p)) {
+                            ++r;
+                            result[p] = cindex[p];
+                        }
+                        return r;
+                    }, 0);
+                    if (!numValues) {
                         result.boolValue = true;
                     }
                     return result;

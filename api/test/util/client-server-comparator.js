@@ -110,7 +110,13 @@ const comparator = {
                 qx.language = answerMap.get(qx.id).language || language || 'en';
                 if (qx.type === 'choices' && qx.answer.choices) {
                     qx.answer.choices.forEach((choice) => {
-                        if (!choice.textValue && !choice.hasOwnProperty('boolValue')) {
+                        const numValues = ['textValue', 'monthValue', 'yearValue', 'dayValue', 'integerValue', 'boolValue'].reduce((r, p) => {
+                            if (choice.hasOwnProperty(p)) {
+                                ++r;
+                            }
+                            return r;
+                        }, 0);
+                        if (!numValues) {
                             choice.boolValue = true;
                         }
                     });
@@ -125,7 +131,13 @@ const comparator = {
             answer.language = answer.language || language || 'en';
             if (answer.answer.choices) {
                 answer.answer.choices.forEach((choice) => {
-                    if (!choice.textValue && !choice.hasOwnProperty('boolValue')) {
+                    const numValues = ['textValue', 'monthValue', 'yearValue', 'dayValue', 'integerValue', 'boolValue'].reduce((r, p) => {
+                        if (choice.hasOwnProperty(p)) {
+                            ++r;
+                        }
+                        return r;
+                    }, 0);
+                    if (!numValues) {
                         choice.boolValue = true;
                     }
                 });
