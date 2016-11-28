@@ -52,7 +52,7 @@ describe('ccf import-export ccf', function () {
 
     it('write out answers', function () {
         console.log(JSON.stringify(jsonDB.assesmentAnswers, undefined, 4));
-        //console.log(JSON.stringify(jsonDB.answers, undefined, 4));
+        console.log(JSON.stringify(jsonDB.answers, undefined, 4));
         console.log(JSON.stringify(jsonDB.assessments, undefined, 4));
     });
 });

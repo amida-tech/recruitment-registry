@@ -22,10 +22,14 @@ const converters = {
         return new CSVConverter({});
     },
     answers() {
-        return new XLSXConverter();
+        return new XLSXConverter({
+            dateTimes: ['updated_at']
+        });
     },
     assessments() {
-        return new XLSXConverter();
+        return new XLSXConverter({
+            dateTimes: ['updated_at']
+        });
     }
 };
 
