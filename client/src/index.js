@@ -21,7 +21,7 @@ export const initialState = {
   login: {
     formState: {
       username: '',
-      password: '',
+      password: ''
     },
     user: {
       username: "",
@@ -105,6 +105,6 @@ export const reducers = {
     }
 };
 
-import './styles/main.scss'
+import './styles/main.scss';
 
-App({ reducers, initialState, Layout, routes }).render()
+App({ reducers, initialState, Layout, routes }).render();
