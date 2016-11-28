@@ -32,7 +32,7 @@ describe('consent section integration', function () {
             const cst = generator.newConsentType();
             store.server
                 .post('/api/v1.0/consent-types')
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(cst)
                 .expect(201)
                 .end(function (err, res) {
@@ -50,7 +50,7 @@ describe('consent section integration', function () {
             const consentType = hxType.server(index);
             store.server
                 .get(`/api/v1.0/consent-types/${consentType.id}`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -66,7 +66,7 @@ describe('consent section integration', function () {
         return function (done) {
             store.server
                 .get('/api/v1.0/consent-types')
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -91,7 +91,7 @@ describe('consent section integration', function () {
             const id = hxType.id(index);
             store.server
                 .get(`/api/v1.0/consent-types/${id}`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .query({ language })
                 .expect(200)
                 .end(function (err, res) {
@@ -109,7 +109,7 @@ describe('consent section integration', function () {
         return function (done) {
             store.server
                 .get('/api/v1.0/consent-types')
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .query({ language })
                 .expect(200)
                 .end(function (err, res) {

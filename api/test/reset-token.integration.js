@@ -155,7 +155,7 @@ describe('reset-token integration', function () {
     it('setup server specifications', function (done) {
         store.server
             .post('/api/v1.0/smtp')
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .send(smtpSpec)
             .expect(204, done);
     });
@@ -189,7 +189,7 @@ describe('reset-token integration', function () {
     it('setup server specifications', function (done) {
         store.server
             .patch('/api/v1.0/smtp/text/en')
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .send(smtpText)
             .expect(204, done);
     });
@@ -217,7 +217,7 @@ describe('reset-token integration', function () {
         smtpSpec.from = 'smtp@rr.com';
         store.server
             .post('/api/v1.0/smtp')
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .send(smtpSpec)
             .expect(204, done);
     });

@@ -47,7 +47,7 @@ describe('user survey integration', function () {
     const verifyNoUserSurveys = function (done) {
         store.server
             .get(`/api/v1.0/user-surveys`)
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
             .end(function (err, res) {
                 if (err) {
@@ -70,7 +70,7 @@ describe('user survey integration', function () {
             const surveyId = hxSurvey.id(index);
             store.server
                 .get(`/api/v1.0/surveys/${surveyId}`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -96,7 +96,7 @@ describe('user survey integration', function () {
             const surveyId = hxSurvey.id(surveyIndex);
             store.server
                 .get(`/api/v1.0/user-surveys/${surveyId}/status`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -122,7 +122,7 @@ describe('user survey integration', function () {
         return function (done) {
             store.server
                 .get(`/api/v1.0/user-surveys`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -148,7 +148,7 @@ describe('user survey integration', function () {
             const surveyId = hxSurvey.id(surveyIndex);
             store.server
                 .get(`/api/v1.0/user-surveys/${surveyId}`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -174,7 +174,7 @@ describe('user survey integration', function () {
             }
             store.server
                 .get(`/api/v1.0/user-surveys/${surveyId}/answers`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .query(query)
                 .expect(200)
                 .end(function (err, res) {
@@ -208,7 +208,7 @@ describe('user survey integration', function () {
             const key = _key(userIndex, surveyIndex);
             store.server
                 .post(`/api/v1.0/user-surveys/${survey.id}/answers`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(input)
                 .expect(204)
                 .end(function (err) {
@@ -236,7 +236,7 @@ describe('user survey integration', function () {
             const key = _key(userIndex, surveyIndex);
             store.server
                 .post(`/api/v1.0/user-surveys/${survey.id}/answers`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(input)
                 .expect(204)
                 .end(function (err) {
@@ -266,7 +266,7 @@ describe('user survey integration', function () {
             const key = _key(userIndex, surveyIndex);
             store.server
                 .post(`/api/v1.0/user-surveys/${survey.id}/answers`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(input)
                 .expect(204)
                 .end(function (err) {
@@ -295,7 +295,7 @@ describe('user survey integration', function () {
             };
             store.server
                 .post(`/api/v1.0/user-surveys/${survey.id}/answers`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(input)
                 .expect(400)
                 .end(function (err, res) {
@@ -395,7 +395,7 @@ describe('user survey integration', function () {
         return function (done) {
             store.server
                 .get(`/api/v1.0/user-surveys`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .query({ language })
                 .expect(200)
                 .end(function (err, res) {
@@ -419,7 +419,7 @@ describe('user survey integration', function () {
             const surveyId = hxSurvey.id(surveyIndex);
             store.server
                 .get(`/api/v1.0/user-surveys/${surveyId}`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .query({ language })
                 .expect(200)
                 .end(function (err, res) {
@@ -446,7 +446,7 @@ describe('user survey integration', function () {
             const query = { 'include-survey': true, language };
             store.server
                 .get(`/api/v1.0/user-surveys/${surveyId}/answers`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .query(query)
                 .expect(200)
                 .end(function (err, res) {
@@ -486,7 +486,7 @@ describe('user survey integration', function () {
             const translation = translator.translateSurvey(survey, language);
             store.server
                 .patch(`/api/v1.0/surveys/text/${language}`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(translation)
                 .expect(204)
                 .end(function (err) {
@@ -529,7 +529,7 @@ describe('user survey integration', function () {
             const key = _key(userIndex, surveyIndex);
             store.server
                 .post(`/api/v1.0/user-surveys/${survey.id}/answers`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(input)
                 .expect(204)
                 .end(function (err) {

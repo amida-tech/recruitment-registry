@@ -28,7 +28,7 @@ describe('smtp integration', function () {
     const checkNull = function (done) {
         store.server
             .get('/api/v1.0/smtp')
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
             .end(function (err, res) {
                 if (err) {
@@ -69,7 +69,7 @@ describe('smtp integration', function () {
             }
             store.server
                 .post('/api/v1.0/smtp')
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(newSmtp)
                 .expect(204)
                 .end(function (err) {
@@ -92,7 +92,7 @@ describe('smtp integration', function () {
             language = language || 'en';
             store.server
                 .patch(`/api/v1.0/smtp/text/${language}`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(text)
                 .expect(204)
                 .end(function (err) {
@@ -109,7 +109,7 @@ describe('smtp integration', function () {
         return function (done) {
             store.server
                 .get('/api/v1.0/smtp')
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -130,7 +130,7 @@ describe('smtp integration', function () {
         return function (done) {
             store.server
                 .get('/api/v1.0/smtp')
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .query({ language })
                 .expect(200)
                 .end(function (err, res) {
@@ -171,7 +171,7 @@ describe('smtp integration', function () {
                 const translation = translateSmtp(smtpText, language);
                 store.server
                     .patch(`/api/v1.0/smtp/text/${language}`)
-                    .set('Authorization', store.auth)
+                    .set('Cookie', `rr-jwt-token=${store.auth}`)
                     .send(translation)
                     .expect(204)
                     .end(function (err) {
@@ -189,7 +189,7 @@ describe('smtp integration', function () {
         return function (done) {
             store.server
                 .delete(`/api/v1.0/smtp`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(204, done);
         };
     };

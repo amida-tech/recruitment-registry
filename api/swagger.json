@@ -35,7 +35,7 @@
                     "200": {
                         "description": "Successful response",
                         "schema": {
-                            "$ref": "#/definitions/token"
+                            "type": "object"
                         }
                     },
                     "default": {
@@ -60,11 +60,8 @@
                 }],
                 "responses": {
                     "201": {
-                        "description": "Successful response",
-                        "schema": {
-                            "$ref": "#/definitions/token"
-                        }
-                     },
+                        "$ref": "#/responses/idSuccess"
+                    },
                     "default": {
                         "$ref": "#/responses/genericError"
                     }
@@ -545,10 +542,7 @@
                 }],
                 "responses": {
                     "201": {
-                        "description": "Successful response",
-                        "schema": {
-                            "$ref": "#/definitions/token"
-                        }
+                        "$ref": "#/responses/idSuccess"
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -1906,14 +1900,6 @@
             ],
             "properties": {
                 "message": {
-                    "type": "string"
-                }
-            }
-        },
-        "token": {
-            "type": "object",
-            "properties": {
-                "token": {
                     "type": "string"
                 }
             }

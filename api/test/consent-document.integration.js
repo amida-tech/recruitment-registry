@@ -31,7 +31,7 @@ describe('consent document integration', function () {
         return function (done) {
             store.server
                 .get('/api/v1.0/consent-types')
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -63,7 +63,7 @@ describe('consent document integration', function () {
     it('error: no consent documents of existing types', function (done) {
         store.server
             .get(`/api/v1.0/user-consent-documents`)
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(400)
             .end(function (err, res) {
                 if (err) {
@@ -141,7 +141,7 @@ describe('consent document integration', function () {
         return function (done) {
             store.server
                 .get('/api/v1.0/user-consent-documents')
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -158,7 +158,7 @@ describe('consent document integration', function () {
         return function (done) {
             store.server
                 .get('/api/v1.0/user-consent-documents')
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .query({ language })
                 .expect(200)
                 .end(function (err, res) {
@@ -193,7 +193,7 @@ describe('consent document integration', function () {
             }
             store.server
                 .post(`/api/v1.0/consent-signatures`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .set('User-Agent', `Browser-${typeId}`)
                 .set('X-Forwarded-For', [`9848.3${typeId}.838`, `111.${typeId}0.999`])
                 .send(input)
@@ -213,7 +213,7 @@ describe('consent document integration', function () {
             const consentDocumentId = history.id(typeIndex);
             store.server
                 .post(`/api/v1.0/consent-signatures`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send({ consentDocumentId })
                 .expect(400, done);
         };
@@ -338,7 +338,7 @@ describe('consent document integration', function () {
             const id = history.typeId(index);
             store.server
                 .delete(`/api/v1.0/consent-types/${id}`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(204)
                 .end(function (err) {
                     if (err) {
@@ -365,7 +365,7 @@ describe('consent document integration', function () {
             const userId = history.userId(userIndex);
             store.server
                 .get(`/api/v1.0/consent-signatures`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .query({ 'user-id': userId })
                 .expect(200)
                 .end(function (err, res) {

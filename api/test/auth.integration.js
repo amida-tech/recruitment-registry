@@ -42,7 +42,9 @@ describe('auth integration', function () {
                 if (err) {
                     return done(err);
                 }
-                const token = res.body.token;
+                const store = {};
+                shared.updateStoreFromCookie(store, res);
+                const token = store.auth;
                 jwt.verify(token, config.jwt.secret, {}, function (err, jwtObject) {
                     if (err) {
                         return done(err);

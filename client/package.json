@@ -31,6 +31,7 @@
     "immutable": "3.8.1",
     "react": "15.3.0",
     "react-addons-test-utils": "15.3.0",
+    "react-cookie": "^0.4.8",
     "react-dom": "15.3.0",
     "react-drag-and-drop": "^2.0.2",
     "react-redux": "4.4.5",
@@ -48,6 +49,7 @@
     "redux-slider-monitor": "1.0.7",
     "redux-thunk": "^1.0.0",
     "slick-carousel": "^1.6.0",
-    "superagent": "^2.2.0"
+    "superagent": "^2.3.0",
+    "whatwg-fetch": "^2.0.0"
   }
 }

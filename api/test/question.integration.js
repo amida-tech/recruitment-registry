@@ -53,7 +53,7 @@ describe('question integration', function () {
         const question = generator.newQuestion();
         store.server
             .post('/api/v1.0/questions')
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .send(question)
             .expect(403, done);
     });
@@ -67,7 +67,7 @@ describe('question integration', function () {
             const question = invalidQuestionsJSON[index];
             store.server
                 .post('/api/v1.0/questions')
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(question)
                 .expect(400)
                 .end(function (err, res) {
@@ -89,7 +89,7 @@ describe('question integration', function () {
             const question = invalidQuestionsSwagger[index];
             store.server
                 .post('/api/v1.0/questions')
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(question)
                 .expect(400)
                 .end(function (err, res) {
@@ -118,7 +118,7 @@ describe('question integration', function () {
             const id = hxQuestion.id(index);
             store.server
                 .get(`/api/v1.0/questions/${id}`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -143,7 +143,7 @@ describe('question integration', function () {
             store.server
                 .patch(`/api/v1.0/questions/text/en`)
                 .send({ id, text })
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(204, done);
         };
     };
@@ -156,7 +156,7 @@ describe('question integration', function () {
             const updatedQuestion = Object.assign({}, clientQuestion, { text });
             store.server
                 .get(`/api/v1.0/questions/${id}`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -176,7 +176,7 @@ describe('question integration', function () {
             store.server
                 .patch(`/api/v1.0/questions/text/en`)
                 .send({ id, text })
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(204, done);
         };
     };
@@ -190,7 +190,7 @@ describe('question integration', function () {
     const getAllAndVerify = function (done) {
         store.server
             .get('/api/v1.0/questions')
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(200)
             .end(function (err, res) {
                 if (err) {
@@ -210,7 +210,7 @@ describe('question integration', function () {
             const translation = translator.translateQuestion(server, language);
             store.server
                 .patch(`/api/v1.0/questions/text/${language}`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(translation)
                 .expect(204)
                 .end(function (err) {
@@ -229,7 +229,7 @@ describe('question integration', function () {
             store.server
                 .get(`/api/v1.0/questions/${id}`)
                 .query({ language })
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -246,7 +246,7 @@ describe('question integration', function () {
         return function (done) {
             store.server
                 .get('/api/v1.0/questions')
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .query({ language })
                 .expect(200)
                 .end(function (err, res) {
@@ -285,7 +285,7 @@ describe('question integration', function () {
             const id = hxQuestion.id(index);
             store.server
                 .delete(`/api/v1.0/questions/${id}`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(204)
                 .end(function (err) {
                     if (err) {
@@ -317,7 +317,7 @@ describe('question integration', function () {
             const clientSurvey = generator.newSurveyQuestionIds(questionIds);
             store.server
                 .post('/api/v1.0/surveys')
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(clientSurvey)
                 .expect(201)
                 .end(function (err, res) {
@@ -343,7 +343,7 @@ describe('question integration', function () {
             const id = hxQuestion.id(index);
             store.server
                 .delete(`/api/v1.0/questions/${id}`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(400)
                 .end(function (err, res) {
                     if (err) {
@@ -365,7 +365,7 @@ describe('question integration', function () {
             const id = hxSurvey.id(index);
             store.server
                 .delete(`/api/v1.0/surveys/${id}`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .expect(204)
                 .end(function (err) {
                     if (err) {
@@ -398,7 +398,7 @@ describe('question integration', function () {
         replacement.parentId = 999;
         store.server
             .post('/api/v1.0/questions')
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .send(replacement)
             .expect(400)
             .end(function (err, res) {
@@ -425,7 +425,7 @@ describe('question integration', function () {
             replacement.parentId = parentId;
             store.server
                 .post('/api/v1.0/questions')
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(replacement)
                 .expect(400)
                 .end(function (err, res) {
@@ -458,7 +458,7 @@ describe('question integration', function () {
             replacement.parentId = parentId;
             store.server
                 .post('/api/v1.0/questions')
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(replacement)
                 .expect(201)
                 .end(function (err, res) {

@@ -69,7 +69,7 @@ describe('profile survey integration', function () {
         const clientSurvey = generator.newSurvey();
         store.server
             .post('/api/v1.0/surveys')
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .send(clientSurvey)
             .expect(201)
             .end(function (err, res) {
@@ -86,7 +86,7 @@ describe('profile survey integration', function () {
             const id = hxSurvey.id(index);
             store.server
                 .post('/api/v1.0/profile-survey-id')
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send({ profileSurveyId: id })
                 .expect(204)
                 .end(done);
@@ -98,7 +98,7 @@ describe('profile survey integration', function () {
             const clientSurvey = generator.newSurvey();
             store.server
                 .post('/api/v1.0/profile-survey')
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(clientSurvey)
                 .expect(201)
                 .end(function (err, res) {
@@ -160,7 +160,7 @@ describe('profile survey integration', function () {
             const translation = translator.translateSurvey(survey, language);
             store.server
                 .patch(`/api/v1.0/surveys/text/${language}`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .send(translation)
                 .expect(204)
                 .end(function (err) {
@@ -177,7 +177,7 @@ describe('profile survey integration', function () {
         return function (done) {
             store.server
                 .get(`/api/v1.0/profile-survey`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .query({ language })
                 .expect(200)
                 .end(function (err, res) {
@@ -197,7 +197,7 @@ describe('profile survey integration', function () {
         return function (done) {
             store.server
                 .get(`/api/v1.0/profile-survey`)
-                .set('Authorization', store.auth)
+                .set('Cookie', `rr-jwt-token=${store.auth}`)
                 .query({ language })
                 .expect(200)
                 .end(function (err, res) {
@@ -288,7 +288,7 @@ describe('profile survey integration', function () {
         const id = hxSurvey.id(3);
         store.server
             .delete(`/api/v1.0/surveys/${id}`)
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .expect(204)
             .end(done);
     });
@@ -317,7 +317,7 @@ describe('profile survey integration', function () {
         replacementSurvey.parentId = id;
         store.server
             .post(`/api/v1.0/surveys`)
-            .set('Authorization', store.auth)
+            .set('Cookie', `rr-jwt-token=${store.auth}`)
             .send(replacementSurvey)
             .expect(201)
             .end(function (err, res) {
