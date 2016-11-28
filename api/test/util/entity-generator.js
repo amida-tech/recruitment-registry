@@ -155,6 +155,18 @@ class Answerer {
             if (choice.type === 'text') {
                 answer.textValue = `text_${answerIndex}`;
             }
+            if (choice.type === 'integer') {
+                answer.integerValue = answerIndex;
+            }
+            if (choice.type === 'year') {
+                answer.yearValue = `${answerIndex % 34 + 1980}`;
+            }
+            if (choice.type === 'month') {
+                answer.monthValue = `0${answerIndex % 8 + 1}`;
+            }
+            if (choice.type === 'day') {
+                answer.dayValue = `${answerIndex % 13 + 10}`;
+            }
             return answer;
         });
 
@@ -172,7 +184,8 @@ class QuestionGenerator {
         this.types = [
             'text', 'choice', 'choices', 'bool', 'integer',
             'zip', 'date', 'year', 'month', 'day', 'pounds',
-            'feet-inches', 'blood-pressure'
+            'feet-inches', 'blood-pressure',
+            'dateChoices', 'integerChoices'
         ];
         this.index = -1;
 
@@ -233,6 +246,33 @@ class QuestionGenerator {
             }
         });
         question.choices = choices;
+        return question;
+    }
+
+    dateChoices() {
+        const question = this._body('choices');
+        question.choices = [{
+            text: 'year text',
+            type: 'year'
+        }, {
+            text: 'month text',
+            type: 'month'
+        }, {
+            text: 'day text',
+            type: 'day'
+        }];
+        return question;
+    }
+
+    integerChoices() {
+        const question = this._body('choices');
+        question.choices = [{
+            text: 'feet',
+            type: 'integer'
+        }, {
+            text: 'inches',
+            type: 'integer'
+        }];
         return question;
     }
 

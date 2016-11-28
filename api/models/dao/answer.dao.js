@@ -22,6 +22,18 @@ const uiToDbAnswer = function (answer) {
             if (choice.hasOwnProperty('textValue')) {
                 dbAnswer.value = choice.textValue;
                 dbAnswer.type = 'text';
+            } else if (choice.hasOwnProperty('yearValue')) {
+                dbAnswer.value = choice.yearValue;
+                dbAnswer.type = 'year';
+            } else if (choice.hasOwnProperty('monthValue')) {
+                dbAnswer.value = choice.monthValue;
+                dbAnswer.type = 'month';
+            } else if (choice.hasOwnProperty('dayValue')) {
+                dbAnswer.value = choice.dayValue;
+                dbAnswer.type = 'day';
+            } else if (choice.hasOwnProperty('integerValue')) {
+                dbAnswer.value = choice.integerValue.toString();
+                dbAnswer.type = 'integer';
             } else if (choice.hasOwnProperty('boolValue')) {
                 dbAnswer.value = choice.boolValue.toString();
                 dbAnswer.type = 'bool';
@@ -141,12 +153,8 @@ const generateAnswerChoices = {
     choices: entries => {
         let choices = entries.map(r => {
             const answer = { id: r.questionChoiceId };
-            if (r.type === 'text') {
-                answer.textValue = r.value;
-                return answer;
-            }
-            answer.boolValue = (r.value === 'true'); // type bool
-            return answer;
+            const fn = generateAnswerSingleFn[r.type];
+            return Object.assign(answer, fn(r.value));
         });
         choices = _.sortBy(choices, 'id');
         return { choices };

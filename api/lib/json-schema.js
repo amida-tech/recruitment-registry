@@ -116,7 +116,7 @@ _.set(schema, 'definitions.newSurveyQuestion', {
                     required: ['text'],
                     properties: {
                         text: { type: 'string' },
-                        type: { type: 'string', enum: ['text', 'bool'] }
+                        type: { type: 'string', enum: ['text', 'bool', 'month', 'year', 'day', 'integer'] }
                     },
                     additionalProperties: false
                 }
@@ -223,7 +223,7 @@ _.set(schema, 'definitions.newQuestion', {
                     required: ['text'],
                     properties: {
                         text: { type: 'string' },
-                        type: { type: 'string', enum: ['text', 'bool'] }
+                        type: { type: 'string', enum: ['text', 'bool', 'month', 'year', 'day', 'integer'] }
                     },
                     additionalProperties: false
                 }

@@ -2325,7 +2325,7 @@
         },
         "choiceType": {
             "type": "string",
-            "enum": ["bool", "text"]
+            "enum": ["bool", "text", "year", "month", "day", "integer"]
         },
         "choice": {
             "type": "object",
@@ -2376,8 +2376,23 @@
                 "boolValue": {
                     "type": "boolean"
                 },
+                "integerValue": {
+                    "type": "integer"
+                },
                 "textValue": {
                     "type": "string"
+                },
+                "yearValue": {
+                    "type": "string",
+                    "pattern": "\\d{4}"
+                },
+                "monthValue": {
+                    "type": "string",
+                    "pattern": "\\d{2}"
+                },
+                "dayValue": {
+                    "type": "string",
+                    "pattern": "\\d{2}"
                 }
             },
             "maxProperties": 2

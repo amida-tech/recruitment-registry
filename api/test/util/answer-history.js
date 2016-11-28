@@ -59,7 +59,13 @@ class AnswerHistory {
         result.forEach(({ answer }) => {
             if (answer.choices) {
                 answer.choices.forEach((choice) => {
-                    if (!(choice.hasOwnProperty('textValue') || choice.hasOwnProperty('boolValue'))) {
+                    const numValues = ['textValue', 'monthValue', 'yearValue', 'dayValue', 'integerValue', 'boolValue'].reduce((r, p) => {
+                        if (choice.hasOwnProperty(p)) {
+                            ++r;
+                        }
+                        return r;
+                    }, 0);
+                    if (!numValues) {
                         choice.boolValue = true;
                     }
                 });
