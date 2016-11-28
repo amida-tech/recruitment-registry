@@ -4,11 +4,14 @@ process.env.NODE_ENV = 'test';
 
 const path = require('path');
 const _ = require('lodash');
+const chai = require('chai');
 
 const ccfImport = require('../../import/ccf');
 const ccfExport = require('../../export/ccf');
 
 const fileCompare = require('../util/file-compare');
+
+const expect = chai.expect;
 
 describe('ccf import-export ccf', function () {
     const fixtureDir = path.join(__dirname, '../fixtures/import-export/ccf');
@@ -50,9 +53,18 @@ describe('ccf import-export ccf', function () {
         fileCompare.contentToFile(exportedJsonDB.questions, filepaths.questions);
     });
 
-    it('write out answers', function () {
-        console.log(JSON.stringify(jsonDB.assesmentAnswers, undefined, 4));
-        console.log(JSON.stringify(jsonDB.answers, undefined, 4));
-        console.log(JSON.stringify(jsonDB.assessments, undefined, 4));
+    it('compare assessments', function () {
+        return ccfImport.converters.assessments().fileToRecords(filepaths.assessments)
+            .then(rawJson => {
+                expect(jsonDB.assessments).to.deep.equal(rawJson);
+            });
+    });
+
+    it('compare answers', function () {
+        return ccfImport.converters.assessments().fileToRecords(filepaths.answers)
+            .then(rawJson => {
+                rawJson.forEach(r => delete r.id);
+                expect(exportedJsonDB.answers).to.deep.equal(rawJson);
+            });
     });
 });

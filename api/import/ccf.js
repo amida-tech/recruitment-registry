@@ -148,13 +148,18 @@ const answersPost = function (result, key, lines) {
 
     const answers = [];
     const indexAnswers = {};
+    const assessmentIndex = {};
     const jsonByAssessment = _.groupBy(lines, 'hb_assessment_id');
     const assessments = Object.keys(jsonByAssessment);
-    assessments.forEach(assessment => {
+    assessments.forEach((assessment, assessIndex) => {
         const current = jsonByAssessment[assessment];
         jsonByAssessment[assessment] = current.reduce((r, p) => {
             delete p.hb_assessment_id;
             const index = `${p.pillar_hash}\t${p.hb_user_id}\t${p.updated_at}`;
+            if (assessmentIndex[index] !== undefined && assessmentIndex[index] !== assessIndex) {
+                return r;
+            }
+            assessmentIndex[index] = assessIndex;
             let record = indexAnswers[index];
             if (!record) {
                 record = {
@@ -165,8 +170,6 @@ const answersPost = function (result, key, lines) {
                 };
                 answers.push(record);
                 indexAnswers[index] = record;
-                r.push(p.updated_at);
-                //console.log(p.pillar_hash + ' ' + p.updated_at);
             }
             const answer = { answer_hash: p.answer_hash };
             if (p.hasOwnProperty('string_value')) {
@@ -212,5 +215,6 @@ const importFiles = function (filepaths) {
 };
 
 module.exports = {
+    converters,
     importFiles
 };
