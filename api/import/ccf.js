@@ -23,6 +23,9 @@ const converters = {
     },
     answers() {
         return new XLSXConverter();
+    },
+    assessments() {
+        return new XLSXConverter();
     }
 };
 

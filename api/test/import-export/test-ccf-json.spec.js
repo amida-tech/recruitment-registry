@@ -18,7 +18,8 @@ describe('ccf import-export ccf', function () {
     const filenames = {
         pillars: 'ccf-pillars.csv',
         questions: 'ccf-questions.csv',
-        answers: '/Work/CCF/ExampleData/public_hb_answer.xlsx'
+        answers: 'ccf-answers.xlsx',
+        assessments: 'ccf-assessments.xlsx'
     };
 
     const filepaths = {};
@@ -51,6 +52,7 @@ describe('ccf import-export ccf', function () {
 
     it('write out answers', function () {
         console.log(JSON.stringify(jsonDB.assesmentAnswers, undefined, 4));
-        console.log(JSON.stringify(jsonDB.answers, undefined, 4));
+        //console.log(JSON.stringify(jsonDB.answers, undefined, 4));
+        console.log(JSON.stringify(jsonDB.assessments, undefined, 4));
     });
 });
