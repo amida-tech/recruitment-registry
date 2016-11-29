@@ -15,7 +15,7 @@ const shared = new SharedSpec(generator);
 
 const ConsentDocumentHistory = require('./util/consent-document-history');
 
-describe('survey consent section unit', function () {
+describe('survey consent unit - consent type only', function () {
     const consentTypeCount = 2;
     const userCount = 4;
 
