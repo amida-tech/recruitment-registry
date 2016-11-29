@@ -50,17 +50,6 @@ describe('consent unit', function () {
     });
 
     _.range(consentSpecs.length).forEach(index => {
-        it(`get/verify consent ${index}`, function () {
-            const id = hxConsent.id(index);
-            return models.consent.getConsent(id)
-                .then(consent => {
-                    const expected = hxConsent.server(index);
-                    expect(consent).to.deep.equal(expected);
-                });
-        });
-    });
-
-    _.range(consentSpecs.length).forEach(index => {
         it(`get/verify consent by name ${index}`, function () {
             const name = hxConsent.client(index).name;
             return models.consent.getConsentByName(name)
