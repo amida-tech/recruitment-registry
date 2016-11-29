@@ -214,7 +214,7 @@ module.exports = class AnswerDAO {
     }
 
     validateConsent(userId, surveyId, action, transaction) {
-        return this.surveyConsentType.listSurveyConsentTypes({
+        return this.surveyConsent.listSurveyConsentTypes({
                 userId,
                 surveyId,
                 action

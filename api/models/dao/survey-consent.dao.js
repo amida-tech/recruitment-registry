@@ -4,7 +4,7 @@ const _ = require('lodash');
 
 const db = require('../db');
 
-const SurveyConsentType = db.SurveyConsentType;
+const SurveyConsent = db.SurveyConsent;
 
 module.exports = class SurveyConsentTypeDAO {
     constructor(dependencies) {
@@ -12,12 +12,12 @@ module.exports = class SurveyConsentTypeDAO {
     }
 
     createSurveyConsentType({ surveyId, consentTypeId, action }) {
-        return SurveyConsentType.create({ surveyId, consentTypeId, action })
+        return SurveyConsent.create({ surveyId, consentTypeId, action })
             .then(({ id }) => ({ id }));
     }
 
     deleteSurveyConsentType(id) {
-        return SurveyConsentType.destroy({ where: { id } });
+        return SurveyConsent.destroy({ where: { id } });
     }
 
     listSurveyConsentTypes({ userId, surveyId, action }, tx) {
@@ -29,7 +29,7 @@ module.exports = class SurveyConsentTypeDAO {
         if (tx) {
             query.transaction = tx;
         }
-        return SurveyConsentType.findAll(query)
+        return SurveyConsent.findAll(query)
             .then(result => _.map(result, 'consentTypeId'))
             .then(typeIds => {
                 if (typeIds.length) {

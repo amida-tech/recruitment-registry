@@ -38,7 +38,7 @@ const ConsentDocumentText = sequelize.import('./consent-document-text.model');
 const ConsentSignature = sequelize.import('./consent-signature.model');
 const ConsentSection = sequelize.import('./consent-section.model');
 const Consent = sequelize.import('./consent.model');
-const SurveyConsentType = sequelize.import('./survey-consent-type.model');
+const SurveyConsent = sequelize.import('./survey-consent.model');
 const Language = sequelize.import('./language.model');
 const SurveySection = sequelize.import('./survey-section.model');
 const SectionText = sequelize.import('./section-text.model');
@@ -87,7 +87,7 @@ module.exports = {
     ConsentSignature,
     ConsentSection,
     Consent,
-    SurveyConsentType,
+    SurveyConsent,
     Language,
     SmtpText,
     Smtp,

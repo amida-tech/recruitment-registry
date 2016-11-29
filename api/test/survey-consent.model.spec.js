@@ -51,7 +51,7 @@ describe('survey consent section unit', function () {
         return function () {
             const consentTypeId = history.typeId(typeIndex);
             const surveyId = profileSurvey.id;
-            return models.surveyConsentType.createSurveyConsentType({ surveyId, consentTypeId, action })
+            return models.surveyConsent.createSurveyConsentType({ surveyId, consentTypeId, action })
                 .then(({ id }) => profileSurveyConsentTypes.push({ id, consentTypeId, action }));
         };
     };
@@ -188,7 +188,7 @@ describe('survey consent section unit', function () {
     const fnDelete = function (index) {
         return function () {
             const id = profileSurveyConsentTypes[index].id;
-            return models.surveyConsentType.deleteSurveyConsentType(id);
+            return models.surveyConsent.deleteSurveyConsentType(id);
         };
     };
 

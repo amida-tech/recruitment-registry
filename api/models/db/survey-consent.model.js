@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    const SurveyConsentType = sequelize.define('survey_consent_type', {
+    return sequelize.define('survey_consent', {
         surveyId: {
             type: DataTypes.INTEGER,
             allowNull: false,
@@ -13,10 +13,17 @@ module.exports = function (sequelize, DataTypes) {
         },
         consentTypeId: {
             type: DataTypes.INTEGER,
-            allowNull: false,
             field: 'consent_type_id',
             references: {
                 model: 'consent_type',
+                key: 'id'
+            }
+        },
+        consentId: {
+            type: DataTypes.INTEGER,
+            field: 'consent_id',
+            references: {
+                model: 'consent',
                 key: 'id'
             }
         },
@@ -37,8 +44,17 @@ module.exports = function (sequelize, DataTypes) {
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',
-        paranoid: true
+        paranoid: true,
+        indexes: [{
+            fields: ['survey_id']
+        }],
+        hooks: {
+            afterSync(options) {
+                if (options.force) {
+                    const query = 'ALTER TABLE survey_consent ADD CONSTRAINT survey_consent_check CHECK (consent_id IS NOT NULL OR consent_type_id IS NOT NULL)';
+                    return sequelize.query(query);
+                }
+            }
+        }
     });
-
-    return SurveyConsentType;
 };

@@ -11,7 +11,7 @@ const ConsentDocumentDAO = require('./consent-document.dao');
 const ConsentSignatureDAO = require('./consent-signature.dao');
 const UserConsentDocumentDAO = require('./user-consent-document.dao');
 const ConsentDAO = require('./consent.dao');
-const SurveyConsentTypeDAO = require('./survey-consent-type.dao');
+const SurveyConsentDAO = require('./survey-consent.dao');
 const ProfileSurveyDAO = require('./profile-survey.dao');
 const ProfileDAO = require('./profile.dao');
 const LanguageDAO = require('./language.dao');
@@ -24,12 +24,12 @@ const consentDocument = new ConsentDocumentDAO({ consentType });
 const consentSignature = new ConsentSignatureDAO();
 const userConsentDocument = new UserConsentDocumentDAO({ consentDocument });
 const user = new UserDAO({ consentDocument });
-const surveyConsentType = new SurveyConsentTypeDAO({ userConsentDocument });
+const surveyConsent = new SurveyConsentDAO({ userConsentDocument });
 const section = new SectionDAO();
 const questionChoice = new QuestionChoiceDAO();
 const questionAction = new QuestionActionDAO();
 const question = new QuestionDAO({ questionChoice, questionAction });
-const answer = new AnswerDAO({ surveyConsentType });
+const answer = new AnswerDAO({ surveyConsent });
 const survey = new SurveyDAO({ answer, section, question });
 const userSurvey = new UserSurveyDAO({ survey, answer });
 const consent = new ConsentDAO({ consentDocument });
@@ -52,7 +52,7 @@ module.exports = {
     consentSignature,
     userConsentDocument,
     consent,
-    surveyConsentType,
+    surveyConsent,
     profileSurvey,
     profile,
     language,
