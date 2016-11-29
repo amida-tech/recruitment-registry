@@ -15,13 +15,13 @@ module.exports = class Translatable {
         this.optionals = optionals;
     }
 
-    createTextTx(input, tx) {
+    createTextTx(input, transaction) {
         const Table = sequelize.models[this.tableName];
         const parentIdField = this.parentIdField;
         const language = input.language || 'en';
         const where = { language };
         where[parentIdField] = input.id;
-        return Table.destroy({ where }, { transaction: tx })
+        return Table.destroy({ where, transaction })
             .then(() => {
                 const record = { language };
                 record[parentIdField] = input.id;
@@ -32,7 +32,7 @@ module.exports = class Translatable {
                     }
                     record[field] = value;
                 });
-                return Table.create(record, { transaction: tx })
+                return Table.create(record, { transaction })
                     .then(() => input);
             });
     }

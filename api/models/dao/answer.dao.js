@@ -202,7 +202,7 @@ const updateStatus = function (userId, surveyId, status, transaction) {
             if (!userSurvey) {
                 return UserSurvey.create({ userId, surveyId, status }, { transaction });
             } else if (userSurvey.status !== status) {
-                return UserSurvey.destroy({ where: { userId, surveyId } }, { transaction })
+                return UserSurvey.destroy({ where: { userId, surveyId }, transaction })
                     .then(() => UserSurvey.create({ userId, surveyId, status }, { transaction }));
             }
         });
@@ -285,7 +285,7 @@ module.exports = class AnswerDAO {
             .then(() => {
                 const ids = _.map(answers, 'questionId');
                 const where = { questionId: { $in: ids }, surveyId, userId };
-                return Answer.destroy({ where }, { transaction });
+                return Answer.destroy({ where, transaction });
             })
             .then(() => {
                 answers = _.filter(answers, answer => answer.answer);

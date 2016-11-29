@@ -57,11 +57,9 @@ module.exports = class ConsentTypeDAO extends Translatable {
                 if (count) {
                     return RRError.reject('consentTypeDeleteOnConsent');
                 } else {
-                    return sequelize.transaction(tx => {
-                        return ConsentType.destroy({ where: { id }, transaction: tx })
-                            .then(() => ConsentDocument.destroy({
-                                where: { typeId: id }
-                            }, { transaction: tx }));
+                    return sequelize.transaction(transaction => {
+                        return ConsentType.destroy({ where: { id }, transaction })
+                            .then(() => ConsentDocument.destroy({ where: { typeId: id }, transaction }));
                     });
                 }
             });
