@@ -10,6 +10,9 @@ const models = require('../models');
 const Generator = require('./util/entity-generator');
 const ConsentDocumentHistory = require('./util/consent-document-history');
 const SurveyHistory = require('./util/survey-history');
+const MultiIndexHistory = require('./util/multi-index-history');
+const MultiIndexStore = require('./util/multi-index-store');
+const comparator = require('./util/client-server-comparator');
 
 const expect = chai.expect;
 const generator = new Generator();
@@ -20,9 +23,9 @@ describe('survey consent unit - consent type only', function () {
 
     const hxConsentDocument = new ConsentDocumentHistory(userCount);
     const hxSurvey = new SurveyHistory();
-
-    const profileSurveyConsents = [];
-    const profileResponses = [];
+    const hxUser = hxConsentDocument.hxUser;
+    const hxSurveyConsents = new MultiIndexHistory();
+    const hxAnswers = new MultiIndexStore();
 
     before(shared.setUpFn());
 
@@ -42,8 +45,9 @@ describe('survey consent unit - consent type only', function () {
         return function () {
             const consentTypeId = hxConsentDocument.typeId(typeIndex);
             const surveyId = hxSurvey.id(surveyIndex);
-            return models.surveyConsent.createSurveyConsentType({ surveyId, consentTypeId, action })
-                .then(({ id }) => profileSurveyConsents.push({ id, consentTypeId, action }));
+            const surveyConsent = { surveyId, consentTypeId, action };
+            return models.surveyConsent.createSurveyConsentType(surveyConsent)
+                .then(({ id }) => hxSurveyConsents.pushWithId([surveyIndex, typeIndex, action], surveyConsent, id));
         };
     };
 
@@ -105,21 +109,18 @@ describe('survey consent unit - consent type only', function () {
         it(`get/verify consent section of type ${i}`, verifyConsentDocumentContentFn(i));
     }
 
-    const formProfileResponse = function () {
-        const profileSurvey = hxSurvey.server(0);
-        const answers = generator.answerQuestions(profileSurvey.questions);
-        const user = generator.newUser();
-        profileResponses.push({ user, answers });
-    };
-
     const createProfileWithoutSignaturesFn = function (index, signIndices, missingConsentDocumentIndices) {
         return function () {
-            let signObj = {};
+            const profileSurvey = hxSurvey.server(0);
+            const answers = generator.answerQuestions(profileSurvey.questions);
+            let response = {
+                user: generator.newUser(),
+                answers
+            };
             if (signIndices) {
                 const signatures = signIndices.map(signIndex => hxConsentDocument.id(signIndex));
-                signObj = Object.assign({}, profileResponses[index], { signatures });
+                Object.assign(response, { signatures });
             }
-            const response = Object.assign({}, profileResponses[index], signObj);
             return models.profile.createProfile(response)
                 .then(shared.throwingHandler, shared.expectedErrorHandler('profileSignaturesMissing'))
                 .then(err => {
@@ -131,27 +132,24 @@ describe('survey consent unit - consent type only', function () {
 
     const createProfileFn = function (index, signIndices) {
         return function () {
+            const profileSurvey = hxSurvey.server(0);
+            const answers = generator.answerQuestions(profileSurvey.questions);
+            const user = generator.newUser();
             const signatures = signIndices.map(signIndex => hxConsentDocument.id(signIndex));
-            let signObj = Object.assign({}, profileResponses[index], { signatures });
-            const response = Object.assign({}, profileResponses[index], signObj);
+            const response = { user, answers, signatures };
             return models.profile.createProfile(response)
-                .then(({ id }) => hxConsentDocument.hxUser.push(response.user, { id }))
+                .then(({ id }) => hxUser.push(response.user, { id }))
                 .then(() => models.userConsentDocument.listUserConsentDocuments(hxConsentDocument.userId(index)))
                 .then(consentDocuments => expect(consentDocuments).to.have.length(2));
         };
     };
 
-    const readProfileFn = function (index) {
+    const getProfileFn = function (index) {
         return function () {
             const userId = hxConsentDocument.userId(index);
             return models.profile.getProfile({ userId })
                 .then(function (result) {
-                    const pr = profileResponses[index];
-                    const expectedUser = _.cloneDeep(pr.user);
-                    const user = result.user;
-                    expectedUser.id = user.id;
-                    delete expectedUser.password;
-                    expect(user).to.deep.equal(expectedUser);
+                    comparator.user(hxUser.client(index), result.user);
                 });
         };
     };
@@ -169,13 +167,12 @@ describe('survey consent unit - consent type only', function () {
     };
 
     for (let i = 0; i < userCount; ++i) {
-        it(`form profile survey input for user ${i}`, formProfileResponse);
         it(`create user profile ${i} without signatures 0`, createProfileWithoutSignaturesFn(i, null, [0, 1]));
         it(`create user profile ${i} without signatures 1`, createProfileWithoutSignaturesFn(i, [], [0, 1]));
         it(`create user profile ${i} without signatures 2`, createProfileWithoutSignaturesFn(i, [0], [1]));
         it(`create user profile ${i} without signatures 3`, createProfileWithoutSignaturesFn(i, [1], [0]));
         it(`create user profile ${i} with signatures`, createProfileFn(i, [0, 1]));
-        it(`read user profile ${i} with signatures`, readProfileFn(i));
+        it(`read user profile ${i} with signatures`, getProfileFn(i));
     }
 
     for (let i = 0; i < 2; ++i) {
@@ -191,19 +188,163 @@ describe('survey consent unit - consent type only', function () {
     it('user 2 signs consent document 0', shared.signConsentTypeFn(hxConsentDocument, 2, 0));
     it('user 3 signs consent document 1', shared.signConsentTypeFn(hxConsentDocument, 3, 1));
 
-    it(`read user profile 0 with signatures`, readProfileFn(0));
+    it(`read user profile 0 with signatures`, getProfileFn(0));
     it('read user profile 1 without signatures', readProfileWithoutSignaturesFn(1, [0, 1]));
     it('read user profile 2 without signatures', readProfileWithoutSignaturesFn(2, [1]));
     it('read user profile 3 without signatures', readProfileWithoutSignaturesFn(3, [0]));
 
-    const fnDelete = function (index) {
+    const answerSurveyWithoutSignaturesFn = function (userIndex, surveyIndex, missingConsentDocumentIndices) {
         return function () {
-            const id = profileSurveyConsents[index].id;
+            const userId = hxUser.id(userIndex);
+            const survey = hxSurvey.server(surveyIndex);
+            const answers = generator.answerQuestions(survey.questions);
+            return models.answer.createAnswers({ userId, surveyId: survey.id, answers })
+                .then(shared.throwingHandler, shared.expectedErrorHandler('profileSignaturesMissing'))
+                .then(err => {
+                    const expected = hxConsentDocument.serversInList(missingConsentDocumentIndices);
+                    expect(err.consentDocument).to.deep.equal(expected);
+                });
+        };
+    };
+
+    it('create user 0 answers to survey 1 without signatures', answerSurveyWithoutSignaturesFn(0, 1, [2, 3]));
+    it('create user 1 answers to survey 1 without signatures', answerSurveyWithoutSignaturesFn(1, 1, [1, 2, 3]));
+    it('create user 2 answers to survey 1 without signatures', answerSurveyWithoutSignaturesFn(2, 1, [1, 2, 3]));
+    it('create user 3 answers to survey 1 without signatures', answerSurveyWithoutSignaturesFn(3, 1, [2, 3]));
+
+    it('create user 0 answers to survey 2 without signatures', answerSurveyWithoutSignaturesFn(0, 2, [2, 3]));
+    it('create user 1 answers to survey 2 without signatures', answerSurveyWithoutSignaturesFn(1, 2, [2, 3]));
+    it('create user 2 answers to survey 2 without signatures', answerSurveyWithoutSignaturesFn(2, 2, [2, 3]));
+    it('create user 3 answers to survey 2 without signatures', answerSurveyWithoutSignaturesFn(3, 2, [2, 3]));
+
+    it('create user 0 answers to survey 3 without signatures', answerSurveyWithoutSignaturesFn(0, 3, [2]));
+    it('create user 1 answers to survey 3 without signatures', answerSurveyWithoutSignaturesFn(1, 3, [0, 2]));
+    it('create user 2 answers to survey 3 without signatures', answerSurveyWithoutSignaturesFn(2, 3, [2]));
+    it('create user 3 answers to survey 3 without signatures', answerSurveyWithoutSignaturesFn(3, 3, [0, 2]));
+
+    it('user 0 signs consent document 3', shared.signConsentTypeFn(hxConsentDocument, 0, 3));
+    it('user 1 signs consent document 1', shared.signConsentTypeFn(hxConsentDocument, 1, 1));
+    it('user 1 signs consent document 3', shared.signConsentTypeFn(hxConsentDocument, 1, 3));
+    it('user 2 signs consent document 3', shared.signConsentTypeFn(hxConsentDocument, 2, 3));
+
+    it('create user 0 answers to survey 1 without signatures', answerSurveyWithoutSignaturesFn(0, 1, [2]));
+    it('create user 1 answers to survey 1 without signatures', answerSurveyWithoutSignaturesFn(1, 1, [2]));
+    it('create user 2 answers to survey 1 without signatures', answerSurveyWithoutSignaturesFn(2, 1, [1, 2]));
+    it('create user 3 answers to survey 1 without signatures', answerSurveyWithoutSignaturesFn(3, 1, [2, 3]));
+
+    it('create user 0 answers to survey 2 without signatures', answerSurveyWithoutSignaturesFn(0, 2, [2]));
+    it('create user 1 answers to survey 2 without signatures', answerSurveyWithoutSignaturesFn(1, 2, [2]));
+    it('create user 2 answers to survey 2 without signatures', answerSurveyWithoutSignaturesFn(2, 2, [2]));
+    it('create user 3 answers to survey 2 without signatures', answerSurveyWithoutSignaturesFn(3, 2, [2, 3]));
+
+    it('create user 0 answers to survey 3 without signatures', answerSurveyWithoutSignaturesFn(0, 3, [2]));
+    it('create user 1 answers to survey 3 without signatures', answerSurveyWithoutSignaturesFn(1, 3, [0, 2]));
+    it('create user 2 answers to survey 3 without signatures', answerSurveyWithoutSignaturesFn(2, 3, [2]));
+    it('create user 3 answers to survey 3 without signatures', answerSurveyWithoutSignaturesFn(3, 3, [0, 2]));
+
+    _.range(4).forEach(index => {
+        it(`user ${index} signs consent document 2`, shared.signConsentTypeFn(hxConsentDocument, index, 2));
+    });
+
+    it('user 1 signs consent document 0', shared.signConsentTypeFn(hxConsentDocument, 1, 0));
+    it('user 3 signs consent document 0', shared.signConsentTypeFn(hxConsentDocument, 3, 0));
+
+    it('create user 2 answers to survey 1 without signatures', answerSurveyWithoutSignaturesFn(2, 1, [1]));
+    it('create user 3 answers to survey 1 without signatures', answerSurveyWithoutSignaturesFn(3, 1, [3]));
+    it('create user 3 answers to survey 2 without signatures', answerSurveyWithoutSignaturesFn(3, 2, [3]));
+
+    const answerSurveyFn = function (userIndex, surveyIndex, update) {
+        return function () {
+            const userId = hxUser.id(userIndex);
+            const survey = hxSurvey.server(surveyIndex);
+            const answers = generator.answerQuestions(survey.questions);
+            const input = {userId, surveyId: survey.id, answers};
+            return models.answer.createAnswers(input)
+                .then(() => {
+                    if (update) {
+                        hxAnswers.update([userIndex, surveyIndex], answers);
+                    } else {
+                        hxAnswers.push([userIndex, surveyIndex], answers);
+                    }
+                });
+        };
+    };
+
+    const verifyAnsweredSurveyFn = function (userIndex, surveyIndex) {
+        return function () {
+            const userId = hxUser.id(userIndex);
+            const survey = hxSurvey.server(surveyIndex);
+            const answers = hxAnswers.get([userIndex, surveyIndex]);
+            return models.survey.getAnsweredSurvey(userId, survey.id)
+                .then(answeredSurvey => {
+                    comparator.answeredSurvey(survey, answers, answeredSurvey);
+                });
+        };
+    };
+
+    _.range(4).forEach(index => {
+        it(`user ${index} answers survey 3`,answerSurveyFn(index, 3));
+    });
+
+    it('user 0 answers survey 1',  answerSurveyFn(0, 1));
+    it('user 1 answers survey 1',  answerSurveyFn(1, 1));
+    it('user 0 answers survey 2',  answerSurveyFn(0, 2));
+    it('user 1 answers survey 2',  answerSurveyFn(1, 2));
+    it('user 2 answers survey 2',  answerSurveyFn(2, 2));
+
+    it('user 0 gets answered survey 1', verifyAnsweredSurveyFn(0, 1));
+    it('user 1 gets answered survey 1', verifyAnsweredSurveyFn(1, 1));
+    it('user 0 gets answered survey 2', verifyAnsweredSurveyFn(0, 2));
+    it('user 1 gets answered survey 2', verifyAnsweredSurveyFn(1, 2));
+    it('user 2 gets answered survey 2', verifyAnsweredSurveyFn(2, 2));
+    it('user 0 gets answered survey 3', verifyAnsweredSurveyFn(0, 3));
+    it('user 1 gets answered survey 3', verifyAnsweredSurveyFn(1, 3));
+
+    const getAnswersWithoutSignaturesFn = function (userIndex, surveyIndex, missingConsentDocumentIndices) {
+        return function () {
+            const userId = hxUser.id(userIndex);
+            const survey = hxSurvey.server(surveyIndex);
+            return models.answer.getAnswers({ userId, surveyId: survey.id })
+                .then(shared.throwingHandler, shared.expectedErrorHandler('profileSignaturesMissing'))
+                .then(err => {
+                    const expected = hxConsentDocument.serversInList(missingConsentDocumentIndices);
+                    expect(err.consentDocument).to.deep.equal(expected);
+                });
+        };
+    };
+
+    it('error: user 2 gets answers to survey 3 without signatures', getAnswersWithoutSignaturesFn(2, 3, [1]));
+    it('error: user 3 gets answers to survey 3 without signatures', getAnswersWithoutSignaturesFn(3, 3, [3]));
+
+    for (let i = 0; i < 2; ++i) {
+        it(`create consent section of type ${i}`, shared.createConsentDocumentFn(hxConsentDocument, i));
+    }
+
+    it('error: user 0 gets answers to survey 1 without signatures', getAnswersWithoutSignaturesFn(0, 1, [1]));
+    it('error: user 1 gets answers to survey 1 without signatures', getAnswersWithoutSignaturesFn(1, 1, [1]));
+    it('error: user 2 gets answers to survey 1 without signatures', getAnswersWithoutSignaturesFn(2, 1, [1]));
+    it('error: user 3 gets answers to survey 1 without signatures', getAnswersWithoutSignaturesFn(3, 1, [1, 3]));
+
+    it('error: user 0 gets answers to survey 3 without signatures', getAnswersWithoutSignaturesFn(0, 3, [1]));
+    it('error: user 1 gets answers to survey 3 without signatures', getAnswersWithoutSignaturesFn(1, 3, [1]));
+    it('error: user 2 gets answers to survey 3 without signatures', getAnswersWithoutSignaturesFn(2, 3, [1]));
+    it('error: user 3 gets answers to survey 3 without signatures', getAnswersWithoutSignaturesFn(3, 3, [1, 3]));
+
+    const fnDelete = function (surveyIndex, typeIndex, action) {
+        return function () {
+            const id = hxSurveyConsents.id([surveyIndex, typeIndex, action]);
             return models.surveyConsent.deleteSurveyConsentType(id);
         };
     };
 
-    for (let i = 0; i < 4; ++i) {
-        it(`delete survey consent type ${i}`, fnDelete(i));
-    }
+    it(`delete survey 1 consent type 1`, fnDelete(1, 1, 'read'));
+
+    it('error: user 3 gets answers to survey 1 without signatures', getAnswersWithoutSignaturesFn(3, 1, [3]));
+
+    it(`delete survey 1 consent type 1`, fnDelete(1, 1, 'create'));
+
+    [0, 1, 2].forEach(index => {
+        it(`user ${index} answers survey 1`,  answerSurveyFn(index, 1, true));
+        it(`user ${index} answered survey 1`, verifyAnsweredSurveyFn(index, 1));
+    });
 });
