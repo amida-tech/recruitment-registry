@@ -6,6 +6,7 @@ const chai = require('chai');
 
 const models = require('../models');
 const SharedSpec = require('./util/shared-spec.js');
+const SurveyHistory = require('./util/survey-history');
 const History = require('./util/entity-history');
 const Generator = require('./util/entity-generator');
 const comparator = require('./util/client-server-comparator');
@@ -18,7 +19,7 @@ const shared = new SharedSpec(generator);
 describe('profile unit', function () {
     before(shared.setUpFn());
 
-    const hxSurvey = new History(['id', 'name']);
+    const hxSurvey = new SurveyHistory();
     const hxUser = new History();
     const hxAnswers = [];
     const hxConsentDoc = new ConsentDocumentHistory(2);

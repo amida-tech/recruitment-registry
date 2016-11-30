@@ -16,7 +16,6 @@ const generator = new Generator();
 const shared = new SharedSpec(generator);
 
 describe('survey consent unit - consent type only', function () {
-    const consentTypeCount = 2;
     const userCount = 4;
 
     const hxConsentDocument = new ConsentDocumentHistory(userCount);
@@ -27,37 +26,60 @@ describe('survey consent unit - consent type only', function () {
 
     before(shared.setUpFn());
 
-    it('create profile survey', shared.createProfileSurveyFn(hxSurvey));
-    it('get/verify profile survey', shared.verifyProfileSurveyFn(hxSurvey, 0));
-
-    for (let i = 0; i < consentTypeCount; ++i) {
+    for (let i = 0; i < 4; ++i) {
         it(`create consent type ${i}`, shared.createConsentTypeFn(hxConsentDocument));
     }
 
-    const createProfileSurveyConsentTypeFn = function (typeIndex, action) {
+    it('create profile survey (survey 0)', shared.createProfileSurveyFn(hxSurvey));
+    it('verify profile survey (survey 0)', shared.verifyProfileSurveyFn(hxSurvey, 0));
+
+    for (let i = 1; i < 4; ++i) {
+        it(`create survey ${i}`, shared.createSurveyFn(hxSurvey));
+        it(`verify survey ${i}`, shared.verifySurveyFn(hxSurvey, i));
+    }
+
+    const createSurveyConsentTypeFn = function (surveyIndex, typeIndex, action) {
         return function () {
             const consentTypeId = hxConsentDocument.typeId(typeIndex);
-            const surveyId = hxSurvey.id(0);
+            const surveyId = hxSurvey.id(surveyIndex);
             return models.surveyConsent.createSurveyConsentType({ surveyId, consentTypeId, action })
                 .then(({ id }) => profileSurveyConsents.push({ id, consentTypeId, action }));
         };
     };
 
-    for (let i = 0; i < consentTypeCount; ++i) {
-        it(`require consent type ${i} in survey question create`, createProfileSurveyConsentTypeFn(i, 'create'));
-        it(`require consent type ${i} in survey question read`, createProfileSurveyConsentTypeFn(i, 'read'));
-    }
+    [0, 1].forEach(index => {
+        it(`require consent type ${index} in profile survey answer create`, createSurveyConsentTypeFn(0, index, 'create'));
+        it(`require consent type ${index} in profile survey answer read`, createSurveyConsentTypeFn(0, index, 'read'));
+    });
 
-    it('error: get profile survey with no consentDocuments of existing types', function () {
+    [1, 2, 3].forEach(index => {
+        it(`require consent type ${index} in survey 1 answer create`, createSurveyConsentTypeFn(1, index, 'create'));
+        it(`require consent type ${index} in survey 1 answer read`, createSurveyConsentTypeFn(1, index, 'read'));
+    });
+
+    [2, 3].forEach(index => {
+        it(`require consent type ${index} in survey 2 answer create`, createSurveyConsentTypeFn(2, index, 'create'));
+        it(`require consent type ${index} in survey 2 answer read`, createSurveyConsentTypeFn(2, index, 'read'));
+    });
+
+    [0, 2].forEach(index => {
+        it(`require consent type ${index} in survey 3 answer create`, createSurveyConsentTypeFn(3, index, 'create'));
+    });
+
+    [1, 3].forEach(index => {
+        it(`require consent type ${index} in survey 3 answer read`, createSurveyConsentTypeFn(3, index, 'read'));
+    });
+
+    it('error: get profile survey with no consent documents of existing types', function () {
         return models.profileSurvey.getProfileSurvey()
             .then(shared.throwingHandler, shared.expectedErrorHandler('noSystemConsentDocuments'));
     });
 
-    for (let i = 0; i < consentTypeCount; ++i) {
-        it(`create consent section of type ${i}`, shared.createConsentDocumentFn(hxConsentDocument, i));
+    for (let i = 0; i < 4; ++i) {
+        it(`create consent document of type ${i}`, shared.createConsentDocumentFn(hxConsentDocument, i));
     }
 
-    it('get registry profile survey with required consentDocuments', function () {
+    it('get profile survey with required consentDocuments', function () {
         return models.profileSurvey.getProfileSurvey()
             .then(result => {
                 expect(result.exists).to.equal(true);
@@ -79,7 +101,7 @@ describe('survey consent unit - consent type only', function () {
         };
     };
 
-    for (let i = 0; i < 2; ++i) {
+    for (let i = 0; i < 4; ++i) {
         it(`get/verify consent section of type ${i}`, verifyConsentDocumentContentFn(i));
     }
 
@@ -115,7 +137,7 @@ describe('survey consent unit - consent type only', function () {
             return models.profile.createProfile(response)
                 .then(({ id }) => hxConsentDocument.hxUser.push(response.user, { id }))
                 .then(() => models.userConsentDocument.listUserConsentDocuments(hxConsentDocument.userId(index)))
-                .then(consentDocuments => expect(consentDocuments).to.have.length(0));
+                .then(consentDocuments => expect(consentDocuments).to.have.length(2));
         };
     };
 
@@ -146,7 +168,7 @@ describe('survey consent unit - consent type only', function () {
         };
     };
 
-    for (let i = 0; i < 4; ++i) {
+    for (let i = 0; i < userCount; ++i) {
         it(`form profile survey input for user ${i}`, formProfileResponse);
         it(`create user profile ${i} without signatures 0`, createProfileWithoutSignaturesFn(i, null, [0, 1]));
         it(`create user profile ${i} without signatures 1`, createProfileWithoutSignaturesFn(i, [], [0, 1]));
@@ -156,11 +178,11 @@ describe('survey consent unit - consent type only', function () {
         it(`read user profile ${i} with signatures`, readProfileFn(i));
     }
 
-    for (let i = 0; i < consentTypeCount; ++i) {
+    for (let i = 0; i < 2; ++i) {
         it(`create consent section of type ${i}`, shared.createConsentDocumentFn(hxConsentDocument, i));
     }
 
-    for (let i = 0; i < 4; ++i) {
+    for (let i = 0; i < userCount; ++i) {
         it(`read user profile ${i} without signatures`, readProfileWithoutSignaturesFn(i, [0, 1]));
     }
 

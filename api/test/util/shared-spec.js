@@ -63,6 +63,26 @@ class SharedSpec {
         };
     }
 
+    createSurveyFn(hxSurvey) {
+        const generator = this.generator;
+        return function () {
+            const survey = generator.newSurvey();
+            return models.survey.createSurvey(survey)
+                .then(id => hxSurvey.push(survey, { id }));
+        };
+    }
+
+    verifySurveyFn(hxSurvey, index) {
+        return function () {
+            const surveyId = hxSurvey.id(index);
+            return models.survey.getSurvey(surveyId)
+                .then(survey => {
+                    return comparator.survey(hxSurvey.client(index), survey)
+                        .then(() => hxSurvey.updateServer(index, survey));
+                });
+        };
+    }
+
     createQuestion(hxQuestion) {
         const generator = this.generator;
         return function () {
@@ -97,21 +117,6 @@ class SharedSpec {
                 })
                 .then(function (qx) {
                     hxQuestion.push(inputQx, qx);
-                });
-        };
-    }
-
-    createSurvey(hxSurvey, hxQuestion, qxIndices) {
-        const generator = this.generator;
-        return function () {
-            const inputSurvey = generator.newSurvey();
-            inputSurvey.questions = qxIndices.map(index => ({
-                id: hxQuestion.server(index).id,
-                required: false
-            }));
-            return models.survey.createSurvey(inputSurvey)
-                .then(id => {
-                    hxSurvey.push(inputSurvey, { id });
                 });
         };
     }
