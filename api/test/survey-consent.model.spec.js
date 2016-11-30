@@ -41,37 +41,37 @@ describe('survey consent unit - consent type only', function () {
         it(`verify survey ${i}`, shared.verifySurveyFn(hxSurvey, i));
     }
 
-    const createSurveyConsentTypeFn = function (surveyIndex, typeIndex, action) {
+    const createSurveyConsentFn = function (surveyIndex, typeIndex, action) {
         return function () {
             const consentTypeId = hxConsentDocument.typeId(typeIndex);
             const surveyId = hxSurvey.id(surveyIndex);
             const surveyConsent = { surveyId, consentTypeId, action };
-            return models.surveyConsent.createSurveyConsentType(surveyConsent)
+            return models.surveyConsent.createSurveyConsent(surveyConsent)
                 .then(({ id }) => hxSurveyConsents.pushWithId([surveyIndex, typeIndex, action], surveyConsent, id));
         };
     };
 
     [0, 1].forEach(index => {
-        it(`require consent type ${index} in profile survey answer create`, createSurveyConsentTypeFn(0, index, 'create'));
-        it(`require consent type ${index} in profile survey answer read`, createSurveyConsentTypeFn(0, index, 'read'));
+        it(`require consent type ${index} in profile survey answer create`, createSurveyConsentFn(0, index, 'create'));
+        it(`require consent type ${index} in profile survey answer read`, createSurveyConsentFn(0, index, 'read'));
     });
 
     [1, 2, 3].forEach(index => {
-        it(`require consent type ${index} in survey 1 answer create`, createSurveyConsentTypeFn(1, index, 'create'));
-        it(`require consent type ${index} in survey 1 answer read`, createSurveyConsentTypeFn(1, index, 'read'));
+        it(`require consent type ${index} in survey 1 answer create`, createSurveyConsentFn(1, index, 'create'));
+        it(`require consent type ${index} in survey 1 answer read`, createSurveyConsentFn(1, index, 'read'));
     });
 
     [2, 3].forEach(index => {
-        it(`require consent type ${index} in survey 2 answer create`, createSurveyConsentTypeFn(2, index, 'create'));
-        it(`require consent type ${index} in survey 2 answer read`, createSurveyConsentTypeFn(2, index, 'read'));
+        it(`require consent type ${index} in survey 2 answer create`, createSurveyConsentFn(2, index, 'create'));
+        it(`require consent type ${index} in survey 2 answer read`, createSurveyConsentFn(2, index, 'read'));
     });
 
     [0, 2].forEach(index => {
-        it(`require consent type ${index} in survey 3 answer create`, createSurveyConsentTypeFn(3, index, 'create'));
+        it(`require consent type ${index} in survey 3 answer create`, createSurveyConsentFn(3, index, 'create'));
     });
 
     [1, 3].forEach(index => {
-        it(`require consent type ${index} in survey 3 answer read`, createSurveyConsentTypeFn(3, index, 'read'));
+        it(`require consent type ${index} in survey 3 answer read`, createSurveyConsentFn(3, index, 'read'));
     });
 
     it('error: get profile survey with no consent documents of existing types', function () {
@@ -258,7 +258,7 @@ describe('survey consent unit - consent type only', function () {
             const userId = hxUser.id(userIndex);
             const survey = hxSurvey.server(surveyIndex);
             const answers = generator.answerQuestions(survey.questions);
-            const input = {userId, surveyId: survey.id, answers};
+            const input = { userId, surveyId: survey.id, answers };
             return models.answer.createAnswers(input)
                 .then(() => {
                     if (update) {
@@ -283,14 +283,14 @@ describe('survey consent unit - consent type only', function () {
     };
 
     _.range(4).forEach(index => {
-        it(`user ${index} answers survey 3`,answerSurveyFn(index, 3));
+        it(`user ${index} answers survey 3`, answerSurveyFn(index, 3));
     });
 
-    it('user 0 answers survey 1',  answerSurveyFn(0, 1));
-    it('user 1 answers survey 1',  answerSurveyFn(1, 1));
-    it('user 0 answers survey 2',  answerSurveyFn(0, 2));
-    it('user 1 answers survey 2',  answerSurveyFn(1, 2));
-    it('user 2 answers survey 2',  answerSurveyFn(2, 2));
+    it('user 0 answers survey 1', answerSurveyFn(0, 1));
+    it('user 1 answers survey 1', answerSurveyFn(1, 1));
+    it('user 0 answers survey 2', answerSurveyFn(0, 2));
+    it('user 1 answers survey 2', answerSurveyFn(1, 2));
+    it('user 2 answers survey 2', answerSurveyFn(2, 2));
 
     it('user 0 gets answered survey 1', verifyAnsweredSurveyFn(0, 1));
     it('user 1 gets answered survey 1', verifyAnsweredSurveyFn(1, 1));
@@ -333,7 +333,7 @@ describe('survey consent unit - consent type only', function () {
     const fnDelete = function (surveyIndex, typeIndex, action) {
         return function () {
             const id = hxSurveyConsents.id([surveyIndex, typeIndex, action]);
-            return models.surveyConsent.deleteSurveyConsentType(id);
+            return models.surveyConsent.deleteSurveyConsent(id);
         };
     };
 
@@ -344,7 +344,7 @@ describe('survey consent unit - consent type only', function () {
     it(`delete survey 1 consent type 1`, fnDelete(1, 1, 'create'));
 
     [0, 1, 2].forEach(index => {
-        it(`user ${index} answers survey 1`,  answerSurveyFn(index, 1, true));
+        it(`user ${index} answers survey 1`, answerSurveyFn(index, 1, true));
         it(`user ${index} answered survey 1`, verifyAnsweredSurveyFn(index, 1));
     });
 });
