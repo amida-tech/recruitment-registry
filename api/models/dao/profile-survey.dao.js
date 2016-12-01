@@ -70,7 +70,7 @@ module.exports = class ProfileSurveyDAO {
                                     if (typeIds.length) {
                                         return this.consentDocument.listConsentDocuments({ summary: true, typeIds })
                                             .then(consentDocuments => {
-                                                survey.consentDocument = consentDocuments;
+                                                survey.consentDocuments = consentDocuments;
                                                 return survey;
                                             });
                                     } else {

@@ -47,7 +47,8 @@ module.exports = function (sequelize, DataTypes) {
         deletedAt: 'deletedAt',
         paranoid: true,
         indexes: [{
-            fields: ['survey_id']
+            unique: true,
+            fields: ['survey_id', 'consent_type_id', 'action']
         }]
     });
 };

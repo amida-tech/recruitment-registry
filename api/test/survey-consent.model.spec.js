@@ -151,7 +151,7 @@ describe('survey consent unit', function () {
                 const id = hxSurvey.id(0);
                 expect(actual.id).to.equal(id);
                 const expected = hxConsentDocument.serversInList([0, 1]);
-                expect(actual.consentDocument).to.deep.equal(expected);
+                expect(actual.consentDocuments).to.deep.equal(expected);
             });
     });
 
@@ -185,7 +185,7 @@ describe('survey consent unit', function () {
                 .then(shared.throwingHandler, shared.expectedErrorHandler('profileSignaturesMissing'))
                 .then(err => {
                     const expected = hxConsentDocument.serversInList(documentIndices);
-                    expect(err.consentDocument).to.deep.equal(expected);
+                    expect(err.consentDocuments).to.deep.equal(expected);
                 });
         };
     };
@@ -221,7 +221,7 @@ describe('survey consent unit', function () {
                 .then(shared.throwingHandler, shared.expectedErrorHandler('profileSignaturesMissing'))
                 .then(err => {
                     const expected = hxConsentDocument.serversInList(documentIndices);
-                    expect(err.consentDocument).to.deep.equal(expected);
+                    expect(err.consentDocuments).to.deep.equal(expected);
                 });
         };
     };
@@ -262,7 +262,7 @@ describe('survey consent unit', function () {
                 .then(shared.throwingHandler, shared.expectedErrorHandler('profileSignaturesMissing'))
                 .then(err => {
                     const expected = consentCommon.getSurveyConsentDocuments(expectedInfo);
-                    expect(err.consentDocument).to.deep.equal(expected);
+                    expect(err.consentDocuments).to.deep.equal(expected);
                 });
         };
     };
@@ -414,7 +414,7 @@ describe('survey consent unit', function () {
                 .then(shared.throwingHandler, shared.expectedErrorHandler('profileSignaturesMissing'))
                 .then(err => {
                     const expected = consentCommon.getSurveyConsentDocuments(expectedInfo);
-                    expect(err.consentDocument).to.deep.equal(expected);
+                    expect(err.consentDocuments).to.deep.equal(expected);
                 });
         };
     };

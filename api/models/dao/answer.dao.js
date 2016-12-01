@@ -222,7 +222,7 @@ module.exports = class AnswerDAO {
             .then(consentDocuments => {
                 if (consentDocuments && consentDocuments.length > 0) {
                     const err = new RRError('profileSignaturesMissing');
-                    err.consentDocument = consentDocuments;
+                    err.consentDocuments = consentDocuments;
                     return SPromise.reject(err);
                 }
             });
