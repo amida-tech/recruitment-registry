@@ -51,27 +51,11 @@ describe('consent integration', function () {
     ];
 
     consentSpecs.forEach((typeIndices, index) => {
-        it(`create consent ${index}`, function (done) {
-            const sections = typeIndices.map(typeIndex => history.typeId(typeIndex));
-            const clientConsent = generator.newConsent({ sections });
-            store.post('/consents', clientConsent, 201)
-                .expect(function (res) {
-                    hxConsent.pushWithId(clientConsent, res.body.id);
-                })
-                .end(done);
-        });
+        it(`create consent ${index}`, shared.createConsentFn(store, hxConsent, history, typeIndices));
     });
 
     _.range(consentSpecs.length).forEach(index => {
-        it(`get/verify consent ${index}`, function (done) {
-            const id = hxConsent.id(index);
-            store.get(`/consents/${id}`, true, 200)
-                .expect(function (res) {
-                    const expected = hxConsent.server(index);
-                    expect(res.body).to.deep.equal(expected);
-                })
-                .end(done);
-        });
+        it(`get/verify consent ${index}`, shared.verifyConsentFn(store, hxConsent, index));
     });
 
     _.range(consentSpecs.length).forEach(index => {

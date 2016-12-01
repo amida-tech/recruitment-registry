@@ -41,8 +41,8 @@ describe('survey consent unit', function () {
         [4, 5, 6],
         [7, 8, 9]
     ].forEach((typeIndices, index) => {
-        it(`create consent ${index}`, consentCommon.createConsentFn(typeIndices));
-        it(`get/verify consent ${index}`, consentCommon.verifyConsentFn(index));
+        it(`create consent ${index}`, shared.createConsentFn(hxConsent, hxConsentDocument, typeIndices));
+        it(`get/verify consent ${index}`, shared.verifyConsentFn(hxConsent, index));
     });
 
     it('create profile survey (survey 0)', shared.createProfileSurveyFn(hxSurvey));

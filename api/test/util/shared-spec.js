@@ -162,6 +162,27 @@ class SharedSpec {
         };
     }
 
+    createConsentFn(hxConsent, hxConsentDocument, typeIndices) {
+        const generator = this.generator;
+        return function () {
+            const sections = typeIndices.map(typeIndex => hxConsentDocument.typeId(typeIndex));
+            const clientConsent = generator.newConsent({ sections });
+            return models.consent.createConsent(clientConsent)
+                .then(result => hxConsent.pushWithId(clientConsent, result.id));
+        };
+    }
+
+    verifyConsentFn(hxConsent, index) {
+        return function () {
+            const expected = hxConsent.server(index);
+            return models.consent.getConsent(expected.id)
+                .then(consent => {
+                    const expected = hxConsent.server(index);
+                    expect(consent).to.deep.equal(expected);
+                });
+        };
+    }
+
     signConsentTypeFn(history, userIndex, typeIndex) {
         return function () {
             const consentDocumentId = history.id(typeIndex);

@@ -204,6 +204,47 @@ class SharedIntegration {
         };
     }
 
+    createConsentFn(store, hxConsent, hxConsentDocument, typeIndices) {
+        const generator = this.generator;
+        return function (done) {
+            const sections = typeIndices.map(typeIndex => hxConsentDocument.typeId(typeIndex));
+            const clientConsent = generator.newConsent({ sections });
+            store.post('/consents', clientConsent, 201)
+                .expect(function (res) {
+                    hxConsent.pushWithId(clientConsent, res.body.id);
+                })
+                .end(done);
+        };
+    }
+
+    verifyConsentFn(store, hxConsent, index) {
+        return function (done) {
+            const id = hxConsent.id(index);
+            store.get(`/consents/${id}`, true, 200)
+                .expect(function (res) {
+                    const expected = hxConsent.server(index);
+                    expect(res.body).to.deep.equal(expected);
+                })
+                .end(done);
+        };
+    }
+
+    signConsentTypeFn(store, hxConsentDocument, userIndex, typeIndex) {
+        return function (done) {
+            const consentDocumentId = hxConsentDocument.id(typeIndex);
+            hxConsentDocument.sign(typeIndex, userIndex);
+            store.post('/consent-signatures', { consentDocumentId }, 201).end(done);
+        };
+    }
+
+    bulkSignConsentTypeFn(store, hxConsentDocument, userIndex, typeIndices) {
+        return function (done) {
+            const consentDocumentIds = typeIndices.map(typeIndex => hxConsentDocument.id(typeIndex));
+            typeIndices.forEach(typeIndex => hxConsentDocument.sign(typeIndex, userIndex));
+            store.post('/consent-signatures/bulk', { consentDocumentIds }, 201).end(done);
+        };
+    }
+
     createConsentDocumentFn(store, history, typeIndex) {
         const generator = this.generator;
         return function (done) {

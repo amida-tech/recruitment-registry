@@ -45,8 +45,8 @@ describe('consent unit', function () {
     ];
 
     consentSpecs.forEach((typeIndices, index) => {
-        it(`create consent ${index}`, consentCommon.createConsentFn(typeIndices));
-        it(`get/verify consent ${index}`, consentCommon.verifyConsentFn(index));
+        it(`create consent ${index}`, shared.createConsentFn(hxConsent, history, typeIndices));
+        it(`get/verify consent ${index}`, shared.verifyConsentFn(hxConsent, index));
     });
 
     _.range(consentSpecs.length).forEach(index => {
