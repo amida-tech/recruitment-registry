@@ -8,6 +8,8 @@ const _ = require('lodash');
 const SharedSpec = require('./util/shared-spec');
 const models = require('../models');
 const Generator = require('./util/entity-generator');
+const History = require('./util/entity-history');
+const ConsentCommon = require('./util/consent-common');
 const ConsentDocumentHistory = require('./util/consent-document-history');
 const SurveyHistory = require('./util/survey-history');
 const MultiIndexHistory = require('./util/multi-index-history');
@@ -18,10 +20,12 @@ const expect = chai.expect;
 const generator = new Generator();
 const shared = new SharedSpec(generator);
 
-describe('survey consent unit - consent type only', function () {
+describe('survey consent unit', function () {
     const userCount = 4;
 
     const hxConsentDocument = new ConsentDocumentHistory(userCount);
+    const hxConsent = new History();
+    const consentCommon = new ConsentCommon(hxConsent, hxConsentDocument, generator);
     const hxSurvey = new SurveyHistory();
     const hxUser = hxConsentDocument.hxUser;
     const hxSurveyConsents = new MultiIndexHistory();
@@ -29,25 +33,48 @@ describe('survey consent unit - consent type only', function () {
 
     before(shared.setUpFn());
 
-    for (let i = 0; i < 4; ++i) {
+    for (let i = 0; i < 10; ++i) {
         it(`create consent type ${i}`, shared.createConsentTypeFn(hxConsentDocument));
     }
+
+    [
+        [4, 5, 6],
+        [7, 8, 9]
+    ].forEach((typeIndices, index) => {
+        it(`create consent ${index}`, consentCommon.createConsentFn(typeIndices));
+        it(`get/verify consent ${index}`, consentCommon.verifyConsentFn(index));
+    });
 
     it('create profile survey (survey 0)', shared.createProfileSurveyFn(hxSurvey));
     it('verify profile survey (survey 0)', shared.verifyProfileSurveyFn(hxSurvey, 0));
 
-    for (let i = 1; i < 4; ++i) {
+    for (let i = 1; i < 7; ++i) {
         it(`create survey ${i}`, shared.createSurveyFn(hxSurvey));
         it(`verify survey ${i}`, shared.verifySurveyFn(hxSurvey, i));
     }
 
-    const createSurveyConsentFn = function (surveyIndex, typeIndex, action) {
+    const createSurveyConsentFn = function (surveyIndex, typeIndex, action, consentIndex) {
         return function () {
-            const consentTypeId = hxConsentDocument.typeId(typeIndex);
+            const consentType = hxConsentDocument.type(typeIndex);
+            const consentTypeId = consentType.id;
             const surveyId = hxSurvey.id(surveyIndex);
             const surveyConsent = { surveyId, consentTypeId, action };
+            if (consentIndex !== undefined) {
+                const consentId = hxConsent.id(consentIndex);
+                surveyConsent.consentId = consentId;
+            }
             return models.surveyConsent.createSurveyConsent(surveyConsent)
-                .then(({ id }) => hxSurveyConsents.pushWithId([surveyIndex, typeIndex, action], surveyConsent, id));
+                .then(({ id }) => {
+                    delete surveyConsent.surveyId;
+                    surveyConsent.consentTypeName = consentType.name;
+                    surveyConsent.consentTypeTitle = consentType.title;
+                    if (consentIndex === undefined) {
+                        hxSurveyConsents.pushWithId([surveyIndex, typeIndex, action], surveyConsent, id);
+                    } else {
+                        surveyConsent.consentName = hxConsent.client(consentIndex).name;
+                        hxSurveyConsents.pushWithId([surveyIndex, typeIndex, action, consentIndex], surveyConsent, id);
+                    }
+                });
         };
     };
 
@@ -74,12 +101,45 @@ describe('survey consent unit - consent type only', function () {
         it(`require consent type ${index} in survey 3 answer read`, createSurveyConsentFn(3, index, 'read'));
     });
 
+    it('error: require consent type with inconsistent consent', function () {
+        const consentTypeId = hxConsentDocument.typeId(0);
+        const surveyId = hxSurvey.id(5);
+        const consentId = hxConsent.id(0);
+        const surveyConsent = { surveyId, consentId, consentTypeId, action: 'read' };
+        return models.surveyConsent.createSurveyConsent(surveyConsent)
+            .then(shared.throwingHandler, shared.expectedErrorHandler('surveyConsentInvalidTypeForConsent'));
+    });
+
+    [4, 5].forEach(index => {
+        [4, 5, 6].forEach(indexType => {
+            it(`require consent type ${indexType} (consent 0) in survey ${index} answer create`, createSurveyConsentFn(index, indexType, 'create', 0));
+        });
+        [7, 8, 9].forEach(indexType => {
+            it(`require consent type ${indexType} (consent 1) in survey ${index} answer read`, createSurveyConsentFn(index, indexType, 'read', 1));
+        });
+    });
+
+    [4, 5, 6].forEach(index => {
+        it(`require consent type ${index} (consent 0) in survey 5 answer read`, createSurveyConsentFn(5, index, 'read', 0));
+    });
+    [7, 8, 9].forEach(index => {
+        it(`require consent type ${index} (consent 1) in survey 5 answer create`, createSurveyConsentFn(5, index, 'create', 1));
+    });
+
+    it('verify survey consents list', function () {
+        return models.surveyConsent.listSurveyConsents()
+            .then(result => {
+                const list = hxSurveyConsents.listServers();
+                expect(result).to.deep.equal(list);
+            });
+    });
+
     it('error: get profile survey with no consent documents of existing types', function () {
         return models.profileSurvey.getProfileSurvey()
             .then(shared.throwingHandler, shared.expectedErrorHandler('noSystemConsentDocuments'));
     });
 
-    for (let i = 0; i < 4; ++i) {
+    for (let i = 0; i < 10; ++i) {
         it(`create consent document of type ${i}`, shared.createConsentDocumentFn(hxConsentDocument, i));
     }
 
@@ -105,7 +165,7 @@ describe('survey consent unit - consent type only', function () {
         };
     };
 
-    for (let i = 0; i < 4; ++i) {
+    for (let i = 0; i < 10; ++i) {
         it(`get/verify consent section of type ${i}`, verifyConsentDocumentContentFn(i));
     }
 
@@ -140,7 +200,7 @@ describe('survey consent unit - consent type only', function () {
             return models.profile.createProfile(response)
                 .then(({ id }) => hxUser.push(response.user, { id }))
                 .then(() => models.userConsentDocument.listUserConsentDocuments(hxConsentDocument.userId(index)))
-                .then(consentDocuments => expect(consentDocuments).to.have.length(2));
+                .then(consentDocuments => expect(consentDocuments).to.have.length(8));
         };
     };
 

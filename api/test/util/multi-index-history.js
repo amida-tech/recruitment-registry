@@ -40,4 +40,8 @@ module.exports = class MultiIndexHistory {
         const index = this.index(indices);
         return this.history.id(index);
     }
+
+    listServers() {
+        return this.history.listServers();
+    }
 };

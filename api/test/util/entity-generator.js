@@ -146,7 +146,8 @@ class Answerer {
     choices(question) {
         ++this.answerIndex;
         this.answerChoicesCountIndex = (this.answerChoicesCountIndex + 1) % 3;
-        const choices = _.range(this.answerChoicesCountIndex + 1).map(() => {
+        const choiceCount = Math.min(this.answerChoicesCountIndex + 1, question.choices.length);
+        const choices = _.range(choiceCount).map(() => {
             const answerIndex = ++this.answerIndex;
             const choice = question.choices[answerIndex % question.choices.length];
             const answer = {

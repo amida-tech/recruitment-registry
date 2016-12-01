@@ -11,14 +11,6 @@ module.exports = function (sequelize, DataTypes) {
                 key: 'id'
             }
         },
-        consentTypeId: {
-            type: DataTypes.INTEGER,
-            field: 'consent_type_id',
-            references: {
-                model: 'consent_type',
-                key: 'id'
-            }
-        },
         consentId: {
             type: DataTypes.INTEGER,
             field: 'consent_id',
@@ -27,8 +19,17 @@ module.exports = function (sequelize, DataTypes) {
                 key: 'id'
             }
         },
+        consentTypeId: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            field: 'consent_type_id',
+            references: {
+                model: 'consent_type',
+                key: 'id'
+            }
+        },
         action: {
-            type: DataTypes.ENUM('read', 'create', 'edit'),
+            type: DataTypes.ENUM('read', 'create'),
             allowNull: false
         },
         createdAt: {
@@ -47,14 +48,6 @@ module.exports = function (sequelize, DataTypes) {
         paranoid: true,
         indexes: [{
             fields: ['survey_id']
-        }],
-        hooks: {
-            afterSync(options) {
-                if (options.force) {
-                    const query = 'ALTER TABLE survey_consent ADD CONSTRAINT survey_consent_check CHECK (consent_id IS NOT NULL OR consent_type_id IS NOT NULL)';
-                    return sequelize.query(query);
-                }
-            }
-        }
+        }]
     });
 };
