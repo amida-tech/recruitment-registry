@@ -12,17 +12,7 @@ module.exports = class UserConsentDocumentDAO {
     }
 
     listUserConsentDocuments(userId, options = {}) {
-        const _options = { summary: true };
-        const typeIds = options.typeIds;
-        if (typeIds && typeIds.length) {
-            _options.typeIds = typeIds;
-        }
-        if (options.transaction) {
-            _options.transaction = options.transaction;
-        }
-        if (options.language) {
-            _options.language = options.language;
-        }
+        const _options = Object.assign({ summary: true }, options);
         return this.consentDocument.listConsentDocuments(_options)
             .then(activeDocs => {
                 const query = {

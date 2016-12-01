@@ -28,6 +28,30 @@ module.exports = class SurveyConsentDAO {
             });
     }
 
+    updateConsentsInSurveyConsents(surveyConsents) {
+        if (surveyConsents.length < 1) {
+            return surveyConsents;
+        }
+        const consentIds = surveyConsents.reduce((r, { consentId }) => {
+            if (consentId) {
+                r.push(consentId);
+            }
+            return r;
+        }, []);
+        return Consent.findAll({ raw: true, id: { $in: consentIds }, attributes: ['id', 'name'] })
+            .then(consents => new Map(consents.map(consent => [consent.id, consent.name])))
+            .then(consentMap => {
+                surveyConsents.forEach(surveyConsent => {
+                    const consentId = surveyConsent.consentId;
+                    if (consentId) {
+                        const consentName = consentMap.get(consentId);
+                        surveyConsent.consentName = consentName;
+                    }
+                });
+                return surveyConsents;
+            });
+    }
+
     listSurveyConsents(surveyId, options) {
         return SurveyConsent.findAll({ surveyId, raw: true, attributes: ['id', 'consentId', 'consentTypeId', 'action'] })
             .then(surveyConsents => {
@@ -48,28 +72,7 @@ module.exports = class SurveyConsentDAO {
                             surveyConsent.consentTypeTitle = consentType.title;
                         });
                     })
-                    .then(() => {
-                        const consentIds = surveyConsents.reduce((r, { consentId }) => {
-                            if (consentId) {
-                                r.push(consentId);
-                            }
-                            return r;
-                        }, []);
-                        if (consentIds.length) {
-                            return Consent.findAll({ raw: true, id: { $in: consentIds }, attributes: ['id', 'name'] })
-                                .then(consents => new Map(consents.map(consent => [consent.id, consent.name])))
-                                .then(consentMap => {
-                                    surveyConsents.forEach(surveyConsent => {
-                                        const consentId = surveyConsent.consentId;
-                                        if (consentId) {
-                                            const consentName = consentMap.get(consentId);
-                                            surveyConsent.consentName = consentName;
-                                        }
-                                    });
-                                });
-                        }
-                    })
-                    .then(() => surveyConsents);
+                    .then(() => this.updateConsentsInSurveyConsents(surveyConsents));
             });
     }
 

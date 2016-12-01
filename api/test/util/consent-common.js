@@ -85,6 +85,21 @@ class ConsentCommon {
         result.sections = expectedSections;
         return result;
     }
+
+    getSurveyConsentDocuments(documentInfo) {
+        const documentIndices = documentInfo.map(info => Array.isArray(info) ? info[1] : info);
+        const consentIndices = documentInfo.map(info => Array.isArray(info) ? info[0] : null);
+        const result = this.history.serversInList(documentIndices);
+        _.range(result.length).forEach(index => {
+            const consentIndex = consentIndices[index];
+            if (consentIndex !== null) {
+                const consent = this.hxConsent.server(consentIndex);
+                result[index].consentId = consent.id;
+                result[index].consentName = consent.name;
+            }
+        });
+        return result;
+    }
 }
 
 module.exports = ConsentCommon;

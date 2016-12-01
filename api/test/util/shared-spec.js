@@ -171,6 +171,15 @@ class SharedSpec {
         };
     }
 
+    bulkSignConsentTypeFn(history, userIndex, typeIndices) {
+        return function () {
+            const consentDocumentIds = typeIndices.map(typeIndex => history.id(typeIndex));
+            const userId = history.userId(userIndex);
+            typeIndices.forEach(typeIndex => history.sign(typeIndex, userIndex));
+            return models.consentSignature.bulkCreateSignatures(consentDocumentIds, { userId });
+        };
+    }
+
     throwingHandler() {
         throw new Error('Unexpected no error.');
     }

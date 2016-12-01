@@ -110,20 +110,20 @@ describe('survey consent unit', function () {
             .then(shared.throwingHandler, shared.expectedErrorHandler('surveyConsentInvalidTypeForConsent'));
     });
 
-    [4, 5].forEach(index => {
-        [4, 5, 6].forEach(indexType => {
-            it(`require consent type ${indexType} (consent 0) in survey ${index} answer create`, createSurveyConsentFn(index, indexType, 'create', 0));
-        });
-        [7, 8, 9].forEach(indexType => {
-            it(`require consent type ${indexType} (consent 1) in survey ${index} answer read`, createSurveyConsentFn(index, indexType, 'read', 1));
-        });
+    [4, 5, 6].forEach(index => {
+        it(`require consent type ${index} (consent 0) in survey 4 answer create`, createSurveyConsentFn(4, index, 'create', 0));
+    });
+    [7, 8, 9].forEach(index => {
+        it(`require consent type ${index} (consent 1) in survey 4 answer read`, createSurveyConsentFn(4, index, 'read', 1));
     });
 
     [4, 5, 6].forEach(index => {
+        it(`require consent type ${index} (consent 0) in survey 5 answer create`, createSurveyConsentFn(5, index, 'create', 0));
         it(`require consent type ${index} (consent 0) in survey 5 answer read`, createSurveyConsentFn(5, index, 'read', 0));
     });
     [7, 8, 9].forEach(index => {
         it(`require consent type ${index} (consent 1) in survey 5 answer create`, createSurveyConsentFn(5, index, 'create', 1));
+        it(`require consent type ${index} (consent 1) in survey 5 answer read`, createSurveyConsentFn(5, index, 'read', 1));
     });
 
     it('verify survey consents list', function () {
@@ -169,7 +169,7 @@ describe('survey consent unit', function () {
         it(`get/verify consent section of type ${i}`, verifyConsentDocumentContentFn(i));
     }
 
-    const createProfileWithoutSignaturesFn = function (index, signIndices, missingConsentDocumentIndices) {
+    const createProfileWithoutSignaturesFn = function (index, signIndices, documentIndices) {
         return function () {
             const profileSurvey = hxSurvey.server(0);
             const answers = generator.answerQuestions(profileSurvey.questions);
@@ -184,7 +184,7 @@ describe('survey consent unit', function () {
             return models.profile.createProfile(response)
                 .then(shared.throwingHandler, shared.expectedErrorHandler('profileSignaturesMissing'))
                 .then(err => {
-                    const expected = hxConsentDocument.serversInList(missingConsentDocumentIndices);
+                    const expected = hxConsentDocument.serversInList(documentIndices);
                     expect(err.consentDocument).to.deep.equal(expected);
                 });
         };
@@ -214,13 +214,13 @@ describe('survey consent unit', function () {
         };
     };
 
-    const readProfileWithoutSignaturesFn = function (index, missingConsentDocumentIndices) {
+    const readProfileWithoutSignaturesFn = function (index, documentIndices) {
         return function () {
             const userId = hxConsentDocument.userId(index);
             return models.profile.getProfile({ userId })
                 .then(shared.throwingHandler, shared.expectedErrorHandler('profileSignaturesMissing'))
                 .then(err => {
-                    const expected = hxConsentDocument.serversInList(missingConsentDocumentIndices);
+                    const expected = hxConsentDocument.serversInList(documentIndices);
                     expect(err.consentDocument).to.deep.equal(expected);
                 });
         };
@@ -236,7 +236,7 @@ describe('survey consent unit', function () {
     }
 
     for (let i = 0; i < 2; ++i) {
-        it(`create consent section of type ${i}`, shared.createConsentDocumentFn(hxConsentDocument, i));
+        it(`create consent document of type ${i}`, shared.createConsentDocumentFn(hxConsentDocument, i));
     }
 
     for (let i = 0; i < userCount; ++i) {
@@ -253,15 +253,25 @@ describe('survey consent unit', function () {
     it('read user profile 2 without signatures', readProfileWithoutSignaturesFn(2, [1]));
     it('read user profile 3 without signatures', readProfileWithoutSignaturesFn(3, [0]));
 
-    const answerSurveyWithoutSignaturesFn = function (userIndex, surveyIndex, missingConsentDocumentIndices) {
+    const answerSurveyWithoutSignaturesFn = function (userIndex, surveyIndex, expectedInfo) {
         return function () {
             const userId = hxUser.id(userIndex);
             const survey = hxSurvey.server(surveyIndex);
             const answers = generator.answerQuestions(survey.questions);
+            const documentIndices = expectedInfo.map(info => Array.isArray(info) ? info[1] : info);
+            const consentIndices = expectedInfo.map(info => Array.isArray(info) ? info[0] : null);
             return models.answer.createAnswers({ userId, surveyId: survey.id, answers })
                 .then(shared.throwingHandler, shared.expectedErrorHandler('profileSignaturesMissing'))
                 .then(err => {
-                    const expected = hxConsentDocument.serversInList(missingConsentDocumentIndices);
+                    const expected = hxConsentDocument.serversInList(documentIndices);
+                    _.range(expected.length).forEach(index => {
+                        const consentIndex = consentIndices[index];
+                        if (consentIndex !== null) {
+                            const consent = hxConsent.server(consentIndex);
+                            expected[index].consentId = consent.id;
+                            expected[index].consentName = consent.name;
+                        }
+                    });
                     expect(err.consentDocument).to.deep.equal(expected);
                 });
         };
@@ -360,14 +370,24 @@ describe('survey consent unit', function () {
     it('user 0 gets answered survey 3', verifyAnsweredSurveyFn(0, 3));
     it('user 1 gets answered survey 3', verifyAnsweredSurveyFn(1, 3));
 
-    const getAnswersWithoutSignaturesFn = function (userIndex, surveyIndex, missingConsentDocumentIndices) {
+    const getAnswersWithoutSignaturesFn = function (userIndex, surveyIndex, expectedInfo) {
         return function () {
             const userId = hxUser.id(userIndex);
             const survey = hxSurvey.server(surveyIndex);
+            const documentIndices = expectedInfo.map(info => Array.isArray(info) ? info[1] : info);
+            const consentIndices = expectedInfo.map(info => Array.isArray(info) ? info[0] : null);
             return models.answer.getAnswers({ userId, surveyId: survey.id })
                 .then(shared.throwingHandler, shared.expectedErrorHandler('profileSignaturesMissing'))
                 .then(err => {
-                    const expected = hxConsentDocument.serversInList(missingConsentDocumentIndices);
+                    const expected = hxConsentDocument.serversInList(documentIndices);
+                    _.range(expected.length).forEach(index => {
+                        const consentIndex = consentIndices[index];
+                        if (consentIndex !== null) {
+                            const consent = hxConsent.server(consentIndex);
+                            expected[index].consentId = consent.id;
+                            expected[index].consentName = consent.name;
+                        }
+                    });
                     expect(err.consentDocument).to.deep.equal(expected);
                 });
         };
@@ -377,7 +397,7 @@ describe('survey consent unit', function () {
     it('error: user 3 gets answers to survey 3 without signatures', getAnswersWithoutSignaturesFn(3, 3, [3]));
 
     for (let i = 0; i < 2; ++i) {
-        it(`create consent section of type ${i}`, shared.createConsentDocumentFn(hxConsentDocument, i));
+        it(`create consent document of type ${i}`, shared.createConsentDocumentFn(hxConsentDocument, i));
     }
 
     it('error: user 0 gets answers to survey 1 without signatures', getAnswersWithoutSignaturesFn(0, 1, [1]));
@@ -407,4 +427,103 @@ describe('survey consent unit', function () {
         it(`user ${index} answers survey 1`, answerSurveyFn(index, 1, true));
         it(`user ${index} answered survey 1`, verifyAnsweredSurveyFn(index, 1));
     });
+
+    _.range(4).forEach(index => {
+        it(`create user ${index} answers to survey 4 without signatures`, answerSurveyWithoutSignaturesFn(index, 4, [
+            [0, 4],
+            [0, 5],
+            [0, 6]
+        ]));
+        it(`create user ${index} answers to survey 5 without signatures`, answerSurveyWithoutSignaturesFn(index, 5, [
+            [0, 4],
+            [0, 5],
+            [0, 6],
+            [1, 7],
+            [1, 8],
+            [1, 9]
+        ]));
+    });
+
+    it('user 0 bulk signs consent documents 4, 5, 6', shared.bulkSignConsentTypeFn(hxConsentDocument, 0, [4, 5, 6]));
+    it('user 1 bulk signs consent documents 4, 5, 6, 7, 8, 9', shared.bulkSignConsentTypeFn(hxConsentDocument, 1, [4, 5, 6, 7, 8, 9]));
+    it('user 2 bulk signs consent documents 4, 6, 8', shared.bulkSignConsentTypeFn(hxConsentDocument, 2, [4, 6, 8]));
+    it('user 3 bulk signs consent documents 5, 7, 9', shared.bulkSignConsentTypeFn(hxConsentDocument, 3, [5, 7, 9]));
+
+    it(`create user 2 answers to survey 4 without signatures`, answerSurveyWithoutSignaturesFn(2, 4, [
+        [0, 5]
+    ]));
+    it(`create user 3 answers to survey 4 without signatures`, answerSurveyWithoutSignaturesFn(3, 4, [
+        [0, 4],
+        [0, 6]
+    ]));
+    it(`create user 0 answers to survey 5 without signatures`, answerSurveyWithoutSignaturesFn(0, 5, [
+        [1, 7],
+        [1, 8],
+        [1, 9]
+    ]));
+    it(`create user 2 answers to survey 5 without signatures`, answerSurveyWithoutSignaturesFn(2, 5, [
+        [0, 5],
+        [1, 7],
+        [1, 9]
+    ]));
+    it(`create user 3 answers to survey 5 without signatures`, answerSurveyWithoutSignaturesFn(3, 5, [
+        [0, 4],
+        [0, 6],
+        [1, 8]
+    ]));
+
+    it('user 0 answers survey 4', answerSurveyFn(0, 4));
+    it('user 1 answers survey 4', answerSurveyFn(1, 4));
+    it('user 1 answers survey 5', answerSurveyFn(1, 5));
+
+    it('user 1 gets answered survey 4', verifyAnsweredSurveyFn(1, 4));
+    it('user 1 gets answered survey 5', verifyAnsweredSurveyFn(1, 5));
+
+    it('error: user 0 gets answers to survey 4 without signatures', getAnswersWithoutSignaturesFn(0, 4, [
+        [1, 7],
+        [1, 8],
+        [1, 9]
+    ]));
+
+    it('user 0 bulk signs consent documents 7, 8, 9', shared.bulkSignConsentTypeFn(hxConsentDocument, 0, [7, 8, 9]));
+    it('user 2 bulk signs consent documents 5, 7, 9', shared.bulkSignConsentTypeFn(hxConsentDocument, 2, [5, 7, 9]));
+    it('user 3 bulk signs consent documents 4, 6, 8', shared.bulkSignConsentTypeFn(hxConsentDocument, 3, [4, 6, 8]));
+
+    it('user 0 answers survey 5', answerSurveyFn(0, 5));
+    it('user 2 answers survey 5', answerSurveyFn(2, 4));
+    it('user 2 answers survey 5', answerSurveyFn(2, 5));
+    it('user 3 answers survey 5', answerSurveyFn(3, 4));
+    it('user 3 answers survey 5', answerSurveyFn(3, 5));
+
+    it('user 0 gets answered survey 4', verifyAnsweredSurveyFn(0, 4));
+    it('user 0 gets answered survey 5', verifyAnsweredSurveyFn(0, 5));
+    it('user 2 gets answered survey 4', verifyAnsweredSurveyFn(2, 4));
+    it('user 2 gets answered survey 5', verifyAnsweredSurveyFn(2, 5));
+    it('user 3 gets answered survey 4', verifyAnsweredSurveyFn(3, 4));
+    it('user 3 gets answered survey 5', verifyAnsweredSurveyFn(3, 5));
+
+    for (let i = 7; i < 10; ++i) {
+        it(`create consent document of type ${i}`, shared.createConsentDocumentFn(hxConsentDocument, i));
+    }
+
+    it('error: user 0 gets answers to survey 4 without signatures', getAnswersWithoutSignaturesFn(0, 5, [
+        [1, 7],
+        [1, 8],
+        [1, 9]
+    ]));
+    it('error: user 1 gets answers to survey 4 without signatures', getAnswersWithoutSignaturesFn(1, 5, [
+        [1, 7],
+        [1, 8],
+        [1, 9]
+    ]));
+    it('error: user 2 gets answers to survey 4 without signatures', getAnswersWithoutSignaturesFn(2, 5, [
+        [1, 7],
+        [1, 8],
+        [1, 9]
+    ]));
+    it('error: user 3 gets answers to survey 4 without signatures', getAnswersWithoutSignaturesFn(3, 5, [
+        [1, 7],
+        [1, 8],
+        [1, 9]
+    ]));
 });
