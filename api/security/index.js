@@ -5,9 +5,7 @@ const config = require('../config');
 const jwt = require('jsonwebtoken');
 const _ = require('lodash');
 
-const db = require('../models/db');
-
-const User = db.User;
+const models = require('../models');
 
 const invalidAuth = {
     message: 'Invalid authorization',
@@ -42,28 +40,19 @@ const jwtAuth = function (req, header, verifyUserFn, callback) {
                 if (err) {
                     return callback(invalidAuth);
                 }
-                User.findOne({
-                    where: {
-                        id: payload.id,
-                        username: payload.username
-                    },
-                    attributes: {
-                        exclude: [
-                            'createdAt', 'updatedAt', 'password'
-                        ]
-                    }
-                }).then(user => {
-                    if (user) {
-                        user = user.get(undefined, {
-                            plain: true
-                        });
-                        let err = verifyUserFn(user);
-                        req.user = user;
-                        return callback(err);
-                    } else {
-                        return callback(invalidUser);
-                    }
-                });
+                models.user.getUser(payload.id)
+                    .then(user => {
+                        if (user) {
+                            if (user.username !== payload.username) {
+                                return callback(invalidUser);
+                            }
+                            let err = verifyUserFn(user);
+                            req.user = user;
+                            return callback(err);
+                        } else {
+                            return callback(invalidUser);
+                        }
+                    });
             });
         } else {
             return callback(invalidAuth);

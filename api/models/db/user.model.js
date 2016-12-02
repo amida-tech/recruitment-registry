@@ -22,7 +22,7 @@ module.exports = function (sequelize, DataTypes) {
         username: {
             type: DataTypes.TEXT,
             unique: {
-                msg: 'The specified username is already in use.'
+                msg: RRError.message('uniqueUsername')
             },
             validate: {
                 notEmpty: true
@@ -32,7 +32,7 @@ module.exports = function (sequelize, DataTypes) {
         email: {
             type: DataTypes.TEXT,
             unique: {
-                msg: 'The specified email address is already in use.'
+                msg: RRError.message('uniqueEmail')
             },
             validate: {
                 isEmail: true

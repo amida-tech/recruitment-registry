@@ -134,3 +134,11 @@ errors.invalidEmail = {
 errors.authenticationError = {
     msg: 'Authentication error.'
 };
+
+errors.uniqueUsername = {
+    msg: 'The specified username is already in use.'
+};
+
+errors.uniqueEmail = {
+    msg: 'The specified email address is already in use.'
+};
