@@ -158,6 +158,22 @@ class SharedIntegration {
         };
     }
 
+    verifySurveyFn(store, hxSurvey, index) {
+        return function (done) {
+            const id = hxSurvey.id(index);
+            store.get(`/surveys/${id}`, true, 200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    const survey = res.body;
+                    hxSurvey.updateServer(index, survey);
+                    comparator.survey(hxSurvey.client(index), survey)
+                        .then(done, done);
+                });
+        };
+    }
+
     createSurveyFn(store, hxSurvey, hxQuestion, qxIndices) {
         const generator = this.generator;
         return function (done) {
