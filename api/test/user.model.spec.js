@@ -11,14 +11,11 @@ const SPromise = require('../lib/promise');
 const SharedSpec = require('./util/shared-spec');
 const config = require('../config');
 const models = require('../models');
-const db = require('../models/db');
 const Generator = require('./util/entity-generator');
 
 const expect = chai.expect;
 const generator = new Generator();
 const shared = new SharedSpec(generator);
-
-const User = db.User;
 
 describe('user unit', function () {
     const example = generator.newUser();
@@ -32,21 +29,15 @@ describe('user unit', function () {
                     expect(user.username).to.equal(inputUser.username);
                     return user;
                 })
-                .then(function (user) {
-                    return User.findOne({
-                        where: {
-                            id: user.id
-                        },
-                        raw: true,
-                        attributes: ['username']
-                    });
+                .then(({ id }) => {
+                    return models.user.getUser(id);
                 })
-                .then(function (user) {
+                .then(user => {
                     expect(user.username).to.equal(inputUser.username);
                     return user;
                 })
-                .then(function (user) {
-                    return models.user.updateUser(user.id, {
+                .then(({ id }) => {
+                    return models.user.updateUser(id, {
                             username: 'rejectusername'
                         })
                         .then(function () {
@@ -61,11 +52,12 @@ describe('user unit', function () {
 
         it('reject non unique username', function () {
             const inputUser = generator.newUser();
-            return models.user.createUser(inputUser).then(function (user) {
+            return models.user.createUser(inputUser)
+                .then(user => {
                     expect(user.username).to.equal(inputUser.username);
                     return user;
                 })
-                .then(function () {
+                .then(() => {
                     const nextInputUser = generator.newUser();
                     nextInputUser.username = inputUser.username;
                     return models.user.createUser(nextInputUser)
@@ -106,31 +98,15 @@ describe('user unit', function () {
         it('create, update and authenticate', function () {
             const inputUser = generator.newUser();
             return models.user.createUser(inputUser)
-                .then(function (user) {
-                    return User.findOne({
-                        where: {
-                            id: user.id
-                        }
-                    });
-                })
-                .then(function (user) {
-                    return user.authenticate(inputUser.password).then(function () {
-                        return user;
-                    });
-                })
-                .then(function (user) {
-                    return user.authenticate(inputUser.password + 'f')
-                        .then(shared.throwingHandler, shared.expectedErrorHandler('authenticationError'))
-                        .then(() => user.id);
-                })
-                .then(function (id) {
-                    return models.user.updateUser(id, {
-                            password: 'newPassword'
+                .then(({ id }) => {
+                    return models.user.authenticateUser(id, inputUser.password)
+                        .then(() => {
+                            return models.user.authenticateUser(id, inputUser.password + 'f')
+                                .then(shared.throwingHandler, shared.expectedErrorHandler('authenticationError'));
                         })
-                        .then(function () {
-                            return User.findById(id).then(function (user) {
-                                return user.authenticate('newPassword');
-                            });
+                        .then(() => {
+                            return models.user.updateUser(id, { password: 'newPassword'})
+                                .then(() => models.user.authenticateUser(id, 'newPassword'));
                         });
                 });
         });
@@ -186,20 +162,12 @@ describe('user unit', function () {
         it('normal set/get', function () {
             const inputUser = generator.newUser();
             return models.user.createUser(inputUser)
-                .then(function (user) {
+                .then(user => {
                     expect(user.email).to.equal(inputUser.email);
                     return user;
                 })
-                .then(function (user) {
-                    return User.findOne({
-                        where: {
-                            id: user.id
-                        },
-                        raw: true,
-                        attributes: ['email']
-                    });
-                })
-                .then(function (user) {
+                .then(({ id }) => models.user.getUser(id))
+                .then(user => {
                     expect(user.email).to.equal(inputUser.email);
                 });
         });
@@ -207,11 +175,11 @@ describe('user unit', function () {
         it('reject non unique e-mail', function () {
             const inputUser = generator.newUser();
             return models.user.createUser(inputUser)
-                .then(function (user) {
+                .then(user => {
                     expect(user.email).to.equal(inputUser.email);
                     return user;
                 })
-                .then(function () {
+                .then(() => {
                     const nextInputUser = generator.newUser();
                     nextInputUser.email = inputUser.email;
                     return models.user.createUser(nextInputUser)
@@ -228,20 +196,12 @@ describe('user unit', function () {
                 email: 'CamelCase@EXAMPLE.COM'
             });
             return models.user.createUser(inputUser)
-                .then(function (user) {
+                .then(user => {
                     expect(user.email).to.equal(inputUser.email.toLowerCase());
                     return user;
                 })
-                .then(function (user) {
-                    return User.findOne({
-                        where: {
-                            id: user.id
-                        },
-                        raw: true,
-                        attributes: ['email']
-                    });
-                })
-                .then(function (user) {
+                .then(user => models.user.getUser(user.id))
+                .then(user => {
                     expect(user.email).to.equal(inputUser.email.toLowerCase());
                 });
         });
@@ -328,28 +288,21 @@ describe('user unit', function () {
     describe('update users', function () {
         it('normal flow', function () {
             const inputUser = generator.newUser();
-            return models.user.createUser(inputUser).then(function (user) {
-                const id = user.id;
-                const attributes = ['email'];
-                let updateObj = {
-                    email: 'newone@example.com',
-                    password: 'newpasword!!'
-                };
-                return models.user.updateUser(id, updateObj)
-                    .then(function () {
-                        return models.user.authenticateUser(id, updateObj.password);
-                    })
-                    .then(function () {
-                        return User.findById(id, {
-                                attributes
-                            })
-                            .then(function (user) {
-                                const actualAttrs = user.get();
-                                delete updateObj.password;
-                                expect(actualAttrs).to.deep.equal(updateObj);
-                            });
-                    });
-            });
+            return models.user.createUser(inputUser)
+                .then(user => {
+                    const id = user.id;
+                    let updateObj = {
+                        email: 'newone@example.com',
+                        password: 'newpasword!!'
+                    };
+                    return models.user.updateUser(id, updateObj)
+                        .then(() => models.user.authenticateUser(id, updateObj.password))
+                        .then(() => models.user.getUser(id))
+                        .then(user => {
+                            expect(user.email).equal(updateObj.email);
+
+                        });
+                });
         });
     });
 
@@ -364,23 +317,17 @@ describe('user unit', function () {
                             return token;
                         })
                         .then(token => {
-                            return User.findOne({ where: { email: inputUser.email } })
-                                .then(user => {
-                                    return user.authenticate(inputUser.password)
-                                        .then(shared.throwingHandler, shared.expectedErrorHandler('authenticationError'))
-                                        .then(() => token);
-                                });
+                            return models.user.authenticateUser(user.id, inputUser.password)
+                                .then(shared.throwingHandler, shared.expectedErrorHandler('authenticationError'))
+                                .then(() => token);
                         })
                         .then(token => {
                             const wrongToken = (token.charAt(0) === '1' ? '2' : '1') + token.slice(1);
                             return models.user.resetPassword(wrongToken, 'newPassword')
                                 .then(shared.throwingHandler, shared.expectedErrorHandler('invalidOrExpiredPWToken'))
                                 .then(() => models.user.resetPassword(token, 'newPassword'));
-                        });
-                })
-                .then(() => {
-                    return User.findOne({ where: { email: inputUser.email } })
-                        .then(user => user.authenticate('newPassword'));
+                        })
+                        .then(() => models.user.authenticateUser(user.id, 'newPassword'));
                 });
         });
 
