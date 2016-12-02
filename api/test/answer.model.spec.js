@@ -6,11 +6,13 @@ const _ = require('lodash');
 
 const models = require('../models');
 const SharedSpec = require('./util/shared-spec');
+const Generator = require('./util/entity-generator');
 const AnswerHistory = require('./util/answer-history');
 const answerCommon = require('./util/answer-common');
 
 const expect = chai.expect;
-const shared = new SharedSpec();
+const generator = new Generator();
+const shared = new SharedSpec(generator);
 
 describe('answer unit', function () {
     const testQuestions = answerCommon.testQuestions;
@@ -30,8 +32,22 @@ describe('answer unit', function () {
         it(`create question ${i}`, shared.createQuestion(hxQuestion));
     }
 
+    const createSurveyFn = function (qxIndices) {
+        return function () {
+            const inputSurvey = generator.newSurvey();
+            inputSurvey.questions = qxIndices.map(index => ({
+                id: hxQuestion.server(index).id,
+                required: false
+            }));
+            return models.survey.createSurvey(inputSurvey)
+                .then(id => {
+                    hxSurvey.push(inputSurvey, { id });
+                });
+        };
+    };
+
     _.map(testQuestions, 'survey').forEach((surveyQuestion, index) => {
-        return it(`create survey ${index}`, shared.createSurvey(hxSurvey, hxQuestion, surveyQuestion));
+        return it(`create survey ${index}`, createSurveyFn(surveyQuestion));
     });
 
     const createTestFn = function (userIndex, surveyIndex, seqIndex, stepIndex) {

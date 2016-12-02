@@ -118,3 +118,7 @@ errors.smtpNotSpecified = {
 errors.smtpTextNotSpecified = {
     msg: 'Email content and/or subject not specified for reset token.'
 };
+
+errors.surveyConsentInvalidTypeForConsent = {
+    msg: 'Consent does not exists or does not include the Consent Type as section.'
+};

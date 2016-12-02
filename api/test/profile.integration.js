@@ -8,6 +8,7 @@ const config = require('../config');
 
 const SharedIntegration = require('./util/shared-integration');
 const RRSuperTest = require('./util/rr-super-test');
+const SurveyHistory = require('./util/survey-history');
 const History = require('./util/entity-history');
 const Generator = require('./util/entity-generator');
 const comparator = require('./util/client-server-comparator');
@@ -20,7 +21,7 @@ const shared = new SharedIntegration(generator);
 describe('profile integration', function () {
     const store = new RRSuperTest();
 
-    const hxSurvey = new History(['id', 'name']);
+    const hxSurvey = new SurveyHistory();
     const hxUser = new History();
     const hxAnswers = [];
     const hxConsentDoc = new ConsentDocumentHistory(2);

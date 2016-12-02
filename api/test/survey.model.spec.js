@@ -34,25 +34,6 @@ describe('survey unit', function () {
             });
     });
 
-    const createSurveyFn = function () {
-        return function () {
-            const survey = generator.newSurvey();
-            return models.survey.createSurvey(survey)
-                .then(id => hxSurvey.push(survey, { id }));
-        };
-    };
-
-    const verifySurveyFn = function (index) {
-        return function () {
-            const surveyId = hxSurvey.id(index);
-            return models.survey.getSurvey(surveyId)
-                .then(survey => {
-                    return comparator.survey(hxSurvey.client(index), survey)
-                        .then(() => hxSurvey.updateServer(index, survey));
-                });
-        };
-    };
-
     const verifyUpdatedSurveyFn = function (index) {
         return function () {
             const expected = hxSurvey.server(index);
@@ -132,8 +113,8 @@ describe('survey unit', function () {
     });
 
     for (let i = 0; i < surveyCount; ++i) {
-        it(`create survey ${i}`, createSurveyFn());
-        it(`get/verify survey ${i}`, verifySurveyFn(i));
+        it(`create survey ${i}`, shared.createSurveyFn(hxSurvey));
+        it(`get/verify survey ${i}`, shared.verifySurveyFn(hxSurvey, i));
         it(`update survey ${i}`, updateSurveyFn(i));
         it(`get/verify survey ${i}`, verifyUpdatedSurveyFn(i));
         it(`revert updated survey back ${i}`, revertUpdateSurveyFn(i));

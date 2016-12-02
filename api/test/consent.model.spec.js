@@ -24,7 +24,7 @@ describe('consent unit', function () {
 
     const history = new ConsentDocumentHistory(userCount);
     const hxConsent = new History();
-    const consentCommon = new ConsentCommon(hxConsent, history);
+    const consentCommon = new ConsentCommon(hxConsent, history, generator);
 
     before(shared.setUpFn());
 
@@ -45,23 +45,8 @@ describe('consent unit', function () {
     ];
 
     consentSpecs.forEach((typeIndices, index) => {
-        it(`create consent ${index}`, function () {
-            const sections = typeIndices.map(typeIndex => history.typeId(typeIndex));
-            const clientConsent = generator.newConsent({ sections });
-            return models.consent.createConsent(clientConsent)
-                .then(result => hxConsent.pushWithId(clientConsent, result.id));
-        });
-    });
-
-    _.range(consentSpecs.length).forEach(index => {
-        it(`get/verify consent ${index}`, function () {
-            const id = hxConsent.id(index);
-            return models.consent.getConsent(id)
-                .then(consent => {
-                    const expected = hxConsent.server(index);
-                    expect(consent).to.deep.equal(expected);
-                });
-        });
+        it(`create consent ${index}`, shared.createConsentFn(hxConsent, history, typeIndices));
+        it(`get/verify consent ${index}`, shared.verifyConsentFn(hxConsent, index));
     });
 
     _.range(consentSpecs.length).forEach(index => {

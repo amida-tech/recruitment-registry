@@ -3,9 +3,10 @@
 const _ = require('lodash');
 
 class ConsentCommon {
-    constructor(hxConsent, history) {
+    constructor(hxConsent, history, generator) {
         this.hxConsent = hxConsent;
         this.history = history;
+        this.generator = generator;
     }
 
     formExpectedConsent(index, typeIndices, signatures) {
@@ -27,7 +28,7 @@ class ConsentCommon {
             }
             return section;
         });
-        let result = _.omit(serverConsent, 'typeIds');
+        const result = _.omit(serverConsent, 'typeIds');
         result.sections = expectedSections;
         return result;
     }
@@ -51,8 +52,23 @@ class ConsentCommon {
             }
             return section;
         });
-        let result = _.omit(serverConsent, 'typeIds');
+        const result = _.omit(serverConsent, 'typeIds');
         result.sections = expectedSections;
+        return result;
+    }
+
+    getSurveyConsentDocuments(documentInfo) {
+        const documentIndices = documentInfo.map(info => Array.isArray(info) ? info[1] : info);
+        const consentIndices = documentInfo.map(info => Array.isArray(info) ? info[0] : null);
+        const result = this.history.serversInList(documentIndices);
+        _.range(result.length).forEach(index => {
+            const consentIndex = consentIndices[index];
+            if (consentIndex !== null) {
+                const consent = this.hxConsent.server(consentIndex);
+                result[index].consentId = consent.id;
+                result[index].consentName = consent.name;
+            }
+        });
         return result;
     }
 }

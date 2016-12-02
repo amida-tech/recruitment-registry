@@ -69,9 +69,9 @@ module.exports = class ConsentDAO {
     }
 
     deleteConsent(id) {
-        return sequelize.transaction(tx => {
-            return Consent.destroy({ where: { id } }, { transaction: tx })
-                .then(() => ConsentSection.destroy({ where: { consentId: id } }, { transaction: tx }));
+        return sequelize.transaction(transaction => {
+            return Consent.destroy({ where: { id }, transaction })
+                .then(() => ConsentSection.destroy({ where: { consentId: id }, transaction }));
         });
     }
 

@@ -63,6 +63,26 @@ class SharedSpec {
         };
     }
 
+    createSurveyFn(hxSurvey) {
+        const generator = this.generator;
+        return function () {
+            const survey = generator.newSurvey();
+            return models.survey.createSurvey(survey)
+                .then(id => hxSurvey.push(survey, { id }));
+        };
+    }
+
+    verifySurveyFn(hxSurvey, index) {
+        return function () {
+            const surveyId = hxSurvey.id(index);
+            return models.survey.getSurvey(surveyId)
+                .then(survey => {
+                    return comparator.survey(hxSurvey.client(index), survey)
+                        .then(() => hxSurvey.updateServer(index, survey));
+                });
+        };
+    }
+
     createQuestion(hxQuestion) {
         const generator = this.generator;
         return function () {
@@ -97,21 +117,6 @@ class SharedSpec {
                 })
                 .then(function (qx) {
                     hxQuestion.push(inputQx, qx);
-                });
-        };
-    }
-
-    createSurvey(hxSurvey, hxQuestion, qxIndices) {
-        const generator = this.generator;
-        return function () {
-            const inputSurvey = generator.newSurvey();
-            inputSurvey.questions = qxIndices.map(index => ({
-                id: hxQuestion.server(index).id,
-                required: false
-            }));
-            return models.survey.createSurvey(inputSurvey)
-                .then(id => {
-                    hxSurvey.push(inputSurvey, { id });
                 });
         };
     }
@@ -157,12 +162,42 @@ class SharedSpec {
         };
     }
 
+    createConsentFn(hxConsent, hxConsentDocument, typeIndices) {
+        const generator = this.generator;
+        return function () {
+            const sections = typeIndices.map(typeIndex => hxConsentDocument.typeId(typeIndex));
+            const clientConsent = generator.newConsent({ sections });
+            return models.consent.createConsent(clientConsent)
+                .then(result => hxConsent.pushWithId(clientConsent, result.id));
+        };
+    }
+
+    verifyConsentFn(hxConsent, index) {
+        return function () {
+            const expected = hxConsent.server(index);
+            return models.consent.getConsent(expected.id)
+                .then(consent => {
+                    const expected = hxConsent.server(index);
+                    expect(consent).to.deep.equal(expected);
+                });
+        };
+    }
+
     signConsentTypeFn(history, userIndex, typeIndex) {
         return function () {
             const consentDocumentId = history.id(typeIndex);
             const userId = history.userId(userIndex);
             history.sign(typeIndex, userIndex);
             return models.consentSignature.createSignature({ userId, consentDocumentId });
+        };
+    }
+
+    bulkSignConsentTypeFn(history, userIndex, typeIndices) {
+        return function () {
+            const consentDocumentIds = typeIndices.map(typeIndex => history.id(typeIndex));
+            const userId = history.userId(userIndex);
+            typeIndices.forEach(typeIndex => history.sign(typeIndex, userIndex));
+            return models.consentSignature.bulkCreateSignatures(consentDocumentIds, { userId });
         };
     }
 

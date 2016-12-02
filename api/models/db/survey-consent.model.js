@@ -1,13 +1,21 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    const SurveyConsentType = sequelize.define('survey_consent_type', {
+    return sequelize.define('survey_consent', {
         surveyId: {
             type: DataTypes.INTEGER,
             allowNull: false,
             field: 'survey_id',
             references: {
                 model: 'survey',
+                key: 'id'
+            }
+        },
+        consentId: {
+            type: DataTypes.INTEGER,
+            field: 'consent_id',
+            references: {
+                model: 'consent',
                 key: 'id'
             }
         },
@@ -21,7 +29,7 @@ module.exports = function (sequelize, DataTypes) {
             }
         },
         action: {
-            type: DataTypes.ENUM('read', 'create', 'edit'),
+            type: DataTypes.ENUM('read', 'create'),
             allowNull: false
         },
         createdAt: {
@@ -37,8 +45,10 @@ module.exports = function (sequelize, DataTypes) {
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',
-        paranoid: true
+        paranoid: true,
+        indexes: [{
+            unique: true,
+            fields: ['survey_id', 'consent_type_id', 'action']
+        }]
     });
-
-    return SurveyConsentType;
 };

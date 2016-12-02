@@ -1856,6 +1856,118 @@
                     }
                 }
             }
+        },
+        "/survey-consents": {
+            "x-swagger-router-controller": "survey-consent.controller",
+            "post": {
+                "summary": "Creates new survey consent",
+                "operationId": "createSurveyConsent",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "newSurveyConsent",
+                    "in": "body",
+                    "description": "Survey consent object",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/newSurveyConsent"
+                    }
+                }],
+                "responses": {
+                    "201": {
+                        "$ref": "#/responses/idSuccess"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "get": {
+                "summary": "Gets all survey consents",
+                "operationId": "listSurveyConsents",
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/surveyConsentDashboard"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/survey-consents/{id}": {
+            "x-swagger-router-controller": "survey-consent.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
+            "delete": {
+                "summary": "Deletes survey consent",
+                "operationId": "deleteSurveyConsent",
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successful response."
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/survey-consent-documents": {
+            "x-swagger-router-controller": "survey-consent-document.controller",
+            "get": {
+                "summary": "Gets all survey consent documents",
+                "operationId": "listSurveyConsentDocuments",
+                "security": [{
+                    "participant": []
+                }],
+                "parameters": [{
+                    "name": "survey-id",
+                    "in": "query",
+                    "description": "Survey id",
+                    "required": true,
+                    "type": "integer",
+                    "minimum": 1
+                }, {
+                    "name": "action",
+                    "in": "query",
+                    "description": "Action",
+                    "required": true,
+                    "type": "string",
+                    "enum": ["create", "read"]
+                }, {
+                    "name": "language",
+                    "in": "query",
+                    "description": "Language code",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 2
+                }],
+                 "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/surveyConsentDocumentDashboard"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
         }
     },
     "securityDefinitions": {
@@ -2176,6 +2288,24 @@
             },
             "additionalProperties": false
         },
+        "surveyConsentType": {
+            "type": "object",
+            "required": ["id", "name", "title"],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "title": {
+                    "type": "string"
+                }
+             },
+            "additionalProperties": false
+        },
         "survey": {
             "type": "object",
             "required": [
@@ -2211,6 +2341,12 @@
                         "$ref": "#/definitions/surveyQuestion"
                     },
                     "minItems": 1
+                },
+                "consentDocuments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/surveyConsentType"
+                    }
                 }
             },
             "additionalProperties": false
@@ -3326,6 +3462,99 @@
                 "survey": {
                     "$ref": "#/definitions/survey"
                 }
+            },
+            "additionalProperties": false
+        },
+        "newSurveyConsent": {
+            "type": "object",
+            "required": ["surveyId", "consentTypeId", "action"],
+            "properties": {
+                "surveyId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "consentId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "consentTypeId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "action": {
+                    "type": "string",
+                    "enum": ["read", "create"]
+                }
+            },
+            "additionalProperties": false
+        },
+        "surveyConsentInfo": {
+            "type": "object",
+            "required": ["id", "consentTypeId", "action"],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "consentId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "consentName": {
+                    "type": "string"
+                },
+                "consentTypeId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "consentTypeName": {
+                    "type": "string"
+                },
+                "consentTypeTitle": {
+                    "type": "string"
+                },
+                "action": {
+                    "type": "string",
+                    "enum": ["read", "create"]
+                }
+            },
+            "additionalProperties": false
+        },
+        "surveyConsentDashboard": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/surveyConsentInfo"
+            },
+            "additionalProperties": false
+        },
+        "surveyConsentDocumentInfo": {
+            "type": "object",
+            "required": ["id"],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "consentId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "consentName": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false
+        },
+        "surveyConsentDocumentDashboard": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/surveyConsentDocumentInfo"
             },
             "additionalProperties": false
         }

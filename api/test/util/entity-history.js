@@ -19,11 +19,12 @@ class History {
         this.servers.push(server);
         this.history.push(server);
         this.currentIndex.push(index);
+        return index;
     }
 
     pushWithId(client, id) {
         const server = Object.assign({}, client, { id });
-        this.push(client, server);
+        return this.push(client, server);
     }
 
     remove(index) {

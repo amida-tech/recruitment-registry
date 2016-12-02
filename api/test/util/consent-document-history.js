@@ -4,7 +4,7 @@ const _ = require('lodash');
 
 const History = require('./entity-history');
 
-class ConsentDocumentHistory {
+module.exports = class ConsentDocumentHistory {
     constructor(userCount) {
         this.hxUser = new History();
         this.hxType = new History();
@@ -103,6 +103,4 @@ class ConsentDocumentHistory {
         language = language || 'en';
         this.signatures[userIndex].push({ id, language });
     }
-}
-
-module.exports = ConsentDocumentHistory;
+};

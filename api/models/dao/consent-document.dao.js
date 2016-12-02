@@ -18,6 +18,15 @@ module.exports = class ConsentDocumentDAO extends Translatable {
         Object.assign(this, dependencies);
     }
 
+    static finalizeDocumentFields(document, fields, options) {
+        const selected = _.omit(fields, 'id');
+        const r = Object.assign(document, selected);
+        if (!options.keepTypeId) {
+            delete r.typeId;
+        }
+        return r;
+    }
+
     listConsentDocuments(options = {}) {
         const typeIds = options.typeIds;
         const query = {
@@ -74,18 +83,13 @@ module.exports = class ConsentDocumentDAO extends Translatable {
                         if (options.typeOrder) {
                             const map = _.keyBy(documents, 'typeId');
                             const result = typeIds.map(typeId => {
-                                const fields = _.omit(types[typeId], 'id');
-                                const r = Object.assign(map[typeId], fields);
-                                delete r.typeId;
-                                return r;
+                                return ConsentDocumentDAO.finalizeDocumentFields(map[typeId], types[typeId], options);
                             });
                             return result;
                         } else {
                             documents.forEach(document => {
                                 const typeId = document.typeId;
-                                const fields = _.omit(types[typeId], 'id');
-                                Object.assign(document, fields);
-                                delete document.typeId;
+                                ConsentDocumentDAO.finalizeDocumentFields(document, types[typeId], options);
                             });
                             return documents;
                         }
@@ -94,17 +98,17 @@ module.exports = class ConsentDocumentDAO extends Translatable {
     }
 
     createConsentDocument(input) {
-        return sequelize.transaction(tx => {
+        return sequelize.transaction(transaction => {
             const typeId = input.typeId;
-            return ConsentDocument.destroy({ where: { typeId } }, { transaction: tx })
-                .then(() => ConsentDocument.create(input, { transaction: tx }))
+            return ConsentDocument.destroy({ where: { typeId }, transaction })
+                .then(() => ConsentDocument.create(input, { transaction }))
                 .then(result => {
                     const textInput = { id: result.id };
                     textInput.content = input.content;
                     if (input.updateComment) {
                         textInput.updateComment = input.updateComment;
                     }
-                    return this.createTextTx(textInput, tx)
+                    return this.createTextTx(textInput, transaction)
                         .then(({ id }) => ({ id }));
                 });
         });

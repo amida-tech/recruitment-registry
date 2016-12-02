@@ -6,7 +6,7 @@ const db = require('../db');
 
 const sequelize = db.sequelize;
 const ProfileSurvey = db.ProfileSurvey;
-const SurveyConsentType = db.SurveyConsentType;
+const SurveyConsent = db.SurveyConsent;
 
 module.exports = class ProfileSurveyDAO {
     constructor(dependencies) {
@@ -60,7 +60,7 @@ module.exports = class ProfileSurveyDAO {
                         .then(survey => {
                             const surveyId = survey.id;
                             const action = 'create';
-                            return SurveyConsentType.findAll({
+                            return SurveyConsent.findAll({
                                     where: { surveyId, action },
                                     raw: true,
                                     attributes: ['consentTypeId']
@@ -70,7 +70,7 @@ module.exports = class ProfileSurveyDAO {
                                     if (typeIds.length) {
                                         return this.consentDocument.listConsentDocuments({ summary: true, typeIds })
                                             .then(consentDocuments => {
-                                                survey.consentDocument = consentDocuments;
+                                                survey.consentDocuments = consentDocuments;
                                                 return survey;
                                             });
                                     } else {
