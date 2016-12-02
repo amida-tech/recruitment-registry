@@ -19,6 +19,11 @@ module.exports = class UserDAO {
         Object.assign(this, dependencies);
     }
 
+    createUser(user, transaction) {
+        const options = transaction ? { transaction } : {};
+        return User.create(user, options);
+    }
+
     getUser(id) {
         return User.findById(id, {
             raw: true,
@@ -32,6 +37,10 @@ module.exports = class UserDAO {
                 ]
             }
         });
+    }
+
+    deleteUser(id) {
+        return User.destroy({ where: { id } });
     }
 
     updateUser(id, values, options) {

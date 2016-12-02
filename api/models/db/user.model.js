@@ -1,6 +1,5 @@
 'use strict';
 
-const _ = require('lodash');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 
@@ -77,9 +76,8 @@ module.exports = function (sequelize, DataTypes) {
         hooks: {
             afterSync(options) {
                 if (options.force) {
-                    const user = _.assign(config.superUser, {
-                        role: 'admin'
-                    });
+                    const role = 'admin';
+                    const user = Object.assign({ role }, config.superUser);
                     return User.create(user);
                 }
             },

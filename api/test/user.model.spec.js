@@ -28,7 +28,7 @@ describe('user unit', function () {
     describe('username', function () {
         it('create and update', function () {
             const inputUser = generator.newUser();
-            return User.create(inputUser).then(function (user) {
+            return models.user.createUser(inputUser).then(function (user) {
                     expect(user.username).to.equal(inputUser.username);
                     return user;
                 })
@@ -61,14 +61,14 @@ describe('user unit', function () {
 
         it('reject non unique username', function () {
             const inputUser = generator.newUser();
-            return User.create(inputUser).then(function (user) {
+            return models.user.createUser(inputUser).then(function (user) {
                     expect(user.username).to.equal(inputUser.username);
                     return user;
                 })
                 .then(function () {
                     const nextInputUser = generator.newUser();
                     nextInputUser.username = inputUser.username;
-                    return User.create(nextInputUser)
+                    return models.user.createUser(nextInputUser)
                         .then(function () {
                             throw new Error('unique username accepted');
                         })
@@ -87,7 +87,7 @@ describe('user unit', function () {
                     } else {
                         inputUser.username = value;
                     }
-                    return User.create(inputUser)
+                    return models.user.createUser(inputUser)
                         .then(function () {
                             throw new Error('no error for \'' + value + '\'');
                         })
@@ -105,7 +105,7 @@ describe('user unit', function () {
     describe('password', function () {
         it('create, update and authenticate', function () {
             const inputUser = generator.newUser();
-            return User.create(inputUser)
+            return models.user.createUser(inputUser)
                 .then(function (user) {
                     return User.findOne({
                         where: {
@@ -144,7 +144,7 @@ describe('user unit', function () {
                     } else {
                         inputUser.password = value;
                     }
-                    return User.create(inputUser)
+                    return models.user.createUser(inputUser)
                         .then(function () {
                             throw new Error('no error for \'' + value + '\'');
                         })
@@ -160,7 +160,7 @@ describe('user unit', function () {
 
         it('reject update with null/undefined/empty', function () {
             const inputValue = generator.newUser();
-            let p = User.create(inputValue).then(function (user) {
+            let p = models.user.createUser(inputValue).then(function (user) {
                 return user.id;
             });
             [null, undefined, ''].forEach(function (value) {
@@ -185,7 +185,7 @@ describe('user unit', function () {
     describe('e-mail', function () {
         it('normal set/get', function () {
             const inputUser = generator.newUser();
-            return User.create(inputUser)
+            return models.user.createUser(inputUser)
                 .then(function (user) {
                     expect(user.email).to.equal(inputUser.email);
                     return user;
@@ -206,7 +206,7 @@ describe('user unit', function () {
 
         it('reject non unique e-mail', function () {
             const inputUser = generator.newUser();
-            return User.create(inputUser)
+            return models.user.createUser(inputUser)
                 .then(function (user) {
                     expect(user.email).to.equal(inputUser.email);
                     return user;
@@ -214,7 +214,7 @@ describe('user unit', function () {
                 .then(function () {
                     const nextInputUser = generator.newUser();
                     nextInputUser.email = inputUser.email;
-                    return User.create(nextInputUser)
+                    return models.user.createUser(nextInputUser)
                         .then(function () {
                             throw new Error('unique email accepted');
                         }).catch(function (err) {
@@ -227,7 +227,7 @@ describe('user unit', function () {
             const inputUser = generator.newUser({
                 email: 'CamelCase@EXAMPLE.COM'
             });
-            return User.create(inputUser)
+            return models.user.createUser(inputUser)
                 .then(function (user) {
                     expect(user.email).to.equal(inputUser.email.toLowerCase());
                     return user;
@@ -255,7 +255,7 @@ describe('user unit', function () {
                     } else {
                         inputUser.email = value;
                     }
-                    return User.create(inputUser)
+                    return models.user.createUser(inputUser)
                         .then(function () {
                             throw new Error('no error for ' + value);
                         })
@@ -271,7 +271,7 @@ describe('user unit', function () {
 
         it('reject update with invalid/null/undefined/empty', function () {
             const inputValue = generator.newUser();
-            let p = User.create(inputValue).then(function (user) {
+            let p = models.user.createUser(inputValue).then(function (user) {
                 return user.id;
             });
             ['noatemail', null, undefined, ''].forEach(function (value) {
@@ -295,7 +295,7 @@ describe('user unit', function () {
 
     describe('create/get users', function () {
         it('post/get user', function () {
-            return User.create(example).then(function (user) {
+            return models.user.createUser(example).then(function (user) {
                 return models.user.getUser(user.id)
                     .then(function (actual) {
                         const expected = _.cloneDeep(example);
@@ -311,7 +311,7 @@ describe('user unit', function () {
             const exampleWNull = _.cloneDeep(example);
             exampleWNull.username += '1';
             exampleWNull.email = 'a' + exampleWNull.email;
-            return User.create(exampleWNull)
+            return models.user.createUser(exampleWNull)
                 .then(function (user) {
                     return models.user.getUser(user.id)
                         .then(function (actual) {
@@ -328,7 +328,7 @@ describe('user unit', function () {
     describe('update users', function () {
         it('normal flow', function () {
             const inputUser = generator.newUser();
-            return User.create(inputUser).then(function (user) {
+            return models.user.createUser(inputUser).then(function (user) {
                 const id = user.id;
                 const attributes = ['email'];
                 let updateObj = {
@@ -356,7 +356,7 @@ describe('user unit', function () {
     describe('reset password', function () {
         it('normal flow', function () {
             const inputUser = generator.newUser();
-            return User.create(inputUser)
+            return models.user.createUser(inputUser)
                 .then(user => {
                     return models.user.resetPasswordToken(user.email)
                         .then(token => {
@@ -396,7 +396,7 @@ describe('user unit', function () {
                 return m.toISOString();
             });
             const inputUser = generator.newUser();
-            return User.create(inputUser)
+            return models.user.createUser(inputUser)
                 .then(user => models.user.resetPasswordToken(user.email))
                 .then(function (token) {
                     return models.user.resetPassword(token, 'newPassword')

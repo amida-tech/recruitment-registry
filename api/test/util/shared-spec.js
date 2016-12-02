@@ -13,7 +13,6 @@ const comparator = require('./client-server-comparator');
 
 const expect = chai.expect;
 
-const User = db.User;
 const QuestionChoice = db.QuestionChoice;
 
 class SharedSpec {
@@ -33,7 +32,7 @@ class SharedSpec {
         const generator = this.generator;
         return function () {
             const clientUser = generator.newUser();
-            return User.create(clientUser)
+            return models.user.createUser(clientUser)
                 .then(function (user) {
                     hxUser.push(clientUser, user);
                 });

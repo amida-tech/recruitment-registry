@@ -18,7 +18,7 @@ exports.createNewUser = function (req, res) {
             } else {
                 const newUser = req.body;
                 newUser.role = 'participant';
-                return db.User.create(req.body)
+                return models.user.createUser(req.body)
                     .then(user => {
                         const token = tokener.createJWT(user);
                         res.cookie('rr-jwt-token', token);
