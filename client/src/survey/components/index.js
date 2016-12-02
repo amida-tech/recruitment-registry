@@ -81,6 +81,7 @@ export class SurveyContainer extends Component {
     const { id, name, questions } = this.props.selectedSurvey.toJS()
     const surveyAnswers = this.props.surveyAnswers.get('answers');
     const surveyQuestions = this.props.selectedSurvey.get('questions');
+    // need to implement: lastUpdated
 
     var questionnaire = [];
 
@@ -96,8 +97,8 @@ export class SurveyContainer extends Component {
             <div className="survey-meta">
               <h3>Questionnaire</h3>
               <h1>{name}</h1>
-              <span>
-                { surveyQuestions && (surveyQuestions.size - surveyAnswers.size) } Questions Remaining
+              <span className="questions-remaining">
+                { surveyQuestions && (surveyQuestions.size - surveyAnswers.size) } questions remaining
               </span>
 
               { this.props.data.get('hasErrors') &&
@@ -115,7 +116,7 @@ export class SurveyContainer extends Component {
               <ol>
                 {questionnaire}
               </ol>
-              <button>{this.props.vocab.get('SUBMIT')}</button>
+              <button className="submit">{this.props.vocab.get('SUBMIT')}</button>
             </form>
           </div>
         </div>
