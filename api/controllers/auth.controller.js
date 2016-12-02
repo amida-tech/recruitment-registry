@@ -20,11 +20,7 @@ const basicStrategy = function (username, password, done) {
         });
 };
 
-exports.init = function () {
-    passport.use(new passportHttp.BasicStrategy(basicStrategy));
-};
-
-exports.init();
+passport.use(new passportHttp.BasicStrategy(basicStrategy));
 
 const authenticate = passport.authenticate('basic', {
     session: false,

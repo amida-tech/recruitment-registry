@@ -40,18 +40,22 @@ describe('user unit', function () {
                         raw: true,
                         attributes: ['username']
                     });
-                }).then(function (user) {
+                })
+                .then(function (user) {
                     expect(user.username).to.equal(inputUser.username);
                     return user;
-                }).then(function (user) {
+                })
+                .then(function (user) {
                     return models.user.updateUser(user.id, {
-                        username: 'rejectusername'
-                    }).then(function () {
-                        throw new Error('unexpected no error');
-                    }).catch(function (err) {
-                        expect(err.message).to.not.equal('unexpected no error');
-                        expect(err.message).to.equal('Field username cannot be updated.');
-                    });
+                            username: 'rejectusername'
+                        })
+                        .then(function () {
+                            throw new Error('unexpected no error');
+                        })
+                        .catch(function (err) {
+                            expect(err.message).to.not.equal('unexpected no error');
+                            expect(err.message).to.equal('Field username cannot be updated.');
+                        });
                 });
         });
 
@@ -64,7 +68,8 @@ describe('user unit', function () {
                 .then(function () {
                     const nextInputUser = generator.newUser();
                     nextInputUser.username = inputUser.username;
-                    return User.create(nextInputUser).then(function () {
+                    return User.create(nextInputUser)
+                        .then(function () {
                             throw new Error('unique username accepted');
                         })
                         .catch(function (err) {
@@ -82,13 +87,15 @@ describe('user unit', function () {
                     } else {
                         inputUser.username = value;
                     }
-                    return User.create(inputUser).then(function () {
-                        throw new Error('no error for \'' + value + '\'');
-                    }).catch(function (err) {
-                        expect(!!err.message).to.equal(true);
-                        expect(err.message).not.to.equal('no error for \'' + value + '\'');
-                        return inputUser;
-                    });
+                    return User.create(inputUser)
+                        .then(function () {
+                            throw new Error('no error for \'' + value + '\'');
+                        })
+                        .catch(function (err) {
+                            expect(!!err.message).to.equal(true);
+                            expect(err.message).not.to.equal('no error for \'' + value + '\'');
+                            return inputUser;
+                        });
                 });
             });
             return p;
@@ -112,13 +119,9 @@ describe('user unit', function () {
                     });
                 })
                 .then(function (user) {
-                    return user.authenticate(inputUser.password + 'f').then(function () {
-                        throw new Error('expected error no');
-                    }).catch(function (err) {
-                        expect(err.message).not.to.equal('expected error no');
-                        expect(err.message).to.equal('Authentication error.');
-                        return user.id;
-                    });
+                    return user.authenticate(inputUser.password + 'f')
+                        .then(shared.throwingHandler, shared.expectedErrorHandler('authenticationError'))
+                        .then(() => user.id);
                 })
                 .then(function (id) {
                     return models.user.updateUser(id, {
@@ -354,70 +357,36 @@ describe('user unit', function () {
         it('normal flow', function () {
             const inputUser = generator.newUser();
             return User.create(inputUser)
-                .then(function (user) {
-                    let token;
-
+                .then(user => {
                     return models.user.resetPasswordToken(user.email)
-                        .then(function (result) {
-                            token = result;
+                        .then(token => {
                             expect(!!token).to.equal(true);
                             return token;
                         })
-                        .then(function (token) {
-                            return User.findOne({
-                                where: {
-                                    email: inputUser.email
-                                }
-                            }).then(function (user) {
-                                return user.authenticate(inputUser.password)
-                                    .then(function () {
-                                        throw new Error('authentication should have failed');
-                                    })
-                                    .catch(function (err) {
-                                        expect(err.message).not.to.equal('authentication should have failed');
-                                        expect(err.message).to.equal('Authentication error.');
-                                        return token;
-                                    });
-                            });
+                        .then(token => {
+                            return User.findOne({ where: { email: inputUser.email } })
+                                .then(user => {
+                                    return user.authenticate(inputUser.password)
+                                        .then(shared.throwingHandler, shared.expectedErrorHandler('authenticationError'))
+                                        .then(() => token);
+                                });
                         })
-                        .then(function (token) {
+                        .then(token => {
                             const wrongToken = (token.charAt(0) === '1' ? '2' : '1') + token.slice(1);
                             return models.user.resetPassword(wrongToken, 'newPassword')
-                                .then(function () {
-                                    throw new Error('unexpected no error for no token');
-                                })
-                                .catch(function (err) {
-                                    expect(err.message).not.to.equal('unexpected no error for no token');
-                                    const emsg = 'Password reset token is invalid or has expired.';
-                                    expect(err.message).to.equal(emsg);
-                                    return token;
-                                })
-                                .then(function (token) {
-                                    return models.user.resetPassword(token, 'newPassword');
-                                });
+                                .then(shared.throwingHandler, shared.expectedErrorHandler('invalidOrExpiredPWToken'))
+                                .then(() => models.user.resetPassword(token, 'newPassword'));
                         });
                 })
-                .then(function () {
-                    return User.findOne({
-                            where: {
-                                email: inputUser.email
-                            }
-                        })
-                        .then(function (user) {
-                            return user.authenticate('newPassword');
-                        });
+                .then(() => {
+                    return User.findOne({ where: { email: inputUser.email } })
+                        .then(user => user.authenticate('newPassword'));
                 });
         });
 
         it('invalid email', function () {
             return models.user.resetPasswordToken('a@a.com')
-                .then(function () {
-                    throw new Error('unexpected no error ');
-                })
-                .catch(function (err) {
-                    expect(err.message).not.to.equal('unexpected no error');
-                    expect(err.message).to.equal('Email is invalid.');
-                });
+                .then(shared.throwingHandler, shared.expectedErrorHandler('invalidEmail'));
         });
 
         it('expired reset token', function () {
@@ -428,25 +397,13 @@ describe('user unit', function () {
             });
             const inputUser = generator.newUser();
             return User.create(inputUser)
-                .then(function (user) {
-                    return models.user.resetPasswordToken(user.email);
-                })
+                .then(user => models.user.resetPasswordToken(user.email))
                 .then(function (token) {
                     return models.user.resetPassword(token, 'newPassword')
-                        .then(function () {
-                            return SPromise.delay(600);
-                        })
-                        .then(function () {
-                            return models.user.resetPassword(token, 'newPassword');
-                        })
-                        .then(function () {
-                            throw new Error('unexpected no expiration error');
-                        })
-                        .catch(function (err) {
-                            expect(err.message).not.to.equal('unexpected no expiration error');
-                            expect(err.message).to.equal('Password reset token is invalid or has expired.');
-                        })
-                        .then(function () {
+                        .then(() => SPromise.delay(600))
+                        .then(() => models.user.resetPassword(token, 'newPassword'))
+                        .then(shared.throwingHandler, shared.expectedErrorHandler('invalidOrExpiredPWToken'))
+                        .then(() => {
                             expect(stub.called).to.equal(true);
                             config.expiresForDB.restore();
                         });

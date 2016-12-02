@@ -122,3 +122,15 @@ errors.smtpTextNotSpecified = {
 errors.surveyConsentInvalidTypeForConsent = {
     msg: 'Consent does not exists or does not include the Consent Type as section.'
 };
+
+errors.invalidOrExpiredPWToken = {
+    msg: 'Password reset token is invalid or has expired.'
+};
+
+errors.invalidEmail = {
+    msg: 'Email is invalid.'
+};
+
+errors.authenticationError = {
+    msg: 'Authentication error.'
+};

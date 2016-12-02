@@ -6,6 +6,7 @@ const crypto = require('crypto');
 
 const config = require('../../config');
 const SPromise = require('../../lib/promise');
+const RRError = require('../../lib/rr-error');
 
 module.exports = function (sequelize, DataTypes) {
     const bccompare = SPromise.promisify(bcrypt.compare, {
@@ -96,7 +97,7 @@ module.exports = function (sequelize, DataTypes) {
                 return bccompare(password, this.password)
                     .then(result => {
                         if (!result) {
-                            throw new Error('Authentication error.');
+                            throw new RRError('authenticationError');
                         }
                     });
             },

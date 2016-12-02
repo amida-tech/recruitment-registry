@@ -4,7 +4,7 @@ const util = require('util');
 const moment = require('moment');
 
 const db = require('../db');
-const SPromise = require('../../lib/promise');
+const RRError = require('../../lib/rr-error');
 
 const sequelize = db.sequelize;
 const User = db.User;
@@ -36,60 +36,48 @@ module.exports = class UserDAO {
 
     updateUser(id, values, options) {
         options = options || {};
-        return User.findById(id, options).then(user => {
-            Object.keys(values).forEach(key => {
-                if (!clientUpdatableFields[key]) {
-                    const msg = util.format('Field %s cannot be updated.', key);
-                    throw new sequelize.ValidationError(msg);
-                }
+        return User.findById(id, options)
+            .then(user => {
+                Object.keys(values).forEach(key => {
+                    if (!clientUpdatableFields[key]) {
+                        const msg = util.format('Field %s cannot be updated.', key);
+                        throw new sequelize.ValidationError(msg);
+                    }
+                });
+                return user.update(values, options);
             });
-            return user.update(values, options);
-        });
     }
 
     authenticateUser(id, password) {
-        return User.findById(id).then(user => {
-            return user.authenticate(password);
-        });
+        return User.findById(id)
+            .then(user => {
+                return user.authenticate(password);
+            });
     }
 
     resetPasswordToken(email) {
-        return User.find({
-            where: {
-                email: email
-            }
-        }).then((user) => {
-            if (!user) {
-                const err = new Error('Email is invalid.');
-                return SPromise.reject(err);
-            } else {
+        return User.find({ where: { email } })
+            .then((user) => {
+                if (!user) {
+                    return RRError.reject('invalidEmail');
+                }
                 return user.updateResetPWToken();
-            }
-        });
+            });
     }
 
-    resetPassword(token, password) {
-        const rejection = function () {
-            const err = new Error('Password reset token is invalid or has expired.');
-            return SPromise.reject(err);
-        };
-        return User.find({
-            where: {
-                resetPasswordToken: token
-            }
-        }).then((user) => {
-            if (!user) {
-                return rejection();
-            } else {
+    resetPassword(resetPasswordToken, password) {
+        return User.find({ where: { resetPasswordToken } })
+            .then((user) => {
+                if (!user) {
+                    return RRError.reject('invalidOrExpiredPWToken');
+                }
                 const expires = user.resetPasswordExpires;
                 const mExpires = moment.utc(expires);
                 if (moment.utc().isAfter(mExpires)) {
-                    return rejection();
-                } else {
-                    user.password = password;
-                    return user.save();
+                    return RRError.reject('invalidOrExpiredPWToken');
                 }
-            }
-        });
+                user.password = password;
+                return user.save();
+            });
     }
 };
