@@ -15,7 +15,7 @@ input[type="checkbox"] + label {
   letter-spacing:    .5px;
   padding:           8px 8px 0px 8px;
   margin:            20px 12px 20px 0px;
-  border:            1px solid $color-key-medium;
+  border:            2px solid $color-key-medium;
   border-radius:     $checkbox-border-radius;
 }
 input[type="checkbox"]:checked + label {

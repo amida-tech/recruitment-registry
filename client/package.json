@@ -14,7 +14,7 @@
   },
   "scripts": {
     "build": "neo build",
-    "start": "neo start --port 4001",
+    "start": "neo start --port 4000",
     "test": "neo test"
   },
   "keywords": [],

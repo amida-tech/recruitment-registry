@@ -1,30 +1,43 @@
-// This is specific to the /survey/<id> view
-// code for styling the survey component itself
-// is location in styles/components/_survey.scss.
+// This is specific to the /survey/<id> view.
+//
+// May need to be consolidated in styles/components/_survey.scss.
+
 
 #survey {
 
   form[name=questionForm] {
 
+    //font-weight: 400;
+
     .container {
       width: 100%;
       position: relative;
 
+      .question {
+        font-weight: 400;
+        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+        margin-bottom: 20px;
+      }
+
       .questionNumber {
         text-transform: uppercase;
+        font-family: "Avenir Next", sans-serif;
+        font-weight: 400;
+        color: rgb(193, 193, 193);
+      }
+
+      label {
+        font-weight: 400;
       }
 
       .bool {
-
-        .btn {
-
-          .buttonPrimary {
-          }
-
-          .buttonSecondary {
-          }
+        button {
+          text-transform: uppercase;
+          font-weight: 400;
         }
       }
+
+
     }
   }
 }
