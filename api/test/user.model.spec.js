@@ -99,14 +99,14 @@ describe('user unit', function () {
             const inputUser = generator.newUser();
             return models.user.createUser(inputUser)
                 .then(({ id }) => {
-                    return models.user.authenticateUser(id, inputUser.password)
+                    return models.user.authenticateUser(inputUser.username, inputUser.password)
                         .then(() => {
-                            return models.user.authenticateUser(id, inputUser.password + 'f')
+                            return models.user.authenticateUser(inputUser.username, inputUser.password + 'f')
                                 .then(shared.throwingHandler, shared.expectedErrorHandler('authenticationError'));
                         })
                         .then(() => {
-                            return models.user.updateUser(id, { password: 'newPassword'})
-                                .then(() => models.user.authenticateUser(id, 'newPassword'));
+                            return models.user.updateUser(id, { password: 'newPassword' })
+                                .then(() => models.user.authenticateUser(inputUser.username, 'newPassword'));
                         });
                 });
         });
@@ -296,7 +296,7 @@ describe('user unit', function () {
                         password: 'newpasword!!'
                     };
                     return models.user.updateUser(id, updateObj)
-                        .then(() => models.user.authenticateUser(id, updateObj.password))
+                        .then(() => models.user.authenticateUser(inputUser.username, updateObj.password))
                         .then(() => models.user.getUser(id))
                         .then(user => {
                             expect(user.email).equal(updateObj.email);
@@ -317,7 +317,7 @@ describe('user unit', function () {
                             return token;
                         })
                         .then(token => {
-                            return models.user.authenticateUser(user.id, inputUser.password)
+                            return models.user.authenticateUser(inputUser.username, inputUser.password)
                                 .then(shared.throwingHandler, shared.expectedErrorHandler('authenticationError'))
                                 .then(() => token);
                         })
@@ -327,7 +327,7 @@ describe('user unit', function () {
                                 .then(shared.throwingHandler, shared.expectedErrorHandler('invalidOrExpiredPWToken'))
                                 .then(() => models.user.resetPassword(token, 'newPassword'));
                         })
-                        .then(() => models.user.authenticateUser(user.id, 'newPassword'));
+                        .then(() => models.user.authenticateUser(inputUser.username, 'newPassword'));
                 });
         });
 

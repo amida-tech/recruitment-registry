@@ -12,6 +12,7 @@ const tokener = require('../lib/tokener');
 
 const SharedIntegration = require('./util/shared-integration');
 const RRSuperTest = require('./util/rr-super-test');
+const RRError = require('../lib/rr-error');
 
 const expect = chai.expect;
 const shared = new SharedIntegration();
@@ -56,8 +57,7 @@ describe('auth integration', function () {
         };
         store.authBasic(credentials, 401)
             .expect(function (res) {
-                expect(typeof res.body).to.equal('object');
-                expect(Boolean(res.body.message)).to.equal(true);
+                expect(res.body.message).to.equal(RRError.message('authenticationError'));
             })
             .end(done);
     });
@@ -69,8 +69,7 @@ describe('auth integration', function () {
         };
         store.authBasic(credentials, 401)
             .expect(function (res) {
-                expect(typeof res.body).to.equal('object');
-                expect(Boolean(res.body.message)).to.equal(true);
+                expect(res.body.message).to.equal(RRError.message('authenticationError'));
             })
             .end(done);
     });

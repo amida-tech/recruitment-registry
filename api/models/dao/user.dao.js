@@ -57,10 +57,15 @@ module.exports = class UserDAO {
             });
     }
 
-    authenticateUser(id, password) {
-        return User.findById(id)
+    authenticateUser(username, password) {
+        return User.findOne({ where: { username } })
             .then(user => {
-                return user.authenticate(password);
+                if (user) {
+                    return user.authenticate(password)
+                        .then(() => user);
+                } else {
+                    return RRError.reject('authenticationError');
+                }
             });
     }
 
