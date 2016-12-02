@@ -25,7 +25,8 @@ describe('user unit', function () {
     describe('username', function () {
         it('create and update', function () {
             const inputUser = generator.newUser();
-            return models.user.createUser(inputUser).then(function (user) {
+            return models.user.createUser(inputUser)
+                .then(function (user) {
                     expect(user.username).to.equal(inputUser.username);
                     return user;
                 })
@@ -61,12 +62,7 @@ describe('user unit', function () {
                     const nextInputUser = generator.newUser();
                     nextInputUser.username = inputUser.username;
                     return models.user.createUser(nextInputUser)
-                        .then(function () {
-                            throw new Error('unique username accepted');
-                        })
-                        .catch(function (err) {
-                            expect(err).not.to.equal('unique username accepted');
-                        });
+                        .then(shared.throwingHandler, shared.expectedSeqErrorHandler('uniqueUsername'));
                 });
         });
 
@@ -80,12 +76,8 @@ describe('user unit', function () {
                         inputUser.username = value;
                     }
                     return models.user.createUser(inputUser)
-                        .then(function () {
-                            throw new Error('no error for \'' + value + '\'');
-                        })
-                        .catch(function (err) {
+                        .then(shared.throwingHandler, err => {
                             expect(!!err.message).to.equal(true);
-                            expect(err.message).not.to.equal('no error for \'' + value + '\'');
                             return inputUser;
                         });
                 });
@@ -183,11 +175,7 @@ describe('user unit', function () {
                     const nextInputUser = generator.newUser();
                     nextInputUser.email = inputUser.email;
                     return models.user.createUser(nextInputUser)
-                        .then(function () {
-                            throw new Error('unique email accepted');
-                        }).catch(function (err) {
-                            expect(err).not.to.equal('unique email accepted');
-                        });
+                        .then(shared.throwingHandler, shared.expectedSeqErrorHandler('uniqueEmail'));
                 });
         });
 

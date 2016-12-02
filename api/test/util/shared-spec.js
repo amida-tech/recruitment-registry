@@ -212,6 +212,13 @@ class SharedSpec {
             return err;
         };
     }
+
+    expectedSeqErrorHandler(code) {
+        return function (err) {
+            expect(err.message).to.equal(RRError.message(code));
+            return err;
+        };
+    }
 }
 
 module.exports = SharedSpec;
