@@ -17,12 +17,12 @@
     letter-spacing:    .5px;
     padding-top:       8px;
     margin-top:        -8px;
-    border-bottom:     2px solid $color-key-medium;
-    border-top:        2px solid $color-key-medium;
-    border-right:      2px solid $color-key-medium;
+    border-bottom:     1px solid $color-key-medium;
+    border-top:        1px solid $color-key-medium;
+    border-right:      1px solid $color-key-medium;
     &:first-of-type {
       border-radius:   4px 0 0 4px;
-      border-left:     2px solid $color-key-medium;
+      border-left:     1px solid $color-key-medium;
     }
     &:last-of-type {
       border-radius:   0 4px 4px 0;
