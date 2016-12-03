@@ -24,6 +24,16 @@ module.exports = class UserDAO {
         if (user.username === user.email) {
             return RRError.reject('userIdenticalUsernameEmail');
         }
+        user = Object.assign({}, user);
+        if (!user.username) {
+            const email = user.email;
+            if (email && (typeof email === 'string')) {
+                user.username = email.toLowerCase();
+            }
+        }
+        if (!user.role) {
+            user.role = 'participant';
+        }
         return User.create(user, options);
     }
 
@@ -62,7 +72,20 @@ module.exports = class UserDAO {
     }
 
     authenticateUser(username, password) {
-        return User.findOne({ where: { username } })
+        return User.findOne({
+                where: {
+                    $or: [
+                        { username },
+                        {
+                            $and: [{
+                                username: sequelize.fn('lower', sequelize.col('email'))
+                            }, {
+                                username: sequelize.fn('lower', username)
+                            }]
+                        }
+                    ]
+                }
+            })
             .then(user => {
                 if (user) {
                     return user.authenticate(password)

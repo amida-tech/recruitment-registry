@@ -32,7 +32,7 @@ describe('user unit', function () {
             const user = generator.newUser();
             return models.user.createUser(user)
                 .then(({ id }) => {
-                    hxUser.pushWithId(user, id);
+                    hxUser.push(user, { id });
                 });
         };
     };
@@ -42,8 +42,20 @@ describe('user unit', function () {
             const id = hxUser.id(index);
             return models.user.getUser(id)
                 .then(user => {
-                    comparator.user(hxUser.client(index), user);
+                    const client = hxUser.client(index);
+                    comparator.user(client, user);
+                    hxUser.updateServer(index, user);
+                    client.username = client.username || client.email.toLowerCase();
+                    client.role = client.role || 'participant';
                 });
+        };
+    };
+
+    const verifyUserFn = function (index) {
+        return function () {
+            const server = hxUser.server(index);
+            return models.user.getUser(server.id)
+                .then(user => expect(user).to.deep.equal(server));
         };
     };
 
@@ -59,6 +71,27 @@ describe('user unit', function () {
             const client = hxUser.client(index);
             return models.user.authenticateUser(client.username, client.password + 'a')
                 .then(shared.throwingHandler, shared.expectedErrorHandler('authenticationError'));
+        };
+    };
+
+    const authenticateOppositeCaseUserFn = function (index) {
+        return function () {
+            const client = hxUser.client(index);
+            if (client.username === client.email.toLowerCase()) {
+                const username = testJsutil.oppositeCase(client.username || client.email);
+                return models.user.authenticateUser(username, client.password);
+            }
+        };
+    };
+
+    const authenticateOppositeCaseUserErrorFn = function (index) {
+        return function () {
+            const client = hxUser.client(index);
+            if (client.username !== client.email.toLowerCase()) {
+                const username = testJsutil.oppositeCase(client.username || client.email);
+                return models.user.authenticateUser(username, client.password)
+                    .then(shared.throwingHandler, shared.expectedErrorHandler('authenticationError'));
+            }
         };
     };
 
@@ -81,6 +114,7 @@ describe('user unit', function () {
                 .then(() => {
                     hxUser.client(index).email = email;
                     hxUser.client(index).password = password;
+                    hxUser.server(index).email = email;
                 });
         };
     };
@@ -90,10 +124,15 @@ describe('user unit', function () {
         it(`get user ${index}`, getUserFn(index));
         it(`authenticate user ${index}`, authenticateUserFn(index));
         it(`error: authenticate user ${index} with wrong password`, authenticateUserErrorFn(index));
+        it(`authenticate user ${index} with wrong password`, authenticateUserErrorFn(index));
         it(`update password for user ${index}`, updateUserPasswordFn(index));
-        it(`authenticate user ${index}`, authenticateUserFn(index));
+        it(`error: authenticate opposite case username user ${index}`, authenticateOppositeCaseUserErrorFn(index));
+        it(`authenticate opposite case username (when email) user ${index}`, authenticateOppositeCaseUserFn(index));
+    });
+
+    _.range(userCount).forEach(index => {
         it(`update user ${index}`, updateUserFn(index));
-        it(`get user ${index}`, getUserFn(index));
+        it(`verify user ${index}`, verifyUserFn(index));
         it(`authenticate user ${index}`, authenticateUserFn(index));
     });
 
@@ -160,29 +199,30 @@ describe('user unit', function () {
         it(`error: create user with username and email of user ${index}`, uniqUsernameEmailErrorFn(index));
     });
 
-    const invalidUsernameErrorFn = function (value) {
-        return function () {
-            const user = generator.newUser();
-            if (value === '--') {
-                delete user.username;
-            } else {
-                user.username = value;
-            }
-            return models.user.createUser(user)
-                .then(shared.throwingHandler, err => {
-                    expect(!!err.message).to.equal(true);
-                });
-        };
-    };
+    //const createUsernamelessUserFn = function () {
+    //    return function () {
+    //        const user = generator.newUser();
+    //        delete user.username;
+    //        return models.user.createUser(user)
+    //            .then(({ id }) => {
+    //                hxUser.push(user, { id });
+    //            });
+    //    };
+    //};
 
-    [
-        [null, 'null'],
-        [undefined, 'undefined'],
-        ['--', 'no'],
-        ['', 'empty']
-    ].forEach(([value, msg]) => {
-        it(`error: create user with ${msg} username`, invalidUsernameErrorFn(value));
-    });
+    //const authenticateOppositeCaseUserFn = function (index) {
+    //    return function () {
+    //        const client = hxUser.client(index);
+    //        const username = testJsutil.oppositeCase(client.username || client.email);
+    //        return models.user.authenticateUser(username, client.password);
+    //    };
+    //};
+
+    //_.range(userCount, userCount+2).forEach(index => {
+    //    it(`create user ${index} with no username`, createUsernamelessUserFn());
+    //    it(`get user ${index}`, getUserFn(index));
+    //    it(`authenticate user ${index} opposite case`, authenticateOppositeCaseUserFn(index));
+    //});
 
     const invalidPasswordErrorFn = function (value) {
         return function () {

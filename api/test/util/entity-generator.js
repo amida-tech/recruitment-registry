@@ -315,7 +315,7 @@ class Generator {
         const userIndex = ++this.userIndex;
         let username = 'uSeRnAmE';
         let email = 'eMaIl';
-        if (userIndex % 2 === 0) {
+        if ((userIndex + 1) % 2 === 0) {
             username = testJsutil.oppositeCase(username);
             email = testJsutil.oppositeCase(email);
         }
@@ -324,6 +324,9 @@ class Generator {
             password: `password_${userIndex}`,
             email: `${email}_${userIndex}@example.com`
         };
+        if ((userIndex + 1) % 3 === 0) {
+            delete user.username;
+        }
         if (override) {
             user = _.assign(user, override);
         }

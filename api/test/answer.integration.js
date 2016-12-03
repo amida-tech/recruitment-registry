@@ -33,8 +33,7 @@ describe('answer integration', function () {
     it('login as super', shared.loginFn(store, config.superUser));
 
     for (let i = 0; i < 4; ++i) {
-        const user = generator.newUser();
-        it(`create user ${i}`, shared.createUserFn(store, hxUser, user));
+        it(`create user ${i}`, shared.createUserFn(store, hxUser));
     }
 
     for (let i = 0; i < 20; ++i) {

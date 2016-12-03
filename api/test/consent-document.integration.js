@@ -45,8 +45,7 @@ describe('consent document integration', function () {
     }
 
     for (let i = 0; i < userCount; ++i) {
-        const user = generator.newUser();
-        it(`create user ${i}`, shared.createUserFn(store, history.hxUser, user));
+        it(`create user ${i}`, shared.createUserFn(store, history.hxUser));
     }
 
     it('logout as super', shared.logoutFn(store));
