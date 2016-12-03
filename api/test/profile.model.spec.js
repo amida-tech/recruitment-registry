@@ -70,10 +70,6 @@ describe('profile unit', function () {
 
     it('get/verify profile survey', shared.verifyProfileSurveyFn(hxSurvey, 0));
 
-    it('check soft sync does not reset registry', function () {
-        return models.sequelize.sync({ force: false });
-    });
-
     it('get/verify profile survey', shared.verifyProfileSurveyFn(hxSurvey, 0));
 
     for (let i = 0; i < 2; ++i) {

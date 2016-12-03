@@ -151,6 +151,9 @@ const comparator = {
         const expected = _.cloneDeep(client);
         expected.id = server.id;
         delete expected.password;
+        if (server.role === null) {
+            expected.role = null;
+        }
         expect(server).to.deep.equal(expected);
     }
 };

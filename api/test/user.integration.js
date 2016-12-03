@@ -21,10 +21,6 @@ describe('user integration', function () {
 
     before(shared.setUpFn(store));
 
-    it('invalid path', function (done) {
-        store.get('/xxxxxxx', false, 404).end(done);
-    });
-
     it('error: get user without previous authentication', function (done) {
         store.get('/users/me', true, 401).end(done);
     });
