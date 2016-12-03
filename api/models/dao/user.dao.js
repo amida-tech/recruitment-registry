@@ -31,6 +31,7 @@ module.exports = class UserDAO {
                 exclude: [
                     'createdAt',
                     'updatedAt',
+                    'deletedAt',
                     'password',
                     'resetPasswordToken',
                     'resetPasswordExpires'

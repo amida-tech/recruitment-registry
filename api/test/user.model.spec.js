@@ -14,6 +14,7 @@ const config = require('../config');
 const models = require('../models');
 const Generator = require('./util/entity-generator');
 const comparator = require('./util/client-server-comparator');
+const testJsutil = require('./util/test-jsutil');
 
 const expect = chai.expect;
 const generator = new Generator();
@@ -83,6 +84,7 @@ describe('user unit', function () {
                 });
         };
     };
+
     _.range(userCount).forEach(index => {
         it(`create user ${index}`, createUserFn());
         it(`get user ${index}`, getUserFn(index));
@@ -106,9 +108,21 @@ describe('user unit', function () {
     const uniqUsernameErrorFn = function (index) {
         return function () {
             const user = generator.newUser();
-            user.username = hxUser.client(index).username;
+            const username = hxUser.client(index).username;
+            user.username = username;
             return models.user.createUser(user)
-                .then(shared.throwingHandler, shared.expectedSeqErrorHandler('uniqueUsername'));
+                .then(shared.throwingHandler, shared.expectedSeqErrorHandler('SequelizeUniqueConstraintError', { username }, 'uniqueUsername'));
+        };
+    };
+
+    const uniqUsernameEmailErrorFn = function (index) {
+        return function () {
+            const user = generator.newUser();
+            const username = hxUser.client(index).username;
+            user.username = username;
+            user.email = hxUser.client(index).email;
+            return models.user.createUser(user)
+                .then(shared.throwingHandler, shared.expectedSeqErrorHandler('SequelizeUniqueConstraintError', { username }, 'uniqueUsername'));
         };
     };
 
@@ -116,14 +130,27 @@ describe('user unit', function () {
         return function () {
             const user = generator.newUser();
             user.email = hxUser.client(index).email;
+            const fields = { 'lower(email)': user.email.toLowerCase() };
             return models.user.createUser(user)
-                .then(shared.throwingHandler, shared.expectedSeqErrorHandler('uniqueEmail'));
+                .then(shared.throwingHandler, shared.expectedSeqErrorHandler('SequelizeUniqueConstraintError', fields));
+        };
+    };
+
+    const uniqOppCaseEmailErrorFn = function (index) {
+        return function () {
+            const user = generator.newUser();
+            user.email = testJsutil.oppositeCase(hxUser.client(index).email);
+            const fields = { 'lower(email)': user.email.toLowerCase() };
+            return models.user.createUser(user)
+                .then(shared.throwingHandler, shared.expectedSeqErrorHandler('SequelizeUniqueConstraintError', fields));
         };
     };
 
     _.range(userCount).forEach(index => {
         it(`error: create user with username of user ${index}`, uniqUsernameErrorFn(index));
         it(`error: create user with email of user ${index}`, uniqEmailErrorFn(index));
+        it(`error: create user with opposite case email of user ${index}`, uniqOppCaseEmailErrorFn(index));
+        it(`error: create user with username and email of user ${index}`, uniqUsernameEmailErrorFn(index));
     });
 
     const invalidUsernameErrorFn = function (value) {
@@ -234,21 +261,6 @@ describe('user unit', function () {
         ['notemail', 'invalid (no @)']
     ].forEach(([value, msg]) => {
         it(`error: update user with ${msg} email`, invalidEmailUpdateErrorFn(value));
-    });
-
-    it('lowercase emails with capital letters', function () {
-        const inputUser = generator.newUser({
-            email: 'CamelCase@EXAMPLE.COM'
-        });
-        return models.user.createUser(inputUser)
-            .then(user => {
-                expect(user.email).to.equal(inputUser.email.toLowerCase());
-                return user;
-            })
-            .then(user => models.user.getUser(user.id))
-            .then(user => {
-                expect(user.email).to.equal(inputUser.email.toLowerCase());
-            });
     });
 
     const oldPasswords = new Array(userCount);

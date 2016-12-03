@@ -31,14 +31,8 @@ module.exports = function (sequelize, DataTypes) {
         },
         email: {
             type: DataTypes.TEXT,
-            unique: {
-                msg: RRError.message('uniqueEmail')
-            },
             validate: {
                 isEmail: true
-            },
-            set(val) {
-                this.setDataValue('email', val && val.toLowerCase());
             },
             allowNull: false
         },
@@ -69,10 +63,20 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.DATE,
             field: 'updated_at',
         },
+        deletedAt: {
+            type: DataTypes.DATE,
+            field: 'deleted_at',
+        }
     }, {
         freezeTableName: true,
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
+        deletedAt: 'deletedAt',
+        paranoid: true,
+        indexes: [{
+            unique: true,
+            fields: [sequelize.fn('lower', sequelize.col('email'))]
+        }],
         hooks: {
             afterSync(options) {
                 if (options.force) {

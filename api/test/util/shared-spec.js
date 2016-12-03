@@ -213,9 +213,13 @@ class SharedSpec {
         };
     }
 
-    expectedSeqErrorHandler(code) {
+    expectedSeqErrorHandler(name, fields, code) {
         return function (err) {
-            expect(err.message).to.equal(RRError.message(code));
+            expect(err.name).to.equal(name);
+            expect(err.fields).to.deep.equal(fields);
+            if (code) {
+                expect(err.message).to.equal(RRError.message(code));
+            }
             return err;
         };
     }
