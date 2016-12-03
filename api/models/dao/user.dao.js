@@ -21,6 +21,9 @@ module.exports = class UserDAO {
 
     createUser(user, transaction) {
         const options = transaction ? { transaction } : {};
+        if (user.username === user.email) {
+            return RRError.reject('userIdenticalUsernameEmail');
+        }
         return User.create(user, options);
     }
 

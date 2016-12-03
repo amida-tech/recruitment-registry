@@ -105,6 +105,13 @@ describe('user unit', function () {
             });
     });
 
+    it('error: identical specified username and email', function () {
+        const user = generator.newUser();
+        user.username = user.email;
+        return models.user.createUser(user)
+            .then(shared.throwingHandler, shared.expectedErrorHandler('userIdenticalUsernameEmail'));
+    });
+
     const uniqUsernameErrorFn = function (index) {
         return function () {
             const user = generator.newUser();

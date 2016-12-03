@@ -142,3 +142,7 @@ errors.uniqueUsername = {
 errors.uniqueEmail = {
     msg: 'The specified email address is already in use.'
 };
+
+errors.userIdenticalUsernameEmail = {
+    msg: 'Username and email cannot be specified and identical.  Do not specify username to use email as username.'
+};
