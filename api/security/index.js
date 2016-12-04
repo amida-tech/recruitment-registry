@@ -40,12 +40,9 @@ const jwtAuth = function (req, header, verifyUserFn, callback) {
                 if (err) {
                     return callback(invalidAuth);
                 }
-                models.user.getUser(payload.id)
+                models.user.getUserForAuth(payload)
                     .then(user => {
                         if (user) {
-                            if (user.username !== payload.username) {
-                                return callback(invalidUser);
-                            }
                             let err = verifyUserFn(user);
                             req.user = user;
                             return callback(err);

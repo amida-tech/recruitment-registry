@@ -9,9 +9,9 @@ const proxy = (token, callback) => {
     jwt.verify(token, config.jwt.secret, {}, callback);
 };
 
-exports.createJWT = function ({ id, username, role }) {
+exports.createJWT = function ({ id, originalUsername }) {
     const secret = config.jwt.secret;
-    return jwt.sign({ id, username, role }, secret, { expiresIn: '30d' });
+    return jwt.sign({ id, username: originalUsername }, secret, { expiresIn: '30d' });
 };
 
 exports.verifyJWT = SPromise.promisify(proxy, { context: jwt });

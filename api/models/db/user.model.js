@@ -47,6 +47,11 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.ENUM('admin', 'participant', 'clinician'),
             allowNull: false
         },
+        originalUsername: {
+            type: DataTypes.TEXT,
+            field: 'original_username',
+            allowNull: true
+        },
         resetPasswordToken: {
             unique: true,
             type: DataTypes.STRING,

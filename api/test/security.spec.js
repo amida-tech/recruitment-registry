@@ -57,22 +57,34 @@ describe('security unit', function () {
         return models.user.createUser(admin)
             .then(user => {
                 admin.id = user.id;
-                adminJWT = tokener.createJWT(admin);
+                adminJWT = tokener.createJWT({
+                    id: admin.id,
+                    originalUsername: admin.username
+                });
             })
             .then(() => models.user.createUser(participant))
             .then(user => {
                 participant.id = user.id;
-                participantJWT = tokener.createJWT(participant);
+                participantJWT = tokener.createJWT({
+                    id: participant.id,
+                    originalUsername: participant.username
+                });
             })
             .then(() => models.user.createUser(other))
             .then(user => {
                 other.id = user.id;
-                otherJWT = tokener.createJWT(other);
+                otherJWT = tokener.createJWT({
+                    id: other.id,
+                    originalUsername: other.username
+                });
             })
             .then(() => models.user.createUser(deleted))
             .then(user => {
                 deleted.id = user.id;
-                deletedJWT = tokener.createJWT(deleted);
+                deletedJWT = tokener.createJWT({
+                    id: deleted.id,
+                    originalUsername: deleted.username
+                });
                 return user.id;
             })
             .then(id => models.user.deleteUser(id));

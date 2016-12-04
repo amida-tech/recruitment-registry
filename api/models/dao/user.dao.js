@@ -26,6 +26,7 @@ module.exports = class UserDAO {
                 user.username = email.toLowerCase();
             }
         }
+        user.originalUsername = user.username;
         if (!user.role) {
             user.role = 'participant';
         }
@@ -35,6 +36,14 @@ module.exports = class UserDAO {
     getUser(id) {
         return User.findById(id, {
             raw: true,
+            attributes: ['id', 'username', 'email', 'role']
+        });
+    }
+
+    getUserForAuth({ id, username }) {
+        return User.findOne({
+            raw: true,
+            where: { id, originalUsername: username },
             attributes: ['id', 'username', 'email', 'role']
         });
     }
