@@ -28,13 +28,13 @@ class SharedSpec {
         };
     }
 
-    createUser(hxUser) {
+    createUserFn(hxUser) {
         const generator = this.generator;
         return function () {
-            const clientUser = generator.newUser();
-            return models.user.createUser(clientUser)
-                .then(function (user) {
-                    hxUser.push(clientUser, user);
+            const user = generator.newUser();
+            return models.user.createUser(user)
+                .then(({ id }) => {
+                    hxUser.push(user, { id });
                 });
         };
     }

@@ -378,7 +378,7 @@ describe('survey unit', function () {
     });
 
     for (let i = 0; i < userCount; ++i) {
-        it(`create user ${i}`, shared.createUser(hxUser));
+        it(`create user ${i}`, shared.createUserFn(hxUser));
     }
 
     const auxAnswerVerifySurvey = function (survey, input) {

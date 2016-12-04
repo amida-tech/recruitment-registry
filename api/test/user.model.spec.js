@@ -45,8 +45,6 @@ describe('user unit', function () {
                     const client = hxUser.client(index);
                     comparator.user(client, user);
                     hxUser.updateServer(index, user);
-                    client.username = client.username || client.email.toLowerCase();
-                    client.role = client.role || 'participant';
                 });
         };
     };
@@ -62,47 +60,8 @@ describe('user unit', function () {
     const authenticateUserFn = function (index) {
         return function () {
             const client = hxUser.client(index);
-            return models.user.authenticateUser(client.username, client.password);
-        };
-    };
-
-    const authenticateUserErrorFn = function (index) {
-        return function () {
-            const client = hxUser.client(index);
-            return models.user.authenticateUser(client.username, client.password + 'a')
-                .then(shared.throwingHandler, shared.expectedErrorHandler('authenticationError'));
-        };
-    };
-
-    const authenticateOppositeCaseUserFn = function (index) {
-        return function () {
-            const client = hxUser.client(index);
-            if (client.username === client.email.toLowerCase()) {
-                const username = testJsutil.oppositeCase(client.username || client.email);
-                return models.user.authenticateUser(username, client.password);
-            }
-        };
-    };
-
-    const authenticateOppositeCaseUserErrorFn = function (index) {
-        return function () {
-            const client = hxUser.client(index);
-            if (client.username !== client.email.toLowerCase()) {
-                const username = testJsutil.oppositeCase(client.username || client.email);
-                return models.user.authenticateUser(username, client.password)
-                    .then(shared.throwingHandler, shared.expectedErrorHandler('authenticationError'));
-            }
-        };
-    };
-
-    const updateUserPasswordFn = function (index) {
-        return function () {
-            const password = generator.newUser().password;
-            const id = hxUser.id(index);
-            return models.user.updateUser(id, { password })
-                .then(() => {
-                    hxUser.client(index).password = password;
-                });
+            const username = client.username || client.email;
+            return models.user.authenticateUser(username, client.password);
         };
     };
 
@@ -114,12 +73,11 @@ describe('user unit', function () {
                 .then(() => {
                     const client = hxUser.client(index);
                     const server = hxUser.server(index);
-                    if (client.username === client.email.toLowerCase()) {
-                        client.username = email.toLowerCase();
+                    if (!client.username) {
                         server.username = email.toLowerCase();
                     }
-                    client.email = email;
                     server.email = email;
+                    client.email = email;
                     client.password = password;
                 });
         };
@@ -128,18 +86,11 @@ describe('user unit', function () {
     _.range(userCount).forEach(index => {
         it(`create user ${index}`, createUserFn());
         it(`get user ${index}`, getUserFn(index));
-        it(`authenticate user ${index}`, authenticateUserFn(index));
-        it(`error: authenticate user ${index} with wrong password`, authenticateUserErrorFn(index));
-        it(`authenticate user ${index} with wrong password`, authenticateUserErrorFn(index));
-        it(`update password for user ${index}`, updateUserPasswordFn(index));
-        it(`error: authenticate opposite case username user ${index}`, authenticateOppositeCaseUserErrorFn(index));
-        it(`authenticate opposite case username (when email) user ${index}`, authenticateOppositeCaseUserFn(index));
     });
 
     _.range(userCount).forEach(index => {
         it(`update user ${index}`, updateUserFn(index));
         it(`verify user ${index}`, verifyUserFn(index));
-        it(`authenticate user ${index}`, authenticateUserFn(index));
     });
 
     it('error: identical specified username and email', function () {
@@ -152,8 +103,11 @@ describe('user unit', function () {
     const updateUsernameWhenEmailFn = function (index) {
         return function () {
             const client = hxUser.client(index);
-            if (client.username === client.email.toLowerCase()) {
+            if (!client.username) {
                 let { username, email, password } = generator.newUser();
+                if (!username) {
+                    username = email.split('@')[0];
+                }
                 const id = hxUser.id(index);
                 return models.user.updateUser(id, { username, email, password })
                     .then(shared.throwingHandler, shared.expectedErrorHandler('userNoUsernameChange'));
@@ -167,8 +121,9 @@ describe('user unit', function () {
 
     const uniqUsernameErrorFn = function (index) {
         return function () {
+            const client = hxUser.client(index);
             const user = generator.newUser();
-            const username = hxUser.client(index).username;
+            const username = client.username || client.email.toLowerCase();
             user.username = username;
             return models.user.createUser(user)
                 .then(shared.throwingHandler, shared.expectedSeqErrorHandler('SequelizeUniqueConstraintError', { username }, 'uniqueUsername'));
@@ -177,20 +132,24 @@ describe('user unit', function () {
 
     const uniqUsernameEmailErrorFn = function (index) {
         return function () {
-            const user = generator.newUser();
-            const username = hxUser.client(index).username;
-            user.username = username;
-            user.email = hxUser.client(index).email;
-            return models.user.createUser(user)
+            const client = hxUser.client(index);
+            const username = client.username || client.email.toLowerCase();
+            return models.user.createUser(client)
                 .then(shared.throwingHandler, shared.expectedSeqErrorHandler('SequelizeUniqueConstraintError', { username }, 'uniqueUsername'));
         };
     };
 
     const uniqEmailErrorFn = function (index) {
         return function () {
+            const client = hxUser.client(index);
             const user = generator.newUser();
-            user.email = hxUser.client(index).email;
-            const fields = { 'lower(email)': user.email.toLowerCase() };
+            user.email = client.email;
+            let fields;
+            if (client.username) {
+                fields = { 'lower(email)': user.email.toLowerCase() };
+            } else {
+                fields = { username: user.email.toLowerCase() };
+            }
             return models.user.createUser(user)
                 .then(shared.throwingHandler, shared.expectedSeqErrorHandler('SequelizeUniqueConstraintError', fields));
         };
@@ -201,12 +160,7 @@ describe('user unit', function () {
             const client = hxUser.client(index);
             const user = generator.newUser();
             user.email = testJsutil.oppositeCase(client.email);
-            let fields;
-            if (client.username === client.email.toLowerCase()) {
-                fields = { username: user.email.toLowerCase() };
-            } else {
-                fields = { 'lower(email)': user.email.toLowerCase() };
-            }
+            const fields = { 'lower(email)': user.email.toLowerCase() };
             return models.user.createUser(user)
                 .then(shared.throwingHandler, shared.expectedSeqErrorHandler('SequelizeUniqueConstraintError', fields));
         };
@@ -327,7 +281,8 @@ describe('user unit', function () {
     const authenticateUserOldPWFn = function (index) {
         return function () {
             const client = hxUser.client(index);
-            return models.user.authenticateUser(client.username, oldPasswords[index])
+            const username = client.username || client.email;
+            return models.user.authenticateUser(username, oldPasswords[index])
                 .then(shared.throwingHandler, shared.expectedErrorHandler('authenticationError'));
         };
     };
