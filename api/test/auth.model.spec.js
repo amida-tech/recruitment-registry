@@ -36,7 +36,7 @@ describe('auth unit', function () {
         return function () {
             const client = hxUser.client(index);
             const username = client.username || client.email;
-            return models.user.authenticateUser(username, client.password);
+            return models.auth.authenticateUser(username, client.password);
         };
     };
 
@@ -44,7 +44,7 @@ describe('auth unit', function () {
         return function () {
             const client = hxUser.client(index);
             const username = client.username || client.email;
-            return models.user.authenticateUser(username, client.password + 'a')
+            return models.auth.authenticateUser(username, client.password + 'a')
                 .then(shared.throwingHandler, shared.expectedErrorHandler('authenticationError'));
         };
     };
@@ -54,7 +54,7 @@ describe('auth unit', function () {
             const client = hxUser.client(index);
             if (!client.username) {
                 const username = testJsutil.oppositeCase(client.email);
-                return models.user.authenticateUser(username, client.password);
+                return models.auth.authenticateUser(username, client.password);
             }
         };
     };
@@ -64,7 +64,7 @@ describe('auth unit', function () {
             const client = hxUser.client(index);
             if (client.username) {
                 const username = testJsutil.oppositeCase(client.username);
-                return models.user.authenticateUser(username, client.password)
+                return models.auth.authenticateUser(username, client.password)
                     .then(shared.throwingHandler, shared.expectedErrorHandler('authenticationError'));
             }
         };

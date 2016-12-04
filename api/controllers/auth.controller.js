@@ -8,7 +8,7 @@ const tokener = require('../lib/tokener');
 const jsutil = require('../lib/jsutil');
 
 const basicStrategy = function (username, password, done) {
-    models.user.authenticateUser(username, password)
+    models.auth.authenticateUser(username, password)
         .then(user => done(null, user))
         .catch(err => done(err));
 };

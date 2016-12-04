@@ -61,7 +61,7 @@ describe('user unit', function () {
         return function () {
             const client = hxUser.client(index);
             const username = client.username || client.email;
-            return models.user.authenticateUser(username, client.password);
+            return models.auth.authenticateUser(username, client.password);
         };
     };
 
@@ -282,7 +282,7 @@ describe('user unit', function () {
         return function () {
             const client = hxUser.client(index);
             const username = client.username || client.email;
-            return models.user.authenticateUser(username, oldPasswords[index])
+            return models.auth.authenticateUser(username, oldPasswords[index])
                 .then(shared.throwingHandler, shared.expectedErrorHandler('authenticationError'));
         };
     };

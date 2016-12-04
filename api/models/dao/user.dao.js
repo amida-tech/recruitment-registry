@@ -40,14 +40,6 @@ module.exports = class UserDAO {
         });
     }
 
-    getUserForAuth({ id, username }) {
-        return User.findOne({
-            raw: true,
-            where: { id, originalUsername: username },
-            attributes: ['id', 'username', 'email', 'role']
-        });
-    }
-
     deleteUser(id) {
         return User.destroy({ where: { id } });
     }
@@ -65,31 +57,6 @@ module.exports = class UserDAO {
                     }
                 }
                 return user.update(fields);
-            });
-    }
-
-    authenticateUser(username, password) {
-        return User.findOne({
-                where: {
-                    $or: [
-                        { username },
-                        {
-                            $and: [{
-                                username: sequelize.fn('lower', sequelize.col('email'))
-                            }, {
-                                username: sequelize.fn('lower', username)
-                            }]
-                        }
-                    ]
-                }
-            })
-            .then(user => {
-                if (user) {
-                    return user.authenticate(password)
-                        .then(() => user);
-                } else {
-                    return RRError.reject('authenticationError');
-                }
             });
     }
 

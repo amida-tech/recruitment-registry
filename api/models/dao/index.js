@@ -1,6 +1,7 @@
 'use strict';
 
 const UserDAO = require('./user.dao');
+const AuthDAO = require('./auth.dao');
 const QuestionChoiceDAO = require('./question-choice.dao');
 const QuestionActionDAO = require('./question-action.dao');
 const QuestionDAO = require('./question.dao');
@@ -25,6 +26,7 @@ const consentDocument = new ConsentDocumentDAO({ consentType });
 const consentSignature = new ConsentSignatureDAO();
 const userConsentDocument = new UserConsentDocumentDAO({ consentDocument });
 const user = new UserDAO({ consentDocument });
+const auth = new AuthDAO();
 const surveyConsent = new SurveyConsentDAO({ consentType });
 const surveyConsentDocument = new SurveyConsentDocumentDAO({ surveyConsent, userConsentDocument });
 const section = new SectionDAO();
@@ -42,6 +44,7 @@ const smtp = new SmtpDAO();
 
 module.exports = {
     user,
+    auth,
     section,
     questionChoice,
     questionAction,
