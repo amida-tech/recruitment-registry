@@ -142,7 +142,6 @@ describe('user unit', function () {
         it(`authenticate user ${index}`, authenticateUserFn(index));
     });
 
-
     it('error: identical specified username and email', function () {
         const user = generator.newUser();
         user.username = user.email;
@@ -151,12 +150,12 @@ describe('user unit', function () {
     });
 
     const updateUsernameWhenEmailFn = function (index) {
-        return function() {
+        return function () {
             const client = hxUser.client(index);
             if (client.username === client.email.toLowerCase()) {
                 let { username, email, password } = generator.newUser();
                 const id = hxUser.id(index);
-                return models.user.updateUser(id, {username, email, password})
+                return models.user.updateUser(id, { username, email, password })
                     .then(shared.throwingHandler, shared.expectedErrorHandler('userNoUsernameChange'));
             }
         };
@@ -204,7 +203,7 @@ describe('user unit', function () {
             user.email = testJsutil.oppositeCase(client.email);
             let fields;
             if (client.username === client.email.toLowerCase()) {
-                fields = { username: user.email.toLowerCase()};
+                fields = { username: user.email.toLowerCase() };
             } else {
                 fields = { 'lower(email)': user.email.toLowerCase() };
             }

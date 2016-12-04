@@ -58,7 +58,7 @@ describe('profile unit', function () {
         };
     };
 
-    it('register user 0 with profile survey', createProfileFn());
+    it('register user 0', createProfileFn());
 
     it('verify user 0 profile', verifyProfileFn(0));
 
@@ -162,9 +162,9 @@ describe('profile unit', function () {
 
     it('verify user 1 profile', verifyProfileWithSurveyFn(0, 1));
 
-    it('verify document 1 is not signed by user 0', verifySignedDocumentFn(1, false));
+    it('verify document 1 is not signed by user 1', verifySignedDocumentFn(1, false));
 
-    it('verify document 1 is not signed by user 0 (type name)', verifySignedDocumentByTypeNameFn(1, false));
+    it('verify document 1 is not signed by user 1 (type name)', verifySignedDocumentByTypeNameFn(1, false));
 
     it('update user 1 profile', updateProfileWithSurveyFn(0, 1));
 
