@@ -199,31 +199,6 @@ describe('user unit', function () {
         it(`error: create user with username and email of user ${index}`, uniqUsernameEmailErrorFn(index));
     });
 
-    //const createUsernamelessUserFn = function () {
-    //    return function () {
-    //        const user = generator.newUser();
-    //        delete user.username;
-    //        return models.user.createUser(user)
-    //            .then(({ id }) => {
-    //                hxUser.push(user, { id });
-    //            });
-    //    };
-    //};
-
-    //const authenticateOppositeCaseUserFn = function (index) {
-    //    return function () {
-    //        const client = hxUser.client(index);
-    //        const username = testJsutil.oppositeCase(client.username || client.email);
-    //        return models.user.authenticateUser(username, client.password);
-    //    };
-    //};
-
-    //_.range(userCount, userCount+2).forEach(index => {
-    //    it(`create user ${index} with no username`, createUsernamelessUserFn());
-    //    it(`get user ${index}`, getUserFn(index));
-    //    it(`authenticate user ${index} opposite case`, authenticateOppositeCaseUserFn(index));
-    //});
-
     const invalidPasswordErrorFn = function (value) {
         return function () {
             const user = generator.newUser();
@@ -317,7 +292,11 @@ describe('user unit', function () {
         return function () {
             const client = hxUser.client(index);
             oldPasswords[index] = client.password;
-            return models.user.resetPasswordToken(client.email)
+            let email = client.email;
+            if ((index + 1) % 2 === 0) {
+                email = testJsutil.oppositeCase(email);
+            }
+            return models.user.resetPasswordToken(email)
                 .then(token => {
                     expect(!!token).to.equal(true);
                     tokens[index] = token;

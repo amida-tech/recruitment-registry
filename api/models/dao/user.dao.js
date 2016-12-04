@@ -97,7 +97,8 @@ module.exports = class UserDAO {
     }
 
     resetPasswordToken(email) {
-        return User.find({ where: { email } })
+        const where = sequelize.where(sequelize.fn('lower', sequelize.col('email')), sequelize.fn('lower', email));
+        return User.find({ where })
             .then((user) => {
                 if (!user) {
                     return RRError.reject('invalidEmail');
