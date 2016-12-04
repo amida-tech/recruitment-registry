@@ -48,9 +48,7 @@ module.exports = function (sequelize, DataTypes) {
             allowNull: false
         },
         resetPasswordToken: {
-            unique: {
-                msg: 'Internal error generating unique token.'
-            },
+            unique: true,
             type: DataTypes.STRING,
             field: 'reset_password_token'
         },
@@ -119,21 +117,23 @@ module.exports = function (sequelize, DataTypes) {
                         const token = buf.toString('hex');
                         return token;
                     })
-                    .then((token) => {
-                        return randomBytes(config.crypt.resetPasswordLength).then(passwordBuf => {
-                            return {
-                                token,
-                                password: passwordBuf.toString('hex')
-                            };
-                        });
+                    .then(token => {
+                        return randomBytes(config.crypt.resetPasswordLength)
+                            .then(passwordBuf => {
+                                return {
+                                    token,
+                                    password: passwordBuf.toString('hex')
+                                };
+                            });
                     })
-                    .then((result) => {
+                    .then(result => {
                         this.resetPasswordToken = result.token;
                         this.password = result.password;
                         this.resetPasswordExpires = config.expiresForDB();
-                        return this.save().then(() => {
-                            return result.token;
-                        });
+                        return this.save()
+                            .then(() => {
+                                return result.token;
+                            });
                     });
             }
         }

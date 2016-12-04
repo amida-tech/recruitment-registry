@@ -146,3 +146,7 @@ errors.uniqueEmail = {
 errors.userIdenticalUsernameEmail = {
     msg: 'Username and email cannot be specified and identical.  Do not specify username to use email as username.'
 };
+
+errors.userNoUsernameChange = {
+    msg: 'Username cannot be changed directly when email is being used as the username.'
+};

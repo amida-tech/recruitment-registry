@@ -112,9 +112,15 @@ describe('user unit', function () {
             const id = hxUser.id(index);
             return models.user.updateUser(id, { email, password })
                 .then(() => {
-                    hxUser.client(index).email = email;
-                    hxUser.client(index).password = password;
-                    hxUser.server(index).email = email;
+                    const client = hxUser.client(index);
+                    const server = hxUser.server(index);
+                    if (client.username === client.email.toLowerCase()) {
+                        client.username = email.toLowerCase();
+                        server.username = email.toLowerCase();
+                    }
+                    client.email = email;
+                    server.email = email;
+                    client.password = password;
                 });
         };
     };
@@ -136,19 +142,28 @@ describe('user unit', function () {
         it(`authenticate user ${index}`, authenticateUserFn(index));
     });
 
-    it('error: update username', function () {
-        const id = hxUser.id(0);
-        return models.user.updateUser(id, { username: 'rejectusername' })
-            .then(shared.throwingHandler, err => {
-                expect(err.message).to.equal('Field username cannot be updated.');
-            });
-    });
 
     it('error: identical specified username and email', function () {
         const user = generator.newUser();
         user.username = user.email;
         return models.user.createUser(user)
             .then(shared.throwingHandler, shared.expectedErrorHandler('userIdenticalUsernameEmail'));
+    });
+
+    const updateUsernameWhenEmailFn = function (index) {
+        return function() {
+            const client = hxUser.client(index);
+            if (client.username === client.email.toLowerCase()) {
+                let { username, email, password } = generator.newUser();
+                const id = hxUser.id(index);
+                return models.user.updateUser(id, {username, email, password})
+                    .then(shared.throwingHandler, shared.expectedErrorHandler('userNoUsernameChange'));
+            }
+        };
+    };
+
+    _.range(userCount).forEach(index => {
+        it(`error: update user ${index} error when email as username`, updateUsernameWhenEmailFn(index));
     });
 
     const uniqUsernameErrorFn = function (index) {
@@ -184,9 +199,15 @@ describe('user unit', function () {
 
     const uniqOppCaseEmailErrorFn = function (index) {
         return function () {
+            const client = hxUser.client(index);
             const user = generator.newUser();
-            user.email = testJsutil.oppositeCase(hxUser.client(index).email);
-            const fields = { 'lower(email)': user.email.toLowerCase() };
+            user.email = testJsutil.oppositeCase(client.email);
+            let fields;
+            if (client.username === client.email.toLowerCase()) {
+                fields = { username: user.email.toLowerCase()};
+            } else {
+                fields = { 'lower(email)': user.email.toLowerCase() };
+            }
             return models.user.createUser(user)
                 .then(shared.throwingHandler, shared.expectedSeqErrorHandler('SequelizeUniqueConstraintError', fields));
         };

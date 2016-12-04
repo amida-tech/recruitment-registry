@@ -1,18 +1,13 @@
 'use strict';
 
-const util = require('util');
 const moment = require('moment');
+const _ = require('lodash');
 
 const db = require('../db');
 const RRError = require('../../lib/rr-error');
 
 const sequelize = db.sequelize;
 const User = db.User;
-
-const clientUpdatableFields = ['email', 'password'].reduce((r, p) => {
-    r[p] = true;
-    return r;
-}, {});
 
 module.exports = class UserDAO {
     constructor(dependencies) {
@@ -40,16 +35,7 @@ module.exports = class UserDAO {
     getUser(id) {
         return User.findById(id, {
             raw: true,
-            attributes: {
-                exclude: [
-                    'createdAt',
-                    'updatedAt',
-                    'deletedAt',
-                    'password',
-                    'resetPasswordToken',
-                    'resetPasswordExpires'
-                ]
-            }
+            attributes: ['id', 'username', 'email', 'role']
         });
     }
 
@@ -57,17 +43,19 @@ module.exports = class UserDAO {
         return User.destroy({ where: { id } });
     }
 
-    updateUser(id, values, options) {
-        options = options || {};
-        return User.findById(id, options)
+    updateUser(id, fields) {
+        return User.findById(id)
             .then(user => {
-                Object.keys(values).forEach(key => {
-                    if (!clientUpdatableFields[key]) {
-                        const msg = util.format('Field %s cannot be updated.', key);
-                        throw new sequelize.ValidationError(msg);
+                fields = _.pick(fields, ['username', 'email', 'password']);
+                if (user.username === user.email.toLowerCase()) {
+                    if (fields.hasOwnProperty('username')) {
+                        return RRError.reject('userNoUsernameChange');
                     }
-                });
-                return user.update(values, options);
+                    if (fields.hasOwnProperty('email')) {
+                        fields.username = fields.email.toLowerCase();
+                    }
+                }
+                return user.update(fields);
             });
     }
 
