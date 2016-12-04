@@ -52,9 +52,11 @@ module.exports = function (sequelize, DataTypes) {
                 msg: 'Internal error generating unique token.'
             },
             type: DataTypes.STRING,
+            field: 'reset_password_token'
         },
         resetPasswordExpires: {
             type: DataTypes.DATE,
+            field: 'reset_password_expires'
         },
         createdAt: {
             type: DataTypes.DATE,
@@ -75,6 +77,7 @@ module.exports = function (sequelize, DataTypes) {
         deletedAt: 'deletedAt',
         paranoid: true,
         indexes: [{
+            name: 'registry_user_lower_email_key',
             unique: true,
             fields: [sequelize.fn('lower', sequelize.col('email'))]
         }],
