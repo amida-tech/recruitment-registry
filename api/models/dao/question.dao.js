@@ -8,6 +8,7 @@ const RRError = require('../../lib/rr-error');
 const SPromise = require('../../lib/promise');
 const Translatable = require('./translatable');
 const exportCSVConverter = require('../../export/csv-converter.js');
+const importCSVConverter = require('../../import/csv-converter.js');
 
 const sequelize = db.sequelize;
 const SurveyQuestion = db.SurveyQuestion;
@@ -26,6 +27,15 @@ module.exports = class QuestionDAO extends Translatable {
         } else {
             return SPromise.resolve({ id });
         }
+    }
+
+    createChoicesTx(questionId, choices, transaction) {
+        const pxs = choices.map(({ text, type }, line) => {
+            type = type || 'bool';
+            const choice = { questionId, text, type, line };
+            return this.questionChoice.createQuestionChoiceTx(choice, transaction);
+        });
+        return SPromise.all(pxs);
     }
 
     createQuestionTx(question, tx) {
@@ -49,16 +59,7 @@ module.exports = class QuestionDAO extends Translatable {
                     if (nOneOfChoices) {
                         choices = oneOfChoices.map(text => ({ text, type: 'bool' }));
                     }
-                    return SPromise.all(choices.map((c, index) => {
-                        const choice = {
-                            questionId: created.id,
-                            text: c.text,
-                            type: c.type || 'bool',
-                            line: index
-                        };
-                        return this.questionChoice.createQuestionChoiceTx(choice, tx)
-                            .then(() => created);
-                    })).then(() => created);
+                    return this.createChoicesTx(created.id, choices, tx).then(() => created);
                 }
                 return created;
             })
@@ -287,6 +288,8 @@ module.exports = class QuestionDAO extends Translatable {
                         }
                         if (index === 0) {
                             Object.assign(line, questionLine);
+                        } else {
+                            line.id = questionLine.id;
                         }
                         r.push(line);
                     });
@@ -296,6 +299,68 @@ module.exports = class QuestionDAO extends Translatable {
             .then(lines => {
                 const converter = new exportCSVConverter();
                 return converter.dataToCSV(lines);
+            });
+    }
+
+    import (stream) {
+        const converter = new importCSVConverter();
+        return converter.streamToRecords(stream)
+            .then(records => {
+                const numRecords = records.length;
+                if (!numRecords) {
+                    return [];
+                }
+                const map = records.reduce((r, record) => {
+                    const id = record.id;
+                    let { question } = r.get(id) || {};
+                    if (!question) {
+                        question = { text: record.text, type: record.type };
+                        if (record.instruction) {
+                            question.instruction = record.instruction;
+                        }
+                        r.set(id, { id, question });
+                    }
+                    if (record.choiceId) {
+                        if (!question.choices) {
+                            question.choices = [];
+                        }
+                        const choice = { id: record.choiceId, text: record.choiceText };
+                        if (record.choiceType) {
+                            choice.type = record.choiceType;
+                        }
+                        question.choices.push(choice);
+                    }
+                    return r;
+                }, new Map());
+                return [...map.values()];
+            })
+            .then(records => {
+                if (!records.length) {
+                    return {};
+                }
+                return sequelize.transaction(transaction => {
+                    const mapIds = {};
+                    const pxs = records.map(({ id, question }) => {
+                        const questionProper = _.omit(question, 'choices');
+                        return this.createQuestionTx(questionProper, transaction)
+                            .then((questionId) => {
+                                const choices = question.choices;
+                                if (choices) {
+                                    const inputChoices = choices.map(choice => _.omit(choice, 'id'));
+                                    return this.createChoicesTx(questionId, inputChoices, transaction)
+                                        .then(choicesIds => choicesIds.map(choicesId => choicesId.id))
+                                        .then(choicesIds => {
+                                            mapIds[id] = {
+                                                questionId,
+                                                choicesIds: _.zipObject(choices.map(choice => choice.id), choicesIds)
+                                            };
+                                        });
+                                }
+                                mapIds[id] = { questionId };
+                            });
+                    });
+                    return SPromise.all(pxs).then(() => mapIds);
+                });
             });
     }
 };
