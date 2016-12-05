@@ -42,14 +42,15 @@ exports.getQuestion = function (req, res) {
     const language = _.get(req, 'swagger.params.language.value');
     const options = language ? { language } : {};
     models.question.getQuestion(id, options)
-        .then((question) => res.status(200).json(question))
+        .then(question => res.status(200).json(question))
         .catch(shared.handleError(res));
 };
 
 exports.listQuestions = function (req, res) {
+    const scope = _.get(req, 'swagger.params.scope.value');
     const language = _.get(req, 'swagger.params.language.value');
-    const options = language ? { language } : {};
+    const options = { scope, language };
     models.question.listQuestions(options)
-        .then((questions) => res.status(200).json(questions))
+        .then(questions => res.status(200).json(questions))
         .catch(shared.handleError(res));
 };

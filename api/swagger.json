@@ -655,12 +655,19 @@
                     "admin": []
                 }],
                 "parameters": [{
-                    "name": "language",
+                    "name": "scope",
                     "in": "query",
-                    "description": "Language requested",
+                    "description": "List scope",
                     "required": false,
                     "type": "string",
-                    "minLength": 1
+                    "enum": ["complete", "summary", "export"]
+                }, {
+                    "name": "language",
+                    "in": "query",
+                    "description": "Language code",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 2
                 }],
                 "responses": {
                     "200": {

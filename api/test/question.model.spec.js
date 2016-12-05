@@ -26,7 +26,7 @@ describe('question unit', function () {
     const hxQuestion = new History();
     const hxSurvey = new History();
 
-    it('get all questions when none', function () {
+    it('list all questions when none', function () {
         return models.question.listQuestions()
             .then(questions => {
                 expect(questions).to.have.length(0);

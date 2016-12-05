@@ -217,7 +217,7 @@ module.exports = class QuestionDAO extends Translatable {
                 }
                 const map = new Map(questions.map(question => ([question.id, question])));
                 if (ids) {
-                    questions = ids.map(id => map.get(id));
+                    questions = ids.map(id => map.get(id)); // order by specified ids
                 }
                 questions.forEach(question => {
                     if (question.meta === null) {
@@ -226,41 +226,45 @@ module.exports = class QuestionDAO extends Translatable {
                 });
                 return this.updateAllTexts(questions, language)
                     .then(() => {
-                        return this.questionAction.findActionsPerQuestions(ids, language)
-                            .then(actions => {
-                                if (actions.length) {
-                                    actions.forEach(action => {
-                                        const q = map.get(action.questionId);
+                        if (scope === 'complete') {
+                            return this.questionAction.findActionsPerQuestions(ids, language)
+                                .then(actions => {
+                                    if (actions.length) {
+                                        actions.forEach(action => {
+                                            const q = map.get(action.questionId);
+                                            if (q) {
+                                                delete action.questionId;
+                                                if (q.actions) {
+                                                    q.actions.push(action);
+                                                } else {
+                                                    q.actions = [action];
+                                                }
+                                            }
+                                        });
+                                    }
+                                });
+                        }
+                    })
+                    .then(() => {
+                        if (scope !== 'summary') {
+                            return this.questionChoice.getAllQuestionChoices(ids, language)
+                                .then(choices => {
+                                    choices.forEach(choice => {
+                                        const q = map.get(choice.questionId);
                                         if (q) {
-                                            delete action.questionId;
-                                            if (q.actions) {
-                                                q.actions.push(action);
+                                            delete choice.questionId;
+                                            if (q.type === 'choice') {
+                                                delete choice.type;
+                                            }
+                                            if (q.choices) {
+                                                q.choices.push(choice);
                                             } else {
-                                                q.actions = [action];
+                                                q.choices = [choice];
                                             }
                                         }
                                     });
-                                }
-                            });
-                    })
-                    .then(() => {
-                        return this.questionChoice.getAllQuestionChoices(ids, language)
-                            .then(choices => {
-                                choices.forEach(choice => {
-                                    const q = map.get(choice.questionId);
-                                    if (q) {
-                                        delete choice.questionId;
-                                        if (q.type === 'choice') {
-                                            delete choice.type;
-                                        }
-                                        if (q.choices) {
-                                            q.choices.push(choice);
-                                        } else {
-                                            q.choices = [choice];
-                                        }
-                                    }
                                 });
-                            });
+                        }
                     })
                     .then(() => questions);
             });
