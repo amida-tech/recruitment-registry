@@ -14,6 +14,7 @@ const comparator = require('./util/client-server-comparator');
 const History = require('./util/entity-history');
 const RRError = require('../lib/rr-error');
 const translator = require('./util/translator');
+const questionCommon = require('./util/question-common');
 
 const invalidQuestionsJSON = require('./fixtures/json-schema-invalid/new-question');
 const invalidQuestionsSwagger = require('./fixtures/swagger-invalid/new-question');
@@ -169,7 +170,7 @@ describe('question integration', function () {
         return function (done) {
             store.get('/questions', true, 200, query)
                 .expect(function (res) {
-                    const fields = (scope === 'complete') ? null : ['id', 'type', 'text', 'instruction'];
+                    const fields = questionCommon.getFieldsForList(scope);
                     const expected = hxQuestion.listServers(fields);
                     expect(res.body).to.deep.equal(expected);
                 })
@@ -182,6 +183,8 @@ describe('question integration', function () {
     it('list questions (summary)', listQuestions('summary'));
 
     it('list questions (default)', listQuestions());
+
+    it('list questions (default)', listQuestions('export'));
 
     const translateQuestionFn = function (index, language) {
         return function (done) {

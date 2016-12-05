@@ -13,6 +13,7 @@ const Generator = require('./util/entity-generator');
 const comparator = require('./util/client-server-comparator');
 const History = require('./util/entity-history');
 const translator = require('./util/translator');
+const questionCommon = require('./util/question-common');
 
 const expect = chai.expect;
 const generator = new Generator();
@@ -124,7 +125,7 @@ describe('question unit', function () {
             }
             return models.question.listQuestions(options)
                 .then(questions => {
-                    const fields = (scope === 'complete') ? null : ['id', 'type', 'text', 'instruction'];
+                    const fields = questionCommon.getFieldsForList(scope);
                     const expected = hxQuestion.listServers(fields);
                     expect(questions).to.deep.equal(expected);
                 });
@@ -136,6 +137,8 @@ describe('question unit', function () {
     it('list all questions (summary)', listQuestionsFn('summary'));
 
     it('list all questions (default - summary)', listQuestionsFn());
+
+    it('list all questions (export)', listQuestionsFn('export'));
 
     it('error: get multiple with non-existent id', function () {
         return models.question.listQuestions({ ids: [1, 99999] })
@@ -219,6 +222,8 @@ describe('question unit', function () {
     it('list all questions (complete)', listQuestionsFn('complete'));
 
     it('list all questions (summary)', listQuestionsFn('summary'));
+
+    it('list all questions (export)', listQuestionsFn('export'));
 
     for (let i = 10; i < 20; ++i) {
         it(`create question ${i}`, createQuestion);
