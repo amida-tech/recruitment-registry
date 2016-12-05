@@ -164,19 +164,24 @@ describe('question integration', function () {
         it(`restore question ${i} text`, restoreUpdatedQxFn(i));
     }
 
-    const getAllAndVerify = function (done) {
-        store.get('/questions', true, 200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-                const clientQuestions = hxQuestion.listClients();
-                comparator.questions(clientQuestions, res.body)
-                    .then(done, done);
-            });
+    const listQuestions = function (scope) {
+        const query = scope ? { scope } : undefined;
+        return function (done) {
+            store.get('/questions', true, 200, query)
+                .expect(function (res) {
+                    const fields = (scope === 'complete') ? null : ['id', 'type', 'text', 'instruction'];
+                    const expected = hxQuestion.listServers(fields);
+                    expect(res.body).to.deep.equal(expected);
+                })
+                .end(done);
+        };
     };
 
-    it('get all and verify', getAllAndVerify);
+    it('list questions (complete)', listQuestions('complete'));
+
+    it('list questions (summary)', listQuestions('summary'));
+
+    it('list questions (default)', listQuestions());
 
     const translateQuestionFn = function (index, language) {
         return function (done) {
@@ -204,7 +209,7 @@ describe('question integration', function () {
 
     const listTranslatedQuestionsFn = function (language) {
         return function (done) {
-            store.get('/questions', true, 200, { language })
+            store.get('/questions', true, 200, { scope: 'complete', language })
                 .expect(function (res) {
                     const expected = hxQuestion.listTranslatedServers(language);
                     expect(res.body).to.deep.equal(expected);
@@ -248,7 +253,7 @@ describe('question integration', function () {
     it(`delete question 4`, deleteQxFn(4));
     it(`delete question 6`, deleteQxFn(6));
 
-    it('get all and verify', getAllAndVerify);
+    it('list questions (complete)', listQuestions('complete'));
 
     for (let i = 10; i < 20; ++i) {
         it(`create question ${i}`, shared.createQxFn(store, hxQuestion));
@@ -381,6 +386,6 @@ describe('question integration', function () {
     [7, 10, 14, 21, 22, 24].forEach((questionIndex, index) => {
         it(`replace question ${questionIndex} with question ${20 + index}`, replaceQxFn(questionIndex));
         it(`get and verify question ${20 + index}`, getAndVerifyQxFn(20 + index));
-        it('get all and verify', getAllAndVerify);
+        it('list questions (complete)', listQuestions('complete'));
     });
 });

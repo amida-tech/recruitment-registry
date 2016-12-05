@@ -33,13 +33,13 @@ describe('question unit', function () {
             });
     });
 
-    const createQx = function () {
+    const createQuestion = function () {
         const qx = generator.newQuestion();
         return models.question.createQuestion(qx)
             .then(id => hxQuestion.push(qx, { id }));
     };
 
-    const showQxFn = function (index) {
+    const getQuestionFn = function (index) {
         return function () {
             const id = hxQuestion.id(index);
             return models.question.getQuestion(id)
@@ -50,7 +50,7 @@ describe('question unit', function () {
         };
     };
 
-    const verifyQxFn = function (index) {
+    const verifyQuestionFn = function (index) {
         return function () {
             const question = hxQuestion.server(index);
             return models.question.getQuestion(question.id)
@@ -93,12 +93,12 @@ describe('question unit', function () {
     };
 
     for (let i = 0; i < 10; ++i) {
-        it(`create question ${i}`, createQx);
-        it(`show/update question ${i}`, showQxFn(i));
+        it(`create question ${i}`, createQuestion);
+        it(`show/update question ${i}`, getQuestionFn(i));
         it(`update question ${i}`, updateQuestionTextFn(i));
-        it(`verify question ${i}`, verifyQxFn(i));
+        it(`verify question ${i}`, verifyQuestionFn(i));
         it(`revert update question ${i}`, revertUpdateQuestionTextFn(i));
-        it(`verify question ${i}`, verifyQxFn(i));
+        it(`verify question ${i}`, verifyQuestionFn(i));
     }
 
     it('error: get with non-existent id', function () {
@@ -106,18 +106,36 @@ describe('question unit', function () {
             .then(shared.throwingHandler, shared.expectedErrorHandler('qxNotFound'));
     });
 
-    it('get multiple questions (2, 4, 7)', function () {
+    it('list questions 2, 4, 7', function () {
         const indices = [2, 4, 7];
         const ids = indices.map(i => hxQuestion.id(i));
-        const clientQuestions = indices.map(i => hxQuestion.client(i));
-        return models.question.listQuestions({ ids })
-            .then(questions => comparator.questions(clientQuestions, questions));
+        return models.question.listQuestions({ scope: 'complete', ids })
+            .then(questions => {
+                const expected = hxQuestion.listServers(null, indices);
+                expect(questions).to.deep.equal(expected);
+            });
     });
 
-    it('get all questions', function () {
-        return models.question.listQuestions()
-            .then(questions => comparator.questions(hxQuestion.listClients(), questions));
-    });
+    const listQuestionsFn = function (scope) {
+        return function () {
+            const options = scope ? {} : undefined;
+            if (scope) {
+                options.scope = scope;
+            }
+            return models.question.listQuestions(options)
+                .then(questions => {
+                    const fields = (scope === 'complete') ? null : ['id', 'type', 'text', 'instruction'];
+                    const expected = hxQuestion.listServers(fields);
+                    expect(questions).to.deep.equal(expected);
+                });
+        };
+    };
+
+    it('list all questions (complete)', listQuestionsFn('complete'));
+
+    it('list all questions (summary)', listQuestionsFn('summary'));
+
+    it('list all questions (default - summary)', listQuestionsFn());
 
     it('error: get multiple with non-existent id', function () {
         return models.question.listQuestions({ ids: [1, 99999] })
@@ -154,7 +172,7 @@ describe('question unit', function () {
 
     const listTranslatedQuestionsFn = function (language, notTranslated) {
         return function () {
-            return models.question.listQuestions({ language })
+            return models.question.listQuestions({ scope: 'complete', language })
                 .then(result => {
                     const expected = hxQuestion.listTranslatedServers(language);
                     if (!notTranslated) {
@@ -198,18 +216,17 @@ describe('question unit', function () {
         it(`delete question ${index}`, qxDeleteFn(index));
     });
 
-    it('verify all questions', function () {
-        return models.question.listQuestions()
-            .then(questions => comparator.questions(hxQuestion.listClients(), questions));
-    });
+    it('list all questions (complete)', listQuestionsFn('complete'));
+
+    it('list all questions (summary)', listQuestionsFn('summary'));
 
     for (let i = 10; i < 20; ++i) {
-        it(`create question ${i}`, createQx);
-        it(`show/update question ${i}`, showQxFn(i));
+        it(`create question ${i}`, createQuestion);
+        it(`show/update question ${i}`, getQuestionFn(i));
         it(`update question ${i}`, updateQuestionTextFn(i));
-        it(`verify question ${i}`, verifyQxFn(i));
+        it(`verify question ${i}`, verifyQuestionFn(i));
         it(`revert update question ${i}`, revertUpdateQuestionTextFn(i));
-        it(`verify question ${i}`, verifyQxFn(i));
+        it(`verify question ${i}`, verifyQuestionFn(i));
     }
 
     const createSurveyFn = function (questionIndices) {
@@ -312,11 +329,11 @@ describe('question unit', function () {
                     comparator.question(replacement, question);
                     hxQuestion.replace(questionIndex, replacement, question);
                     return question;
-                })
-                .then(() => models.question.listQuestions())
-                .then(questions => comparator.questions(hxQuestion.listClients(), questions));
+                });
         });
     });
+
+    it('list all questions (complete)', listQuestionsFn('complete'));
 
     const verifyVersioningFn = function (index, expectedVersion) {
         return function () {

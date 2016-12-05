@@ -198,7 +198,7 @@ module.exports = class QuestionDAO extends Translatable {
     }
 
     listQuestions({ scope, ids, language } = {}) {
-        scope = scope || 'complete';
+        scope = scope || 'summary';
         const attributes = ['id', 'type'];
         if (scope === 'complete') {
             attributes.push('meta');
