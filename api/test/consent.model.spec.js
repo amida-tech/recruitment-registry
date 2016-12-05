@@ -34,7 +34,7 @@ describe('consent unit', function () {
     }
 
     for (let i = 0; i < userCount; ++i) {
-        it(`create user ${i}`, shared.createUser(history.hxUser));
+        it(`create user ${i}`, shared.createUserFn(history.hxUser));
     }
 
     const consentSpecs = [

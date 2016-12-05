@@ -38,6 +38,7 @@ class SharedIntegration {
         const shared = this;
         return function (done) {
             const login = history.client(index);
+            login.username = login.username || login.email.toLowerCase();
             shared.loginFn(store, login)(done);
         };
     }

@@ -1,7 +1,6 @@
 'use strict';
 
 const dotenv = require('dotenv');
-const moment = require('moment');
 
 dotenv.config();
 
@@ -31,6 +30,7 @@ const all = {
         resetTokenLength: 20,
         resetPasswordLength: 10,
         resetExpires: 3600,
+        resetExpiresUnit: 'seconds'
     }
 };
 
@@ -64,14 +64,9 @@ const main = {
         resetTokenLength: process.env.RECREG_CRYPT_RESET_TOKEN_LENGTH,
         resetPasswordLength: process.env.RECREG_CRYPT_RESET_PASSWORD_LENGTH,
         resetExpires: process.env.RECREG_CRYPT_RESET_EXPIRES,
+        resetExpiresUnit: process.env.RECREG_CRYPT_RESET_EXPIRES_UNIT
     },
     clientBaseUrl: process.env.RECREG_CLIENT_BASE_URL
-};
-
-all.expiresForDB = function () {
-    let m = moment.utc();
-    m.add(this.crypt.resetExpires, 'seconds');
-    return m.toISOString();
 };
 
 const configBase = _.merge(all, main);

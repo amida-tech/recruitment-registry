@@ -3,28 +3,17 @@
 const passport = require('passport');
 const passportHttp = require('passport-http');
 
-const db = require('../models/db');
+const models = require('../models');
 const tokener = require('../lib/tokener');
 const jsutil = require('../lib/jsutil');
 
 const basicStrategy = function (username, password, done) {
-    db.User.findOne({ where: { username } })
-        .then(function (user) {
-            if (user) {
-                return user.authenticate(password)
-                    .then(() => done(null, user))
-                    .catch(err => done(err));
-            } else {
-                return done(null, false);
-            }
-        });
+    models.auth.authenticateUser(username, password)
+        .then(user => done(null, user))
+        .catch(err => done(err));
 };
 
-exports.init = function () {
-    passport.use(new passportHttp.BasicStrategy(basicStrategy));
-};
-
-exports.init();
+passport.use(new passportHttp.BasicStrategy(basicStrategy));
 
 const authenticate = passport.authenticate('basic', {
     session: false,

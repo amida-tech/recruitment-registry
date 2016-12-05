@@ -63,6 +63,10 @@ class History {
         return this.history.length - 1;
     }
 
+    length() {
+        return this.history.length;
+    }
+
     client(index) {
         const currentIndex = this.currentIndex[index];
         return this.clients[currentIndex];

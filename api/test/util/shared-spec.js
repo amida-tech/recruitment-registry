@@ -13,7 +13,6 @@ const comparator = require('./client-server-comparator');
 
 const expect = chai.expect;
 
-const User = db.User;
 const QuestionChoice = db.QuestionChoice;
 
 class SharedSpec {
@@ -29,14 +28,22 @@ class SharedSpec {
         };
     }
 
-    createUser(hxUser) {
+    createUserFn(hxUser) {
         const generator = this.generator;
         return function () {
-            const clientUser = generator.newUser();
-            return User.create(clientUser)
-                .then(function (user) {
-                    hxUser.push(clientUser, user);
+            const user = generator.newUser();
+            return models.user.createUser(user)
+                .then(({ id }) => {
+                    hxUser.push(user, { id });
                 });
+        };
+    }
+
+    authenticateUserFn(hxUser, index) {
+        return function () {
+            const client = hxUser.client(index);
+            const username = client.username || client.email;
+            return models.auth.authenticateUser(username, client.password);
         };
     }
 
@@ -211,6 +218,33 @@ class SharedSpec {
             expect(err.code).to.equal(code);
             expect(!!err.message).to.equal(true);
             return err;
+        };
+    }
+
+    expectedSeqErrorHandler(name, fields, code) {
+        return function (err) {
+            expect(err.name).to.equal(name);
+            expect(err.fields).to.deep.equal(fields);
+            if (code) {
+                expect(err.message).to.equal(RRError.message(code));
+            }
+            return err;
+        };
+    }
+
+    sanityEnoughUserTested(hxUser) {
+        return function () {
+            const userCount = hxUser.length();
+            const counts = _.range(userCount).reduce((r, index) => {
+                if (hxUser.client(index).username) {
+                    ++r.username;
+                } else {
+                    ++r.email;
+                }
+                return r;
+            }, { username: 0, email: 0 });
+            expect(counts.username).to.be.above(0);
+            expect(counts.email).to.be.above(0);
         };
     }
 }

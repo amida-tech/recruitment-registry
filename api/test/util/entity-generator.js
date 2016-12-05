@@ -2,6 +2,8 @@
 
 const _ = require('lodash');
 
+const testJsutil = require('./test-jsutil');
+
 class Answerer {
     constructor() {
         this.answerIndex = -1;
@@ -311,11 +313,20 @@ class Generator {
 
     newUser(override) {
         const userIndex = ++this.userIndex;
+        let username = 'uSeRnAmE';
+        let email = 'eMaIl';
+        if ((userIndex + 1) % 3 === 0) {
+            username = testJsutil.oppositeCase(username);
+            email = testJsutil.oppositeCase(email);
+        }
         let user = {
-            username: 'username_' + userIndex,
-            password: 'password_' + userIndex,
-            email: 'email_' + userIndex + '@example.com'
+            username: `${username}_${userIndex}`,
+            password: `password_${userIndex}`,
+            email: `${email}_${userIndex}@example.com`
         };
+        if ((userIndex + 1) % 2 === 0) {
+            delete user.username;
+        }
         if (override) {
             user = _.assign(user, override);
         }

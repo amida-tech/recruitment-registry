@@ -3,454 +3,329 @@
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
-const sinon = require('sinon');
-const moment = require('moment');
 const _ = require('lodash');
 
 const SPromise = require('../lib/promise');
 const SharedSpec = require('./util/shared-spec');
+const History = require('./util/entity-history');
 const config = require('../config');
 const models = require('../models');
-const db = require('../models/db');
 const Generator = require('./util/entity-generator');
+const comparator = require('./util/client-server-comparator');
+const testJsutil = require('./util/test-jsutil');
 
 const expect = chai.expect;
 const generator = new Generator();
 const shared = new SharedSpec(generator);
 
-const User = db.User;
-
 describe('user unit', function () {
-    const example = generator.newUser();
+    const userCount = 4;
+
+    const hxUser = new History();
 
     before(shared.setUpFn());
 
-    describe('username', function () {
-        it('create and update', function () {
-            const inputUser = generator.newUser();
-            return User.create(inputUser).then(function (user) {
-                    expect(user.username).to.equal(inputUser.username);
-                    return user;
-                })
-                .then(function (user) {
-                    return User.findOne({
-                        where: {
-                            id: user.id
-                        },
-                        raw: true,
-                        attributes: ['username']
-                    });
-                }).then(function (user) {
-                    expect(user.username).to.equal(inputUser.username);
-                    return user;
-                }).then(function (user) {
-                    return models.user.updateUser(user.id, {
-                        username: 'rejectusername'
-                    }).then(function () {
-                        throw new Error('unexpected no error');
-                    }).catch(function (err) {
-                        expect(err.message).to.not.equal('unexpected no error');
-                        expect(err.message).to.equal('Field username cannot be updated.');
-                    });
+    const getUserFn = function (index) {
+        return function () {
+            const id = hxUser.id(index);
+            return models.user.getUser(id)
+                .then(user => {
+                    const client = hxUser.client(index);
+                    comparator.user(client, user);
+                    hxUser.updateServer(index, user);
                 });
-        });
+        };
+    };
 
-        it('reject non unique username', function () {
-            const inputUser = generator.newUser();
-            return User.create(inputUser).then(function (user) {
-                    expect(user.username).to.equal(inputUser.username);
-                    return user;
-                })
-                .then(function () {
-                    const nextInputUser = generator.newUser();
-                    nextInputUser.username = inputUser.username;
-                    return User.create(nextInputUser).then(function () {
-                            throw new Error('unique username accepted');
-                        })
-                        .catch(function (err) {
-                            expect(err).not.to.equal('unique username accepted');
-                        });
-                });
-        });
+    const verifyUserFn = function (index) {
+        return function () {
+            const server = hxUser.server(index);
+            return models.user.getUser(server.id)
+                .then(user => expect(user).to.deep.equal(server));
+        };
+    };
 
-        it('reject null/undefined/missing/empty', function () {
-            let p = SPromise.resolve(generator.newUser());
-            [null, undefined, '--', ''].forEach(function (value) {
-                p = p.then(function (inputUser) {
-                    if (value === '--') {
-                        delete inputUser.username;
-                    } else {
-                        inputUser.username = value;
+    const updateUserFn = function (index) {
+        return function () {
+            const { email, password } = generator.newUser();
+            const id = hxUser.id(index);
+            return models.user.updateUser(id, { email, password })
+                .then(() => {
+                    const client = hxUser.client(index);
+                    const server = hxUser.server(index);
+                    if (!client.username) {
+                        server.username = email.toLowerCase();
                     }
-                    return User.create(inputUser).then(function () {
-                        throw new Error('no error for \'' + value + '\'');
-                    }).catch(function (err) {
-                        expect(!!err.message).to.equal(true);
-                        expect(err.message).not.to.equal('no error for \'' + value + '\'');
-                        return inputUser;
-                    });
+                    server.email = email;
+                    client.email = email;
+                    client.password = password;
                 });
-            });
-            return p;
-        });
+        };
+    };
+
+    _.range(userCount).forEach(index => {
+        it(`create user ${index}`, shared.createUserFn(hxUser));
+        it(`get user ${index}`, getUserFn(index));
     });
 
-    describe('password', function () {
-        it('create, update and authenticate', function () {
-            const inputUser = generator.newUser();
-            return User.create(inputUser)
-                .then(function (user) {
-                    return User.findOne({
-                        where: {
-                            id: user.id
-                        }
-                    });
-                })
-                .then(function (user) {
-                    return user.authenticate(inputUser.password).then(function () {
-                        return user;
-                    });
-                })
-                .then(function (user) {
-                    return user.authenticate(inputUser.password + 'f').then(function () {
-                        throw new Error('expected error no');
-                    }).catch(function (err) {
-                        expect(err.message).not.to.equal('expected error no');
-                        expect(err.message).to.equal('Authentication error.');
-                        return user.id;
-                    });
-                })
-                .then(function (id) {
-                    return models.user.updateUser(id, {
-                            password: 'newPassword'
-                        })
-                        .then(function () {
-                            return User.findById(id).then(function (user) {
-                                return user.authenticate('newPassword');
-                            });
-                        });
-                });
-        });
-
-        it('reject null/undefined/missing/empty', function () {
-            let p = SPromise.resolve(generator.newUser());
-            [null, undefined, '--', ''].forEach(function (value) {
-                p = p.then(function (inputUser) {
-                    if (value === '--') {
-                        delete inputUser.password;
-                    } else {
-                        inputUser.password = value;
-                    }
-                    return User.create(inputUser)
-                        .then(function () {
-                            throw new Error('no error for \'' + value + '\'');
-                        })
-                        .catch(function (err) {
-                            expect(!!err.message).to.equal(true);
-                            expect(err.message).not.to.equal('no error for \'' + value + '\'');
-                            return inputUser;
-                        });
-                });
-            });
-            return p;
-        });
-
-        it('reject update with null/undefined/empty', function () {
-            const inputValue = generator.newUser();
-            let p = User.create(inputValue).then(function (user) {
-                return user.id;
-            });
-            [null, undefined, ''].forEach(function (value) {
-                p = p.then(function (id) {
-                    return models.user.updateUser(id, {
-                            password: value
-                        })
-                        .then(function () {
-                            throw new Error('no error for \'' + value + '\'');
-                        })
-                        .catch(function (err) {
-                            expect(!!err.message).to.equal(true);
-                            expect(err.message).not.to.equal('no error for \'' + value + '\'');
-                            return id;
-                        });
-                });
-            });
-            return p;
-        });
+    it('error: identical specified username and email', function () {
+        const user = generator.newUser();
+        user.username = user.email;
+        return models.user.createUser(user)
+            .then(shared.throwingHandler, shared.expectedErrorHandler('userIdenticalUsernameEmail'));
     });
 
-    describe('e-mail', function () {
-        it('normal set/get', function () {
-            const inputUser = generator.newUser();
-            return User.create(inputUser)
-                .then(function (user) {
-                    expect(user.email).to.equal(inputUser.email);
-                    return user;
-                })
-                .then(function (user) {
-                    return User.findOne({
-                        where: {
-                            id: user.id
-                        },
-                        raw: true,
-                        attributes: ['email']
-                    });
-                })
-                .then(function (user) {
-                    expect(user.email).to.equal(inputUser.email);
-                });
-        });
+    const updateUsernameWhenEmailFn = function (index) {
+        return function () {
+            const client = hxUser.client(index);
+            if (!client.username) {
+                let { username, email, password } = generator.newUser();
+                if (!username) {
+                    username = email.split('@')[0];
+                }
+                const id = hxUser.id(index);
+                return models.user.updateUser(id, { username, email, password })
+                    .then(shared.throwingHandler, shared.expectedErrorHandler('userNoUsernameChange'));
+            }
+        };
+    };
 
-        it('reject non unique e-mail', function () {
-            const inputUser = generator.newUser();
-            return User.create(inputUser)
-                .then(function (user) {
-                    expect(user.email).to.equal(inputUser.email);
-                    return user;
-                })
-                .then(function () {
-                    const nextInputUser = generator.newUser();
-                    nextInputUser.email = inputUser.email;
-                    return User.create(nextInputUser)
-                        .then(function () {
-                            throw new Error('unique email accepted');
-                        }).catch(function (err) {
-                            expect(err).not.to.equal('unique email accepted');
-                        });
-                });
-        });
-
-        it('lowercase emails with capital letters', function () {
-            const inputUser = generator.newUser({
-                email: 'CamelCase@EXAMPLE.COM'
-            });
-            return User.create(inputUser)
-                .then(function (user) {
-                    expect(user.email).to.equal(inputUser.email.toLowerCase());
-                    return user;
-                })
-                .then(function (user) {
-                    return User.findOne({
-                        where: {
-                            id: user.id
-                        },
-                        raw: true,
-                        attributes: ['email']
-                    });
-                })
-                .then(function (user) {
-                    expect(user.email).to.equal(inputUser.email.toLowerCase());
-                });
-        });
-
-        it('reject create invalid/null/undefined/missing/empty', function () {
-            let p = SPromise.resolve(generator.newUser());
-            ['noatemail', null, undefined, '--', ''].forEach(function (value) {
-                p = p.then(function (inputUser) {
-                    if (value === '--') {
-                        delete inputUser.email;
-                    } else {
-                        inputUser.email = value;
-                    }
-                    return User.create(inputUser)
-                        .then(function () {
-                            throw new Error('no error for ' + value);
-                        })
-                        .catch(function (err) {
-                            expect(!!err.message).to.equal(true);
-                            expect(err.message).not.to.equal('no error for ' + value);
-                            return inputUser;
-                        });
-                });
-            });
-            return p;
-        });
-
-        it('reject update with invalid/null/undefined/empty', function () {
-            const inputValue = generator.newUser();
-            let p = User.create(inputValue).then(function (user) {
-                return user.id;
-            });
-            ['noatemail', null, undefined, ''].forEach(function (value) {
-                p = p.then(function (id) {
-                    return models.user.updateUser(id, {
-                            email: value
-                        })
-                        .then(function () {
-                            throw new Error('no error for \'' + value + '\'');
-                        })
-                        .catch(function (err) {
-                            expect(!!err.message).to.equal(true);
-                            expect(err.message).not.to.equal('no error for \'' + value + '\'');
-                            return id;
-                        });
-                });
-            });
-            return p;
-        });
+    _.range(userCount).forEach(index => {
+        it(`error: update user ${index} error when email as username`, updateUsernameWhenEmailFn(index));
     });
 
-    describe('create/get users', function () {
-        it('post/get user', function () {
-            return User.create(example).then(function (user) {
-                return models.user.getUser(user.id)
-                    .then(function (actual) {
-                        const expected = _.cloneDeep(example);
-                        expected.id = user.id;
-                        delete actual.role;
-                        delete expected.password;
-                        expect(actual).to.deep.equal(expected);
-                    });
-            });
-        });
+    const uniqUsernameErrorFn = function (index) {
+        return function () {
+            const client = hxUser.client(index);
+            const user = generator.newUser();
+            const username = client.username || client.email.toLowerCase();
+            user.username = username;
+            return models.user.createUser(user)
+                .then(shared.throwingHandler, shared.expectedSeqErrorHandler('SequelizeUniqueConstraintError', { username }, 'uniqueUsername'));
+        };
+    };
 
-        it('post/get user with null values', function () {
-            const exampleWNull = _.cloneDeep(example);
-            exampleWNull.username += '1';
-            exampleWNull.email = 'a' + exampleWNull.email;
-            return User.create(exampleWNull)
-                .then(function (user) {
-                    return models.user.getUser(user.id)
-                        .then(function (actual) {
-                            const expected = _.cloneDeep(exampleWNull);
-                            expected.id = user.id;
-                            delete actual.role;
-                            delete expected.password;
-                            expect(actual).to.deep.equal(expected);
-                        });
-                });
-        });
+    const uniqEmailErrorFn = function (index) {
+        return function () {
+            const client = hxUser.client(index);
+            const user = generator.newUser();
+            user.email = client.email;
+            let fields;
+            if (client.username || user.username) {
+                fields = { 'lower(email)': user.email.toLowerCase() };
+            } else {
+                fields = { username: user.email.toLowerCase() };
+            }
+            return models.user.createUser(user)
+                .then(shared.throwingHandler, shared.expectedSeqErrorHandler('SequelizeUniqueConstraintError', fields));
+        };
+    };
+
+    const uniqOppCaseEmailErrorFn = function (index) {
+        return function () {
+            const client = hxUser.client(index);
+            const user = generator.newUser();
+            user.email = testJsutil.oppositeCase(client.email);
+            let fields;
+            if (client.username || user.username) {
+                fields = { 'lower(email)': user.email.toLowerCase() };
+            } else {
+                fields = { username: user.email.toLowerCase() };
+            }
+            return models.user.createUser(user)
+                .then(shared.throwingHandler, shared.expectedSeqErrorHandler('SequelizeUniqueConstraintError', fields));
+        };
+    };
+
+    const uniqUserErrorFn = function (index) {
+        return function () {
+            const client = hxUser.client(index);
+            const username = client.username || client.email.toLowerCase();
+            return models.user.createUser(client)
+                .then(shared.throwingHandler, shared.expectedSeqErrorHandler('SequelizeUniqueConstraintError', { username }, 'uniqueUsername'));
+        };
+    };
+
+    [0, 2, 1, 3].forEach(index => {
+        it(`error: create user with username of user ${index}`, uniqUsernameErrorFn(index));
+        it(`error: create user with email of user ${index}`, uniqEmailErrorFn(index));
+        it(`error: create user with opposite case email of user ${index}`, uniqOppCaseEmailErrorFn(index));
+        it(`error: create user with username and email of user ${index}`, uniqUserErrorFn(index));
     });
 
-    describe('update users', function () {
-        it('normal flow', function () {
-            const inputUser = generator.newUser();
-            return User.create(inputUser).then(function (user) {
-                const id = user.id;
-                const attributes = ['email'];
-                let updateObj = {
-                    email: 'newone@example.com',
-                    password: 'newpasword!!'
-                };
-                return models.user.updateUser(id, updateObj)
-                    .then(function () {
-                        return models.user.authenticateUser(id, updateObj.password);
-                    })
-                    .then(function () {
-                        return User.findById(id, {
-                                attributes
-                            })
-                            .then(function (user) {
-                                const actualAttrs = user.get();
-                                delete updateObj.password;
-                                expect(actualAttrs).to.deep.equal(updateObj);
-                            });
-                    });
-            });
-        });
+    _.range(userCount).forEach(index => {
+        it(`update user ${index}`, updateUserFn(index));
+        it(`verify user ${index}`, verifyUserFn(index));
     });
 
-    describe('reset password', function () {
-        it('normal flow', function () {
-            const inputUser = generator.newUser();
-            return User.create(inputUser)
-                .then(function (user) {
-                    let token;
-
-                    return models.user.resetPasswordToken(user.email)
-                        .then(function (result) {
-                            token = result;
-                            expect(!!token).to.equal(true);
-                            return token;
-                        })
-                        .then(function (token) {
-                            return User.findOne({
-                                where: {
-                                    email: inputUser.email
-                                }
-                            }).then(function (user) {
-                                return user.authenticate(inputUser.password)
-                                    .then(function () {
-                                        throw new Error('authentication should have failed');
-                                    })
-                                    .catch(function (err) {
-                                        expect(err.message).not.to.equal('authentication should have failed');
-                                        expect(err.message).to.equal('Authentication error.');
-                                        return token;
-                                    });
-                            });
-                        })
-                        .then(function (token) {
-                            const wrongToken = (token.charAt(0) === '1' ? '2' : '1') + token.slice(1);
-                            return models.user.resetPassword(wrongToken, 'newPassword')
-                                .then(function () {
-                                    throw new Error('unexpected no error for no token');
-                                })
-                                .catch(function (err) {
-                                    expect(err.message).not.to.equal('unexpected no error for no token');
-                                    const emsg = 'Password reset token is invalid or has expired.';
-                                    expect(err.message).to.equal(emsg);
-                                    return token;
-                                })
-                                .then(function (token) {
-                                    return models.user.resetPassword(token, 'newPassword');
-                                });
-                        });
-                })
-                .then(function () {
-                    return User.findOne({
-                            where: {
-                                email: inputUser.email
-                            }
-                        })
-                        .then(function (user) {
-                            return user.authenticate('newPassword');
-                        });
+    const invalidPasswordErrorFn = function (value) {
+        return function () {
+            const user = generator.newUser();
+            if (value === '--') {
+                delete user.password;
+            } else {
+                user.password = value;
+            }
+            return models.user.createUser(user)
+                .then(shared.throwingHandler, err => {
+                    expect(!!err.message).to.equal(true);
                 });
-        });
+        };
+    };
 
-        it('invalid email', function () {
-            return models.user.resetPasswordToken('a@a.com')
-                .then(function () {
-                    throw new Error('unexpected no error ');
-                })
-                .catch(function (err) {
-                    expect(err.message).not.to.equal('unexpected no error');
-                    expect(err.message).to.equal('Email is invalid.');
-                });
-        });
+    [
+        [null, 'null'],
+        [undefined, 'undefined'],
+        ['--', 'no'],
+        ['', 'empty']
+    ].forEach(([value, msg]) => {
+        it(`error: create user with ${msg} password`, invalidPasswordErrorFn(value));
+    });
 
-        it('expired reset token', function () {
-            const stub = sinon.stub(config, 'expiresForDB', function () {
-                let m = moment.utc();
-                m.add(250, 'ms');
-                return m.toISOString();
-            });
-            const inputUser = generator.newUser();
-            return User.create(inputUser)
-                .then(function (user) {
-                    return models.user.resetPasswordToken(user.email);
-                })
-                .then(function (token) {
-                    return models.user.resetPassword(token, 'newPassword')
-                        .then(function () {
-                            return SPromise.delay(600);
-                        })
-                        .then(function () {
-                            return models.user.resetPassword(token, 'newPassword');
-                        })
-                        .then(function () {
-                            throw new Error('unexpected no expiration error');
-                        })
-                        .catch(function (err) {
-                            expect(err.message).not.to.equal('unexpected no expiration error');
-                            expect(err.message).to.equal('Password reset token is invalid or has expired.');
-                        })
-                        .then(function () {
-                            expect(stub.called).to.equal(true);
-                            config.expiresForDB.restore();
-                        });
+    const invalidPasswordUpdateErrorFn = function (value) {
+        return function () {
+            const id = hxUser.id(0);
+            return models.user.updateUser(id, { password: value })
+                .then(shared.throwingHandler, err => {
+                    expect(!!err.message).to.equal(true);
                 });
-        });
+        };
+    };
+
+    [
+        [null, 'null'],
+        [undefined, 'undefined'],
+        ['', 'empty']
+    ].forEach(([value, msg]) => {
+        it(`error: update user with ${msg} password`, invalidPasswordUpdateErrorFn(value));
+    });
+
+    const invalidEmailErrorFn = function (value) {
+        return function () {
+            const user = generator.newUser();
+            if (value === '--') {
+                delete user.email;
+            } else {
+                user.email = value;
+            }
+            return models.user.createUser(user)
+                .then(shared.throwingHandler, err => {
+                    expect(!!err.message).to.equal(true);
+                });
+        };
+    };
+
+    [
+        [null, 'null'],
+        [undefined, 'undefined'],
+        ['--', 'no'],
+        ['', 'empty'],
+        ['notemail', 'invalid (no @) ']
+    ].forEach(([value, msg]) => {
+        it(`error: create user with ${msg} email`, invalidEmailErrorFn(value));
+    });
+
+    const invalidEmailUpdateErrorFn = function (value) {
+        return function () {
+            const id = hxUser.id(0);
+            return models.user.updateUser(id, { email: value })
+                .then(shared.throwingHandler, err => {
+                    expect(!!err.message).to.equal(true);
+                });
+        };
+    };
+
+    [
+        [null, 'null'],
+        [undefined, 'undefined'],
+        ['', 'empty'],
+        ['notemail', 'invalid (no @)']
+    ].forEach(([value, msg]) => {
+        it(`error: update user with ${msg} email`, invalidEmailUpdateErrorFn(value));
+    });
+
+    const oldPasswords = new Array(userCount);
+    const tokens = new Array(userCount);
+
+    const resetPasswordTokenFn = function (index) {
+        return function () {
+            const client = hxUser.client(index);
+            oldPasswords[index] = client.password;
+            let email = client.email;
+            if ((index + 1) % 2 === 0) {
+                email = testJsutil.oppositeCase(email);
+            }
+            return models.user.resetPasswordToken(email)
+                .then(token => {
+                    expect(!!token).to.equal(true);
+                    tokens[index] = token;
+                });
+        };
+    };
+
+    const authenticateUserOldPWFn = function (index) {
+        return function () {
+            const client = hxUser.client(index);
+            const username = client.username || client.email;
+            return models.auth.authenticateUser(username, oldPasswords[index])
+                .then(shared.throwingHandler, shared.expectedErrorHandler('authenticationError'));
+        };
+    };
+
+    const resetPasswordWrongTokenFn = function (index) {
+        return function () {
+            const token = tokens[index];
+            const wrongToken = (token.charAt(0) === '1' ? '2' : '1') + token.slice(1);
+            return models.user.resetPassword(wrongToken, 'newPassword')
+                .then(shared.throwingHandler, shared.expectedErrorHandler('invalidOrExpiredPWToken'));
+        };
+    };
+
+    const resetPasswordFn = function (index) {
+        return function () {
+            const token = tokens[index];
+            const password = generator.newUser().password;
+            hxUser.client(index).password = password;
+            return models.user.resetPassword(token, password);
+        };
+    };
+
+    it('sanity check both direct username and email username are tested', shared.sanityEnoughUserTested(hxUser));
+
+    _.range(userCount).forEach(index => {
+        it(`get reset password token for user ${index}`, resetPasswordTokenFn(index));
+        it(`error: authenticate user ${index} with old password`, authenticateUserOldPWFn(index));
+        it(`error: reset password with wrong token for user ${index}`, resetPasswordWrongTokenFn(index));
+        it(`reset password for user ${index}`, resetPasswordFn(index));
+        it(`authenticate user ${index}`, shared.authenticateUserFn(hxUser, index));
+    });
+
+    it('error: reset password token for invalid email', function () {
+        return models.user.resetPasswordToken('a@a.com')
+            .then(shared.throwingHandler, shared.expectedErrorHandler('invalidEmail'));
+    });
+
+    let resetExpires;
+    let resetExpiresUnit;
+
+    it('reduce password token expiration duration', function () {
+        resetExpires = config.crypt.resetExpires;
+        resetExpiresUnit = config.crypt.resetExpiresUnit;
+        config.crypt.resetExpires = 250;
+        config.crypt.resetExpiresUnit = 'ms';
+    });
+
+    it('get reset password token for user 0', resetPasswordTokenFn(0));
+    it('delay to cause password tokenn expiration', function () {
+        return SPromise.delay(600);
+    });
+    it('error: reset password with expired reset token', function () {
+        return models.user.resetPassword(tokens[0], 'newPassword')
+            .then(shared.throwingHandler, shared.expectedErrorHandler('invalidOrExpiredPWToken'));
+    });
+
+    it('restore password token expiration duraction', function () {
+        config.crypt.resetExpires = resetExpires;
+        config.crypt.resetExpiresUnit = resetExpiresUnit;
     });
 });

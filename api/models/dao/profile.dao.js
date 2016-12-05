@@ -5,7 +5,6 @@ const db = require('../db');
 const SPromise = require('../../lib/promise');
 
 const sequelize = db.sequelize;
-const User = db.User;
 
 module.exports = class ProfileDAO {
     constructor(dependencies) {
@@ -17,7 +16,7 @@ module.exports = class ProfileDAO {
             return this.profileSurvey.getProfileSurveyId()
                 .then(profileSurveyId => {
                     input.user.role = 'participant';
-                    return User.create(input.user, { transaction: tx })
+                    return this.user.createUser(input.user, tx)
                         .then(user => {
                             if (input.signatures && input.signatures.length) {
                                 return SPromise.all(input.signatures.map(consentDocumentId => {

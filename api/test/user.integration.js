@@ -8,6 +8,7 @@ const _ = require('lodash');
 const config = require('../config');
 const SharedIntegration = require('./util/shared-integration');
 const RRSuperTest = require('./util/rr-super-test');
+const RRError = require('../lib/rr-error');
 const Generator = require('./util/entity-generator');
 
 const expect = chai.expect;
@@ -19,10 +20,6 @@ describe('user integration', function () {
     const store = new RRSuperTest();
 
     before(shared.setUpFn(store));
-
-    it('invalid path', function (done) {
-        store.get('/xxxxxxx', false, 404).end(done);
-    });
 
     it('error: get user without previous authentication', function (done) {
         store.get('/users/me', true, 401).end(done);
@@ -90,7 +87,21 @@ describe('user integration', function () {
     });
 
     it('error: create the same user', function (done) {
-        store.post('/users', user, 400).end(done);
+        store.post('/users', user, 400)
+            .expect(function (res) {
+                expect(res.body.message).to.equal(RRError.message('uniqueUsername'));
+            })
+            .end(done);
+    });
+
+    it('error: create user with the same email', function (done) {
+        const newUser = Object.assign({}, user);
+        newUser.username = 'anotherusername';
+        store.post('/users', newUser, 400)
+            .expect(function (res) {
+                expect(res.body.message).to.equal(RRError.message('uniqueEmail'));
+            })
+            .end(done);
     });
 
     it('login as new user', shared.loginFn(store, user));

@@ -122,3 +122,31 @@ errors.smtpTextNotSpecified = {
 errors.surveyConsentInvalidTypeForConsent = {
     msg: 'Consent does not exists or does not include the Consent Type as section.'
 };
+
+errors.invalidOrExpiredPWToken = {
+    msg: 'Password reset token is invalid or has expired.'
+};
+
+errors.invalidEmail = {
+    msg: 'Email is invalid.'
+};
+
+errors.authenticationError = {
+    msg: 'Authentication error.'
+};
+
+errors.uniqueUsername = {
+    msg: 'The specified username is already in use.'
+};
+
+errors.uniqueEmail = {
+    msg: 'The specified email address is already in use.'
+};
+
+errors.userIdenticalUsernameEmail = {
+    msg: 'Username and email cannot be specified and identical.  Do not specify username to use email as username.'
+};
+
+errors.userNoUsernameChange = {
+    msg: 'Username cannot be changed directly when email is being used as the username.'
+};

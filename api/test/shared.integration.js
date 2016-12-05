@@ -22,9 +22,13 @@ describe('shared integration', function () {
 
     before(shared.setUpFn(store));
 
+    it('error: unknown end point', function (done) {
+        store.get('/xxxxxxx', false, 404).end(done);
+    });
+
     it('login as super', shared.loginFn(store, config.superUser));
 
-    it('unexpected run time error', function (done) {
+    it('error: unexpected run time error', function (done) {
         sinon.stub(language, 'listLanguages', function () {
             return SPromise.reject(new Error('unexpected error'));
         });
@@ -36,7 +40,7 @@ describe('shared integration', function () {
             .end(done);
     });
 
-    it('unknown end point', function (done) {
+    it('error: unknown end point (authorized)', function (done) {
         store.get('/unknown', true, 404).end(done);
     });
 

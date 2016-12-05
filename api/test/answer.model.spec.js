@@ -25,7 +25,7 @@ describe('answer unit', function () {
     before(shared.setUpFn());
 
     for (let i = 0; i < 4; ++i) {
-        it(`create user ${i}`, shared.createUser(hxUser));
+        it(`create user ${i}`, shared.createUserFn(hxUser));
     }
 
     for (let i = 0; i < 20; ++i) {

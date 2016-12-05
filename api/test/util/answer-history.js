@@ -4,7 +4,7 @@ const _ = require('lodash');
 
 const History = require('./entity-history');
 const Generator = require('./entity-generator');
-const jsutil = require('../../lib/jsutil');
+const jsutil = require('./test-jsutil');
 
 class AnswerHistory {
     constructor(testQuestions) {

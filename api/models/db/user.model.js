@@ -1,11 +1,12 @@
 'use strict';
 
-const _ = require('lodash');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
+const moment = require('moment');
 
 const config = require('../../config');
 const SPromise = require('../../lib/promise');
+const RRError = require('../../lib/rr-error');
 
 module.exports = function (sequelize, DataTypes) {
     const bccompare = SPromise.promisify(bcrypt.compare, {
@@ -22,7 +23,7 @@ module.exports = function (sequelize, DataTypes) {
         username: {
             type: DataTypes.TEXT,
             unique: {
-                msg: 'The specified username is already in use.'
+                msg: RRError.message('uniqueUsername')
             },
             validate: {
                 notEmpty: true
@@ -31,14 +32,8 @@ module.exports = function (sequelize, DataTypes) {
         },
         email: {
             type: DataTypes.TEXT,
-            unique: {
-                msg: 'The specified email address is already in use.'
-            },
             validate: {
                 isEmail: true
-            },
-            set(val) {
-                this.setDataValue('email', val && val.toLowerCase());
             },
             allowNull: false
         },
@@ -50,16 +45,22 @@ module.exports = function (sequelize, DataTypes) {
             allowNull: false
         },
         role: {
-            type: DataTypes.ENUM('admin', 'participant', 'clinician')
+            type: DataTypes.ENUM('admin', 'participant', 'clinician'),
+            allowNull: false
+        },
+        originalUsername: {
+            type: DataTypes.TEXT,
+            field: 'original_username',
+            allowNull: true
         },
         resetPasswordToken: {
-            unique: {
-                msg: 'Internal error generating unique token.'
-            },
+            unique: true,
             type: DataTypes.STRING,
+            field: 'reset_password_token'
         },
         resetPasswordExpires: {
             type: DataTypes.DATE,
+            field: 'reset_password_expires'
         },
         createdAt: {
             type: DataTypes.DATE,
@@ -69,16 +70,26 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.DATE,
             field: 'updated_at',
         },
+        deletedAt: {
+            type: DataTypes.DATE,
+            field: 'deleted_at',
+        }
     }, {
         freezeTableName: true,
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
+        deletedAt: 'deletedAt',
+        paranoid: true,
+        indexes: [{
+            name: 'registry_user_lower_email_key',
+            unique: true,
+            fields: [sequelize.fn('lower', sequelize.col('email'))]
+        }],
         hooks: {
             afterSync(options) {
                 if (options.force) {
-                    const user = _.assign(config.superUser, {
-                        role: 'admin'
-                    });
+                    const role = 'admin';
+                    const user = Object.assign({ role }, config.superUser);
                     return User.create(user);
                 }
             },
@@ -96,7 +107,7 @@ module.exports = function (sequelize, DataTypes) {
                 return bccompare(password, this.password)
                     .then(result => {
                         if (!result) {
-                            throw new Error('Authentication error.');
+                            throw new RRError('authenticationError');
                         }
                     });
             },
@@ -108,25 +119,26 @@ module.exports = function (sequelize, DataTypes) {
             },
             updateResetPWToken() {
                 return randomBytes(config.crypt.resetTokenLength)
-                    .then(buf => {
-                        const token = buf.toString('hex');
-                        return token;
+                    .then(buf => buf.toString('hex'))
+                    .then(token => {
+                        return randomBytes(config.crypt.resetPasswordLength)
+                            .then(passwordBuf => {
+                                return {
+                                    token,
+                                    password: passwordBuf.toString('hex')
+                                };
+                            });
                     })
-                    .then((token) => {
-                        return randomBytes(config.crypt.resetPasswordLength).then(passwordBuf => {
-                            return {
-                                token,
-                                password: passwordBuf.toString('hex')
-                            };
-                        });
-                    })
-                    .then((result) => {
+                    .then(result => {
                         this.resetPasswordToken = result.token;
                         this.password = result.password;
-                        this.resetPasswordExpires = config.expiresForDB();
-                        return this.save().then(() => {
-                            return result.token;
-                        });
+                        let m = moment.utc();
+                        m.add(config.crypt.resetExpires, config.crypt.resetExpiresUnit);
+                        this.resetPasswordExpires = m.toISOString();
+                        return this.save()
+                            .then(() => {
+                                return result.token;
+                            });
                     });
             }
         }

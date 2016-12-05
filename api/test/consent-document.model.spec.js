@@ -42,7 +42,7 @@ describe('consent document/type/signature unit', function () {
     }
 
     for (let i = 0; i < userCount; ++i) {
-        it(`create user ${i}`, shared.createUser(history.hxUser));
+        it(`create user ${i}`, shared.createUserFn(history.hxUser));
     }
 
     it('error: no consent documents of existing types', function () {

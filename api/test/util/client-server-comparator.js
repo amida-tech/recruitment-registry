@@ -151,6 +151,12 @@ const comparator = {
         const expected = _.cloneDeep(client);
         expected.id = server.id;
         delete expected.password;
+        if (!expected.hasOwnProperty('role')) {
+            expected.role = 'participant';
+        }
+        if (!expected.username) {
+            expected.username = expected.email.toLowerCase();
+        }
         expect(server).to.deep.equal(expected);
     }
 };

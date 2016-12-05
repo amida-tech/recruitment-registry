@@ -3,28 +3,16 @@
 const _ = require('lodash');
 
 const models = require('../models');
-const db = require('../models/db');
 const shared = require('./shared.js');
 const tokener = require('../lib/tokener');
 
 exports.createNewUser = function (req, res) {
-    const username = req.body.username;
-    db.User.findOne({ where: { username } })
-        .then(data => {
-            if (data) {
-                return res.status(400).json({
-                    message: 'An existing user has already used that username address.'
-                });
-            } else {
-                const newUser = req.body;
-                newUser.role = 'participant';
-                return db.User.create(req.body)
-                    .then(user => {
-                        const token = tokener.createJWT(user);
-                        res.cookie('rr-jwt-token', token);
-                        res.status(201).json({ id: user.id });
-                    });
-            }
+    const newUser = Object.assign({ role: 'participant' }, req.body);
+    return models.user.createUser(newUser)
+        .then(user => {
+            const token = tokener.createJWT(user);
+            res.cookie('rr-jwt-token', token);
+            res.status(201).json({ id: user.id });
         })
         .catch(shared.handleError(res));
 };
