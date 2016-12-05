@@ -13,11 +13,12 @@ import { combineReducers } from 'redux-immutable'
 import { applyMiddleware, compose, createStore } from 'redux';
 import { createDevTools, persistState } from 'redux-devtools';
 import thunk from 'redux-thunk';
+
 import dataService from './utils/api';
 
 
 const IS_PROD = process.env.NODE_ENV !== 'development';
-const NOOP = () => null;
+const NOOP = () => null; //should this be in its own utils package
 
 let DevTools = IS_PROD ? NOOP : createDevTools(
   <DockMonitor
@@ -89,6 +90,7 @@ export default (options) => {
     </div>
   );
 
+  // This is the app.
   return {
     store,
     history,
@@ -97,7 +99,13 @@ export default (options) => {
         <Provider store={store}>
           <Router history={history}>
             <Route component={LayoutWrapper}>
-              {routes.map(route => <Route key={route.path} path={route.path} component={route.component} />)}
+              {routes.map(route => 
+                  <Route 
+                      key={route.path} 
+                      path={route.path} 
+                      component={route.component} 
+                  />
+              )}
             </Route>
           </Router>
         </Provider>,

@@ -1,7 +1,6 @@
 import React, { Component} from 'react';
 import { Draggable, Droppable } from 'react-drag-and-drop'
 import Guid from 'guid'
-import './index.scss';
 import ChoicesQuestion from './choices-question'
 import BoolQuestion from './bool-question'
 import ChoiceQuestion from './choice-question'
@@ -47,8 +46,6 @@ export default class Toolbox extends Component {
       required: true
     })
 
-
-
     var boolChoice = JSON.stringify({
       id: undefined,
       text: "Choice",
@@ -62,8 +59,7 @@ export default class Toolbox extends Component {
       type: "text",
       isNew: true
     })
-
-
+    
     return (
       <div className="survey-builder">
         <div className="row">
