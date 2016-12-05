@@ -3,8 +3,6 @@
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
-const sinon = require('sinon');
-const moment = require('moment');
 const _ = require('lodash');
 
 const SPromise = require('../lib/promise');
@@ -27,16 +25,6 @@ describe('user unit', function () {
 
     before(shared.setUpFn());
 
-    const createUserFn = function () {
-        return function () {
-            const user = generator.newUser();
-            return models.user.createUser(user)
-                .then(({ id }) => {
-                    hxUser.push(user, { id });
-                });
-        };
-    };
-
     const getUserFn = function (index) {
         return function () {
             const id = hxUser.id(index);
@@ -54,14 +42,6 @@ describe('user unit', function () {
             const server = hxUser.server(index);
             return models.user.getUser(server.id)
                 .then(user => expect(user).to.deep.equal(server));
-        };
-    };
-
-    const authenticateUserFn = function (index) {
-        return function () {
-            const client = hxUser.client(index);
-            const username = client.username || client.email;
-            return models.auth.authenticateUser(username, client.password);
         };
     };
 
@@ -84,13 +64,8 @@ describe('user unit', function () {
     };
 
     _.range(userCount).forEach(index => {
-        it(`create user ${index}`, createUserFn());
+        it(`create user ${index}`, shared.createUserFn(hxUser));
         it(`get user ${index}`, getUserFn(index));
-    });
-
-    _.range(userCount).forEach(index => {
-        it(`update user ${index}`, updateUserFn(index));
-        it(`verify user ${index}`, verifyUserFn(index));
     });
 
     it('error: identical specified username and email', function () {
@@ -130,22 +105,13 @@ describe('user unit', function () {
         };
     };
 
-    const uniqUsernameEmailErrorFn = function (index) {
-        return function () {
-            const client = hxUser.client(index);
-            const username = client.username || client.email.toLowerCase();
-            return models.user.createUser(client)
-                .then(shared.throwingHandler, shared.expectedSeqErrorHandler('SequelizeUniqueConstraintError', { username }, 'uniqueUsername'));
-        };
-    };
-
     const uniqEmailErrorFn = function (index) {
         return function () {
             const client = hxUser.client(index);
             const user = generator.newUser();
             user.email = client.email;
             let fields;
-            if (client.username) {
+            if (client.username || user.username) {
                 fields = { 'lower(email)': user.email.toLowerCase() };
             } else {
                 fields = { username: user.email.toLowerCase() };
@@ -160,17 +126,36 @@ describe('user unit', function () {
             const client = hxUser.client(index);
             const user = generator.newUser();
             user.email = testJsutil.oppositeCase(client.email);
-            const fields = { 'lower(email)': user.email.toLowerCase() };
+            let fields;
+            if (client.username || user.username) {
+                fields = { 'lower(email)': user.email.toLowerCase() };
+            } else {
+                fields = { username: user.email.toLowerCase() };
+            }
             return models.user.createUser(user)
                 .then(shared.throwingHandler, shared.expectedSeqErrorHandler('SequelizeUniqueConstraintError', fields));
         };
     };
 
-    _.range(userCount).forEach(index => {
+    const uniqUserErrorFn = function (index) {
+        return function () {
+            const client = hxUser.client(index);
+            const username = client.username || client.email.toLowerCase();
+            return models.user.createUser(client)
+                .then(shared.throwingHandler, shared.expectedSeqErrorHandler('SequelizeUniqueConstraintError', { username }, 'uniqueUsername'));
+        };
+    };
+
+    [0, 2, 1, 3].forEach(index => {
         it(`error: create user with username of user ${index}`, uniqUsernameErrorFn(index));
         it(`error: create user with email of user ${index}`, uniqEmailErrorFn(index));
         it(`error: create user with opposite case email of user ${index}`, uniqOppCaseEmailErrorFn(index));
-        it(`error: create user with username and email of user ${index}`, uniqUsernameEmailErrorFn(index));
+        it(`error: create user with username and email of user ${index}`, uniqUserErrorFn(index));
+    });
+
+    _.range(userCount).forEach(index => {
+        it(`update user ${index}`, updateUserFn(index));
+        it(`verify user ${index}`, verifyUserFn(index));
     });
 
     const invalidPasswordErrorFn = function (value) {
@@ -305,12 +290,14 @@ describe('user unit', function () {
         };
     };
 
+    it('sanity check both direct username and email username are tested', shared.sanityEnoughUserTested(hxUser));
+
     _.range(userCount).forEach(index => {
         it(`get reset password token for user ${index}`, resetPasswordTokenFn(index));
         it(`error: authenticate user ${index} with old password`, authenticateUserOldPWFn(index));
         it(`error: reset password with wrong token for user ${index}`, resetPasswordWrongTokenFn(index));
         it(`reset password for user ${index}`, resetPasswordFn(index));
-        it(`authenticate user ${index}`, authenticateUserFn(index));
+        it(`authenticate user ${index}`, shared.authenticateUserFn(hxUser, index));
     });
 
     it('error: reset password token for invalid email', function () {
@@ -318,24 +305,27 @@ describe('user unit', function () {
             .then(shared.throwingHandler, shared.expectedErrorHandler('invalidEmail'));
     });
 
+    let resetExpires;
+    let resetExpiresUnit;
+
+    it('reduce password token expiration duration', function () {
+        resetExpires = config.crypt.resetExpires;
+        resetExpiresUnit = config.crypt.resetExpiresUnit;
+        config.crypt.resetExpires = 250;
+        config.crypt.resetExpiresUnit = 'ms';
+    });
+
+    it('get reset password token for user 0', resetPasswordTokenFn(0));
+    it('delay to cause password tokenn expiration', function () {
+        return SPromise.delay(600);
+    });
     it('error: reset password with expired reset token', function () {
-        const stub = sinon.stub(config, 'expiresForDB', function () {
-            let m = moment.utc();
-            m.add(250, 'ms');
-            return m.toISOString();
-        });
-        const inputUser = generator.newUser();
-        return models.user.createUser(inputUser)
-            .then(user => models.user.resetPasswordToken(user.email))
-            .then(function (token) {
-                return models.user.resetPassword(token, 'newPassword')
-                    .then(() => SPromise.delay(600))
-                    .then(() => models.user.resetPassword(token, 'newPassword'))
-                    .then(shared.throwingHandler, shared.expectedErrorHandler('invalidOrExpiredPWToken'))
-                    .then(() => {
-                        expect(stub.called).to.equal(true);
-                        config.expiresForDB.restore();
-                    });
-            });
+        return models.user.resetPassword(tokens[0], 'newPassword')
+            .then(shared.throwingHandler, shared.expectedErrorHandler('invalidOrExpiredPWToken'));
+    });
+
+    it('restore password token expiration duraction', function () {
+        config.crypt.resetExpires = resetExpires;
+        config.crypt.resetExpiresUnit = resetExpiresUnit;
     });
 });

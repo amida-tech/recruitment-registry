@@ -39,6 +39,14 @@ class SharedSpec {
         };
     }
 
+    authenticateUserFn(hxUser, index) {
+        return function () {
+            const client = hxUser.client(index);
+            const username = client.username || client.email;
+            return models.auth.authenticateUser(username, client.password);
+        };
+    }
+
     createProfileSurveyFn(hxSurvey) {
         const generator = this.generator;
         return function () {
@@ -221,6 +229,22 @@ class SharedSpec {
                 expect(err.message).to.equal(RRError.message(code));
             }
             return err;
+        };
+    }
+
+    sanityEnoughUserTested(hxUser) {
+        return function () {
+            const userCount = hxUser.length();
+            const counts = _.range(userCount).reduce((r, index) => {
+                if (hxUser.client(index).username) {
+                    ++r.username;
+                } else {
+                    ++r.email;
+                }
+                return r;
+            }, { username: 0, email: 0 });
+            expect(counts.username).to.be.above(0);
+            expect(counts.email).to.be.above(0);
         };
     }
 }

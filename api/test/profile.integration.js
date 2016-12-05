@@ -3,6 +3,7 @@
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
+const _ = require('lodash');
 
 const config = require('../config');
 
@@ -31,7 +32,6 @@ describe('profile integration', function () {
     const createProfileFn = function () {
         return function (done) {
             const user = generator.newUser();
-            user.role = 'participant';
             const input = { user };
             store.authPost('/profiles', input, 201)
                 .expect(function () {
@@ -67,26 +67,22 @@ describe('profile integration', function () {
         };
     };
 
-    it('register user 0 with profile survey', createProfileFn());
-
-    it('verify user 0 profile', verifyProfileFn(0));
-
-    it('update user 0 profile', updateProfileFn(0));
-
-    it('verify user 0 profile', verifyProfileFn(0));
+    _.range(0, 2).forEach(index => {
+        it(`register user ${index} with profile`, createProfileFn());
+        it(`verify user ${index} profile`, verifyProfileFn(index));
+        it(`update user ${index} profile`, updateProfileFn(index));
+        it(`verify user ${index} profile`, verifyProfileFn(index));
+        it(`logout as user ${index}`, shared.logoutFn(store));
+    });
 
     it('login as super', shared.loginFn(store, config.superUser));
-
     for (let i = 0; i < 2; ++i) {
         it(`create consent type ${i}`, shared.createConsentTypeFn(store, hxConsentDoc));
     }
-
     for (let i = 0; i < 2; ++i) {
         it(`create consent document of type ${i}`, shared.createConsentDocumentFn(store, hxConsentDoc, i));
     }
-
     it('create profile survey', shared.createProfileSurveyFn(store, hxSurvey));
-
     it('logout as super', shared.logoutFn(store));
 
     it(`get/verify profile survey`, shared.verifyProfileSurveyFn(store, hxSurvey, 0));
@@ -95,7 +91,6 @@ describe('profile integration', function () {
         return function (done) {
             const survey = hxSurvey.server(surveyIndex);
             const clientUser = generator.newUser();
-            clientUser.role = 'participant';
             const answers = generator.answerQuestions(survey.questions);
             hxAnswers.push(answers);
             const input = { user: clientUser, answers };
@@ -114,7 +109,6 @@ describe('profile integration', function () {
         return function (done) {
             const survey = hxSurvey.server(surveyIndex);
             const clientUser = generator.newUser();
-            clientUser.role = 'participant';
             const answers = generator.answerQuestions(survey.questions);
             hxAnswers.push(answers);
             const input = { user: clientUser, answers };
@@ -227,39 +221,37 @@ describe('profile integration', function () {
         };
     };
 
-    it('register user 1 with profile survey', createProfileWithSurveyFn(0));
+    _.range(2, 4).forEach(index => {
+        it(`register user ${index} with profile survey`, createProfileWithSurveyFn(0));
+        it(`verify user ${index} profile`, verifyProfileWithSurveyFn(0, index));
+        it(`verify document 0 is not signed by user ${index}`, verifySignedDocumentFn(false));
+        it(`verify document 0 is not signed by user ${index} (type name)`, verifySignedDocumentByTypeNameFn(false));
+        it(`update user ${index} profile`, updateProfileWithSurveyFn(0, index));
+        it(`verify user ${index} profile`, verifyProfileWithSurveyFn(0, index));
+        it(`logout as user ${index}`, shared.logoutFn(store));
+    });
 
-    it('verify user 1 profile', verifyProfileWithSurveyFn(0, 1));
+    _.range(4, 6).forEach(index => {
+        it(`register user ${index} with profile survey 0 and doc 0 signature`, createProfileWithSurveyFn(0, [0]));
+        it(`verify user ${index} profile`, verifyProfileWithSurveyFn(0, index));
+        it(`verify document 0 is signed by user ${index}`, verifySignedDocumentFn(true));
+        it(`verify document 0 is not signed by user ${index} (type name)`, verifySignedDocumentByTypeNameFn(true));
+        it(`logout as user ${index}`, shared.logoutFn(store));
+    });
 
-    it('verify document 0 is not signed by user 1', verifySignedDocumentFn(false));
+    _.range(6, 8).forEach(index => {
+        it(`register user ${index} with profile survey 1 and doc 0 signature in spanish`, createProfileWithSurveyLanguageFn(0, [0], 'es'));
+        it(`verify user ${index} profile`, verifyProfileWithSurveyFn(0, index, 'es'));
+        it(`verify document 0 is signed by user ${index} in spanish`, verifySignedDocumentFn(true, 'es'));
+        it(`logout as user ${index}`, shared.logoutFn(store));
+    });
 
-    it('verify document 0 is not signed by user 1 (type name)', verifySignedDocumentByTypeNameFn(false));
-
-    it('update user 1 profile', updateProfileWithSurveyFn(0, 1));
-
-    it('verify user 1 profile', verifyProfileWithSurveyFn(0, 1));
-
-    it('register user 2 with profile survey 0 and doc 0 signature', createProfileWithSurveyFn(0, [0]));
-
-    it('verify user 2 profile', verifyProfileWithSurveyFn(0, 2));
-
-    it('verify document 0 is signed by user 2', verifySignedDocumentFn(true));
-
-    it('verify document 0 is not signed by user 2 (type name)', verifySignedDocumentByTypeNameFn(true));
-
-    it('register user 3 with profile survey 1 and doc 0 signature in spanish', createProfileWithSurveyLanguageFn(0, [0], 'es'));
-
-    it('verify user 3 profile', verifyProfileWithSurveyFn(0, 3, 'es'));
-
-    it('verify document 0 is signed by user in spanish', verifySignedDocumentFn(true, 'es'));
-
-    it('register user 4 with profile survey 1 and doc 0 signature in english', createProfileWithSurveyLanguageFn(0, [0], 'en'));
-
-    it('verify user 4 profile', verifyProfileWithSurveyFn(0, 4, 'en'));
-
-    it('verify document 0 is signed by user in english', verifySignedDocumentFn(true, 'en'));
-
-    it('update user 4 profile', patchProfileFn(0, 4, 'es'));
-
-    it('verify user 0 profile', verifyProfileWithSurveyFn(0, 4));
+    _.range(8, 10).forEach(index => {
+        it(`register user ${index} with profile survey 1 and doc 0 signature in english`, createProfileWithSurveyLanguageFn(0, [0], 'en'));
+        it(`verify user ${index} profile`, verifyProfileWithSurveyFn(0, index, 'en'));
+        it(`verify document 0 is signed by user ${index} in english`, verifySignedDocumentFn(true, 'en'));
+        it(`update user ${index} profile`, patchProfileFn(0, index, 'es'));
+        it(`verify user ${index} profile`, verifyProfileWithSurveyFn(0, index));
+        it(`logout as user ${index}`, shared.logoutFn(store));
+    });
 });

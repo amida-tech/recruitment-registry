@@ -7,11 +7,11 @@ const chai = require('chai');
 const sinon = require('sinon');
 const _ = require('lodash');
 
-const models = require('../models');
 const config = require('../config');
 const tokener = require('../lib/tokener');
 
 const SharedIntegration = require('./util/shared-integration');
+const SharedSpec = require('./util/shared-spec');
 const RRSuperTest = require('./util/rr-super-test');
 const RRError = require('../lib/rr-error');
 const History = require('./util/entity-history');
@@ -20,6 +20,7 @@ const Generator = require('./util/entity-generator');
 const expect = chai.expect;
 const generator = new Generator();
 const shared = new SharedIntegration(generator);
+const sharedSpec = new SharedSpec(generator);
 
 describe('auth integration', function () {
     const userCount = 4;
@@ -30,20 +31,17 @@ describe('auth integration', function () {
 
     before(shared.setUpFn(store));
 
-    const createUserFn = function () {
-        const user = generator.newUser();
-        return models.user.createUser(user)
-            .then(({ id }) => hxUser.pushWithId(user, id));
-    };
-
     _.range(userCount).forEach(index => {
-        it(`create user ${index} directly on db`, createUserFn);
+        it(`create user ${index} using model`, sharedSpec.createUserFn(hxUser));
     });
 
     const successfullLoginFn = function (index) {
         return function (done) {
-            const clientUser = hxUser.client(index);
-            const { username, password } = clientUser;
+            const client = hxUser.client(index);
+            let { username, email, password } = client;
+            if (!username) {
+                username = email;
+            }
             store.authBasic({ username, password })
                 .end(function (err) {
                     if (err) {
@@ -54,7 +52,7 @@ describe('auth integration', function () {
                             return done(err);
                         }
                         const id = hxUser.id(index);
-                        expect(jwtObject.username).to.equal(clientUser.username);
+                        expect(jwtObject.username).to.equal(client.username || client.email.toLowerCase());
                         expect(jwtObject.id).to.equal(id);
                         done();
                     });
@@ -64,8 +62,12 @@ describe('auth integration', function () {
 
     const wrongUsernameFn = function (index) {
         return function (done) {
-            let { username, password } = hxUser.client(index);
-            username += 'a';
+            const client = hxUser.client(index);
+            let { username, email, password } = client;
+            if (!username) {
+                username = email;
+            }
+            username += 'u' + username;
             store.authBasic({ username, password }, 401)
                 .expect(function (res) {
                     expect(res.body.message).to.equal(RRError.message('authenticationError'));
@@ -76,7 +78,11 @@ describe('auth integration', function () {
 
     const wrongPasswordFn = function (index) {
         return function (done) {
-            let { username, password } = hxUser.client(index);
+            const client = hxUser.client(index);
+            let { username, email, password } = client;
+            if (!username) {
+                username = email;
+            }
             password += 'a';
             store.authBasic({ username, password }, 401)
                 .expect(function (res) {
@@ -87,9 +93,9 @@ describe('auth integration', function () {
     };
 
     _.range(userCount).forEach(index => {
-        it(`user ${index} successfull login`, successfullLoginFn(0));
-        it(`user ${index} wrong username`, wrongUsernameFn(0));
-        it(`user ${index} wrong password`, wrongPasswordFn(0));
+        it(`user ${index} successfull login`, successfullLoginFn(index));
+        it(`user ${index} wrong username`, wrongUsernameFn(index));
+        it(`user ${index} wrong password`, wrongPasswordFn(index));
     });
 
     it('token creation throws', function (done) {

@@ -35,7 +35,10 @@ module.exports = class UserDAO {
             .then(user => {
                 if (user) {
                     return user.authenticate(password)
-                        .then(() => user);
+                        .then(() => ({
+                            id: user.id,
+                            originalUsername: user.originalUsername
+                        }));
                 } else {
                     return RRError.reject('authenticationError');
                 }

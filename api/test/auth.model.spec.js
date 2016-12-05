@@ -2,7 +2,6 @@
 'use strict';
 process.env.NODE_ENV = 'test';
 
-const chai = require('chai');
 const _ = require('lodash');
 
 const SharedSpec = require('./util/shared-spec');
@@ -13,7 +12,6 @@ const testJsutil = require('./util/test-jsutil');
 
 const generator = new Generator();
 const shared = new SharedSpec(generator);
-const expect = chai.expect;
 
 describe('auth unit', function () {
     const userCount = 4;
@@ -22,25 +20,7 @@ describe('auth unit', function () {
 
     before(shared.setUpFn());
 
-    const createUserFn = function () {
-        return function () {
-            const user = generator.newUser();
-            return models.user.createUser(user)
-                .then(({ id }) => {
-                    hxUser.push(user, { id });
-                });
-        };
-    };
-
-    const authenticateUserFn = function (index) {
-        return function () {
-            const client = hxUser.client(index);
-            const username = client.username || client.email;
-            return models.auth.authenticateUser(username, client.password);
-        };
-    };
-
-    const authenticateUserErrorFn = function (index) {
+    const authenticateUserBadPWFn = function (index) {
         return function () {
             const client = hxUser.client(index);
             const username = client.username || client.email;
@@ -101,31 +81,19 @@ describe('auth unit', function () {
     };
 
     _.range(userCount).forEach(index => {
-        it(`create user ${index}`, createUserFn());
-        it(`authenticate user ${index}`, authenticateUserFn(index));
-        it(`error: authenticate user ${index} with wrong password`, authenticateUserErrorFn(index));
-        it(`authenticate user ${index} with wrong password`, authenticateUserErrorFn(index));
+        it(`create user ${index}`, shared.createUserFn(hxUser));
+        it(`authenticate user ${index}`, shared.authenticateUserFn(hxUser, index));
+        it(`error: authenticate user ${index} with wrong password`, authenticateUserBadPWFn(index));
         it(`update password for user ${index}`, updateUserPasswordFn(index));
-        it(`authenticate user ${index}`, authenticateUserFn(index));
-        it(`error: authenticate opposite case username user ${index}`, authenticateOppositeCaseUserErrorFn(index));
-        it(`authenticate opposite case username (when email) user ${index}`, authenticateOppositeCaseUserFn(index));
+        it(`authenticate user ${index}`, shared.authenticateUserFn(hxUser, index));
+        it(`error: authenticate user ${index} with opposite case username`, authenticateOppositeCaseUserErrorFn(index));
+        it(`authenticate user ${index} with opposite case username (when email) `, authenticateOppositeCaseUserFn(index));
     });
 
     _.range(userCount).forEach(index => {
         it(`update user ${index}`, updateUserFn(index));
-        it(`authenticate user ${index}`, authenticateUserFn(index));
+        it(`authenticate user ${index}`, shared.authenticateUserFn(hxUser, index));
     });
 
-    it('sanity check both direct username and email username are tested', function () {
-        const counts = _.range(userCount).reduce((r, index) => {
-            if (hxUser.client(index).username) {
-                ++r.username;
-            } else {
-                ++r.email;
-            }
-            return r;
-        }, { username: 0, email: 0 });
-        expect(counts.username).to.be.above(0);
-        expect(counts.email).to.be.above(0);
-    });
+    it('sanity check both direct username and email username are tested', shared.sanityEnoughUserTested(hxUser));
 });

@@ -2,6 +2,7 @@
 
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
+const moment = require('moment');
 
 const config = require('../../config');
 const SPromise = require('../../lib/promise');
@@ -118,10 +119,7 @@ module.exports = function (sequelize, DataTypes) {
             },
             updateResetPWToken() {
                 return randomBytes(config.crypt.resetTokenLength)
-                    .then(buf => {
-                        const token = buf.toString('hex');
-                        return token;
-                    })
+                    .then(buf => buf.toString('hex'))
                     .then(token => {
                         return randomBytes(config.crypt.resetPasswordLength)
                             .then(passwordBuf => {
@@ -134,7 +132,9 @@ module.exports = function (sequelize, DataTypes) {
                     .then(result => {
                         this.resetPasswordToken = result.token;
                         this.password = result.password;
-                        this.resetPasswordExpires = config.expiresForDB();
+                        let m = moment.utc();
+                        m.add(config.crypt.resetExpires, config.crypt.resetExpiresUnit);
+                        this.resetPasswordExpires = m.toISOString();
                         return this.save()
                             .then(() => {
                                 return result.token;
