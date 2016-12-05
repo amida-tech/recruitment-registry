@@ -24,11 +24,15 @@
     "request-promise": "^4.1.1"
   },
   "dependencies": {
+    "animate.css": "^3.5.2",
     "bcryptjs": "2.3.0",
     "bootstrap": "4.0.0-alpha.2",
+    "bulma": "^0.2.3",
     "classnames": "^2.2.5",
+    "font-awesome": "^4.7.0",
     "guid": "0.0.12",
     "immutable": "3.8.1",
+    "normalize.css": "^5.0.0",
     "react": "15.3.0",
     "react-addons-test-utils": "15.3.0",
     "react-cookie": "^0.4.8",
