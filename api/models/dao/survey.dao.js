@@ -207,8 +207,9 @@ module.exports = class SurveyDAO extends Translatable {
                             attributes: ['questionId', 'required']
                         })
                         .then(surveyQuestions => {
-                            const questionIds = _.map(surveyQuestions, 'questionId');
-                            return this.question.listQuestions({ ids: questionIds, language: options.language })
+                            const ids = _.map(surveyQuestions, 'questionId');
+                            const language = options.language;
+                            return this.question.listQuestions({ scope: 'complete', ids, language })
                                 .then(questions => ({ questions, surveyQuestions }));
                         })
                         .then(({ questions, surveyQuestions }) => {

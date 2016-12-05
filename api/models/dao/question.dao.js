@@ -197,43 +197,40 @@ module.exports = class QuestionDAO extends Translatable {
             });
     }
 
-    _listQuestions(options = {}) {
-        const _options = {
-            raw: true,
-            attributes: ['id', 'type', 'meta'],
-            order: 'id'
-        };
-        const ids = options.ids;
-        const language = options.language;
-        if (ids) {
-            _options.where = { id: { $in: ids } };
+    listQuestions({ scope, ids, language } = {}) {
+        scope = scope || 'complete';
+        const attributes = ['id', 'type'];
+        if (scope === 'complete') {
+            attributes.push('meta');
         }
-        return Question.findAll(_options)
+        const options = { raw: true, attributes, order: 'id' };
+        if (ids) {
+            options.where = { id: { $in: ids } };
+        }
+        return Question.findAll(options)
             .then(questions => {
+                if (ids && (questions.length !== ids.length)) {
+                    return RRError.reject('qxNotFound');
+                }
                 if (!questions.length) {
-                    return { questions, map: {} };
+                    return questions;
+                }
+                const map = new Map(questions.map(question => ([question.id, question])));
+                if (ids) {
+                    questions = ids.map(id => map.get(id));
                 }
                 questions.forEach(question => {
                     if (question.meta === null) {
                         delete question.meta;
                     }
                 });
-                const map = _.keyBy(questions, 'id');
-                const qtOptions = {
-                    raw: true,
-                    language,
-                    attributes: ['questionId', 'text', 'instruction']
-                };
-                if (ids) {
-                    qtOptions.where = { questionId: { $in: ids } };
-                }
                 return this.updateAllTexts(questions, language)
                     .then(() => {
                         return this.questionAction.findActionsPerQuestions(ids, language)
                             .then(actions => {
                                 if (actions.length) {
                                     actions.forEach(action => {
-                                        const q = map[action.questionId];
+                                        const q = map.get(action.questionId);
                                         if (q) {
                                             delete action.questionId;
                                             if (q.actions) {
@@ -249,9 +246,8 @@ module.exports = class QuestionDAO extends Translatable {
                     .then(() => {
                         return this.questionChoice.getAllQuestionChoices(ids, language)
                             .then(choices => {
-                                const map = _.keyBy(questions, 'id');
                                 choices.forEach(choice => {
-                                    const q = map[choice.questionId];
+                                    const q = map.get(choice.questionId);
                                     if (q) {
                                         delete choice.questionId;
                                         if (q.type === 'choice') {
@@ -264,24 +260,9 @@ module.exports = class QuestionDAO extends Translatable {
                                         }
                                     }
                                 });
-                                return { questions, map };
                             });
-                    });
-            });
-    }
-
-    listQuestions(options = {}) {
-        return this._listQuestions(options)
-            .then(({ questions, map }) => {
-                const ids = options.ids;
-                if (ids) {
-                    if (questions.length !== ids.length) {
-                        return RRError.reject('qxNotFound');
-                    }
-                    return ids.map(id => map[id]);
-                } else {
-                    return questions;
-                }
+                    })
+                    .then(() => questions);
             });
     }
 };
