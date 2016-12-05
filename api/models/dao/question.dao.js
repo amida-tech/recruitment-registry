@@ -7,6 +7,7 @@ const db = require('../db');
 const RRError = require('../../lib/rr-error');
 const SPromise = require('../../lib/promise');
 const Translatable = require('./translatable');
+const exportCSVConverter = require('../../export/csv-converter.js');
 
 const sequelize = db.sequelize;
 const SurveyQuestion = db.SurveyQuestion;
@@ -267,6 +268,34 @@ module.exports = class QuestionDAO extends Translatable {
                         }
                     })
                     .then(() => questions);
+            });
+    }
+
+    export () {
+        return this.listQuestions({ scope: 'export' })
+            .then(questions => {
+                return questions.reduce((r, { id, type, text, instruction, choices }) => {
+                    const questionLine = { id, type, text, instruction };
+                    if (!choices) {
+                        r.push(questionLine);
+                        return r;
+                    }
+                    choices.forEach(({ id, type, text }, index) => {
+                        const line = { choiceId: id, choiceText: text };
+                        if (type) {
+                            line.choiceType = type;
+                        }
+                        if (index === 0) {
+                            Object.assign(line, questionLine);
+                        }
+                        r.push(line);
+                    });
+                    return r;
+                }, []);
+            })
+            .then(lines => {
+                const converter = new exportCSVConverter();
+                return converter.dataToCSV(lines);
             });
     }
 };

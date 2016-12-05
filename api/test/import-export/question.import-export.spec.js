@@ -4,6 +4,8 @@ process.env.NODE_ENV = 'test';
 
 const _ = require('lodash');
 
+const models = require('../../models');
+
 const SharedSpec = require('../util/shared-spec.js');
 const Generator = require('../util/entity-generator');
 const History = require('../util/entity-history');
@@ -17,6 +19,7 @@ describe('question import-export unit', function () {
 
     const hxQuestion = new History();
     const tests = new questionCommon.specTests(generator, hxQuestion);
+    let csvContent;
 
     for (let i = 0; i < 12; ++i) {
         it(`create question ${i}`, tests.createQuestionFn());
@@ -41,4 +44,9 @@ describe('question import-export unit', function () {
     });
 
     it('list all questions (export)', tests.listQuestionsFn('export'));
+
+    it('export questions to csv', function () {
+        return models.question.export()
+            .then(result => csvContent = result);
+    });
 });

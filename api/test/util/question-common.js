@@ -14,27 +14,27 @@ const scopeToFieldsMap = {
 const expect = chai.expect;
 
 const getFieldsForList = function (scope) {
-	scope = scope || 'summary';
-	return scopeToFieldsMap[scope];
+    scope = scope || 'summary';
+    return scopeToFieldsMap[scope];
 };
 
 const specTests = class QuestionSpecTests {
-	constructor(generator, hxQuestion) {
-		this.generator = generator;
-		this.hxQuestion = hxQuestion;
-	}
+    constructor(generator, hxQuestion) {
+        this.generator = generator;
+        this.hxQuestion = hxQuestion;
+    }
 
     createQuestionFn() {
         const generator = this.generator;
         const hxQuestion = this.hxQuestion;
-    	return function () {
-        	const qx = generator.newQuestion();
-        	return models.question.createQuestion(qx)
-            	.then(id => hxQuestion.push(qx, { id }));
-    	};
+        return function () {
+            const qx = generator.newQuestion();
+            return models.question.createQuestion(qx)
+                .then(id => hxQuestion.push(qx, { id }));
+        };
     }
 
-	getQuestionFn(index) {
+    getQuestionFn(index) {
         const hxQuestion = this.hxQuestion;
         return function () {
             const id = hxQuestion.id(index);
@@ -74,6 +74,6 @@ const specTests = class QuestionSpecTests {
 };
 
 module.exports = {
-	getFieldsForList,
-	specTests
+    getFieldsForList,
+    specTests
 };
