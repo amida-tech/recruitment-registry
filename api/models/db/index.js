@@ -1,6 +1,7 @@
 'use strict';
 
 const Sequelize = require('sequelize');
+delete pg.native; // FIXME clears a weird pg-native getter bug: https://github.com/sequelize/sequelize/issues/5476
 
 const config = require('../../config');
 const logger = require('../../logger');
