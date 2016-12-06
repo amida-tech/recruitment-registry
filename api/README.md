@@ -38,7 +38,7 @@ A minimal sample `.env` file is below.  Change according to your database
 ```
 RECREG_DB_DATABASE=recreg
 RECREG_DB_USER=foouser
-RECREG_DB_PW=TDP#2016!
+RECREG_DB_PASS=TDP#2016!
 RECREG_DB_HOST=localhost
 RECREG_DB_PORT=5432
 RECREG_DB_DIALECT=postgres
