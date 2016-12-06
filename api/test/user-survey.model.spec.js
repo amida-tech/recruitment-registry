@@ -13,6 +13,7 @@ const SurveyHistory = require('./util/survey-history');
 const SharedSpec = require('./util/shared-spec');
 const comparator = require('./util/client-server-comparator');
 const translator = require('./util/translator');
+const surveyCommon = require('./util/survey-common');
 
 const expect = chai.expect;
 const generator = new Generator();
@@ -28,6 +29,7 @@ describe('user survey unit', function () {
     const hxUser = new History();
     const mapAnswers = new Map();
     const mapStatus = new Map();
+    const surveyTests = new surveyCommon.SpecTests(generator, hxSurvey);
 
     const _key = function (userIndex, surveyIndex) {
         return `${userIndex}:${surveyIndex}`;
@@ -49,28 +51,9 @@ describe('user survey unit', function () {
         it(`verify no surveys for user ${i}`, verifyNoUserSurveys(i));
     }
 
-    const createSurveyFn = function () {
-        return function () {
-            const survey = generator.newSurvey();
-            return models.survey.createSurvey(survey)
-                .then(id => hxSurvey.push(survey, { id }));
-        };
-    };
-
-    const verifySurveyFn = function (index) {
-        return function () {
-            const surveyId = hxSurvey.id(index);
-            return models.survey.getSurvey(surveyId)
-                .then(survey => {
-                    return comparator.survey(hxSurvey.client(index), survey)
-                        .then(() => hxSurvey.updateServer(index, survey));
-                });
-        };
-    };
-
     for (let i = 0; i < surveyCount; ++i) {
-        it(`create survey ${i}`, createSurveyFn());
-        it(`get/verify survey ${i}`, verifySurveyFn(i));
+        it(`create survey ${i}`, surveyTests.createSurveyFn());
+        it(`get survey ${i}`, surveyTests.getSurveyFn(i));
     }
 
     const verifyStatusFn = function (userIndex, surveyIndex, expectedStatus) {

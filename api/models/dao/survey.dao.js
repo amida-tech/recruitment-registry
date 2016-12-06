@@ -168,23 +168,58 @@ module.exports = class SurveyDAO extends Translatable {
         });
     }
 
-    listSurveys(options = {}) {
-        let _options = {
-            raw: true,
-            attributes: ['id'],
-            order: 'id'
-        };
-        if (options.override) {
-            _options = _.assign({}, _options, options.override);
-            const indexName = _options.attributes.indexOf('name');
-            if (indexName < 0) {
-                return Survey.findAll(_options);
-            } else {
-                _options.attributes.splice(indexName, 1);
+    listSurveys({ scope, language, history, where, order, groupId, version } = {}) {
+        const attributes = ['id'];
+        if (scope === 'version-only' || scope === 'version') {
+            attributes.push('groupId');
+            attributes.push('version');
+        }
+        const options = { raw: true, attributes, order: order || 'id', paranoid: !history };
+        if (groupId || version) {
+            options.where = {};
+            if (groupId) {
+                options.where.groupId = groupId;
+            }
+            if (version) {
+                options.where.version = version;
             }
         }
-        return Survey.findAll(_options)
-            .then(surveys => this.updateAllTexts(surveys, options.language));
+        if (language) {
+            options.language = language;
+        }
+        if (scope === 'version-only') {
+            return Survey.findAll(options);
+        }
+        return Survey.findAll(options)
+            .then(surveys => this.updateAllTexts(surveys, options.language))
+            .then(surveys => {
+                if (scope === 'export') {
+                    return SurveyQuestion.findAll({
+                            raw: true,
+                            attributes: ['surveyId', 'questionId', 'required'],
+                            order: 'line'
+                        })
+                        .then(surveyQuestions => {
+                            return surveyQuestions.reduce((r, qx) => {
+                                const p = r.get(qx.surveyId);
+                                if (!p) {
+                                    r.set(qx.surveyId, [{ id: qx.questionId, required: qx.required }]);
+                                    return r;
+                                }
+                                p.push({ id: qx.questionId, required: qx.required });
+                                return r;
+                            }, new Map());
+                        })
+                        .then(map => {
+                            surveys.forEach(survey => {
+                                survey.questions = map.get(survey.id);
+                            });
+                            return surveys;
+                        });
+
+                }
+                return surveys;
+            });
     }
 
     getSurvey(id, options = {}) {

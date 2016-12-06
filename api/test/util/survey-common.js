@@ -1,8 +1,14 @@
 'use strict';
 
+const chai = require('chai');
 const _ = require('lodash');
 
-exports.formAnswersToPost = function (survey, answersSpec) {
+const models = require('../../models');
+const comparator = require('./client-server-comparator');
+
+const expect = chai.expect;
+
+const formAnswersToPost = function (survey, answersSpec) {
     const questions = survey.questions;
     const result = answersSpec.reduce(function (r, spec, index) {
         if (spec !== null) {
@@ -43,11 +49,61 @@ exports.formAnswersToPost = function (survey, answersSpec) {
     return result;
 };
 
-exports.formAnsweredSurvey = function (survey, answers) {
+const formAnsweredSurvey = function (survey, answers) {
     const result = _.cloneDeep(survey);
     result.questions.forEach(function (question, index) {
         question.answer = answers[index].answer;
         question.language = answers.language || 'en';
     });
     return result;
+};
+
+const SpecTests = class SurveySpecTests {
+    constructor(generator, hxSurvey) {
+        this.generator = generator;
+        this.hxSurvey = hxSurvey;
+    }
+
+    createSurveyFn() {
+        const generator = this.generator;
+        const hxSurvey = this.hxSurvey;
+        return function () {
+            const survey = generator.newSurvey();
+            return models.survey.createSurvey(survey)
+                .then(id => hxSurvey.push(survey, { id }));
+        };
+    }
+
+    getSurveyFn(index) {
+        const hxSurvey = this.hxSurvey;
+        return function () {
+            const surveyId = hxSurvey.id(index);
+            return models.survey.getSurvey(surveyId)
+                .then(survey => {
+                    return comparator.survey(hxSurvey.client(index), survey)
+                        .then(() => hxSurvey.updateServer(index, survey));
+                });
+        };
+    }
+
+    listSurveysFn(scope) {
+        const hxSurvey = this.hxSurvey;
+        return function () {
+            const options = scope ? {} : undefined;
+            if (scope) {
+                options.scope = scope;
+            }
+            return models.survey.listSurveys(options)
+                .then(surveys => {
+                    const expected = hxSurvey.listServersByScope(scope);
+                    expect(surveys).to.deep.equal(expected);
+                });
+        };
+    }
+};
+
+module.exports = {
+    formAnswersToPost,
+    formAnsweredSurvey,
+    SpecTests
 };

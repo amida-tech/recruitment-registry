@@ -70,26 +70,6 @@ class SharedSpec {
         };
     }
 
-    createSurveyFn(hxSurvey) {
-        const generator = this.generator;
-        return function () {
-            const survey = generator.newSurvey();
-            return models.survey.createSurvey(survey)
-                .then(id => hxSurvey.push(survey, { id }));
-        };
-    }
-
-    verifySurveyFn(hxSurvey, index) {
-        return function () {
-            const surveyId = hxSurvey.id(index);
-            return models.survey.getSurvey(surveyId)
-                .then(survey => {
-                    return comparator.survey(hxSurvey.client(index), survey)
-                        .then(() => hxSurvey.updateServer(index, survey));
-                });
-        };
-    }
-
     createQuestion(hxQuestion) {
         const generator = this.generator;
         return function () {
