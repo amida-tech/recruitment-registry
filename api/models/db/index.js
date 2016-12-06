@@ -14,6 +14,7 @@ const sequelize = new Sequelize(config.db.name, config.db.user, config.db.pass, 
         min: 0,
         idle: 10000
     },
+    native: true,
     logging: message => logger.info(message)
 });
 
