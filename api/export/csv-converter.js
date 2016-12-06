@@ -8,7 +8,8 @@ module.exports = class CSVConverter {
     }
 
     dataToCSV(data) {
-        const result = json2csv({ data });
+    	const input = Object.assign({ data }, this.options);
+        const result = json2csv(input);
         return result;
     }
 };

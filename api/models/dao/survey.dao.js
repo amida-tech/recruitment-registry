@@ -6,8 +6,9 @@ const db = require('../db');
 
 const RRError = require('../../lib/rr-error');
 const SPromise = require('../../lib/promise');
-
 const Translatable = require('./translatable');
+const exportCSVConverter = require('../../export/csv-converter.js');
+const importCSVConverter = require('../../import/csv-converter.js');
 
 const sequelize = db.sequelize;
 const Survey = db.Survey;
@@ -283,6 +284,78 @@ module.exports = class SurveyDAO extends Translatable {
                         });
                         return survey;
                     });
+            });
+    }
+
+    export () {
+        return this.listSurveys({ scope: 'export' })
+            .then(surveys => {
+                return surveys.reduce((r, { id, name, description, questions }) => {
+                    const surveyLine = { id, name, description };
+                    questions.forEach(({ id, required }, index) => {
+                        const line = { questionId: id, required };
+                        if (index === 0) {
+                            Object.assign(line, surveyLine);
+                        } else {
+                            line.id =surveyLine.id;
+                        }
+                        r.push(line);
+                    });
+                    return r;
+                }, []);
+            })
+            .then(lines => {
+                const converter = new exportCSVConverter({ fields: ['id', 'name', 'description', 'questionId', 'required']});
+                return converter.dataToCSV(lines);
+            });
+    }
+
+    import (stream, questionIdMap) {
+        questionIdMap = _.toPairs(questionIdMap).reduce((r, pair) => {
+            r[pair[0]] = pair[1].questionId;
+            return r;
+        }, {});
+        const converter = new importCSVConverter();
+        return converter.streamToRecords(stream)
+            .then(records => {
+                const numRecords = records.length;
+                if (!numRecords) {
+                    return [];
+                }
+                const map = records.reduce((r, record) => {
+                    const id = record.id;
+                    let { survey } = r.get(id) || {};
+                    if (!survey) {
+                        survey = { name: record.name };
+                        if (record.description) {
+                            survey.description = record.description;
+                        }
+                        r.set(id, { id, survey });
+                    }
+                    if (!survey.questions) {
+                        survey.questions = [];
+                    }
+                    const question = {
+                        id: questionIdMap[record.questionId],
+                        required: record.required
+                    };
+                    survey.questions.push(question);
+                    return r;
+                }, new Map());
+                return [...map.values()];
+            })
+            .then(records => {
+                if (!records.length) {
+                    return {};
+                }
+                return sequelize.transaction(transaction => {
+                    const mapIds = {};
+                    const pxs = records.map(({ id, survey }) => {
+                        return this.createSurveyTx(survey, transaction)
+                            .then(surveyId => mapIds[id] = surveyId);
+                    });
+                    return SPromise.all(pxs).then(() => mapIds);
+                });
             });
     }
 };

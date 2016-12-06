@@ -114,7 +114,7 @@ describe('survey unit', function () {
         it(`get/verify survey ${i}`, verifyUpdatedSurveyFn(i));
         it(`revert updated survey text back ${i}`, revertUpdateSurveyTextFn(i));
         it(`get/verify survey ${i}`, verifyUpdatedSurveyFn(i));
-        it(`list survey`, tests.listSurveysFn());
+        it('list surveys', tests.listSurveysFn());
     }
 
     it('replace sections of first survey with sections', function () {
@@ -314,16 +314,9 @@ describe('survey unit', function () {
             });
     });
 
-    it('delete survey 5', function () {
-        const id = hxSurvey.id(5);
-        hxSurvey.remove(5);
-        return models.survey.deleteSurvey(id)
-            .then(() => models.survey.listSurveys())
-            .then(surveys => {
-                const expected = hxSurvey.listServers();
-                expect(surveys).to.deep.equal(expected);
-            });
-    });
+    it('delete survey 5', tests.deleteSurveyFn(5));
+
+    it('list surveys', tests.listSurveysFn());
 
     it('extract existing questions', function () {
         hxSurvey.questions = _.flatten(_.map(hxSurvey.listServers('questions'), 'questions'));

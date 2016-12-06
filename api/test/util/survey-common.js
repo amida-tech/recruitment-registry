@@ -58,6 +58,23 @@ const formAnsweredSurvey = function (survey, answers) {
     return result;
 };
 
+const updateIds = function (surveys, idMap, questionIdMap) {
+    return surveys.map(survey => {
+        const surveyId = idMap[survey.id];
+        if (!surveyId) {
+            throw new Error(`updateIds: id for '${survey.name}' does not exist in the map`);
+        }
+        survey.id = surveyId;
+        survey.questions.forEach(question => {
+            const questionIdObj = questionIdMap[question.id];
+            if (!questionIdObj) {
+                throw new Error(`updateIds: choice id does not exist for for '${survey.name}' in '${question.id}'`);
+            }
+            question.id = questionIdObj.questionId;
+        });
+    });
+};
+
 const SpecTests = class SurveySpecTests {
     constructor(generator, hxSurvey) {
         this.generator = generator;
@@ -86,6 +103,15 @@ const SpecTests = class SurveySpecTests {
         };
     }
 
+    deleteSurveyFn(index) {
+        const hxSurvey = this.hxSurvey;
+        return function () {
+            const id = hxSurvey.id(index);
+            return models.survey.deleteSurvey(id)
+                .then(() => hxSurvey.remove(index));
+        };
+    }
+
     listSurveysFn(scope) {
         const hxSurvey = this.hxSurvey;
         return function () {
@@ -105,5 +131,6 @@ const SpecTests = class SurveySpecTests {
 module.exports = {
     formAnswersToPost,
     formAnsweredSurvey,
+    updateIds,
     SpecTests
 };
