@@ -29,6 +29,7 @@
     "bootstrap": "4.0.0-alpha.2",
     "bulma": "^0.2.3",
     "classnames": "^2.2.5",
+    "flexboxgrid": "^6.3.1",
     "font-awesome": "^4.7.0",
     "guid": "0.0.12",
     "immutable": "3.8.1",
