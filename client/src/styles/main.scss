@@ -1,9 +1,13 @@
 @charset "UTF-8";
 
-// Vendor imports. Strips default browser styling, and imports the scaffolding framework (flexboxgrid -- see http://flexboxgrid.com/ for documentation)
-@import 'vendor/normalize';
+//Add Bulma Instead of Flexbox Grid
+@import '../../node_modules/normalize.css/normalize.css';
+@import '../../node_modules/animate.css/animate.css';
+@import '../../node_modules/bulma/bulma.sass';
+@import '../../node_modules/font-awesome/scss/font-awesome.scss';
+//@import '../../node_modules/flexboxgrid/css/flexboxgrid.css';
 @import 'vendor/flexboxgrid';
-@import 'vendor/animate';
+
 
 // Global variables and UI chrome
 @import 'utils/variables';

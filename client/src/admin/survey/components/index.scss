@@ -1,0 +1,26 @@
+.question {
+  border: 0px;
+  font-weight: bold !important;
+}
+/* Remove scroll on the body when react-modal is open */
+.ReactModal__Body--open {
+  overflow: hidden;
+}
+.ReactModal__Overlay {
+  z-index: 1111111;
+
+  .ReactModal__Content {
+    padding: 0 !important;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+    top: 10% !important;
+  }
+}
+.questionContent {
+  background: #04A777;
+  height: 100%;
+  padding: 0px 10px 10px;
+
+  .loadButton {
+    margin-left: 10px;
+  }
+}
