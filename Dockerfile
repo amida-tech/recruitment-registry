@@ -20,6 +20,7 @@ RUN npm install --production
 # RUN bower install --allow-root
 
 ADD api /app
+RUN touch .env
 
 # Run any additional build commands here...
 # RUN grunt some:task
