@@ -10,7 +10,7 @@ ENV PYTHON /usr/bin/python2.7
 
 # Add package.json before rest of repo, for Docker caching purposes
 # See http://ilikestuffblog.com/2014/01/06/
-ADD package.json /app/
+ADD api/package.json /app/
 WORKDIR /app
 RUN npm install --production
 
@@ -19,7 +19,7 @@ RUN npm install --production
 # ADD bower.json /app/
 # RUN bower install --allow-root
 
-ADD . /app
+ADD api /app
 
 # Run any additional build commands here...
 # RUN grunt some:task
