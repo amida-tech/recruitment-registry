@@ -297,7 +297,7 @@ module.exports = class SurveyDAO extends Translatable {
                         if (index === 0) {
                             Object.assign(line, surveyLine);
                         } else {
-                            line.id =surveyLine.id;
+                            line.id = surveyLine.id;
                         }
                         r.push(line);
                     });
@@ -305,7 +305,7 @@ module.exports = class SurveyDAO extends Translatable {
                 }, []);
             })
             .then(lines => {
-                const converter = new exportCSVConverter({ fields: ['id', 'name', 'description', 'questionId', 'required']});
+                const converter = new exportCSVConverter({ fields: ['id', 'name', 'description', 'questionId', 'required'] });
                 return converter.dataToCSV(lines);
             });
     }
