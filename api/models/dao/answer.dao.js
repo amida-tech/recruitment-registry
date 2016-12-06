@@ -301,74 +301,54 @@ module.exports = class AnswerDAO {
         });
     }
 
-    getAnswers({ userId, surveyId }) {
-        return this.validateConsent(userId, surveyId, 'read')
-            .then(() => {
-                return Answer.findAll({
-                        raw: true,
-                        where: { userId, surveyId },
-                        attributes: ['questionChoiceId', 'language', 'value', 'type'],
-                        include: [{
-                            model: Question,
-                            as: 'question',
-                            attributes: ['id', 'type']
-                        }]
-                    })
-                    .then(result => {
-                        const groupedResult = _.groupBy(result, 'question.id');
-                        return Object.keys(groupedResult).map(key => {
-                            const v = groupedResult[key];
-                            const r = {
-                                questionId: v[0]['question.id'],
-                                language: v[0].language,
-                                answer: generateAnswer(v[0]['question.type'], v)
-                            };
-                            return r;
-                        });
-                    });
+    listAnswers({ userId, scope, surveyId, history }) {
+        scope = scope || 'survey';
+        const where = { userId };
+        if (surveyId) {
+            where.surveyId = surveyId;
+        }
+        if (scope === 'history-only') {
+            where.deletedAt = { $ne: null };
+        }
+        const attributes = ['questionChoiceId', 'language', 'value', 'type'];
+        if (scope === 'export') {
+            attributes.push('surveyId');
+        }
+        if (scope === 'history-only') {
+            attributes.push([sequelize.fn('to_char', sequelize.col('answer.deleted_at'), 'SSSS.MS'), 'deletedAt']);
+        }
+        const include = [{ model: Question, as: 'question', attributes: ['id', 'type'] }];
+        return Answer.findAll({ raw: true, where, attributes, include, paranoid: !history })
+            .then(result => {
+                const groupedResult = _.groupBy(result, function (r) {
+                    let surveyId = r.surveyId;
+                    let deletedAt = r.deletedAt;
+                    let key = r['question.id'];
+                    if (deletedAt) {
+                        key = deletedAt + ';' + key;
+                    }
+                    if (surveyId) {
+                        key = surveyId + ';' + surveyId;
+                    }
+                    return key;
+                });
+                return Object.keys(groupedResult).map(key => {
+                    const v = groupedResult[key];
+                    const r = {
+                        questionId: v[0]['question.id'],
+                        language: v[0].language,
+                        answer: generateAnswer(v[0]['question.type'], v)
+                    };
+                    if (scope === 'history-only') {
+                        r.deletedAt = v[0].deletedAt;
+                    }
+                    return r;
+                });
             });
     }
 
-    getOldAnswers({ userId, surveyId }) {
-        return Answer.findAll({
-                paranoid: false,
-                where: { userId, surveyId, deletedAt: { $ne: null } },
-                raw: true,
-                order: 'deleted_at',
-                attributes: [
-                    'language',
-                    'questionChoiceId',
-                    'value',
-                    'type',
-                    'questionId', [sequelize.fn('to_char', sequelize.col('deleted_at'), 'SSSS.MS'), 'deletedAt']
-                ]
-            })
-            .then(rawAnswers => {
-                const qidGrouped = _.groupBy(rawAnswers, 'questionId');
-                const qids = Object.keys(qidGrouped);
-                return Question.findAll({
-                        where: { id: { $in: qids } },
-                        raw: true,
-                        attributes: ['id', 'type']
-                    })
-                    .then(rawQuestions => _.keyBy(rawQuestions, 'id'))
-                    .then(qxMap => {
-                        const rmGrouped = _.groupBy(rawAnswers, 'deletedAt');
-                        return Object.keys(rmGrouped).reduce((r, date) => {
-                            const rmGroup = rmGrouped[date];
-                            const qxGrouped = _.groupBy(rmGroup, 'questionId');
-                            const newValue = Object.keys(qxGrouped).map(qid => {
-                                const qxGroup = qxGrouped[qid];
-                                return {
-                                    questionId: parseInt(qid),
-                                    language: qxGroup[0].language,
-                                    answer: generateAnswer(qxMap[qid].type, qxGroup)
-                                };
-                            });
-                            r[date] = _.sortBy(newValue, 'questionId');
-                            return r;
-                        }, {});
-                    });
-            });
+    getAnswers({ userId, surveyId }) {
+        return this.validateConsent(userId, surveyId, 'read')
+            .then(() => this.listAnswers({ userId, surveyId }));
     }
 };
