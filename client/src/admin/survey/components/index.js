@@ -18,7 +18,6 @@ export class AdminSurveyContainer extends Component {
   }
 
   render() {
-    console.log(this.props);
     const { id, name, questions } = this.props.selectedSurvey.toJS();
     var questionnaire = [];
     if(questions){

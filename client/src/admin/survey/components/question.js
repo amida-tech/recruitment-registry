@@ -35,8 +35,6 @@ export class AdminAddQuestionModal extends Component {
   };
 
   render() {
-    console.log(this.props);
-    console.log(this.state);
     const modalStatus = this.props.modalStatus;
     return (
       <Modal
