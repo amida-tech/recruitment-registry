@@ -29,7 +29,7 @@ function runScript(callback) {
     // keep track of whether callback has been invoked to prevent multiple invocations
     var invoked = false;
 
-    var process = childProcess.fork(process.env.RECREG_STARTUP_SCRIPT);
+    var process = childProcess.fork(config.startupScript);
 
     // listen for errors as they may prevent the exit event from firing
     process.on('error', function (err) {

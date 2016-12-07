@@ -66,7 +66,8 @@ const main = {
         resetExpires: process.env.RECREG_CRYPT_RESET_EXPIRES,
         resetExpiresUnit: process.env.RECREG_CRYPT_RESET_EXPIRES_UNIT
     },
-    clientBaseUrl: process.env.RECREG_CLIENT_BASE_URL
+    clientBaseUrl: process.env.RECREG_CLIENT_BASE_URL,
+    startupScript: process.env.RECREG_STARTUP_SCRIPT
 };
 
 const configBase = _.merge(all, main);
