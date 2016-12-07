@@ -5,6 +5,7 @@ import { ProfileContainer } from './profile';
 import SurveyBuilderContainer from './surveyBuilder/components/index';
 import { SurveyListContainer } from './surveylist';
 import { SurveyContainer } from './survey';
+import { AdminSurveyContainer } from './admin/survey';
 import { DashboardContainer } from './dashboard';
 import { ConsentContainer } from './consent';
 
@@ -72,5 +73,12 @@ export default [
     component: ConsentContainer,
     requiresAuth: true,
     newUsers: true
+  }, {
+    path: '/admin/survey/:id',
+    title: 'Preview Survey',
+    transTerm: 'PREVIEWSURVEY',
+    component: AdminSurveyContainer,
+    requiresAuth: true,
+    newUsers: false
   }
 ];

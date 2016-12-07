@@ -28,15 +28,20 @@ const survey = {
     ]
 };
 
-models.sequelize.sync({
-    force: true
-}).then(function () {
-    return models.survey.createSurvey(survey);
-}).then(function () {
-    return consentSeed(consentExample);
-}).then(function () {
-    console.log('success');
-}).catch(function (err) {
-    console.log('failure');
-    console.log(err);
-});
+models.sequelize.query('SELECT COUNT(*) AS count FROM information_schema.tables WHERE  table_schema = \'public\' AND table_name = \'registry_user\'', { type: models.sequelize.QueryTypes.SELECT})
+    .then(result => {
+        if (result[0].count === '0') {
+            return models.sequelize.sync({ force: true })
+                .then(() => models.profileSurvey.createProfileSurvey(survey))
+                .then(() => consentSeed(consentExample))
+                .then(() => console.log('success'));
+        } else {
+            console.log('already initialized');
+        }
+    })
+    .then(() => process.exit(0))
+    .catch(err => {
+        console.log('failure');
+        console.log(err);
+        process.exit(1);
+    });
