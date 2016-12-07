@@ -21,7 +21,7 @@ describe('question import-export unit', function () {
     before(shared.setUpFn());
 
     const hxQuestion = new History();
-    const tests = new questionCommon.specTests(generator, hxQuestion);
+    const tests = new questionCommon.SpecTests(generator, hxQuestion);
 
     for (let i = 0; i < 12; ++i) {
         it(`create question ${i}`, tests.createQuestionFn());

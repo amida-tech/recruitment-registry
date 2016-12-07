@@ -42,7 +42,7 @@ const updateIds = function (questions, idMap) {
     });
 };
 
-const specTests = class QuestionSpecTests {
+const SpecTests = class QuestionSpecTests {
     constructor(generator, hxQuestion) {
         this.generator = generator;
         this.hxQuestion = hxQuestion;
@@ -97,8 +97,79 @@ const specTests = class QuestionSpecTests {
     }
 };
 
+const IntegrationTests = class QuestionIntegrationTests {
+    constructor(rrSuperTest, generator, hxQuestion) {
+        this.rrSuperTest = rrSuperTest;
+        this.generator = generator;
+        this.hxQuestion = hxQuestion;
+    }
+
+    createQuestionFn() {
+        const generator = this.generator;
+        const rrSuperTest = this.rrSuperTest;
+        const hxQuestion = this.hxQuestion;
+        return function (done) {
+            const question = generator.newQuestion();
+            rrSuperTest.post('/questions', question, 201)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    hxQuestion.push(question, res.body);
+                    done();
+                });
+        };
+    }
+
+    getQuestionFn(index) {
+        const rrSuperTest = this.rrSuperTest;
+        const hxQuestion = this.hxQuestion;
+        return function (done) {
+            const id = hxQuestion.id(index);
+            rrSuperTest.get(`/questions/${id}`, true, 200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    hxQuestion.reloadServer(res.body);
+                    comparator.question(hxQuestion.client(index), res.body)
+                        .then(done, done);
+                });
+        };
+    }
+
+    deleteQuestionFn(index) {
+        const rrSuperTest = this.rrSuperTest;
+        const hxQuestion = this.hxQuestion;
+        return function (done) {
+            const id = hxQuestion.id(index);
+            rrSuperTest.delete(`/questions/${id}`, 204)
+                .expect(function () {
+                    hxQuestion.remove(index);
+                })
+                .end(done);
+        };
+    }
+
+    listQuestionsFn(scope) {
+        const rrSuperTest = this.rrSuperTest;
+        const hxQuestion = this.hxQuestion;
+        const query = scope ? { scope } : undefined;
+        return function (done) {
+            rrSuperTest.get('/questions', true, 200, query)
+                .expect(function (res) {
+                    const fields = getFieldsForList(scope);
+                    const expected = hxQuestion.listServers(fields);
+                    expect(res.body).to.deep.equal(expected);
+                })
+                .end(done);
+        };
+    }
+};
+
 module.exports = {
     getFieldsForList,
-    specTests,
+    SpecTests,
+    IntegrationTests,
     updateIds
 };

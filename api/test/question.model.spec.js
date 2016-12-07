@@ -26,7 +26,7 @@ describe('question unit', function () {
 
     const hxQuestion = new History();
     const hxSurvey = new History();
-    const tests = new questionCommon.specTests(generator, hxQuestion);
+    const tests = new questionCommon.SpecTests(generator, hxQuestion);
 
     it('list all questions when none', function () {
         return models.question.listQuestions()

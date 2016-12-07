@@ -12,6 +12,7 @@ const RRSuperTest = require('./util/rr-super-test');
 const Generator = require('./util/entity-generator');
 const AnswerHistory = require('./util/answer-history');
 const answerCommon = require('./util/answer-common');
+const questionCommon = require('./util/question-common');
 
 const expect = chai.expect;
 
@@ -27,6 +28,7 @@ describe('answer integration', function () {
     const hxUser = hxAnswer.hxUser;
     const hxQuestion = hxAnswer.hxQuestion;
     const hxSurvey = hxAnswer.hxSurvey;
+    const questionTests = new questionCommon.IntegrationTests(store, generator, hxQuestion);
 
     before(shared.setUpFn(store));
 
@@ -37,7 +39,7 @@ describe('answer integration', function () {
     }
 
     for (let i = 0; i < 20; ++i) {
-        it(`create question ${i}`, shared.createQxFn(store, hxQuestion));
+        it(`create question ${i}`, questionTests.createQuestionFn());
         it(`fill choices ids in question ${i}`, shared.fillQxFn(store, hxQuestion));
     }
 
