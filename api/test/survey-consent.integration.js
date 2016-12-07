@@ -522,18 +522,14 @@ describe('survey consent integration', function () {
     it('error: create user 3 answers to survey 2 without signatures', answerSurveyWithoutSignaturesFn(3, 2, [3]));
     it('logout as user 3', shared.logoutFn(store));
 
-    const answerSurveyFn = function (userIndex, surveyIndex, update) {
+    const answerSurveyFn = function (userIndex, surveyIndex) {
         return function (done) {
             const survey = hxSurvey.server(surveyIndex);
             const answers = generator.answerQuestions(survey.questions);
             const input = { surveyId: survey.id, answers };
             store.post('/answers', input, 204)
                 .expect(function () {
-                    if (update) {
-                        hxAnswers.update([userIndex, surveyIndex], answers);
-                    } else {
-                        hxAnswers.push([userIndex, surveyIndex], answers);
-                    }
+                    hxAnswers.set([userIndex, surveyIndex], answers);
                 })
                 .end(done);
         };
@@ -702,7 +698,7 @@ describe('survey consent integration', function () {
 
     [0, 1, 2].forEach(index => {
         it(`login as user ${index}`, shared.loginIndexFn(store, hxUser, index));
-        it(`user ${index} answers survey 1`, answerSurveyFn(index, 1, true));
+        it(`user ${index} answers survey 1`, answerSurveyFn(index, 1));
         it(`user ${index} answered survey 1`, verifyAnsweredSurveyFn(index, 1));
         it(`logout as user ${index}`, shared.logoutFn(store));
     });

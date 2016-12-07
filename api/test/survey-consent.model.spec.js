@@ -361,20 +361,14 @@ describe('survey consent unit', function () {
     it('error: create user 3 answers to survey 1 without signatures', answerSurveyWithoutSignaturesFn(3, 1, [3]));
     it('error: create user 3 answers to survey 2 without signatures', answerSurveyWithoutSignaturesFn(3, 2, [3]));
 
-    const answerSurveyFn = function (userIndex, surveyIndex, update) {
+    const answerSurveyFn = function (userIndex, surveyIndex) {
         return function () {
             const userId = hxUser.id(userIndex);
             const survey = hxSurvey.server(surveyIndex);
             const answers = generator.answerQuestions(survey.questions);
             const input = { userId, surveyId: survey.id, answers };
             return models.answer.createAnswers(input)
-                .then(() => {
-                    if (update) {
-                        hxAnswers.update([userIndex, surveyIndex], answers);
-                    } else {
-                        hxAnswers.push([userIndex, surveyIndex], answers);
-                    }
-                });
+                .then(() => hxAnswers.set([userIndex, surveyIndex], answers));
         };
     };
 
@@ -467,7 +461,7 @@ describe('survey consent unit', function () {
     it(`delete survey 1 consent type 1`, fnDelete(1, 1, 'create'));
 
     [0, 1, 2].forEach(index => {
-        it(`user ${index} answers survey 1`, answerSurveyFn(index, 1, true));
+        it(`user ${index} answers survey 1`, answerSurveyFn(index, 1));
         it(`user ${index} answered survey 1`, verifyAnsweredSurveyFn(index, 1));
     });
 
