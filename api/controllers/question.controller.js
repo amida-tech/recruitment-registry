@@ -1,6 +1,7 @@
 'use strict';
 
 const _ = require('lodash');
+const intoStream = require('into-stream');
 
 const models = require('../models');
 const shared = require('./shared.js');
@@ -66,14 +67,9 @@ exports.exportQuestions = function (req, res) {
 };
 
 exports.importQuestions = function (req, res) {
-    console.log('=================');
-    console.log(req);
-    res.status(201).json({});
-    //models.question.export()
-    //    .then(csvContent => {
-    //        res.header('Content-disposition', 'attachment; filename=question.csv');
-    //        res.type('text/csv');
-    //        res.status(200).send(csvContent);
-    //    })
-    //    .catch(shared.handleError(res));
+    const csvFile = _.get(req, 'swagger.params.questioncsv.value');
+    const stream = intoStream(csvFile.buffer);
+    models.question.import(stream)
+        .then(result => res.status(201).json(result))
+        .catch(shared.handleError(res));
 };

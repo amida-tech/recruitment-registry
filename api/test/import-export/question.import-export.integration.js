@@ -15,13 +15,12 @@ const RRSuperTest = require('../util/rr-super-test');
 const Generator = require('../util/entity-generator');
 const History = require('../util/entity-history');
 const questionCommon = require('../util/question-common');
-const intoStream = require('into-stream');
 
 const expect = chai.expect;
 const generator = new Generator();
 const shared = new SharedIntegration(generator);
 
-describe('question import-export unit', function () {
+describe('question integration unit', function () {
     const rrSuperTest = new RRSuperTest();
     const hxQuestion = new History();
     const tests = new questionCommon.IntegrationTests(rrSuperTest, generator, hxQuestion);
@@ -63,8 +62,8 @@ describe('question import-export unit', function () {
     let csvContent;
 
     it('export questions to csv', function (done) {
-        return rrSuperTest.get('/questions/csv', true, 200)
-            .expect(function(res) {
+        rrSuperTest.get('/questions/csv', true, 200)
+            .expect(function (res) {
                 const filepath = path.join(generatedDirectory, 'question.csv');
                 fs.writeFileSync(filepath, res.text);
                 csvContent = res.text;
@@ -79,20 +78,24 @@ describe('question import-export unit', function () {
 
     it('import csv into db', function (done) {
         const filepath = path.join(generatedDirectory, 'question.csv');
-        return rrSuperTest.postFile('/questions/csv', filepath, {}, 201)
-            .expect(function(res) {
-                console.log(res);
+        rrSuperTest.postFile('/questions/csv', 'questioncsv', filepath, null, 201)
+            .expect(function (res) {
+                idMap = res.body;
             })
             .end(done);
     });
 
-    //it('list imported questions and verify', function () {
-    //    return models.question.listQuestions({ scope: 'export' })
-    //        .then(list => {
-    //            const fields = questionCommon.getFieldsForList('export');
-    //            const expected = hxQuestion.listServers(fields);
-    //            questionCommon.updateIds(expected, idMap);
-    //            expect(list).to.deep.equal(expected);
-    //        });
-    //});
+    it('list imported questions and verify', function () {
+        const query = { scope: 'export' };
+        return function (done) {
+            rrSuperTest.get('/questions', true, 200, query)
+                .expect(function (res) {
+                    const fields = questionCommon.getFieldsForList('export');
+                    const expected = hxQuestion.listServers(fields);
+                    questionCommon.updateIds(expected, idMap);
+                    expect(res.body).to.deep.equal(expected);
+                })
+                .end(done);
+        };
+    });
 });

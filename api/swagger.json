@@ -706,8 +706,16 @@
             "post": {
                 "summary": "Imports question csv file",
                 "operationId": "importQuestions",
+                "consumes": ["multipart/form-data"],
                 "security": [{
                     "admin": []
+                }],
+                "parameters": [{
+                    "name": "questioncsv",
+                    "in": "formData",
+                    "description": "Question CSV file",
+                    "required": true,
+                    "type": "file"
                 }],
                 "responses": {
                     "201": {

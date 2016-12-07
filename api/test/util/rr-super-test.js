@@ -54,14 +54,17 @@ module.exports = class RRSupertest {
         return this.update('post', resource, payload, status, header);
     }
 
-    postFile(resource, filepath, payload, status) {
+    postFile(resource, field, filepath, payload, status) {
         const filename = path.basename(filepath);
-        return this.server
+        const request = this.server
             .post(this.baseUrl + resource)
             .set('Cookie', `rr-jwt-token=${this.jwt}`)
-            .attach('filex', filepath, filename)
-            .send(payload);
-            //.expect(status);
+            .attach(field, filepath, filename);
+        if (payload) {
+            return request.field(payload).expect(status);
+        } else {
+            return request.expect(status);
+        }
     }
 
     patch(resource, payload, status, header) {
