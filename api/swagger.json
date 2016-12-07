@@ -682,6 +682,46 @@
                 }
             }
         },
+        "/questions/csv": {
+            "x-swagger-router-controller": "question.controller",
+            "get": {
+                "summary": "Exports questions as csv file",
+                "operationId": "exportQuestions",
+                "produces": ["text/csv", "application/json"],
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "post": {
+                "summary": "Imports question csv file",
+                "operationId": "importQuestions",
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "201": {
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
         "/questions/{id}": {
             "x-swagger-router-controller": "question.controller",
             "parameters": [{

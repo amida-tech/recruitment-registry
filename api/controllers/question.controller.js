@@ -54,3 +54,26 @@ exports.listQuestions = function (req, res) {
         .then(questions => res.status(200).json(questions))
         .catch(shared.handleError(res));
 };
+
+exports.exportQuestions = function (req, res) {
+    models.question.export()
+        .then(csvContent => {
+            res.header('Content-disposition', 'attachment; filename=question.csv');
+            res.type('text/csv');
+            res.status(200).send(csvContent);
+        })
+        .catch(shared.handleError(res));
+};
+
+exports.importQuestions = function (req, res) {
+    console.log('=================');
+    console.log(req);
+    res.status(201).json({});
+    //models.question.export()
+    //    .then(csvContent => {
+    //        res.header('Content-disposition', 'attachment; filename=question.csv');
+    //        res.type('text/csv');
+    //        res.status(200).send(csvContent);
+    //    })
+    //    .catch(shared.handleError(res));
+};

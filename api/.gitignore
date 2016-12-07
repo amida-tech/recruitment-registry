@@ -16,3 +16,4 @@ env.sh
 sandbox
 env.production.user
 env.production.head
+test/generated
