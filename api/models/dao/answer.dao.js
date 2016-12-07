@@ -12,6 +12,9 @@ const Question = db.Question;
 const SurveyQuestion = db.SurveyQuestion;
 const UserSurvey = db.UserSurvey;
 
+const exportCSVConverter = require('../../export/csv-converter.js');
+const importCSVConverter = require('../../import/csv-converter.js');
+
 const uiToDbAnswer = function (answer) {
     let result = [];
     if (answer.hasOwnProperty('choices')) {
@@ -213,6 +216,10 @@ module.exports = class AnswerDAO {
         Object.assign(this, dependencies);
     }
 
+    toDbAnswer(answer) {
+        return uiToDbAnswer(answer);
+    }
+
     validateConsent(userId, surveyId, action, transaction) {
         return this.surveyConsentDocument.listSurveyConsentDocuments({
                 userId,
@@ -320,6 +327,23 @@ module.exports = class AnswerDAO {
         const include = [{ model: Question, as: 'question', attributes: ['id', 'type'] }];
         return Answer.findAll({ raw: true, where, attributes, include, paranoid: !history })
             .then(result => {
+                if (scope === 'export') {
+                    return result.map(answer => {
+                        const r = { surveyId: answer.surveyId };
+                        r.questionId = answer['question.id'];
+                        r.questionType = answer['question.type'];
+                        if (answer.questionChoiceId) {
+                            r.questionChoiceId = answer.questionChoiceId;
+                        }
+                        if (answer.value) {
+                            r.value = answer.value;
+                        }
+                        if (answer.type) {
+                            r.type = answer.type;
+                        }
+                        return r;
+                    });
+                }
                 const groupedResult = _.groupBy(result, function (r) {
                     let surveyId = r.surveyId;
                     let deletedAt = r.deletedAt;
@@ -328,7 +352,7 @@ module.exports = class AnswerDAO {
                         key = deletedAt + ';' + key;
                     }
                     if (surveyId) {
-                        key = surveyId + ';' + surveyId;
+                        key = surveyId + ';' + key;
                     }
                     return key;
                 });
@@ -342,6 +366,9 @@ module.exports = class AnswerDAO {
                     if (scope === 'history-only') {
                         r.deletedAt = v[0].deletedAt;
                     }
+                    if (v[0].surveyId) {
+                        r.surveyId = v[0].surveyId;
+                    }
                     return r;
                 });
             });
@@ -350,5 +377,54 @@ module.exports = class AnswerDAO {
     getAnswers({ userId, surveyId }) {
         return this.validateConsent(userId, surveyId, 'read')
             .then(() => this.listAnswers({ userId, surveyId }));
+    }
+
+    exportForUser(userId) {
+        return this.listAnswers({ userId, scope: 'export' })
+            .then(answers => {
+                const converter = new exportCSVConverter({ fields: ['surveyId', 'questionId', 'questionChoiceId', 'questionType', 'type', 'value'] });
+                return converter.dataToCSV(answers);
+            });
+    }
+
+    importForUser(userId, stream, surveyIdMap, questionIdMap) {
+        const converter = new importCSVConverter();
+        return converter.streamToRecords(stream)
+            .then(records => {
+                return records.map(record => {
+                    record.surveyId = surveyIdMap[record.surveyId];
+                    const questionIdInfo = questionIdMap[record.questionId];
+                    record.questionId = questionIdInfo.questionId;
+                    if (record.questionChoiceId) {
+                        const choicesIds = questionIdInfo.choicesIds;
+                        record.questionChoiceId = choicesIds[record.questionChoiceId];
+                    } else {
+                        record.questionChoiceId = null;
+                    }
+                    if (record.value === '') {
+                        delete record.value;
+                    } else {
+                        record.value = record.value.toString();
+                    }
+                    if (record.type === 'month') {
+                        if (record.value.length === 1) {
+                            record.value = '0' + record.value;
+                        }
+                    }
+                    delete record.questionType;
+                    record.userId = userId;
+                    record.language = 'en';
+                    return record;
+                });
+            })
+            .then(records => {
+                return sequelize.transaction(transaction => {
+                    // TODO: Switch to bulkCreate when Sequelize 4 arrives
+                    return SPromise.all(records.map(record => {
+                        return Answer.create(record, { transaction });
+                    }));
+                });
+            });
+
     }
 };

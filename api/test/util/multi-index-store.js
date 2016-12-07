@@ -1,5 +1,7 @@
 'use strict';
 
+const _ = require('lodash');
+
 module.exports = class MultiIndexStore {
     constructor() {
         this.currentIndexMap = new Map();
@@ -29,7 +31,7 @@ module.exports = class MultiIndexStore {
         }
         index = this.store.length;
         const value = { obj };
-        indices.forEach((index, indexIndex) => value[indexIndex] = index);
+        indices.forEach((indexValue, indexIndex) => value[indexIndex] = indexValue);
         this.store.push(value);
         this.currentIndexMap.set(key, index);
         indexHistory.push(index);
@@ -39,5 +41,15 @@ module.exports = class MultiIndexStore {
         const index = this.index(indices);
         const value = this.store[index];
         return value.obj;
+    }
+
+    listFlatForIndex(indexIndex, indexValue) {
+        const result = this.store.reduce((r, value) => {
+            if ((value[indexIndex] === indexValue) && !value.deleted) {
+                r.push(value);
+            }
+            return r;
+        }, []);
+        return _.flatten(result);
     }
 };

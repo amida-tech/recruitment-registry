@@ -13,6 +13,15 @@ class History {
         this.translations = {};
     }
 
+    reset() {
+        this.clients = [];
+        this.servers = [];
+        this.history = [];
+        this.currentIndex = [];
+        this.removed = [];
+        this.translations = {};
+    }
+
     push(client, server) {
         const index = this.clients.length;
         this.clients.push(client);

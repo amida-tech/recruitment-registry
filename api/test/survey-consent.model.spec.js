@@ -13,9 +13,9 @@ const ConsentCommon = require('./util/consent-common');
 const ConsentDocumentHistory = require('./util/consent-document-history');
 const SurveyHistory = require('./util/survey-history');
 const MultiIndexHistory = require('./util/multi-index-history');
-const MultiIndexStore = require('./util/multi-index-store');
 const comparator = require('./util/client-server-comparator');
 const surveyCommon = require('./util/survey-common');
+const answerCommon = require('./util/answer-common');
 
 const expect = chai.expect;
 const generator = new Generator();
@@ -30,8 +30,8 @@ describe('survey consent unit', function () {
     const hxSurvey = new SurveyHistory();
     const hxUser = hxConsentDocument.hxUser;
     const hxSurveyConsents = new MultiIndexHistory();
-    const hxAnswers = new MultiIndexStore();
     const surveyTests = new surveyCommon.SpecTests(generator, hxSurvey);
+    const answerTests = new answerCommon.SpecTests(generator, hxUser, hxSurvey);
 
     before(shared.setUpFn());
 
@@ -361,46 +361,23 @@ describe('survey consent unit', function () {
     it('error: create user 3 answers to survey 1 without signatures', answerSurveyWithoutSignaturesFn(3, 1, [3]));
     it('error: create user 3 answers to survey 2 without signatures', answerSurveyWithoutSignaturesFn(3, 2, [3]));
 
-    const answerSurveyFn = function (userIndex, surveyIndex) {
-        return function () {
-            const userId = hxUser.id(userIndex);
-            const survey = hxSurvey.server(surveyIndex);
-            const answers = generator.answerQuestions(survey.questions);
-            const input = { userId, surveyId: survey.id, answers };
-            return models.answer.createAnswers(input)
-                .then(() => hxAnswers.set([userIndex, surveyIndex], answers));
-        };
-    };
-
-    const verifyAnsweredSurveyFn = function (userIndex, surveyIndex) {
-        return function () {
-            const userId = hxUser.id(userIndex);
-            const survey = hxSurvey.server(surveyIndex);
-            const answers = hxAnswers.get([userIndex, surveyIndex]);
-            return models.survey.getAnsweredSurvey(userId, survey.id)
-                .then(answeredSurvey => {
-                    comparator.answeredSurvey(survey, answers, answeredSurvey);
-                });
-        };
-    };
-
     _.range(4).forEach(index => {
-        it(`user ${index} answers survey 3`, answerSurveyFn(index, 3));
+        it(`user ${index} answers survey 3`, answerTests.answerSurveyFn(index, 3));
     });
 
-    it('user 0 answers survey 1', answerSurveyFn(0, 1));
-    it('user 1 answers survey 1', answerSurveyFn(1, 1));
-    it('user 0 answers survey 2', answerSurveyFn(0, 2));
-    it('user 1 answers survey 2', answerSurveyFn(1, 2));
-    it('user 2 answers survey 2', answerSurveyFn(2, 2));
+    it('user 0 answers survey 1', answerTests.answerSurveyFn(0, 1));
+    it('user 1 answers survey 1', answerTests.answerSurveyFn(1, 1));
+    it('user 0 answers survey 2', answerTests.answerSurveyFn(0, 2));
+    it('user 1 answers survey 2', answerTests.answerSurveyFn(1, 2));
+    it('user 2 answers survey 2', answerTests.answerSurveyFn(2, 2));
 
-    it('user 0 gets answered survey 1', verifyAnsweredSurveyFn(0, 1));
-    it('user 1 gets answered survey 1', verifyAnsweredSurveyFn(1, 1));
-    it('user 0 gets answered survey 2', verifyAnsweredSurveyFn(0, 2));
-    it('user 1 gets answered survey 2', verifyAnsweredSurveyFn(1, 2));
-    it('user 2 gets answered survey 2', verifyAnsweredSurveyFn(2, 2));
-    it('user 0 gets answered survey 3', verifyAnsweredSurveyFn(0, 3));
-    it('user 1 gets answered survey 3', verifyAnsweredSurveyFn(1, 3));
+    it('user 0 gets answered survey 1', answerTests.verifyAnsweredSurveyFn(0, 1));
+    it('user 1 gets answered survey 1', answerTests.verifyAnsweredSurveyFn(1, 1));
+    it('user 0 gets answered survey 2', answerTests.verifyAnsweredSurveyFn(0, 2));
+    it('user 1 gets answered survey 2', answerTests.verifyAnsweredSurveyFn(1, 2));
+    it('user 2 gets answered survey 2', answerTests.verifyAnsweredSurveyFn(2, 2));
+    it('user 0 gets answered survey 3', answerTests.verifyAnsweredSurveyFn(0, 3));
+    it('user 1 gets answered survey 3', answerTests.verifyAnsweredSurveyFn(1, 3));
 
     const getAnswersWithoutSignaturesFn = function (userIndex, surveyIndex, expectedInfo) {
         return function () {
@@ -461,8 +438,8 @@ describe('survey consent unit', function () {
     it(`delete survey 1 consent type 1`, fnDelete(1, 1, 'create'));
 
     [0, 1, 2].forEach(index => {
-        it(`user ${index} answers survey 1`, answerSurveyFn(index, 1));
-        it(`user ${index} answered survey 1`, verifyAnsweredSurveyFn(index, 1));
+        it(`user ${index} answers survey 1`, answerTests.answerSurveyFn(index, 1));
+        it(`user ${index} answered survey 1`, answerTests.verifyAnsweredSurveyFn(index, 1));
     });
 
     _.range(4).forEach(index => {
@@ -548,12 +525,12 @@ describe('survey consent unit', function () {
         [1, 8]
     ]));
 
-    it('user 0 answers survey 4', answerSurveyFn(0, 4));
-    it('user 1 answers survey 4', answerSurveyFn(1, 4));
-    it('user 1 answers survey 5', answerSurveyFn(1, 5));
+    it('user 0 answers survey 4', answerTests.answerSurveyFn(0, 4));
+    it('user 1 answers survey 4', answerTests.answerSurveyFn(1, 4));
+    it('user 1 answers survey 5', answerTests.answerSurveyFn(1, 5));
 
-    it('user 1 gets answered survey 4', verifyAnsweredSurveyFn(1, 4));
-    it('user 1 gets answered survey 5', verifyAnsweredSurveyFn(1, 5));
+    it('user 1 gets answered survey 4', answerTests.verifyAnsweredSurveyFn(1, 4));
+    it('user 1 gets answered survey 5', answerTests.verifyAnsweredSurveyFn(1, 5));
 
     it('user 0 survey 4 consent documents for read', listConsentSurveyDocumentsFn(0, 4, 'read', [
         [1, 7],
@@ -571,18 +548,18 @@ describe('survey consent unit', function () {
     it('user 2 bulk signs consent documents 5, 7, 9', shared.bulkSignConsentTypeFn(hxConsentDocument, 2, [5, 7, 9]));
     it('user 3 bulk signs consent documents 4, 6, 8', shared.bulkSignConsentTypeFn(hxConsentDocument, 3, [4, 6, 8]));
 
-    it('user 0 answers survey 5', answerSurveyFn(0, 5));
-    it('user 2 answers survey 5', answerSurveyFn(2, 4));
-    it('user 2 answers survey 5', answerSurveyFn(2, 5));
-    it('user 3 answers survey 5', answerSurveyFn(3, 4));
-    it('user 3 answers survey 5', answerSurveyFn(3, 5));
+    it('user 0 answers survey 5', answerTests.answerSurveyFn(0, 5));
+    it('user 2 answers survey 5', answerTests.answerSurveyFn(2, 4));
+    it('user 2 answers survey 5', answerTests.answerSurveyFn(2, 5));
+    it('user 3 answers survey 5', answerTests.answerSurveyFn(3, 4));
+    it('user 3 answers survey 5', answerTests.answerSurveyFn(3, 5));
 
-    it('user 0 gets answered survey 4', verifyAnsweredSurveyFn(0, 4));
-    it('user 0 gets answered survey 5', verifyAnsweredSurveyFn(0, 5));
-    it('user 2 gets answered survey 4', verifyAnsweredSurveyFn(2, 4));
-    it('user 2 gets answered survey 5', verifyAnsweredSurveyFn(2, 5));
-    it('user 3 gets answered survey 4', verifyAnsweredSurveyFn(3, 4));
-    it('user 3 gets answered survey 5', verifyAnsweredSurveyFn(3, 5));
+    it('user 0 gets answered survey 4', answerTests.verifyAnsweredSurveyFn(0, 4));
+    it('user 0 gets answered survey 5', answerTests.verifyAnsweredSurveyFn(0, 5));
+    it('user 2 gets answered survey 4', answerTests.verifyAnsweredSurveyFn(2, 4));
+    it('user 2 gets answered survey 5', answerTests.verifyAnsweredSurveyFn(2, 5));
+    it('user 3 gets answered survey 4', answerTests.verifyAnsweredSurveyFn(3, 4));
+    it('user 3 gets answered survey 5', answerTests.verifyAnsweredSurveyFn(3, 5));
 
     for (let i = 7; i < 10; ++i) {
         it(`create consent document of type ${i}`, shared.createConsentDocumentFn(hxConsentDocument, i));
