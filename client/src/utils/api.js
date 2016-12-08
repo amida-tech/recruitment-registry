@@ -4,8 +4,6 @@ import cookie from 'react-cookie';
 
 import config from '../config';
 
-// var apiUrl = 'http://localhost:9005/api/v1.0';
-
 var apiUrl = config.API_HTTP_URL;
 
 const apiProvider = store => next => action => {
