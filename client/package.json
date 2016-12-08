@@ -33,7 +33,6 @@
     "font-awesome": "^4.7.0",
     "guid": "0.0.12",
     "immutable": "3.8.1",
-    "lodash": "^4.17.2",
     "normalize.css": "^5.0.0",
     "react": "15.3.0",
     "react-addons-test-utils": "15.3.0",
