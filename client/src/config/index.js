@@ -1,3 +1,12 @@
-var envConfig = require('./' + process.env.NODE_ENV + '.js');
+import devConfig from './development';
+import prodConfig from './production';
 
-export default envConfig;
+let config;
+
+if (process.env.NODE_ENV === 'development') {
+    config = devConfig;
+} else {
+    config = prodConfig;
+}
+
+export default config;

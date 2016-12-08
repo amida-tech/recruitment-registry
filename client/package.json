@@ -14,7 +14,7 @@
   },
   "scripts": {
 	"preBuild": "NODE_ENV=production node preBuild.js",
-    "build": "neo build",
+    "build": "NODE_ENV=production node prebuild.js && neo build",
     "start": "neo start --port 4000 --config webpack.start.js",
     "test": "neo test"
   },
