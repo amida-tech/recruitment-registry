@@ -207,6 +207,60 @@
                 }
             }
         },
+        "/surveys/csv": {
+            "x-swagger-router-controller": "survey.controller",
+            "get": {
+                "summary": "Exports surveys as csv file",
+                "operationId": "exportSurveys",
+                "produces": ["text/csv", "application/json"],
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "post": {
+                "summary": "Imports survey csv file",
+                "operationId": "importSurveys",
+                "consumes": ["multipart/form-data"],
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "surveycsv",
+                    "in": "formData",
+                    "description": "Survey CSV file",
+                    "required": true,
+                    "type": "file"
+                }, {
+                    "name": "questionidmap",
+                    "in": "formData",
+                    "description": "Question Id Map",
+                    "required": true,
+                    "type": "string"
+                }],
+                "responses": {
+                    "201": {
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
         "/surveys/{id}": {
             "x-swagger-router-controller": "survey.controller",
             "parameters": [{
@@ -2484,6 +2538,23 @@
                 },
                 "description": {
                     "type": "string"
+                },
+                "questions": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": ["id", "required"],
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "minimum": 1
+                            },
+                            "required": {
+                                "type": "boolean"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
                 }
             },
             "additionalProperties": false

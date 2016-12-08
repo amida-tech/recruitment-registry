@@ -175,7 +175,11 @@ const IntegrationTests = class SurveyIntegrationTests {
         const hxSurvey = this.hxSurvey;
         return function (done) {
             const id = hxSurvey.id(index);
-            rrSuperTest.delete(`/surveys/${id}`, 204).end(done);
+            rrSuperTest.delete(`/surveys/${id}`, 204)
+                .expect(function () {
+                    hxSurvey.remove(index);
+                })
+                .end(done);
         };
     }
 

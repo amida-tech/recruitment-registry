@@ -59,15 +59,11 @@ describe('question integration unit', function () {
         mkdirp(generatedDirectory, done);
     });
 
-    let csvContent;
-
     it('export questions to csv', function (done) {
         rrSuperTest.get('/questions/csv', true, 200)
             .expect(function (res) {
                 const filepath = path.join(generatedDirectory, 'question.csv');
                 fs.writeFileSync(filepath, res.text);
-                csvContent = res.text;
-
             })
             .end(done);
     });
