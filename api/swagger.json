@@ -546,6 +546,30 @@
                 }
             }
         },
+        "/answers/export": {
+            "x-swagger-router-controller": "answer.controller",
+            "get": {
+                "summary": "List answers export ready",
+                "operationId": "listAnswersExport",
+                "security": [{
+                    "participant": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "object"
+                            }
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
         "/profile-survey": {
             "x-swagger-router-controller": "profile-survey.controller",
             "post": {

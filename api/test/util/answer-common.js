@@ -163,13 +163,45 @@ const IntegrationTests = class AnswerIntegrationTests {
     verifyAnsweredSurveyFn(userIndex, surveyIndex) {
         const hxSurvey = this.hxSurvey;
         const hxAnswer = this.hxAnswer;
+        const rrSuperTest = this.rrSuperTest;
         return function (done) {
-            const rrSuperTest = this.rrSuperTest;
             const survey = hxSurvey.server(surveyIndex);
             const answers = hxAnswer.get([userIndex, surveyIndex]);
             rrSuperTest.get(`/answered-surveys/${survey.id}`, true, 200)
                 .expect(function (res) {
                     comparator.answeredSurvey(survey, answers, res.body);
+                })
+                .end(done);
+        };
+    }
+
+    listAnswersForUserFn(userIndex) {
+        const rrSuperTest = this.rrSuperTest;
+        const hxSurvey = this.hxSurvey;
+        const hxAnswer = this.hxAnswer;
+        return function (done) {
+            const expectedRaw = hxAnswer.listFlatForIndex(0, userIndex);
+            const expected = expectedRaw.reduce((r, e) => {
+                const survey = hxSurvey.server(e[1]);
+                const idToType = new Map(survey.questions.map(question => [question.id, question.type]));
+                const surveyId = hxSurvey.id(e[1]);
+                e.obj.forEach(answer => {
+                    const dbAnswers = models.answer.toDbAnswer(answer.answer);
+                    dbAnswers.forEach(dbAnswer => {
+                        const value = Object.assign({ surveyId, questionId: answer.questionId }, dbAnswer);
+                        value.questionType = idToType.get(value.questionId);
+                        if (value.hasOwnProperty('value')) {
+                            value.value = value.value.toString();
+                        }
+                        r.push(value);
+                    });
+                });
+                return r;
+            }, []);
+            rrSuperTest.get(`/answers/export`, true, 200)
+                .expect(function (res) {
+                    expect(res.body).to.deep.equal(expected);
+                    hxAnswer.lastAnswers = res.body;
                 })
                 .end(done);
         };

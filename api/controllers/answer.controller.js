@@ -45,3 +45,10 @@ exports.importAnswers = function (req, res) {
         .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };
+
+exports.listAnswersExport = function (req, res) {
+    const userId = req.user.id;
+    models.answer.listAnswers({ scope: 'export', userId })
+        .then(answers => res.status(200).json(answers))
+        .catch(shared.handleError(res));
+};
