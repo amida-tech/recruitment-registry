@@ -15,7 +15,6 @@ const RRSuperTest = require('../util/rr-super-test');
 const Generator = require('../util/entity-generator');
 const SurveyHistory = require('../util/survey-history');
 const surveyCommon = require('../util/survey-common');
-const intoStream = require('into-stream');
 
 const expect = chai.expect;
 const generator = new Generator();

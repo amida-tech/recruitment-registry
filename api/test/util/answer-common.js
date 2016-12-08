@@ -131,7 +131,53 @@ const SpecTests = class AnswerSpecTests {
     }
 };
 
+const IntegrationTests = class AnswerIntegrationTests {
+    constructor(rrSuperTest, generator, hxUser, hxSurvey, hxAnswer) {
+        this.rrSuperTest = rrSuperTest;
+        this.generator = generator;
+        this.hxUser = hxUser;
+        this.hxSurvey = hxSurvey;
+        this.hxAnswer = hxAnswer || new MultiIndexStore();
+    }
+
+    answerSurveyFn(userIndex, surveyIndex) {
+        const rrSuperTest = this.rrSuperTest;
+        const generator = this.generator;
+        const hxSurvey = this.hxSurvey;
+        const hxAnswer = this.hxAnswer;
+        return function (done) {
+            const survey = hxSurvey.server(surveyIndex);
+            const answers = generator.answerQuestions(survey.questions);
+            const input = {
+                surveyId: hxSurvey.id(surveyIndex),
+                answers
+            };
+            rrSuperTest.post('/answers', input, 204)
+                .expect(function () {
+                    hxAnswer.set([userIndex, surveyIndex], answers);
+                })
+                .end(done);
+        };
+    }
+
+    verifyAnsweredSurveyFn(userIndex, surveyIndex) {
+        const hxSurvey = this.hxSurvey;
+        const hxAnswer = this.hxAnswer;
+        return function (done) {
+            const rrSuperTest = this.rrSuperTest;
+            const survey = hxSurvey.server(surveyIndex);
+            const answers = hxAnswer.get([userIndex, surveyIndex]);
+            rrSuperTest.get(`/answered-surveys/${survey.id}`, true, 200)
+                .expect(function (res) {
+                    comparator.answeredSurvey(survey, answers, res.body);
+                })
+                .end(done);
+        };
+    }
+};
+
 module.exports = {
     testQuestions,
-    SpecTests
+    SpecTests,
+    IntegrationTests
 };

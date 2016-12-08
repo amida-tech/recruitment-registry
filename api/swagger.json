@@ -489,6 +489,63 @@
                 }
             }
         },
+        "/answers/csv": {
+            "x-swagger-router-controller": "answer.controller",
+            "get": {
+                "summary": "Exports answers as csv file",
+                "operationId": "exportAnswers",
+                "produces": ["text/csv", "application/json"],
+                "security": [{
+                    "participant": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "post": {
+                "summary": "Imports answer csv file",
+                "operationId": "importAnswers",
+                "consumes": ["multipart/form-data"],
+                "security": [{
+                    "participant": []
+                }],
+                "parameters": [{
+                    "name": "answercsv",
+                    "in": "formData",
+                    "description": "Answer CSV file",
+                    "required": true,
+                    "type": "file"
+                }, {
+                    "name": "questionidmap",
+                    "in": "formData",
+                    "description": "Question Id Map",
+                    "required": true,
+                    "type": "string"
+                }, {
+                    "name": "surveyidmap",
+                    "in": "formData",
+                    "description": "Question Id Map",
+                    "required": true,
+                    "type": "string"
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successful response"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
         "/profile-survey": {
             "x-swagger-router-controller": "profile-survey.controller",
             "post": {
