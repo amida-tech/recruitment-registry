@@ -7,6 +7,7 @@ import { ProfileReducer } from './profile';
 import surveyBuilder from './surveyBuilder';
 import { SurveyListReducer } from './surveylist';
 import { SurveyReducer } from './survey';
+import { AdminSurveyReducer } from './admin/survey';
 import { browserHistory } from 'react-router';
 import i18n from './i18n/en.json';
 
@@ -21,7 +22,7 @@ export const initialState = {
   login: {
     formState: {
       username: '',
-      password: '',
+      password: ''
     },
     user: {
       username: "",
@@ -73,6 +74,13 @@ export const initialState = {
       'surveyId': 0,
       'answers': []
     }
+  },
+  adminSurvey: {
+    selectedSurvey: [],
+    surveyAnswers: {
+      'surveyId': 0,
+      'answers': []
+    }
   }
 };
 
@@ -83,6 +91,7 @@ export const reducers = {
   surveyBuilder: surveyBuilder.reducer,
   surveys: SurveyListReducer,
   survey: SurveyReducer,
+  adminSurvey: AdminSurveyReducer,
   auth: (state, action) => {
     switch (action.type) {
       case "LOGIN_SUCCESS":
@@ -105,6 +114,6 @@ export const reducers = {
     }
 };
 
-import './styles/main.scss'
+import './styles/main.scss';
 
-App({ reducers, initialState, Layout, routes }).render()
+App({ reducers, initialState, Layout, routes }).render();

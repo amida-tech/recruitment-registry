@@ -28,7 +28,7 @@ const survey = {
     ]
 };
 
-models.sequelize.query('SELECT COUNT(*) AS count FROM information_schema.tables WHERE  table_schema = \'public\' AND table_name = \'registry_user\'', { type: models.sequelize.QueryTypes.SELECT })
+models.sequelize.query('SELECT COUNT(*) AS count FROM information_schema.tables WHERE  table_schema = \'public\' AND table_name = \'registry_user\'', { type: models.sequelize.QueryTypes.SELECT})
     .then(result => {
         if (result[0].count === '0') {
             return models.sequelize.sync({ force: true })

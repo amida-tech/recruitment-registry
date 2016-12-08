@@ -1,0 +1,85 @@
+// This is specific to the /survey/<id> view.
+//
+// May need to be consolidated in styles/components/_survey.scss.
+
+
+#survey {
+
+  .survey-meta {
+    font-family: "Avenir Next", sans-serif;
+    font-weight: 400;
+
+    h3 {
+      font-size: 1.66em;
+      margin-bottom: 25px;
+    }
+
+    h1 {
+      font-size: 3em;
+    }
+
+    .questions-remaining {
+      color: red;
+      font-family: "Avenir Next", sans-serif;
+      font-weight: 600;
+    }
+
+  }
+
+  form[name=questionForm] {
+
+    position: relative;
+
+    .container {
+      width: 100%;
+      position: relative;
+
+      .question {
+        font-weight: 400;
+        font-family: $font-apple-sf;
+        margin-bottom: 20px;
+      }
+
+      .questionNumber {
+        text-transform: uppercase;
+        font-family: "Avenir Next", sans-serif;
+        font-weight: 400;
+        color: rgb(193, 193, 193);
+      }
+
+      label {
+        font-weight: 400;
+      }
+
+      // Question Type-specific CSS
+
+      .bool {
+        button {
+          text-transform: uppercase;
+          font-weight: 400;
+        }
+      }
+
+      .checkboxes {
+        input[type='checkbox'] {
+
+          & + label {
+            color: $color-key-medium;
+          }
+
+          &:checked + label {
+            color: $color-white;
+          }
+        }
+      }
+    }
+
+    .submit {
+      @extend .buttonPrimary;
+      position: absolute;
+      right: 10px;
+      margin-bottom: 20px;
+    }
+
+  }
+}

@@ -79,7 +79,12 @@
 .utility--pull-right, .pull-right {
 	float:right;
 }
-
-.text-left {
+/* Gap Theme Colors */
+.gapRed {
+	color: $gap-red;
+}
+.gapMediumGray {
+	color: $gap-medium-grey !important;
+}.text-left {
 	text-align: left;
 }

@@ -4,7 +4,7 @@
 	left: 0;
 	right: 0;
 	position: fixed;
-	@extend .row;
+	@extend .columns;
 	.subtitle {
 		position:absolute;
 		top: 150px;

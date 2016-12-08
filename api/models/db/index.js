@@ -8,6 +8,9 @@ const logger = require('../../logger');
 const sequelize = new Sequelize(config.db.name, config.db.user, config.db.pass, {
     host: config.db.host,
     dialect: config.db.dialect,
+    dialectOptions: {
+        ssl: true
+    },
     port: config.db.port,
     pool: {
         max: 20,
