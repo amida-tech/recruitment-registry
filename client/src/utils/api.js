@@ -2,7 +2,11 @@ import request from 'superagent';
 import { push } from 'react-router-redux';
 import cookie from 'react-cookie';
 
-var apiUrl = 'http://localhost:9005/api/v1.0';
+import config from '../config';
+
+// var apiUrl = 'http://localhost:9005/api/v1.0';
+
+var apiUrl = config.API_HTTP_URL;
 
 const apiProvider = store => next => action => {
   next(action);
