@@ -1,5 +1,7 @@
 'use strict';
 
+const path = require('path');
+
 const _ = require('lodash');
 
 module.exports = class RRSupertest {
@@ -50,6 +52,19 @@ module.exports = class RRSupertest {
 
     post(resource, payload, status, header) {
         return this.update('post', resource, payload, status, header);
+    }
+
+    postFile(resource, field, filepath, payload, status) {
+        const filename = path.basename(filepath);
+        const request = this.server
+            .post(this.baseUrl + resource)
+            .set('Cookie', `rr-jwt-token=${this.jwt}`)
+            .attach(field, filepath, filename);
+        if (payload) {
+            return request.field(payload).expect(status);
+        } else {
+            return request.expect(status);
+        }
     }
 
     patch(resource, payload, status, header) {

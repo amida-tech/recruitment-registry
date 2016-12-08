@@ -180,6 +180,13 @@
                     "participant": []
                 }],
                 "parameters": [{
+                    "name": "scope",
+                    "in": "query",
+                    "description": "List scope",
+                    "required": false,
+                    "type": "string",
+                    "enum": ["summary", "export"]
+                }, {
                     "name": "language",
                     "in": "query",
                     "description": "Language code",
@@ -192,6 +199,60 @@
                         "description": "Successful response.",
                         "schema": {
                             "$ref": "#/definitions/surveyDashboard"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/surveys/csv": {
+            "x-swagger-router-controller": "survey.controller",
+            "get": {
+                "summary": "Exports surveys as csv file",
+                "operationId": "exportSurveys",
+                "produces": ["text/csv", "application/json"],
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "post": {
+                "summary": "Imports survey csv file",
+                "operationId": "importSurveys",
+                "consumes": ["multipart/form-data"],
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "surveycsv",
+                    "in": "formData",
+                    "description": "Survey CSV file",
+                    "required": true,
+                    "type": "file"
+                }, {
+                    "name": "questionidmap",
+                    "in": "formData",
+                    "description": "Question Id Map",
+                    "required": true,
+                    "type": "string"
+                }],
+                "responses": {
+                    "201": {
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "object"
                         }
                     },
                     "default": {
@@ -428,6 +489,87 @@
                 }
             }
         },
+        "/answers/csv": {
+            "x-swagger-router-controller": "answer.controller",
+            "get": {
+                "summary": "Exports answers as csv file",
+                "operationId": "exportAnswers",
+                "produces": ["text/csv", "application/json"],
+                "security": [{
+                    "participant": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "post": {
+                "summary": "Imports answer csv file",
+                "operationId": "importAnswers",
+                "consumes": ["multipart/form-data"],
+                "security": [{
+                    "participant": []
+                }],
+                "parameters": [{
+                    "name": "answercsv",
+                    "in": "formData",
+                    "description": "Answer CSV file",
+                    "required": true,
+                    "type": "file"
+                }, {
+                    "name": "questionidmap",
+                    "in": "formData",
+                    "description": "Question Id Map",
+                    "required": true,
+                    "type": "string"
+                }, {
+                    "name": "surveyidmap",
+                    "in": "formData",
+                    "description": "Question Id Map",
+                    "required": true,
+                    "type": "string"
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successful response"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/answers/export": {
+            "x-swagger-router-controller": "answer.controller",
+            "get": {
+                "summary": "List answers export ready",
+                "operationId": "listAnswersExport",
+                "security": [{
+                    "participant": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "object"
+                            }
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
         "/profile-survey": {
             "x-swagger-router-controller": "profile-survey.controller",
             "post": {
@@ -655,18 +797,73 @@
                     "admin": []
                 }],
                 "parameters": [{
-                    "name": "language",
+                    "name": "scope",
                     "in": "query",
-                    "description": "Language requested",
+                    "description": "List scope",
                     "required": false,
                     "type": "string",
-                    "minLength": 1
+                    "enum": ["complete", "summary", "export"]
+                }, {
+                    "name": "language",
+                    "in": "query",
+                    "description": "Language code",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 2
                 }],
                 "responses": {
                     "200": {
                         "description": "Successful response",
                         "schema": {
                             "$ref": "#/definitions/questions"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/questions/csv": {
+            "x-swagger-router-controller": "question.controller",
+            "get": {
+                "summary": "Exports questions as csv file",
+                "operationId": "exportQuestions",
+                "produces": ["text/csv", "application/json"],
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "post": {
+                "summary": "Imports question csv file",
+                "operationId": "importQuestions",
+                "consumes": ["multipart/form-data"],
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "questioncsv",
+                    "in": "formData",
+                    "description": "Question CSV file",
+                    "required": true,
+                    "type": "file"
+                }],
+                "responses": {
+                    "201": {
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "object"
                         }
                     },
                     "default": {
@@ -2422,6 +2619,23 @@
                 },
                 "description": {
                     "type": "string"
+                },
+                "questions": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": ["id", "required"],
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "minimum": 1
+                            },
+                            "required": {
+                                "type": "boolean"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
                 }
             },
             "additionalProperties": false

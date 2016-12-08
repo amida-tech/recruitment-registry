@@ -1,6 +1,7 @@
 'use strict';
 
 const _ = require('lodash');
+const intoStream = require('into-stream');
 
 const models = require('../models');
 const shared = require('./shared.js');
@@ -42,14 +43,33 @@ exports.getQuestion = function (req, res) {
     const language = _.get(req, 'swagger.params.language.value');
     const options = language ? { language } : {};
     models.question.getQuestion(id, options)
-        .then((question) => res.status(200).json(question))
+        .then(question => res.status(200).json(question))
         .catch(shared.handleError(res));
 };
 
 exports.listQuestions = function (req, res) {
+    const scope = _.get(req, 'swagger.params.scope.value');
     const language = _.get(req, 'swagger.params.language.value');
-    const options = language ? { language } : {};
+    const options = { scope, language };
     models.question.listQuestions(options)
-        .then((questions) => res.status(200).json(questions))
+        .then(questions => res.status(200).json(questions))
+        .catch(shared.handleError(res));
+};
+
+exports.exportQuestions = function (req, res) {
+    models.question.export()
+        .then(csvContent => {
+            res.header('Content-disposition', 'attachment; filename=question.csv');
+            res.type('text/csv');
+            res.status(200).send(csvContent);
+        })
+        .catch(shared.handleError(res));
+};
+
+exports.importQuestions = function (req, res) {
+    const csvFile = _.get(req, 'swagger.params.questioncsv.value');
+    const stream = intoStream(csvFile.buffer);
+    models.question.import(stream)
+        .then(result => res.status(201).json(result))
         .catch(shared.handleError(res));
 };

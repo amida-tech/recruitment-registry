@@ -13,6 +13,7 @@ const SurveyHistory = require('./util/survey-history');
 const SharedSpec = require('./util/shared-spec');
 const comparator = require('./util/client-server-comparator');
 const translator = require('./util/translator');
+const surveyCommon = require('./util/survey-common');
 
 const expect = chai.expect;
 const generator = new Generator();
@@ -26,6 +27,7 @@ describe('survey unit', function () {
 
     const hxSurvey = new SurveyHistory();
     const hxUser = new History();
+    const tests = new surveyCommon.SpecTests(generator, hxSurvey);
 
     it('verify no surveys', function () {
         return models.survey.listSurveys()
@@ -96,25 +98,14 @@ describe('survey unit', function () {
         };
     };
 
-    const listSurveysFn = function (index) {
-        return function () {
-            return models.survey.listSurveys()
-                .then(surveys => {
-                    expect(surveys).to.have.length(index + 1);
-                    const expected = hxSurvey.listServers();
-                    expect(surveys).to.deep.equal(expected);
-                });
-        };
-    };
-
     it('error: create survey without questions', function () {
         return models.survey.createSurvey({ name: 'name' })
             .then(shared.throwingHandler, shared.expectedErrorHandler('surveyNoQuestions'));
     });
 
     for (let i = 0; i < surveyCount; ++i) {
-        it(`create survey ${i}`, shared.createSurveyFn(hxSurvey));
-        it(`get/verify survey ${i}`, shared.verifySurveyFn(hxSurvey, i));
+        it(`create survey ${i}`, tests.createSurveyFn());
+        it(`get survey ${i}`, tests.getSurveyFn(i));
         it(`update survey ${i}`, updateSurveyFn(i));
         it(`get/verify survey ${i}`, verifyUpdatedSurveyFn(i));
         it(`revert updated survey back ${i}`, revertUpdateSurveyFn(i));
@@ -123,7 +114,7 @@ describe('survey unit', function () {
         it(`get/verify survey ${i}`, verifyUpdatedSurveyFn(i));
         it(`revert updated survey text back ${i}`, revertUpdateSurveyTextFn(i));
         it(`get/verify survey ${i}`, verifyUpdatedSurveyFn(i));
-        it(`list surveys ${i}`, listSurveysFn(i));
+        it('list surveys', tests.listSurveysFn());
     }
 
     it('replace sections of first survey with sections', function () {
@@ -268,13 +259,12 @@ describe('survey unit', function () {
                 .then(surveyWithGroupId => {
                     const groupId = surveyWithGroupId.groupId;
                     return models.survey.listSurveys({
-                            override: {
-                                where: { groupId },
-                                paranoid: false,
-                                attributes: ['groupId', 'version'],
-                                order: 'version'
-                            }
+                            scope: 'version-only',
+                            history: true,
+                            order: 'version',
+                            groupId
                         })
+                        .then(actual => actual.map(({ id, version, groupId }) => ({ version, groupId })))
                         .then(actual => {
                             const expected = _.range(1, count + 1).map(version => ({ version, groupId }));
                             expect(actual).to.deep.equal(expected);
@@ -314,13 +304,7 @@ describe('survey unit', function () {
     });
 
     it('listSurvey override where', function () {
-        return models.survey.listSurveys({
-                override: {
-                    where: { version: 3 },
-                    paranoid: false,
-                    attributes: ['id', 'name', 'version']
-                }
-            })
+        return models.survey.listSurveys({ scope: 'version', version: 3, history: true })
             .then(list => {
                 expect(list).to.have.length(1);
                 const { name, version } = list[0];
@@ -330,16 +314,9 @@ describe('survey unit', function () {
             });
     });
 
-    it('delete survey 5', function () {
-        const id = hxSurvey.id(5);
-        hxSurvey.remove(5);
-        return models.survey.deleteSurvey(id)
-            .then(() => models.survey.listSurveys())
-            .then(surveys => {
-                const expected = hxSurvey.listServers();
-                expect(surveys).to.deep.equal(expected);
-            });
-    });
+    it('delete survey 5', tests.deleteSurveyFn(5));
+
+    it('list surveys', tests.listSurveysFn());
 
     it('extract existing questions', function () {
         hxSurvey.questions = _.flatten(_.map(hxSurvey.listServers('questions'), 'questions'));

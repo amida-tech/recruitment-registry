@@ -98,11 +98,16 @@ describe('answer unit', function () {
                             const actual = _.sortBy(result, 'questionId');
                             expect(actual).to.deep.equal(expected);
                         })
-                        .then(() => models.answer.getOldAnswers({
+                        .then(() => models.answer.listAnswers({
                             userId: hxUser.id(userIndex),
-                            surveyId: hxSurvey.id(surveyIndex)
+                            surveyId: hxSurvey.id(surveyIndex),
+                            scope: 'history-only',
+                            history: true
                         }))
                         .then((actual) => {
+                            actual = _.groupBy(actual, 'deletedAt');
+                            Object.keys(actual).forEach(key => actual[key].forEach(value => delete value.deletedAt));
+
                             const expectedAnswers = hxAnswer.expectedRemovedAnswers(userIndex, surveyIndex, seqIndex);
                             const keys = Object.keys(expectedAnswers).sort();
                             const expected = {};
@@ -117,7 +122,8 @@ describe('answer unit', function () {
                             expect(actualKeys.length).to.equal(expectedKeys.length);
                             for (let i = 0; i < expectedKeys.length; ++i) {
                                 const modifiedAnswers = AnswerHistory.prepareClientAnswers(expectedAnswers[expectedKeys[i]]);
-                                expect(actual[actualKeys[i]]).to.deep.equal(modifiedAnswers);
+                                const sortedActual = _.sortBy(actual[actualKeys[i]], 'questionId');
+                                expect(sortedActual).to.deep.equal(modifiedAnswers);
                             }
                         });
                 });

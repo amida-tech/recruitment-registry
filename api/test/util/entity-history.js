@@ -13,6 +13,15 @@ class History {
         this.translations = {};
     }
 
+    reset() {
+        this.clients = [];
+        this.servers = [];
+        this.history = [];
+        this.currentIndex = [];
+        this.removed = [];
+        this.translations = {};
+    }
+
     push(client, server) {
         const index = this.clients.length;
         this.clients.push(client);
@@ -80,13 +89,18 @@ class History {
         return this.clients;
     }
 
-    listServers(fields) {
-        let result = this.servers;
+    listServers(fields, indices) {
+        let list;
+        if (indices) {
+            list = indices.map(index => this.server(index));
+        } else {
+            list = this.servers;
+        }
         fields = fields || this.listFields;
         if (fields) {
-            result = result.map(element => _.pick(element, fields));
+            list = list.map(element => _.pick(element, fields));
         }
-        return result;
+        return list;
     }
 
     updateClient(index, client) {

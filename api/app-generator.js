@@ -14,6 +14,9 @@ const errHandler = function (err, req, res, next) {
     next = next; // rid of unused error
     logger.error(err);
     err = jsutil.errToJSON(err);
+    if ((!res.statusCode) || (res.statusCode < 300)) {
+        res.statusCode = 500;
+    }
     res.json(err);
 };
 

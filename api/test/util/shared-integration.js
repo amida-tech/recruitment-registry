@@ -105,21 +105,6 @@ class SharedIntegration {
         };
     }
 
-    createQxFn(store, hxQuestions) {
-        const generator = this.generator;
-        return function (done) {
-            const clientQuestion = generator.newQuestion();
-            store.post('/questions', clientQuestion, 201)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    hxQuestions.push(clientQuestion, res.body);
-                    done();
-                });
-        };
-    }
-
     fillQxFn(store, hxQuestions) {
         return function (done) {
             const id = hxQuestions.lastId();

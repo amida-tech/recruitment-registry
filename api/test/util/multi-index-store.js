@@ -1,8 +1,11 @@
 'use strict';
 
+const _ = require('lodash');
+
 module.exports = class MultiIndexStore {
     constructor() {
-        this.indexMap = new Map();
+        this.currentIndexMap = new Map();
+        this.historyIndexMap = new Map();
         this.store = [];
     }
 
@@ -12,26 +15,41 @@ module.exports = class MultiIndexStore {
 
     index(indices) {
         const key = MultiIndexStore.key(indices);
-        return this.indexMap.get(key);
+        return this.currentIndexMap.get(key);
     }
 
-    push(indices, obj) {
+    set(indices, obj) {
         const key = MultiIndexStore.key(indices);
-        if (this.indexMap.has(key)) {
-            throw new Error('Data with those indices are already pushed.');
+        let index = this.currentIndexMap.get(key);
+        let indexHistory;
+        if (index === undefined) {
+            indexHistory = [];
+            this.historyIndexMap.set(key, indexHistory);
+        } else {
+            this.store[index].deleted = true;
+            indexHistory = this.historyIndexMap.get(key);
         }
-        const index = this.store.length;
-        this.store.push(obj);
-        this.indexMap.set(key, index);
-    }
-
-    update(indices, obj) {
-        const index = this.index(indices);
-        this.store[index] = obj;
+        index = this.store.length;
+        const value = { obj };
+        indices.forEach((indexValue, indexIndex) => value[indexIndex] = indexValue);
+        this.store.push(value);
+        this.currentIndexMap.set(key, index);
+        indexHistory.push(index);
     }
 
     get(indices) {
         const index = this.index(indices);
-        return this.store[index];
+        const value = this.store[index];
+        return value.obj;
+    }
+
+    listFlatForIndex(indexIndex, indexValue) {
+        const result = this.store.reduce((r, value) => {
+            if ((value[indexIndex] === indexValue) && !value.deleted) {
+                r.push(value);
+            }
+            return r;
+        }, []);
+        return _.flatten(result);
     }
 };

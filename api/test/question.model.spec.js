@@ -13,6 +13,7 @@ const Generator = require('./util/entity-generator');
 const comparator = require('./util/client-server-comparator');
 const History = require('./util/entity-history');
 const translator = require('./util/translator');
+const questionCommon = require('./util/question-common');
 
 const expect = chai.expect;
 const generator = new Generator();
@@ -25,32 +26,16 @@ describe('question unit', function () {
 
     const hxQuestion = new History();
     const hxSurvey = new History();
+    const tests = new questionCommon.SpecTests(generator, hxQuestion);
 
-    it('get all questions when none', function () {
+    it('list all questions when none', function () {
         return models.question.listQuestions()
             .then(questions => {
                 expect(questions).to.have.length(0);
             });
     });
 
-    const createQx = function () {
-        const qx = generator.newQuestion();
-        return models.question.createQuestion(qx)
-            .then(id => hxQuestion.push(qx, { id }));
-    };
-
-    const showQxFn = function (index) {
-        return function () {
-            const id = hxQuestion.id(index);
-            return models.question.getQuestion(id)
-                .then(question => {
-                    hxQuestion.updateServer(index, question);
-                    return comparator.question(hxQuestion.client(index), question);
-                });
-        };
-    };
-
-    const verifyQxFn = function (index) {
+    const verifyQuestionFn = function (index) {
         return function () {
             const question = hxQuestion.server(index);
             return models.question.getQuestion(question.id)
@@ -93,12 +78,12 @@ describe('question unit', function () {
     };
 
     for (let i = 0; i < 10; ++i) {
-        it(`create question ${i}`, createQx);
-        it(`show/update question ${i}`, showQxFn(i));
+        it(`create question ${i}`, tests.createQuestionFn());
+        it(`get question ${i}`, tests.getQuestionFn(i));
         it(`update question ${i}`, updateQuestionTextFn(i));
-        it(`verify question ${i}`, verifyQxFn(i));
+        it(`verify question ${i}`, verifyQuestionFn(i));
         it(`revert update question ${i}`, revertUpdateQuestionTextFn(i));
-        it(`verify question ${i}`, verifyQxFn(i));
+        it(`verify question ${i}`, verifyQuestionFn(i));
     }
 
     it('error: get with non-existent id', function () {
@@ -106,18 +91,21 @@ describe('question unit', function () {
             .then(shared.throwingHandler, shared.expectedErrorHandler('qxNotFound'));
     });
 
-    it('get multiple questions (2, 4, 7)', function () {
+    it('list questions 2, 4, 7', function () {
         const indices = [2, 4, 7];
         const ids = indices.map(i => hxQuestion.id(i));
-        const clientQuestions = indices.map(i => hxQuestion.client(i));
-        return models.question.listQuestions({ ids })
-            .then(questions => comparator.questions(clientQuestions, questions));
+        return models.question.listQuestions({ scope: 'complete', ids })
+            .then(questions => {
+                const expected = hxQuestion.listServers(null, indices);
+                expect(questions).to.deep.equal(expected);
+            });
     });
 
-    it('get all questions', function () {
-        return models.question.listQuestions()
-            .then(questions => comparator.questions(hxQuestion.listClients(), questions));
-    });
+    it('list all questions (complete)', tests.listQuestionsFn('complete'));
+
+    it('list all questions (summary)', tests.listQuestionsFn('summary'));
+
+    it('list all questions (default - summary)', tests.listQuestionsFn());
 
     it('error: get multiple with non-existent id', function () {
         return models.question.listQuestions({ ids: [1, 99999] })
@@ -154,7 +142,7 @@ describe('question unit', function () {
 
     const listTranslatedQuestionsFn = function (language, notTranslated) {
         return function () {
-            return models.question.listQuestions({ language })
+            return models.question.listQuestions({ scope: 'complete', language })
                 .then(result => {
                     const expected = hxQuestion.listTranslatedServers(language);
                     if (!notTranslated) {
@@ -185,31 +173,21 @@ describe('question unit', function () {
 
     it('list questions in english (original)', listTranslatedQuestionsFn('en', true));
 
-    const qxDeleteFn = function (index) {
-        return function () {
-            return models.question.deleteQuestion(hxQuestion.id(index))
-                .then(() => {
-                    hxQuestion.remove(index);
-                });
-        };
-    };
-
     _.forEach([1, 4, 6], index => {
-        it(`delete question ${index}`, qxDeleteFn(index));
+        it(`delete question ${index}`, tests.deleteQuestionFn(index));
     });
 
-    it('verify all questions', function () {
-        return models.question.listQuestions()
-            .then(questions => comparator.questions(hxQuestion.listClients(), questions));
-    });
+    it('list all questions (complete)', tests.listQuestionsFn('complete'));
+
+    it('list all questions (summary)', tests.listQuestionsFn('summary'));
 
     for (let i = 10; i < 20; ++i) {
-        it(`create question ${i}`, createQx);
-        it(`show/update question ${i}`, showQxFn(i));
+        it(`create question ${i}`, tests.createQuestionFn());
+        it(`get question ${i}`, tests.getQuestionFn(i));
         it(`update question ${i}`, updateQuestionTextFn(i));
-        it(`verify question ${i}`, verifyQxFn(i));
+        it(`verify question ${i}`, verifyQuestionFn(i));
         it(`revert update question ${i}`, revertUpdateQuestionTextFn(i));
-        it(`verify question ${i}`, verifyQxFn(i));
+        it(`verify question ${i}`, verifyQuestionFn(i));
     }
 
     const createSurveyFn = function (questionIndices) {
@@ -261,7 +239,7 @@ describe('question unit', function () {
     });
 
     _.forEach([5, 11, 15], index => {
-        it(`delete question ${index}`, qxDeleteFn(index));
+        it(`delete question ${index}`, tests.deleteQuestionFn(index));
     });
 
     it(`error: replace a non-existent question`, function () {
@@ -312,11 +290,11 @@ describe('question unit', function () {
                     comparator.question(replacement, question);
                     hxQuestion.replace(questionIndex, replacement, question);
                     return question;
-                })
-                .then(() => models.question.listQuestions())
-                .then(questions => comparator.questions(hxQuestion.listClients(), questions));
+                });
         });
     });
+
+    it('list all questions (complete)', tests.listQuestionsFn('complete'));
 
     const verifyVersioningFn = function (index, expectedVersion) {
         return function () {

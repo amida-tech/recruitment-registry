@@ -6,8 +6,9 @@ const db = require('../db');
 
 const RRError = require('../../lib/rr-error');
 const SPromise = require('../../lib/promise');
-
 const Translatable = require('./translatable');
+const exportCSVConverter = require('../../export/csv-converter.js');
+const importCSVConverter = require('../../import/csv-converter.js');
 
 const sequelize = db.sequelize;
 const Survey = db.Survey;
@@ -168,23 +169,58 @@ module.exports = class SurveyDAO extends Translatable {
         });
     }
 
-    listSurveys(options = {}) {
-        let _options = {
-            raw: true,
-            attributes: ['id'],
-            order: 'id'
-        };
-        if (options.override) {
-            _options = _.assign({}, _options, options.override);
-            const indexName = _options.attributes.indexOf('name');
-            if (indexName < 0) {
-                return Survey.findAll(_options);
-            } else {
-                _options.attributes.splice(indexName, 1);
+    listSurveys({ scope, language, history, where, order, groupId, version } = {}) {
+        const attributes = ['id'];
+        if (scope === 'version-only' || scope === 'version') {
+            attributes.push('groupId');
+            attributes.push('version');
+        }
+        const options = { raw: true, attributes, order: order || 'id', paranoid: !history };
+        if (groupId || version) {
+            options.where = {};
+            if (groupId) {
+                options.where.groupId = groupId;
+            }
+            if (version) {
+                options.where.version = version;
             }
         }
-        return Survey.findAll(_options)
-            .then(surveys => this.updateAllTexts(surveys, options.language));
+        if (language) {
+            options.language = language;
+        }
+        if (scope === 'version-only') {
+            return Survey.findAll(options);
+        }
+        return Survey.findAll(options)
+            .then(surveys => this.updateAllTexts(surveys, options.language))
+            .then(surveys => {
+                if (scope === 'export') {
+                    return SurveyQuestion.findAll({
+                            raw: true,
+                            attributes: ['surveyId', 'questionId', 'required'],
+                            order: 'line'
+                        })
+                        .then(surveyQuestions => {
+                            return surveyQuestions.reduce((r, qx) => {
+                                const p = r.get(qx.surveyId);
+                                if (!p) {
+                                    r.set(qx.surveyId, [{ id: qx.questionId, required: qx.required }]);
+                                    return r;
+                                }
+                                p.push({ id: qx.questionId, required: qx.required });
+                                return r;
+                            }, new Map());
+                        })
+                        .then(map => {
+                            surveys.forEach(survey => {
+                                survey.questions = map.get(survey.id);
+                            });
+                            return surveys;
+                        });
+
+                }
+                return surveys;
+            });
     }
 
     getSurvey(id, options = {}) {
@@ -207,8 +243,9 @@ module.exports = class SurveyDAO extends Translatable {
                             attributes: ['questionId', 'required']
                         })
                         .then(surveyQuestions => {
-                            const questionIds = _.map(surveyQuestions, 'questionId');
-                            return this.question.listQuestions({ ids: questionIds, language: options.language })
+                            const ids = _.map(surveyQuestions, 'questionId');
+                            const language = options.language;
+                            return this.question.listQuestions({ scope: 'complete', ids, language })
                                 .then(questions => ({ questions, surveyQuestions }));
                         })
                         .then(({ questions, surveyQuestions }) => {
@@ -247,6 +284,78 @@ module.exports = class SurveyDAO extends Translatable {
                         });
                         return survey;
                     });
+            });
+    }
+
+    export () {
+        return this.listSurveys({ scope: 'export' })
+            .then(surveys => {
+                return surveys.reduce((r, { id, name, description, questions }) => {
+                    const surveyLine = { id, name, description };
+                    questions.forEach(({ id, required }, index) => {
+                        const line = { questionId: id, required };
+                        if (index === 0) {
+                            Object.assign(line, surveyLine);
+                        } else {
+                            line.id = surveyLine.id;
+                        }
+                        r.push(line);
+                    });
+                    return r;
+                }, []);
+            })
+            .then(lines => {
+                const converter = new exportCSVConverter({ fields: ['id', 'name', 'description', 'questionId', 'required'] });
+                return converter.dataToCSV(lines);
+            });
+    }
+
+    import (stream, questionIdMap) {
+        questionIdMap = _.toPairs(questionIdMap).reduce((r, pair) => {
+            r[pair[0]] = pair[1].questionId;
+            return r;
+        }, {});
+        const converter = new importCSVConverter();
+        return converter.streamToRecords(stream)
+            .then(records => {
+                const numRecords = records.length;
+                if (!numRecords) {
+                    return [];
+                }
+                const map = records.reduce((r, record) => {
+                    const id = record.id;
+                    let { survey } = r.get(id) || {};
+                    if (!survey) {
+                        survey = { name: record.name };
+                        if (record.description) {
+                            survey.description = record.description;
+                        }
+                        r.set(id, { id, survey });
+                    }
+                    if (!survey.questions) {
+                        survey.questions = [];
+                    }
+                    const question = {
+                        id: questionIdMap[record.questionId],
+                        required: record.required
+                    };
+                    survey.questions.push(question);
+                    return r;
+                }, new Map());
+                return [...map.values()];
+            })
+            .then(records => {
+                if (!records.length) {
+                    return {};
+                }
+                return sequelize.transaction(transaction => {
+                    const mapIds = {};
+                    const pxs = records.map(({ id, survey }) => {
+                        return this.createSurveyTx(survey, transaction)
+                            .then(surveyId => mapIds[id] = surveyId);
+                    });
+                    return SPromise.all(pxs).then(() => mapIds);
+                });
             });
     }
 };
