@@ -180,6 +180,13 @@
                     "participant": []
                 }],
                 "parameters": [{
+                    "name": "scope",
+                    "in": "query",
+                    "description": "List scope",
+                    "required": false,
+                    "type": "string",
+                    "enum": ["summary", "export"]
+                }, {
                     "name": "language",
                     "in": "query",
                     "description": "Language code",

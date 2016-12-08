@@ -128,9 +128,76 @@ const SpecTests = class SurveySpecTests {
     }
 };
 
+const IntegrationTests = class SurveyIntegrationTests {
+    constructor(rrSuperTest, generator, hxSurvey) {
+        this.rrSuperTest = rrSuperTest;
+        this.generator = generator;
+        this.hxSurvey = hxSurvey;
+    }
+
+    createSurveyFn() {
+        const generator = this.generator;
+        const rrSuperTest = this.rrSuperTest;
+        const hxSurvey = this.hxSurvey;
+        return function (done) {
+            const survey = generator.newSurvey();
+            rrSuperTest.post('/surveys', survey, 201)
+                .expect(function (res) {
+                    hxSurvey.push(survey, res.body);
+                })
+                .end(done);
+        };
+    }
+
+    getSurveyFn(index) {
+        const rrSuperTest = this.rrSuperTest;
+        const hxSurvey = this.hxSurvey;
+        return function (done) {
+            if (index === null || index === undefined) {
+                index = hxSurvey.lastIndex();
+            }
+            const id = hxSurvey.id(index);
+            rrSuperTest.get(`/surveys/${id}`, true, 200)
+                .end(function (err, res) {
+                    if (err) {
+                        return done(err);
+                    }
+                    hxSurvey.reloadServer(res.body);
+                    const expected = hxSurvey.client(index);
+                    comparator.survey(expected, res.body)
+                        .then(done, done);
+                });
+        };
+    }
+
+    deleteSurveyFn(index) {
+        const rrSuperTest = this.rrSuperTest;
+        const hxSurvey = this.hxSurvey;
+        return function (done) {
+            const id = hxSurvey.id(index);
+            rrSuperTest.delete(`/surveys/${id}`, 204).end(done);
+        };
+    }
+
+    listSurveysFn(scope) {
+        const rrSuperTest = this.rrSuperTest;
+        const hxSurvey = this.hxSurvey;
+        return function (done) {
+            const query = scope ? { scope } : undefined;
+            rrSuperTest.get('/surveys', true, 200, query)
+                .expect(function (res) {
+                    const expected = hxSurvey.listServersByScope(scope);
+                    expect(res.body).to.deep.equal(expected);
+                })
+                .end(done);
+        };
+    }
+};
+
 module.exports = {
     formAnswersToPost,
     formAnsweredSurvey,
     updateIds,
-    SpecTests
+    SpecTests,
+    IntegrationTests
 };

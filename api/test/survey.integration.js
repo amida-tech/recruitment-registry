@@ -14,6 +14,7 @@ const History = require('./util/entity-history');
 const SurveyHistory = require('./util/survey-history');
 const comparator = require('./util/client-server-comparator');
 const translator = require('./util/translator');
+const surveyCommon = require('./util/survey-common');
 
 const invalidSurveysJSON = require('./fixtures/json-schema-invalid/new-survey');
 const invalidSurveysSwagger = require('./fixtures/swagger-invalid/new-survey');
@@ -25,12 +26,13 @@ const generator = new Generator();
 const shared = new SharedIntegration(generator);
 
 describe('survey integration', function () {
+    const store = new RRSuperTest();
     const user = generator.newUser();
     const hxUser = new History();
     const surveyCount = 8;
     const hxSurvey = new SurveyHistory();
 
-    const store = new RRSuperTest();
+    const tests = new surveyCommon.IntegrationTests(store, generator, hxSurvey);
 
     before(shared.setUpFn(store));
 
@@ -40,48 +42,6 @@ describe('survey integration', function () {
     });
 
     it('login as super', shared.loginFn(store, config.superUser));
-
-    const createSurveyFn = function () {
-        return function (done) {
-            const clientSurvey = generator.newSurvey();
-            store.post('/surveys', clientSurvey, 201)
-                .expect(function (res) {
-                    hxSurvey.push(clientSurvey, res.body);
-                })
-                .end(done);
-        };
-    };
-
-    const showSurveyFn = function (index, update = {}) {
-        return function (done) {
-            if (index === null || index === undefined) {
-                index = hxSurvey.lastIndex();
-            }
-            const id = hxSurvey.id(index);
-            store.get(`/surveys/${id}`, true, 200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    if (_.isEmpty(update)) {
-                        hxSurvey.reloadServer(res.body);
-                    }
-                    const clientSurvey = hxSurvey.client(index);
-                    const expected = Object.assign({}, clientSurvey, update);
-                    comparator.survey(expected, res.body)
-                        .then(done, done);
-                });
-        };
-    };
-
-    const showSurveyMetaFn = function (index, update = {}) {
-        return function (done) {
-            if (hxSurvey.client(index).meta === undefined) {
-                return done();
-            }
-            showSurveyFn(index, update)(done);
-        };
-    };
 
     const verifySurveyFn = function (index) {
         return function (done) {
@@ -101,6 +61,7 @@ describe('survey integration', function () {
             }
             const id = hxSurvey.id(index);
             meta = meta || hxSurvey.client(index).meta;
+            hxSurvey.server(index).meta = meta;
             store.patch(`/surveys/${id}`, { meta }, 204)
                 .end(done);
         };
@@ -139,18 +100,6 @@ describe('survey integration', function () {
         };
     };
 
-    const listSurveysFn = function () {
-        return function (done) {
-            store.get('/surveys', true, 200)
-                .expect(function (res) {
-                    const surveys = res.body;
-                    const expected = hxSurvey.listServers();
-                    expect(surveys).to.deep.equal(expected);
-                })
-                .end(done);
-        };
-    };
-
     const invalidSurveyJSONFn = function (index) {
         return function (done) {
             const survey = invalidSurveysJSON[index];
@@ -182,19 +131,19 @@ describe('survey integration', function () {
     }
 
     for (let i = 0; i < surveyCount; ++i) {
-        it(`create survey ${i}`, createSurveyFn());
-        it(`verify survey ${i}`, showSurveyFn(i));
+        it(`create survey ${i}`, tests.createSurveyFn());
+        it(`verify survey ${i}`, tests.getSurveyFn(i));
         const meta = {
             anyProperty: true
         };
         it(`update survey ${i}`, updateSurveyFn(i, meta));
-        it(`verify survey ${i}`, showSurveyMetaFn(i, { meta }));
+        it(`verify survey ${i}`, verifySurveyFn(i));
         it(`update survey ${i}`, updateSurveyFn(i));
         it(`update survey text ${i}`, updateSurveyTextFn(i));
         it(`verify survey ${i}`, verifySurveyFn(i));
         it(`revert update survey ${i}`, revertUpdateSurveyTextFn(i));
         it(`verify survey ${i}`, verifySurveyFn(i));
-        it(`list surveys and verify`, listSurveysFn());
+        it(`list surveys and verify`, tests.listSurveysFn());
     }
 
     it('replace sections of first survey with sections', function (done) {
@@ -232,7 +181,7 @@ describe('survey integration', function () {
 
     it('get survey 3 in spanish when no name translation', verifySurveyFn(3));
 
-    it('list surveys in spanish when no translation', listSurveysFn());
+    it('list surveys in spanish when no translation', tests.listSurveysFn());
 
     const translateTextFn = function (index, language) {
         return function (done) {
@@ -293,21 +242,14 @@ describe('survey integration', function () {
     };
 
     it('replace survey 3', replaceSurveyFn(3));
-    it('verify survey 3 replacement', showSurveyFn(surveyCount));
-    it(`list surveys and verify`, listSurveysFn());
+    it('verify survey 3 replacement', tests.getSurveyFn(surveyCount));
+    it(`list surveys and verify`, tests.listSurveysFn());
 
-    const deleteSurveyFn = function (index) {
-        return function (done) {
-            const id = hxSurvey.id(index);
-            store.delete(`/surveys/${id}`, 204).end(done);
-        };
-    };
-
-    it('delete survey 5', deleteSurveyFn(5));
+    it('delete survey 5', tests.deleteSurveyFn(5));
     it('remove deleted survey locally', function () {
         hxSurvey.remove(5);
     });
-    it(`list surveys and verify`, listSurveysFn());
+    it(`list surveys and verify`, tests.listSurveysFn());
 
     it('create a new user', shared.createUserFn(store, hxUser, user));
 
@@ -320,8 +262,8 @@ describe('survey integration', function () {
 
     it('login as super', shared.loginFn(store, config.superUser));
 
-    it('create survey', createSurveyFn());
-    it('verify survey', showSurveyFn());
+    it('create survey', tests.createSurveyFn());
+    it('verify survey', tests.getSurveyFn());
 
     it('translate survey', function (done) {
         const name = 'puenno';

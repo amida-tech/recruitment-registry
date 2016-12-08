@@ -46,8 +46,9 @@ exports.deleteSurvey = function (req, res) {
 };
 
 exports.listSurveys = function (req, res) {
+    const scope = _.get(req, 'swagger.params.scope.value');
     const language = _.get(req, 'swagger.params.language.value');
-    const options = language ? { language } : {};
+    const options = { scope, language };
     models.survey.listSurveys(options)
         .then(surveys => res.status(200).json(surveys))
         .catch(shared.handleError(res));
