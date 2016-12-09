@@ -13,8 +13,8 @@
     }
   },
   "scripts": {
-	"preBuild": "NODE_ENV=production node preBuild.js",
-    "build": "NODE_ENV=production node prebuild.js && neo build",
+    "preBuild": "NODE_ENV=production node preBuild.js",
+    "build": "NODE_ENV=production node preBuild.js && neo build",
     "start": "neo start --port 4000 --config webpack.start.js",
     "test": "neo test"
   },
@@ -30,6 +30,7 @@
     "bootstrap": "4.0.0-alpha.2",
     "bulma": "^0.2.3",
     "classnames": "^2.2.5",
+    "dotenv": "^2.0.0",
     "flexboxgrid": "^6.3.1",
     "font-awesome": "^4.7.0",
     "guid": "0.0.12",
