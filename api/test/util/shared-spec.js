@@ -65,7 +65,7 @@ class SharedSpec {
                     const id = hxSurvey.id(index);
                     expect(survey.id).to.equal(id);
                     hxSurvey.updateServer(index, survey);
-                    return comparator.survey(hxSurvey.client(index), survey);
+                    comparator.survey(hxSurvey.client(index), survey);
                 });
         };
     }

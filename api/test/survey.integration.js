@@ -168,15 +168,12 @@ describe('survey integration', function () {
         const index = _.findIndex(hxSurvey.listClients(), client => client.sections);
         const id = hxSurvey.id(index);
         store.get(`/surveys/${id}`, true, 200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function (res) {
                 hxSurvey.updateServer(index, res.body);
                 const clientSurvey = hxSurvey.client(index);
-                comparator.survey(clientSurvey, res.body)
-                    .then(done, done);
-            });
+                comparator.survey(clientSurvey, res.body);
+            })
+            .end(done);
     });
 
     it('get survey 3 in spanish when no name translation', verifySurveyFn(3));

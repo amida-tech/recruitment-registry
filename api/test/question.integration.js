@@ -121,13 +121,10 @@ describe('question integration', function () {
             }
             const updatedQuestion = Object.assign({}, clientQuestion, cmp);
             store.get(`/questions/${id}`, true, 200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    comparator.question(updatedQuestion, res.body)
-                        .then(done, done);
-                });
+                .expect(function (res) {
+                    comparator.question(updatedQuestion, res.body);
+                })
+                .end(done);
         };
     };
 

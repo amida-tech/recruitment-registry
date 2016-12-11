@@ -73,18 +73,15 @@ class SharedIntegration {
     verifyProfileSurveyFn(store, hxSurvey, index) {
         return function (done) {
             store.get('/profile-survey', false, 200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     expect(res.body.exists).to.equal(true);
                     const survey = res.body.survey;
                     const id = hxSurvey.id(index);
                     expect(survey.id).to.equal(id);
                     hxSurvey.updateServer(index, survey);
-                    comparator.survey(hxSurvey.client(index), survey)
-                        .then(done, done);
-                });
+                    comparator.survey(hxSurvey.client(index), survey);
+                })
+                .end(done);
         };
     }
 
@@ -148,15 +145,12 @@ class SharedIntegration {
         return function (done) {
             const id = hxSurvey.id(index);
             store.get(`/surveys/${id}`, true, 200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const survey = res.body;
                     hxSurvey.updateServer(index, survey);
-                    comparator.survey(hxSurvey.client(index), survey)
-                        .then(done, done);
-                });
+                    comparator.survey(hxSurvey.client(index), survey);
+                })
+                .end(done);
         };
     }
 

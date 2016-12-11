@@ -62,15 +62,12 @@ describe('user survey integration', function () {
         return function (done) {
             const surveyId = hxSurvey.id(index);
             store.get(`/surveys/${surveyId}`, true, 200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const survey = res.body;
                     hxSurvey.updateServer(index, survey);
-                    comparator.survey(hxSurvey.client(index), survey)
-                        .then(done, done);
-                });
+                    comparator.survey(hxSurvey.client(index), survey);
+                })
+                .end(done);
         };
     };
 

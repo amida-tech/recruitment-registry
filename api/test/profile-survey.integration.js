@@ -81,18 +81,15 @@ describe('profile survey integration', function () {
     const verifyProfileSurveyFn = function (index) {
         return function (done) {
             store.get('/profile-survey', false, 200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const { exists, survey } = res.body;
                     expect(exists).to.equal(true);
                     const id = hxSurvey.id(index);
                     expect(survey.id).to.equal(id);
                     hxSurvey.updateServer(index, survey);
-                    comparator.survey(hxSurvey.client(index), survey)
-                        .then(done, done);
-                });
+                    comparator.survey(hxSurvey.client(index), survey);
+                })
+                .end(done);
         };
     };
 

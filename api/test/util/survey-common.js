@@ -97,8 +97,8 @@ const SpecTests = class SurveySpecTests {
             const surveyId = hxSurvey.id(index);
             return models.survey.getSurvey(surveyId)
                 .then(survey => {
-                    return comparator.survey(hxSurvey.client(index), survey)
-                        .then(() => hxSurvey.updateServer(index, survey));
+                    comparator.survey(hxSurvey.client(index), survey);
+                    hxSurvey.updateServer(index, survey);
                 });
         };
     }
@@ -158,15 +158,12 @@ const IntegrationTests = class SurveyIntegrationTests {
             }
             const id = hxSurvey.id(index);
             rrSuperTest.get(`/surveys/${id}`, true, 200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     hxSurvey.reloadServer(res.body);
                     const expected = hxSurvey.client(index);
-                    comparator.survey(expected, res.body)
-                        .then(done, done);
-                });
+                    comparator.survey(expected, res.body);
+                })
+                .end(done);
         };
     }
 

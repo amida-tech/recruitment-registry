@@ -141,10 +141,8 @@ describe('survey unit', function () {
         return models.survey.getSurvey(id)
             .then(survey => {
                 const clientSurvey = hxSurvey.client(index);
-                return comparator.survey(clientSurvey, survey)
-                    .then(() => {
-                        hxSurvey.updateServer(index, survey);
-                    });
+                comparator.survey(clientSurvey, survey);
+                hxSurvey.updateServer(index, survey);
             });
     });
 
@@ -238,11 +236,8 @@ describe('survey unit', function () {
             return models.survey.replaceSurvey(id, clientSurvey)
                 .then(id => models.survey.getSurvey(id))
                 .then((serverSurvey) => {
-                    return comparator.survey(clientSurvey, serverSurvey)
-                        .then(() => {
-                            hxSurvey.replace(index, clientSurvey, serverSurvey);
-                            return serverSurvey.id;
-                        });
+                    comparator.survey(clientSurvey, serverSurvey);
+                    hxSurvey.replace(index, clientSurvey, serverSurvey);
                 })
                 .then(() => models.survey.listSurveys())
                 .then(surveys => {
@@ -330,11 +325,9 @@ describe('survey unit', function () {
             .then(id => models.survey.getSurvey(id))
             .then(serverSurvey => {
                 survey.questions = questions;
-                return comparator.survey(survey, serverSurvey)
-                    .then(() => {
-                        hxSurvey.push(survey, serverSurvey);
-                        ++surveyCount;
-                    });
+                comparator.survey(survey, serverSurvey);
+                hxSurvey.push(survey, serverSurvey);
+                ++surveyCount;
             });
     });
 
@@ -350,7 +343,7 @@ describe('survey unit', function () {
                 survey.questions[1] = hxSurvey.questions[10];
                 survey.questions[2] = hxSurvey.questions[11];
                 hxSurvey.push(survey, serverSurvey);
-                return comparator.survey(survey, serverSurvey);
+                comparator.survey(survey, serverSurvey);
             });
     });
 

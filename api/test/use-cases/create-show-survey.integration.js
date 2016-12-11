@@ -67,12 +67,9 @@ describe('create-show-survey use case', function () {
 
     it('show the new survey', function (done) {
         store.get(`/surveys/${store.lastId}`, true, 200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-                comparator.survey(surveyExamples.Example.survey, res.body)
-                    .then(done, done);
-            });
+            .expect(function (res) {
+                comparator.survey(surveyExamples.Example.survey, res.body);
+            })
+            .end(done);
     });
 });
