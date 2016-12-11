@@ -192,11 +192,12 @@ class SharedSpec {
         throw new Error('Unexpected no error.');
     }
 
-    expectedErrorHandler(code) {
+    expectedErrorHandler(code, ...params) {
         return function (err) {
             expect(err).to.be.instanceof(RRError);
             expect(err.code).to.equal(code);
-            expect(!!err.message).to.equal(true);
+            const expected = new RRError(code, params);
+            expect(err.message).to.equal(expected.message);
             return err;
         };
     }

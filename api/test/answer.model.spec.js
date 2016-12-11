@@ -50,6 +50,37 @@ describe('answer unit', function () {
         return it(`create survey ${index}`, createSurveyFn(surveyQuestion));
     });
 
+    it('error: invalid answer property', function () {
+        const input = {
+            userId: hxUser.id(0),
+            surveyId: hxSurvey.id(0),
+            answers: [{
+                questionId: hxQuestion.id(0),
+                answer: {
+                    invalidValue: 'invalidValue'
+                }
+            }]
+        };
+        return models.answer.createAnswers(input)
+            .then(shared.throwingHandler, shared.expectedErrorHandler('answerAnswerNotUnderstood', 'invalidValue'));
+    });
+
+    it('error: multiple answer properties', function () {
+        const input = {
+            userId: hxUser.id(0),
+            surveyId: hxSurvey.id(0),
+            answers: [{
+                questionId: hxQuestion.id(0),
+                answer: {
+                    invalidValue1: 'invalidValue1',
+                    invalidValue0: 'invalidValue0'
+                }
+            }]
+        };
+        return models.answer.createAnswers(input)
+            .then(shared.throwingHandler, shared.expectedErrorHandler('answerMultipleTypeAnswers', 'invalidValue0, invalidValue1'));
+    });
+
     const createTestFn = function (userIndex, surveyIndex, seqIndex, stepIndex) {
         return function () {
             const { answers, language } = hxAnswer.generateAnswers(userIndex, surveyIndex, seqIndex, stepIndex);

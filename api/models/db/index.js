@@ -63,6 +63,8 @@ Answer.belongsTo(Question, {
     }
 });
 
+SurveyQuestion.belongsTo(Question, { as: 'question', foreignKey: 'question_id' });
+
 module.exports = {
     Sequelize,
     sequelize,
