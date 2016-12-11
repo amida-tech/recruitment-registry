@@ -8,9 +8,9 @@ const _ = require('lodash');
 const models = require('../models');
 const SharedSpec = require('./util/shared-spec.js');
 const SurveyHistory = require('./util/survey-history');
-const History = require('./util/entity-history');
-const Generator = require('./util/entity-generator');
-const comparator = require('./util/client-server-comparator');
+const History = require('./util/history');
+const Generator = require('./util/generator');
+const comparator = require('./util/comparator');
 const ConsentDocumentHistory = require('./util/consent-document-history');
 
 const expect = chai.expect;

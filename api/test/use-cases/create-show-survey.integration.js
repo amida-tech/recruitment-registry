@@ -7,7 +7,7 @@ const chai = require('chai');
 const SharedIntegration = require('../util/shared-integration');
 const RRSuperTest = require('../util/rr-super-test');
 const surveyExamples = require('../fixtures/example/survey');
-const comparator = require('../util/client-server-comparator');
+const comparator = require('../util/comparator');
 
 const config = require('../../config');
 

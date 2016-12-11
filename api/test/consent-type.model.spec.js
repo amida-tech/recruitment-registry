@@ -5,8 +5,8 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 
 const SharedSpec = require('./util/shared-spec');
-const Generator = require('./util/entity-generator');
-const History = require('./util/entity-history');
+const Generator = require('./util/generator');
+const History = require('./util/history');
 const models = require('../models');
 
 const expect = chai.expect;

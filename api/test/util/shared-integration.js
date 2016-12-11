@@ -5,9 +5,9 @@ const chai = require('chai');
 const _ = require('lodash');
 
 const appgen = require('../../app-generator');
-const Generator = require('./entity-generator');
+const Generator = require('./generator');
 const translator = require('./translator');
-const comparator = require('./client-server-comparator');
+const comparator = require('./comparator');
 
 const expect = chai.expect;
 

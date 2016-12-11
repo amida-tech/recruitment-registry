@@ -8,12 +8,12 @@ const _ = require('lodash');
 const config = require('../config');
 
 const RRSuperTest = require('./util/rr-super-test');
-const Generator = require('./util/entity-generator');
-const History = require('./util/entity-history');
+const Generator = require('./util/generator');
+const History = require('./util/history');
 const SurveyHistory = require('./util/survey-history');
 const Shared = require('./util/shared-integration');
 const RRError = require('../lib/rr-error');
-const comparator = require('./util/client-server-comparator');
+const comparator = require('./util/comparator');
 const translator = require('./util/translator');
 
 const expect = chai.expect;

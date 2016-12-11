@@ -6,7 +6,7 @@ const _ = require('lodash');
 
 const models = require('../models');
 const SharedSpec = require('./util/shared-spec');
-const Generator = require('./util/entity-generator');
+const Generator = require('./util/generator');
 const AnswerHistory = require('./util/answer-history');
 const answerCommon = require('./util/answer-common');
 

@@ -7,9 +7,9 @@ const models = require('../../models');
 const db = require('../../models/db');
 
 const RRError = require('../../lib/rr-error');
-const Generator = require('./entity-generator');
+const Generator = require('./generator');
 const translator = require('./translator');
-const comparator = require('./client-server-comparator');
+const comparator = require('./comparator');
 
 const expect = chai.expect;
 

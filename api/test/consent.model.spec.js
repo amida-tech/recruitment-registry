@@ -6,8 +6,8 @@ const chai = require('chai');
 const _ = require('lodash');
 
 const SharedSpec = require('./util/shared-spec');
-const Generator = require('./util/entity-generator');
-const History = require('./util/entity-history');
+const Generator = require('./util/generator');
+const History = require('./util/history');
 const ConsentCommon = require('./util/consent-common');
 const ConsentDocumentHistory = require('./util/consent-document-history');
 const models = require('../models');

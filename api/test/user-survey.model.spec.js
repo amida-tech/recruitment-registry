@@ -7,11 +7,11 @@ const _ = require('lodash');
 
 const models = require('../models');
 
-const Generator = require('./util/entity-generator');
-const History = require('./util/entity-history');
+const Generator = require('./util/generator');
+const History = require('./util/history');
 const SurveyHistory = require('./util/survey-history');
 const SharedSpec = require('./util/shared-spec');
-const comparator = require('./util/client-server-comparator');
+const comparator = require('./util/comparator');
 const translator = require('./util/translator');
 const surveyCommon = require('./util/survey-common');
 

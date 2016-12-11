@@ -8,9 +8,9 @@ const _ = require('lodash');
 const models = require('../../models');
 
 const SharedSpec = require('../util/shared-spec.js');
-const Generator = require('../util/entity-generator');
+const Generator = require('../util/generator');
 const SurveyHistory = require('../util/survey-history');
-const History = require('../util/entity-history');
+const History = require('../util/history');
 const MultiIndexStore = require('../util/multi-index-store');
 const surveyCommon = require('../util/survey-common');
 const answerCommon = require('../util/answer-common');

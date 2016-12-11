@@ -7,7 +7,7 @@ const chai = require('chai');
 const models = require('../models');
 const SharedSpec = require('./util/shared-spec.js');
 const SurveyHistory = require('./util/survey-history');
-const Generator = require('./util/entity-generator');
+const Generator = require('./util/generator');
 const translator = require('./util/translator');
 
 const expect = chai.expect;

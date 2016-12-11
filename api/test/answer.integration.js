@@ -9,7 +9,7 @@ const config = require('../config');
 
 const SharedIntegration = require('./util/shared-integration');
 const RRSuperTest = require('./util/rr-super-test');
-const Generator = require('./util/entity-generator');
+const Generator = require('./util/generator');
 const AnswerHistory = require('./util/answer-history');
 const answerCommon = require('./util/answer-common');
 const questionCommon = require('./util/question-common');

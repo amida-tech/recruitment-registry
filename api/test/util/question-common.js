@@ -3,7 +3,7 @@
 const chai = require('chai');
 
 const models = require('../../models');
-const comparator = require('./client-server-comparator');
+const comparator = require('./comparator');
 
 const scopeToFieldsMap = {
     'summary': ['id', 'type', 'text', 'instruction'],

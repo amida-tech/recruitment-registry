@@ -7,7 +7,7 @@ const _ = require('lodash');
 
 const SharedIntegration = require('./util/shared-integration');
 const RRSuperTest = require('./util/rr-super-test');
-const Generator = require('./util/entity-generator');
+const Generator = require('./util/generator');
 const ConsentDocumentHistory = require('./util/consent-document-history');
 const config = require('../config');
 const RRError = require('../lib/rr-error');

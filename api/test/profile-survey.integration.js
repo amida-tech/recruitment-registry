@@ -9,8 +9,8 @@ const config = require('../config');
 const SharedIntegration = require('./util/shared-integration');
 const RRSuperTest = require('./util/rr-super-test');
 const SurveyHistory = require('./util/survey-history');
-const Generator = require('./util/entity-generator');
-const comparator = require('./util/client-server-comparator');
+const Generator = require('./util/generator');
+const comparator = require('./util/comparator');
 const translator = require('./util/translator');
 
 const expect = chai.expect;

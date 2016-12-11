@@ -8,7 +8,7 @@ const _ = require('lodash');
 const models = require('../../models');
 
 const SharedSpec = require('../util/shared-spec.js');
-const Generator = require('../util/entity-generator');
+const Generator = require('../util/generator');
 const SurveyHistory = require('../util/survey-history');
 const surveyCommon = require('../util/survey-common');
 const intoStream = require('into-stream');

@@ -12,8 +12,8 @@ const config = require('../../config');
 
 const SharedIntegration = require('../util/shared-integration');
 const RRSuperTest = require('../util/rr-super-test');
-const Generator = require('../util/entity-generator');
-const History = require('../util/entity-history');
+const Generator = require('../util/generator');
+const History = require('../util/history');
 const questionCommon = require('../util/question-common');
 
 const expect = chai.expect;

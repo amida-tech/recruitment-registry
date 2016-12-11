@@ -5,9 +5,9 @@ process.env.NODE_ENV = 'test';
 const _ = require('lodash');
 
 const SharedSpec = require('./util/shared-spec');
-const History = require('./util/entity-history');
+const History = require('./util/history');
 const models = require('../models');
-const Generator = require('./util/entity-generator');
+const Generator = require('./util/generator');
 const testJsutil = require('./util/test-jsutil');
 
 const generator = new Generator();
