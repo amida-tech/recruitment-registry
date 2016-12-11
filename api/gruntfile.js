@@ -8,6 +8,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-jsbeautifier');
     grunt.loadNpmTasks('grunt-mocha-test');
     grunt.loadNpmTasks('grunt-shell');
+    grunt.loadNpmTasks('grunt-env');
 
     const mochaBin = './node_modules/mocha/bin/_mocha';
 
@@ -94,6 +95,11 @@ module.exports = function (grunt) {
                 tasks: ['default']
             }
         },
+        env: {
+            test: {
+                NODE_ENV: 'test'
+            }
+        },
         mochaTest: {
             test: {
                 options: {
@@ -112,7 +118,7 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask('beautify', ['jsbeautifier:beautify']);
-    grunt.registerTask('mocha', ['mochaTest']);
+    grunt.registerTask('mocha', ['env:test', 'mochaTest']);
     grunt.registerTask('coverage', ['shell:runIstanbul']);
     grunt.registerTask('swagger', 'Validates api definition', swaggerValidation);
     grunt.registerTask('default', ['beautify', 'jshint', 'swagger', 'mocha']);
