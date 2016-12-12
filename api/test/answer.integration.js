@@ -40,7 +40,7 @@ describe('answer integration', function () {
 
     for (let i = 0; i < 20; ++i) {
         it(`create question ${i}`, questionTests.createQuestionFn());
-        it(`fill choices ids in question ${i}`, shared.fillQxFn(store, hxQuestion));
+        it(`get question ${i}`, questionTests.getQuestionFn(i));
     }
 
     _.map(testQuestions, 'survey').forEach((surveyQuestion, index) => {

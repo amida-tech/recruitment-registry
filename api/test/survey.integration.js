@@ -132,7 +132,7 @@ describe('survey integration', function () {
 
     for (let i = 0; i < surveyCount; ++i) {
         it(`create survey ${i}`, tests.createSurveyFn());
-        it(`verify survey ${i}`, tests.getSurveyFn(i));
+        it(`get survey ${i}`, tests.getSurveyFn(i));
         const meta = {
             anyProperty: true
         };

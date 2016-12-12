@@ -9,6 +9,7 @@ const SharedSpec = require('./util/shared-spec');
 const Generator = require('./util/generator');
 const AnswerHistory = require('./util/answer-history');
 const answerCommon = require('./util/answer-common');
+const questionCommon = require('./util/question-common');
 
 const expect = chai.expect;
 const generator = new Generator();
@@ -22,6 +23,8 @@ describe('answer unit', function () {
     const hxQuestion = hxAnswer.hxQuestion;
     const hxSurvey = hxAnswer.hxSurvey;
 
+    const questionTests = new questionCommon.SpecTests(generator, hxQuestion);
+
     before(shared.setUpFn());
 
     for (let i = 0; i < 4; ++i) {
@@ -29,7 +32,8 @@ describe('answer unit', function () {
     }
 
     for (let i = 0; i < 20; ++i) {
-        it(`create question ${i}`, shared.createQuestion(hxQuestion));
+        it(`create question ${i}`, questionTests.createQuestionFn());
+        it(`get question ${i}`, questionTests.getQuestionFn(i));
     }
 
     const createSurveyFn = function (qxIndices) {

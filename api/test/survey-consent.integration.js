@@ -17,6 +17,7 @@ const SurveyHistory = require('./util/survey-history');
 const MultiIndexHistory = require('./util/multi-index-history');
 const MultiIndexStore = require('./util/multi-index-store');
 const comparator = require('./util/comparator');
+const surveyCommon = require('./util/survey-common');
 
 const expect = chai.expect;
 const generator = new Generator();
@@ -33,6 +34,8 @@ describe('survey consent integration', function () {
     const hxUser = hxConsentDocument.hxUser;
     const hxSurveyConsents = new MultiIndexHistory();
     const hxAnswers = new MultiIndexStore();
+
+    const surveyTests = new surveyCommon.IntegrationTests(store, generator, hxSurvey);
 
     before(shared.setUpFn(store));
 
@@ -54,8 +57,8 @@ describe('survey consent integration', function () {
     it('verify profile survey (survey 0)', shared.verifyProfileSurveyFn(store, hxSurvey, 0));
 
     for (let i = 1; i < 7; ++i) {
-        it(`create survey ${i}`, shared.createSurveyFn(store, hxSurvey));
-        it(`verify survey ${i}`, shared.verifySurveyFn(store, hxSurvey, i));
+        it(`create survey ${i}`, surveyTests.createSurveyFn());
+        it(`get survey ${i}`, surveyTests.getSurveyFn(i));
     }
 
     const createSurveyConsentFn = function (surveyIndex, typeIndex, action, consentIndex) {
