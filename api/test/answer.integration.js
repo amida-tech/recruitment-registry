@@ -58,7 +58,7 @@ describe('answer integration', function () {
         { userIndex: 0, surveyIndex: 3, seqIndex: 1 },
     ];
 
-    const postAnswersFn = function (userIndex, surveyIndex, seqIndex, stepIndex) {
+    const createAnswersFn = function (userIndex, surveyIndex, seqIndex, stepIndex) {
         return function (done) {
             const qxIndices = testQuestions[surveyIndex].answerSequences[seqIndex][stepIndex];
             const { answers, language } = hxAnswer.generateAnswers(userIndex, surveyIndex, qxIndices);
@@ -73,12 +73,12 @@ describe('answer integration', function () {
         };
     };
 
-    const getAndVerifyFn = function (userIndex, surveyIndex, seqIndex) {
+    const getAnswersFn = function (userIndex, surveyIndex) {
         return function (done) {
             const surveyId = hxSurvey.id(surveyIndex);
             store.get('/answers', true, 200, { 'survey-id': surveyId })
                 .expect(function (res) {
-                    const expected = hxAnswer.expectedAnswers(userIndex, surveyIndex, seqIndex);
+                    const expected = hxAnswer.expectedAnswers(userIndex, surveyIndex);
                     const actual = _.sortBy(res.body, 'questionId');
                     expect(actual).to.deep.equal(expected);
                 })
@@ -90,13 +90,8 @@ describe('answer integration', function () {
         for (let i = 0; i < cases.length; ++i) {
             const { userIndex, surveyIndex, seqIndex } = cases[i];
             it(`login as user ${userIndex}`, shared.loginIndexFn(store, hxUser, userIndex));
-
-            const msgPost = `answers survey ${surveyIndex}-${seqIndex} step ${j}`;
-            it(msgPost, postAnswersFn(userIndex, surveyIndex, seqIndex, j));
-
-            const msgGet = `get and verify answers to survey ${surveyIndex}-${seqIndex} step ${j}`;
-            it(msgGet, getAndVerifyFn(userIndex, surveyIndex, seqIndex, j));
-
+            it(`user ${userIndex} answers survey ${surveyIndex} (step ${j})`, createAnswersFn(userIndex, surveyIndex, seqIndex, j));
+            it(`user ${userIndex} gets answers to survey ${surveyIndex} (step ${j})`, getAnswersFn(userIndex, surveyIndex));
             it(`logout as  user ${userIndex}`, shared.logoutFn(store));
         }
     }
