@@ -51,26 +51,6 @@ class AnswerHistory {
         }, []);
     }
 
-    static prepareClientAnswers(clientAnswers) {
-        const result = _.cloneDeep(clientAnswers);
-        result.forEach(({ answer }) => {
-            if (answer.choices) {
-                answer.choices.forEach((choice) => {
-                    const numValues = ['textValue', 'monthValue', 'yearValue', 'dayValue', 'integerValue', 'boolValue'].reduce((r, p) => {
-                        if (choice.hasOwnProperty(p)) {
-                            ++r;
-                        }
-                        return r;
-                    }, 0);
-                    if (!numValues) {
-                        choice.boolValue = true;
-                    }
-                });
-            }
-        });
-        return result;
-    }
-
     _key(userIndex, surveyIndex) {
         return `${userIndex}_${surveyIndex}`;
     }
@@ -85,9 +65,7 @@ class AnswerHistory {
 
     expectedAnswers(userIndex, surveyIndex) {
         const key = this._key(userIndex, surveyIndex);
-        const expectedAnswers = this._pullExpectedAnswers(key);
-        const modifiedAnswers = AnswerHistory.prepareClientAnswers(expectedAnswers);
-        return _.sortBy(modifiedAnswers, 'questionId');
+        return this._pullExpectedAnswers(key);
     }
 
     expectedRemovedAnswers(userIndex, surveyIndex) {

@@ -2,7 +2,6 @@
 'use strict';
 process.env.NODE_ENV = 'test';
 
-const chai = require('chai');
 const _ = require('lodash');
 
 const config = require('../config');
@@ -10,11 +9,10 @@ const config = require('../config');
 const SharedIntegration = require('./util/shared-integration');
 const RRSuperTest = require('./util/rr-super-test');
 const Generator = require('./util/generator');
+const comparator = require('./util/comparator');
 const AnswerHistory = require('./util/answer-history');
 const answerCommon = require('./util/answer-common');
 const questionCommon = require('./util/question-common');
-
-const expect = chai.expect;
 
 describe('answer integration', function () {
     const generator = new Generator();
@@ -79,8 +77,7 @@ describe('answer integration', function () {
             store.get('/answers', true, 200, { 'survey-id': surveyId })
                 .expect(function (res) {
                     const expected = hxAnswer.expectedAnswers(userIndex, surveyIndex);
-                    const actual = _.sortBy(res.body, 'questionId');
-                    expect(actual).to.deep.equal(expected);
+                    comparator.answers(expected, res.body);
                 })
                 .end(done);
         };

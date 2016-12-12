@@ -7,6 +7,7 @@ const _ = require('lodash');
 const models = require('../models');
 const SharedSpec = require('./util/shared-spec');
 const Generator = require('./util/generator');
+const comparator = require('./util/comparator');
 const AnswerHistory = require('./util/answer-history');
 const answerCommon = require('./util/answer-common');
 const questionCommon = require('./util/question-common');
@@ -109,8 +110,7 @@ describe('answer unit', function () {
                 })
                 .then(function (result) {
                     const expected = hxAnswer.expectedAnswers(userIndex, surveyIndex);
-                    const actual = _.sortBy(result, 'questionId');
-                    expect(actual).to.deep.equal(expected);
+                    comparator.answers(expected, result);
                 });
         };
     };
@@ -126,23 +126,12 @@ describe('answer unit', function () {
                 .then((actual) => {
                     actual = _.groupBy(actual, 'deletedAt');
                     Object.keys(actual).forEach(key => actual[key].forEach(value => delete value.deletedAt));
-
                     const expectedAnswers = hxAnswer.expectedRemovedAnswers(userIndex, surveyIndex);
-                    const keys = Object.keys(expectedAnswers).sort();
-                    const expected = {};
-                    keys.forEach(key => {
-                        const value = _.sortBy(expectedAnswers[key], 'questionId');
-                        if (value.length) {
-                            expected[key] = value;
-                        }
-                    });
                     const expectedKeys = _.sortBy(Object.keys(expectedAnswers), r => Number(r));
                     const actualKeys = _.sortBy(Object.keys(actual), r => Number(r));
                     expect(actualKeys.length).to.equal(expectedKeys.length);
                     for (let i = 0; i < expectedKeys.length; ++i) {
-                        const modifiedAnswers = AnswerHistory.prepareClientAnswers(expectedAnswers[expectedKeys[i]]);
-                        const sortedActual = _.sortBy(actual[actualKeys[i]], 'questionId');
-                        expect(sortedActual).to.deep.equal(modifiedAnswers);
+                        comparator.answers(expectedAnswers[expectedKeys[i]], actual[actualKeys[i]]);
                     }
                 });
         };
