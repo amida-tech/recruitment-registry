@@ -16,7 +16,7 @@ const shared = new SharedSpec(generator);
 
 describe('answer unit', function () {
     const testQuestions = answerCommon.testQuestions;
-    const hxAnswer = new AnswerHistory(testQuestions);
+    const hxAnswer = new AnswerHistory();
 
     const hxUser = hxAnswer.hxUser;
     const hxQuestion = hxAnswer.hxQuestion;
@@ -83,7 +83,8 @@ describe('answer unit', function () {
 
     const createTestFn = function (userIndex, surveyIndex, seqIndex, stepIndex) {
         return function () {
-            const { answers, language } = hxAnswer.generateAnswers(userIndex, surveyIndex, seqIndex, stepIndex);
+            const qxIndices = testQuestions[surveyIndex].answerSequences[seqIndex][stepIndex];
+            const { answers, language } = hxAnswer.generateAnswers(userIndex, surveyIndex, qxIndices);
             const input = {
                 userId: hxUser.id(userIndex),
                 surveyId: hxSurvey.id(surveyIndex),
@@ -109,7 +110,8 @@ describe('answer unit', function () {
 
     const updateTestFn = function (userIndex, surveyIndex, seqIndex, stepIndex) {
         return function () {
-            const { answers, language } = hxAnswer.generateAnswers(userIndex, surveyIndex, seqIndex, stepIndex);
+            const qxIndices = testQuestions[surveyIndex].answerSequences[seqIndex][stepIndex];
+            const { answers, language } = hxAnswer.generateAnswers(userIndex, surveyIndex, qxIndices);
             const input = {
                 userId: hxUser.id(userIndex),
                 surveyId: hxSurvey.id(surveyIndex),

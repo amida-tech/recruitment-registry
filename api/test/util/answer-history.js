@@ -7,8 +7,7 @@ const Generator = require('./generator');
 const jsutil = require('./test-jsutil');
 
 class AnswerHistory {
-    constructor(testQuestions) {
-        this.testQuestions = testQuestions;
+    constructor() {
         this.hxAnswers = {};
         this.hxUser = new History();
         this.hxQuestion = new History();
@@ -16,12 +15,10 @@ class AnswerHistory {
         this.generator = new Generator();
     }
 
-    _generateQxAnswer(questionIndex) {
+    generateAnswer(questionIndex) {
         if (questionIndex < 0) {
-            const question = this.hxQuestion.server(-questionIndex);
-            return {
-                questionId: question.id
-            };
+            const questionId = this.hxQuestion.id(-questionIndex);
+            return { questionId };
         } else {
             const question = this.hxQuestion.server(questionIndex);
             return this.generator.answerQuestion(question);
@@ -74,28 +71,27 @@ class AnswerHistory {
         return result;
     }
 
-    _key(userIndex, surveyIndex, seqIndex) {
-        return `${userIndex}_${surveyIndex}_${seqIndex}`;
+    _key(userIndex, surveyIndex) {
+        return `${userIndex}_${surveyIndex}`;
     }
 
-    generateAnswers(userIndex, surveyIndex, seqIndex, stepIndex) {
-        const key = this._key(userIndex, surveyIndex, seqIndex);
-        const qxIndices = this.testQuestions[surveyIndex].answerSequences[seqIndex][stepIndex];
-        const answers = qxIndices.map(qxIndex => this._generateQxAnswer(qxIndex));
+    generateAnswers(userIndex, surveyIndex, qxIndices) {
+        const key = this._key(userIndex, surveyIndex);
+        const answers = qxIndices.map(qxIndex => this.generateAnswer(qxIndex));
         const language = this.generator.nextLanguage();
         this._updateHxAnswers(key, qxIndices, answers, language);
         return { answers, language };
     }
 
-    expectedAnswers(userIndex, surveyIndex, seqIndex) {
-        const key = this._key(userIndex, surveyIndex, seqIndex);
+    expectedAnswers(userIndex, surveyIndex) {
+        const key = this._key(userIndex, surveyIndex);
         const expectedAnswers = this._pullExpectedAnswers(key);
         const modifiedAnswers = AnswerHistory.prepareClientAnswers(expectedAnswers);
         return _.sortBy(modifiedAnswers, 'questionId');
     }
 
-    expectedRemovedAnswers(userIndex, surveyIndex, seqIndex) {
-        const key = this._key(userIndex, surveyIndex, seqIndex);
+    expectedRemovedAnswers(userIndex, surveyIndex) {
+        const key = this._key(userIndex, surveyIndex);
         const answersSpec = this.hxAnswers[key];
         const removed = jsutil.findRemoved(_.map(answersSpec, 'qxIndices'));
         const result = removed.reduce((r, answerIndices, index) => {

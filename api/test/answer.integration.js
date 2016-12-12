@@ -23,7 +23,7 @@ describe('answer integration', function () {
     const store = new RRSuperTest();
 
     const testQuestions = answerCommon.testQuestions;
-    const hxAnswer = new AnswerHistory(testQuestions);
+    const hxAnswer = new AnswerHistory();
 
     const hxUser = hxAnswer.hxUser;
     const hxQuestion = hxAnswer.hxQuestion;
@@ -60,7 +60,8 @@ describe('answer integration', function () {
 
     const postAnswersFn = function (userIndex, surveyIndex, seqIndex, stepIndex) {
         return function (done) {
-            const { answers, language } = hxAnswer.generateAnswers(userIndex, surveyIndex, seqIndex, stepIndex);
+            const qxIndices = testQuestions[surveyIndex].answerSequences[seqIndex][stepIndex];
+            const { answers, language } = hxAnswer.generateAnswers(userIndex, surveyIndex, qxIndices);
             const input = {
                 surveyId: hxSurvey.id(surveyIndex),
                 answers
