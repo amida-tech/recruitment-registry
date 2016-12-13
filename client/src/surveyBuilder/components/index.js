@@ -49,7 +49,7 @@ export class SurveyBuilderContainer extends Component {
     this.props.dispatch(surveyBuilder.actions.updateQuestion(question))
   }
 
-  _saveSurvey(evt) {
+  _saveSurvey() {
 
     var survey = this.props.data.get('survey').toJS()
 

@@ -1,5 +1,5 @@
 import React, { Component} from 'react';
-import { Draggable, Droppable } from 'react-drag-and-drop'
+import { Droppable } from 'react-drag-and-drop'
 
 export default class ChoicesQuestion extends Component {
   render() {
