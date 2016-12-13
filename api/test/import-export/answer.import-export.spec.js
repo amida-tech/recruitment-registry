@@ -11,7 +11,6 @@ const SharedSpec = require('../util/shared-spec.js');
 const Generator = require('../util/generator');
 const SurveyHistory = require('../util/survey-history');
 const History = require('../util/history');
-const MultiIndexStore = require('../util/multi-index-store');
 const surveyCommon = require('../util/survey-common');
 const answerCommon = require('../util/answer-common');
 const intoStream = require('into-stream');
@@ -25,9 +24,9 @@ describe('answer import-export unit', function () {
 
     let hxUser = new History();
     const hxSurvey = new SurveyHistory();
-    const hxAnswer = new MultiIndexStore();
     const surveyTests = new surveyCommon.SpecTests(generator, hxSurvey);
-    const answerTests = new answerCommon.SpecTests(generator, hxUser, hxSurvey, hxAnswer);
+    const answerTests = new answerCommon.SpecTests(generator, hxUser, hxSurvey);
+    const hxAnswer = answerTests.hxAnswer;
 
     for (let i = 0; i < 4; ++i) {
         it(`create user ${i}`, shared.createUserFn(hxUser));

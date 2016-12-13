@@ -8,6 +8,8 @@ const models = require('../models');
 const SharedSpec = require('./util/shared-spec');
 const Generator = require('./util/generator');
 const comparator = require('./util/comparator');
+const History = require('./util/history');
+const SurveyHistory = require('./util/survey-history');
 const AnswerHistory = require('./util/answer-history');
 const answerCommon = require('./util/answer-common');
 const questionCommon = require('./util/question-common');
@@ -18,11 +20,12 @@ const shared = new SharedSpec(generator);
 
 describe('answer unit', function () {
     const testQuestions = answerCommon.testQuestions;
-    const hxAnswer = new AnswerHistory();
 
-    const hxUser = hxAnswer.hxUser;
-    const hxQuestion = hxAnswer.hxQuestion;
-    const hxSurvey = hxAnswer.hxSurvey;
+    const hxUser = new History();
+    const hxSurvey = new SurveyHistory();
+    const hxQuestion = new History();
+
+    const hxAnswer = new AnswerHistory(generator, hxUser, hxSurvey, hxQuestion);
 
     const questionTests = new questionCommon.SpecTests(generator, hxQuestion);
 

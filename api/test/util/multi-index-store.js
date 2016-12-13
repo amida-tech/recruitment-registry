@@ -43,6 +43,12 @@ module.exports = class MultiIndexStore {
         return value.obj;
     }
 
+    getAll(indices) {
+        const key = MultiIndexStore.key(indices);
+        const keyIndices = this.historyIndexMap.get(key);
+        return _.at(this.store, keyIndices).map(v => v.obj);
+    }
+
     listFlatForIndex(indexIndex, indexValue) {
         const result = this.store.reduce((r, value) => {
             if ((value[indexIndex] === indexValue) && !value.deleted) {

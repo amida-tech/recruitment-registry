@@ -2,17 +2,16 @@
 
 const _ = require('lodash');
 
-const History = require('./history');
-const Generator = require('./generator');
 const jsutil = require('./test-jsutil');
+const MultiIndexStore = require('./multi-index-store');
 
-class AnswerHistory {
-    constructor() {
-        this.hxAnswers = {};
-        this.hxUser = new History();
-        this.hxQuestion = new History();
-        this.hxSurvey = new History();
-        this.generator = new Generator();
+module.exports = class AnswerHistory {
+    constructor(generator, hxUser, hxSurvey, hxQuestion) {
+        this.generator = generator;
+        this.hxUser = hxUser;
+        this.hxSurvey = hxSurvey;
+        this.hxQuestion = hxQuestion;
+        this.hxAnswers = new MultiIndexStore();
     }
 
     generateAnswer(questionIndex) {
@@ -25,8 +24,7 @@ class AnswerHistory {
         }
     }
 
-    _updateHxAnswers(key, qxIndices, answers, language) {
-        const hx = this.hxAnswers[key] || (this.hxAnswers[key] = []);
+    updateHxAnswers(userIndex, surveyIndex, qxIndices, answers, language) {
         const qxAnswers = answers.reduce((r, answer, index) => {
             const qxIndex = qxIndices[index];
             if (qxIndex >= 0) {
@@ -36,11 +34,18 @@ class AnswerHistory {
             }
             return r;
         }, {});
-        hx.push({ qxIndices, qxAnswers });
+        this.hxAnswers.set([userIndex, surveyIndex], { qxIndices, qxAnswers });
     }
 
-    _pullExpectedAnswers(key) {
-        const answersSpec = this.hxAnswers[key];
+    generateAnswers(userIndex, surveyIndex, qxIndices) {
+        const answers = qxIndices.map(qxIndex => this.generateAnswer(qxIndex));
+        const language = this.generator.nextLanguage();
+        this.updateHxAnswers(userIndex, surveyIndex, qxIndices, answers, language);
+        return { answers, language };
+    }
+
+    expectedAnswers(userIndex, surveyIndex) {
+        const answersSpec = this.hxAnswers.getAll([userIndex, surveyIndex]);
         const standing = jsutil.findStanding(_.map(answersSpec, 'qxIndices'));
         return standing.reduce((r, answerIndices, index) => {
             answerIndices.forEach((answerIndex) => {
@@ -51,26 +56,8 @@ class AnswerHistory {
         }, []);
     }
 
-    _key(userIndex, surveyIndex) {
-        return `${userIndex}_${surveyIndex}`;
-    }
-
-    generateAnswers(userIndex, surveyIndex, qxIndices) {
-        const key = this._key(userIndex, surveyIndex);
-        const answers = qxIndices.map(qxIndex => this.generateAnswer(qxIndex));
-        const language = this.generator.nextLanguage();
-        this._updateHxAnswers(key, qxIndices, answers, language);
-        return { answers, language };
-    }
-
-    expectedAnswers(userIndex, surveyIndex) {
-        const key = this._key(userIndex, surveyIndex);
-        return this._pullExpectedAnswers(key);
-    }
-
     expectedRemovedAnswers(userIndex, surveyIndex) {
-        const key = this._key(userIndex, surveyIndex);
-        const answersSpec = this.hxAnswers[key];
+        const answersSpec = this.hxAnswers.getAll([userIndex, surveyIndex]);
         const removed = jsutil.findRemoved(_.map(answersSpec, 'qxIndices'));
         const result = removed.reduce((r, answerIndices, index) => {
             answerIndices.forEach((answerIndex) => {
@@ -86,6 +73,4 @@ class AnswerHistory {
         }, {});
         return result;
     }
-}
-
-module.exports = AnswerHistory;
+};

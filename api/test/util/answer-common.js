@@ -61,11 +61,12 @@ const testQuestions = [{
 }];
 
 const SpecTests = class AnswerSpecTests {
-    constructor(generator, hxUser, hxSurvey, hxAnswer) {
+    constructor(generator, hxUser, hxSurvey, hxQuestion) {
         this.generator = generator;
         this.hxUser = hxUser;
         this.hxSurvey = hxSurvey;
-        this.hxAnswer = hxAnswer || new MultiIndexStore();
+        this.hxAnswer = new MultiIndexStore();
+        this.hxQuestion = hxQuestion;
     }
 
     answerSurveyFn(userIndex, surveyIndex) {
@@ -132,12 +133,13 @@ const SpecTests = class AnswerSpecTests {
 };
 
 const IntegrationTests = class AnswerIntegrationTests {
-    constructor(rrSuperTest, generator, hxUser, hxSurvey, hxAnswer) {
+    constructor(rrSuperTest, generator, hxUser, hxSurvey, hxQuestion) {
         this.rrSuperTest = rrSuperTest;
         this.generator = generator;
         this.hxUser = hxUser;
         this.hxSurvey = hxSurvey;
-        this.hxAnswer = hxAnswer || new MultiIndexStore();
+        this.hxQuestion = hxQuestion;
+        this.hxAnswer = new MultiIndexStore();
     }
 
     answerSurveyFn(userIndex, surveyIndex) {
