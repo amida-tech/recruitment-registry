@@ -71,10 +71,15 @@ export default (options) => {
     combineReducers({...reducers, routing}),
     frozen,
     compose(
-      applyMiddleware(routerMiddleware(browserHistory), ...initialMiddleware, ...middleware),
+      applyMiddleware(
+          routerMiddleware(browserHistory),
+          ...initialMiddleware,
+          ...middleware
+      ),
       ...initialEnhancers,
       ...enhancers
-    ));
+    )
+  );
 
   store.subscribe(() => {
     localStorage.setItem('rec-reg', JSON.stringify(store.getState().get('auth')));
