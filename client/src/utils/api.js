@@ -96,7 +96,7 @@ const apiProvider = store => next => action => {
       break;
     case 'GET_PROFILE':
       request
-        .get(apiUrl + '/users/me')
+        .get(apiUrl + '/profiles')
         .withCredentials()
         .end((error, response) => {
           if (!error) {
