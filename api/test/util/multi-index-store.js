@@ -4,54 +4,47 @@ const _ = require('lodash');
 
 module.exports = class MultiIndexStore {
     constructor() {
-        this.currentIndexMap = new Map();
         this.historyIndexMap = new Map();
         this.store = [];
     }
 
-    static key(indices) {
-        return indices.map(index => index.toString()).join('-');
+    static key(userIndex, surveyIndex) {
+        return `${userIndex}-${surveyIndex}`;
     }
 
-    index(indices) {
-        const key = MultiIndexStore.key(indices);
-        return this.currentIndexMap.get(key);
-    }
-
-    set(indices, obj) {
-        const key = MultiIndexStore.key(indices);
-        let index = this.currentIndexMap.get(key);
-        let indexHistory;
-        if (index === undefined) {
+    push(userIndex, surveyIndex, obj) {
+        const key = MultiIndexStore.key(userIndex, surveyIndex);
+        let indexHistory = this.historyIndexMap.get(key);
+        if (indexHistory === undefined) {
             indexHistory = [];
             this.historyIndexMap.set(key, indexHistory);
         } else {
-            this.store[index].deleted = true;
-            indexHistory = this.historyIndexMap.get(key);
+            const lastIndex = indexHistory[indexHistory.length - 1];
+            this.store[lastIndex].deleted = true;
         }
-        index = this.store.length;
+        const index = this.store.length;
         const value = { obj };
-        indices.forEach((indexValue, indexIndex) => value[indexIndex] = indexValue);
+        value[0] = userIndex;
+        value[1] = surveyIndex;
         this.store.push(value);
-        this.currentIndexMap.set(key, index);
         indexHistory.push(index);
     }
 
-    get(indices) {
-        const index = this.index(indices);
-        const value = this.store[index];
-        return value.obj;
+    getLast(userIndex, surveyIndex) {
+        const all = this.getAll(userIndex, surveyIndex);
+        const length = all.length;
+        return all[length - 1];
     }
 
-    getAll(indices) {
-        const key = MultiIndexStore.key(indices);
+    getAll(userIndex, surveyIndex) {
+        const key = MultiIndexStore.key(userIndex, surveyIndex);
         const keyIndices = this.historyIndexMap.get(key);
         return _.at(this.store, keyIndices).map(v => v.obj);
     }
 
-    listFlatForIndex(indexIndex, indexValue) {
+    listFlatForUser(userIndex) {
         const result = this.store.reduce((r, value) => {
-            if ((value[indexIndex] === indexValue) && !value.deleted) {
+            if ((value[0] === userIndex) && !value.deleted) {
                 r.push(value);
             }
             return r;

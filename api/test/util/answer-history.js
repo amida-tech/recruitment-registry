@@ -34,7 +34,7 @@ module.exports = class AnswerHistory {
             }
             return r;
         }, {});
-        this.hxAnswers.set([userIndex, surveyIndex], { qxIndices, qxAnswers });
+        this.hxAnswers.push(userIndex, surveyIndex, { qxIndices, qxAnswers });
     }
 
     generateAnswers(userIndex, surveyIndex, qxIndices) {
@@ -45,7 +45,7 @@ module.exports = class AnswerHistory {
     }
 
     expectedAnswers(userIndex, surveyIndex) {
-        const answersSpec = this.hxAnswers.getAll([userIndex, surveyIndex]);
+        const answersSpec = this.hxAnswers.getAll(userIndex, surveyIndex);
         const standing = jsutil.findStanding(_.map(answersSpec, 'qxIndices'));
         return standing.reduce((r, answerIndices, index) => {
             answerIndices.forEach((answerIndex) => {
@@ -57,7 +57,7 @@ module.exports = class AnswerHistory {
     }
 
     expectedRemovedAnswers(userIndex, surveyIndex) {
-        const answersSpec = this.hxAnswers.getAll([userIndex, surveyIndex]);
+        const answersSpec = this.hxAnswers.getAll(userIndex, surveyIndex);
         const removed = jsutil.findRemoved(_.map(answersSpec, 'qxIndices'));
         const result = removed.reduce((r, answerIndices, index) => {
             answerIndices.forEach((answerIndex) => {
