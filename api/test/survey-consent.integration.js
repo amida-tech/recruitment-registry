@@ -15,9 +15,9 @@ const ConsentCommon = require('./util/consent-common');
 const ConsentDocumentHistory = require('./util/consent-document-history');
 const SurveyHistory = require('./util/survey-history');
 const MultiIndexHistory = require('./util/multi-index-history');
-const MultiIndexStore = require('./util/multi-index-store');
 const comparator = require('./util/comparator');
 const surveyCommon = require('./util/survey-common');
+const answerCommon = require('./util/answer-common');
 
 const expect = chai.expect;
 const generator = new Generator();
@@ -33,9 +33,9 @@ describe('survey consent integration', function () {
     const hxSurvey = new SurveyHistory();
     const hxUser = hxConsentDocument.hxUser;
     const hxSurveyConsents = new MultiIndexHistory();
-    const hxAnswers = new MultiIndexStore();
 
     const surveyTests = new surveyCommon.IntegrationTests(store, generator, hxSurvey);
+    const answerTests = new answerCommon.IntegrationTests(store, generator, hxUser, hxSurvey);
 
     before(shared.setUpFn(store));
 
@@ -525,72 +525,47 @@ describe('survey consent integration', function () {
     it('error: create user 3 answers to survey 2 without signatures', answerSurveyWithoutSignaturesFn(3, 2, [3]));
     it('logout as user 3', shared.logoutFn(store));
 
-    const answerSurveyFn = function (userIndex, surveyIndex) {
-        return function (done) {
-            const survey = hxSurvey.server(surveyIndex);
-            const answers = generator.answerQuestions(survey.questions);
-            const input = { surveyId: survey.id, answers };
-            store.post('/answers', input, 204)
-                .expect(function () {
-                    hxAnswers.push(userIndex, surveyIndex, answers);
-                })
-                .end(done);
-        };
-    };
-
-    const verifyAnsweredSurveyFn = function (userIndex, surveyIndex) {
-        return function (done) {
-            const survey = hxSurvey.server(surveyIndex);
-            const { answers } = hxAnswers.getLast(userIndex, surveyIndex);
-            store.get(`/answered-surveys/${survey.id}`, true, 200)
-                .expect(function (res) {
-                    comparator.answeredSurvey(survey, answers, res.body);
-                })
-                .end(done);
-        };
-    };
-
     _.range(4).forEach(index => {
         it(`login as user ${index}`, shared.loginIndexFn(store, hxUser, index));
-        it(`user ${index} answers survey 3`, answerSurveyFn(index, 3));
+        it(`user ${index} answers survey 3`, answerTests.answerSurveyFn(index, 3));
         it(`logout as user ${index}`, shared.logoutFn(store));
     });
 
     it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
-    it('user 0 answers survey 1', answerSurveyFn(0, 1));
+    it('user 0 answers survey 1', answerTests.answerSurveyFn(0, 1));
     it('logout as user 0', shared.logoutFn(store));
     it('login as user 1', shared.loginIndexFn(store, hxUser, 1));
-    it('user 1 answers survey 1', answerSurveyFn(1, 1));
+    it('user 1 answers survey 1', answerTests.answerSurveyFn(1, 1));
     it('logout as user 1', shared.logoutFn(store));
     it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
-    it('user 0 answers survey 2', answerSurveyFn(0, 2));
+    it('user 0 answers survey 2', answerTests.answerSurveyFn(0, 2));
     it('login as user 1', shared.loginIndexFn(store, hxUser, 1));
-    it('user 1 answers survey 2', answerSurveyFn(1, 2));
+    it('user 1 answers survey 2', answerTests.answerSurveyFn(1, 2));
     it('logout as user 1', shared.logoutFn(store));
     it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
-    it('user 2 answers survey 2', answerSurveyFn(2, 2));
+    it('user 2 answers survey 2', answerTests.answerSurveyFn(2, 2));
     it('logout as user 2', shared.logoutFn(store));
 
     it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
-    it('user 0 gets answered survey 1', verifyAnsweredSurveyFn(0, 1));
+    it('user 0 gets answered survey 1', answerTests.verifyAnsweredSurveyFn(0, 1));
     it('logout as user 0', shared.logoutFn(store));
     it('login as user 1', shared.loginIndexFn(store, hxUser, 1));
-    it('user 1 gets answered survey 1', verifyAnsweredSurveyFn(1, 1));
+    it('user 1 gets answered survey 1', answerTests.verifyAnsweredSurveyFn(1, 1));
     it('logout as user 1', shared.logoutFn(store));
     it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
-    it('user 0 gets answered survey 2', verifyAnsweredSurveyFn(0, 2));
+    it('user 0 gets answered survey 2', answerTests.verifyAnsweredSurveyFn(0, 2));
     it('logout as user 0', shared.logoutFn(store));
     it('login as user 1', shared.loginIndexFn(store, hxUser, 1));
-    it('user 1 gets answered survey 2', verifyAnsweredSurveyFn(1, 2));
+    it('user 1 gets answered survey 2', answerTests.verifyAnsweredSurveyFn(1, 2));
     it('logout as user 1', shared.logoutFn(store));
     it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
-    it('user 2 gets answered survey 2', verifyAnsweredSurveyFn(2, 2));
+    it('user 2 gets answered survey 2', answerTests.verifyAnsweredSurveyFn(2, 2));
     it('logout as user 2', shared.logoutFn(store));
     it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
-    it('user 0 gets answered survey 3', verifyAnsweredSurveyFn(0, 3));
+    it('user 0 gets answered survey 3', answerTests.verifyAnsweredSurveyFn(0, 3));
     it('logout as user 0', shared.logoutFn(store));
     it('login as user 1', shared.loginIndexFn(store, hxUser, 1));
-    it('user 1 gets answered survey 3', verifyAnsweredSurveyFn(1, 3));
+    it('user 1 gets answered survey 3', answerTests.verifyAnsweredSurveyFn(1, 3));
     it('logout as user 1', shared.logoutFn(store));
 
     const getAnswersWithoutSignaturesFn = function (userIndex, surveyIndex, expectedInfo) {
@@ -701,8 +676,8 @@ describe('survey consent integration', function () {
 
     [0, 1, 2].forEach(index => {
         it(`login as user ${index}`, shared.loginIndexFn(store, hxUser, index));
-        it(`user ${index} answers survey 1`, answerSurveyFn(index, 1));
-        it(`user ${index} answered survey 1`, verifyAnsweredSurveyFn(index, 1));
+        it(`user ${index} answers survey 1`, answerTests.answerSurveyFn(index, 1));
+        it(`user ${index} answered survey 1`, answerTests.verifyAnsweredSurveyFn(index, 1));
         it(`logout as user ${index}`, shared.logoutFn(store));
     });
 
@@ -822,14 +797,14 @@ describe('survey consent integration', function () {
     it('logout as user 3', shared.logoutFn(store));
 
     it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
-    it('user 0 answers survey 4', answerSurveyFn(0, 4));
+    it('user 0 answers survey 4', answerTests.answerSurveyFn(0, 4));
     it('logout as user 0', shared.logoutFn(store));
     it('login as user 1', shared.loginIndexFn(store, hxUser, 1));
-    it('user 1 answers survey 4', answerSurveyFn(1, 4));
-    it('user 1 answers survey 5', answerSurveyFn(1, 5));
+    it('user 1 answers survey 4', answerTests.answerSurveyFn(1, 4));
+    it('user 1 answers survey 5', answerTests.answerSurveyFn(1, 5));
 
-    it('user 1 gets answered survey 4', verifyAnsweredSurveyFn(1, 4));
-    it('user 1 gets answered survey 5', verifyAnsweredSurveyFn(1, 5));
+    it('user 1 gets answered survey 4', answerTests.verifyAnsweredSurveyFn(1, 4));
+    it('user 1 gets answered survey 5', answerTests.verifyAnsweredSurveyFn(1, 5));
     it('logout as user 1', shared.logoutFn(store));
 
     it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
@@ -857,28 +832,28 @@ describe('survey consent integration', function () {
     it('logout as user 3', shared.logoutFn(store));
 
     it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
-    it('user 0 answers survey 5', answerSurveyFn(0, 5));
+    it('user 0 answers survey 5', answerTests.answerSurveyFn(0, 5));
     it('logout as user 0', shared.logoutFn(store));
     it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
-    it('user 2 answers survey 5', answerSurveyFn(2, 4));
-    it('user 2 answers survey 5', answerSurveyFn(2, 5));
+    it('user 2 answers survey 5', answerTests.answerSurveyFn(2, 4));
+    it('user 2 answers survey 5', answerTests.answerSurveyFn(2, 5));
     it('logout as user 2', shared.logoutFn(store));
     it('login as user 3', shared.loginIndexFn(store, hxUser, 3));
-    it('user 3 answers survey 5', answerSurveyFn(3, 4));
-    it('user 3 answers survey 5', answerSurveyFn(3, 5));
+    it('user 3 answers survey 5', answerTests.answerSurveyFn(3, 4));
+    it('user 3 answers survey 5', answerTests.answerSurveyFn(3, 5));
     it('logout as user 3', shared.logoutFn(store));
 
     it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
-    it('user 0 gets answered survey 4', verifyAnsweredSurveyFn(0, 4));
-    it('user 0 gets answered survey 5', verifyAnsweredSurveyFn(0, 5));
+    it('user 0 gets answered survey 4', answerTests.verifyAnsweredSurveyFn(0, 4));
+    it('user 0 gets answered survey 5', answerTests.verifyAnsweredSurveyFn(0, 5));
     it('logout as user 0', shared.logoutFn(store));
     it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
-    it('user 2 gets answered survey 4', verifyAnsweredSurveyFn(2, 4));
-    it('user 2 gets answered survey 5', verifyAnsweredSurveyFn(2, 5));
+    it('user 2 gets answered survey 4', answerTests.verifyAnsweredSurveyFn(2, 4));
+    it('user 2 gets answered survey 5', answerTests.verifyAnsweredSurveyFn(2, 5));
     it('logout as user 2', shared.logoutFn(store));
     it('login as user 3', shared.loginIndexFn(store, hxUser, 3));
-    it('user 3 gets answered survey 4', verifyAnsweredSurveyFn(3, 4));
-    it('user 3 gets answered survey 5', verifyAnsweredSurveyFn(3, 5));
+    it('user 3 gets answered survey 4', answerTests.verifyAnsweredSurveyFn(3, 4));
+    it('user 3 gets answered survey 5', answerTests.verifyAnsweredSurveyFn(3, 5));
     it('logout as user 3', shared.logoutFn(store));
 
     for (let i = 7; i < 10; ++i) {

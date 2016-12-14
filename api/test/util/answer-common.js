@@ -4,7 +4,7 @@ const chai = require('chai');
 
 const models = require('../../models');
 const comparator = require('./comparator');
-const MultiIndexStore = require('./multi-index-store');
+const AnswerHistory = require('./answer-history');
 
 const expect = chai.expect;
 
@@ -82,7 +82,7 @@ const SpecTests = class AnswerSpecTests {
         this.hxUser = hxUser;
         this.hxSurvey = hxSurvey;
         this.hxQuestion = hxQuestion;
-        this.hxAnswer = new MultiIndexStore();
+        this.hxAnswer = new AnswerHistory();
     }
 
     answerSurveyFn(userIndex, surveyIndex, qxIndices) {
@@ -177,7 +177,7 @@ const IntegrationTests = class AnswerIntegrationTests {
         this.hxUser = hxUser;
         this.hxSurvey = hxSurvey;
         this.hxQuestion = hxQuestion;
-        this.hxAnswer = new MultiIndexStore();
+        this.hxAnswer = new AnswerHistory();
     }
 
     answerSurveyFn(userIndex, surveyIndex, qxIndices) {

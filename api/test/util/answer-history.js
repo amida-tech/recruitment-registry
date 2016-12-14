@@ -17,7 +17,7 @@ const toAnswerRecord = function (answers, language) {
     return { remaining, answers, removed: {} };
 };
 
-module.exports = class MultiIndexStore {
+module.exports = class AnswerHistory {
     constructor() {
         this.historyIndexMap = new Map();
         this.store = [];
@@ -44,14 +44,11 @@ module.exports = class MultiIndexStore {
 
     push(userIndex, surveyIndex, answers, language) {
         this.updateRecords(userIndex, surveyIndex, answers);
-        const key = MultiIndexStore.key(userIndex, surveyIndex);
+        const key = AnswerHistory.key(userIndex, surveyIndex);
         let indexHistory = this.historyIndexMap.get(key);
         if (indexHistory === undefined) {
             indexHistory = [];
             this.historyIndexMap.set(key, indexHistory);
-        } else {
-            const lastIndex = indexHistory[indexHistory.length - 1];
-            this.store[lastIndex].deleted = true;
         }
         const index = this.store.length;
         const record = toAnswerRecord(answers, language);
@@ -67,7 +64,7 @@ module.exports = class MultiIndexStore {
     }
 
     getAll(userIndex, surveyIndex) {
-        const key = MultiIndexStore.key(userIndex, surveyIndex);
+        const key = AnswerHistory.key(userIndex, surveyIndex);
         const keyIndices = this.historyIndexMap.get(key);
         if (!keyIndices) {
             return [];
@@ -76,18 +73,21 @@ module.exports = class MultiIndexStore {
     }
 
     listFlatForUser(userIndex) {
-        const result = this.store.reduce((r, value) => {
-            if ((value.userIndex === userIndex) && !value.deleted) {
-                r.push(value);
+        return this.store.reduce((r, record) => {
+            if (record.userIndex === userIndex) {
+                const { surveyIndex, answers, remaining } = record;
+                const remainingAnswers = answers.filter(({ questionId }) => remaining.hasOwnProperty(questionId));
+                if (remainingAnswers.length) {
+                    r.push({ surveyIndex, answers: remainingAnswers });
+                }
             }
             return r;
         }, []);
-        return _.flatten(result);
     }
 
     expectedAnswers(userIndex, surveyIndex) {
-        const answersSpec = this.getAll(userIndex, surveyIndex);
-        const result = answersSpec.reduce((r, { remaining, answers }) => {
+        const records = this.getAll(userIndex, surveyIndex);
+        const result = records.reduce((r, { remaining, answers }) => {
             if (!remaining) {
                 r.push(...answers);
                 return r;
@@ -104,8 +104,8 @@ module.exports = class MultiIndexStore {
     }
 
     expectedRemovedAnswers(userIndex, surveyIndex) {
-        const answersSpec = this.getAll(userIndex, surveyIndex);
-        const result = answersSpec.reduce((r, { removed, answers }) => {
+        const records = this.getAll(userIndex, surveyIndex);
+        const result = records.reduce((r, { removed, answers }) => {
             answers.forEach(answer => {
                 const questionId = answer.questionId;
                 const timeIndex = removed[questionId];
