@@ -532,7 +532,7 @@ describe('survey consent integration', function () {
             const input = { surveyId: survey.id, answers };
             store.post('/answers', input, 204)
                 .expect(function () {
-                    hxAnswers.push(userIndex, surveyIndex, { answers });
+                    hxAnswers.push(userIndex, surveyIndex, answers);
                 })
                 .end(done);
         };

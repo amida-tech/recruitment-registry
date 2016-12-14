@@ -9,10 +9,8 @@ const config = require('../config');
 const SharedIntegration = require('./util/shared-integration');
 const RRSuperTest = require('./util/rr-super-test');
 const Generator = require('./util/generator');
-const comparator = require('./util/comparator');
 const History = require('./util/history');
 const SurveyHistory = require('./util/survey-history');
-const AnswerHistory = require('./util/answer-history');
 const answerCommon = require('./util/answer-common');
 const questionCommon = require('./util/question-common');
 
@@ -28,7 +26,7 @@ describe('answer integration', function () {
     const hxSurvey = new SurveyHistory();
     const hxQuestion = new History();
 
-    const hxAnswer = new AnswerHistory(generator, hxUser, hxSurvey, hxQuestion);
+    const tests = new answerCommon.IntegrationTests(store, generator, hxUser, hxSurvey, hxQuestion);
 
     const questionTests = new questionCommon.IntegrationTests(store, generator, hxQuestion);
 
@@ -60,39 +58,13 @@ describe('answer integration', function () {
         { userIndex: 0, surveyIndex: 3, seqIndex: 1 },
     ];
 
-    const createAnswersFn = function (userIndex, surveyIndex, seqIndex, stepIndex) {
-        return function (done) {
-            const qxIndices = testQuestions[surveyIndex].answerSequences[seqIndex][stepIndex];
-            const { answers, language } = hxAnswer.generateAnswers(userIndex, surveyIndex, qxIndices);
-            const input = {
-                surveyId: hxSurvey.id(surveyIndex),
-                answers
-            };
-            if (language) {
-                input.language = language;
-            }
-            store.post('/answers', input, 204).end(done);
-        };
-    };
-
-    const getAnswersFn = function (userIndex, surveyIndex) {
-        return function (done) {
-            const surveyId = hxSurvey.id(surveyIndex);
-            store.get('/answers', true, 200, { 'survey-id': surveyId })
-                .expect(function (res) {
-                    const expected = hxAnswer.expectedAnswers(userIndex, surveyIndex);
-                    comparator.answers(expected, res.body);
-                })
-                .end(done);
-        };
-    };
-
     for (let j = 0; j < 3; ++j) {
         for (let i = 0; i < cases.length; ++i) {
             const { userIndex, surveyIndex, seqIndex } = cases[i];
+            const questionIndices = testQuestions[surveyIndex].answerSequences[seqIndex][j];
             it(`login as user ${userIndex}`, shared.loginIndexFn(store, hxUser, userIndex));
-            it(`user ${userIndex} answers survey ${surveyIndex} (step ${j})`, createAnswersFn(userIndex, surveyIndex, seqIndex, j));
-            it(`user ${userIndex} gets answers to survey ${surveyIndex} (step ${j})`, getAnswersFn(userIndex, surveyIndex));
+            it(`user ${userIndex} answers survey ${surveyIndex} (step ${j})`, tests.answerSurveyFn(userIndex, surveyIndex, questionIndices));
+            it(`user ${userIndex} gets answers to survey ${surveyIndex} (step ${j})`, tests.getAnswersFn(userIndex, surveyIndex));
             it(`logout as  user ${userIndex}`, shared.logoutFn(store));
         }
     }

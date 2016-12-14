@@ -10,7 +10,6 @@ const Generator = require('./util/generator');
 const comparator = require('./util/comparator');
 const History = require('./util/history');
 const SurveyHistory = require('./util/survey-history');
-const AnswerHistory = require('./util/answer-history');
 const answerCommon = require('./util/answer-common');
 const questionCommon = require('./util/question-common');
 
@@ -25,7 +24,8 @@ describe('answer unit', function () {
     const hxSurvey = new SurveyHistory();
     const hxQuestion = new History();
 
-    const hxAnswer = new AnswerHistory(generator, hxUser, hxSurvey, hxQuestion);
+    const tests = new answerCommon.SpecTests(generator, hxUser, hxSurvey, hxQuestion);
+    const hxAnswers = tests.hxAnswer;
 
     const questionTests = new questionCommon.SpecTests(generator, hxQuestion);
 
@@ -89,35 +89,6 @@ describe('answer unit', function () {
             .then(shared.throwingHandler, shared.expectedErrorHandler('answerMultipleTypeAnswers', 'invalidValue0, invalidValue1'));
     });
 
-    const createAnswersFn = function (userIndex, surveyIndex, seqIndex, stepIndex) {
-        return function () {
-            const qxIndices = testQuestions[surveyIndex].answerSequences[seqIndex][stepIndex];
-            const { answers, language } = hxAnswer.generateAnswers(userIndex, surveyIndex, qxIndices);
-            const input = {
-                userId: hxUser.id(userIndex),
-                surveyId: hxSurvey.id(surveyIndex),
-                answers
-            };
-            if (language) {
-                input.language = language;
-            }
-            return models.answer.createAnswers(input);
-        };
-    };
-
-    const getAnswersFn = function (userIndex, surveyIndex) {
-        return function () {
-            return models.answer.getAnswers({
-                    userId: hxUser.id(userIndex),
-                    surveyId: hxSurvey.id(surveyIndex)
-                })
-                .then(function (result) {
-                    const expected = hxAnswer.expectedAnswers(userIndex, surveyIndex);
-                    comparator.answers(expected, result);
-                });
-        };
-    };
-
     const listAnswersFn = function (userIndex, surveyIndex) {
         return function () {
             return models.answer.listAnswers({
@@ -129,7 +100,7 @@ describe('answer unit', function () {
                 .then((actual) => {
                     actual = _.groupBy(actual, 'deletedAt');
                     Object.keys(actual).forEach(key => actual[key].forEach(value => delete value.deletedAt));
-                    const expectedAnswers = hxAnswer.expectedRemovedAnswers(userIndex, surveyIndex);
+                    const expectedAnswers = hxAnswers.expectedRemovedAnswers(userIndex, surveyIndex);
                     const expectedKeys = _.sortBy(Object.keys(expectedAnswers), r => Number(r));
                     const actualKeys = _.sortBy(Object.keys(actual), r => Number(r));
                     expect(actualKeys.length).to.equal(expectedKeys.length);
@@ -151,15 +122,17 @@ describe('answer unit', function () {
 
     for (let i = 0; i < cases.length; ++i) {
         const { userIndex, surveyIndex, seqIndex } = cases[i];
-        it(`user ${userIndex} answers survey ${surveyIndex} (step 0)`, createAnswersFn(userIndex, surveyIndex, seqIndex, 0));
-        it(`user ${userIndex} gets answers to survey ${surveyIndex} (step 0)`, getAnswersFn(userIndex, surveyIndex));
+        const questionIndices = testQuestions[surveyIndex].answerSequences[seqIndex][0];
+        it(`user ${userIndex} answers survey ${surveyIndex} (step 0)`, tests.answerSurveyFn(userIndex, surveyIndex, questionIndices));
+        it(`user ${userIndex} gets answers to survey ${surveyIndex} (step 0)`, tests.getAnswersFn(userIndex, surveyIndex));
     }
 
     for (let j = 1; j < 3; ++j) {
         for (let i = 0; i < cases.length; ++i) {
             const { userIndex, surveyIndex, seqIndex } = cases[i];
-            it(`user ${userIndex} answers survey ${surveyIndex} (step ${j})`, createAnswersFn(userIndex, surveyIndex, seqIndex, j));
-            it(`user ${userIndex} gets answers to survey ${surveyIndex} (step ${j})`, getAnswersFn(userIndex, surveyIndex));
+            const questionIndices = testQuestions[surveyIndex].answerSequences[seqIndex][j];
+            it(`user ${userIndex} answers survey ${surveyIndex} (step ${j})`, tests.answerSurveyFn(userIndex, surveyIndex, questionIndices));
+            it(`user ${userIndex} gets answers to survey ${surveyIndex} (step ${j})`, tests.getAnswersFn(userIndex, surveyIndex));
             it('list user ${userIndex} survey ${surveyIndex} answer history (step ${j})', listAnswersFn(userIndex, surveyIndex));
         }
     }

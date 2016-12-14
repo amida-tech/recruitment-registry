@@ -60,27 +60,65 @@ const testQuestions = [{
     ]
 }];
 
+const generateAnswers = function (generator, survey, hxQuestion, qxIndices) {
+    if (qxIndices) {
+        return qxIndices.map(questionIndex => {
+            if (questionIndex < 0) {
+                const questionId = hxQuestion.id(-questionIndex);
+                return { questionId };
+            } else {
+                const question = hxQuestion.server(questionIndex);
+                return generator.answerQuestion(question);
+            }
+        });
+    } else {
+        return generator.answerQuestions(survey.questions);
+    }
+};
+
 const SpecTests = class AnswerSpecTests {
     constructor(generator, hxUser, hxSurvey, hxQuestion) {
         this.generator = generator;
         this.hxUser = hxUser;
         this.hxSurvey = hxSurvey;
-        this.hxAnswer = new MultiIndexStore();
         this.hxQuestion = hxQuestion;
+        this.hxAnswer = new MultiIndexStore();
     }
 
-    answerSurveyFn(userIndex, surveyIndex) {
+    answerSurveyFn(userIndex, surveyIndex, qxIndices) {
         const generator = this.generator;
         const hxUser = this.hxUser;
         const hxSurvey = this.hxSurvey;
+        const hxQuestion = this.hxQuestion;
         const hxAnswer = this.hxAnswer;
         return function () {
             const userId = hxUser.id(userIndex);
             const survey = hxSurvey.server(surveyIndex);
-            const answers = generator.answerQuestions(survey.questions);
-            const input = { userId, surveyId: survey.id, answers };
+            const answers = generateAnswers(generator, survey, hxQuestion, qxIndices);
+            const surveyId = survey.id;
+            const input = { userId, surveyId, answers };
+            const language = generator.nextLanguage();
+            if (language) {
+                input.language = language;
+            }
             return models.answer.createAnswers(input)
-                .then(() => hxAnswer.push(userIndex, surveyIndex, { answers }));
+                .then(() => hxAnswer.push(userIndex, surveyIndex, answers, language));
+        };
+    }
+
+    getAnswersFn(userIndex, surveyIndex) {
+        const hxUser = this.hxUser;
+        const hxSurvey = this.hxSurvey;
+        const hxAnswer = this.hxAnswer;
+        return function () {
+            return models.answer.getAnswers({
+                    userId: hxUser.id(userIndex),
+                    surveyId: hxSurvey.id(surveyIndex)
+                })
+                .then(function (result) {
+                    const expected = hxAnswer.expectedAnswers(userIndex, surveyIndex);
+                    comparator.answers(expected, result);
+                });
         };
     }
 
@@ -142,21 +180,41 @@ const IntegrationTests = class AnswerIntegrationTests {
         this.hxAnswer = new MultiIndexStore();
     }
 
-    answerSurveyFn(userIndex, surveyIndex) {
+    answerSurveyFn(userIndex, surveyIndex, qxIndices) {
         const rrSuperTest = this.rrSuperTest;
         const generator = this.generator;
         const hxSurvey = this.hxSurvey;
+        const hxQuestion = this.hxQuestion;
         const hxAnswer = this.hxAnswer;
         return function (done) {
             const survey = hxSurvey.server(surveyIndex);
-            const answers = generator.answerQuestions(survey.questions);
+            const answers = generateAnswers(generator, survey, hxQuestion, qxIndices);
             const input = {
-                surveyId: hxSurvey.id(surveyIndex),
+                surveyId: survey.id,
                 answers
             };
+            const language = generator.nextLanguage();
+            if (language) {
+                input.language = language;
+            }
             rrSuperTest.post('/answers', input, 204)
                 .expect(function () {
-                    hxAnswer.push(userIndex, surveyIndex, { answers });
+                    hxAnswer.push(userIndex, surveyIndex, answers, language);
+                })
+                .end(done);
+        };
+    }
+
+    getAnswersFn(userIndex, surveyIndex) {
+        const rrSuperTest = this.rrSuperTest;
+        const hxSurvey = this.hxSurvey;
+        const hxAnswer = this.hxAnswer;
+        return function (done) {
+            const surveyId = hxSurvey.id(surveyIndex);
+            rrSuperTest.get('/answers', true, 200, { 'survey-id': surveyId })
+                .expect(function (res) {
+                    const expected = hxAnswer.expectedAnswers(userIndex, surveyIndex);
+                    comparator.answers(expected, res.body);
                 })
                 .end(done);
         };
