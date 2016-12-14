@@ -80,7 +80,7 @@ const SpecTests = class AnswerSpecTests {
             const answers = generator.answerQuestions(survey.questions);
             const input = { userId, surveyId: survey.id, answers };
             return models.answer.createAnswers(input)
-                .then(() => hxAnswer.push(userIndex, surveyIndex, answers));
+                .then(() => hxAnswer.push(userIndex, surveyIndex, { answers }));
         };
     }
 
@@ -91,7 +91,7 @@ const SpecTests = class AnswerSpecTests {
         return function () {
             const userId = hxUser.id(userIndex);
             const survey = hxSurvey.server(surveyIndex);
-            const answers = hxAnswer.getLast(userIndex, surveyIndex);
+            const { answers } = hxAnswer.getLast(userIndex, surveyIndex);
             return models.survey.getAnsweredSurvey(userId, survey.id)
                 .then(answeredSurvey => {
                     comparator.answeredSurvey(survey, answers, answeredSurvey);
@@ -107,10 +107,10 @@ const SpecTests = class AnswerSpecTests {
             const userId = hxUser.id(userIndex);
             const expectedRaw = hxAnswer.listFlatForUser(userIndex);
             const expected = expectedRaw.reduce((r, e) => {
-                const survey = hxSurvey.server(e[1]);
+                const survey = hxSurvey.server(e.surveyIndex);
                 const idToType = new Map(survey.questions.map(question => [question.id, question.type]));
-                const surveyId = hxSurvey.id(e[1]);
-                e.obj.forEach(answer => {
+                const surveyId = survey.id;
+                e.answers.forEach(answer => {
                     const dbAnswers = models.answer.toDbAnswer(answer.answer);
                     dbAnswers.forEach(dbAnswer => {
                         const value = Object.assign({ surveyId, questionId: answer.questionId }, dbAnswer);
@@ -156,7 +156,7 @@ const IntegrationTests = class AnswerIntegrationTests {
             };
             rrSuperTest.post('/answers', input, 204)
                 .expect(function () {
-                    hxAnswer.push(userIndex, surveyIndex, answers);
+                    hxAnswer.push(userIndex, surveyIndex, { answers });
                 })
                 .end(done);
         };
@@ -168,7 +168,7 @@ const IntegrationTests = class AnswerIntegrationTests {
         const rrSuperTest = this.rrSuperTest;
         return function (done) {
             const survey = hxSurvey.server(surveyIndex);
-            const answers = hxAnswer.getLast(userIndex, surveyIndex);
+            const { answers } = hxAnswer.getLast(userIndex, surveyIndex);
             rrSuperTest.get(`/answered-surveys/${survey.id}`, true, 200)
                 .expect(function (res) {
                     comparator.answeredSurvey(survey, answers, res.body);
@@ -184,10 +184,10 @@ const IntegrationTests = class AnswerIntegrationTests {
         return function (done) {
             const expectedRaw = hxAnswer.listFlatForUser(userIndex);
             const expected = expectedRaw.reduce((r, e) => {
-                const survey = hxSurvey.server(e[1]);
+                const survey = hxSurvey.server(e.surveyIndex);
                 const idToType = new Map(survey.questions.map(question => [question.id, question.type]));
-                const surveyId = hxSurvey.id(e[1]);
-                e.obj.forEach(answer => {
+                const surveyId = survey.id;
+                e.answers.forEach(answer => {
                     const dbAnswers = models.answer.toDbAnswer(answer.answer);
                     dbAnswers.forEach(dbAnswer => {
                         const value = Object.assign({ surveyId, questionId: answer.questionId }, dbAnswer);

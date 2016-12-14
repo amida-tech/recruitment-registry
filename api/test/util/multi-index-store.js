@@ -23,9 +23,7 @@ module.exports = class MultiIndexStore {
             this.store[lastIndex].deleted = true;
         }
         const index = this.store.length;
-        const value = { obj };
-        value[0] = userIndex;
-        value[1] = surveyIndex;
+        const value = Object.assign({ userIndex, surveyIndex }, obj);
         this.store.push(value);
         indexHistory.push(index);
     }
@@ -39,12 +37,15 @@ module.exports = class MultiIndexStore {
     getAll(userIndex, surveyIndex) {
         const key = MultiIndexStore.key(userIndex, surveyIndex);
         const keyIndices = this.historyIndexMap.get(key);
-        return _.at(this.store, keyIndices).map(v => v.obj);
+        if (!keyIndices) {
+            return [];
+        }
+        return _.at(this.store, keyIndices);
     }
 
     listFlatForUser(userIndex) {
         const result = this.store.reduce((r, value) => {
-            if ((value[0] === userIndex) && !value.deleted) {
+            if ((value.userIndex === userIndex) && !value.deleted) {
                 r.push(value);
             }
             return r;

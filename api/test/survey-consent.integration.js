@@ -532,7 +532,7 @@ describe('survey consent integration', function () {
             const input = { surveyId: survey.id, answers };
             store.post('/answers', input, 204)
                 .expect(function () {
-                    hxAnswers.push(userIndex, surveyIndex, answers);
+                    hxAnswers.push(userIndex, surveyIndex, { answers });
                 })
                 .end(done);
         };
@@ -541,7 +541,7 @@ describe('survey consent integration', function () {
     const verifyAnsweredSurveyFn = function (userIndex, surveyIndex) {
         return function (done) {
             const survey = hxSurvey.server(surveyIndex);
-            const answers = hxAnswers.getLast(userIndex, surveyIndex);
+            const { answers } = hxAnswers.getLast(userIndex, surveyIndex);
             store.get(`/answered-surveys/${survey.id}`, true, 200)
                 .expect(function (res) {
                     comparator.answeredSurvey(survey, answers, res.body);

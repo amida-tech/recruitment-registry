@@ -1,8 +1,5 @@
 'use strict';
 
-const _ = require('lodash');
-
-const jsutil = require('./test-jsutil');
 const MultiIndexStore = require('./multi-index-store');
 
 module.exports = class AnswerHistory {
@@ -24,49 +21,69 @@ module.exports = class AnswerHistory {
         }
     }
 
-    updateHxAnswers(userIndex, surveyIndex, qxIndices, answers, language) {
-        const qxAnswers = answers.reduce((r, answer, index) => {
-            const qxIndex = qxIndices[index];
-            if (qxIndex >= 0) {
-                const result = _.cloneDeep(answer);
-                result.language = language || 'en';
-                r[qxIndex] = result;
+    updateHxAnswers(userIndex, surveyIndex, answers, language) {
+        const remaining = answers.reduce((r, answer, index) => {
+            if (answer.answer) {
+                r[answer.questionId] = index;
             }
             return r;
         }, {});
-        this.hxAnswers.push(userIndex, surveyIndex, { qxIndices, qxAnswers });
+        language = language || 'en';
+        answers = answers.map(answer => {
+            const r = Object.assign({ language }, answer);
+            return r;
+        });
+        this.hxAnswers.push(userIndex, surveyIndex, { remaining, answers, removed: {} });
     }
 
     generateAnswers(userIndex, surveyIndex, qxIndices) {
         const answers = qxIndices.map(qxIndex => this.generateAnswer(qxIndex));
+        const answersSpecs = this.hxAnswers.getAll(userIndex, surveyIndex);
+        const timeIndex = answersSpecs.length;
+        answersSpecs.forEach(answersSpec => {
+            const remaining = answersSpec.remaining;
+            const removed = answersSpec.removed;
+            answers.forEach(({ questionId }) => {
+                if (remaining.hasOwnProperty(questionId)) {
+                    delete remaining[questionId];
+                    removed[questionId] = timeIndex;
+                }
+            });
+        });
         const language = this.generator.nextLanguage();
-        this.updateHxAnswers(userIndex, surveyIndex, qxIndices, answers, language);
+        this.updateHxAnswers(userIndex, surveyIndex, answers, language);
         return { answers, language };
     }
 
     expectedAnswers(userIndex, surveyIndex) {
         const answersSpec = this.hxAnswers.getAll(userIndex, surveyIndex);
-        const standing = jsutil.findStanding(_.map(answersSpec, 'qxIndices'));
-        return standing.reduce((r, answerIndices, index) => {
-            answerIndices.forEach((answerIndex) => {
-                const answer = answersSpec[index].qxAnswers[answerIndex];
-                r.push(answer);
+        const result = answersSpec.reduce((r, { remaining, answers }) => {
+            if (!remaining) {
+                r.push(...answers);
+                return r;
+            }
+            answers.forEach(answer => {
+                const questionId = answer.questionId;
+                if (remaining.hasOwnProperty(questionId)) {
+                    r.push(answer);
+                }
             });
             return r;
         }, []);
+        return result;
     }
 
     expectedRemovedAnswers(userIndex, surveyIndex) {
         const answersSpec = this.hxAnswers.getAll(userIndex, surveyIndex);
-        const removed = jsutil.findRemoved(_.map(answersSpec, 'qxIndices'));
-        const result = removed.reduce((r, answerIndices, index) => {
-            answerIndices.forEach((answerIndex) => {
-                if (answerIndex.removed.length) {
-                    const timeIndex = answerIndex.timeIndex;
-                    const arr = r[timeIndex] || (r[timeIndex] = []);
-                    const answers = answerIndex.removed.map(r => answersSpec[index].qxAnswers[r]);
-                    arr.push(...answers);
-                    arr.sort((a, b) => a.questionId - b.questionId);
+        const result = answersSpec.reduce((r, { removed, answers }) => {
+            answers.forEach(answer => {
+                const questionId = answer.questionId;
+                const timeIndex = removed[questionId];
+                if (timeIndex !== undefined) {
+                    if (r[timeIndex] === undefined) {
+                        r[timeIndex] = [];
+                    }
+                    r[timeIndex].push(answer);
                 }
             });
             return r;
