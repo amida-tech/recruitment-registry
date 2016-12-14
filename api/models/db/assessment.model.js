@@ -7,7 +7,7 @@ module.exports = function (sequelize, DataTypes) {
             allowNull: false
         },
         sequenceType: {
-            type: DataTypes.ENUM('on-demand', 'biyearly'),
+            type: DataTypes.ENUM('ondemand', 'biyearly'),
             allowNull: false
         },
         createdAt: {
