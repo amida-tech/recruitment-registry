@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    const SmtpText = sequelize.define('smtp_text', {
+    return sequelize.define('smtp_text', {
         language: {
             type: DataTypes.TEXT,
             allowNull: false,
@@ -34,6 +34,4 @@ module.exports = function (sequelize, DataTypes) {
         deletedAt: 'deletedAt',
         paranoid: true
     });
-
-    return SmtpText;
 };

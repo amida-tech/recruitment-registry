@@ -3,7 +3,7 @@
 const SPromise = require('../../lib/promise');
 
 module.exports = function (sequelize, DataTypes) {
-    const AnswerType = sequelize.define('answer_type', {
+    return sequelize.define('answer_type', {
         name: {
             type: DataTypes.TEXT,
             allowNull: false,
@@ -24,12 +24,10 @@ module.exports = function (sequelize, DataTypes) {
                         'choice', 'text', 'bool', 'date', 'number',
                         'dual-integers', 'year', 'month', 'day', 'integer'
                     ];
-                    const ps = names.map(name => AnswerType.create({ name }));
+                    const ps = names.map(name => this.create({ name }));
                     return SPromise.all(ps);
                 }
             }
         }
     });
-
-    return AnswerType;
 };

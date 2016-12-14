@@ -1,41 +1,46 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('section_text', {
-        sectionId: {
+    return sequelize.define('assessment_survey', {
+        assessmentId: {
             type: DataTypes.INTEGER,
             allowNull: false,
-            field: 'section_id',
+            field: 'assessment_id',
             references: {
-                model: 'rr_section',
+                model: 'assessment',
                 key: 'id'
             }
         },
-        language: {
-            type: DataTypes.TEXT,
+        surveyId: {
+            type: DataTypes.INTEGER,
             allowNull: false,
-            field: 'language_code',
+            field: 'survey_id',
             references: {
-                model: 'language',
-                key: 'code'
+                model: 'survey',
+                key: 'id'
             }
         },
-        name: {
-            type: DataTypes.TEXT,
-            allowNull: false
+        lookback: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: false
         },
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',
         },
+        updatedAt: {
+            type: DataTypes.DATE,
+            field: 'created_at',
+        },
         deletedAt: {
             type: DataTypes.DATE,
-            field: 'deleted_at'
+            field: 'deleted_at',
         }
     }, {
         freezeTableName: true,
         createdAt: 'createdAt',
-        updatedAt: false,
+        updatedAt: 'updatedAt',
         deletedAt: 'deletedAt',
         paranoid: true
     });

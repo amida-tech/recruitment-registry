@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    const Smtp = sequelize.define('smtp', {
+    return sequelize.define('smtp', {
         protocol: {
             type: DataTypes.TEXT,
             allowNull: false
@@ -43,6 +43,4 @@ module.exports = function (sequelize, DataTypes) {
         deletedAt: 'deletedAt',
         paranoid: true
     });
-
-    return Smtp;
 };

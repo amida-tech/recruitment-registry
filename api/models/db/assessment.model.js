@@ -1,24 +1,14 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('question', {
-        type: {
+    return sequelize.define('assessment', {
+        name: {
             type: DataTypes.TEXT,
-            allowNull: false,
-            references: {
-                model: 'question_type',
-                key: 'name'
-            },
+            allowNull: false
         },
-        version: {
-            type: DataTypes.INTEGER
-        },
-        groupId: {
-            type: DataTypes.INTEGER,
-            field: 'group_id'
-        },
-        meta: {
-            type: DataTypes.JSON
+        sequenceType: {
+            type: DataTypes.ENUM('on-demand', 'biyearly'),
+            allowNull: false
         },
         createdAt: {
             type: DataTypes.DATE,
@@ -26,7 +16,7 @@ module.exports = function (sequelize, DataTypes) {
         },
         updatedAt: {
             type: DataTypes.DATE,
-            field: 'updated_at',
+            field: 'cupdated_at',
         },
         deletedAt: {
             type: DataTypes.DATE,

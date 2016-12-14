@@ -1,31 +1,40 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('survey_section', {
-        surveyId: {
+    return sequelize.define('user_assessment', {
+        userId: {
             type: DataTypes.INTEGER,
             allowNull: false,
-            field: 'survey_id',
+            field: 'user_id',
             references: {
-                model: 'survey',
+                model: 'registry_user',
                 key: 'id'
             }
         },
-        sectionId: {
+        assessmentId: {
             type: DataTypes.INTEGER,
             allowNull: false,
-            field: 'section_id',
+            field: 'assessment_id',
             references: {
-                model: 'rr_section',
+                model: 'assessment',
                 key: 'id'
             }
         },
-        line: {
-            type: DataTypes.INTEGER
+        sequence: {
+            type: DataTypes.INTEGER,
+            allowNull: false
+        },
+        status: {
+            type: DataTypes.ENUM('scheduled', 'not-in-protocol', 'failed-to-collect', 'collected'),
+            allowNull: false
         },
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',
+        },
+        updatedAt: {
+            type: DataTypes.DATE,
+            field: 'updated_at',
         },
         deletedAt: {
             type: DataTypes.DATE,
@@ -34,7 +43,7 @@ module.exports = function (sequelize, DataTypes) {
     }, {
         freezeTableName: true,
         createdAt: 'createdAt',
-        updatedAt: false,
+        updatedAt: 'updatedAt',
         deletedAt: 'deletedAt',
         paranoid: true
     });

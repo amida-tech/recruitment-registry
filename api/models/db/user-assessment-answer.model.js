@@ -1,22 +1,24 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('question_action', {
-        questionId: {
+    return sequelize.define('user_assessment_answer', {
+        answerId: {
             type: DataTypes.INTEGER,
-            field: 'question_id',
             allowNull: false,
+            field: 'answer_id',
             references: {
-                model: 'question',
+                model: 'answer',
                 key: 'id'
             }
         },
-        type: {
-            type: DataTypes.TEXT,
+        userAssessmentId: {
+            type: DataTypes.INTEGER,
             allowNull: false,
-        },
-        line: {
-            type: DataTypes.INTEGER
+            field: 'user_assessment_id',
+            references: {
+                model: 'user_assessment',
+                key: 'id'
+            }
         },
         createdAt: {
             type: DataTypes.DATE,

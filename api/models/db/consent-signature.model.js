@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    const ConsentSignature = sequelize.define('consent_signature', {
+    return sequelize.define('consent_signature', {
         consentDocumentId: {
             type: DataTypes.INTEGER,
             allowNull: false,
@@ -47,6 +47,4 @@ module.exports = function (sequelize, DataTypes) {
         freezeTableName: true,
         createdAt: 'createdAt'
     });
-
-    return ConsentSignature;
 };
