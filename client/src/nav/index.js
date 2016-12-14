@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router';
-import routes from '../routes';
 import { logout } from '../login/actions';
 import { changeLanguage } from '../profile/actions';
 

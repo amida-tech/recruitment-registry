@@ -1,18 +1,19 @@
-import ChartMonitor from 'redux-devtools-chart-monitor';
-import DockMonitor from 'redux-devtools-dock-monitor';
-import LogMonitor from 'redux-devtools-log-monitor';
-import Immutable from 'immutable';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import SliderMonitor from 'redux-slider-monitor';
-import createLogger from 'redux-logger';
+import Immutable from 'immutable';
 import { LOCATION_CHANGE, syncHistoryWithStore, routerMiddleware } from 'react-router-redux';
 import { Provider } from 'react-redux';
 import { Router, Route, browserHistory } from 'react-router';
 import { combineReducers } from 'redux-immutable'
 import { applyMiddleware, compose, createStore } from 'redux';
-import { createDevTools, persistState } from 'redux-devtools';
 import thunk from 'redux-thunk';
+
+import ChartMonitor from 'redux-devtools-chart-monitor';
+import DockMonitor from 'redux-devtools-dock-monitor';
+import LogMonitor from 'redux-devtools-log-monitor';
+import SliderMonitor from 'redux-slider-monitor';
+import createLogger from 'redux-logger';
+import { createDevTools, persistState } from 'redux-devtools';
 
 import dataService from './utils/api';
 
@@ -70,10 +71,15 @@ export default (options) => {
     combineReducers({...reducers, routing}),
     frozen,
     compose(
-      applyMiddleware(routerMiddleware(browserHistory), ...initialMiddleware, ...middleware),
+      applyMiddleware(
+          routerMiddleware(browserHistory),
+          ...initialMiddleware,
+          ...middleware
+      ),
       ...initialEnhancers,
       ...enhancers
-    ));
+    )
+  );
 
   store.subscribe(() => {
     localStorage.setItem('rec-reg', JSON.stringify(store.getState().get('auth')));

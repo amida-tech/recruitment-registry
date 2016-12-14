@@ -1,5 +1,4 @@
 import React, { Component} from 'react';
-import { Draggable, Droppable } from 'react-drag-and-drop'
 
 export default class BoolQuestion extends Component {
   render() {

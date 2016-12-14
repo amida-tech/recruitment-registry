@@ -3,7 +3,10 @@ import Immutable from 'immutable'
 
 export const initialState = {
   user: {
-    name: ""
+    username: "",
+    email: "",
+    role: ""
+
   },
   survey: {
     questions: []
@@ -19,9 +22,12 @@ export default (state = immutableState, action) => {
     case 'SAVE_PROFILE_SUCCESS':
       return state
         .set('userUpdated', undefined)
-        .set('profileSaved', true)
+        .set('profileSaved', true);
     case t.GET_PROFILE_SUCCESS:
-      return Immutable.fromJS(action.payload)
+          return state.merge({
+            user: action.payload.user,
+            survey: action.payload.survey
+          });
     default:
       return state;
   }

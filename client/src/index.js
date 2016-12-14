@@ -8,7 +8,6 @@ import surveyBuilder from './surveyBuilder';
 import { SurveyListReducer } from './surveylist';
 import { SurveyReducer } from './survey';
 import { AdminSurveyReducer } from './admin/survey';
-import { browserHistory } from 'react-router';
 import i18n from './i18n/en.json';
 
 export const initialState = {
