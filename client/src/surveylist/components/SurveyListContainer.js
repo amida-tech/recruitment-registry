@@ -2,7 +2,7 @@ import React, { Component} from 'react';
 import { connect } from 'react-redux';
 import * as actions from '../actions';
 
-import SurveyList from './surveyList';
+import SurveyList from './SurveyList';
 
 export class SurveysContainer extends Component {
 
@@ -13,7 +13,7 @@ export class SurveysContainer extends Component {
     render() {
         return (
             <SurveyList
-                data={this.props.data}
+                surveys={this.props.surveys}
                 vocab={this.props.vocab}
             />
         )}
@@ -25,7 +25,8 @@ export class SurveysContainer extends Component {
 
 const mapStateToProps = function(state) {
     return {
-        data: state.get('surveys'),
+        // data: state.get('surveys'),
+        surveys: state.get('surveys'),
         vocab: state.getIn(['settings', 'language', 'vocabulary'])
     };
 };
