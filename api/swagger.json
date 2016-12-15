@@ -2237,6 +2237,126 @@
                     }
                 }
             }
+        },
+        "/user-assessments": {
+            "x-swagger-router-controller": "user-assessment.controller",
+            "post": {
+                "summary": "Opens new user assessment",
+                "operationId": "openUserAssessment",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "newAssessment",
+                    "in": "body",
+                    "description": "User assessment object",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/newUserAssessment"
+                    }
+                }],
+                "responses": {
+                    "201": {
+                        "$ref": "#/responses/idSuccess"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "get": {
+                "summary": "List user assessmentd",
+                "operationId": "listUserAssessments",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "user-id",
+                    "in": "query",
+                    "description": "User id",
+                    "required": true,
+                    "type": "integer",
+                    "minimum": 1
+                }, {
+                    "name": "assessment-id",
+                    "in": "query",
+                    "description": "Assessment id",
+                    "required": true,
+                    "type": "integer",
+                    "minimum": 1
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successul response",
+                        "schema": {
+                            "$ref": "#/definitions/userAssessmentList"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Close active user assessment",
+                "operationId": "closeUserAssessment",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "user-id",
+                    "in": "query",
+                    "description": "User id",
+                    "required": true,
+                    "type": "integer",
+                    "minimum": 1
+                }, {
+                    "name": "assessment-id",
+                    "in": "query",
+                    "description": "Assessment id",
+                    "required": true,
+                    "type": "integer",
+                    "minimum": 1
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successul response"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/user-assessments/{id}/answers": {
+            "x-swagger-router-controller": "user-assessment.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
+            "get": {
+                "summary": "List user assesment answers",
+                "operationId": "listUserAssessmentAnswers",
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "object"
+                            }
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
         }
     },
     "securityDefinitions": {
@@ -3912,6 +4032,38 @@
                     "name": {
                         "type": "string",
                         "minLength": 1
+                    }
+                },
+                "additionalProperties": false
+            }
+        },
+        "newUserAssessment": {
+            "type": "object",
+            "required": ["userId", "assessmentId"],
+            "properties": {
+                "userId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                 "assessmentId": {
+                    "type": "integer",
+                    "minimum": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "userAssessmentList": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": ["id", "sequence"],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                     "sequence": {
+                        "type": "integer"
                     }
                 },
                 "additionalProperties": false

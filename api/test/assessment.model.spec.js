@@ -38,5 +38,4 @@ describe('assessment unit', function () {
     });
 
     it('list assessments', assessmentTests.listAssessmentFn());
-
 });

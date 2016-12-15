@@ -49,6 +49,7 @@ module.exports = class AssessmentDAO {
                     attributes: ['id', 'sequence', 'deletedAt'],
                     order: 'sequence',
                     raw: true,
+                    paranoid: false,
                     transaction
                 })
                 .then(userAssessments => {
@@ -84,6 +85,7 @@ module.exports = class AssessmentDAO {
             attributes: ['id', 'sequence'],
             order: 'sequence',
             raw: true,
+            paranoid: false
         });
     }
 

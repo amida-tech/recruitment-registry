@@ -80,10 +80,12 @@ module.exports = class RRSupertest {
             });
     }
 
-    delete(resource, status) {
-        return this.server.delete(this.baseUrl + resource)
-            .set('Cookie', `rr-jwt-token=${this.jwt}`)
-            .expect(status);
+    delete(resource, status, query) {
+        let r = this.server.delete(this.baseUrl + resource);
+        if (query) {
+            r = r.query(query);
+        }
+        return r.set('Cookie', `rr-jwt-token=${this.jwt}`).expect(status);
     }
 
     get(resource, auth, status, query) {
