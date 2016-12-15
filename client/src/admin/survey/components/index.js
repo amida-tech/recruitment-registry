@@ -18,7 +18,8 @@ export class AdminSurveyContainer extends Component {
   }
 
   render() {
-    const { id, name, questions } = this.props.selectedSurvey.toJS();
+    // id is also available:
+    const { name, questions } = this.props.selectedSurvey.toJS();
     var questionnaire = [];
     if(questions){
       questionnaire = questions.map(question => {

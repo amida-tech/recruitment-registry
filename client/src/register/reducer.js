@@ -1,6 +1,5 @@
 import * as t from './actionTypes';
 import Immutable from 'immutable'
-import { browserHistory } from 'react-router';
 
 
 export default (state, action) => {

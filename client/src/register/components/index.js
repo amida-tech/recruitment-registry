@@ -9,7 +9,7 @@ import { SurveyNavigator } from '../../common/SurveyNavigation';
 
 export class RegisterContainer extends Component {
   render() {
-    const { survey } = this.props.data.toJS();
+    // const { survey } = this.props.data.toJS();
     var slides = [];
     var userInfo = ['username', 'password', 'email'];
 
