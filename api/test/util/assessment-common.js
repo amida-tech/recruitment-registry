@@ -47,6 +47,57 @@ const SpecTests = class AssessmentSpecTests {
     }
 };
 
+const IntegrationTests = class AssessmentSpecTests {
+    constructor(rrSuperTest, generator, hxSurvey, hxAssessment) {
+        this.rrSuperTest = rrSuperTest;
+        this.generator = generator;
+        this.hxSurvey = hxSurvey;
+        this.hxAssessment = hxAssessment;
+    }
+
+    createAssessmentFn(indices) {
+        const rrSuperTest = this.rrSuperTest;
+        const generator = this.generator;
+        const hxSurvey = this.hxSurvey;
+        const hxAssessment = this.hxAssessment;
+        return function (done) {
+            const surveyIds = indices.map(index => hxSurvey.id(index));
+            const assessment = generator.newAssessment(surveyIds);
+            rrSuperTest.post('/assessments', assessment, 201)
+                .expect(function (res) {
+                    hxAssessment.pushWithId(assessment, res.body.id);
+                })
+                .end(done);
+        };
+    }
+
+    getAssessmentFn(index) {
+        const rrSuperTest = this.rrSuperTest;
+        const hxAssessment = this.hxAssessment;
+        return function (done) {
+            const id = hxAssessment.id(index);
+            rrSuperTest.get(`/assessments/${id}`, true, 200)
+                .expect(function (res) {
+                    expect(res.body).to.deep.equal(hxAssessment.server(index));
+                })
+                .end(done);
+        };
+    }
+
+    listAssessmentFn() {
+        const rrSuperTest = this.rrSuperTest;
+        const hxAssessment = this.hxAssessment;
+        return function (done) {
+            rrSuperTest.get('/assessments', true, 200)
+                .expect(function (res) {
+                    expect(res.body).to.deep.equal(hxAssessment.listServers());
+                })
+                .end(done);
+        };
+    }
+};
+
 module.exports = {
-    SpecTests
+    SpecTests,
+    IntegrationTests
 };

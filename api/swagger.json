@@ -2165,6 +2165,78 @@
                     }
                 }
             }
+        },
+        "/assessments": {
+            "x-swagger-router-controller": "assessment.controller",
+            "post": {
+                "summary": "Creates new assessment",
+                "operationId": "createAssessment",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "newAssessment",
+                    "in": "body",
+                    "description": "Assessment object",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/newAssessment"
+                    }
+                }],
+                "responses": {
+                    "201": {
+                        "$ref": "#/responses/idSuccess"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "get": {
+                "summary": "List assessments",
+                "operationId": "listAssessments",
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successul response",
+                        "schema": {
+                            "$ref": "#/definitions/assessmentList"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/assessments/{id}": {
+            "x-swagger-router-controller": "assessment.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
+            "get": {
+                "summary": "Gets assessment",
+                "operationId": "getAssessment",
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successul response",
+                        "schema": {
+                            "$ref": "#/definitions/assessment"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
         }
     },
     "securityDefinitions": {
@@ -3771,6 +3843,79 @@
                 "$ref": "#/definitions/surveyConsentDocumentInfo"
             },
             "additionalProperties": false
+        },
+        "assessmentSurveys": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": ["id"],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "lookback": {
+                        "type": "boolean"
+                    }
+                },
+                "additionalProperties": false
+            }
+        },
+        "newAssessment": {
+            "type": "object",
+            "required": ["name", "surveys"],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "sequenceType": {
+                    "type": "string"
+                },
+                "surveys": {
+                    "$ref": "#/definitions/assessmentSurveys"
+                }
+            },
+            "additionalProperties": false
+        },
+        "assessment": {
+            "type": "object",
+            "required": ["id", "name", "surveys"],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "sequenceType": {
+                    "type": "string"
+                },
+                "surveys": {
+                    "$ref": "#/definitions/assessmentSurveys"
+                }
+            },
+            "additionalProperties": false
+        },
+        "assessmentList": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": ["id", "name"],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "minLength": 1
+                    }
+                },
+                "additionalProperties": false
+            }
         }
     }
 }
