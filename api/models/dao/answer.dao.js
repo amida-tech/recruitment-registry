@@ -285,9 +285,9 @@ module.exports = class AnswerDAO {
         });
     }
 
-    listAnswers({ userId, scope, surveyId, history }) {
+    listAnswers({ userId, scope, surveyId, history, ids }) {
         scope = scope || 'survey';
-        const where = { userId };
+        const where = ids ? { id: { $in: ids } } : { userId };
         if (surveyId) {
             where.surveyId = surveyId;
         }
@@ -295,7 +295,7 @@ module.exports = class AnswerDAO {
             where.deletedAt = { $ne: null };
         }
         const attributes = ['questionChoiceId', 'language', 'value', 'type'];
-        if (scope === 'export') {
+        if (scope === 'export' || !surveyId) {
             attributes.push('surveyId');
         }
         if (scope === 'history-only') {

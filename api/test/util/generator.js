@@ -431,7 +431,7 @@ class Generator {
         return result;
     }
 
-    newAssessment (surveyIds) {
+    newAssessment(surveyIds) {
         const index = ++this.assessmentIndex;
         const name = `name_${index}`;
         const sequenceType = (index % 2 === 0) ? 'ondemand' : 'biyearly';

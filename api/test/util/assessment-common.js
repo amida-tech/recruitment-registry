@@ -33,7 +33,7 @@ const SpecTests = class AssessmentSpecTests {
                 .then(assessment => {
                     expect(assessment).to.deep.equal(hxAssessment.server(index));
                 });
-         };
+        };
     }
 
     listAssessmentFn() {

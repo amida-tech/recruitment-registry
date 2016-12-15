@@ -21,6 +21,7 @@ const SectionDAO = require('./section.dao');
 const SmtpDAO = require('./smtp.dao');
 const UserSurveyDAO = require('./user-survey.dao');
 const AssessmentDAO = require('./assessment.dao');
+const UserAssessmentDAO = require('./user-assessment.dao');
 
 const consentType = new ConsentTypeDAO();
 const consentDocument = new ConsentDocumentDAO({ consentType });
@@ -43,6 +44,7 @@ const profile = new ProfileDAO({ profileSurvey, survey, answer, user, consentSig
 const language = new LanguageDAO();
 const smtp = new SmtpDAO();
 const assessment = new AssessmentDAO();
+const userAssessment = new UserAssessmentDAO({ answer });
 
 module.exports = {
     user,
@@ -65,5 +67,6 @@ module.exports = {
     profile,
     language,
     smtp,
-    assessment
+    assessment,
+    userAssessment
 };
