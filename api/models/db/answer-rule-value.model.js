@@ -1,38 +1,26 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('survey_question', {
-        surveyId: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            field: 'survey_id',
-            references: {
-                model: 'survey',
-                key: 'id'
-            }
-        },
-        questionId: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            field: 'question_id',
-            references: {
-                model: 'question',
-                key: 'id'
-            }
-        },
-        line: {
-            type: DataTypes.INTEGER
-        },
-        required: {
-            type: DataTypes.BOOLEAN
-        },
+    return sequelize.define('answer_rule_value', {
         answerRuleId: {
             type: DataTypes.INTEGER,
+            allowNull: false,
             field: 'answer_rule_id',
             references: {
                 model: 'answer_rule',
                 key: 'id'
             }
+        },
+        questionChoiceId: {
+            type: DataTypes.INTEGER,
+            field: 'question_choice_id',
+            references: {
+                model: 'question_choice',
+                key: 'id'
+            }
+        },
+        value: {
+            type: DataTypes.TEXT
         },
         createdAt: {
             type: DataTypes.DATE,
@@ -41,7 +29,7 @@ module.exports = function (sequelize, DataTypes) {
         deletedAt: {
             type: DataTypes.DATE,
             field: 'deleted_at',
-        },
+        }
     }, {
         freezeTableName: true,
         createdAt: 'createdAt',
