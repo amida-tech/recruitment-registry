@@ -9,7 +9,7 @@ class SurveyListSection extends Component {
 
     render() {
         return (
-            <section id="surveysToComplete">
+            <section id={this.props.cssId}>
             <span className="label">
                 {this.props.title}
             </span>

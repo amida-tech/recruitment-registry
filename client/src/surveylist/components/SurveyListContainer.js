@@ -4,7 +4,7 @@ import * as actions from '../actions';
 
 import SurveyList from './SurveyList';
 
-export class SurveysContainer extends Component {
+export class SurveysListContainer extends Component {
 
     constructor() {
         super();
@@ -25,10 +25,9 @@ export class SurveysContainer extends Component {
 
 const mapStateToProps = function(state) {
     return {
-        // data: state.get('surveys'),
         surveys: state.get('surveys'),
         vocab: state.getIn(['settings', 'language', 'vocabulary'])
     };
 };
 
-export default connect(mapStateToProps)(SurveysContainer);
+export default connect(mapStateToProps)(SurveysListContainer);
