@@ -31,7 +31,7 @@ class Answerer {
         };
     }
 
-    'blood-pressure' (question) {
+    bloodPressure(question) {
         const answerIndex = ++this.answerIndex;
         return {
             questionId: question.id,
@@ -44,7 +44,7 @@ class Answerer {
         };
     }
 
-    'feet-inches' (question) {
+    feetInches(question) {
         const answerIndex = ++this.answerIndex;
         return {
             questionId: question.id,
@@ -338,9 +338,9 @@ class Generator {
         return this.questionGenerator.newQuestion();
     }
 
-    newSurvey(override = {}) {
+    newSurvey() {
         const surveyIndex = ++this.surveyIndex;
-        const name = override.name || `name_${surveyIndex}`;
+        const name = `name_${surveyIndex}`;
         const result = { name };
         if (surveyIndex % 2 === 0) {
             result.description = `description_${surveyIndex}`;
@@ -352,23 +352,16 @@ class Generator {
                 saveProgress: metaIndex === 2
             };
         }
-        if (override.questions) {
-            result.questions = override.questions;
-            if (override.sections) {
-                result.section = override.sections;
-            }
-        } else {
-            const sectionType = this.surveyIndex % 3;
-            const count = sectionType ? 9 + sectionType - 1 : this.questionGenerator.types.length + 1;
-            result.questions = _.range(count).map(() => this.newQuestion());
-            result.questions.forEach((qx, surveyIndex) => (qx.required = Boolean(surveyIndex % 2)));
-            if (sectionType) {
-                const sections = Array(3);
-                sections[0] = { name: 'section_0', indices: _.range(0, 6, 2) };
-                sections[1] = { name: 'section_1', indices: _.range(1, 6, 2) };
-                sections[2] = { name: 'section_2', indices: _.rangeRight(count - 3, count) };
-                result.sections = sections;
-            }
+        const sectionType = this.surveyIndex % 3;
+        const count = sectionType ? 9 + sectionType - 1 : this.questionGenerator.types.length + 1;
+        result.questions = _.range(count).map(() => this.newQuestion());
+        result.questions.forEach((qx, surveyIndex) => (qx.required = Boolean(surveyIndex % 2)));
+        if (sectionType) {
+            const sections = Array(3);
+            sections[0] = { name: 'section_0', indices: _.range(0, 6, 2) };
+            sections[1] = { name: 'section_1', indices: _.range(1, 6, 2) };
+            sections[2] = { name: 'section_2', indices: _.rangeRight(count - 3, count) };
+            result.sections = sections;
         }
         return result;
     }
@@ -385,7 +378,8 @@ class Generator {
         if (question.id < 0) {
             return { questionId: -question.id };
         } else {
-            return this.answerer[question.type](question);
+            const typeKey = _.camelCase(question.type);
+            return this.answerer[typeKey](question);
         }
     }
 
