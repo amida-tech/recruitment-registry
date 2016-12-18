@@ -19,7 +19,7 @@ module.exports = class QuestionGenerator {
         this.typeChoicesIndex = -1;
     }
 
-    _body(type) {
+    body(type) {
         const index = ++this.index;
         const result = { text: `text_${index}`, type };
         if (index % 2 === 0) {
@@ -35,7 +35,7 @@ module.exports = class QuestionGenerator {
         return result;
     }
 
-    _choices() {
+    newChoices() {
         const startIndex = this.choiceIndex;
         const endIndex = this.choiceIndex + 5;
         this.choiceIndex = endIndex;
@@ -44,8 +44,8 @@ module.exports = class QuestionGenerator {
 
     choice() {
         const typeChoiceIndex = ++this.typeChoiceIndex;
-        const question = this._body('choice');
-        const choices = this._choices();
+        const question = this.body('choice');
+        const choices = this.newChoices();
         if (typeChoiceIndex % 2) {
             question.oneOfChoices = choices;
         } else {
@@ -55,8 +55,8 @@ module.exports = class QuestionGenerator {
     }
 
     choices() {
-        const question = this._body('choices');
-        const choices = this._choices().map(choice => ({ text: choice }));
+        const question = this.body('choices');
+        const choices = this.newChoices().map(choice => ({ text: choice }));
         choices.forEach(choice => {
             const choiceType = ++this.typeChoicesIndex % 4;
             switch (choiceType) {
@@ -73,7 +73,7 @@ module.exports = class QuestionGenerator {
     }
 
     dateChoices() {
-        const question = this._body('choices');
+        const question = this.body('choices');
         question.choices = [{
             text: 'year text',
             type: 'year'
@@ -88,7 +88,7 @@ module.exports = class QuestionGenerator {
     }
 
     integerChoices() {
-        const question = this._body('choices');
+        const question = this.body('choices');
         question.choices = [{
             text: 'feet',
             type: 'integer'
@@ -107,9 +107,9 @@ module.exports = class QuestionGenerator {
         });
     }
 
-    newQuestion() {
-        const type = this.types[(this.index + 1) % this.types.length];
-        const result = this[type] ? this[type]() : this._body(type);
+    newQuestion(type) {
+        type = type || this.types[(this.index + 1) % this.types.length];
+        const result = this[type] ? this[type]() : this.body(type);
         const actionCount = (this.index % 3) - 1;
         if (actionCount > 0) {
             result.actions = this.newActions(this.index, actionCount);

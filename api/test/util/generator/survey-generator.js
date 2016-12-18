@@ -8,6 +8,10 @@ module.exports = class SurveyGenerator {
         this.surveyIndex = -1;
     }
 
+    currentIndex() {
+        return this.surveyIndex;
+    }
+
     sectionType() {
         return this.surveyIndex % 3;
     }

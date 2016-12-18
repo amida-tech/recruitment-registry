@@ -10,9 +10,9 @@ const testJsutil = require('../test-jsutil');
 
 class Generator {
     constructor(generators = {}) {
-        this.answerer = new Answerer();
-        this.questionGenerator = generators.question || new QuestionGenerator();
-        this.surveyGenerator = generators.survey || new SurveyGenerator(this.questionGenerator);
+        this.answerer = generators.answerer || new Answerer();
+        this.questionGenerator = generators.questionGenerator || new QuestionGenerator();
+        this.surveyGenerator = generators.surveyGenerator || new SurveyGenerator(this.questionGenerator);
 
         this.userIndex = -1;
         this.consentTypeIndex = -1;
@@ -61,8 +61,7 @@ class Generator {
         if (question.id < 0) {
             return { questionId: -question.id };
         } else {
-            const typeKey = _.camelCase(question.type);
-            return this.answerer[typeKey](question);
+            return this.answerer.answerQuestion(question);
         }
     }
 

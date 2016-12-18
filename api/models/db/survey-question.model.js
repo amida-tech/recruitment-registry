@@ -26,13 +26,16 @@ module.exports = function (sequelize, DataTypes) {
         required: {
             type: DataTypes.BOOLEAN
         },
-        answerRuleId: {
+        skipRuleId: {
             type: DataTypes.INTEGER,
             field: 'answer_rule_id',
             references: {
                 model: 'answer_rule',
                 key: 'id'
             }
+        },
+        skipCount: {
+            type: DataTypes.INTEGER,
         },
         createdAt: {
             type: DataTypes.DATE,
