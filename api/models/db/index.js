@@ -29,6 +29,7 @@ const QuestionActionText = sequelize.import('./question-action-text.model');
 const QuestionText = sequelize.import('./question-text.model');
 const Question = sequelize.import('./question.model');
 const AnswerRule = sequelize.import('./answer-rule.model');
+const AnswerRuleValue = sequelize.import('./answer-rule-value.model');
 const SurveyQuestion = sequelize.import('./survey-question.model');
 const AnswerType = sequelize.import('./answer-type.model');
 const Answer = sequelize.import('./answer.model');
@@ -69,6 +70,7 @@ Answer.belongsTo(Question, {
 });
 
 SurveyQuestion.belongsTo(Question, { as: 'question', foreignKey: 'question_id' });
+SurveyQuestion.belongsTo(AnswerRule, { as: 'skip', foreignKey: 'answer_rule_id' });
 
 module.exports = {
     Sequelize,
@@ -85,6 +87,7 @@ module.exports = {
     Question,
     QuestionText,
     AnswerRule,
+    AnswerRuleValue,
     SurveyQuestion,
     AnswerType,
     Answer,

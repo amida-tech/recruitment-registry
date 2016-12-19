@@ -32,6 +32,9 @@ const comparator = {
             });
             expect(server.actions).to.deep.equal(expected.actions);
         }
+        if (expected.skip && expected.skip.rule && server.skip && server.skip.rule) {
+            expected.skip.rule.id = server.skip.rule.id;
+        }
         expect(server).to.deep.equal(expected);
         return expected;
     },

@@ -197,6 +197,10 @@ module.exports = class AnswerDAO {
         return prepareAnswerForDB(answer);
     }
 
+    toInterfaceAnswer(type, entries) {
+        return generateAnswer(type, entries);
+    }
+
     validateConsent(userId, surveyId, action, transaction) {
         return this.surveyConsentDocument.listSurveyConsentDocuments({
                 userId,

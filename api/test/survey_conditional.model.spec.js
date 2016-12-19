@@ -14,7 +14,7 @@ const ConditionalSurveyGenerator = (function () {
     const conditionalQuestions = {
         '0-3': { type: 'choice', logic: 'equals', count: 3 },
         '1-5': { type: 'choice', logic: 'equals', count: 1 },
-        '2-3': { type: 'choices', logic: 'equals', count: 2 },
+        '2-3': { type: 'bool', logic: 'equals', count: 2 },
         '3-0': { type: 'text', logic: 'exists', count: 1 }
     };
 
@@ -55,7 +55,7 @@ const ConditionalSurveyGenerator = (function () {
                 if (logic === 'equals') {
                     skip.rule.answer = this.answerer.answerRawQuestion(question);
                 }
-                //question.skip = skip;
+                question.skip = skip;
             } else {
                 question = super.newSurveyQuestion(index);
             }

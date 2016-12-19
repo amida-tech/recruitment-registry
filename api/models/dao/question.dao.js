@@ -33,19 +33,20 @@ module.exports = class QuestionDAO extends Translatable {
         const pxs = choices.map(({ text, type }, line) => {
             type = type || 'bool';
             const choice = { questionId, text, type, line };
-            return this.questionChoice.createQuestionChoiceTx(choice, transaction);
+            return this.questionChoice.createQuestionChoiceTx(choice, transaction)
+                .then(({ id }) => ({ id, text: choice.text }));
         });
         return SPromise.all(pxs);
     }
 
     createQuestionTx(question, transaction) {
         const qxFields = _.omit(question, ['oneOfChoices', 'choices', 'actions', 'questions']);
-        return Question.create(qxFields, { transaction })
-            .then(created => {
+        return Question.create(qxFields, { transaction, raw: true })
+            .then(result => {
                 const { text, instruction } = question;
-                const id = created.id;
+                const id = result.id;
                 return this.createTextTx({ text, instruction, id }, transaction)
-                    .then(() => this.createActionsTx(created.id, question.actions, transaction))
+                    .then(() => this.createActionsTx(result.id, question.actions, transaction))
                     .then(() => {
                         let { oneOfChoices, choices } = question;
                         const nOneOfChoices = (oneOfChoices && oneOfChoices.length) || 0;
@@ -54,10 +55,11 @@ module.exports = class QuestionDAO extends Translatable {
                             if (nOneOfChoices) {
                                 choices = oneOfChoices.map(text => ({ text, type: 'bool' }));
                             }
-                            return this.createChoicesTx(created.id, choices, transaction);
+                            return this.createChoicesTx(result.id, choices, transaction)
+                                .then(choices => (result.choices = choices));
                         }
                     })
-                    .then(() => created);
+                    .then(() => result);
             });
     }
 

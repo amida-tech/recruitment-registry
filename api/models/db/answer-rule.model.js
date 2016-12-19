@@ -6,18 +6,6 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.ENUM('equals', 'exists'),
             allowNull: false
         },
-        answerChoiceId: {
-            type: DataTypes.INTEGER,
-            field: 'answer_choice_id',
-            references: {
-                model: 'question_choice',
-                key: 'id'
-            }
-        },
-        answerValue: {
-            type: DataTypes.TEXT,
-            field: 'answer_value',
-        },
     }, {
         freezeTableName: true,
         createdAt: 'createdAt',
