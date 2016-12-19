@@ -7,7 +7,7 @@ class SurveyItem extends Component {
 
 
     render() {
-        return (
+        return ("hi"
             
         )
     }

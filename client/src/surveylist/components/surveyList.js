@@ -1,4 +1,5 @@
 import React, {Component} from 'react';
+import Immutable from 'immutable';
 
 import SurveyListSection from './SurveySection';
 
@@ -11,10 +12,21 @@ export class SurveyList extends Component {
 
     render() {
 
+        const sorted = {
+            surveysToComplete: [],
+            surveysToUpdate: [],
+            surveysCompleted: []
+        };
+
+
+
         const surveys = this.props.surveys;
         const total = this.props.surveys.length;
         // TODO: Implement completed
         const completed = 2;
+
+
+
 
         return (
             <div className="row" id="surveyList">
@@ -45,11 +57,10 @@ export class SurveyList extends Component {
         )
     }
 
-
-    propTypes: {
-            
-    }
-
 }
+
+SurveyList.propTypes =  {
+    surveys: React.PropTypes.arrayOf(Immutable.List).isRequired
+};
 
 export default SurveyList;
