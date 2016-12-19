@@ -38,32 +38,27 @@ module.exports = class QuestionDAO extends Translatable {
         return SPromise.all(pxs);
     }
 
-    createQuestionTx(question, tx) {
+    createQuestionTx(question, transaction) {
         const qxFields = _.omit(question, ['oneOfChoices', 'choices', 'actions', 'questions']);
-        return Question.create(qxFields, { transaction: tx })
+        return Question.create(qxFields, { transaction })
             .then(created => {
                 const { text, instruction } = question;
                 const id = created.id;
-                return this.createTextTx({ text, instruction, id }, tx)
+                return this.createTextTx({ text, instruction, id }, transaction)
+                    .then(() => this.createActionsTx(created.id, question.actions, transaction))
+                    .then(() => {
+                        let { oneOfChoices, choices } = question;
+                        const nOneOfChoices = (oneOfChoices && oneOfChoices.length) || 0;
+                        const nChoices = (choices && choices.length) || 0;
+                        if (nOneOfChoices || nChoices) {
+                            if (nOneOfChoices) {
+                                choices = oneOfChoices.map(text => ({ text, type: 'bool' }));
+                            }
+                            return this.createChoicesTx(created.id, choices, transaction);
+                        }
+                    })
                     .then(() => created);
-            })
-            .then(created => {
-                return this.createActionsTx(created.id, question.actions, tx)
-                    .then(() => created);
-            })
-            .then((created) => {
-                let { oneOfChoices, choices } = question;
-                const nOneOfChoices = (oneOfChoices && oneOfChoices.length) || 0;
-                const nChoices = (choices && choices.length) || 0;
-                if (nOneOfChoices || nChoices) {
-                    if (nOneOfChoices) {
-                        choices = oneOfChoices.map(text => ({ text, type: 'bool' }));
-                    }
-                    return this.createChoicesTx(created.id, choices, tx).then(() => created);
-                }
-                return created;
-            })
-            .then(({ id }) => id);
+            });
     }
 
     createQuestion(question) {
@@ -90,7 +85,7 @@ module.exports = class QuestionDAO extends Translatable {
                                     groupId: question.groupId || question.id
                                 });
                                 return this.createQuestionTx(newQuestion, tx)
-                                    .then(id => {
+                                    .then(({ id }) => {
                                         if (!question.groupId) {
                                             return question.update({ version: 1, groupId: question.id }, { transaction: tx })
                                                 .then(() => id);
@@ -343,7 +338,7 @@ module.exports = class QuestionDAO extends Translatable {
                     const pxs = records.map(({ id, question }) => {
                         const questionProper = _.omit(question, 'choices');
                         return this.createQuestionTx(questionProper, transaction)
-                            .then((questionId) => {
+                            .then(({ id: questionId }) => {
                                 const choices = question.choices;
                                 if (choices) {
                                     const inputChoices = choices.map(choice => _.omit(choice, 'id'));

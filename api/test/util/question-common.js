@@ -54,7 +54,7 @@ const SpecTests = class QuestionSpecTests {
         return function () {
             const qx = generator.newQuestion();
             return models.question.createQuestion(qx)
-                .then(id => hxQuestion.push(qx, { id }));
+                .then(({ id }) => hxQuestion.push(qx, { id }));
         };
     }
 

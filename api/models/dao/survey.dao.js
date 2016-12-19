@@ -30,7 +30,7 @@ module.exports = class SurveyDAO extends Translatable {
         }, []);
         if (newQuestions.length) {
             return SPromise.all(newQuestions.map(q => {
-                    return this.question.createQuestionTx(q.qx, tx).then(id => {
+                    return this.question.createQuestionTx(q.qx, tx).then(({ id }) => {
                         const oldQx = questions[q.index];
                         questions[q.index] = { id, required: oldQx.required };
                     });
