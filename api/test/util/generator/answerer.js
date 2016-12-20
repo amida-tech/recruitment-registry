@@ -120,7 +120,7 @@ module.exports = class Answerer {
         ++this.answerIndex;
         if (type === 'choice') {
             const choices = question.oneOfChoices || question.choices.map(choice => choice.text);
-            return { choice: this.selectChoice(choices) };
+            return { choiceText: this.selectChoice(choices) };
         }
         if (type === 'choices') {
             const answers = _.range(2).map(() => {

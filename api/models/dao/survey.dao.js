@@ -40,7 +40,7 @@ module.exports = class SurveyDAO extends Translatable {
                             let skip = inputQuestion.skip;
                             if (skip) {
                                 skip = _.cloneDeep(skip);
-                                const choiceText = _.get(skip, 'rule.answer.choice');
+                                const choiceText = _.get(skip, 'rule.answer.choiceText');
                                 if (choiceText) {
                                     if (!choices) {
                                         return RRError.reject('surveySkipChoiceForNonChoice');
@@ -51,6 +51,7 @@ module.exports = class SurveyDAO extends Translatable {
                                     }
                                     const skipWithId = Object.assign({}, skip);
                                     skipWithId.rule.answer.choice = serverChoice.id;
+                                    delete skipWithId.rule.answer.choiceText;
                                     questions[q.index].skip = skipWithId;
                                     return;
                                 }

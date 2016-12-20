@@ -35,9 +35,10 @@ const comparator = {
         if (expected.skip && expected.skip.rule && server.skip && server.skip.rule) {
             expected.skip.rule.id = server.skip.rule.id;
             const answer = expected.skip.rule.answer;
-            if (answer && answer.choice) {
-                const skipChoice = server.choices.find(choice => (choice.text === answer.choice));
+            if (answer && answer.choiceText) {
+                const skipChoice = server.choices.find(choice => (choice.text === answer.choiceText));
                 answer.choice = skipChoice.id;
+                delete answer.choiceText;
             }
             if (answer && answer.choices) {
                 answer.choices.forEach(answerChoice => {

@@ -3066,10 +3066,12 @@
         },
          "newSkipChoicesItem": {
             "type": "object",
-            "required": ["text"],
             "properties": {
                 "text": {
                     "type": "string"
+                },
+                "id": {
+                    "type": "integer"
                 },
                 "boolValue": {
                     "type": "boolean"
@@ -3098,8 +3100,11 @@
         "newSkipAnswer": {
             "type": "object",
             "properties": {
-                "choice": {
+                "choiceText": {
                     "type": "string"
+                },
+                "choice": {
+                    "type": "integer"
                 },
                 "choices": {
                     "type": "array",

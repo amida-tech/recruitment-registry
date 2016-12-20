@@ -15,13 +15,39 @@ const swaggerJson = require('../swagger.json');
 
 const schema = _.cloneDeep(_.pick(swaggerJson, 'definitions'));
 
+const skip = {
+    type: 'object',
+    required: ['count', 'rule'],
+    properties: {
+        count: {
+            type: 'integer',
+            minimum: 1
+        },
+        rule: {
+            type: 'object',
+            required: ['logic'],
+            properties: {
+                logic: {
+                    type: 'string'
+                },
+                answer: {
+                    $ref: '#/definitions/newSkipAnswer'
+                }
+            },
+            additionalProperties: false
+        }
+    },
+    additionalProperties: false
+};
+
 _.set(schema, 'definitions.newSurvey.properties.questions.items', {
     oneOf: [{
         type: 'object',
         required: ['id', 'required'],
         properties: {
             'id': { type: 'integer' },
-            'required': { type: 'boolean' }
+            'required': { type: 'boolean' },
+            skip
         },
         additionalProperties: false
     }, {
@@ -46,30 +72,7 @@ _.set(schema, 'definitions.newSurveyQuestion', {
                 $ref: '#/definitions/questionMeta'
             },
             required: { type: 'boolean' },
-            skip: {
-                type: 'object',
-                required: ['count', 'rule'],
-                properties: {
-                    count: {
-                        type: 'integer',
-                        minimum: 1
-                    },
-                    rule: {
-                        type: 'object',
-                        required: ['logic'],
-                        properties: {
-                            logic: {
-                                type: 'string'
-                            },
-                            answer: {
-                                $ref: '#/definitions/newSkipAnswer'
-                            }
-                        },
-                        additionalProperties: false
-                    }
-                },
-                additionalProperties: false
-            },
+            skip,
             actions: {
                 $ref: '#/definitions/newActions'
             }
@@ -97,30 +100,7 @@ _.set(schema, 'definitions.newSurveyQuestion', {
                     additionalProperties: false
                 }
             },
-            skip: {
-                type: 'object',
-                required: ['count', 'rule'],
-                properties: {
-                    count: {
-                        type: 'integer',
-                        minimum: 1
-                    },
-                    rule: {
-                        type: 'object',
-                        required: ['logic'],
-                        properties: {
-                            logic: {
-                                type: 'string'
-                            },
-                            answer: {
-                                $ref: '#/definitions/newSkipAnswer'
-                            }
-                        },
-                        additionalProperties: false
-                    }
-                },
-                additionalProperties: false
-            },
+            skip,
             actions: {
                 $ref: '#/definitions/newActions'
             }
@@ -141,30 +121,7 @@ _.set(schema, 'definitions.newSurveyQuestion', {
                 type: 'array',
                 items: { type: 'string', minLength: 1 }
             },
-            skip: {
-                type: 'object',
-                required: ['count', 'rule'],
-                properties: {
-                    count: {
-                        type: 'integer',
-                        minimum: 1
-                    },
-                    rule: {
-                        type: 'object',
-                        required: ['logic'],
-                        properties: {
-                            logic: {
-                                type: 'string'
-                            },
-                            answer: {
-                                $ref: '#/definitions/newSkipAnswer'
-                            }
-                        },
-                        additionalProperties: false
-                    }
-                },
-                additionalProperties: false
-            },
+            skip,
             actions: {
                 $ref: '#/definitions/newActions'
             }
@@ -193,30 +150,7 @@ _.set(schema, 'definitions.newSurveyQuestion', {
                     additionalProperties: false
                 }
             },
-            skip: {
-                type: 'object',
-                required: ['count', 'rule'],
-                properties: {
-                    count: {
-                        type: 'integer',
-                        minimum: 1
-                    },
-                    rule: {
-                        type: 'object',
-                        required: ['logic'],
-                        properties: {
-                            logic: {
-                                type: 'string'
-                            },
-                            answer: {
-                                $ref: '#/definitions/newSkipAnswer'
-                            }
-                        },
-                        additionalProperties: false
-                    }
-                },
-                additionalProperties: false
-            },
+            skip,
             actions: {
                 $ref: '#/definitions/newActions'
             }

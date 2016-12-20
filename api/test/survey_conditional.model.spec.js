@@ -2,6 +2,10 @@
 'use strict';
 process.env.NODE_ENV = 'test';
 
+const chai = require('chai');
+const _ = require('lodash');
+
+const models = require('../models');
 const Answerer = require('./util/generator/answerer');
 const QuestionGenerator = require('./util/generator/question-generator');
 const SurveyGenerator = require('./util/generator/survey-generator');
@@ -9,6 +13,8 @@ const Generator = require('./util/generator');
 const SurveyHistory = require('./util/survey-history');
 const SharedSpec = require('./util/shared-spec');
 const surveyCommon = require('./util/survey-common');
+
+const expect = chai.expect;
 
 const ConditionalSurveyGenerator = (function () {
     const conditionalQuestions = {
@@ -90,4 +96,49 @@ describe('survey (conditional questions) unit', function () {
         it(`create survey ${i}`, tests.createSurveyFn());
         it(`get survey ${i}`, tests.getSurveyFn(i));
     }
+
+    _.range(surveyCount).forEach(surveyIndex => {
+        it(`create survey ${surveyIndex + 4} from survey ${surveyIndex} questions`, function () {
+            const survey = hxSurvey.server(surveyIndex);
+            const questions = survey.questions.map(({ id, required, skip }) => {
+                const question = { id, required };
+                if (skip) {
+                    question.skip = _.cloneDeep(skip);
+                    delete question.skip.rule.id;
+                }
+                return question;
+            });
+            const newSurvey = _.cloneDeep(hxSurvey.client(surveyIndex));
+            newSurvey.questions = questions;
+            delete newSurvey.sections;
+            return models.survey.createSurvey(newSurvey)
+                .then(id => {
+                    const survey = _.cloneDeep(hxSurvey.server(surveyIndex));
+                    survey.id = id;
+                    hxSurvey.push(newSurvey, survey);
+                });
+        });
+    });
+
+    const verifySurveyFn = function (index) {
+        return function () {
+            const survey = _.cloneDeep(hxSurvey.server(index));
+            return models.survey.getSurvey(survey.id)
+                .then(serverSurvey => {
+                    serverSurvey.questions.forEach((question, index) => {
+                        const ruleId = _.get(question, 'skip.rule.id');
+                        if (ruleId) {
+                            const newRuleId = survey.questions[index].skip.rule.id;
+                            question.skip.rule.id = newRuleId;
+                        }
+                    });
+                    delete survey.sections;
+                    expect(serverSurvey).to.deep.equal(survey);
+                });
+        };
+    };
+
+    _.range(surveyCount, 2 * surveyCount).forEach(surveyIndex => {
+        it(`verify survey ${surveyIndex}`, verifySurveyFn(surveyIndex));
+    });
 });
