@@ -46,6 +46,30 @@ _.set(schema, 'definitions.newSurveyQuestion', {
                 $ref: '#/definitions/questionMeta'
             },
             required: { type: 'boolean' },
+            skip: {
+                type: 'object',
+                required: ['count', 'rule'],
+                properties: {
+                    count: {
+                        type: 'integer',
+                        minimum: 1
+                    },
+                    rule: {
+                        type: 'object',
+                        required: ['logic'],
+                        properties: {
+                            logic: {
+                                type: 'string'
+                            },
+                            answer: {
+                                $ref: '#/definitions/newSkipAnswer'
+                            }
+                        },
+                        additionalProperties: false
+                    }
+                },
+                additionalProperties: false
+            },
             actions: {
                 $ref: '#/definitions/newActions'
             }
@@ -73,6 +97,30 @@ _.set(schema, 'definitions.newSurveyQuestion', {
                     additionalProperties: false
                 }
             },
+            skip: {
+                type: 'object',
+                required: ['count', 'rule'],
+                properties: {
+                    count: {
+                        type: 'integer',
+                        minimum: 1
+                    },
+                    rule: {
+                        type: 'object',
+                        required: ['logic'],
+                        properties: {
+                            logic: {
+                                type: 'string'
+                            },
+                            answer: {
+                                $ref: '#/definitions/newSkipAnswer'
+                            }
+                        },
+                        additionalProperties: false
+                    }
+                },
+                additionalProperties: false
+            },
             actions: {
                 $ref: '#/definitions/newActions'
             }
@@ -92,6 +140,30 @@ _.set(schema, 'definitions.newSurveyQuestion', {
             oneOfChoices: {
                 type: 'array',
                 items: { type: 'string', minLength: 1 }
+            },
+            skip: {
+                type: 'object',
+                required: ['count', 'rule'],
+                properties: {
+                    count: {
+                        type: 'integer',
+                        minimum: 1
+                    },
+                    rule: {
+                        type: 'object',
+                        required: ['logic'],
+                        properties: {
+                            logic: {
+                                type: 'string'
+                            },
+                            answer: {
+                                $ref: '#/definitions/newSkipAnswer'
+                            }
+                        },
+                        additionalProperties: false
+                    }
+                },
+                additionalProperties: false
             },
             actions: {
                 $ref: '#/definitions/newActions'
@@ -120,6 +192,30 @@ _.set(schema, 'definitions.newSurveyQuestion', {
                     },
                     additionalProperties: false
                 }
+            },
+            skip: {
+                type: 'object',
+                required: ['count', 'rule'],
+                properties: {
+                    count: {
+                        type: 'integer',
+                        minimum: 1
+                    },
+                    rule: {
+                        type: 'object',
+                        required: ['logic'],
+                        properties: {
+                            logic: {
+                                type: 'string'
+                            },
+                            answer: {
+                                $ref: '#/definitions/newSkipAnswer'
+                            }
+                        },
+                        additionalProperties: false
+                    }
+                },
+                additionalProperties: false
             },
             actions: {
                 $ref: '#/definitions/newActions'
