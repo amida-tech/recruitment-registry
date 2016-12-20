@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import Immutable from 'immutable';
+import {groupBy} from 'lodash';
 
 import SurveyListSection from './SurveySection';
 
@@ -10,18 +11,37 @@ export class SurveyList extends Component {
         super();
     }
 
+
     render() {
 
-        const sorted = {
-            surveysToComplete: [],
-            surveysToUpdate: [],
-            surveysCompleted: []
-        };
 
+
+        // function sortSurveys(surveys) {
+        //     const sorted = {
+        //         new: [],
+        //         surveysToUpdate: [],
+        //         completed: []
+        //     };
+        //
+        //     surveys.forEach((survey) => {
+        //         sorted[survey.status].push(survey);
+        //     });
+        //
+        //     return sorted;
+        // }
+        //
+        // const surveys = sortSurveys(this.props.surveys);
+
+
+
+        // console.log(this.props.surveys.size);
+        // // const surveys = groupBy(this.props.surveys, 'status');
+        // console.log("SURVAYS ");
+        // console.log(surveys);
 
 
         const surveys = this.props.surveys;
-        const total = this.props.surveys.length;
+        const total = surveys.length;
         // TODO: Implement completed
         const completed = 2;
 
