@@ -16,7 +16,7 @@ const ConditionalSurveyGenerator = (function () {
         '1-5': { type: 'choice', logic: 'equals', count: 1 },
         '2-3': { type: 'bool', logic: 'equals', count: 2 },
         '3-0': { type: 'text', logic: 'exists', count: 1 },
-        '4-2': { type: 'choices', logic: 'equals', count: 2}
+        '4-2': { type: 'choices', logic: 'equals', count: 2 }
     };
 
     const requiredOverrides = {
