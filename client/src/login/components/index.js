@@ -1,36 +1,46 @@
 import React, { Component} from 'react';
 import { connect } from 'react-redux';
 import Form from './login-form';
-import { login } from '../../login/actions';
+import * as actions from '../actions';
 
 export class LoginContainer extends Component {
   render() {
-    const dispatch = this.props.dispatch;
-    const { formState, currentlySending } = this.props.data;
-    const { loggedIn } = this.props.loggedIn;
+    const formState = this.props.data.get('formState');
     return (
-      <div> { !loggedIn ? (
-        <div className="form-page__wrapper">
-          <div className="form-page__form-wrapper">
-            <div className="form-page__form-header">
-              <h2 className="form-page__form-heading">Login</h2>
-            </div>
-            <Form dispatch={dispatch} data={formState} location={location} history={this.props.history} onSubmit={::this._login} btnText={"LoginContainer"} currentlySending={currentlySending}/>
-          </div>
-        </div>) : (<h3>You are already logged in :)</h3>) }
+      <div className="login">
+        <div id="utility--background" className="blue"></div>
+        <div className="login--inputContainer">
+        <Form data={formState}
+                location={location}
+                vocab={this.props.vocab}
+                history={this.props.history}
+                changeForm={::this._changeForm}
+                onSubmit={::this._login}
+                btnText={this.props.vocab.get('SIGN_IN')} />
+                </div>
       </div>
     );
   }
 
-  _login(username, password) {
-    this.props.dispatch(login(username, password));
+  _login(evt) {
+    evt.preventDefault();
+
+    var username = this.props.data.getIn(['formState', 'username'])
+    var password = this.props.data.getIn(['formState', 'password'])
+
+    this.props.dispatch(actions.login(username, password));
+  }
+
+  _changeForm(evt) {
+    this.props.dispatch(actions.update(evt.target.id, evt.target.value))
   }
 }
 
-const mapStateToProps = function(store) {
+//const mapStateToProps = function(store) {
+function mapStateToProps(store) {
   return {
-    data: store.login,
-    loggedIn: store.loggedIn
+    data: store.get('login'),
+    vocab: store.getIn(['settings', 'language', 'vocabulary'])
   };
 }
 

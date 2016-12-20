@@ -2,6 +2,7 @@
 logs
 *.log
 npm-debug.log*
+.env
 
 # Runtime data
 pids
@@ -31,3 +32,4 @@ bower_components
 .node_repl_history
 .idea
 *config.js
+client/src/config/production.js

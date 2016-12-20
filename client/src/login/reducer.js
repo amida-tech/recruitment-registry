@@ -1,25 +1,17 @@
-import * as t from './actionTypes';
+import * as actionTypes from './actionTypes';
 
-const assign = Object.assign || require('object.assign');
-
-const initialState = {
-  formState: {
-    username: '',
-    password: ''
-  },
-  currentlySending: false
-};
-
-export default (state = initialState, action) => {
+export default (state, action) => {
   switch (action.type) {
-    case t.CHANGE_FORM:
-      return assign({}, state, {
-        formState: action.newState
-      });
-    case t.SENDING_REQUEST:
-      return assign({}, state, {
-        currentlySending: action.sending
-      });
+    case actionTypes.UPDATE_CREDENTIALS:
+      return state.setIn(['formState', action.name], action.value);
+    case actionTypes.LOGIN_ERROR:
+      return state.setIn(['formState', 'hasErrors'], true);
+    case actionTypes.LOGIN_SUCCESS:
+      return state.setIn(['formState', 'hasErrors'], false);
+    case actionTypes.GET_USER_SUCCESS:
+      return state.merge(state, {user: action.payload});
+    case actionTypes.LOGOUT:
+      return state.merge(state, {isAuthenticated: false});
     default:
       return state;
   }

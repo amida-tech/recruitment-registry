@@ -1,18 +1,18 @@
-//
-// Import application from app.js
-//
-const app = require('./app');
+'use strict';
 
-//
-// Import config from config.js
-//
 const config = require('./config');
 
-//
-// Start an instance of the app on the port specified in the proper
-// NODE_ENV config obj. It's okay to log synchronously here on server
-// initialization.
-//
-app.listen(config.port, function() {
-  console.log('Server started at ', config.port);
+const app = require('./app');
+const appgen = require('./app-generator');
+
+appgen.initialize(app, {}, function (err) {
+    if (err) {
+        console.log('Server failed to start due to error: %s', err);
+    } else {
+        app.listen(config.port, function () {
+            console.log('Server started at ', config.port);
+        });
+    }
 });
+
+module.exports = app;

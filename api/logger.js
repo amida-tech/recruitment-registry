@@ -1,14 +1,15 @@
-const winston = require('winston');
-const expressWinston = require('express-winston');
+'use strict';
 
-module.exports = expressWinston.logger({
-  transports: [
-    new winston.transports.Console({
-      json: true,
-      colorize: true
-    })
-  ],
-  msg: "HTTP {{req.method}} {{req.url}}",
-  expressFormat: true,
-  colorize: true
+const winston = require('winston');
+
+const config = require('./config');
+
+module.exports = new(winston.Logger)({
+    transports: [
+        new winston.transports.Console({
+            json: true,
+            colorize: true
+        })
+    ],
+    level: config.logging.level
 });

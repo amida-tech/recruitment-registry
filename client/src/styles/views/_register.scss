@@ -1,0 +1,65 @@
+.register {
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	position: fixed;
+	@extend .columns;
+	.subtitle {
+		position:absolute;
+		top: 150px;
+		left: 50%;
+		transform: translate(-50% ,-50%);
+		font-weight: bold;
+		color: $color-white;
+	}
+	.register--inputContainer {
+		position: absolute;
+		top: 280px;
+		left: 50%;
+		transform: translate(-50% ,-50%);
+		margin: 0 auto;
+		border: 1px solid $gap-medium-grey;
+		padding: 20px;
+		border-radius: 4px;
+		width: 50%;
+		max-width: 540px;
+		@extend .utility--shadow-1;
+		background-color: $gap-white;
+		.form {
+			h1 {
+				margin:0;
+				font-family: $ui-text-font-stack;
+				font-size: 16px;
+				color: $gap-dark-grey;
+				text-transform: uppercase;
+				line-height: 24px;
+			}
+			// label {
+			// 	display: none;
+			// }
+			a {
+				float: right;
+				vertical-align: baseline;
+				margin-top: 10px;
+				font-size: 14px;
+			}
+			input[type=radio],
+			input.radio{
+				float:left;
+				clear: none;
+				width: 5%;
+				margin: 2px 0 0 2px;
+			},
+			input[type=text],
+			input[type=password],
+			input[type=email],
+			input.text{
+				top:20px;
+				margin-bottom:22px;
+			}
+			.controls {
+			}
+		}
+	}
+}

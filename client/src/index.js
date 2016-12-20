@@ -1,47 +1,117 @@
 import App from './app';
 import routes from './routes';
 import Layout from './layout/index';
-import auth from './utils/auth';
-import login from './login';
-import register from './register';
-import * as t from './login/actionTypes';
-
-const assign = Object.assign || require('object.assign');
+import { LoginReducer } from './login';
+import { RegisterReducer } from './register';
+import { ProfileReducer } from './profile';
+import surveyBuilder from './surveyBuilder';
+import { SurveyListReducer } from './surveylist';
+import { SurveyReducer } from './survey';
+import { AdminSurveyReducer } from './admin/survey';
+import i18n from './i18n/en.json';
 
 export const initialState = {
+  title: "GAP",
+  settings: {
+    language: {
+      choice: 'en',
+      vocabulary: i18n
+    }
+  },
   login: {
     formState: {
       username: '',
       password: ''
     },
-    currentlySending: false
+    user: {
+      username: "",
+      role: "",
+      id: ""
+    }
+  },
+  auth: {
+    isAuthenticated: false
   },
   register: {
-    formState: {
+    newUserProfile: {
+    user: {
       username: '',
-      password: ''
+      password: '',
+      role: 'participant',
+      email: ''
     },
-    currentlySending: false
+    answers: []
   },
-  loggedIn: auth.loggedIn()
-};
-
-export const reducers = {
-  [login.constants.NAME]: login.reducer,
-  [register.constants.NAME]: register.reducer,
-  loggedIn: (state = initialState, action) => {
-    switch (action.type) {
-      case t.SET_AUTH:
-        return assign({}, state, {
-          loggedIn: action.newState
-        });
-      default:
-        return state;
+    survey: {
+      questions: []
+    },
+    availableEthnicities: [
+      "Caucasian",
+      "Hispanic",
+      "African",
+      "Asian"
+    ],
+    availableGenders: [
+      "male",
+      "female",
+      "other"
+    ]
+  },
+  profile: {
+    user: {
+      name: ""
+    },
+    survey: {
+      questions: []
+    }
+  },
+  surveyBuilder: surveyBuilder.reducer.initialState,
+  surveys: [],
+  survey: {
+    selectedSurvey: [],
+    surveyAnswers: {
+      'surveyId': 0,
+      'answers': []
+    }
+  },
+  adminSurvey: {
+    selectedSurvey: [],
+    surveyAnswers: {
+      'surveyId': 0,
+      'answers': []
     }
   }
 };
 
-
+export const reducers = {
+  login: LoginReducer,
+  register: RegisterReducer,
+  profile: ProfileReducer,
+  surveyBuilder: surveyBuilder.reducer,
+  surveys: SurveyListReducer,
+  survey: SurveyReducer,
+  adminSurvey: AdminSurveyReducer,
+  auth: (state, action) => {
+    switch (action.type) {
+      case "LOGIN_SUCCESS":
+        return state.merge(state, {isAuthenticated: true});
+      case "LOGOUT":
+        return state.merge(state, {isAuthenticated: false});
+      default:
+        return state
+    }
+  },
+  title: state => state,
+  settings: (state, action) => {
+    switch (action.type) {
+      case "CHANGE_LANGUAGE":
+        var choice = state.getIn(['language','choice']) == 'en' ? 'es' : 'en';
+        return state.setIn(['language'], {'choice': choice, 'vocabulary': require('./i18n/'+choice+'.json')});
+      default:
+        return state;
+      }
+    }
+};
 
 import './styles/main.scss';
 

@@ -1,3 +1,4 @@
 export const CHANGE_FORM = 'register/CHANGE_FORM';
-export const SET_AUTH = 'register/SET_AUTH';
-export const SENDING_REQUEST = 'register/SENDING_REQUEST';
+export const GET_SURVEY = 'GET_SURVEY';
+export const UPDATE_REGISTER_ANSWERS = 'UPDATE_REGISTER_ANSWERS';
+export const UPDATE_REGISTER_USER = 'UPDATE_REGISTER_USER';

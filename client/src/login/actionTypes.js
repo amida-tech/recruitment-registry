@@ -1,3 +1,6 @@
-export const CHANGE_FORM = 'CHANGE_FORM';
-export const SET_AUTH = 'SET_AUTH';
-export const SENDING_REQUEST = 'SENDING_REQUEST';
+export const UPDATE_CREDENTIALS = 'UPDATE_CREDENTIALS';
+export const LOGIN = 'LOGIN';
+export const LOGOUT = 'LOGOUT';
+export const LOGIN_ERROR = 'LOGIN_ERROR';
+export const LOGIN_SUCCESS = 'LOGIN_SUCCESS';
+export const GET_USER_SUCCESS = 'GET_USER_SUCCESS';

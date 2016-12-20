@@ -1,13 +1,19 @@
 import React, { Component } from 'react';
-import Nav from '../nav/index';
+import Nav from '../nav';
 import { connect } from 'react-redux';
 
 class Layout extends Component {
+  componentWillReceiveProps(nextProps){
+    this.vocab = nextProps.vocab;
+  }
+
   render() {
+    const displayClass = displayAltClass(this.props.location.pathname);
+    const altClass = displayClass ? 'alt-nav' : '';
     return (
-      <div>
+      <div className={altClass}>
         <Nav />
-        <main id="content" className="container">{this.props.children}</main>
+        <main id="content">{this.props.children}</main>
       </div>
     );
   }
@@ -15,10 +21,21 @@ class Layout extends Component {
 
 Layout.displayName = 'Layout';
 
-function select(state) {
+function mapStateToProps(state, ownProps) {
   return {
-    data: state
+    data: state,
+    vocab: state.getIn(['settings', 'language', 'vocabulary']),
+    ...ownProps
   };
 }
 
-export default connect(select)(Layout);
+function displayAltClass(pathName) {
+  const paths = ['/login', '/register', '/dashboard'];
+  if (paths.indexOf(pathName) >= 0) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+export default connect(mapStateToProps)(Layout);

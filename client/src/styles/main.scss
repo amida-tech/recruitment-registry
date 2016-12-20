@@ -1,13 +1,45 @@
 @charset "UTF-8";
-@import "~bootstrap/scss/bootstrap";
-@import 'vendor/_normalize';
-@import 'utils/_variables';
-@import 'base/_base';
-@import 'layout/_header';
-@import 'layout/_footer';
-@import 'components/_buttons';
-@import 'components/_home';
-@import 'components/_form-page';
-@import 'components/_form';
-@import 'components/_nav';
-@import 'components/_loading-indicator';
+
+//Add Bulma Instead of Flexbox Grid
+@import '../../node_modules/normalize.css/normalize.css';
+@import '../../node_modules/animate.css/animate.css';
+@import '../../node_modules/bulma/bulma.sass';
+@import '../../node_modules/font-awesome/scss/font-awesome.scss';
+//@import '../../node_modules/flexboxgrid/css/flexboxgrid.css';
+@import 'vendor/flexboxgrid';
+
+
+// Global variables and UI chrome
+@import 'utils/variables';
+@import 'utils/ui';
+
+// Theme variables are made available via import in '~/client/src/styles/theme/*' read the README.md in that directory for more.
+@import 'theme/config';
+
+// Base styling. Applies to all pages
+@import 'base/base';
+
+// Header and footer
+@import 'layout/header';
+@import 'layout/footer';
+
+// Various UI components. (Comments are provided for utilization, review each document for expample utilization.)
+@import 'components/buttons';
+@import 'components/checkbox';
+@import 'components/displayBox';
+@import 'components/form';
+@import 'components/input';
+@import 'components/loading-indicator';
+@import 'components/nav';
+@import 'components/radio';
+@import 'components/select';
+@import 'components/text';
+@import 'components/survey';
+
+// View specific componenets.
+@import 'views/login';
+@import 'views/register';
+@import 'views/home';
+@import 'views/dashboard';
+@import 'views/surveyList';
+@import 'views/survey';
