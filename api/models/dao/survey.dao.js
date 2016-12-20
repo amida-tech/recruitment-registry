@@ -37,8 +37,9 @@ module.exports = class SurveyDAO extends Translatable {
                         .then(({ id, choices }) => {
                             const inputQuestion = questions[q.index];
                             questions[q.index] = { id, required: inputQuestion.required };
-                            const skip = inputQuestion.skip;
+                            let skip = inputQuestion.skip;
                             if (skip) {
+                                skip = _.cloneDeep(skip);
                                 const choiceText = _.get(skip, 'rule.answer.choice');
                                 if (choiceText) {
                                     if (!choices) {
@@ -50,6 +51,23 @@ module.exports = class SurveyDAO extends Translatable {
                                     }
                                     const skipWithId = Object.assign({}, skip);
                                     skipWithId.rule.answer.choice = serverChoice.id;
+                                    questions[q.index].skip = skipWithId;
+                                    return;
+                                }
+                                const rawChoices = _.get(skip, 'rule.answer.choices');
+                                if (rawChoices) {
+                                    if (!choices) {
+                                        return RRError.reject('surveySkipChoiceForNonChoice');
+                                    }
+                                    const skipWithId = Object.assign({}, skip);
+                                    skipWithId.rule.answer.choices.forEach(skipChoice => {
+                                        const serverChoice = choices.find(choice => choice.text === skipChoice.text);
+                                        if (!serverChoice) {
+                                            throw new RRError('surveySkipChoiceNotFound');
+                                        }
+                                        skipChoice.id = serverChoice.id;
+                                        delete skipChoice.text;
+                                    });
                                     questions[q.index].skip = skipWithId;
                                     return;
                                 }

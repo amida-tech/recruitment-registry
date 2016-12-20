@@ -15,7 +15,8 @@ const ConditionalSurveyGenerator = (function () {
         '0-3': { type: 'choice', logic: 'equals', count: 3 },
         '1-5': { type: 'choice', logic: 'equals', count: 1 },
         '2-3': { type: 'bool', logic: 'equals', count: 2 },
-        '3-0': { type: 'text', logic: 'exists', count: 1 }
+        '3-0': { type: 'text', logic: 'exists', count: 1 },
+        '4-2': { type: 'choices', logic: 'equals', count: 2}
     };
 
     const requiredOverrides = {
@@ -26,7 +27,10 @@ const ConditionalSurveyGenerator = (function () {
         '2-4': true,
         '2-5': true,
         '3-0': true,
-        '3-1': true
+        '3-1': true,
+        '4-2': false,
+        '4-3': true,
+        '4-4': true
     };
 
     return class ConditionalSurveyGenerator extends SurveyGenerator {
@@ -77,7 +81,7 @@ const shared = new SharedSpec(generator);
 describe('survey (conditional questions) unit', function () {
     before(shared.setUpFn());
 
-    let surveyCount = 4;
+    let surveyCount = 5;
 
     const hxSurvey = new SurveyHistory();
     const tests = new surveyCommon.SpecTests(generator, hxSurvey);

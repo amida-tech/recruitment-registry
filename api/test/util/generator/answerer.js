@@ -123,12 +123,17 @@ module.exports = class Answerer {
             return { choice: this.selectChoice(choices) };
         }
         if (type === 'choices') {
-            const choice = this.selectChoice(question.choices);
-            const answer = { choice: choice.text };
-            if (choice.type && (choice.type !== 'bool')) {
-                Object.assign(answer, this[choice.type]());
-            }
-            return answer;
+            const answers = _.range(2).map(() => {
+                const choice = this.selectChoice(question.choices);
+                this.answerIndex += 2;
+                const answer = { text: choice.text };
+                if (choice.type !== 'bool') {
+                    Object.assign(answer, this[choice.type]());
+                }
+                return answer;
+            });
+            _.sortBy(answers, 'id');
+            return { choices: answers };
         }
         return this[type](question);
     }

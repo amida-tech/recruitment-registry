@@ -70,7 +70,7 @@ const choiceValueToDBFormat = {
             const key = keys[0];
             const fn = answerValueToDBFormat[key];
             if (!fn) {
-                throw new RRError('answerChoiceNotUnderstood');
+                throw new RRError('answerAnswerNotUnderstood', key);
             }
             return Object.assign({ questionChoiceId }, fn(choice[key])[0]);
         });
