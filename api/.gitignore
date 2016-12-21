@@ -17,3 +17,4 @@ sandbox
 env.production.user
 env.production.head
 test/generated
+migration/sequelize-meta.json

@@ -5,7 +5,9 @@ const Sequelize = require('sequelize');
 const config = require('../../config');
 const logger = require('../../logger');
 
-const sequelize = new Sequelize(config.db.name, config.db.user, config.db.pass, {
+const dbName = process.env.RECREG_DB_NAME_OVERRIDE || config.db.name;
+
+const sequelize = new Sequelize(dbName, config.db.user, config.db.pass, {
     host: config.db.host,
     dialect: config.db.dialect,
     dialectOptions: {
@@ -28,8 +30,6 @@ const QuestionAction = sequelize.import('./question-action.model');
 const QuestionActionText = sequelize.import('./question-action-text.model');
 const QuestionText = sequelize.import('./question-text.model');
 const Question = sequelize.import('./question.model');
-const AnswerRule = sequelize.import('./answer-rule.model');
-const AnswerRuleValue = sequelize.import('./answer-rule-value.model');
 const SurveyQuestion = sequelize.import('./survey-question.model');
 const AnswerType = sequelize.import('./answer-type.model');
 const Answer = sequelize.import('./answer.model');
@@ -51,10 +51,6 @@ const Section = sequelize.import('./section.model');
 const SmtpText = sequelize.import('./smtp-text.model');
 const Smtp = sequelize.import('./smtp.model');
 const UserSurvey = sequelize.import('./user-survey.model');
-const Assessment = sequelize.import('./assessment.model');
-const AssessmentSurvey = sequelize.import('./assessment-survey.model');
-const UserAssessment = sequelize.import('./user-assessment.model');
-const UserAssessmentAnswer = sequelize.import('./user-assessment-answer.model');
 
 Answer.belongsTo(Question, {
     as: 'question',
@@ -68,21 +64,6 @@ Answer.belongsTo(Question, {
         }
     }
 });
-
-SurveyQuestion.belongsTo(Question, {
-    as: 'question',
-    foreignKey: {
-        allowNull: false,
-        fieldName: 'questionId',
-        field: 'question_id',
-        references: {
-            model: 'question',
-            key: 'id'
-        }
-    }
-});
-
-SurveyQuestion.belongsTo(AnswerRule, { as: 'skip', foreignKey: 'answer_rule_id' });
 
 module.exports = {
     Sequelize,
@@ -98,8 +79,6 @@ module.exports = {
     QuestionActionText,
     Question,
     QuestionText,
-    AnswerRule,
-    AnswerRuleValue,
     SurveyQuestion,
     AnswerType,
     Answer,
@@ -117,9 +96,5 @@ module.exports = {
     Language,
     SmtpText,
     Smtp,
-    UserSurvey,
-    Assessment,
-    AssessmentSurvey,
-    UserAssessment,
-    UserAssessmentAnswer
+    UserSurvey
 };
