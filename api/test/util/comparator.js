@@ -32,6 +32,26 @@ const comparator = {
             });
             expect(server.actions).to.deep.equal(expected.actions);
         }
+        if (expected.skip && expected.skip.rule && server.skip && server.skip.rule) {
+            expected.skip.rule.id = server.skip.rule.id;
+            const answer = expected.skip.rule.answer;
+            if (answer && answer.choiceText) {
+                const skipChoice = server.choices.find(choice => (choice.text === answer.choiceText));
+                answer.choice = skipChoice.id;
+                delete answer.choiceText;
+            }
+            if (answer && answer.choices) {
+                answer.choices.forEach(answerChoice => {
+                    const skipChoice = server.choices.find(choice => (choice.text === answerChoice.text));
+                    answerChoice.id = skipChoice.id;
+                    delete answerChoice.text;
+                    if (Object.keys(answerChoice).length === 1) {
+                        answerChoice.boolValue = true;
+                    }
+                });
+                answer.choices = _.sortBy(answer.choices, 'id');
+            }
+        }
         expect(server).to.deep.equal(expected);
         return expected;
     },

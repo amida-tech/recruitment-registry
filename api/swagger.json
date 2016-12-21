@@ -2490,6 +2490,30 @@
                 "id": {
                     "type": "integer"
                 },
+                "skip": {
+                    "type": "object",
+                    "required": ["count", "rule"],
+                    "properties": {
+                        "count": {
+                            "type": "integer",
+                            "minimum": 1
+                        },
+                        "rule": {
+                            "type": "object",
+                            "required": ["logic"],
+                            "properties": {
+                                "logic": {
+                                    "type": "string"
+                                },
+                                "answer": {
+                                    "$ref": "#/definitions/newSkipAnswer"
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    },
+                    "additionalProperties": false
+                },
                 "text": {
                     "type": "string",
                     "minLength": 1
@@ -2656,6 +2680,34 @@
                 },
                 "required": {
                     "type": "boolean"
+                },
+                "skip": {
+                    "type": "object",
+                    "required": ["count", "rule"],
+                    "properties": {
+                        "count": {
+                            "type": "integer",
+                            "minimum": 1
+                        },
+                        "rule": {
+                            "type": "object",
+                            "required": ["id", "logic"],
+                            "properties": {
+                                "id": {
+                                    "type": "integer",
+                                    "minimum": 1
+                                },
+                                "logic": {
+                                    "type": "string"
+                                },
+                                "answer": {
+                                    "$ref": "#/definitions/answer"
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    },
+                    "additionalProperties": false
                 },
                 "choices": {
                     "type": "array",
@@ -2950,6 +3002,114 @@
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/choicesItem"
+                    },
+                    "minItems": 1
+                },
+                "textValue": {
+                    "type": "string"
+                },
+                "boolValue": {
+                    "type": "boolean"
+                },
+                "dateValue": {
+                    "type": "string",
+                    "format": "date"
+                },
+                "numberValue": {
+                    "type": "number"
+                },
+                "integerValue": {
+                    "type": "integer"
+                },
+                "feetInchesValue": {
+                    "type": "object",
+                    "properties": {
+                        "feet": {
+                            "type": "integer"
+                        },
+                        "inches": {
+                            "type": "integer"
+                        }
+                    },
+                    "minProperties": 1,
+                    "additionalProperties": false
+                },
+                "bloodPressureValue": {
+                    "type": "object",
+                    "required": ["systolic", "diastolic"],
+                    "properties": {
+                        "systolic": {
+                            "type": "integer"
+                        },
+                        "diastolic": {
+                            "type": "integer"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "yearValue": {
+                    "type": "string",
+                    "pattern": "\\d{4}"
+                },
+                "monthValue": {
+                    "type": "string",
+                    "pattern": "\\d{2}"
+                },
+                "dayValue": {
+                    "type": "string",
+                    "pattern": "\\d{2}"
+                }
+            },
+            "minProperties": 1,
+            "maxProperties": 1,
+            "additionalProperties": false
+        },
+         "newSkipChoicesItem": {
+            "type": "object",
+            "properties": {
+                "text": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "boolValue": {
+                    "type": "boolean"
+                },
+                "integerValue": {
+                    "type": "integer"
+                },
+                "textValue": {
+                    "type": "string"
+                },
+                "yearValue": {
+                    "type": "string",
+                    "pattern": "\\d{4}"
+                },
+                "monthValue": {
+                    "type": "string",
+                    "pattern": "\\d{2}"
+                },
+                "dayValue": {
+                    "type": "string",
+                    "pattern": "\\d{2}"
+                }
+            },
+            "maxProperties": 2
+        },
+        "newSkipAnswer": {
+            "type": "object",
+            "properties": {
+                "choiceText": {
+                    "type": "string"
+                },
+                "choice": {
+                    "type": "integer"
+                },
+                "choices": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/newSkipChoicesItem"
                     },
                     "minItems": 1
                 },

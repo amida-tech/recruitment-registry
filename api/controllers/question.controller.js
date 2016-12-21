@@ -19,7 +19,7 @@ exports.createQuestion = function (req, res) {
             .catch(shared.handleError(res));
     } else {
         models.question.createQuestion(question)
-            .then(id => res.status(201).json({ id }))
+            .then(({ id }) => res.status(201).json({ id }))
             .catch(shared.handleError(res));
     }
 };

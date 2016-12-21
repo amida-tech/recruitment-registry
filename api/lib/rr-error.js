@@ -158,3 +158,12 @@ errors.answerMultipleTypeAnswers = {
 errors.answerAnswerNotUnderstood = {
     msg: 'Unknown answer value key: $0.'
 };
+
+errors.surveySkipChoiceForNonChoice = {
+    msg: 'Skip rule choice specified for non choice/choices question.'
+
+};
+
+errors.surveySkipChoiceNotFound = {
+    msg: 'Skup rule choice is not found.'
+};
