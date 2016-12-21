@@ -67,7 +67,18 @@ Answer.belongsTo(Question, {
     }
 });
 
-SurveyQuestion.belongsTo(Question, { as: 'question', foreignKey: 'question_id' });
+SurveyQuestion.belongsTo(Question, {
+    as: 'question',
+    foreignKey: {
+        allowNull: false,
+        fieldName: 'questionId',
+        field: 'question_id',
+        references: {
+            model: 'question',
+            key: 'id'
+        }
+    }
+});
 
 module.exports = {
     Sequelize,

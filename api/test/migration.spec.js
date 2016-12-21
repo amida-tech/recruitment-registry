@@ -3,6 +3,8 @@
 process.env.NODE_ENV = 'test';
 process.env.RECREG_DB_NAME_OVERRIDE = 'recregmigrate';
 
+const fs = require('fs');
+const path = require('path');
 const chai = require('chai');
 
 const db = require('../models/db');
@@ -27,7 +29,20 @@ describe('migration spec', function () {
         return dbMigrate.sequelize.sync({ force: true });
     });
 
-    // apply changes to dbMigrate when available
+    it('apply all migrations', function () {
+        const queryInterface = dbMigrate.sequelize.getQueryInterface();
+        const Sequelize = dbMigrate.Sequelize;
+        const migrateDirectory = path.join(__dirname, '../migration/migrations');
+        const filenames = fs.readdirSync(migrateDirectory);
+        filenames.sort();
+        const pxs = filenames.map(filename => {
+            const filepath = path.join(migrateDirectory, filename);
+            const m = require(filepath);
+            return m.up(queryInterface, Sequelize);
+        });
+        return db.sequelize.Promise.all(pxs);
+    });
+
     let tables;
     it('get/compare table list', function () {
         return db.sequelize.getQueryInterface().showAllTables()
