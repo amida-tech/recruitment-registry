@@ -11,6 +11,8 @@ const initialState = {
 
 var immutableState = Immutable.fromJS(initialState);
 
+
+// TODO: This function is too big.
 export default (state = immutableState, action) => {
   switch (action.type) {
     case actionTypes.UPDATE_SURVEY_ANSWERS:

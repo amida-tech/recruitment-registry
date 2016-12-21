@@ -173,7 +173,7 @@ const apiProvider = store => next => action => {
       break;
     case 'GET_ALL_SURVEYS':
       request
-        .get(apiUrl + '/surveys')
+        .get(apiUrl + '/user-surveys')
         .withCredentials()
         .end((error, response) => {
           if (!error) {

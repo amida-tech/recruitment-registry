@@ -96,7 +96,7 @@ $ mocha test/survey.model.spec.js --bail
 
 Each test in a file may depend on some of the previous tests so using flag `bail` is recommended.
 
-Most API resources are documented in snippets in the [integration document](./docs/api.md).  A script that exercises most snippets is [included](./docs/scripts/run-all.js).  This script however is not yet part of the testing suite and needs to be run independently and updated according to changes.
+Most API resources are documented in snippets in the [integration document](./docs/api.md).  A script that exercises most snippets is.  This script however is not yet part of the testing suite and needs to be run independently and updated according to changes.
 
 ## Postgres specific functionality
 <a name="postgresdepend"/>
@@ -194,12 +194,25 @@ There can be multiple `question_action` records for a question.  Order is preser
 
 Except account columns `email` and `password` in users table, none of the user facing columns ever overwrite a previous value and a history is always available.  There are a few overwriting columns such as `meta` in `survey` table.  These are mainly used for client level settings and do not contribute to any business logic.
 
+## Migration
+
+This project uses [sequelize-cli](https://github.com/sequelize/cli) for migrations.  The bootstrap model is located [here](./migration/models) and corresponds to the state of the database during first go-live.
+
+All migrations can be run using sequelize-cli](https://github.com/sequelize/cli) in migration directory
+```bash
+cd migration
+sequelize
+```
+
+Migration uses the `.env` file in the root directory.  Each run creates/updates a file named `sequelize-meta.json` in the migration directory.  This file must be preserved in this directory to avoid running the same migrations again.
+
 ## References
 
 - [Node.js](https://nodejs.org/en/)
 - [Express.js](https://expressjs.com/)
 - [Grunt](http://gruntjs.com/)
 - [Sequelize](http://docs.sequelizejs.com/en/v3/)
+- [Sequelize-Cli](https://github.com/sequelize/cli)
 - [Postgres](https://www.postgresql.org/)
 - [Sinon](http://sinonjs.org/)
 - [Mocha](http://mochajs.org/)
