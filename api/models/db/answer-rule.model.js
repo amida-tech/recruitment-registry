@@ -6,6 +6,10 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.ENUM('equals', 'exists'),
             allowNull: false
         },
+        createdAt: {
+            type: DataTypes.DATE,
+            field: 'created_at',
+        },
     }, {
         freezeTableName: true,
         createdAt: 'createdAt',

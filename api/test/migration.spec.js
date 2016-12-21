@@ -6,6 +6,7 @@ process.env.RECREG_DB_NAME_OVERRIDE = 'recregmigrate';
 const fs = require('fs');
 const path = require('path');
 const chai = require('chai');
+const _ = require('lodash');
 
 const db = require('../models/db');
 const dbMigrate = require('../migration/models');
@@ -58,12 +59,22 @@ describe('migration spec', function () {
             });
     });
 
+    const normalizeDescription = function (description) {
+        _.values(description, value => {
+            if (value.special) {
+                value.special.sort();
+            }
+        });
+    };
+
     it('compare table descriptions', function () {
         const pxs = tables.map(tableName => {
             return db.sequelize.getQueryInterface().describeTable(tableName)
                 .then(tableDescription => {
                     return dbMigrate.sequelize.getQueryInterface().describeTable(tableName)
                         .then(migrateTableDescription => {
+                            normalizeDescription(tableDescription);
+                            normalizeDescription(migrateTableDescription);
                             expect(migrateTableDescription).to.deep.equal(tableDescription);
                         });
                 });
