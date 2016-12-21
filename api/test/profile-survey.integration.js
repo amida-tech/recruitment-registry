@@ -9,8 +9,8 @@ const config = require('../config');
 const SharedIntegration = require('./util/shared-integration');
 const RRSuperTest = require('./util/rr-super-test');
 const SurveyHistory = require('./util/survey-history');
-const Generator = require('./util/entity-generator');
-const comparator = require('./util/client-server-comparator');
+const Generator = require('./util/generator');
+const comparator = require('./util/comparator');
 const translator = require('./util/translator');
 
 const expect = chai.expect;
@@ -81,18 +81,15 @@ describe('profile survey integration', function () {
     const verifyProfileSurveyFn = function (index) {
         return function (done) {
             store.get('/profile-survey', false, 200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const { exists, survey } = res.body;
                     expect(exists).to.equal(true);
                     const id = hxSurvey.id(index);
                     expect(survey.id).to.equal(id);
                     hxSurvey.updateServer(index, survey);
-                    comparator.survey(hxSurvey.client(index), survey)
-                        .then(done, done);
-                });
+                    comparator.survey(hxSurvey.client(index), survey);
+                })
+                .end(done);
         };
     };
 

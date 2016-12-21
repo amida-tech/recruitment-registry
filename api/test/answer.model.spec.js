@@ -6,9 +6,12 @@ const _ = require('lodash');
 
 const models = require('../models');
 const SharedSpec = require('./util/shared-spec');
-const Generator = require('./util/entity-generator');
-const AnswerHistory = require('./util/answer-history');
+const Generator = require('./util/generator');
+const comparator = require('./util/comparator');
+const History = require('./util/history');
+const SurveyHistory = require('./util/survey-history');
 const answerCommon = require('./util/answer-common');
+const questionCommon = require('./util/question-common');
 
 const expect = chai.expect;
 const generator = new Generator();
@@ -16,11 +19,15 @@ const shared = new SharedSpec(generator);
 
 describe('answer unit', function () {
     const testQuestions = answerCommon.testQuestions;
-    const hxAnswer = new AnswerHistory(testQuestions);
 
-    const hxUser = hxAnswer.hxUser;
-    const hxQuestion = hxAnswer.hxQuestion;
-    const hxSurvey = hxAnswer.hxSurvey;
+    const hxUser = new History();
+    const hxSurvey = new SurveyHistory();
+    const hxQuestion = new History();
+
+    const tests = new answerCommon.SpecTests(generator, hxUser, hxSurvey, hxQuestion);
+    const hxAnswers = tests.hxAnswer;
+
+    const questionTests = new questionCommon.SpecTests(generator, hxQuestion);
 
     before(shared.setUpFn());
 
@@ -29,7 +36,8 @@ describe('answer unit', function () {
     }
 
     for (let i = 0; i < 20; ++i) {
-        it(`create question ${i}`, shared.createQuestion(hxQuestion));
+        it(`create question ${i}`, questionTests.createQuestionFn());
+        it(`get question ${i}`, questionTests.getQuestionFn(i));
     }
 
     const createSurveyFn = function (qxIndices) {
@@ -50,82 +58,55 @@ describe('answer unit', function () {
         return it(`create survey ${index}`, createSurveyFn(surveyQuestion));
     });
 
-    const createTestFn = function (userIndex, surveyIndex, seqIndex, stepIndex) {
-        return function () {
-            const { answers, language } = hxAnswer.generateAnswers(userIndex, surveyIndex, seqIndex, stepIndex);
-            const input = {
-                userId: hxUser.id(userIndex),
-                surveyId: hxSurvey.id(surveyIndex),
-                answers
-            };
-            if (language) {
-                input.language = language;
-            }
-            return models.answer.createAnswers(input)
-                .then(function () {
-                    return models.answer.getAnswers({
-                            userId: hxUser.id(userIndex),
-                            surveyId: hxSurvey.id(surveyIndex)
-                        })
-                        .then(function (result) {
-                            const expected = hxAnswer.expectedAnswers(userIndex, surveyIndex, seqIndex);
-                            const actual = _.sortBy(result, 'questionId');
-                            expect(actual).to.deep.equal(expected);
-                        });
-                });
+    it('error: invalid answer property', function () {
+        const input = {
+            userId: hxUser.id(0),
+            surveyId: hxSurvey.id(0),
+            answers: [{
+                questionId: hxQuestion.id(0),
+                answer: {
+                    invalidValue: 'invalidValue'
+                }
+            }]
         };
-    };
+        return models.answer.createAnswers(input)
+            .then(shared.throwingHandler, shared.expectedErrorHandler('answerAnswerNotUnderstood', 'invalidValue'));
+    });
 
-    const updateTestFn = function (userIndex, surveyIndex, seqIndex, stepIndex) {
+    it('error: multiple answer properties', function () {
+        const input = {
+            userId: hxUser.id(0),
+            surveyId: hxSurvey.id(0),
+            answers: [{
+                questionId: hxQuestion.id(0),
+                answer: {
+                    invalidValue1: 'invalidValue1',
+                    invalidValue0: 'invalidValue0'
+                }
+            }]
+        };
+        return models.answer.createAnswers(input)
+            .then(shared.throwingHandler, shared.expectedErrorHandler('answerMultipleTypeAnswers', 'invalidValue0, invalidValue1'));
+    });
+
+    const listAnswersFn = function (userIndex, surveyIndex) {
         return function () {
-            const { answers, language } = hxAnswer.generateAnswers(userIndex, surveyIndex, seqIndex, stepIndex);
-            const input = {
-                userId: hxUser.id(userIndex),
-                surveyId: hxSurvey.id(surveyIndex),
-                answers
-            };
-            if (language) {
-                input.language = language;
-            }
-            return models.answer.createAnswers(input)
-                .then(function () {
-                    return models.answer.getAnswers({
-                            userId: hxUser.id(userIndex),
-                            surveyId: hxSurvey.id(surveyIndex)
-                        })
-                        .then(function (result) {
-                            const expected = hxAnswer.expectedAnswers(userIndex, surveyIndex, seqIndex);
-                            const actual = _.sortBy(result, 'questionId');
-                            expect(actual).to.deep.equal(expected);
-                        })
-                        .then(() => models.answer.listAnswers({
-                            userId: hxUser.id(userIndex),
-                            surveyId: hxSurvey.id(surveyIndex),
-                            scope: 'history-only',
-                            history: true
-                        }))
-                        .then((actual) => {
-                            actual = _.groupBy(actual, 'deletedAt');
-                            Object.keys(actual).forEach(key => actual[key].forEach(value => delete value.deletedAt));
-
-                            const expectedAnswers = hxAnswer.expectedRemovedAnswers(userIndex, surveyIndex, seqIndex);
-                            const keys = Object.keys(expectedAnswers).sort();
-                            const expected = {};
-                            keys.forEach(key => {
-                                const value = _.sortBy(expectedAnswers[key], 'questionId');
-                                if (value.length) {
-                                    expected[key] = value;
-                                }
-                            });
-                            const expectedKeys = _.sortBy(Object.keys(expectedAnswers), r => Number(r));
-                            const actualKeys = _.sortBy(Object.keys(actual), r => Number(r));
-                            expect(actualKeys.length).to.equal(expectedKeys.length);
-                            for (let i = 0; i < expectedKeys.length; ++i) {
-                                const modifiedAnswers = AnswerHistory.prepareClientAnswers(expectedAnswers[expectedKeys[i]]);
-                                const sortedActual = _.sortBy(actual[actualKeys[i]], 'questionId');
-                                expect(sortedActual).to.deep.equal(modifiedAnswers);
-                            }
-                        });
+            return models.answer.listAnswers({
+                    userId: hxUser.id(userIndex),
+                    surveyId: hxSurvey.id(surveyIndex),
+                    scope: 'history-only',
+                    history: true
+                })
+                .then((actual) => {
+                    actual = _.groupBy(actual, 'deletedAt');
+                    Object.keys(actual).forEach(key => actual[key].forEach(value => delete value.deletedAt));
+                    const expectedAnswers = hxAnswers.expectedRemovedAnswers(userIndex, surveyIndex);
+                    const expectedKeys = _.sortBy(Object.keys(expectedAnswers), r => Number(r));
+                    const actualKeys = _.sortBy(Object.keys(actual), r => Number(r));
+                    expect(actualKeys.length).to.equal(expectedKeys.length);
+                    for (let i = 0; i < expectedKeys.length; ++i) {
+                        comparator.answers(expectedAnswers[expectedKeys[i]], actual[actualKeys[i]]);
+                    }
                 });
         };
     };
@@ -141,15 +122,18 @@ describe('answer unit', function () {
 
     for (let i = 0; i < cases.length; ++i) {
         const { userIndex, surveyIndex, seqIndex } = cases[i];
-        const msg = `user ${userIndex} answers survey ${surveyIndex}-${seqIndex} step 0`;
-        it(msg, createTestFn(userIndex, surveyIndex, seqIndex, 0));
+        const questionIndices = testQuestions[surveyIndex].answerSequences[seqIndex][0];
+        it(`user ${userIndex} answers survey ${surveyIndex} (step 0)`, tests.answerSurveyFn(userIndex, surveyIndex, questionIndices));
+        it(`user ${userIndex} gets answers to survey ${surveyIndex} (step 0)`, tests.getAnswersFn(userIndex, surveyIndex));
     }
 
     for (let j = 1; j < 3; ++j) {
         for (let i = 0; i < cases.length; ++i) {
             const { userIndex, surveyIndex, seqIndex } = cases[i];
-            const msg = `user ${userIndex} answers survey ${surveyIndex}-${seqIndex} step ${j}`;
-            it(msg, updateTestFn(userIndex, surveyIndex, seqIndex, j));
+            const questionIndices = testQuestions[surveyIndex].answerSequences[seqIndex][j];
+            it(`user ${userIndex} answers survey ${surveyIndex} (step ${j})`, tests.answerSurveyFn(userIndex, surveyIndex, questionIndices));
+            it(`user ${userIndex} gets answers to survey ${surveyIndex} (step ${j})`, tests.getAnswersFn(userIndex, surveyIndex));
+            it('list user ${userIndex} survey ${surveyIndex} answer history (step ${j})', listAnswersFn(userIndex, surveyIndex));
         }
     }
 });

@@ -12,7 +12,7 @@ const config = require('../../config');
 
 const SharedIntegration = require('../util/shared-integration');
 const RRSuperTest = require('../util/rr-super-test');
-const Generator = require('../util/entity-generator');
+const Generator = require('../util/generator');
 const SurveyHistory = require('../util/survey-history');
 const surveyCommon = require('../util/survey-common');
 

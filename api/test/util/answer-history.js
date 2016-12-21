@@ -2,116 +2,122 @@
 
 const _ = require('lodash');
 
-const History = require('./entity-history');
-const Generator = require('./entity-generator');
-const jsutil = require('./test-jsutil');
-
-class AnswerHistory {
-    constructor(testQuestions) {
-        this.testQuestions = testQuestions;
-        this.hxAnswers = {};
-        this.hxUser = new History();
-        this.hxQuestion = new History();
-        this.hxSurvey = new History();
-        this.generator = new Generator();
-    }
-
-    _generateQxAnswer(questionIndex) {
-        if (questionIndex < 0) {
-            const question = this.hxQuestion.server(-questionIndex);
-            return {
-                questionId: question.id
-            };
-        } else {
-            const question = this.hxQuestion.server(questionIndex);
-            return this.generator.answerQuestion(question);
+const toAnswerRecord = function (answers, language) {
+    const remaining = answers.reduce((r, answer, index) => {
+        if (answer.answer) {
+            r[answer.questionId] = index;
         }
+        return r;
+    }, {});
+    language = language || 'en';
+    answers = answers.map(answer => {
+        const r = Object.assign({ language }, answer);
+        return r;
+    });
+    return { remaining, answers, removed: {} };
+};
+
+module.exports = class AnswerHistory {
+    constructor() {
+        this.historyIndexMap = new Map();
+        this.store = [];
     }
 
-    _updateHxAnswers(key, qxIndices, answers, language) {
-        const hx = this.hxAnswers[key] || (this.hxAnswers[key] = []);
-        const qxAnswers = answers.reduce((r, answer, index) => {
-            const qxIndex = qxIndices[index];
-            if (qxIndex >= 0) {
-                const result = _.cloneDeep(answer);
-                result.language = language || 'en';
-                r[qxIndex] = result;
-            }
-            return r;
-        }, {});
-        hx.push({ qxIndices, qxAnswers });
+    static key(userIndex, surveyIndex) {
+        return `${userIndex}-${surveyIndex}`;
     }
 
-    _pullExpectedAnswers(key) {
-        const answersSpec = this.hxAnswers[key];
-        const standing = jsutil.findStanding(_.map(answersSpec, 'qxIndices'));
-        return standing.reduce((r, answerIndices, index) => {
-            answerIndices.forEach((answerIndex) => {
-                const answer = answersSpec[index].qxAnswers[answerIndex];
-                r.push(answer);
+    updateRecords(userIndex, surveyIndex, answers) {
+        const records = this.getAll(userIndex, surveyIndex);
+        const timeIndex = records.length;
+        records.forEach(record => {
+            const remaining = record.remaining;
+            const removed = record.removed;
+            answers.forEach(({ questionId }) => {
+                if (remaining.hasOwnProperty(questionId)) {
+                    delete remaining[questionId];
+                    removed[questionId] = timeIndex;
+                }
             });
+        });
+    }
+
+    push(userIndex, surveyIndex, answers, language) {
+        this.updateRecords(userIndex, surveyIndex, answers);
+        const key = AnswerHistory.key(userIndex, surveyIndex);
+        let indexHistory = this.historyIndexMap.get(key);
+        if (indexHistory === undefined) {
+            indexHistory = [];
+            this.historyIndexMap.set(key, indexHistory);
+        }
+        const index = this.store.length;
+        const record = toAnswerRecord(answers, language);
+        const value = Object.assign({ userIndex, surveyIndex }, record);
+        this.store.push(value);
+        indexHistory.push(index);
+    }
+
+    getLast(userIndex, surveyIndex) {
+        const all = this.getAll(userIndex, surveyIndex);
+        const length = all.length;
+        return all[length - 1];
+    }
+
+    getAll(userIndex, surveyIndex) {
+        const key = AnswerHistory.key(userIndex, surveyIndex);
+        const keyIndices = this.historyIndexMap.get(key);
+        if (!keyIndices) {
+            return [];
+        }
+        return _.at(this.store, keyIndices);
+    }
+
+    listFlatForUser(userIndex) {
+        return this.store.reduce((r, record) => {
+            if (record.userIndex === userIndex) {
+                const { surveyIndex, answers, remaining } = record;
+                const remainingAnswers = answers.filter(({ questionId }) => remaining.hasOwnProperty(questionId));
+                if (remainingAnswers.length) {
+                    r.push({ surveyIndex, answers: remainingAnswers });
+                }
+            }
             return r;
         }, []);
     }
 
-    static prepareClientAnswers(clientAnswers) {
-        const result = _.cloneDeep(clientAnswers);
-        result.forEach(({ answer }) => {
-            if (answer.choices) {
-                answer.choices.forEach((choice) => {
-                    const numValues = ['textValue', 'monthValue', 'yearValue', 'dayValue', 'integerValue', 'boolValue'].reduce((r, p) => {
-                        if (choice.hasOwnProperty(p)) {
-                            ++r;
-                        }
-                        return r;
-                    }, 0);
-                    if (!numValues) {
-                        choice.boolValue = true;
-                    }
-                });
+    expectedAnswers(userIndex, surveyIndex) {
+        const records = this.getAll(userIndex, surveyIndex);
+        const result = records.reduce((r, { remaining, answers }) => {
+            if (!remaining) {
+                r.push(...answers);
+                return r;
             }
-        });
+            answers.forEach(answer => {
+                const questionId = answer.questionId;
+                if (remaining.hasOwnProperty(questionId)) {
+                    r.push(answer);
+                }
+            });
+            return r;
+        }, []);
         return result;
     }
 
-    _key(userIndex, surveyIndex, seqIndex) {
-        return `${userIndex}_${surveyIndex}_${seqIndex}`;
-    }
-
-    generateAnswers(userIndex, surveyIndex, seqIndex, stepIndex) {
-        const key = this._key(userIndex, surveyIndex, seqIndex);
-        const qxIndices = this.testQuestions[surveyIndex].answerSequences[seqIndex][stepIndex];
-        const answers = qxIndices.map(qxIndex => this._generateQxAnswer(qxIndex));
-        const language = this.generator.nextLanguage();
-        this._updateHxAnswers(key, qxIndices, answers, language);
-        return { answers, language };
-    }
-
-    expectedAnswers(userIndex, surveyIndex, seqIndex) {
-        const key = this._key(userIndex, surveyIndex, seqIndex);
-        const expectedAnswers = this._pullExpectedAnswers(key);
-        const modifiedAnswers = AnswerHistory.prepareClientAnswers(expectedAnswers);
-        return _.sortBy(modifiedAnswers, 'questionId');
-    }
-
-    expectedRemovedAnswers(userIndex, surveyIndex, seqIndex) {
-        const key = this._key(userIndex, surveyIndex, seqIndex);
-        const answersSpec = this.hxAnswers[key];
-        const removed = jsutil.findRemoved(_.map(answersSpec, 'qxIndices'));
-        const result = removed.reduce((r, answerIndices, index) => {
-            answerIndices.forEach((answerIndex) => {
-                if (answerIndex.removed.length) {
-                    const timeIndex = answerIndex.timeIndex;
-                    const arr = r[timeIndex] || (r[timeIndex] = []);
-                    const answers = answerIndex.removed.map(r => answersSpec[index].qxAnswers[r]);
-                    arr.push(...answers);
-                    arr.sort((a, b) => a.questionId - b.questionId);
+    expectedRemovedAnswers(userIndex, surveyIndex) {
+        const records = this.getAll(userIndex, surveyIndex);
+        const result = records.reduce((r, { removed, answers }) => {
+            answers.forEach(answer => {
+                const questionId = answer.questionId;
+                const timeIndex = removed[questionId];
+                if (timeIndex !== undefined) {
+                    if (r[timeIndex] === undefined) {
+                        r[timeIndex] = [];
+                    }
+                    r[timeIndex].push(answer);
                 }
             });
             return r;
         }, {});
         return result;
     }
-}
-
-module.exports = AnswerHistory;
+};

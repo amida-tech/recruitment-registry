@@ -9,9 +9,9 @@ const config = require('../config');
 
 const SharedIntegration = require('./util/shared-integration');
 const RRSuperTest = require('./util/rr-super-test');
-const Generator = require('./util/entity-generator');
-const comparator = require('./util/client-server-comparator');
-const History = require('./util/entity-history');
+const Generator = require('./util/generator');
+const comparator = require('./util/comparator');
+const History = require('./util/history');
 const RRError = require('../lib/rr-error');
 const translator = require('./util/translator');
 const questionCommon = require('./util/question-common');
@@ -121,13 +121,10 @@ describe('question integration', function () {
             }
             const updatedQuestion = Object.assign({}, clientQuestion, cmp);
             store.get(`/questions/${id}`, true, 200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-                    comparator.question(updatedQuestion, res.body)
-                        .then(done, done);
-                });
+                .expect(function (res) {
+                    comparator.question(updatedQuestion, res.body);
+                })
+                .end(done);
         };
     };
 

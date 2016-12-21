@@ -12,10 +12,9 @@ const config = require('../../config');
 
 const SharedIntegration = require('../util/shared-integration');
 const RRSuperTest = require('../util/rr-super-test');
-const Generator = require('../util/entity-generator');
+const Generator = require('../util/generator');
 const SurveyHistory = require('../util/survey-history');
-const History = require('../util/entity-history');
-const MultiIndexStore = require('../util/multi-index-store');
+const History = require('../util/history');
 const surveyCommon = require('../util/survey-common');
 const answerCommon = require('../util/answer-common');
 
@@ -27,9 +26,9 @@ describe('answer import-export integration', function () {
     const rrSuperTest = new RRSuperTest();
     let hxUser = new History();
     const hxSurvey = new SurveyHistory();
-    const hxAnswer = new MultiIndexStore();
     const surveyTests = new surveyCommon.IntegrationTests(rrSuperTest, generator, hxSurvey);
-    const answerTests = new answerCommon.IntegrationTests(rrSuperTest, generator, hxUser, hxSurvey, hxAnswer);
+    const answerTests = new answerCommon.IntegrationTests(rrSuperTest, generator, hxUser, hxSurvey);
+    const hxAnswer = answerTests.hxAnswer;
 
     before(shared.setUpFn(rrSuperTest));
 

@@ -15,110 +15,87 @@ const UserSurvey = db.UserSurvey;
 const exportCSVConverter = require('../../export/csv-converter.js');
 const importCSVConverter = require('../../import/csv-converter.js');
 
-const uiToDbAnswer = function (answer) {
-    let result = [];
-    if (answer.hasOwnProperty('choices')) {
-        answer.choices.forEach(choice => {
-            const dbAnswer = {
-                questionChoiceId: choice.id
-            };
-            if (choice.hasOwnProperty('textValue')) {
-                dbAnswer.value = choice.textValue;
-                dbAnswer.type = 'text';
-            } else if (choice.hasOwnProperty('yearValue')) {
-                dbAnswer.value = choice.yearValue;
-                dbAnswer.type = 'year';
-            } else if (choice.hasOwnProperty('monthValue')) {
-                dbAnswer.value = choice.monthValue;
-                dbAnswer.type = 'month';
-            } else if (choice.hasOwnProperty('dayValue')) {
-                dbAnswer.value = choice.dayValue;
-                dbAnswer.type = 'day';
-            } else if (choice.hasOwnProperty('integerValue')) {
-                dbAnswer.value = choice.integerValue.toString();
-                dbAnswer.type = 'integer';
-            } else if (choice.hasOwnProperty('boolValue')) {
-                dbAnswer.value = choice.boolValue.toString();
-                dbAnswer.type = 'bool';
-            } else {
-                dbAnswer.value = 'true';
-                dbAnswer.type = 'bool';
-            }
-            result.push(dbAnswer);
-        });
+const answerValueToDBFormat = {
+    boolValue(value) {
+        value = value ? 'true' : 'false';
+        return [{ value, type: 'bool' }];
+    },
+    dateValue(value) {
+        return [{ value, type: 'date' }];
+    },
+    yearValue(value) {
+        return [{ value, type: 'year' }];
+    },
+    monthValue(value) {
+        return [{ value, type: 'month' }];
+    },
+    dayValue(value) {
+        return [{ value, type: 'day' }];
+    },
+    textValue(value) {
+        return [{ value, type: 'text' }];
+    },
+    numberValue(value) {
+        return [{ value, type: 'number' }];
+    },
+    integerValue(value) {
+        return [{ value, type: 'integer' }];
+    },
+    feetInchesValue(value) {
+        const feet = value.feet || 0;
+        const inches = value.inches || 0;
+        return [{ value: `${feet}-${inches}`, type: 'dual-integers' }];
+    },
+    bloodPressureValue(value) {
+        const systolic = value.systolic || 0;
+        const diastolic = value.diastolic || 0;
+        return [{ value: `${systolic}-${diastolic}`, type: 'dual-integers' }];
     }
-    if (answer.hasOwnProperty('choice')) {
-        result.push({
-            questionChoiceId: answer.choice,
-            type: 'choice'
-        });
-    }
-    if (answer.hasOwnProperty('boolValue')) {
-        result.push({
-            value: answer.boolValue ? 'true' : 'false',
-            type: 'bool'
-        });
-    }
-    if (answer.hasOwnProperty('dateValue')) {
-        result.push({
-            value: answer.dateValue,
-            type: 'date'
-        });
-    }
-    if (answer.hasOwnProperty('yearValue')) {
-        result.push({
-            value: answer.yearValue,
-            type: 'year'
-        });
-    }
-    if (answer.hasOwnProperty('monthValue')) {
-        result.push({
-            value: answer.monthValue,
-            type: 'month'
-        });
-    }
-    if (answer.hasOwnProperty('dayValue')) {
-        result.push({
-            value: answer.dayValue,
-            type: 'day'
-        });
-    }
-    if (answer.hasOwnProperty('textValue')) {
-        result.push({
-            value: answer.textValue,
-            type: 'text'
-        });
-    }
-    if (answer.hasOwnProperty('numberValue')) {
-        result.push({
-            value: answer.numberValue,
-            type: 'number'
-        });
-    }
-    if (answer.hasOwnProperty('integerValue')) {
-        result.push({
-            value: answer.integerValue,
-            type: 'integer'
-        });
-    }
-    if (answer.hasOwnProperty('feetInchesValue')) {
-        const feet = _.get(answer, 'feetInchesValue.feet') || 0;
-        const inches = _.get(answer, 'feetInchesValue.inches') || 0;
-        result.push({
-            value: `${feet}-${inches}`,
-            type: 'dual-integers'
-        });
-    }
-    if (answer.hasOwnProperty('bloodPressureValue')) {
-        const systolic = _.get(answer, 'bloodPressureValue.systolic') || 0;
-        const diastolic = _.get(answer, 'bloodPressureValue.diastolic') || 0;
-        result.push({
-            value: `${systolic}-${diastolic}`,
-            type: 'dual-integers'
-        });
-    }
+};
 
-    return result;
+const choiceValueToDBFormat = {
+    choices(value) {
+        return value.map(choice => {
+            const questionChoiceId = choice.id;
+            choice = _.omit(choice, 'id');
+            const keys = Object.keys(choice);
+            const numKeys = keys.length;
+            if (numKeys > 1) {
+                keys.sort();
+                throw new RRError('answerMultipleTypeChoice', keys.join(', '));
+            }
+            if (numKeys === 0) {
+                return { questionChoiceId, value: 'true', type: 'bool' };
+            }
+            const key = keys[0];
+            const fn = answerValueToDBFormat[key];
+            if (!fn) {
+                throw new RRError('answerChoiceNotUnderstood');
+            }
+            return Object.assign({ questionChoiceId }, fn(choice[key])[0]);
+        });
+    },
+    choice(value) {
+        return [{ questionChoiceId: value, type: 'choice' }];
+    }
+};
+
+const prepareAnswerForDB = function (answer) {
+    const keys = Object.keys(answer);
+    const numKeys = keys.length;
+    if (numKeys > 1) {
+        keys.sort();
+        throw new RRError('answerMultipleTypeAnswers', keys.join(', '));
+    }
+    const key = keys[0];
+    let fn = choiceValueToDBFormat[key];
+    if (!fn) {
+        fn = answerValueToDBFormat[key];
+    }
+    if (!fn) {
+        throw new RRError('answerAnswerNotUnderstood', key);
+    }
+    return fn(answer[key]);
 };
 
 const generateAnswerSingleFn = {
@@ -176,7 +153,7 @@ const generateAnswer = function (type, entries) {
 const fileAnswer = function ({ userId, surveyId, language, answers }, tx) {
     answers = answers.reduce((r, q) => {
         const questionId = q.questionId;
-        const values = uiToDbAnswer(q.answer).map(value => ({
+        const values = prepareAnswerForDB(q.answer).map(value => ({
             userId,
             surveyId,
             language,
@@ -217,7 +194,7 @@ module.exports = class AnswerDAO {
     }
 
     toDbAnswer(answer) {
-        return uiToDbAnswer(answer);
+        return prepareAnswerForDB(answer);
     }
 
     validateConsent(userId, surveyId, action, transaction) {
@@ -308,9 +285,9 @@ module.exports = class AnswerDAO {
         });
     }
 
-    listAnswers({ userId, scope, surveyId, history }) {
+    listAnswers({ userId, scope, surveyId, history, ids }) {
         scope = scope || 'survey';
-        const where = { userId };
+        const where = ids ? { id: { $in: ids } } : { userId };
         if (surveyId) {
             where.surveyId = surveyId;
         }
@@ -318,7 +295,7 @@ module.exports = class AnswerDAO {
             where.deletedAt = { $ne: null };
         }
         const attributes = ['questionChoiceId', 'language', 'value', 'type'];
-        if (scope === 'export') {
+        if (scope === 'export' || !surveyId) {
             attributes.push('surveyId');
         }
         if (scope === 'history-only') {

@@ -309,6 +309,7 @@ class Generator {
         this.consentTypeAdded = {};
         this.consentIndex = -1;
         this.languageIndex = -1;
+        this.assessmentIndex = -1;
     }
 
     newUser(override) {
@@ -428,6 +429,15 @@ class Generator {
         };
         Object.assign(result, override);
         return result;
+    }
+
+    newAssessment(surveyIds) {
+        const index = ++this.assessmentIndex;
+        const name = `name_${index}`;
+        const sequenceType = (index % 2 === 0) ? 'ondemand' : 'biyearly';
+        const lookback = (index % 2 === 1);
+        const surveys = surveyIds.map(id => ({ id, lookback }));
+        return { name, sequenceType, surveys };
     }
 
     nextLanguage() {

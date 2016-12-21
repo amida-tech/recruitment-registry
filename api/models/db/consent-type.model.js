@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    const ConsentType = sequelize.define('consent_type', {
+    return sequelize.define('consent_type', {
         name: {
             type: DataTypes.TEXT,
             allowNull: false
@@ -25,6 +25,4 @@ module.exports = function (sequelize, DataTypes) {
         deletedAt: 'deletedAt',
         paranoid: true
     });
-
-    return ConsentType;
 };

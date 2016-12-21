@@ -9,9 +9,9 @@ const models = require('../models');
 const db = require('../models/db');
 
 const SharedSpec = require('./util/shared-spec.js');
-const Generator = require('./util/entity-generator');
-const comparator = require('./util/client-server-comparator');
-const History = require('./util/entity-history');
+const Generator = require('./util/generator');
+const comparator = require('./util/comparator');
+const History = require('./util/history');
 const translator = require('./util/translator');
 const questionCommon = require('./util/question-common');
 

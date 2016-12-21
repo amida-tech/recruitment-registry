@@ -7,11 +7,11 @@ const _ = require('lodash');
 
 const SPromise = require('../lib/promise');
 const SharedSpec = require('./util/shared-spec');
-const History = require('./util/entity-history');
+const History = require('./util/history');
 const config = require('../config');
 const models = require('../models');
-const Generator = require('./util/entity-generator');
-const comparator = require('./util/client-server-comparator');
+const Generator = require('./util/generator');
+const comparator = require('./util/comparator');
 const testJsutil = require('./util/test-jsutil');
 
 const expect = chai.expect;

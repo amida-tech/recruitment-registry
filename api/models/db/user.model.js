@@ -19,7 +19,7 @@ module.exports = function (sequelize, DataTypes) {
         context: crypto
     });
 
-    const User = sequelize.define('registry_user', {
+    return sequelize.define('registry_user', {
         username: {
             type: DataTypes.TEXT,
             unique: {
@@ -90,7 +90,7 @@ module.exports = function (sequelize, DataTypes) {
                 if (options.force) {
                     const role = 'admin';
                     const user = Object.assign({ role }, config.superUser);
-                    return User.create(user);
+                    return this.create(user);
                 }
             },
             beforeCreate(user) {
@@ -143,6 +143,4 @@ module.exports = function (sequelize, DataTypes) {
             }
         }
     });
-
-    return User;
 };

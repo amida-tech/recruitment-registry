@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    const Section = sequelize.define('rr_section', {
+    return sequelize.define('rr_section', {
         indices: {
             type: DataTypes.ARRAY(DataTypes.INTEGER),
             allowNull: false
@@ -21,6 +21,4 @@ module.exports = function (sequelize, DataTypes) {
         deletedAt: 'deletedAt',
         paranoid: true
     });
-
-    return Section;
 };

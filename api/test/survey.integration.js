@@ -9,10 +9,10 @@ const config = require('../config');
 
 const SharedIntegration = require('./util/shared-integration');
 const RRSuperTest = require('./util/rr-super-test');
-const Generator = require('./util/entity-generator');
-const History = require('./util/entity-history');
+const Generator = require('./util/generator');
+const History = require('./util/history');
 const SurveyHistory = require('./util/survey-history');
-const comparator = require('./util/client-server-comparator');
+const comparator = require('./util/comparator');
 const translator = require('./util/translator');
 const surveyCommon = require('./util/survey-common');
 
@@ -132,7 +132,7 @@ describe('survey integration', function () {
 
     for (let i = 0; i < surveyCount; ++i) {
         it(`create survey ${i}`, tests.createSurveyFn());
-        it(`verify survey ${i}`, tests.getSurveyFn(i));
+        it(`get survey ${i}`, tests.getSurveyFn(i));
         const meta = {
             anyProperty: true
         };
@@ -168,15 +168,12 @@ describe('survey integration', function () {
         const index = _.findIndex(hxSurvey.listClients(), client => client.sections);
         const id = hxSurvey.id(index);
         store.get(`/surveys/${id}`, true, 200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function (res) {
                 hxSurvey.updateServer(index, res.body);
                 const clientSurvey = hxSurvey.client(index);
-                comparator.survey(clientSurvey, res.body)
-                    .then(done, done);
-            });
+                comparator.survey(clientSurvey, res.body);
+            })
+            .end(done);
     });
 
     it('get survey 3 in spanish when no name translation', verifySurveyFn(3));

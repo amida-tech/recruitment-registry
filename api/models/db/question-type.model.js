@@ -3,7 +3,7 @@
 const SPromise = require('../../lib/promise');
 
 module.exports = function (sequelize, DataTypes) {
-    const QuestionType = sequelize.define('question_type', {
+    return sequelize.define('question_type', {
         name: {
             type: DataTypes.TEXT,
             allowNull: false,
@@ -25,12 +25,10 @@ module.exports = function (sequelize, DataTypes) {
                         'zip', 'date', 'pounds', 'year', 'month', 'day',
                         'feet-inches', 'blood-pressure'
                     ];
-                    const ps = names.map(name => QuestionType.create({ name }));
+                    const ps = names.map(name => this.create({ name }));
                     return SPromise.all(ps);
                 }
             }
         }
     });
-
-    return QuestionType;
 };

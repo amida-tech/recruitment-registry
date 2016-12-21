@@ -9,7 +9,7 @@ const config = require('../config');
 const SharedIntegration = require('./util/shared-integration');
 const RRSuperTest = require('./util/rr-super-test');
 const RRError = require('../lib/rr-error');
-const Generator = require('./util/entity-generator');
+const Generator = require('./util/generator');
 
 const expect = chai.expect;
 const generator = new Generator();

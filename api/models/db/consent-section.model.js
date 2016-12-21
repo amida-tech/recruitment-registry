@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    const ConsentSection = sequelize.define('consent_section', {
+    return sequelize.define('consent_section', {
         consentId: {
             type: DataTypes.INTEGER,
             allowNull: false,
@@ -38,6 +38,4 @@ module.exports = function (sequelize, DataTypes) {
         deletedAt: 'deletedAt',
         paranoid: true
     });
-
-    return ConsentSection;
 };

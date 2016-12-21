@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    const SectionText = sequelize.define('section_text', {
+    return sequelize.define('section_text', {
         sectionId: {
             type: DataTypes.INTEGER,
             allowNull: false,
@@ -39,6 +39,4 @@ module.exports = function (sequelize, DataTypes) {
         deletedAt: 'deletedAt',
         paranoid: true
     });
-
-    return SectionText;
 };

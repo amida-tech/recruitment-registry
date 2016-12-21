@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    const SurveyText = sequelize.define('survey_text', {
+    return sequelize.define('survey_text', {
         surveyId: {
             type: DataTypes.INTEGER,
             allowNull: false,
@@ -42,6 +42,4 @@ module.exports = function (sequelize, DataTypes) {
         deletedAt: 'deletedAt',
         paranoid: true
     });
-
-    return SurveyText;
 };

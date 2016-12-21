@@ -3,7 +3,7 @@
 const chai = require('chai');
 
 const models = require('../../models');
-const comparator = require('./client-server-comparator');
+const comparator = require('./comparator');
 
 const scopeToFieldsMap = {
     'summary': ['id', 'type', 'text', 'instruction'],
@@ -65,7 +65,7 @@ const SpecTests = class QuestionSpecTests {
             return models.question.getQuestion(id)
                 .then(question => {
                     hxQuestion.updateServer(index, question);
-                    return comparator.question(hxQuestion.client(index), question);
+                    comparator.question(hxQuestion.client(index), question);
                 });
         };
     }
@@ -127,14 +127,11 @@ const IntegrationTests = class QuestionIntegrationTests {
         return function (done) {
             const id = hxQuestion.id(index);
             rrSuperTest.get(`/questions/${id}`, true, 200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     hxQuestion.reloadServer(res.body);
-                    comparator.question(hxQuestion.client(index), res.body)
-                        .then(done, done);
-                });
+                    comparator.question(hxQuestion.client(index), res.body);
+                })
+                .end(done);
         };
     }
 

@@ -2,7 +2,7 @@
 
 const _ = require('lodash');
 
-const History = require('./entity-history');
+const History = require('./history');
 
 module.exports = class ConsentDocumentHistory {
     constructor(userCount) {

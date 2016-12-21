@@ -4,16 +4,13 @@ const chai = require('chai');
 const _ = require('lodash');
 
 const models = require('../../models');
-const db = require('../../models/db');
 
 const RRError = require('../../lib/rr-error');
-const Generator = require('./entity-generator');
+const Generator = require('./generator');
 const translator = require('./translator');
-const comparator = require('./client-server-comparator');
+const comparator = require('./comparator');
 
 const expect = chai.expect;
-
-const QuestionChoice = db.QuestionChoice;
 
 class SharedSpec {
     constructor(generator) {
@@ -65,45 +62,7 @@ class SharedSpec {
                     const id = hxSurvey.id(index);
                     expect(survey.id).to.equal(id);
                     hxSurvey.updateServer(index, survey);
-                    return comparator.survey(hxSurvey.client(index), survey);
-                });
-        };
-    }
-
-    createQuestion(hxQuestion) {
-        const generator = this.generator;
-        return function () {
-            const inputQx = generator.newQuestion();
-            const type = inputQx.type;
-            return models.question.createQuestion(inputQx)
-                .then(function (id) {
-                    const qx = {
-                        id,
-                        choices: null,
-                        type
-                    };
-                    if ((type === 'choices') || (type === 'choice')) {
-                        return QuestionChoice.findAll({
-                                where: {
-                                    questionId: id
-                                },
-                                raw: true,
-                                attributes: ['id', 'type']
-                            })
-                            .then(function (choices) {
-                                if (type === 'choice') {
-                                    qx.choices = _.map(choices, choice => ({ id: choice.id }));
-                                } else {
-                                    qx.choices = _.map(choices, choice => ({ id: choice.id, type: choice.type }));
-                                }
-                                return qx;
-                            });
-                    } else {
-                        return qx;
-                    }
-                })
-                .then(function (qx) {
-                    hxQuestion.push(inputQx, qx);
+                    comparator.survey(hxSurvey.client(index), survey);
                 });
         };
     }
@@ -192,11 +151,12 @@ class SharedSpec {
         throw new Error('Unexpected no error.');
     }
 
-    expectedErrorHandler(code) {
+    expectedErrorHandler(code, ...params) {
         return function (err) {
             expect(err).to.be.instanceof(RRError);
             expect(err.code).to.equal(code);
-            expect(!!err.message).to.equal(true);
+            const expected = new RRError(code, params);
+            expect(err.message).to.equal(expected.message);
             return err;
         };
     }

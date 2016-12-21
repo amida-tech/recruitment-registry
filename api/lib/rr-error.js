@@ -150,3 +150,11 @@ errors.userIdenticalUsernameEmail = {
 errors.userNoUsernameChange = {
     msg: 'Username cannot be changed directly when email is being used as the username.'
 };
+
+errors.answerMultipleTypeAnswers = {
+    msg: 'Multiple answer value keys: $0.'
+};
+
+errors.answerAnswerNotUnderstood = {
+    msg: 'Unknown answer value key: $0.'
+};

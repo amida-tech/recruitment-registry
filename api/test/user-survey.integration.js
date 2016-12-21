@@ -8,12 +8,12 @@ const _ = require('lodash');
 const config = require('../config');
 
 const RRSuperTest = require('./util/rr-super-test');
-const Generator = require('./util/entity-generator');
-const History = require('./util/entity-history');
+const Generator = require('./util/generator');
+const History = require('./util/history');
 const SurveyHistory = require('./util/survey-history');
 const Shared = require('./util/shared-integration');
 const RRError = require('../lib/rr-error');
-const comparator = require('./util/client-server-comparator');
+const comparator = require('./util/comparator');
 const translator = require('./util/translator');
 
 const expect = chai.expect;
@@ -62,15 +62,12 @@ describe('user survey integration', function () {
         return function (done) {
             const surveyId = hxSurvey.id(index);
             store.get(`/surveys/${surveyId}`, true, 200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     const survey = res.body;
                     hxSurvey.updateServer(index, survey);
-                    comparator.survey(hxSurvey.client(index), survey)
-                        .then(done, done);
-                });
+                    comparator.survey(hxSurvey.client(index), survey);
+                })
+                .end(done);
         };
     };
 

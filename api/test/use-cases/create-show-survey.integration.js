@@ -7,7 +7,7 @@ const chai = require('chai');
 const SharedIntegration = require('../util/shared-integration');
 const RRSuperTest = require('../util/rr-super-test');
 const surveyExamples = require('../fixtures/example/survey');
-const comparator = require('../util/client-server-comparator');
+const comparator = require('../util/comparator');
 
 const config = require('../../config');
 
@@ -67,12 +67,9 @@ describe('create-show-survey use case', function () {
 
     it('show the new survey', function (done) {
         store.get(`/surveys/${store.lastId}`, true, 200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-                comparator.survey(surveyExamples.Example.survey, res.body)
-                    .then(done, done);
-            });
+            .expect(function (res) {
+                comparator.survey(surveyExamples.Example.survey, res.body);
+            })
+            .end(done);
     });
 });

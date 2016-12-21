@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    const QuestionAction = sequelize.define('question_action', {
+    return sequelize.define('question_action', {
         questionId: {
             type: DataTypes.INTEGER,
             field: 'question_id',
@@ -27,6 +27,4 @@ module.exports = function (sequelize, DataTypes) {
         createdAt: 'createdAt',
         updatedAt: false
     });
-
-    return QuestionAction;
 };

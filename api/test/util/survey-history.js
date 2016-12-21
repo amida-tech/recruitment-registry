@@ -1,6 +1,6 @@
 'use strict';
 
-const History = require('./entity-history');
+const History = require('./history');
 
 module.exports = class SurveyHistory extends History {
     constructor() {

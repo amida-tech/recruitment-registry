@@ -49,8 +49,25 @@ const Section = sequelize.import('./section.model');
 const SmtpText = sequelize.import('./smtp-text.model');
 const Smtp = sequelize.import('./smtp.model');
 const UserSurvey = sequelize.import('./user-survey.model');
+const Assessment = sequelize.import('./assessment.model');
+const AssessmentSurvey = sequelize.import('./assessment-survey.model');
+const UserAssessment = sequelize.import('./user-assessment.model');
+const UserAssessmentAnswer = sequelize.import('./user-assessment-answer.model');
 
 Answer.belongsTo(Question, {
+    as: 'question',
+    foreignKey: {
+        allowNull: false,
+        fieldName: 'questionId',
+        field: 'question_id',
+        references: {
+            model: 'question',
+            key: 'id'
+        }
+    }
+});
+
+SurveyQuestion.belongsTo(Question, {
     as: 'question',
     foreignKey: {
         allowNull: false,
@@ -94,5 +111,9 @@ module.exports = {
     Language,
     SmtpText,
     Smtp,
-    UserSurvey
+    UserSurvey,
+    Assessment,
+    AssessmentSurvey,
+    UserAssessment,
+    UserAssessmentAnswer
 };

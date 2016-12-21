@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    const QuestionChoiceText = sequelize.define('question_choice_text', {
+    return sequelize.define('question_choice_text', {
         questionChoiceId: {
             type: DataTypes.INTEGER,
             allowNull: false,
@@ -38,6 +38,4 @@ module.exports = function (sequelize, DataTypes) {
         updatedAt: false,
         deletedAt: 'deletedAt'
     });
-
-    return QuestionChoiceText;
 };
