@@ -165,5 +165,13 @@ errors.surveySkipChoiceForNonChoice = {
 };
 
 errors.surveySkipChoiceNotFound = {
-    msg: 'Skup rule choice is not found.'
+    msg: 'Skip rule choice is not found.'
+};
+
+errors.questionIdentifierNotFound = {
+    msg: 'No such question identifier is found.'
+};
+
+errors.answerIdentifierNotFound = {
+    msg: 'No such answer identifier is found.'
 };
