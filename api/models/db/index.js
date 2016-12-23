@@ -55,6 +55,8 @@ const Assessment = sequelize.import('./assessment.model');
 const AssessmentSurvey = sequelize.import('./assessment-survey.model');
 const UserAssessment = sequelize.import('./user-assessment.model');
 const UserAssessmentAnswer = sequelize.import('./user-assessment-answer.model');
+const QuestionIdentifier = sequelize.import('./question-identifier.model');
+const AnswerIdentifier = sequelize.import('./answer-identifier.model');
 
 Answer.belongsTo(Question, {
     as: 'question',
@@ -121,5 +123,7 @@ module.exports = {
     Assessment,
     AssessmentSurvey,
     UserAssessment,
-    UserAssessmentAnswer
+    UserAssessmentAnswer,
+    QuestionIdentifier,
+    AnswerIdentifier
 };

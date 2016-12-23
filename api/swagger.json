@@ -955,6 +955,39 @@
                 }
             }
         },
+        "/questions/{id}/identifiers": {
+            "x-swagger-router-controller": "question.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
+            "post": {
+                "summary": "Add identifiers for question",
+                "operationId": "addQuestionIdentifiers",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "newQuestionIdentifiers",
+                    "in": "body",
+                    "description": "New question identifiers",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/newQuestionIdentifiers"
+                    }
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successful response."
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
         "/consent-types": {
             "x-swagger-router-controller": "consent-type.controller",
             "post": {
@@ -2350,6 +2383,78 @@
                             "items": {
                                 "type": "object"
                             }
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/question-identifiers/{type}/{identifier}": {
+            "x-swagger-router-controller": "question-identifier.controller",
+            "get": {
+                "summary": "Gets question id from identifier",
+                "operationId": "getQuestionIdByIdentifier",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "type",
+                    "in": "path",
+                    "description": "Type of identifier",
+                    "required": true,
+                    "type": "string",
+                    "minLength": 1
+                }, {
+                    "name": "identifier",
+                    "in": "path",
+                    "description": "Identifier",
+                    "required": true,
+                    "type": "string",
+                    "minLength": 1
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successul response",
+                        "schema": {
+                            "$ref": "#/definitions/questionId"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/answer-identifiers/{type}/{identifier}": {
+            "x-swagger-router-controller": "answer-identifier.controller",
+            "get": {
+                "summary": "Gets question id from identifier",
+                "operationId": "getIdsByAnswerIdentifier",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "type",
+                    "in": "path",
+                    "description": "Type of identifier",
+                    "required": true,
+                    "type": "string",
+                    "minLength": 1
+                }, {
+                    "name": "identifier",
+                    "in": "path",
+                    "description": "Identifier",
+                    "required": true,
+                    "type": "string",
+                    "minLength": 1
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successul response",
+                        "schema": {
+                            "$ref": "#/definitions/answerIds"
                         }
                     },
                     "default": {
@@ -4228,6 +4333,71 @@
                 },
                 "additionalProperties": false
             }
+        },
+        "newQuestionIdentifiers": {
+            "type": "object",
+            "required": ["type", "identifier"],
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "identifier": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "answerIdentifier": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "choices": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": ["id", "answerIdentifier"],
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "minimum": 1
+                            },
+                            "answerIdentifier": {
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "additionalProperties": false,
+            "minProperties": 3,
+            "maxProperties": 3
+        },
+        "questionId": {
+            "type": "object",
+            "required": ["questionId"],
+            "properties": {
+                "questionId": {
+                    "type": "integer",
+                    "minimum": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "answerIds": {
+            "type": "object",
+            "required": ["questionId"],
+            "properties": {
+                "questionId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "questionChoiceId": {
+                    "type": "integer",
+                    "minimum": 1
+                }
+            },
+            "additionalProperties": false
         }
     }
 }

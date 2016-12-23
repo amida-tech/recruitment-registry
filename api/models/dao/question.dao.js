@@ -13,6 +13,8 @@ const importCSVConverter = require('../../import/csv-converter.js');
 const sequelize = db.sequelize;
 const SurveyQuestion = db.SurveyQuestion;
 const Question = db.Question;
+const QuestionIdentifier = db.QuestionIdentifier;
+const AnswerIdentifier = db.AnswerIdentifier;
 
 module.exports = class QuestionDAO extends Translatable {
     constructor(dependencies) {
@@ -267,6 +269,26 @@ module.exports = class QuestionDAO extends Translatable {
                     })
                     .then(() => questions);
             });
+    }
+
+    addQuestionIdentifiersTx(questionId, allIdentifiers, transaction) {
+        const { type, identifier, answerIdentifier, choices } = allIdentifiers;
+        return QuestionIdentifier.create({ type, identifier, questionId }, { transaction })
+            .then(() => {
+                if (answerIdentifier) {
+                    return AnswerIdentifier.create({ type, identifier: answerIdentifier, questionId }, { transaction });
+                }
+                const pxs = choices.map(({ answerIdentifier: identifier, id: questionChoiceId }) => {
+                    return AnswerIdentifier.create({ type, identifier, questionId, questionChoiceId }, { transaction });
+                });
+                return SPromise.all(pxs);
+            });
+    }
+
+    addQuestionIdentifiers(questionId, allIdentifiers) {
+        return sequelize.transaction(transaction => {
+            return this.addQuestionIdentifiersTx(questionId, allIdentifiers, transaction);
+        });
     }
 
     export () {

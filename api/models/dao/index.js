@@ -22,6 +22,8 @@ const SmtpDAO = require('./smtp.dao');
 const UserSurveyDAO = require('./user-survey.dao');
 const AssessmentDAO = require('./assessment.dao');
 const UserAssessmentDAO = require('./user-assessment.dao');
+const QuestionIdentifierDAO = require('./question-identifier.dao');
+const AnswerIdentifierDAO = require('./answer-identifier.dao');
 
 const consentType = new ConsentTypeDAO();
 const consentDocument = new ConsentDocumentDAO({ consentType });
@@ -45,6 +47,8 @@ const language = new LanguageDAO();
 const smtp = new SmtpDAO();
 const assessment = new AssessmentDAO();
 const userAssessment = new UserAssessmentDAO({ answer });
+const questionIdentifier = new QuestionIdentifierDAO();
+const answerIdentifier = new AnswerIdentifierDAO();
 
 module.exports = {
     user,
@@ -68,5 +72,7 @@ module.exports = {
     language,
     smtp,
     assessment,
-    userAssessment
+    userAssessment,
+    questionIdentifier,
+    answerIdentifier
 };

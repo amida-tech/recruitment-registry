@@ -6,7 +6,6 @@ process.env.RECREG_DB_NAME_OVERRIDE = 'recregmigrate';
 const fs = require('fs');
 const path = require('path');
 const chai = require('chai');
-const _ = require('lodash');
 
 const db = require('../models/db');
 const dbMigrate = require('../migration/models');
@@ -60,10 +59,12 @@ describe('migration spec', function () {
     });
 
     const normalizeDescription = function (description) {
-        _.values(description, value => {
+        Object.keys(description).forEach(key => {
+            const value = description[key];
             if (value.special) {
                 value.special.sort();
             }
+            delete value.primaryKey; // seqeulize bug.  fixed on master but not fixed
         });
     };
 

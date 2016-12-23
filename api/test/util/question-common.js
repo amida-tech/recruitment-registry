@@ -42,6 +42,34 @@ const updateIds = function (questions, idMap) {
     });
 };
 
+const IdentifierGenerator = class identifierGenerator {
+    constructor() {
+        this.index = 0;
+    }
+
+    newAllIdentifiers(question, type) {
+        ++this.index;
+        const identifier = `qid-${this.index}-${question.id}`;
+        const result = { type, identifier };
+        const questionType = question.type;
+        if ((questionType === 'choice') || (questionType === 'choices')) {
+            result.choices = question.choices.map(choice => ({
+                answerIdentifier: `cid-${this.index}-${question.id}-${choice.id}`,
+                id: choice.id
+            }));
+        } else {
+            ++this.index;
+            const answerIdentifier = `aid-${this.index}-${question.id}`;
+            result.answerIdentifier = answerIdentifier;
+        }
+        return result;
+    }
+
+    reset() {
+        this.index = 0;
+    }
+};
+
 const SpecTests = class QuestionSpecTests {
     constructor(generator, hxQuestion) {
         this.generator = generator;
@@ -168,5 +196,6 @@ module.exports = {
     getFieldsForList,
     SpecTests,
     IntegrationTests,
-    updateIds
+    updateIds,
+    IdentifierGenerator
 };

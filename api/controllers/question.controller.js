@@ -56,6 +56,13 @@ exports.listQuestions = function (req, res) {
         .catch(shared.handleError(res));
 };
 
+exports.addQuestionIdentifiers = function (req, res) {
+    const id = _.get(req, 'swagger.params.id.value');
+    models.question.addQuestionIdentifiers(id, req.body)
+        .then(() => res.status(204).end())
+        .catch(shared.handleError(res));
+};
+
 exports.exportQuestions = function (req, res) {
     models.question.export()
         .then(csvContent => {
