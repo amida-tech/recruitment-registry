@@ -105,7 +105,7 @@ const comparator = {
             answer.language = answer.language || language || 'en';
             if (answer.answer.choices) {
                 answer.answer.choices.forEach((choice) => {
-                    const numValues = ['textValue', 'monthValue', 'yearValue', 'dayValue', 'integerValue', 'boolValue'].reduce((r, p) => {
+                    const numValues = ['textValue', 'monthValue', 'yearValue', 'dayValue', 'integerValue', 'boolValue', 'dateValue', 'numberValue', 'feetInchesValue', 'bloodPressureValue'].reduce((r, p) => {
                         if (choice.hasOwnProperty(p)) {
                             ++r;
                         }

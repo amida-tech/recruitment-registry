@@ -1,10 +1,12 @@
 'use strict';
 
 const chai = require('chai');
+const _ = require('lodash');
 
 const models = require('../../models');
 const comparator = require('./comparator');
 const AnswerHistory = require('./answer-history');
+const Answerer = require('./generator/answerer');
 
 const expect = chai.expect;
 
@@ -81,6 +83,12 @@ const expectedAnswerListForUser = function (userIndex, hxSurvey, hxAnswer) {
     const expected = expectedRaw.reduce((r, e) => {
         const survey = hxSurvey.server(e.surveyIndex);
         const idToType = new Map(survey.questions.map(question => [question.id, question.type]));
+        const choiceIdToType = new Map();
+        survey.questions.forEach(question => {
+            if (question.type === 'choices') {
+                question.choices.forEach(choice => choiceIdToType.set(choice.id, choice.type));
+            }
+        });
         const surveyId = survey.id;
         e.answers.forEach(answer => {
             const dbAnswers = models.answer.toDbAnswer(answer.answer);
@@ -90,12 +98,36 @@ const expectedAnswerListForUser = function (userIndex, hxSurvey, hxAnswer) {
                 if (value.hasOwnProperty('value')) {
                     value.value = value.value.toString();
                 }
+                if (value.questionType === 'choices') {
+                    value.type = choiceIdToType.get(value.questionChoiceId);
+                } else if (value.questionType === 'choice') {
+                    value.type = 'choice';
+                } else {
+                    value.type = value.questionType;
+                }
                 r.push(value);
             });
         });
         return r;
     }, []);
     return expected;
+};
+
+const AllChoicesAnswerer = class AllChoicesAnswerer extends Answerer {
+    constructor() {
+        super();
+    }
+
+    choices(question) {
+        const choices = question.choices.map(choice => {
+            ++this.answerIndex;
+            const answer = { id: choice.id };
+            const type = _.camelCase(choice.type || 'bool');
+            Object.assign(answer, this[type]());
+            return answer;
+        });
+        return { choices };
+    }
 };
 
 const SpecTests = class AnswerSpecTests {
@@ -259,5 +291,6 @@ const IntegrationTests = class AnswerIntegrationTests {
 module.exports = {
     testQuestions,
     SpecTests,
-    IntegrationTests
+    IntegrationTests,
+    AllChoicesAnswerer
 };

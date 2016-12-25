@@ -145,7 +145,7 @@ _.set(schema, 'definitions.newSurveyQuestion', {
                     required: ['text'],
                     properties: {
                         text: { type: 'string' },
-                        type: { type: 'string', enum: ['text', 'bool', 'month', 'year', 'day', 'integer'] }
+                        type: { type: 'string', enum: ['bool', 'text', 'year', 'month', 'day', 'integer', 'date', 'pounds', 'zip', 'feet-inches', 'blood-pressure'] }
                     },
                     additionalProperties: false
                 }
@@ -253,7 +253,7 @@ _.set(schema, 'definitions.newQuestion', {
                     required: ['text'],
                     properties: {
                         text: { type: 'string' },
-                        type: { type: 'string', enum: ['text', 'bool', 'month', 'year', 'day', 'integer'] }
+                        type: { type: 'string', enum: ['bool', 'text', 'year', 'month', 'day', 'integer', 'date', 'pounds', 'zip', 'feet-inches', 'blood-pressure'] }
                     },
                     additionalProperties: false
                 }

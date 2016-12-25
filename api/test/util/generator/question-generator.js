@@ -99,6 +99,51 @@ module.exports = class QuestionGenerator {
         return question;
     }
 
+    allChoices() {
+        const question = this.body('choices');
+        question.choices = [{
+            text: 'feet',
+            type: 'integer'
+        }, {
+            text: 'inches',
+            type: 'integer'
+        }, {
+            text: 'year text',
+            type: 'year'
+        }, {
+            text: 'month text',
+            type: 'month'
+        }, {
+            text: 'day text',
+            type: 'day'
+        }, {
+            text: 'text text',
+            type: 'text'
+        }, {
+            text: 'bool text',
+            type: 'bool'
+        }, {
+            text: 'zip text',
+            type: 'zip'
+        }, {
+            text: 'date text',
+            type: 'date'
+        }, {
+            text: 'pounds text',
+            type: 'pounds'
+        }, {
+            text: 'zip text',
+            type: 'zip'
+        }, {
+            text: 'feet-inches text',
+            type: 'feet-inches'
+        }, {
+            text: 'blood-pressure text',
+            type: 'blood-pressure'
+        }];
+        return question;
+    }
+
     newActions(index, count) {
         return _.range(count).map(i => {
             const text = `text_${index}_${i}`;

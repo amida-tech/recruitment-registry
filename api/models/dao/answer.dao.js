@@ -9,6 +9,7 @@ const SPromise = require('../../lib/promise');
 const sequelize = db.sequelize;
 const Answer = db.Answer;
 const Question = db.Question;
+const QuestionChoice = db.QuestionChoice;
 const SurveyQuestion = db.SurveyQuestion;
 const UserSurvey = db.UserSurvey;
 
@@ -159,8 +160,7 @@ const fileAnswer = function ({ userId, surveyId, language, answers }, tx) {
             language,
             questionId,
             questionChoiceId: value.questionChoiceId || null,
-            value: value.hasOwnProperty('value') ? value.value : null,
-            type: value.type
+            value: value.hasOwnProperty('value') ? value.value : null
         }));
         values.forEach(value => r.push(value));
         return r;
@@ -298,15 +298,31 @@ module.exports = class AnswerDAO {
         if (scope === 'history-only') {
             where.deletedAt = { $ne: null };
         }
-        const attributes = ['questionChoiceId', 'language', 'value', 'type'];
+        const attributes = ['questionChoiceId', 'language', 'value'];
         if (scope === 'export' || !surveyId) {
             attributes.push('surveyId');
         }
         if (scope === 'history-only') {
             attributes.push([sequelize.fn('to_char', sequelize.col('answer.deleted_at'), 'SSSS.MS'), 'deletedAt']);
         }
-        const include = [{ model: Question, as: 'question', attributes: ['id', 'type'] }];
+        const include = [
+            { model: Question, as: 'question', attributes: ['id', 'type'] },
+            { model: QuestionChoice, as: 'questionChoice', attributes: ['type'] }
+        ];
         return Answer.findAll({ raw: true, where, attributes, include, paranoid: !history })
+            .then(result => {
+                result.forEach(answer => {
+                    if (answer['question.type'] === 'choices') {
+                        answer.type = answer['questionChoice.type'];
+                    } else if (answer['question.type'] === 'choice') {
+                        answer.type = 'choice';
+                    } else {
+                        answer.type = answer['question.type'];
+                    }
+                    delete answer['questionChoice.type'];
+                });
+                return result;
+            })
             .then(result => {
                 if (scope === 'export') {
                     return result.map(answer => {
