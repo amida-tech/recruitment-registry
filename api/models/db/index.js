@@ -71,6 +71,18 @@ Answer.belongsTo(Question, {
     }
 });
 
+AnswerRuleValue.belongsTo(QuestionChoice, {
+    as: 'questionChoice',
+    foreignKey: {
+        fileName: 'questionChoiceId',
+        field: 'question_choice_id',
+        references: {
+            model: 'question_choice',
+            key: 'id'
+        }
+    }
+});
+
 SurveyQuestion.belongsTo(Question, {
     as: 'question',
     foreignKey: {
