@@ -76,6 +76,28 @@ const generateAnswers = function (generator, survey, hxQuestion, qxIndices) {
     }
 };
 
+const expectedAnswerListForUser = function (userIndex, hxSurvey, hxAnswer) {
+    const expectedRaw = hxAnswer.listFlatForUser(userIndex);
+    const expected = expectedRaw.reduce((r, e) => {
+        const survey = hxSurvey.server(e.surveyIndex);
+        const idToType = new Map(survey.questions.map(question => [question.id, question.type]));
+        const surveyId = survey.id;
+        e.answers.forEach(answer => {
+            const dbAnswers = models.answer.toDbAnswer(answer.answer);
+            dbAnswers.forEach(dbAnswer => {
+                const value = Object.assign({ surveyId, questionId: answer.questionId }, dbAnswer);
+                value.questionType = idToType.get(value.questionId);
+                if (value.hasOwnProperty('value')) {
+                    value.value = value.value.toString();
+                }
+                r.push(value);
+            });
+        });
+        return r;
+    }, []);
+    return expected;
+};
+
 const SpecTests = class AnswerSpecTests {
     constructor(generator, hxUser, hxSurvey, hxQuestion) {
         this.generator = generator;
@@ -143,24 +165,7 @@ const SpecTests = class AnswerSpecTests {
         const hxAnswer = this.hxAnswer;
         return function () {
             const userId = hxUser.id(userIndex);
-            const expectedRaw = hxAnswer.listFlatForUser(userIndex);
-            const expected = expectedRaw.reduce((r, e) => {
-                const survey = hxSurvey.server(e.surveyIndex);
-                const idToType = new Map(survey.questions.map(question => [question.id, question.type]));
-                const surveyId = survey.id;
-                e.answers.forEach(answer => {
-                    const dbAnswers = models.answer.toDbAnswer(answer.answer);
-                    dbAnswers.forEach(dbAnswer => {
-                        const value = Object.assign({ surveyId, questionId: answer.questionId }, dbAnswer);
-                        value.questionType = idToType.get(value.questionId);
-                        if (value.hasOwnProperty('value')) {
-                            value.value = value.value.toString();
-                        }
-                        r.push(value);
-                    });
-                });
-                return r;
-            }, []);
+            const expected = expectedAnswerListForUser(userIndex, hxSurvey, hxAnswer);
             return models.answer.listAnswers({ scope: 'export', userId })
                 .then(answers => {
                     expect(answers).to.deep.equal(expected);
@@ -240,24 +245,7 @@ const IntegrationTests = class AnswerIntegrationTests {
         const hxSurvey = this.hxSurvey;
         const hxAnswer = this.hxAnswer;
         return function (done) {
-            const expectedRaw = hxAnswer.listFlatForUser(userIndex);
-            const expected = expectedRaw.reduce((r, e) => {
-                const survey = hxSurvey.server(e.surveyIndex);
-                const idToType = new Map(survey.questions.map(question => [question.id, question.type]));
-                const surveyId = survey.id;
-                e.answers.forEach(answer => {
-                    const dbAnswers = models.answer.toDbAnswer(answer.answer);
-                    dbAnswers.forEach(dbAnswer => {
-                        const value = Object.assign({ surveyId, questionId: answer.questionId }, dbAnswer);
-                        value.questionType = idToType.get(value.questionId);
-                        if (value.hasOwnProperty('value')) {
-                            value.value = value.value.toString();
-                        }
-                        r.push(value);
-                    });
-                });
-                return r;
-            }, []);
+            const expected = expectedAnswerListForUser(userIndex, hxSurvey, hxAnswer);
             rrSuperTest.get(`/answers/export`, true, 200)
                 .expect(function (res) {
                     expect(res.body).to.deep.equal(expected);
