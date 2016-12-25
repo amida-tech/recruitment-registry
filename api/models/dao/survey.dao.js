@@ -335,7 +335,7 @@ module.exports = class SurveyDAO extends Translatable {
                                         if (result.length) {
                                             result.forEach(answer => {
                                                 if (answer['questionChoice.type']) {
-                                                    answer.type = answer['questionChoice.type'];
+                                                    answer.choiceType = answer['questionChoice.type'];
                                                 }
                                                 delete answer['questionChoice.type'];
                                             });

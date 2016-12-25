@@ -99,11 +99,7 @@ const expectedAnswerListForUser = function (userIndex, hxSurvey, hxAnswer) {
                     value.value = value.value.toString();
                 }
                 if (value.questionType === 'choices') {
-                    value.type = choiceIdToType.get(value.questionChoiceId);
-                } else if (value.questionType === 'choice') {
-                    value.type = 'choice';
-                } else {
-                    value.type = value.questionType;
+                    value.choiceType = choiceIdToType.get(value.questionChoiceId);
                 }
                 r.push(value);
             });
