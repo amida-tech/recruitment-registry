@@ -136,4 +136,32 @@ describe('answer unit', function () {
             it('list user ${userIndex} survey ${surveyIndex} answer history (step ${j})', listAnswersFn(userIndex, surveyIndex));
         }
     }
+
+    it('create question 20 (choices of all types)', function () {
+        const question = generator.questionGenerator.allChoices();
+        return questionTests.createQuestionFn(question)();
+    });
+    it('get question 20', questionTests.getQuestionFn(20));
+    it(`create survey ${testQuestions.length}`, createSurveyFn([20]));
+    it('replace choices type answer generator to answer all choices', function () {
+        const answerer = new answerCommon.AllChoicesAnswerer();
+        answerer.answerIndex = tests.generator.answerer.answerIndex;
+        tests.generator.answerer = answerer;
+    });
+    it(`user 3 answers survey 5`, tests.answerSurveyFn(3, 5, [20]));
+    it(`user 3 gets answers to survey 5`, tests.getAnswersFn(3, 5));
+
+    it('create question 21 (choices with bool-sole)', function () {
+        const question = generator.questionGenerator.boolSoleChoices();
+        return questionTests.createQuestionFn(question)();
+    });
+    it('get question 21', questionTests.getQuestionFn());
+    it(`create survey ${testQuestions.length+1}`, createSurveyFn([21]));
+    it('replace choices type answer generator to answer with bool-sole', function () {
+        const answerer = new answerCommon.BoolSoleChoicesAnswerer();
+        answerer.answerIndex = tests.generator.answerer.answerIndex;
+        tests.generator.answerer = answerer;
+    });
+    it(`user 3 answers survey 6`, tests.answerSurveyFn(3, 6, [21]));
+    it(`user 3 gets answers to survey 6`, tests.getAnswersFn(3, 6));
 });

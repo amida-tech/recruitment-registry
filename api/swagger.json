@@ -3024,7 +3024,7 @@
         },
         "choiceType": {
             "type": "string",
-            "enum": ["bool", "text", "year", "month", "day", "integer"]
+            "enum": ["bool", "bool-sole", "text", "year", "month", "day", "integer", "date", "pounds", "zip", "feet-inches", "blood-pressure"]
         },
         "choice": {
             "type": "object",

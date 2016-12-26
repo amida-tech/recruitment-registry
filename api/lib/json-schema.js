@@ -60,6 +60,11 @@ const questionTypes = [
     'year', 'month', 'day', 'feet-inches', 'blood-pressure'
 ];
 
+const choiceTypes = [
+    'bool', 'bool-sole', 'text', 'year', 'month', 'day', 'integer', 'date',
+    'pounds', 'zip', 'feet-inches', 'blood-pressure'
+];
+
 _.set(schema, 'definitions.newSurveyQuestion', {
     oneOf: [{
         type: 'object',
@@ -145,7 +150,7 @@ _.set(schema, 'definitions.newSurveyQuestion', {
                     required: ['text'],
                     properties: {
                         text: { type: 'string' },
-                        type: { type: 'string', enum: ['text', 'bool', 'month', 'year', 'day', 'integer'] }
+                        type: { type: 'string', enum: choiceTypes }
                     },
                     additionalProperties: false
                 }
@@ -253,7 +258,7 @@ _.set(schema, 'definitions.newQuestion', {
                     required: ['text'],
                     properties: {
                         text: { type: 'string' },
-                        type: { type: 'string', enum: ['text', 'bool', 'month', 'year', 'day', 'integer'] }
+                        type: { type: 'string', enum: choiceTypes }
                     },
                     additionalProperties: false
                 }

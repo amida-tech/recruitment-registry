@@ -9,6 +9,7 @@ const SPromise = require('../../lib/promise');
 const sequelize = db.sequelize;
 const Answer = db.Answer;
 const Question = db.Question;
+const QuestionChoice = db.QuestionChoice;
 const SurveyQuestion = db.SurveyQuestion;
 const UserSurvey = db.UserSurvey;
 
@@ -18,38 +19,38 @@ const importCSVConverter = require('../../import/csv-converter.js');
 const answerValueToDBFormat = {
     boolValue(value) {
         value = value ? 'true' : 'false';
-        return [{ value, type: 'bool' }];
+        return [{ value }];
     },
     dateValue(value) {
-        return [{ value, type: 'date' }];
+        return [{ value }];
     },
     yearValue(value) {
-        return [{ value, type: 'year' }];
+        return [{ value }];
     },
     monthValue(value) {
-        return [{ value, type: 'month' }];
+        return [{ value }];
     },
     dayValue(value) {
-        return [{ value, type: 'day' }];
+        return [{ value }];
     },
     textValue(value) {
-        return [{ value, type: 'text' }];
+        return [{ value }];
     },
     numberValue(value) {
-        return [{ value, type: 'number' }];
+        return [{ value }];
     },
     integerValue(value) {
-        return [{ value, type: 'integer' }];
+        return [{ value }];
     },
     feetInchesValue(value) {
         const feet = value.feet || 0;
         const inches = value.inches || 0;
-        return [{ value: `${feet}-${inches}`, type: 'dual-integers' }];
+        return [{ value: `${feet}-${inches}` }];
     },
     bloodPressureValue(value) {
         const systolic = value.systolic || 0;
         const diastolic = value.diastolic || 0;
-        return [{ value: `${systolic}-${diastolic}`, type: 'dual-integers' }];
+        return [{ value: `${systolic}-${diastolic}` }];
     }
 };
 
@@ -65,7 +66,7 @@ const choiceValueToDBFormat = {
                 throw new RRError('answerMultipleTypeChoice', keys.join(', '));
             }
             if (numKeys === 0) {
-                return { questionChoiceId, value: 'true', type: 'bool' };
+                return { questionChoiceId, value: 'true' };
             }
             const key = keys[0];
             const fn = answerValueToDBFormat[key];
@@ -76,7 +77,7 @@ const choiceValueToDBFormat = {
         });
     },
     choice(value) {
-        return [{ questionChoiceId: value, type: 'choice' }];
+        return [{ questionChoiceId: value }];
     }
 };
 
@@ -106,6 +107,7 @@ const generateAnswerSingleFn = {
     month: value => ({ monthValue: value }),
     day: value => ({ dayValue: value }),
     bool: value => ({ boolValue: value === 'true' }),
+    'bool-sole': value => ({ boolValue: value === 'true' }),
     pounds: value => ({ numberValue: parseInt(value) }),
     integer: value => ({ integerValue: parseInt(value) }),
     'blood-pressure': value => {
@@ -133,7 +135,7 @@ const generateAnswerChoices = {
     choices: entries => {
         let choices = entries.map(r => {
             const answer = { id: r.questionChoiceId };
-            const fn = generateAnswerSingleFn[r.type];
+            const fn = generateAnswerSingleFn[r.choiceType || 'bool'];
             return Object.assign(answer, fn(r.value));
         });
         choices = _.sortBy(choices, 'id');
@@ -159,8 +161,7 @@ const fileAnswer = function ({ userId, surveyId, language, answers }, tx) {
             language,
             questionId,
             questionChoiceId: value.questionChoiceId || null,
-            value: value.hasOwnProperty('value') ? value.value : null,
-            type: value.type
+            value: value.hasOwnProperty('value') ? value.value : null
         }));
         values.forEach(value => r.push(value));
         return r;
@@ -298,15 +299,27 @@ module.exports = class AnswerDAO {
         if (scope === 'history-only') {
             where.deletedAt = { $ne: null };
         }
-        const attributes = ['questionChoiceId', 'language', 'value', 'type'];
+        const attributes = ['questionChoiceId', 'language', 'value'];
         if (scope === 'export' || !surveyId) {
             attributes.push('surveyId');
         }
         if (scope === 'history-only') {
             attributes.push([sequelize.fn('to_char', sequelize.col('answer.deleted_at'), 'SSSS.MS'), 'deletedAt']);
         }
-        const include = [{ model: Question, as: 'question', attributes: ['id', 'type'] }];
+        const include = [
+            { model: Question, as: 'question', attributes: ['id', 'type'] },
+            { model: QuestionChoice, as: 'questionChoice', attributes: ['type'] }
+        ];
         return Answer.findAll({ raw: true, where, attributes, include, paranoid: !history })
+            .then(result => {
+                result.forEach(answer => {
+                    if (answer['question.type'] === 'choices') {
+                        answer.choiceType = answer['questionChoice.type'];
+                    }
+                    delete answer['questionChoice.type'];
+                });
+                return result;
+            })
             .then(result => {
                 if (scope === 'export') {
                     return result.map(answer => {
@@ -319,8 +332,8 @@ module.exports = class AnswerDAO {
                         if (answer.value) {
                             r.value = answer.value;
                         }
-                        if (answer.type) {
-                            r.type = answer.type;
+                        if (answer.choiceType) {
+                            r.choiceType = answer.choiceType;
                         }
                         return r;
                     });
@@ -363,7 +376,7 @@ module.exports = class AnswerDAO {
     exportForUser(userId) {
         return this.listAnswers({ userId, scope: 'export' })
             .then(answers => {
-                const converter = new exportCSVConverter({ fields: ['surveyId', 'questionId', 'questionChoiceId', 'questionType', 'type', 'value'] });
+                const converter = new exportCSVConverter({ fields: ['surveyId', 'questionId', 'questionChoiceId', 'questionType', 'choiceType', 'value'] });
                 return converter.dataToCSV(answers);
             });
     }
@@ -387,12 +400,13 @@ module.exports = class AnswerDAO {
                     } else {
                         record.value = record.value.toString();
                     }
-                    if (record.type === 'month') {
+                    if (record.choiceType === 'month' || record.questionType === 'month') {
                         if (record.value.length === 1) {
                             record.value = '0' + record.value;
                         }
                     }
                     delete record.questionType;
+                    delete record.choiceType;
                     record.userId = userId;
                     record.language = 'en';
                     return record;

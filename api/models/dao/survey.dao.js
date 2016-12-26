@@ -17,6 +17,7 @@ const ProfileSurvey = db.ProfileSurvey;
 const AnswerRule = db.AnswerRule;
 const AnswerRuleValue = db.AnswerRuleValue;
 const Question = db.Question;
+const QuestionChoice = db.QuestionChoice;
 
 module.exports = class SurveyDAO extends Translatable {
     constructor(dependencies) {
@@ -98,10 +99,10 @@ module.exports = class SurveyDAO extends Translatable {
                                     .then(() => {
                                         if (rule.answer) {
                                             let dbAnswers = this.answer.toDbAnswer(rule.answer);
-                                            const pxs = dbAnswers.map(({ questionChoiceId, value, type }) => {
+                                            const pxs = dbAnswers.map(({ questionChoiceId, value }) => {
                                                 questionChoiceId = questionChoiceId || null;
                                                 value = (value !== undefined ? value : null);
-                                                return AnswerRuleValue.create({ ruleId, questionChoiceId, value, type }, { transaction });
+                                                return AnswerRuleValue.create({ ruleId, questionChoiceId, value }, { transaction });
                                             });
                                             return SPromise.all(pxs);
                                         }
@@ -326,11 +327,18 @@ module.exports = class SurveyDAO extends Translatable {
                             if (ruleIds.length) {
                                 return AnswerRuleValue.findAll({
                                         where: { ruleId: { $in: ruleIds } },
-                                        attributes: ['ruleId', 'questionChoiceId', 'value', 'type'],
-                                        raw: true
+                                        attributes: ['ruleId', 'questionChoiceId', 'value'],
+                                        raw: true,
+                                        include: [{ model: QuestionChoice, as: 'questionChoice', attributes: ['type'] }]
                                     })
                                     .then(result => {
                                         if (result.length) {
+                                            result.forEach(answer => {
+                                                if (answer['questionChoice.type']) {
+                                                    answer.choiceType = answer['questionChoice.type'];
+                                                }
+                                                delete answer['questionChoice.type'];
+                                            });
                                             const groupedResult = _.groupBy(result, 'ruleId');
                                             ruleIds.forEach(ruleId => {
                                                 const entries = groupedResult[ruleId];

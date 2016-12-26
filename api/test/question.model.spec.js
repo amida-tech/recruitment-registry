@@ -333,4 +333,16 @@ describe('question unit', function () {
 
     it('verify versioning for question 6', verifyDeletedVersioningFn(6, null));
     it('verify versioning for question 14', verifyDeletedVersioningFn(14, 1));
+
+    it('create question 26 (choices of all types)', function () {
+        const question = generator.questionGenerator.allChoices();
+        return tests.createQuestionFn(question)();
+    });
+    it('get question 26', tests.getQuestionFn());
+
+    it('create question 27 (choices with bool-sole)', function () {
+        const question = generator.questionGenerator.boolSoleChoices();
+        return tests.createQuestionFn(question)();
+    });
+    it('get question 27', tests.getQuestionFn());
 });

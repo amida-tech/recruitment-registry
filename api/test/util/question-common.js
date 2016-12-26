@@ -76,19 +76,20 @@ const SpecTests = class QuestionSpecTests {
         this.hxQuestion = hxQuestion;
     }
 
-    createQuestionFn() {
+    createQuestionFn(question) {
         const generator = this.generator;
         const hxQuestion = this.hxQuestion;
         return function () {
-            const qx = generator.newQuestion();
-            return models.question.createQuestion(qx)
-                .then(({ id }) => hxQuestion.push(qx, { id }));
+            question = question || generator.newQuestion();
+            return models.question.createQuestion(question)
+                .then(({ id }) => hxQuestion.push(question, { id }));
         };
     }
 
     getQuestionFn(index) {
         const hxQuestion = this.hxQuestion;
         return function () {
+            index = (index === undefined) ? hxQuestion.lastIndex() : index;
             const id = hxQuestion.id(index);
             return models.question.getQuestion(id)
                 .then(question => {
@@ -132,20 +133,17 @@ const IntegrationTests = class QuestionIntegrationTests {
         this.hxQuestion = hxQuestion;
     }
 
-    createQuestionFn() {
+    createQuestionFn(question) {
         const generator = this.generator;
         const rrSuperTest = this.rrSuperTest;
         const hxQuestion = this.hxQuestion;
         return function (done) {
-            const question = generator.newQuestion();
+            question = question || generator.newQuestion();
             rrSuperTest.post('/questions', question, 201)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(function (res) {
                     hxQuestion.push(question, res.body);
-                    done();
-                });
+                })
+                .end(done);
         };
     }
 
@@ -153,6 +151,7 @@ const IntegrationTests = class QuestionIntegrationTests {
         const rrSuperTest = this.rrSuperTest;
         const hxQuestion = this.hxQuestion;
         return function (done) {
+            index = (index === undefined) ? hxQuestion.lastIndex() : index;
             const id = hxQuestion.id(index);
             rrSuperTest.get(`/questions/${id}`, true, 200)
                 .expect(function (res) {

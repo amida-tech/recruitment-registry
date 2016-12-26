@@ -97,4 +97,14 @@ describe('migration spec', function () {
         });
         return db.sequelize.Promise.all(pxs);
     });
+
+    it('compare answer type records', function () {
+        return db.sequelize.query('SELECT name FROM answer_type ORDER BY name', { type: db.sequelize.QueryTypes.SELECT })
+            .then(names => {
+                return dbMigrate.sequelize.query('SELECT name FROM answer_type ORDER BY name', { type: dbMigrate.sequelize.QueryTypes.SELECT })
+                    .then(namesMigrate => {
+                        expect(namesMigrate).to.deep.equal(names);
+                    });
+            });
+    });
 });

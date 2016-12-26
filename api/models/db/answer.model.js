@@ -49,15 +49,6 @@ module.exports = function (sequelize, DataTypes) {
         value: {
             type: DataTypes.TEXT
         },
-        type: {
-            type: DataTypes.TEXT,
-            allowNull: false,
-            field: 'answer_type_id',
-            references: {
-                model: 'answer_type',
-                key: 'name'
-            }
-        },
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',

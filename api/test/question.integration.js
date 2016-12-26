@@ -350,4 +350,16 @@ describe('question integration', function () {
         it(`get question ${20 + index}`, tests.getQuestionFn(20 + index));
         it('list questions (complete)', tests.listQuestionsFn('complete'));
     });
+
+    it('create question 26 (choices of all types)', function (done) {
+        const question = generator.questionGenerator.allChoices();
+        return tests.createQuestionFn(question)(done);
+    });
+    it('get question 26', tests.getQuestionFn());
+
+    it('create question 27 (choices with bool-sole)', function (done) {
+        const question = generator.questionGenerator.boolSoleChoices();
+        return tests.createQuestionFn(question)(done);
+    });
+    it('get question 27', tests.getQuestionFn());
 });

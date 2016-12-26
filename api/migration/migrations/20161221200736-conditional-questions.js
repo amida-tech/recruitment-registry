@@ -27,15 +27,6 @@ const answerRuleValue = function (queryInterface, Sequelize) {
         value: {
             type: Sequelize.TEXT
         },
-        type: {
-            type: Sequelize.TEXT,
-            allowNull: false,
-            field: 'answer_type_id',
-            references: {
-                model: 'answer_type',
-                key: 'name'
-            }
-        },
         createdAt: {
             type: Sequelize.DATE,
             field: 'created_at',

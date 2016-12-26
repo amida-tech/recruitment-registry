@@ -68,4 +68,41 @@ describe('answer integration', function () {
             it(`logout as  user ${userIndex}`, shared.logoutFn(store));
         }
     }
+
+    it('login as super', shared.loginFn(store, config.superUser));
+    it('create question 20 (choices of all types)', function (done) {
+        const question = generator.questionGenerator.allChoices();
+        return questionTests.createQuestionFn(question)(done);
+    });
+    it('get question 20', questionTests.getQuestionFn(20));
+    it(`create survey ${testQuestions.length}`, shared.createSurveyFn(store, hxSurvey, hxQuestion, [20]));
+    it('replace choices type answer generator to answer all choices', function () {
+        const answerer = new answerCommon.AllChoicesAnswerer();
+        answerer.answerIndex = tests.generator.answerer.answerIndex;
+        tests.generator.answerer = answerer;
+    });
+    it('logout as super', shared.logoutFn(store));
+    it('login as user 3', shared.loginIndexFn(store, hxUser, 3));
+    it(`user 3 answers survey 5`, tests.answerSurveyFn(3, 5, [20]));
+    it(`user 3 gets answers to survey 5`, tests.getAnswersFn(3, 5));
+    it(`logout as  user 3`, shared.logoutFn(store));
+
+    it('login as super', shared.loginFn(store, config.superUser));
+    it('create question 21 (choices with bool-sole)', function (done) {
+        const question = generator.questionGenerator.boolSoleChoices();
+        return questionTests.createQuestionFn(question)(done);
+    });
+    it('get question 21', questionTests.getQuestionFn());
+    it(`create survey ${testQuestions.length+1}`, shared.createSurveyFn(store, hxSurvey, hxQuestion, [21]));
+    it('replace choices type answer generator to answer with bool-sole', function () {
+        const answerer = new answerCommon.BoolSoleChoicesAnswerer();
+        answerer.answerIndex = tests.generator.answerer.answerIndex;
+        tests.generator.answerer = answerer;
+    });
+    it('logout as super', shared.logoutFn(store));
+    it('login as user 3', shared.loginIndexFn(store, hxUser, 3));
+
+    it(`user 3 answers survey 6`, tests.answerSurveyFn(3, 6, [21]));
+    it(`user 3 gets answers to survey 6`, tests.getAnswersFn(3, 6));
+    it(`logout as  user 3`, shared.logoutFn(store));
 });
