@@ -339,4 +339,10 @@ describe('question unit', function () {
         return tests.createQuestionFn(question)();
     });
     it('get question 26', tests.getQuestionFn());
+
+    it('create question 27 (choices with bool-sole)', function () {
+        const question = generator.questionGenerator.boolSoleChoices();
+        return tests.createQuestionFn(question)();
+    });
+    it('get question 27', tests.getQuestionFn());
 });

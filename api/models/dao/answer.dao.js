@@ -107,6 +107,7 @@ const generateAnswerSingleFn = {
     month: value => ({ monthValue: value }),
     day: value => ({ dayValue: value }),
     bool: value => ({ boolValue: value === 'true' }),
+    'bool-sole': value => ({ boolValue: value === 'true' }),
     pounds: value => ({ numberValue: parseInt(value) }),
     integer: value => ({ integerValue: parseInt(value) }),
     'blood-pressure': value => {

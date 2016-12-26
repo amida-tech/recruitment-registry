@@ -356,4 +356,10 @@ describe('question integration', function () {
         return tests.createQuestionFn(question)(done);
     });
     it('get question 26', tests.getQuestionFn());
+
+    it('create question 27 (choices with bool-sole)', function (done) {
+        const question = generator.questionGenerator.boolSoleChoices();
+        return tests.createQuestionFn(question)(done);
+    });
+    it('get question 27', tests.getQuestionFn());
 });

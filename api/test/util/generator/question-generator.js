@@ -144,6 +144,14 @@ module.exports = class QuestionGenerator {
         return question;
     }
 
+    boolSoleChoices() {
+        const question = this.body('choices');
+        const choices = this.newChoices().map(choice => ({ text: choice, type: 'bool' }));
+        choices[choices.length - 1].type = 'bool-sole';
+        question.choices = choices;
+        return question;
+    }
+
     newActions(index, count) {
         return _.range(count).map(i => {
             const text = `text_${index}_${i}`;
