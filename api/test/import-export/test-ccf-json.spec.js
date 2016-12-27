@@ -22,7 +22,8 @@ describe('ccf import-export ccf', function () {
         pillars: 'ccf-pillars.csv',
         questions: 'ccf-questions.csv',
         answers: 'ccf-answers.xlsx',
-        assessments: 'ccf-assessments.xlsx'
+        assessments: 'ccf-assessments.xlsx',
+        surveys: 'ccf-questions.xlsx'
     };
 
     const filepaths = {};

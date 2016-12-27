@@ -30,6 +30,28 @@ const converters = {
         return new XLSXConverter({
             dateTimes: ['updated_at']
         });
+    },
+    surveys() {
+        return new XLSXConverter({
+            sheets: [{
+                name: 'Questions',
+                headers: {
+                    number: 'id',
+                    'objectId (Hash Tag Used for Questions)': 'key',
+                    question: 'text',
+                    instruction: 'instruction',
+                    'skipCount (Number of Questions Skipped if Contitional answer is picked)': 'skipCount',
+                    answerType: 'type',
+                    'conditional (Answer Hash Tag used with skipCount to skip next question if certain answer is picked': 'condition',
+                    answer: 'choice',
+                    'hash (Hash Tag Used for Answers)': 'answerKey',
+                    tag: 'tag',
+                    toggle: 'toggle'
+                }
+            }, {
+                name: 'Pillars'
+            }]
+        });
     }
 };
 
