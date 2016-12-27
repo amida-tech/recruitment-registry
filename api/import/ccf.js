@@ -95,8 +95,11 @@ const answerUpdate = {
     10: answerUpdateChoice
 };
 
-const questionsPost = function (result, key, lines) {
-    if (!(result.pillars && result.pillarsTitleIndex)) {
+const surveysPost = function (result, key, lines) {
+    result[`surveysIdIndex`] = _.keyBy(lines.Pillars, 'id');
+    result[`surveysTitleIndex`] = _.keyBy(lines.Pillars, 'title');
+    lines.Pillars.forEach(pillar => pillar.isBHI = (pillar.isBHI === 'true'));
+    if (!(lines.Pillars && result.surveysTitleIndex)) {
         throw new Error('Pillar records have to be read before questions.');
     }
     let activePillar = null;
@@ -105,11 +108,11 @@ const questionsPost = function (result, key, lines) {
     const answers = [];
     const choices = [];
     const answersKeyIndex = {};
-    lines.forEach(line => {
+    lines.Questions.forEach(line => {
         const objKeys = Object.keys(line);
         if ((objKeys.length === 1) && (objKeys[0] === 'id')) {
             const title = line.id;
-            activePillar = result.pillarsTitleIndex[title];
+            activePillar = result.surveysTitleIndex[title];
             if (!activePillar) {
                 throw new Error(`Unknown pillar: ${title}`);
             }
@@ -124,9 +127,12 @@ const questionsPost = function (result, key, lines) {
                 id: questions.length + 1,
                 key: line.key,
                 text: line.text,
-                instruction: line.instruction,
+                instruction: line.instruction || '',
                 type: line.type
             };
+            if (activeQuestion.hasOwnProperty('type')) {
+                activeQuestion.type = parseInt(activeQuestion.type, 10);
+            }
             const pillarQuestion = {
                 questionId: activeQuestion.id,
             };
@@ -152,10 +158,12 @@ const questionsPost = function (result, key, lines) {
         }
         throw new Error(`Unexpected line.  Unsupported type: ${activeQuestion.type}`);
     });
-    result[key] = questions;
+    result[key].Questions = questions;
     result.qanswers = answers;
     result.choices = choices;
     result.answersKeyIndex = answersKeyIndex;
+    result.pillars = result.surveys.Pillars;
+    result.questions = result.surveys.Questions;
 };
 
 const answersPost = function (result, key, lines) {
@@ -208,13 +216,8 @@ const answersPost = function (result, key, lines) {
 };
 
 const postAction = {
-    pillars(result, key, json) {
-        result[key] = json;
-        result[`${key}IdIndex`] = _.keyBy(json, 'id');
-        result[`${key}TitleIndex`] = _.keyBy(json, 'title');
-    },
-    questions: questionsPost,
-    answers: answersPost
+    answers: answersPost,
+    surveys: surveysPost
 };
 
 const importFile = function (filepaths, result, key) {
@@ -222,18 +225,24 @@ const importFile = function (filepaths, result, key) {
     const converter = converters[key]();
     return converter.fileToRecords(filepath)
         .then(json => {
-            const fn = postAction[key];
-            if (fn) {
-                return fn(result, key, json);
-            }
             result[key] = json;
         });
 };
 
 const importFiles = function (filepaths) {
     const result = {};
-    const pxs = Object.keys(filepaths).map(key => importFile(filepaths, result, key));
-    return SPromise.all(pxs).then(() => result);
+    const keys = ['surveys', 'assessments', 'answers'];
+    const pxs = keys.map(key => importFile(filepaths, result, key));
+    return SPromise.all(pxs)
+        .then(() => {
+            keys.forEach(key => {
+                const fn = postAction[key];
+                if (fn) {
+                    fn(result, key, result[key]);
+                }
+            });
+            return result;
+        });
 };
 
 module.exports = {
