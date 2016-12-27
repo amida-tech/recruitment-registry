@@ -7,6 +7,20 @@ const SPromise = require('../lib/promise');
 const CSVConverter = require('./csv-converter');
 const XLSXConverter = require('./xlsx-converter');
 
+const headers2 = {
+    number: 'id',
+    'objectId (Hash Tag Used for Questions)': 'key',
+    question: 'text',
+    instruction: 'instruction',
+    'skipCount (Number of Questions Skipped if Contitional answer is picked)': 'skipCount',
+    answerType: 'type',
+    'conditional (Answer Hash Tag used with skipCount to skip next question if certain answer is picked': 'condition',
+    answer: 'choice',
+    'hash (Hash Tag Used for Answers)': 'answerKey',
+    tag: 'tag',
+    toggle: 'toggle'
+};
+
 const converters = {
     questions() {
         const options = {
@@ -34,20 +48,7 @@ const converters = {
     surveys() {
         return new XLSXConverter({
             sheets: [{
-                name: 'Questions',
-                headers: {
-                    number: 'id',
-                    'objectId (Hash Tag Used for Questions)': 'key',
-                    question: 'text',
-                    instruction: 'instruction',
-                    'skipCount (Number of Questions Skipped if Contitional answer is picked)': 'skipCount',
-                    answerType: 'type',
-                    'conditional (Answer Hash Tag used with skipCount to skip next question if certain answer is picked': 'condition',
-                    answer: 'choice',
-                    'hash (Hash Tag Used for Answers)': 'answerKey',
-                    tag: 'tag',
-                    toggle: 'toggle'
-                }
+                name: 'Questions'
             }, {
                 name: 'Pillars'
             }]
@@ -96,6 +97,14 @@ const answerUpdate = {
 };
 
 const surveysPost = function (result, key, lines) {
+    lines.Questions = lines.Questions.map(row => {
+        return Object.keys(row).reduce((r, key) => {
+            const newKey = headers2[key] || key;
+            const value = row[key];
+            r[newKey] = value;
+            return r;
+        }, {});
+    });
     result[`surveysIdIndex`] = _.keyBy(lines.Pillars, 'id');
     result[`surveysTitleIndex`] = _.keyBy(lines.Pillars, 'title');
     lines.Pillars.forEach(pillar => pillar.isBHI = (pillar.isBHI === 'true'));

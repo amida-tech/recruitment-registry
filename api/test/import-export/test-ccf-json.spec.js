@@ -54,6 +54,14 @@ describe('ccf import-export ccf', function () {
         fileCompare.contentToFile(exportedJsonDB.questions, filepaths.questions);
     });
 
+    //it('compare surveys', function () {
+    //    return ccfImport.converters.surveys().fileToRecords(filepaths.surveys)
+    //        .then(rawJson => {
+    //            expect(exportedJsonDB.questions).to.deep.equal(rawJson.Questions);
+    //            expect(exportedJsonDB.pillars).to.deep.equal(rawJson.Pillars);
+    //        });
+    //});
+
     it('compare assessments', function () {
         return ccfImport.converters.assessments().fileToRecords(filepaths.assessments)
             .then(rawJson => {

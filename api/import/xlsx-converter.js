@@ -38,19 +38,9 @@ module.exports = class XLSXConverter {
             try {
                 const workbook = xlsx.readFile(filepath);
                 if (this.options.sheets) {
-                    const result = this.options.sheets.reduce((r, { name, headers }) => {
+                    const result = this.options.sheets.reduce((r, { name }) => {
                         const worksheet = workbook.Sheets[name];
                         let rows = xlsx.utils.sheet_to_json(worksheet, { raw: true });
-                        if (headers) {
-                            rows = rows.map(row => {
-                                return Object.keys(row).reduce((r, key) => {
-                                    const newKey = headers[key] || key;
-                                    const value = row[key];
-                                    r[newKey] = value;
-                                    return r;
-                                }, {});
-                            });
-                        }
                         r[name] = rows;
                         return r;
                     }, {});
