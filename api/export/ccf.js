@@ -1,12 +1,14 @@
 'use strict';
 
 const json2csv = require('json2csv');
+const _ = require('lodash');
 
 const cId = 'number';
 const cHash = 'objectId (Hash Tag Used for Questions)';
 const cConditional = 'conditional (Answer Hash Tag used with skipCount to skip next question if certain answer is picked)';
 const cAnswerHash = 'hash (Hash Tag Used for Answers)';
 const cSkipCount = 'skipCount (Number of Questions Skipped if Contitional answer is picked)';
+const cAnswerKey = 'hash (Hash Tag Used for Answers)';
 
 const options = {
     pillars: {
@@ -124,6 +126,69 @@ const convertQuestions = function (pillars, questions, choices, answers) {
     return result;
 };
 
+const convertQuestions2 = function (pillars, questions, choices, answers) {
+    const pillarsResult = _.cloneDeep(pillars);
+    pillarsResult.forEach(pillar => delete pillar.questions);
+    pillarsResult.forEach(pillar => pillar.isBHI = pillar.isBHI ? 'true' : 'false');
+    const questionMap = new Map(questions.map(qx => [qx.id, qx]));
+    const choiceMap = new Map(choices.map(choice => [choice.id, choice]));
+    const answerMap = new Map(answers.map(answer => {
+        let key = answer.questionId;
+        if (answer.choice) {
+            key = key += ':' + answer.choice;
+        }
+        return [key, answer];
+    }));
+    const result = [];
+    let questionIndex = 1;
+    pillars.forEach(pillar => {
+        result.push({
+            [cId]: pillar.title
+        });
+        pillar.questions.forEach(({ questionId }) => {
+            const question = questionMap.get(questionId);
+            let current = {
+                [cId]: questionIndex ? questionIndex.toString() : questionIndex,
+                [cHash]: question.key,
+                question: question.text,
+                answerType: question.type ? question.type.toString() : question.type
+            };
+            if (question.instruction) {
+                current.instruction = question.instruction;
+            }
+            if (question.choices) {
+                question.choices.forEach(choiceId => {
+                    const choice = choiceMap.get(choiceId);
+                    const key = question.id + ':' + choice.id;
+                    const answer = answerMap.get(key);
+                    current.answer = choice.value;
+                    if (answer) {
+                        current.tag = answer.tag;
+                        current[cAnswerKey] = answer.key;
+                        if (answer.toggle) {
+                            current.toggle = answer.toggle;
+                        }
+                    }
+                    result.push(current);
+                    current = {};
+                });
+            } else {
+                const answer = answerMap.get(question.id);
+                if (answer) {
+                    current.tag = answer.tag;
+                    current[cAnswerKey] = answer.key;
+                    if (answer.toggle) {
+                        current.toggle = answer.toggle;
+                    }
+                }
+                result.push(current);
+            }
+            ++questionIndex;
+        });
+    });
+    return { Questions: result, Pillars: pillarsResult };
+};
+
 const answerKey = function (answer) {
     return answer.user_id + ':' + answer.pillar_hash;
 };
@@ -176,6 +241,7 @@ const convertJsonDB = function convertJsonDB(jsonDB) {
         quotes: ''
     });
     const questions = convertQuestions(jsonDB.pillars, jsonDB.questions, jsonDB.choices, jsonDB.qanswers);
+    const surveys = convertQuestions2(jsonDB.pillars, jsonDB.questions, jsonDB.choices, jsonDB.qanswers);
     const questionsFile = json2csv({
         data: questions,
         fields: options.questions.fields,
@@ -184,7 +250,8 @@ const convertJsonDB = function convertJsonDB(jsonDB) {
     return {
         pillars: pillarsFile,
         questions: questionsFile,
-        answers: answersJson(jsonDB)
+        answers: answersJson(jsonDB),
+        surveys
     };
 };
 
