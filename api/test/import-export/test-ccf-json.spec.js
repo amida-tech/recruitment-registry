@@ -9,8 +9,6 @@ const chai = require('chai');
 const ccfImport = require('../../import/ccf');
 const ccfExport = require('../../export/ccf');
 
-const fileCompare = require('../util/file-compare');
-
 const expect = chai.expect;
 
 describe('ccf import-export ccf', function () {
@@ -19,8 +17,6 @@ describe('ccf import-export ccf', function () {
     let jsonDB = null;
 
     const filenames = {
-        pillars: 'ccf-pillars.csv',
-        questions: 'ccf-questions.csv',
         answers: 'ccf-answers.xlsx',
         assessments: 'ccf-assessments.xlsx',
         surveys: 'ccf-questions.xlsx'
@@ -44,14 +40,6 @@ describe('ccf import-export ccf', function () {
 
     it('export json db', function () {
         exportedJsonDB = ccfExport.convertJsonDB(jsonDB);
-    });
-
-    it('compare pillars', function () {
-        fileCompare.contentToFile(exportedJsonDB.pillars, filepaths.pillars);
-    });
-
-    it('compare questions', function () {
-        fileCompare.contentToFile(exportedJsonDB.questions, filepaths.questions);
     });
 
     it('compare surveys', function () {
