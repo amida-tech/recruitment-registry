@@ -1,11 +1,14 @@
 'use strict';
 
 const _ = require('lodash');
+const intoStream = require('into-stream');
 
 const SPromise = require('../lib/promise');
 
 const CSVConverter = require('./csv-converter');
 const XLSXConverter = require('./xlsx-converter');
+
+const models = require('../models');
 
 const headers2 = {
     number: 'id',
@@ -73,6 +76,9 @@ const answerUpdateChoice = function (id, line, question, choices) {
         id: choices.length + 1,
         value: line.choice
     };
+    if (line.toggle) {
+        choice.toggle = line.toggle;
+    }
     question.choices.push(choice.id);
     choices.push(choice);
     return {
@@ -94,6 +100,17 @@ const answerUpdate = {
     8: answerUpdateChoice,
     9: answerUpdateChoice,
     10: answerUpdateChoice
+};
+
+const questionTypes = {
+    5: 'zip',
+    10: ['month', 'day', 'year'],
+    2: 'choice',
+    3: 'choice',
+    7: 'choice',
+    4: 'choices',
+    8: ['integer'],
+    9: ['integer', 'integer'],
 };
 
 const surveysPost = function (result, key, lines) {
@@ -158,9 +175,6 @@ const surveysPost = function (result, key, lines) {
         const fnAnswer = answerUpdate[activeQuestion.type];
         if (fnAnswer) {
             const answer = fnAnswer(answers.length + 1, line, activeQuestion, choices);
-            if (line.toggle) {
-                answer.toggle = line.toggle;
-            }
             answers.push(answer);
             answersKeyIndex[answer.key] = answer;
             return;
@@ -254,7 +268,45 @@ const importFiles = function (filepaths) {
         });
 };
 
+const importToDb = function (jsonDB) {
+    const choiceMap = new Map(jsonDB.choices.map(choice => [choice.id, [choice.value, choice.toggle]]));
+    const csv = jsonDB.questions.reduce((r, question) => {
+        let id = question.id;
+        const type = questionTypes[question.type];
+        let questionType = type;
+        let text = question.text;
+        let instruction = question.instruction || '';
+        if (type === 'choice' || type === 'choices' || Array.isArray(type)) {
+            question.choices.forEach((choiceId, index) => {
+                const [choiceText, choiceToggle] = choiceMap.get(choiceId);
+                let choiceType = '';
+                if (type === 'choices') {
+                    choiceType = 'bool';
+                    if (choiceToggle && (choiceToggle === 'checkalloff')) {
+                        choiceType = 'bool-sole';
+                    }
+                }
+                if (Array.isArray(type)) {
+                    questionType = 'choices';
+                    choiceType = type[index];
+                }
+                const line = `${id},${questionType},"${text}","${instruction}",${choiceId},"${choiceText}",${choiceType}`;
+                r.push(line);
+                questionType = text = instruction = '';
+            });
+            return r;
+        }
+        const line = [id,questionType, text, instruction, '', '', ''].join(',');
+        r.push(line);
+        return r;
+    }, ['id,type,text,instruction,choiceId,choiceText,choiceType']);
+    const stream = intoStream(csv.join('\n'));
+    return models.question.import(stream)
+        .then(idMap => idMap);
+};
+
 module.exports = {
     converters,
-    importFiles
+    importFiles,
+    importToDb
 };

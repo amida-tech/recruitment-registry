@@ -1,4 +1,4 @@
-/* global describe,it*/
+/* global before,describe,it*/
 'use strict';
 process.env.NODE_ENV = 'test';
 
@@ -9,7 +9,10 @@ const chai = require('chai');
 const ccfImport = require('../../import/ccf');
 const ccfExport = require('../../export/ccf');
 
+const SharedSpec = require('../util/shared-spec.js');
+
 const expect = chai.expect;
+const shared = new SharedSpec();
 
 describe('ccf import-export ccf', function () {
     const fixtureDir = path.join(__dirname, '../fixtures/import-export/ccf');
@@ -31,12 +34,18 @@ describe('ccf import-export ccf', function () {
         }
     });
 
+    before(shared.setUpFn());
+
     it('import ccf files to json db', function () {
         return ccfImport.importFiles(filepaths)
             .then(result => jsonDB = result);
     });
 
     let exportedJsonDB = null;
+
+    it('import to database', function () {
+        return ccfImport.importToDb(jsonDB);
+    });
 
     it('export json db', function () {
         exportedJsonDB = ccfExport.convertJsonDB(jsonDB);

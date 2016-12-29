@@ -45,12 +45,12 @@ const convertQuestions = function (pillars, questions, choices, answers) {
                     const key = question.id + ':' + choice.id;
                     const answer = answerMap.get(key);
                     current.answer = choice.value;
+                    if (choice.toggle) {
+                        current.toggle = choice.toggle;
+                    }
                     if (answer) {
                         current.tag = answer.tag;
                         current[cAnswerKey] = answer.key;
-                        if (answer.toggle) {
-                            current.toggle = answer.toggle;
-                        }
                     }
                     result.push(current);
                     current = {};
