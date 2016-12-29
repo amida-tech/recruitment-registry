@@ -127,7 +127,7 @@ module.exports = class Answerer {
                 const choice = this.selectChoice(question.choices);
                 this.answerIndex += 2;
                 const answer = { text: choice.text };
-                if (choice.type !== 'bool') {
+                if (choice.type && choice.type !== 'bool') {
                     Object.assign(answer, this[choice.type]());
                 }
                 return answer;

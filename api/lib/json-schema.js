@@ -100,7 +100,8 @@ _.set(schema, 'definitions.newSurveyQuestion', {
                     type: 'object',
                     required: ['text'],
                     properties: {
-                        text: { type: 'string' }
+                        text: { type: 'string' },
+                        meta: { type: 'object' }
                     },
                     additionalProperties: false
                 }
@@ -150,7 +151,8 @@ _.set(schema, 'definitions.newSurveyQuestion', {
                     required: ['text'],
                     properties: {
                         text: { type: 'string' },
-                        type: { type: 'string', enum: choiceTypes }
+                        type: { type: 'string', enum: choiceTypes },
+                        meta: { type: 'object' }
                     },
                     additionalProperties: false
                 }
@@ -204,7 +206,8 @@ _.set(schema, 'definitions.newQuestion', {
                     type: 'object',
                     required: ['text'],
                     properties: {
-                        text: { type: 'string' }
+                        text: { type: 'string' },
+                        meta: { type: 'object' }
                     },
                     additionalProperties: false
                 }
@@ -258,7 +261,8 @@ _.set(schema, 'definitions.newQuestion', {
                     required: ['text'],
                     properties: {
                         text: { type: 'string' },
-                        type: { type: 'string', enum: choiceTypes }
+                        type: { type: 'string', enum: choiceTypes },
+                        meta: { type: 'object' }
                     },
                     additionalProperties: false
                 }

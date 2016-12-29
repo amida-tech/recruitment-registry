@@ -296,7 +296,7 @@ const importToDb = function (jsonDB) {
             });
             return r;
         }
-        const line = [id,questionType, text, instruction, '', '', ''].join(',');
+        const line = [id, questionType, text, instruction, '', '', ''].join(',');
         r.push(line);
         return r;
     }, ['id,type,text,instruction,choiceId,choiceText,choiceType']);

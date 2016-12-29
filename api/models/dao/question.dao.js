@@ -32,11 +32,20 @@ module.exports = class QuestionDAO extends Translatable {
     }
 
     createChoicesTx(questionId, choices, transaction) {
-        const pxs = choices.map(({ text, type }, line) => {
+        const pxs = choices.map(({ text, type, meta }, line) => {
             type = type || 'bool';
             const choice = { questionId, text, type, line };
+            if (meta) {
+                choice.meta = meta;
+            }
             return this.questionChoice.createQuestionChoiceTx(choice, transaction)
-                .then(({ id }) => ({ id, text: choice.text }));
+                .then(({ id }) => {
+                    const result = { id, text: choice.text };
+                    if (meta) {
+                        result.meta = meta;
+                    }
+                    return result;
+                });
         });
         return SPromise.all(pxs);
     }
@@ -138,17 +147,9 @@ module.exports = class QuestionDAO extends Translatable {
                 return this.questionChoice.findChoicesPerQuestion(question.id, options.language)
                     .then(choices => {
                         if (question.type === 'choice') {
-                            question.choices = choices.map(({ id, text }) => ({
-                                id,
-                                text
-                            }));
-                        } else {
-                            question.choices = choices.map(({ id, text, type }) => ({
-                                id,
-                                text,
-                                type: type
-                            }));
+                            choices.forEach(choice => delete choice.type);
                         }
+                        question.choices = choices;
                         return question;
                     });
             });
@@ -201,7 +202,7 @@ module.exports = class QuestionDAO extends Translatable {
     listQuestions({ scope, ids, language } = {}) {
         scope = scope || 'summary';
         const attributes = ['id', 'type'];
-        if (scope === 'complete') {
+        if (scope === 'complete' || scope === 'export') {
             attributes.push('meta');
         }
         const options = { raw: true, attributes, order: 'id' };
@@ -291,19 +292,38 @@ module.exports = class QuestionDAO extends Translatable {
         });
     }
 
-    export () {
+    exportMetaQuestionProperties(meta, metaOptions, withChoice, fromQuestion) {
+        return metaOptions.meta.reduce((r, propertyInfo) => {
+            if (fromQuestion && withChoice) {
+                return r;
+            }
+            const name = propertyInfo.name;
+            if (meta.hasOwnProperty(name)) {
+                r[name] = meta[name];
+            }
+            return r;
+        }, {});
+    }
+
+    export (options = {}) {
         return this.listQuestions({ scope: 'export' })
             .then(questions => {
-                return questions.reduce((r, { id, type, text, instruction, choices }) => {
+                return questions.reduce((r, { id, type, text, instruction, meta, choices }) => {
                     const questionLine = { id, type, text, instruction };
+                    if (meta && options.meta) {
+                        Object.assign(questionLine, this.exportMetaQuestionProperties(meta, options.meta, choices, true));
+                    }
                     if (!choices) {
                         r.push(questionLine);
                         return r;
                     }
-                    choices.forEach(({ id, type, text }, index) => {
+                    choices.forEach(({ id, type, text, meta }, index) => {
                         const line = { choiceId: id, choiceText: text };
                         if (type) {
                             line.choiceType = type;
+                        }
+                        if (meta && options.meta) {
+                            Object.assign(questionLine, this.exportMetaQuestionProperties(meta, options.meta, true, false));
                         }
                         if (index === 0) {
                             Object.assign(line, questionLine);
@@ -321,7 +341,21 @@ module.exports = class QuestionDAO extends Translatable {
             });
     }
 
-    import (stream) {
+    importtMetaQuestionProperties(record, metaOptions, withChoice, fromQuestion) {
+        return metaOptions.meta.reduce((r, propertyInfo) => {
+            if (fromQuestion && withChoice) {
+                return r;
+            }
+            const name = propertyInfo.name;
+            const value = record[name];
+            if (value !== undefined) {
+                r[name] = value;
+            }
+            return r;
+        }, {});
+    }
+
+    import (stream, options = {}) {
         const converter = new importCSVConverter();
         return converter.streamToRecords(stream)
             .then(records => {
@@ -337,6 +371,13 @@ module.exports = class QuestionDAO extends Translatable {
                         if (record.instruction) {
                             question.instruction = record.instruction;
                         }
+                        if (options.meta) {
+                            const withChoice = record.type === 'choice' || record.type === 'choices';
+                            const meta = this.exportMetaQuestionProperties(record, options.meta, withChoice, true);
+                            if (Object.keys(meta) > 0) {
+                                question.meta = meta;
+                            }
+                        }
                         r.set(id, { id, question });
                     }
                     if (record.choiceId) {
@@ -346,6 +387,12 @@ module.exports = class QuestionDAO extends Translatable {
                         const choice = { id: record.choiceId, text: record.choiceText };
                         if (record.choiceType) {
                             choice.type = record.choiceType;
+                        }
+                        if (options.meta) {
+                            const meta = this.exportMetaQuestionProperties(record, options.meta, true, false);
+                            if (Object.keys(meta) > 0) {
+                                choice.meta = meta;
+                            }
                         }
                         question.choices.push(choice);
                     }

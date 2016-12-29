@@ -19,6 +19,9 @@ module.exports = function (sequelize, DataTypes) {
                 key: 'name'
             },
         },
+        meta: {
+            type: DataTypes.JSON
+        },
         line: {
             type: DataTypes.INTEGER
         },

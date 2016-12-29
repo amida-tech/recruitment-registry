@@ -3043,8 +3043,12 @@
                 },
                 "type": {
                     "$ref": "#/definitions/choiceType"
+                },
+                "meta": {
+                    "type": "object"
                 }
-            }
+            },
+            "additionalProperties": false
         },
         "choiceTextUpdate": {
             "type": "object",
@@ -3366,6 +3370,9 @@
                 },
                 "type": {
                     "$ref": "#/definitions/choiceType"
+                },
+                "meta": {
+                    "type": "object"
                 }
             },
             "additionalProperties": false
