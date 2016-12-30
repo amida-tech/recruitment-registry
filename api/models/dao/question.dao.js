@@ -293,7 +293,7 @@ module.exports = class QuestionDAO extends Translatable {
     }
 
     exportMetaQuestionProperties(meta, metaOptions, withChoice, fromQuestion) {
-        return metaOptions.meta.reduce((r, propertyInfo) => {
+        return metaOptions.reduce((r, propertyInfo) => {
             if (fromQuestion && withChoice) {
                 return r;
             }
@@ -341,15 +341,14 @@ module.exports = class QuestionDAO extends Translatable {
             });
     }
 
-    importtMetaQuestionProperties(record, metaOptions, withChoice, fromQuestion) {
-        return metaOptions.meta.reduce((r, propertyInfo) => {
-            if (fromQuestion && withChoice) {
-                return r;
-            }
-            const name = propertyInfo.name;
-            const value = record[name];
-            if (value !== undefined) {
-                r[name] = value;
+    importMetaQuestionProperties(record, metaOptions, fromType) {
+        return metaOptions.reduce((r, propertyInfo) => {
+            if (propertyInfo.type === fromType) {
+                const name = propertyInfo.name;
+                const value = record[name];
+                if (value !== undefined && value !== null) {
+                    r[name] = value;
+                }
             }
             return r;
         }, {});
@@ -367,16 +366,18 @@ module.exports = class QuestionDAO extends Translatable {
                     const id = record.id;
                     let { question } = r.get(id) || {};
                     if (!question) {
-                        question = { text: record.text, type: record.type };
+                        question = { text: record.text, type: record.type, key: record.key };
                         if (record.instruction) {
                             question.instruction = record.instruction;
                         }
                         if (options.meta) {
-                            const withChoice = record.type === 'choice' || record.type === 'choices';
-                            const meta = this.exportMetaQuestionProperties(record, options.meta, withChoice, true);
-                            if (Object.keys(meta) > 0) {
+                            const meta = this.importMetaQuestionProperties(record, options.meta, 'question');
+                            if (Object.keys(meta).length > 0) {
                                 question.meta = meta;
                             }
+                        }
+                        if (!record.choiceId) {
+                            question.answerKey = record.answerKey;
                         }
                         r.set(id, { id, question });
                     }
@@ -389,11 +390,12 @@ module.exports = class QuestionDAO extends Translatable {
                             choice.type = record.choiceType;
                         }
                         if (options.meta) {
-                            const meta = this.exportMetaQuestionProperties(record, options.meta, true, false);
-                            if (Object.keys(meta) > 0) {
+                            const meta = this.importMetaQuestionProperties(record, options.meta, 'choice');
+                            if (Object.keys(meta).length > 0) {
                                 choice.meta = meta;
                             }
                         }
+                        choice.answerKey = record.answerKey;
                         question.choices.push(choice);
                     }
                     return r;
@@ -407,14 +409,41 @@ module.exports = class QuestionDAO extends Translatable {
                 return sequelize.transaction(transaction => {
                     const mapIds = {};
                     const pxs = records.map(({ id, question }) => {
-                        const questionProper = _.omit(question, 'choices');
+                        const questionProper = _.omit(question, ['choices', 'key', 'answerKey']);
                         return this.createQuestionTx(questionProper, transaction)
                             .then(({ id: questionId }) => {
+                                const type = options.sourceType;
+                                const identifier = question.key;
+                                if (type && identifier) {
+                                    return QuestionIdentifier.create({ type, identifier, questionId }, { transaction })
+                                        .then(() => {
+                                            if (!question.choices) {
+                                                const identifier = question.answerKey;
+                                                return AnswerIdentifier.create({ type, identifier, questionId }, { transaction });
+                                            }
+                                        })
+                                        .then(() => questionId);
+                                }
+                                return questionId;
+                            })
+                            .then(questionId => {
                                 const choices = question.choices;
                                 if (choices) {
-                                    const inputChoices = choices.map(choice => _.omit(choice, 'id'));
+                                    const inputChoices = choices.map(choice => _.omit(choice, ['id', 'answerKey']));
                                     return this.createChoicesTx(questionId, inputChoices, transaction)
                                         .then(choicesIds => choicesIds.map(choicesId => choicesId.id))
+                                        .then(choicesIds => {
+                                            const type = options.sourceType;
+                                            if (type) {
+                                                const pxs = choicesIds.map((questionChoiceId, index) => {
+                                                    const identifier = choices[index].answerKey;
+                                                    return AnswerIdentifier.create({ type, identifier, questionId, questionChoiceId }, { transaction });
+                                                });
+                                                return SPromise.all(pxs)
+                                                    .then(() => choicesIds);
+                                            }
+                                            return choicesIds;
+                                        })
                                         .then(choicesIds => {
                                             mapIds[id] = {
                                                 questionId,

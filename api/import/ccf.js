@@ -60,6 +60,7 @@ const converters = {
 };
 
 const answerUpdateSingle = function (id, line, question) {
+    question.answerKey = line.answerKey;
     return {
         id: id,
         key: line.answerKey,
@@ -79,6 +80,7 @@ const answerUpdateChoice = function (id, line, question, choices) {
     if (line.toggle) {
         choice.toggle = line.toggle;
     }
+    choice.answerKey = line.answerKey;
     question.choices.push(choice.id);
     choices.push(choice);
     return {
@@ -269,16 +271,18 @@ const importFiles = function (filepaths) {
 };
 
 const importToDb = function (jsonDB) {
-    const choiceMap = new Map(jsonDB.choices.map(choice => [choice.id, [choice.value, choice.toggle]]));
+    const choiceMap = new Map(jsonDB.choices.map(choice => [choice.id, [choice.value, choice.toggle, choice.answerKey]]));
     const csv = jsonDB.questions.reduce((r, question) => {
         let id = question.id;
         const type = questionTypes[question.type];
         let questionType = type;
+        let ccType = question.type;
         let text = question.text;
         let instruction = question.instruction || '';
+        let key = question.key;
         if (type === 'choice' || type === 'choices' || Array.isArray(type)) {
             question.choices.forEach((choiceId, index) => {
-                const [choiceText, choiceToggle] = choiceMap.get(choiceId);
+                const [choiceText, choiceToggle, answerKey] = choiceMap.get(choiceId);
                 let choiceType = '';
                 if (type === 'choices') {
                     choiceType = 'bool';
@@ -290,18 +294,19 @@ const importToDb = function (jsonDB) {
                     questionType = 'choices';
                     choiceType = type[index];
                 }
-                const line = `${id},${questionType},"${text}","${instruction}",${choiceId},"${choiceText}",${choiceType}`;
+                const line = `${id},${questionType},"${text}","${instruction}",${ccType},${key},${choiceId},"${choiceText}",${choiceType},${answerKey}`;
                 r.push(line);
-                questionType = text = instruction = '';
+                questionType = text = instruction = key = '';
             });
             return r;
         }
-        const line = [id, questionType, text, instruction, '', '', ''].join(',');
+        const line = [id, questionType, text, instruction, ccType, key, '', '', '', question.answerKey].join(',');
         r.push(line);
         return r;
-    }, ['id,type,text,instruction,choiceId,choiceText,choiceType']);
+    }, ['id,type,text,instruction,ccType,key,choiceId,choiceText,choiceType,answerKey']);
+    const options = { meta: [{ name: 'ccType', type: 'question' }], sourceType: 'cc' };
     const stream = intoStream(csv.join('\n'));
-    return models.question.import(stream)
+    return models.question.import(stream, options)
         .then(idMap => idMap);
 };
 
