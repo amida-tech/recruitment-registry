@@ -72,6 +72,9 @@ const answerIdentifier = function (queryInterface, Sequelize) {
                 key: 'id'
             }
         },
+        tag: {
+            type: Sequelize.INTEGER
+        },
         createdAt: {
             type: Sequelize.DATE,
             field: 'created_at',

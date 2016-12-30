@@ -5,7 +5,6 @@ const intoStream = require('into-stream');
 
 const SPromise = require('../lib/promise');
 
-const CSVConverter = require('./csv-converter');
 const XLSXConverter = require('./xlsx-converter');
 
 const models = require('../models');
@@ -25,19 +24,6 @@ const headers2 = {
 };
 
 const converters = {
-    questions() {
-        const options = {
-            ignoreEmpty: true,
-            headers: [
-                'id', 'key', 'text', 'instruction', 'skipCount', 'type',
-                'condition', 'choice', 'answerKey', 'tag', 'toggle'
-            ]
-        };
-        return new CSVConverter(options);
-    },
-    pillars() {
-        return new CSVConverter({});
-    },
     answers() {
         return new XLSXConverter({
             dateTimes: ['updated_at']
@@ -61,6 +47,7 @@ const converters = {
 
 const answerUpdateSingle = function (id, line, question) {
     question.answerKey = line.answerKey;
+    question.tag = line.tag;
     return {
         id: id,
         key: line.answerKey,
@@ -81,6 +68,7 @@ const answerUpdateChoice = function (id, line, question, choices) {
         choice.toggle = line.toggle;
     }
     choice.answerKey = line.answerKey;
+    choice.tag = line.tag;
     question.choices.push(choice.id);
     choices.push(choice);
     return {
@@ -271,7 +259,7 @@ const importFiles = function (filepaths) {
 };
 
 const importToDb = function (jsonDB) {
-    const choiceMap = new Map(jsonDB.choices.map(choice => [choice.id, [choice.value, choice.toggle, choice.answerKey]]));
+    const choiceMap = new Map(jsonDB.choices.map(choice => [choice.id, [choice.value, choice.toggle, choice.answerKey, choice.tag]]));
     const csv = jsonDB.questions.reduce((r, question) => {
         let id = question.id;
         const type = questionTypes[question.type];
@@ -282,7 +270,7 @@ const importToDb = function (jsonDB) {
         let key = question.key;
         if (type === 'choice' || type === 'choices' || Array.isArray(type)) {
             question.choices.forEach((choiceId, index) => {
-                const [choiceText, choiceToggle, answerKey] = choiceMap.get(choiceId);
+                const [choiceText, choiceToggle, answerKey, tag] = choiceMap.get(choiceId);
                 let choiceType = '';
                 if (type === 'choices') {
                     choiceType = 'bool';
@@ -294,16 +282,16 @@ const importToDb = function (jsonDB) {
                     questionType = 'choices';
                     choiceType = type[index];
                 }
-                const line = `${id},${questionType},"${text}","${instruction}",${ccType},${key},${choiceId},"${choiceText}",${choiceType},${answerKey}`;
+                const line = `${id},${questionType},"${text}","${instruction}",${ccType},${key},${choiceId},"${choiceText}",${choiceType},${answerKey},${tag}`;
                 r.push(line);
                 questionType = text = instruction = key = '';
             });
             return r;
         }
-        const line = [id, questionType, text, instruction, ccType, key, '', '', '', question.answerKey].join(',');
+        const line = [id, questionType, text, instruction, ccType, key, '', '', '', question.answerKey, question.tag].join(',');
         r.push(line);
         return r;
-    }, ['id,type,text,instruction,ccType,key,choiceId,choiceText,choiceType,answerKey']);
+    }, ['id,type,text,instruction,ccType,key,choiceId,choiceText,choiceType,answerKey,tag']);
     const options = { meta: [{ name: 'ccType', type: 'question' }], sourceType: 'cc' };
     const stream = intoStream(csv.join('\n'));
     return models.question.import(stream, options)

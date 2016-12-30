@@ -378,6 +378,7 @@ module.exports = class QuestionDAO extends Translatable {
                         }
                         if (!record.choiceId) {
                             question.answerKey = record.answerKey;
+                            question.tag = record.tag;
                         }
                         r.set(id, { id, question });
                     }
@@ -396,6 +397,7 @@ module.exports = class QuestionDAO extends Translatable {
                             }
                         }
                         choice.answerKey = record.answerKey;
+                        choice.tag = record.tag;
                         question.choices.push(choice);
                     }
                     return r;
@@ -409,7 +411,7 @@ module.exports = class QuestionDAO extends Translatable {
                 return sequelize.transaction(transaction => {
                     const mapIds = {};
                     const pxs = records.map(({ id, question }) => {
-                        const questionProper = _.omit(question, ['choices', 'key', 'answerKey']);
+                        const questionProper = _.omit(question, ['choices', 'key', 'answerKey', 'tag']);
                         return this.createQuestionTx(questionProper, transaction)
                             .then(({ id: questionId }) => {
                                 const type = options.sourceType;
@@ -419,7 +421,8 @@ module.exports = class QuestionDAO extends Translatable {
                                         .then(() => {
                                             if (!question.choices) {
                                                 const identifier = question.answerKey;
-                                                return AnswerIdentifier.create({ type, identifier, questionId }, { transaction });
+                                                const tag = parseInt(question.tag, 10);
+                                                return AnswerIdentifier.create({ type, identifier, questionId, tag }, { transaction });
                                             }
                                         })
                                         .then(() => questionId);
@@ -429,7 +432,7 @@ module.exports = class QuestionDAO extends Translatable {
                             .then(questionId => {
                                 const choices = question.choices;
                                 if (choices) {
-                                    const inputChoices = choices.map(choice => _.omit(choice, ['id', 'answerKey']));
+                                    const inputChoices = choices.map(choice => _.omit(choice, ['id', 'answerKey', 'tag']));
                                     return this.createChoicesTx(questionId, inputChoices, transaction)
                                         .then(choicesIds => choicesIds.map(choicesId => choicesId.id))
                                         .then(choicesIds => {
@@ -437,7 +440,8 @@ module.exports = class QuestionDAO extends Translatable {
                                             if (type) {
                                                 const pxs = choicesIds.map((questionChoiceId, index) => {
                                                     const identifier = choices[index].answerKey;
-                                                    return AnswerIdentifier.create({ type, identifier, questionId, questionChoiceId }, { transaction });
+                                                    const tag = parseInt(choices[index].tag, 10);
+                                                    return AnswerIdentifier.create({ type, identifier, questionId, questionChoiceId, tag }, { transaction });
                                                 });
                                                 return SPromise.all(pxs)
                                                     .then(() => choicesIds);
