@@ -4,9 +4,9 @@ const _ = require('lodash');
 
 const cId = 'number';
 const cHash = 'objectId (Hash Tag Used for Questions)';
-//const cConditional = 'conditional (Answer Hash Tag used with skipCount to skip next question if certain answer is picked)';
+const cConditional = 'conditional (Answer Hash Tag used with skipCount to skip next question if certain answer is picked)';
 //const cAnswerHash = 'hash (Hash Tag Used for Answers)';
-//const cSkipCount = 'skipCount (Number of Questions Skipped if Contitional answer is picked)';
+const cSkipCount = 'skipCount (Number of Questions Skipped if Contitional answer is picked)';
 const cAnswerKey = 'hash (Hash Tag Used for Answers)';
 
 const convertQuestions = function (pillars, questions, choices, answers) {
@@ -28,7 +28,7 @@ const convertQuestions = function (pillars, questions, choices, answers) {
         result.push({
             [cId]: pillar.title
         });
-        pillar.questions.forEach(({ questionId }) => {
+        pillar.questions.forEach(({ questionId, skipCount, condition }) => {
             const question = questionMap.get(questionId);
             let current = {
                 [cId]: questionIndex ? questionIndex.toString() : questionIndex,
@@ -38,6 +38,10 @@ const convertQuestions = function (pillars, questions, choices, answers) {
             };
             if (question.instruction) {
                 current.instruction = question.instruction;
+            }
+            if (skipCount) {
+                current[cSkipCount] = skipCount;
+                current[cConditional] = condition;
             }
             if (question.choices) {
                 question.choices.forEach(choiceId => {

@@ -16,7 +16,7 @@ const headers2 = {
     instruction: 'instruction',
     'skipCount (Number of Questions Skipped if Contitional answer is picked)': 'skipCount',
     answerType: 'type',
-    'conditional (Answer Hash Tag used with skipCount to skip next question if certain answer is picked': 'condition',
+    'conditional (Answer Hash Tag used with skipCount to skip next question if certain answer is picked)': 'condition',
     answer: 'choice',
     'hash (Hash Tag Used for Answers)': 'answerKey',
     tag: 'tag',
@@ -56,7 +56,7 @@ const answerUpdateSingle = function (id, line, question) {
     };
 };
 
-const answerUpdateChoice = function (id, line, question, choices) {
+const answerUpdateChoice = function (id, line, question, choices, pillarQuestion) {
     if (!question.choices) {
         question.choices = [];
     }
@@ -68,6 +68,9 @@ const answerUpdateChoice = function (id, line, question, choices) {
         choice.toggle = line.toggle;
     }
     choice.answerKey = line.answerKey;
+    if (pillarQuestion.condition === choice.answerKey) {
+        pillarQuestion.skipValue = choice.id;
+    }
     choice.tag = line.tag;
     question.choices.push(choice.id);
     choices.push(choice);
@@ -120,6 +123,7 @@ const surveysPost = function (result, key, lines) {
     }
     let activePillar = null;
     let activeQuestion = null;
+    let pillarQuestion = null;
     const questions = [];
     const answers = [];
     const choices = [];
@@ -149,7 +153,7 @@ const surveysPost = function (result, key, lines) {
             if (activeQuestion.hasOwnProperty('type')) {
                 activeQuestion.type = parseInt(activeQuestion.type, 10);
             }
-            const pillarQuestion = {
+            pillarQuestion = {
                 questionId: activeQuestion.id,
             };
             if (line.condition) {
@@ -164,7 +168,7 @@ const surveysPost = function (result, key, lines) {
         }
         const fnAnswer = answerUpdate[activeQuestion.type];
         if (fnAnswer) {
-            const answer = fnAnswer(answers.length + 1, line, activeQuestion, choices);
+            const answer = fnAnswer(answers.length + 1, line, activeQuestion, choices, pillarQuestion);
             answers.push(answer);
             answersKeyIndex[answer.key] = answer;
             return;
@@ -305,12 +309,14 @@ const importToDb = function (jsonDB) {
                 const required = 'true';
                 pillar.questions.forEach(question => {
                     const questionId = question.questionId;
-                    const line = `${id},${name},${description},${isBHI},${maxScore},${questionId},${required}`;
+                    const skipCount = question.skipCount || '';
+                    const skipValue = question.skipValue || '';
+                    const line = `${id},${name},${description},${isBHI},${maxScore},${questionId},${required},${skipCount},${skipValue}`;
                     r.push(line);
                     name = '';
                 });
                 return r;
-            }, ['id,name,description,isBHI,maxScore,questionId,required']);
+            }, ['id,name,description,isBHI,maxScore,questionId,required,skipCount,skipValue']);
             const stream = intoStream(surveysCsv.join('\n'));
             const options = { meta: [{ name: 'isBHI' }, { name: 'id' }, { name: 'maxScore' }] };
             return models.survey.import(stream, idMap, options);

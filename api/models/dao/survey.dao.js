@@ -435,6 +435,10 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     import (stream, questionIdMap, options = {}) {
+        const choicesIdMap = _.values(questionIdMap).reduce((r, { choicesIds }) => {
+            Object.assign(r, choicesIds);
+            return r;
+        }, {});
         questionIdMap = _.toPairs(questionIdMap).reduce((r, pair) => {
             r[pair[0]] = pair[1].questionId;
             return r;
@@ -469,6 +473,14 @@ module.exports = class SurveyDAO extends Translatable {
                         id: questionIdMap[record.questionId],
                         required: record.required
                     };
+                    if (record.skipCount) {
+                        const rule = { logic: 'equals' };
+                        const count = record.skipCount;
+                        rule.answer = {
+                            choice: choicesIdMap[record.skipValue]
+                        };
+                        question.skip = { count, rule };
+                    }
                     survey.questions.push(question);
                     return r;
                 }, new Map());
