@@ -45,18 +45,12 @@ const converters = {
     }
 };
 
-const answerUpdateSingle = function (id, line, question) {
+const answerUpdateSingle = function (line, question) {
     question.answerKey = line.answerKey;
     question.tag = line.tag;
-    return {
-        id: id,
-        key: line.answerKey,
-        questionId: question.id,
-        tag: line.tag
-    };
 };
 
-const answerUpdateChoice = function (id, line, question, choices, pillarQuestion) {
+const answerUpdateChoice = function (line, question, choices, pillarQuestion) {
     if (!question.choices) {
         question.choices = [];
     }
@@ -74,13 +68,6 @@ const answerUpdateChoice = function (id, line, question, choices, pillarQuestion
     choice.tag = line.tag;
     question.choices.push(choice.id);
     choices.push(choice);
-    return {
-        id: id,
-        choice: choice.id,
-        key: line.answerKey,
-        questionId: question.id,
-        tag: line.tag
-    };
 };
 
 const answerUpdate = {
@@ -125,9 +112,7 @@ const surveysPost = function (result, key, lines) {
     let activeQuestion = null;
     let pillarQuestion = null;
     const questions = [];
-    const answers = [];
     const choices = [];
-    const answersKeyIndex = {};
     lines.Questions.forEach(line => {
         const objKeys = Object.keys(line);
         if ((objKeys.length === 1) && (objKeys[0] === 'id')) {
@@ -168,17 +153,13 @@ const surveysPost = function (result, key, lines) {
         }
         const fnAnswer = answerUpdate[activeQuestion.type];
         if (fnAnswer) {
-            const answer = fnAnswer(answers.length + 1, line, activeQuestion, choices, pillarQuestion);
-            answers.push(answer);
-            answersKeyIndex[answer.key] = answer;
+            fnAnswer(line, activeQuestion, choices, pillarQuestion);
             return;
         }
         throw new Error(`Unexpected line.  Unsupported type: ${activeQuestion.type}`);
     });
     result[key].Questions = questions;
-    result.qanswers = answers;
     result.choices = choices;
-    result.answersKeyIndex = answersKeyIndex;
     result.pillars = result.surveys.Pillars;
     result.questions = result.surveys.Questions;
 };
