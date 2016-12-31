@@ -248,6 +248,10 @@ module.exports = class SurveyDAO extends Translatable {
         if (scope === 'version-only') {
             return Survey.findAll(options);
         }
+        if (scope === 'id-only') {
+            return Survey.findAll(options)
+                .then(surveys => surveys.map(survey => survey.id));
+        }
         return Survey.findAll(options)
             .then(surveys => this.updateAllTexts(surveys, options.language))
             .then(surveys => {

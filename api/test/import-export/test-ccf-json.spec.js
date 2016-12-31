@@ -47,6 +47,17 @@ describe('ccf import-export ccf', function () {
         return ccfImport.importToDb(jsonDB);
     });
 
+    it('export from database', function () {
+        return ccfExport.exportSurveys()
+            .then(result => {
+                return ccfImport.converters.surveys().fileToRecords(filepaths.surveys)
+                    .then(rawJson => {
+                        expect(result.questions).to.deep.equal(rawJson.Questions);
+                        expect(result.pillars).to.deep.equal(rawJson.Pillars);
+                    });
+            });
+    });
+
     it('export json db', function () {
         exportedJsonDB = ccfExport.convertJsonDB(jsonDB);
     });

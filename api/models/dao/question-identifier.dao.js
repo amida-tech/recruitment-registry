@@ -21,4 +21,18 @@ module.exports = class QuestionIdentifierDAO {
                 return ids;
             });
     }
+
+    getQuestionIdToIdentifierMap(type, ids) {
+        return QuestionIdentifier.findAll({
+                where: { type, questionId: { $in: ids } },
+                attributes: ['identifier', 'questionId'],
+                raw: true
+            })
+            .then(records => {
+                return records.reduce((r, record) => {
+                    r[record.questionId] = record.identifier;
+                    return r;
+                }, {});
+            });
+    }
 };

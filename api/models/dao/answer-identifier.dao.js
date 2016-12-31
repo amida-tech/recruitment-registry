@@ -24,4 +24,20 @@ module.exports = class QuestionIdentifierDAO {
                 return ids;
             });
     }
+
+    getAnswerIdsToIdentifierMap(type) {
+        return AnswerIdentifier.findAll({
+                where: { type },
+                attributes: ['identifier', 'questionId', 'questionChoiceId', 'tag'],
+                raw: true
+            })
+            .then(records => {
+                return records.reduce((r, record) => {
+                    const questionChoiceId = record.questionChoiceId;
+                    const key = record.questionId + (questionChoiceId ? (':' + questionChoiceId) : '');
+                    r[key] = { identifier: record.identifier, tag: record.tag };
+                    return r;
+                }, {});
+            });
+    }
 };
