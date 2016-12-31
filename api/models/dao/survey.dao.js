@@ -423,7 +423,18 @@ module.exports = class SurveyDAO extends Translatable {
             });
     }
 
-    import (stream, questionIdMap) {
+    importMetaProperties(record, metaOptions) {
+        return metaOptions.reduce((r, propertyInfo) => {
+            const name = propertyInfo.name;
+            const value = record[name];
+            if (value !== undefined && value !== null) {
+                r[name] = value;
+            }
+            return r;
+        }, {});
+    }
+
+    import (stream, questionIdMap, options = {}) {
         questionIdMap = _.toPairs(questionIdMap).reduce((r, pair) => {
             r[pair[0]] = pair[1].questionId;
             return r;
@@ -440,6 +451,12 @@ module.exports = class SurveyDAO extends Translatable {
                     let { survey } = r.get(id) || {};
                     if (!survey) {
                         survey = { name: record.name };
+                        if (options.meta) {
+                            const meta = this.importMetaProperties(record, options.meta);
+                            if (Object.keys(meta).length > 0) {
+                                survey.meta = meta;
+                            }
+                        }
                         if (record.description) {
                             survey.description = record.description;
                         }

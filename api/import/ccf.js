@@ -295,7 +295,26 @@ const importToDb = function (jsonDB) {
     const options = { meta: [{ name: 'ccType', type: 'question' }], sourceType: 'cc' };
     const stream = intoStream(csv.join('\n'));
     return models.question.import(stream, options)
-        .then(idMap => idMap);
+        .then(idMap => {
+            const surveysCsv = jsonDB.pillars.reduce((r, pillar) => {
+                const id = pillar.id;
+                let name = pillar.title;
+                let isBHI = pillar.isBHI;
+                let maxScore = pillar.maxScore;
+                const description = '';
+                const required = 'true';
+                pillar.questions.forEach(question => {
+                    const questionId = question.questionId;
+                    const line = `${id},${name},${description},${isBHI},${maxScore},${questionId},${required}`;
+                    r.push(line);
+                    name = '';
+                });
+                return r;
+            }, ['id,name,description,isBHI,maxScore,questionId,required']);
+            const stream = intoStream(surveysCsv.join('\n'));
+            const options = { meta: [{ name: 'isBHI' }, { name: 'id' }, { name: 'maxScore' }] };
+            return models.survey.import(stream, idMap, options);
+        });
 };
 
 module.exports = {
