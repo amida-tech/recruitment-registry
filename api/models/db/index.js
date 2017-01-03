@@ -58,7 +58,7 @@ const UserAssessmentAnswer = sequelize.import('./user-assessment-answer.model');
 const QuestionIdentifier = sequelize.import('./question-identifier.model');
 const AnswerIdentifier = sequelize.import('./answer-identifier.model');
 
-Answer.belongsTo(Question, {
+const questionBelongsToArgument = {
     as: 'question',
     foreignKey: {
         allowNull: false,
@@ -69,9 +69,9 @@ Answer.belongsTo(Question, {
             key: 'id'
         }
     }
-});
+};
 
-Answer.belongsTo(QuestionChoice, {
+const questionChoiceBelongsToArgument = {
     as: 'questionChoice',
     foreignKey: {
         fileName: 'questionChoiceId',
@@ -81,33 +81,17 @@ Answer.belongsTo(QuestionChoice, {
             key: 'id'
         }
     }
-});
+};
 
-AnswerRuleValue.belongsTo(QuestionChoice, {
-    as: 'questionChoice',
-    foreignKey: {
-        fileName: 'questionChoiceId',
-        field: 'question_choice_id',
-        references: {
-            model: 'question_choice',
-            key: 'id'
-        }
-    }
-});
+Answer.belongsTo(Question, questionBelongsToArgument);
+Answer.belongsTo(QuestionChoice, questionChoiceBelongsToArgument);
 
-SurveyQuestion.belongsTo(Question, {
-    as: 'question',
-    foreignKey: {
-        allowNull: false,
-        fieldName: 'questionId',
-        field: 'question_id',
-        references: {
-            model: 'question',
-            key: 'id'
-        }
-    }
-});
+AnswerIdentifier.belongsTo(Question, questionBelongsToArgument);
+AnswerIdentifier.belongsTo(QuestionChoice, questionChoiceBelongsToArgument);
 
+AnswerRuleValue.belongsTo(QuestionChoice, questionChoiceBelongsToArgument);
+
+SurveyQuestion.belongsTo(Question, questionBelongsToArgument);
 SurveyQuestion.belongsTo(AnswerRule, { as: 'skip', foreignKey: 'answer_rule_id' });
 
 module.exports = {

@@ -404,6 +404,19 @@ module.exports = class SurveyDAO extends Translatable {
             });
     }
 
+    getSurveyIdentifierToIdMap() {
+        const options = { raw: true, attributes: ['id', 'meta'], order: 'id' };
+        return Survey.findAll(options)
+            .then(surveys => surveys.reduce((r, survey) => {
+                const identifier = _.get(survey, 'meta.id');
+                if (!identifier) {
+                    return RRError.reject('surveyNoIdentifier');
+                }
+                r[identifier] = survey.id;
+                return r;
+            }, {}));
+    }
+
     export () {
         return this.listSurveys({ scope: 'export' })
             .then(surveys => {

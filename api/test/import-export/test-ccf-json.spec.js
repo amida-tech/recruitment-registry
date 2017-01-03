@@ -10,6 +10,7 @@ const ccfImport = require('../../import/ccf');
 const ccfExport = require('../../export/ccf');
 
 const SharedSpec = require('../util/shared-spec.js');
+const History = require('../util/history');
 
 const expect = chai.expect;
 const shared = new SharedSpec();
@@ -34,6 +35,12 @@ describe('ccf import-export ccf', function () {
         }
     });
 
+    const hxUser = new History();
+
+    for (let i = 0; i < 1; ++i) {
+        it(`create user ${i}`, shared.createUserFn(hxUser));
+    }
+
     before(shared.setUpFn());
 
     it('import ccf files to json db', function () {
@@ -45,6 +52,11 @@ describe('ccf import-export ccf', function () {
 
     it('import to database', function () {
         return ccfImport.importToDb(jsonDB);
+    });
+
+    it('import to database', function () {
+        const userId = hxUser.id(0);
+        return ccfImport.importAnswersToDb(jsonDB, userId);
     });
 
     it('export from database', function () {

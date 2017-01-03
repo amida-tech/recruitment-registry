@@ -175,3 +175,19 @@ errors.questionIdentifierNotFound = {
 errors.answerIdentifierNotFound = {
     msg: 'No such answer identifier is found.'
 };
+
+errors.surveyNoIdentifier = {
+    msg: 'No identifiers founds for some surveys.'
+};
+
+errors.ccfInconsistentAnswerForType = {
+    msg: 'Inconsistent answer ($1) specified for the question type $0.'
+};
+
+errors.ccfMultipleSelectionsForChoice = {
+    msg: 'Multiple selections are specified choice type question.'
+};
+
+errors.ccfNoSelectionsForChoice = {
+    msg: 'No selection is specified choice type question.'
+};

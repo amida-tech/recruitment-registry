@@ -4,6 +4,7 @@ const _ = require('lodash');
 const intoStream = require('into-stream');
 
 const SPromise = require('../lib/promise');
+const RRError = require('../lib/rr-error');
 
 const XLSXConverter = require('./xlsx-converter');
 
@@ -304,8 +305,97 @@ const importToDb = function (jsonDB) {
         });
 };
 
+const toDbFormat = function (surveyId, answersByQuestionId) {
+    const dbAnswers = answersByQuestionId.reduce((r, answer) => {
+        const questionId = answer.questionId;
+        const questionType = answer.questionType;
+        if (questionType === 'choices') {
+            answer.answers.forEach(({ questionChoiceId, questionChoiceType, value }) => {
+                if (questionChoiceType === 'month') {
+                    if (value.length === 1) {
+                        value = '0' + value;
+                    }
+                }
+                r.push({ surveyId, questionId, questionChoiceId, value });
+            });
+            return r;
+        }
+        if (questionType === 'choice') {
+            const questionChoiceId = answer.answers.reduce((p, answer) => {
+                if ((answer.questionChoiceType !== 'bool') || (typeof answer.value !== 'boolean')) {
+                    throw new RRError('ccfInconsistentAnswerForType', 'choice', answer.questionChoiceType);
+                }
+                if (!answer.value) {
+                    return p;
+                }
+                if (p !== null) {
+                    throw new RRError('ccfMultipleSelectionsForChoice');
+                }
+                p = answer.questionChoiceId;
+                return p;
+            }, null);
+            if (questionChoiceId === null) {
+                throw new RRError('ccfNoSelectionsForChoice');
+            }
+            r.push({ surveyId, questionId, questionChoiceId });
+            return r;
+        }
+        const value = answer.answers[0].value;
+        r.push({ surveyId, questionId, value });
+        return r;
+    }, []);
+    return dbAnswers;
+};
+
+const importAnswersToDb = function (jsonDB, userId) {
+    return models.survey.getSurveyIdentifierToIdMap()
+        .then(surveyIdMap => {
+            return models.answerIdentifier.getAnswerIdentifierToIdsMap('cc')
+                .then(answerIdMap => ({ surveyIdMap, answerIdMap }));
+        })
+        .then(({ surveyIdMap, answerIdMap }) => {
+            let records = jsonDB.answers.map(answer => {
+                const surveyIdentifier = answer.pillar_hash;
+                const surveyId = surveyIdMap[surveyIdentifier];
+                const answerIndex = new Map();
+                const answersByQuestionId = answer.answers.reduce((r, record) => {
+                    const answerIdentifier = record.answer_hash;
+                    const answerInfo = answerIdMap[answerIdentifier];
+                    const questionId = answerInfo.questionId;
+                    let dbAnswer = answerIndex.get(questionId);
+                    if (!dbAnswer) {
+                        dbAnswer = { questionId, questionType: answerInfo.questionType, answers: [] };
+                        r.push(dbAnswer);
+                        answerIndex.set(questionId, dbAnswer);
+                    }
+                    let answer = {};
+                    if (answerInfo.questionChoiceId) {
+                        answer.questionChoiceId = answerInfo.questionChoiceId;
+                        answer.questionChoiceType = answerInfo.questionChoiceType;
+                    }
+                    if (record.hasOwnProperty('string_value')) {
+                        answer.value = record.string_value.toString();
+                    } else if (record.hasOwnProperty('boolean_value')) {
+                        answer.value = record.boolean_value;
+                    }
+                    dbAnswer.answers.push(answer);
+                    return r;
+                }, []);
+                const dbAnswers = toDbFormat(surveyId, answersByQuestionId);
+                return dbAnswers;
+            });
+            records = _.flatten(records);
+            records.forEach(record => {
+                record.userId = userId;
+                record.language = 'en';
+            });
+            return models.answer.importRecords(records);
+        });
+};
+
 module.exports = {
     converters,
     importFiles,
-    importToDb
+    importToDb,
+    importAnswersToDb
 };

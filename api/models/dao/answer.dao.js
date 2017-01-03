@@ -420,6 +420,14 @@ module.exports = class AnswerDAO {
                     }));
                 });
             });
+    }
 
+    importRecords(records) {
+        return sequelize.transaction(transaction => {
+            // TODO: Switch to bulkCreate when Sequelize 4 arrives
+            return SPromise.all(records.map(record => {
+                return Answer.create(record, { transaction });
+            }));
+        });
     }
 };
