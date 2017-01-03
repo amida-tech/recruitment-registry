@@ -112,6 +112,9 @@ const userAssessment = function (queryInterface, Sequelize) {
                 key: 'id'
             }
         },
+        meta: {
+            type: Sequelize.JSON
+        },
         sequence: {
             type: Sequelize.INTEGER,
             allowNull: false

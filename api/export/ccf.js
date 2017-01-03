@@ -1,5 +1,7 @@
 'use strict';
 
+const _ = require('lodash');
+
 const models = require('../models');
 const SPromise = require('../lib/promise');
 
@@ -137,7 +139,24 @@ const exportSurveys = function () {
         });
 };
 
+const exportAssessments = function () {
+    return models.userAssessment.exportBulk()
+        .then(records => records.map(record => {
+            return {
+                id: record.id,
+                assessment_id: _.get(record, 'meta.key'),
+                assessment_name: record['assessment.name'],
+                updated_at: record.createdAt,
+                hb_user_id: record.userId
+            };
+        }))
+        .then(assessments => {
+            return { assessments };
+        });
+};
+
 module.exports = {
     convertJsonDB,
-    exportSurveys
+    exportSurveys,
+    exportAssessments
 };

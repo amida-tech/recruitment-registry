@@ -94,6 +94,19 @@ AnswerRuleValue.belongsTo(QuestionChoice, questionChoiceBelongsToArgument);
 SurveyQuestion.belongsTo(Question, questionBelongsToArgument);
 SurveyQuestion.belongsTo(AnswerRule, { as: 'skip', foreignKey: 'answer_rule_id' });
 
+UserAssessment.belongsTo(Assessment, {
+    as: 'assessment',
+    foreignKey: {
+        allowNull: false,
+        fieldName: 'assessmentId',
+        field: 'assessment_id',
+        references: {
+            model: 'assessment',
+            key: 'id'
+        }
+    }
+});
+
 module.exports = {
     Sequelize,
     sequelize,

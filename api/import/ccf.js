@@ -199,7 +199,8 @@ const answersPost = function (result, key, lines) {
                     updated_at: p.updated_at,
                     answers: [],
                     assessments: {
-                        [assessment]: true }
+                        [assessment]: true
+                    }
                 };
                 answers.push(record);
                 indexAnswers[index] = record;
@@ -422,6 +423,9 @@ const importAnswersToDb = function (jsonDB, userId) {
                             assessmentId: 1,
                             sequence: index,
                             status: 'collected',
+                            meta: {
+                                key: assessment.assessment_id
+                            },
                             createdAt,
                             updatedAt: createdAt
                         };

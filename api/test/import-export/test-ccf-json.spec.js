@@ -70,6 +70,24 @@ describe('ccf import-export ccf', function () {
             });
     });
 
+    let dbExport;
+
+    it('export assessments from database', function () {
+        const idMap = { 1: 10, 2: 36, 3: 62 };
+        return ccfExport.exportAssessments()
+            .then(result => {
+                dbExport = result;
+                dbExport.assessments.forEach(record => record.id = idMap[record.id]);
+            });
+    });
+
+    it('compare db assessments', function () {
+        return ccfImport.converters.assessments().fileToRecords(filepaths.assessments)
+            .then(rawJson => {
+                expect(dbExport.assessments).to.deep.equal(rawJson);
+            });
+    });
+
     it('export json db', function () {
         exportedJsonDB = ccfExport.convertJsonDB(jsonDB);
     });

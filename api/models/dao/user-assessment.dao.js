@@ -11,6 +11,7 @@ const UserAssessment = db.UserAssessment;
 const AssessmentSurvey = db.AssessmentSurvey;
 const Answer = db.Answer;
 const UserAssessmentAnswer = db.UserAssessmentAnswer;
+const Assessment = db.Assessment;
 
 module.exports = class AssessmentDAO {
     constructor(dependencies) {
@@ -122,6 +123,18 @@ module.exports = class AssessmentDAO {
                     });
                     return SPromise.all(promises);
                 });
+        });
+    }
+
+    exportBulk() {
+        const createdAtColumn = [sequelize.fn('to_char', sequelize.col('user_assessment.created_at'), 'YYYY-MM-DD"T"HH24:MI:SS"Z"'), 'createdAt'];
+        const attributes = ['id', 'userId', 'assessmentId', 'meta', createdAtColumn];
+        return UserAssessment.findAll({
+            attributes,
+            include: [{ model: Assessment, as: 'assessment', attributes: ['id', 'name'] }],
+            order: ['userId', 'assessmentId', 'sequence'],
+            raw: true,
+            paranoid: false
         });
     }
 };
