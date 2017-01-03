@@ -77,6 +77,7 @@ describe('ccf import-export ccf', function () {
     it('compare assessments', function () {
         return ccfImport.converters.assessments().fileToRecords(filepaths.assessments)
             .then(rawJson => {
+                jsonDB.assessments.forEach(assessment => delete assessment.answerIndices);
                 expect(jsonDB.assessments).to.deep.equal(rawJson);
             });
     });

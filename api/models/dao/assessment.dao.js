@@ -18,7 +18,7 @@ const createAssessmentSurveys = function (assessmentId, surveys, transaction) {
 module.exports = class AssessmentDAO {
     constructor() {}
 
-    createAssessment({ name, sequenceType = 'on-demand', surveys }) {
+    createAssessment({ name, sequenceType = 'ondemand', surveys }) {
         return sequelize.transaction(transaction => {
             return Assessment.create({ name, sequenceType }, { transaction })
                 .then(({ id }) => {

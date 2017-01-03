@@ -1,5 +1,7 @@
 'use strict';
 
+const _ = require('lodash');
+
 const db = require('../db');
 
 const sequelize = db.sequelize;
@@ -98,5 +100,28 @@ module.exports = class AssessmentDAO {
                 const ids = records.map(({ answerId }) => answerId);
                 return this.answer.listAnswers({ ids, history: true });
             });
+    }
+
+    importBulk(records) {
+        return sequelize.transaction(transaction => {
+            const promises = records.map(record => {
+                const dbRecord = _.omit(record, 'answerIds');
+                return UserAssessment.create(dbRecord, { transaction })
+                    .then(({ id }) => id);
+            });
+            return SPromise.all(promises)
+                .then(ids => {
+                    const answerRecords = records.reduce((r, { answerIds }, index) => {
+                        const userAssessmentId = ids[index];
+                        answerIds.forEach(answerId => r.push({ userAssessmentId, answerId }));
+                        return r;
+                    }, []);
+                    const promises = answerRecords.map(answerRecord => {
+                        return UserAssessmentAnswer.create(answerRecord, { transaction })
+                            .then(({ id }) => id);
+                    });
+                    return SPromise.all(promises);
+                });
+        });
     }
 };

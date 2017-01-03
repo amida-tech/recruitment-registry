@@ -21,7 +21,7 @@ const assessment = function (queryInterface, Sequelize) {
         },
         updatedAt: {
             type: Sequelize.DATE,
-            field: 'cupdated_at',
+            field: 'updated_at',
         },
         deletedAt: {
             type: Sequelize.DATE,

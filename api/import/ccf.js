@@ -186,6 +186,8 @@ const answersPost = function (result, key, lines) {
             delete p.hb_assessment_id;
             const index = `${p.pillar_hash}\t${p.hb_user_id}\t${p.updated_at}`;
             if (assessmentIndex[index] !== undefined && assessmentIndex[index] !== assessIndex) {
+                let record = indexAnswers[index];
+                record.assessments[assessment] = true;
                 return r;
             }
             assessmentIndex[index] = assessIndex;
@@ -195,7 +197,9 @@ const answersPost = function (result, key, lines) {
                     user_id: p.hb_user_id,
                     pillar_hash: p.pillar_hash,
                     updated_at: p.updated_at,
-                    answers: []
+                    answers: [],
+                    assessments: {
+                        [assessment]: true }
                 };
                 answers.push(record);
                 indexAnswers[index] = record;
@@ -301,11 +305,13 @@ const importToDb = function (jsonDB) {
             }, ['id,name,description,isBHI,maxScore,questionId,required,skipCount,skipValue']);
             const stream = intoStream(surveysCsv.join('\n'));
             const options = { meta: [{ name: 'isBHI' }, { name: 'id' }, { name: 'maxScore' }] };
-            return models.survey.import(stream, idMap, options);
+            return models.survey.import(stream, idMap, options)
+                .then(surveys => _.values(surveys).map(survey => ({ id: survey })))
+                .then(surveys => models.assessment.createAssessment({ name: 'BHI', surveys }));
         });
 };
 
-const toDbFormat = function (surveyId, answersByQuestionId) {
+const toDbFormat = function (surveyId, createdAt, answersByQuestionId) {
     const dbAnswers = answersByQuestionId.reduce((r, answer) => {
         const questionId = answer.questionId;
         const questionType = answer.questionType;
@@ -316,7 +322,7 @@ const toDbFormat = function (surveyId, answersByQuestionId) {
                         value = '0' + value;
                     }
                 }
-                r.push({ surveyId, questionId, questionChoiceId, value });
+                r.push({ surveyId, createdAt, questionId, questionChoiceId, value });
             });
             return r;
         }
@@ -337,11 +343,11 @@ const toDbFormat = function (surveyId, answersByQuestionId) {
             if (questionChoiceId === null) {
                 throw new RRError('ccfNoSelectionsForChoice');
             }
-            r.push({ surveyId, questionId, questionChoiceId });
+            r.push({ surveyId, createdAt, questionId, questionChoiceId });
             return r;
         }
         const value = answer.answers[0].value;
-        r.push({ surveyId, questionId, value });
+        r.push({ surveyId, createdAt, questionId, value });
         return r;
     }, []);
     return dbAnswers;
@@ -358,6 +364,7 @@ const importAnswersToDb = function (jsonDB, userId) {
                 const surveyIdentifier = answer.pillar_hash;
                 const surveyId = surveyIdMap[surveyIdentifier];
                 const answerIndex = new Map();
+                const createdAt = answer.updated_at;
                 const answersByQuestionId = answer.answers.reduce((r, record) => {
                     const answerIdentifier = record.answer_hash;
                     const answerInfo = answerIdMap[answerIdentifier];
@@ -381,15 +388,52 @@ const importAnswersToDb = function (jsonDB, userId) {
                     dbAnswer.answers.push(answer);
                     return r;
                 }, []);
-                const dbAnswers = toDbFormat(surveyId, answersByQuestionId);
+                const dbAnswers = toDbFormat(surveyId, createdAt, answersByQuestionId);
                 return dbAnswers;
+            });
+            let overallIndex = 0;
+            records.forEach((record, index) => {
+                const assessmentSet = jsonDB.answers[index].assessments;
+                const endIndex = overallIndex + record.length;
+                jsonDB.assessments.forEach(assessment => {
+                    if (assessmentSet[assessment.id]) {
+                        let answerIndices = assessment.answerIndices;
+                        if (!answerIndices) {
+                            assessment.answerIndices = (answerIndices = []);
+                        }
+                        _.range(overallIndex, endIndex).forEach(answerIndex => {
+                            answerIndices.push(answerIndex);
+                        });
+                    }
+                });
+                overallIndex = endIndex;
             });
             records = _.flatten(records);
             records.forEach(record => {
                 record.userId = userId;
                 record.language = 'en';
             });
-            return models.answer.importRecords(records);
+            return models.answer.importRecords(records)
+                .then(ids => {
+                    const records = jsonDB.assessments.map((assessment, index, assessments) => {
+                        const createdAt = assessment.updated_at;
+                        const record = {
+                            userId: 1,
+                            assessmentId: 1,
+                            sequence: index,
+                            status: 'collected',
+                            createdAt,
+                            updatedAt: createdAt
+                        };
+                        const nextIndex = index + 1;
+                        if (nextIndex < assessments.length) {
+                            record.deletedAt = assessments[nextIndex].updated_at;
+                        }
+                        record.answerIds = assessment.answerIndices.map(answerIndex => ids[answerIndex]);
+                        return record;
+                    });
+                    return models.userAssessment.importBulk(records);
+                });
         });
 };
 

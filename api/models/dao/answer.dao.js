@@ -426,7 +426,8 @@ module.exports = class AnswerDAO {
         return sequelize.transaction(transaction => {
             // TODO: Switch to bulkCreate when Sequelize 4 arrives
             return SPromise.all(records.map(record => {
-                return Answer.create(record, { transaction });
+                return Answer.create(record, { transaction })
+                    .then(({ id }) => id);
             }));
         });
     }
