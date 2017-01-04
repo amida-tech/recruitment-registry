@@ -18,6 +18,7 @@ const AnswerRule = db.AnswerRule;
 const AnswerRuleValue = db.AnswerRuleValue;
 const Question = db.Question;
 const QuestionChoice = db.QuestionChoice;
+const SurveyIdentifier = db.SurveyIdentifier;
 
 module.exports = class SurveyDAO extends Translatable {
     constructor(dependencies) {
@@ -404,19 +405,6 @@ module.exports = class SurveyDAO extends Translatable {
             });
     }
 
-    getSurveyIdentifierToIdMap() {
-        const options = { raw: true, attributes: ['id', 'meta'], order: 'id' };
-        return Survey.findAll(options)
-            .then(surveys => surveys.reduce((r, survey) => {
-                const identifier = _.get(survey, 'meta.id');
-                if (!identifier) {
-                    return RRError.reject('surveyNoIdentifier');
-                }
-                r[identifier] = survey.id;
-                return r;
-            }, {}));
-    }
-
     export () {
         return this.listSurveys({ scope: 'export' })
             .then(surveys => {
@@ -513,16 +501,21 @@ module.exports = class SurveyDAO extends Translatable {
                         return this.createSurveyTx(survey, transaction)
                             .then(surveyId => mapIds[id] = surveyId);
                     });
-                    return SPromise.all(pxs).then(() => mapIds);
+                    return SPromise.all(pxs)
+                        .then(() => {
+                            if (options.sourceType) {
+                                const type = options.sourceType;
+                                const promises = _.transform(mapIds, (r, surveyId, identifier) => {
+                                    const record = { type, identifier, surveyId };
+                                    const promise = SurveyIdentifier.create(record, { transaction });
+                                    r.push(promise);
+                                    return r;
+                                }, []);
+                                return SPromise.all(promises).then(() => mapIds);
+                            }
+                            return mapIds;
+                        });
                 });
             });
-    }
-
-    exportWithMeta(ids) {
-        return Survey.findAll({
-            where: { id: { $in: ids } },
-            attributes: ['id', 'meta'],
-            raw: true
-        });
     }
 };

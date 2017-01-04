@@ -24,6 +24,8 @@ const headers2 = {
     toggle: 'toggle'
 };
 
+const identifierType = 'ccf';
+
 const converters = {
     answers() {
         return new XLSXConverter({
@@ -283,7 +285,7 @@ const importToDb = function (jsonDB) {
         r.push(line);
         return r;
     }, ['id,type,text,instruction,ccType,key,choiceId,choiceText,choiceType,answerKey,tag']);
-    const options = { meta: [{ name: 'ccType', type: 'question' }], sourceType: 'cc' };
+    const options = { meta: [{ name: 'ccType', type: 'question' }], sourceType: identifierType };
     const stream = intoStream(csv.join('\n'));
     return models.question.import(stream, options)
         .then(idMap => {
@@ -305,7 +307,7 @@ const importToDb = function (jsonDB) {
                 return r;
             }, ['id,name,description,isBHI,maxScore,questionId,required,skipCount,skipValue']);
             const stream = intoStream(surveysCsv.join('\n'));
-            const options = { meta: [{ name: 'isBHI' }, { name: 'id' }, { name: 'maxScore' }] };
+            const options = { meta: [{ name: 'isBHI' }, { name: 'maxScore' }], sourceType: identifierType };
             return models.survey.import(stream, idMap, options)
                 .then(surveys => _.values(surveys).map(survey => ({ id: survey })))
                 .then(surveys => models.assessment.createAssessment({ name: 'BHI', surveys }));
@@ -355,15 +357,15 @@ const toDbFormat = function (surveyId, createdAt, answersByQuestionId) {
 };
 
 const importAnswersToDb = function (jsonDB, userId) {
-    return models.survey.getSurveyIdentifierToIdMap()
+    return models.surveyIdentifier.getIdsBySurveyIdentifier(identifierType)
         .then(surveyIdMap => {
-            return models.answerIdentifier.getAnswerIdentifierToIdsMap('cc')
+            return models.answerIdentifier.getAnswerIdentifierToIdsMap(identifierType)
                 .then(answerIdMap => ({ surveyIdMap, answerIdMap }));
         })
         .then(({ surveyIdMap, answerIdMap }) => {
             let records = jsonDB.answers.map(answer => {
                 const surveyIdentifier = answer.pillar_hash;
-                const surveyId = surveyIdMap[surveyIdentifier];
+                const surveyId = surveyIdMap.get(surveyIdentifier);
                 const answerIndex = new Map();
                 const createdAt = answer.updated_at;
                 const answersByQuestionId = answer.answers.reduce((r, record) => {

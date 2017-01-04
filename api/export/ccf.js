@@ -10,17 +10,22 @@ const cConditional = 'conditional (Answer Hash Tag used with skipCount to skip n
 const cAnswerHash = 'hash (Hash Tag Used for Answers)';
 const cSkipCount = 'skipCount (Number of Questions Skipped if Contitional answer is picked)';
 
+const identifierType = 'ccf';
+
 const exportSurveys = function () {
     return models.survey.listSurveys({ scope: 'id-only' })
-        .then(ids => SPromise.all(ids.map(id => models.survey.getSurvey(id))))
+        .then(ids => {
+            return SPromise.all(ids.map(id => models.survey.getSurvey(id)))
+                .then(surveys => models.surveyIdentifier.updateSurveysWithIdentifier(surveys, identifierType));
+        })
         .then(surveys => {
             const ids = surveys.reduce((r, survey) => {
                 survey.questions.forEach(question => r.push(question.id));
                 return r;
             }, []);
-            return models.questionIdentifier.getQuestionIdToIdentifierMap('cc', ids)
+            return models.questionIdentifier.getQuestionIdToIdentifierMap(identifierType, ids)
                 .then(questionIdentifierMap => {
-                    return models.answerIdentifier.getAnswerIdsToIdentifierMap('cc')
+                    return models.answerIdentifier.getAnswerIdsToIdentifierMap(identifierType)
                         .then(answerIdentifierMap => ({ surveys, questionIdentifierMap, answerIdentifierMap }));
                 });
         })
@@ -77,7 +82,7 @@ const exportSurveys = function () {
             const exportedSurveys = surveys.reduce((r, survey) => {
                 const meta = survey.meta;
                 r.push({
-                    id: meta.id,
+                    id: survey.identifier,
                     isBHI: meta.isBHI ? 'true' : 'false',
                     maxScore: meta.maxScore,
                     title: survey.name
@@ -130,15 +135,10 @@ const exportAssessments = function () {
                             const surveyIdSet = new Set();
                             answers.forEach(answer => surveyIdSet.add(answer.surveyId));
                             const ids = [...surveyIdSet];
-                            return models.survey.exportWithMeta(ids)
-                                .then(surveys => new Map(surveys.map(survey => [survey.id, survey.meta])))
+                            return models.surveyIdentifier.getIdentifiersBySurveyId(identifierType, ids)
                                 .then(surveyMap => {
                                     answers.forEach(answer => {
-                                        const id = answer.surveyId;
-                                        const meta = surveyMap.get(id);
-                                        if (meta) {
-                                            answer.pillar_hash = meta.id;
-                                        }
+                                        answer.pillar_hash = surveyMap.get(answer.surveyId);
                                         delete answer.surveyId;
                                     });
                                     return answers;
@@ -147,7 +147,7 @@ const exportAssessments = function () {
                         .then(answers => {
                             const questionIdSet = new Set();
                             answers.forEach(answer => questionIdSet.add(answer.questionId));
-                            return models.answerIdentifier.getMapByQuestionId('cc', [...questionIdSet])
+                            return models.answerIdentifier.getMapByQuestionId(identifierType, [...questionIdSet])
                                 .then(identifierMap => {
                                     return answers.reduce((r, answer) => {
                                         if (answer['question.type'] === 'choice') {
