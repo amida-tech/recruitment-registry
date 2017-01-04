@@ -91,6 +91,46 @@ const answerIdentifier = function (queryInterface, Sequelize) {
     });
 };
 
+const surveyIdentifier = function (queryInterface, Sequelize) {
+    return queryInterface.createTable('survey_identifier', {
+        id: {
+            type: Sequelize.INTEGER,
+            primaryKey: true,
+            autoIncrement: true
+        },
+        type: {
+            type: Sequelize.TEXT,
+            allowNull: false
+        },
+        identifier: {
+            type: Sequelize.TEXT,
+            allowNull: false
+        },
+        surveyId: {
+            type: Sequelize.INTEGER,
+            allowNull: false,
+            field: 'survey_id',
+            references: {
+                model: 'survey',
+                key: 'id'
+            }
+        },
+        createdAt: {
+            type: Sequelize.DATE,
+            field: 'created_at',
+        },
+        updatedAt: {
+            type: Sequelize.DATE,
+            field: 'updated_at'
+        }
+    }, {
+        freezeTableName: true,
+        createdAt: 'createdAt',
+        updatedAt: 'updatedAt',
+        indexes: [{ fields: ['survey_id'] }]
+    });
+};
+
 module.exports = {
     up: function (queryInterface, Sequelize) {
         return questionIdentifier(queryInterface, Sequelize)
@@ -100,6 +140,14 @@ module.exports = {
             }))
             .then(() => queryInterface.addIndex('question_identifier', ['question_id'], {
                 indexName: 'question_identifier_question_id'
+            }))
+            .then(() => surveyIdentifier(queryInterface, Sequelize))
+            .then(() => queryInterface.addIndex('survey_identifier', ['type', 'identifier'], {
+                indexName: 'survey_identifier_type_identifier_key',
+                indicesType: 'UNIQUE'
+            }))
+            .then(() => queryInterface.addIndex('survey_identifier', ['survey_id'], {
+                indexName: 'survey_identifier_survey_id'
             }))
             .then(() => answerIdentifier(queryInterface, Sequelize))
             .then(() => queryInterface.addIndex('answer_identifier', ['type', 'identifier'], {
@@ -112,6 +160,7 @@ module.exports = {
     },
     down: function (queryInterface) {
         return queryInterface.dropTable('answer_identifier')
-            .then(() => queryInterface.dropTable('question_identifier'));
+            .then(() => queryInterface.dropTable('question_identifier'))
+            .then(() => queryInterface.dropTable('survey_identifier'));
     }
 };
