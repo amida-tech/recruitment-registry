@@ -10,7 +10,6 @@ const ccfImport = require('../../import/ccf');
 const ccfExport = require('../../export/ccf');
 
 const SharedSpec = require('../util/shared-spec.js');
-const History = require('../util/history');
 
 const expect = chai.expect;
 const shared = new SharedSpec();
@@ -18,43 +17,28 @@ const shared = new SharedSpec();
 describe('ccf import-export ccf', function () {
     const fixtureDir = path.join(__dirname, '../fixtures/import-export/ccf');
 
-    let jsonDB = null;
-
     const filenames = {
+        users: 'ccf-user.xls',
         answers: 'ccf-answers.xlsx',
         assessments: 'ccf-assessments.xlsx',
         surveys: 'ccf-questions.xlsx'
     };
 
-    const filepaths = {};
-    _.forOwn(filenames, (name, key) => {
+    const filepaths = _.transform(filenames, (r, name, key) => {
         if (name.charAt(0) === '/') {
-            filepaths[key] = name;
+            r[key] = name;
         } else {
-            filepaths[key] = path.join(fixtureDir, name);
+            r[key] = path.join(fixtureDir, name);
         }
-    });
-
-    const hxUser = new History();
-
-    for (let i = 0; i < 1; ++i) {
-        it(`create user ${i}`, shared.createUserFn(hxUser));
-    }
+        return r;
+    }, {});
 
     before(shared.setUpFn());
 
-    it('import ccf files to json db', function () {
-        return ccfImport.importFiles(filepaths)
-            .then(result => jsonDB = result);
-    });
-
+    let userIdMap;
     it('import to database', function () {
-        return ccfImport.importToDb(jsonDB);
-    });
-
-    it('import to database', function () {
-        const userId = hxUser.id(0);
-        return ccfImport.importAnswersToDb(jsonDB, userId);
+        return ccfImport.importCCFFiles(filepaths)
+            .then(result => userIdMap = result);
     });
 
     it('export from database', function () {

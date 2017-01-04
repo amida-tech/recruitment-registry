@@ -105,7 +105,6 @@ const surveysPost = function (result, key, lines) {
             return r;
         }, {});
     });
-    result[`surveysIdIndex`] = _.keyBy(lines.Pillars, 'id');
     result[`surveysTitleIndex`] = _.keyBy(lines.Pillars, 'title');
     lines.Pillars.forEach(pillar => pillar.isBHI = (pillar.isBHI === 'true'));
     if (!(lines.Pillars && result.surveysTitleIndex)) {
@@ -314,7 +313,7 @@ const importToDb = function (jsonDB) {
         });
 };
 
-const toDbFormat = function (surveyId, createdAt, answersByQuestionId) {
+const toDbFormat = function (userId, surveyId, createdAt, answersByQuestionId) {
     const dbAnswers = answersByQuestionId.reduce((r, answer) => {
         const questionId = answer.questionId;
         const questionType = answer.questionType;
@@ -325,7 +324,7 @@ const toDbFormat = function (surveyId, createdAt, answersByQuestionId) {
                         value = '0' + value;
                     }
                 }
-                r.push({ surveyId, createdAt, questionId, questionChoiceId, value });
+                r.push({ userId, surveyId, createdAt, questionId, questionChoiceId, value });
             });
             return r;
         }
@@ -346,17 +345,17 @@ const toDbFormat = function (surveyId, createdAt, answersByQuestionId) {
             if (questionChoiceId === null) {
                 throw new RRError('ccfNoSelectionsForChoice');
             }
-            r.push({ surveyId, createdAt, questionId, questionChoiceId });
+            r.push({ userId, surveyId, createdAt, questionId, questionChoiceId });
             return r;
         }
         const value = answer.answers[0].value;
-        r.push({ surveyId, createdAt, questionId, value });
+        r.push({ userId, surveyId, createdAt, questionId, value });
         return r;
     }, []);
     return dbAnswers;
 };
 
-const importAnswersToDb = function (jsonDB, userId) {
+const importAnswersToDb = function (jsonDB, userIdMap) {
     return models.surveyIdentifier.getIdsBySurveyIdentifier(identifierType)
         .then(surveyIdMap => {
             return models.answerIdentifier.getAnswerIdentifierToIdsMap(identifierType)
@@ -391,7 +390,8 @@ const importAnswersToDb = function (jsonDB, userId) {
                     dbAnswer.answers.push(answer);
                     return r;
                 }, []);
-                const dbAnswers = toDbFormat(surveyId, createdAt, answersByQuestionId);
+                const userId = userIdMap.get(answer.user_id);
+                const dbAnswers = toDbFormat(userId, surveyId, createdAt, answersByQuestionId);
                 return dbAnswers;
             });
             let overallIndex = 0;
@@ -413,7 +413,6 @@ const importAnswersToDb = function (jsonDB, userId) {
             });
             records = _.flatten(records);
             records.forEach(record => {
-                record.userId = userId;
                 record.language = 'en';
             });
             return models.answer.importRecords(records)
@@ -443,9 +442,35 @@ const importAnswersToDb = function (jsonDB, userId) {
         });
 };
 
+const importUsers = function (filepath) {
+    const converter = new XLSXConverter();
+    return converter.fileToRecords(filepath)
+        .then(users => {
+            const userIdMap = new Map();
+            const promises = users.map(user => {
+                const username = `username_${user.id}`;
+                const email = `${username}@dummy.com`;
+                const record = { username, email, password: 'pw' };
+                return models.user.createUser(record)
+                    .then(({ id }) => userIdMap.set(user.id, id));
+            });
+            return SPromise.all(promises).then(() => userIdMap);
+        });
+};
+
+const importCCFFiles = function (filepaths) {
+    return importUsers(filepaths.users)
+        .then(userIdMap => {
+            return importFiles(filepaths)
+                .then(ccfData => {
+                    return importToDb(ccfData)
+                        .then(() => importAnswersToDb(ccfData, userIdMap));
+                })
+                .then(() => userIdMap);
+        });
+};
+
 module.exports = {
     converters,
-    importFiles,
-    importToDb,
-    importAnswersToDb
+    importCCFFiles
 };
