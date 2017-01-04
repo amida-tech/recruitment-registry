@@ -517,4 +517,12 @@ module.exports = class SurveyDAO extends Translatable {
                 });
             });
     }
+
+    exportWithMeta(ids) {
+        return Survey.findAll({
+            where: { id: { $in: ids } },
+            attributes: ['id', 'meta'],
+            raw: true
+        });
+    }
 };

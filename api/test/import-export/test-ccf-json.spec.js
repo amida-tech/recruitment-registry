@@ -88,6 +88,34 @@ describe('ccf import-export ccf', function () {
             });
     });
 
+    it('compare db answers', function () {
+        return ccfImport.converters.answers().fileToRecords(filepaths.answers)
+            .then(rawJson => {
+                const expected = _.sortBy(rawJson, ['hb_assessment_id', 'pillar_hash', 'answer_hash']);
+                const actual = _.sortBy(dbExport.answers, ['hb_assessment_id', 'pillar_hash', 'answer_hash']);
+                const assessmentMap = new Map([
+                    [1, 10],
+                    [2, 36],
+                    [3, 62]
+                ]);
+                actual.forEach(answer => {
+                    answer.hb_user_id = 1;
+                    answer.hb_assessment_id = assessmentMap.get(answer.hb_assessment_id);
+                    delete answer.id;
+                });
+                expected.forEach(answer => {
+                    delete answer.id;
+                    answer.string_value = answer.string_value.toString();
+                    if (answer.answer_hash === 'answer_profile_birthday_month') {
+                        if (answer.string_value.length === 1) {
+                            answer.string_value = '0' + answer.string_value;
+                        }
+                    }
+                });
+                expect(actual).to.deep.equal(expected);
+            });
+    });
+
     it('export json db', function () {
         exportedJsonDB = ccfExport.convertJsonDB(jsonDB);
     });

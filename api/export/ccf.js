@@ -151,7 +151,111 @@ const exportAssessments = function () {
             };
         }))
         .then(assessments => {
-            return { assessments };
+            const assessmentIdSet = new Set();
+            assessments.forEach(({ id }) => assessmentIdSet.add(id));
+            const ids = [...assessmentIdSet];
+            return models.userAssessment.exportBulkAnswers(ids)
+                .then(assesmentAnswers => {
+                    const answerIdSet = new Set();
+                    const assessmentAnswerMap = new Map();
+                    assesmentAnswers.forEach(({ userAssessmentId, answerId }) => {
+                        answerIdSet.add(answerId);
+                        let answerIds = assessmentAnswerMap.get(userAssessmentId);
+                        if (!answerIds) {
+                            answerIds = [];
+                            assessmentAnswerMap.set(userAssessmentId, answerIds);
+                        }
+                        answerIds.push(answerId);
+                    });
+                    const answerIds = [...answerIdSet];
+                    return models.answer.exportBulk(answerIds)
+                        .then(answers => {
+                            const answerMap = new Map(answers.map(answer => [answer.id, answer]));
+                            return assesmentAnswers.map(({ userAssessmentId, answerId }) => {
+                                const answer = _.cloneDeep(answerMap.get(answerId));
+                                answer.hb_assessment_id = userAssessmentId;
+                                return answer;
+                            });
+                        })
+                        .then(answers => {
+                            const surveyIdSet = new Set();
+                            answers.forEach(answer => surveyIdSet.add(answer.surveyId));
+                            const ids = [...surveyIdSet];
+                            return models.survey.exportWithMeta(ids)
+                                .then(surveys => new Map(surveys.map(survey => [survey.id, survey.meta])))
+                                .then(surveyMap => {
+                                    answers.forEach(answer => {
+                                        const id = answer.surveyId;
+                                        const meta = surveyMap.get(id);
+                                        if (meta) {
+                                            answer.pillar_hash = meta.id;
+                                        }
+                                        delete answer.surveyId;
+                                    });
+                                    return answers;
+                                });
+                        })
+                        .then(answers => {
+                            const questionIdSet = new Set();
+                            answers.forEach(answer => questionIdSet.add(answer.questionId));
+                            return models.answerIdentifier.getMapByQuestionId('cc', [...questionIdSet])
+                                .then(identifierMap => {
+                                    return answers.reduce((r, answer) => {
+                                        if (answer['question.type'] === 'choice') {
+                                            const choiceId = answer.questionChoiceId;
+                                            const identifierInfo = identifierMap.get(answer.questionId);
+                                            identifierInfo.forEach(({ identifier, questionChoiceId }) => {
+                                                const answerClone = _.cloneDeep(answer);
+                                                answerClone.answer_hash = identifier;
+                                                answerClone.boolean_value = (questionChoiceId === choiceId);
+                                                answerClone.string_value = 'null';
+                                                r.push(answerClone);
+                                            });
+                                            return r;
+                                        }
+                                        if (answer['question.type'] === 'choices') {
+                                            const choiceId = answer.questionChoiceId;
+                                            const identifierInfo = identifierMap.get(answer.questionId);
+                                            answer.answer_hash = identifierInfo.get(choiceId);
+                                            if (answer['questionChoice.type'] === 'bool' || answer['questionChoice.type'] === 'bool-sole') {
+                                                answer.boolean_value = (answer.value === 'true');
+                                                answer.string_value = 'null';
+                                            } else {
+                                                answer.boolean_value = 'null';
+                                                answer.string_value = answer.value;
+                                            }
+                                            r.push(answer);
+                                            return r;
+                                        }
+                                        answer.answer_hash = identifierMap.get(answer.questionId);
+                                        if (answer['questionChoice.type'] === 'bool') {
+                                            answer.boolean_value = (answer.value === 'true');
+                                            answer.string_value = 'null';
+                                        } else {
+                                            answer.boolean_value = 'null';
+                                            answer.string_value = answer.value;
+                                        }
+                                        r.push(answer);
+                                        return r;
+                                    }, []);
+                                });
+                        })
+                        .then(answers => {
+                            answers.forEach(answer => {
+                                answer.updated_at = answer.createdAt;
+                                answer.hb_user_id = answer.userId;
+                                delete answer['question.type'];
+                                delete answer['question.id'];
+                                delete answer['questionChoice.type'];
+                                delete answer.questionId;
+                                delete answer.questionChoiceId;
+                                delete answer.value;
+                                delete answer.createdAt;
+                                delete answer.userId;
+                            });
+                            return { assessments, answers };
+                        });
+                });
         });
 };
 

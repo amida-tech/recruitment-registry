@@ -137,4 +137,13 @@ module.exports = class AssessmentDAO {
             paranoid: false
         });
     }
+
+    exportBulkAnswers(ids) {
+        return UserAssessmentAnswer.findAll({
+            where: { userAssessmentId: { $in: ids } },
+            attributes: ['answerId', 'userAssessmentId'],
+            order: ['userAssessmentId', 'answerId'],
+            raw: true
+        });
+    }
 };

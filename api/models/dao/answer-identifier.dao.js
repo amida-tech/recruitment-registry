@@ -71,4 +71,37 @@ module.exports = class QuestionIdentifierDAO {
                 }, {});
             });
     }
+
+    getMapByQuestionId(type, ids) {
+        return AnswerIdentifier.findAll({
+                where: { type, questionId: { $in: ids } },
+                attributes: ['identifier', 'questionId', 'questionChoiceId'],
+                include: [{ model: Question, as: 'question', attributes: ['type'] }],
+                raw: true
+            })
+            .then(records => {
+                return records.reduce((r, record) => {
+                    if (record['question.type'] === 'choice') {
+                        let list = r.get(record.questionId);
+                        if (!list) {
+                            list = [];
+                            r.set(record.questionId, list);
+                        }
+                        list.push(record);
+                        return r;
+                    }
+                    if (record['question.type'] === 'choices') {
+                        let map = r.get(record.questionId);
+                        if (!map) {
+                            map = new Map();
+                            r.set(record.questionId, map);
+                        }
+                        map.set(record.questionChoiceId, record.identifier);
+                        return r;
+                    }
+                    r.set(record.questionId, record.identifier);
+                    return r;
+                }, new Map());
+            });
+    }
 };

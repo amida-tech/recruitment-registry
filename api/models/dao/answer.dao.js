@@ -431,4 +431,18 @@ module.exports = class AnswerDAO {
             }));
         });
     }
+
+    exportBulk(ids) {
+        const createdAtColumn = [sequelize.fn('to_char', sequelize.col('answer.created_at'), 'YYYY-MM-DD"T"HH24:MI:SS"Z"'), 'createdAt'];
+        return Answer.findAll({
+            where: { id: { $in: ids } },
+            attributes: ['id', 'userId', 'surveyId', 'questionId', 'questionChoiceId', 'value', createdAtColumn],
+            include: [
+                { model: Question, as: 'question', attributes: ['id', 'type'] },
+                { model: QuestionChoice, as: 'questionChoice', attributes: ['type'] }
+            ],
+            raw: true,
+            paranoid: false
+        });
+    }
 };
