@@ -10,57 +10,6 @@ const cConditional = 'conditional (Answer Hash Tag used with skipCount to skip n
 const cAnswerHash = 'hash (Hash Tag Used for Answers)';
 const cSkipCount = 'skipCount (Number of Questions Skipped if Contitional answer is picked)';
 
-const answerKey = function (answer) {
-    return answer.user_id + ':' + answer.pillar_hash;
-};
-
-const answersJson = function (jsonDB) {
-    const result = [];
-    const assessments = jsonDB.assessments.map((assessment, index, all) => {
-        const deletedAt = all[index + 1] ? all[index + 1].updated_at : null;
-        return Object.assign({ deleted_at: deletedAt }, assessment);
-    });
-
-    assessments.forEach(assessment => {
-        const answersActiveIndex = {};
-        let activeIndex = 0;
-        const answers = jsonDB.answers.reduce((r, answer) => {
-            if (!assessment.deleted_at || (assessment.deleted_at > answer.updated_at)) {
-                r.push(answer);
-                answersActiveIndex[answerKey(answer)] = activeIndex;
-                ++activeIndex;
-            }
-            return r;
-        }, []);
-        answers.forEach((answer, index) => {
-            if (index !== answersActiveIndex[answerKey(answer)]) {
-                return;
-            }
-            const common = {
-                pillar_hash: answer.pillar_hash,
-                hb_user_id: answer.user_id,
-                updated_at: answer.updated_at,
-                hb_assessment_id: assessment.id
-            };
-            answer.answers.forEach(a => {
-                const r = Object.assign({
-                    answer_hash: a.answer_hash,
-                    boolean_value: (a.boolean_value === undefined ? 'null' : a.boolean_value),
-                    string_value: (a.string_value === undefined ? 'null' : a.string_value)
-                }, common);
-                result.push(r);
-            });
-        });
-    });
-    return result;
-};
-
-const convertJsonDB = function convertJsonDB(jsonDB) {
-    return {
-        answers: answersJson(jsonDB)
-    };
-};
-
 const exportSurveys = function () {
     return models.survey.listSurveys({ scope: 'id-only' })
         .then(ids => SPromise.all(ids.map(id => models.survey.getSurvey(id))))
@@ -260,7 +209,6 @@ const exportAssessments = function () {
 };
 
 module.exports = {
-    convertJsonDB,
     exportSurveys,
     exportAssessments
 };

@@ -48,8 +48,6 @@ describe('ccf import-export ccf', function () {
             .then(result => jsonDB = result);
     });
 
-    let exportedJsonDB = null;
-
     it('import to database', function () {
         return ccfImport.importToDb(jsonDB);
     });
@@ -113,26 +111,6 @@ describe('ccf import-export ccf', function () {
                     }
                 });
                 expect(actual).to.deep.equal(expected);
-            });
-    });
-
-    it('export json db', function () {
-        exportedJsonDB = ccfExport.convertJsonDB(jsonDB);
-    });
-
-    it('compare assessments', function () {
-        return ccfImport.converters.assessments().fileToRecords(filepaths.assessments)
-            .then(rawJson => {
-                jsonDB.assessments.forEach(assessment => delete assessment.answerIndices);
-                expect(jsonDB.assessments).to.deep.equal(rawJson);
-            });
-    });
-
-    it('compare answers', function () {
-        return ccfImport.converters.assessments().fileToRecords(filepaths.answers)
-            .then(rawJson => {
-                rawJson.forEach(r => delete r.id);
-                expect(exportedJsonDB.answers).to.deep.equal(rawJson);
             });
     });
 });
