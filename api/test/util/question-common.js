@@ -8,7 +8,7 @@ const comparator = require('./comparator');
 const scopeToFieldsMap = {
     'summary': ['id', 'type', 'text', 'instruction'],
     'complete': null,
-    'export': ['id', 'type', 'text', 'instruction', 'choices']
+    'export': ['id', 'type', 'text', 'instruction', 'choices', 'meta']
 };
 
 const expect = chai.expect;

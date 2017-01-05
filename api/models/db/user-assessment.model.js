@@ -20,6 +20,9 @@ module.exports = function (sequelize, DataTypes) {
                 key: 'id'
             }
         },
+        meta: {
+            type: DataTypes.JSON
+        },
         sequence: {
             type: DataTypes.INTEGER,
             allowNull: false

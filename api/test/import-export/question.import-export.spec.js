@@ -68,7 +68,13 @@ describe('question import-export unit', function () {
         return models.question.listQuestions({ scope: 'export' })
             .then(list => {
                 const fields = questionCommon.getFieldsForList('export');
-                const expected = hxQuestion.listServers(fields);
+                const expected = _.cloneDeep(hxQuestion.listServers(fields));
+                expected.forEach(question => {
+                    delete question.meta;
+                    if (question.choices) {
+                        question.choices.forEach(choice => delete choice.meta);
+                    }
+                });
                 questionCommon.updateIds(expected, idMap);
                 expect(list).to.deep.equal(expected);
             });

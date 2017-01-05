@@ -420,6 +420,29 @@ module.exports = class AnswerDAO {
                     }));
                 });
             });
+    }
 
+    importRecords(records) {
+        return sequelize.transaction(transaction => {
+            // TODO: Switch to bulkCreate when Sequelize 4 arrives
+            return SPromise.all(records.map(record => {
+                return Answer.create(record, { transaction })
+                    .then(({ id }) => id);
+            }));
+        });
+    }
+
+    exportBulk(ids) {
+        const createdAtColumn = [sequelize.fn('to_char', sequelize.col('answer.created_at'), 'YYYY-MM-DD"T"HH24:MI:SS"Z"'), 'createdAt'];
+        return Answer.findAll({
+            where: { id: { $in: ids } },
+            attributes: ['id', 'userId', 'surveyId', 'questionId', 'questionChoiceId', 'value', createdAtColumn],
+            include: [
+                { model: Question, as: 'question', attributes: ['id', 'type'] },
+                { model: QuestionChoice, as: 'questionChoice', attributes: ['type'] }
+            ],
+            raw: true,
+            paranoid: false
+        });
     }
 };

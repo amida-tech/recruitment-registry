@@ -1,5 +1,7 @@
 'use strict';
 
+const _ = require('lodash');
+
 const db = require('../db');
 
 const sequelize = db.sequelize;
@@ -9,6 +11,7 @@ const UserAssessment = db.UserAssessment;
 const AssessmentSurvey = db.AssessmentSurvey;
 const Answer = db.Answer;
 const UserAssessmentAnswer = db.UserAssessmentAnswer;
+const Assessment = db.Assessment;
 
 module.exports = class AssessmentDAO {
     constructor(dependencies) {
@@ -98,5 +101,49 @@ module.exports = class AssessmentDAO {
                 const ids = records.map(({ answerId }) => answerId);
                 return this.answer.listAnswers({ ids, history: true });
             });
+    }
+
+    importBulk(records) {
+        return sequelize.transaction(transaction => {
+            const promises = records.map(record => {
+                const dbRecord = _.omit(record, 'answerIds');
+                return UserAssessment.create(dbRecord, { transaction })
+                    .then(({ id }) => id);
+            });
+            return SPromise.all(promises)
+                .then(ids => {
+                    const answerRecords = records.reduce((r, { answerIds }, index) => {
+                        const userAssessmentId = ids[index];
+                        answerIds.forEach(answerId => r.push({ userAssessmentId, answerId }));
+                        return r;
+                    }, []);
+                    const promises = answerRecords.map(answerRecord => {
+                        return UserAssessmentAnswer.create(answerRecord, { transaction })
+                            .then(({ id }) => id);
+                    });
+                    return SPromise.all(promises);
+                });
+        });
+    }
+
+    exportBulk() {
+        const createdAtColumn = [sequelize.fn('to_char', sequelize.col('user_assessment.created_at'), 'YYYY-MM-DD"T"HH24:MI:SS"Z"'), 'createdAt'];
+        const attributes = ['id', 'userId', 'assessmentId', 'meta', createdAtColumn];
+        return UserAssessment.findAll({
+            attributes,
+            include: [{ model: Assessment, as: 'assessment', attributes: ['id', 'name'] }],
+            order: ['userId', 'assessmentId', 'sequence'],
+            raw: true,
+            paranoid: false
+        });
+    }
+
+    exportBulkAnswers(ids) {
+        return UserAssessmentAnswer.findAll({
+            where: { userAssessmentId: { $in: ids } },
+            attributes: ['answerId', 'userAssessmentId'],
+            order: ['userAssessmentId', 'answerId'],
+            raw: true
+        });
     }
 };

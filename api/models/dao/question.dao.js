@@ -32,11 +32,20 @@ module.exports = class QuestionDAO extends Translatable {
     }
 
     createChoicesTx(questionId, choices, transaction) {
-        const pxs = choices.map(({ text, type }, line) => {
+        const pxs = choices.map(({ text, type, meta }, line) => {
             type = type || 'bool';
             const choice = { questionId, text, type, line };
+            if (meta) {
+                choice.meta = meta;
+            }
             return this.questionChoice.createQuestionChoiceTx(choice, transaction)
-                .then(({ id }) => ({ id, text: choice.text }));
+                .then(({ id }) => {
+                    const result = { id, text: choice.text };
+                    if (meta) {
+                        result.meta = meta;
+                    }
+                    return result;
+                });
         });
         return SPromise.all(pxs);
     }
@@ -138,17 +147,9 @@ module.exports = class QuestionDAO extends Translatable {
                 return this.questionChoice.findChoicesPerQuestion(question.id, options.language)
                     .then(choices => {
                         if (question.type === 'choice') {
-                            question.choices = choices.map(({ id, text }) => ({
-                                id,
-                                text
-                            }));
-                        } else {
-                            question.choices = choices.map(({ id, text, type }) => ({
-                                id,
-                                text,
-                                type: type
-                            }));
+                            choices.forEach(choice => delete choice.type);
                         }
+                        question.choices = choices;
                         return question;
                     });
             });
@@ -201,7 +202,7 @@ module.exports = class QuestionDAO extends Translatable {
     listQuestions({ scope, ids, language } = {}) {
         scope = scope || 'summary';
         const attributes = ['id', 'type'];
-        if (scope === 'complete') {
+        if (scope === 'complete' || scope === 'export') {
             attributes.push('meta');
         }
         const options = { raw: true, attributes, order: 'id' };
@@ -291,19 +292,38 @@ module.exports = class QuestionDAO extends Translatable {
         });
     }
 
-    export () {
+    exportMetaQuestionProperties(meta, metaOptions, withChoice, fromQuestion) {
+        return metaOptions.reduce((r, propertyInfo) => {
+            if (fromQuestion && withChoice) {
+                return r;
+            }
+            const name = propertyInfo.name;
+            if (meta.hasOwnProperty(name)) {
+                r[name] = meta[name];
+            }
+            return r;
+        }, {});
+    }
+
+    export (options = {}) {
         return this.listQuestions({ scope: 'export' })
             .then(questions => {
-                return questions.reduce((r, { id, type, text, instruction, choices }) => {
+                return questions.reduce((r, { id, type, text, instruction, meta, choices }) => {
                     const questionLine = { id, type, text, instruction };
+                    if (meta && options.meta) {
+                        Object.assign(questionLine, this.exportMetaQuestionProperties(meta, options.meta, choices, true));
+                    }
                     if (!choices) {
                         r.push(questionLine);
                         return r;
                     }
-                    choices.forEach(({ id, type, text }, index) => {
+                    choices.forEach(({ id, type, text, meta }, index) => {
                         const line = { choiceId: id, choiceText: text };
                         if (type) {
                             line.choiceType = type;
+                        }
+                        if (meta && options.meta) {
+                            Object.assign(questionLine, this.exportMetaQuestionProperties(meta, options.meta, true, false));
                         }
                         if (index === 0) {
                             Object.assign(line, questionLine);
@@ -321,7 +341,20 @@ module.exports = class QuestionDAO extends Translatable {
             });
     }
 
-    import (stream) {
+    importMetaQuestionProperties(record, metaOptions, fromType) {
+        return metaOptions.reduce((r, propertyInfo) => {
+            if (propertyInfo.type === fromType) {
+                const name = propertyInfo.name;
+                const value = record[name];
+                if (value !== undefined && value !== null) {
+                    r[name] = value;
+                }
+            }
+            return r;
+        }, {});
+    }
+
+    import (stream, options = {}) {
         const converter = new importCSVConverter();
         return converter.streamToRecords(stream)
             .then(records => {
@@ -333,9 +366,19 @@ module.exports = class QuestionDAO extends Translatable {
                     const id = record.id;
                     let { question } = r.get(id) || {};
                     if (!question) {
-                        question = { text: record.text, type: record.type };
+                        question = { text: record.text, type: record.type, key: record.key };
                         if (record.instruction) {
                             question.instruction = record.instruction;
+                        }
+                        if (options.meta) {
+                            const meta = this.importMetaQuestionProperties(record, options.meta, 'question');
+                            if (Object.keys(meta).length > 0) {
+                                question.meta = meta;
+                            }
+                        }
+                        if (!record.choiceId) {
+                            question.answerKey = record.answerKey;
+                            question.tag = record.tag;
                         }
                         r.set(id, { id, question });
                     }
@@ -347,6 +390,14 @@ module.exports = class QuestionDAO extends Translatable {
                         if (record.choiceType) {
                             choice.type = record.choiceType;
                         }
+                        if (options.meta) {
+                            const meta = this.importMetaQuestionProperties(record, options.meta, 'choice');
+                            if (Object.keys(meta).length > 0) {
+                                choice.meta = meta;
+                            }
+                        }
+                        choice.answerKey = record.answerKey;
+                        choice.tag = record.tag;
                         question.choices.push(choice);
                     }
                     return r;
@@ -360,14 +411,43 @@ module.exports = class QuestionDAO extends Translatable {
                 return sequelize.transaction(transaction => {
                     const mapIds = {};
                     const pxs = records.map(({ id, question }) => {
-                        const questionProper = _.omit(question, 'choices');
+                        const questionProper = _.omit(question, ['choices', 'key', 'answerKey', 'tag']);
                         return this.createQuestionTx(questionProper, transaction)
                             .then(({ id: questionId }) => {
+                                const type = options.sourceType;
+                                const identifier = question.key;
+                                if (type && identifier) {
+                                    return QuestionIdentifier.create({ type, identifier, questionId }, { transaction })
+                                        .then(() => {
+                                            if (!question.choices) {
+                                                const identifier = question.answerKey;
+                                                const tag = parseInt(question.tag, 10);
+                                                return AnswerIdentifier.create({ type, identifier, questionId, tag }, { transaction });
+                                            }
+                                        })
+                                        .then(() => questionId);
+                                }
+                                return questionId;
+                            })
+                            .then(questionId => {
                                 const choices = question.choices;
                                 if (choices) {
-                                    const inputChoices = choices.map(choice => _.omit(choice, 'id'));
+                                    const inputChoices = choices.map(choice => _.omit(choice, ['id', 'answerKey', 'tag']));
                                     return this.createChoicesTx(questionId, inputChoices, transaction)
                                         .then(choicesIds => choicesIds.map(choicesId => choicesId.id))
+                                        .then(choicesIds => {
+                                            const type = options.sourceType;
+                                            if (type) {
+                                                const pxs = choicesIds.map((questionChoiceId, index) => {
+                                                    const identifier = choices[index].answerKey;
+                                                    const tag = parseInt(choices[index].tag, 10);
+                                                    return AnswerIdentifier.create({ type, identifier, questionId, questionChoiceId, tag }, { transaction });
+                                                });
+                                                return SPromise.all(pxs)
+                                                    .then(() => choicesIds);
+                                            }
+                                            return choicesIds;
+                                        })
                                         .then(choicesIds => {
                                             mapIds[id] = {
                                                 questionId,

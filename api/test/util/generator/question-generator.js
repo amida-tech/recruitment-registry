@@ -8,7 +8,7 @@ module.exports = class QuestionGenerator {
             'text', 'choice', 'choices', 'bool', 'integer',
             'zip', 'date', 'year', 'month', 'day', 'pounds',
             'feet-inches', 'blood-pressure',
-            'dateChoices', 'integerChoices'
+            'dateChoices', 'integerChoices', 'choicesMeta', 'choiceMeta'
         ];
         this.index = -1;
 
@@ -54,6 +54,13 @@ module.exports = class QuestionGenerator {
         return question;
     }
 
+    choiceMeta() {
+        const question = this.body('choice');
+        const choices = this.newChoices();
+        question.choices = choices.map((choice, index) => ({ text: choice, meta: { tag: index * 10 + 10 } }));
+        return question;
+    }
+
     choices() {
         const question = this.body('choices');
         const choices = this.newChoices().map(choice => ({ text: choice }));
@@ -68,6 +75,13 @@ module.exports = class QuestionGenerator {
                 break;
             }
         });
+        question.choices = choices;
+        return question;
+    }
+
+    choicesMeta() {
+        const question = this.body('choices');
+        const choices = this.newChoices().map((choice, index) => ({ text: choice, type: 'bool', meta: { tag: index * 10 + 10 } }));
         question.choices = choices;
         return question;
     }

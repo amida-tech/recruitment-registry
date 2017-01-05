@@ -37,13 +37,23 @@ module.exports = class XLSXConverter {
         const px = new SPromise((resolve, reject) => {
             try {
                 const workbook = xlsx.readFile(filepath);
-                const sheetName = workbook.SheetNames[0];
-                const worksheet = workbook.Sheets[sheetName];
-                const json = xlsx.utils.sheet_to_json(worksheet, { raw: true });
-                if (this.options.dateTimes) {
-                    XLSXConverter.convertDateTimes(json, this.options.dateTimes);
+                if (this.options.sheets) {
+                    const result = this.options.sheets.reduce((r, { name }) => {
+                        const worksheet = workbook.Sheets[name];
+                        let rows = xlsx.utils.sheet_to_json(worksheet, { raw: true });
+                        r[name] = rows;
+                        return r;
+                    }, {});
+                    resolve(result);
+                } else {
+                    const sheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[sheetName];
+                    const json = xlsx.utils.sheet_to_json(worksheet, { raw: true });
+                    if (this.options.dateTimes) {
+                        XLSXConverter.convertDateTimes(json, this.options.dateTimes);
+                    }
+                    resolve(json);
                 }
-                resolve(json);
             } catch (err) {
                 reject(err);
             }

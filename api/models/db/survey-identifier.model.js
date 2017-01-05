@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('answer_identifier', {
+    return sequelize.define('survey_identifier', {
         type: {
             type: DataTypes.TEXT,
             allowNull: false,
@@ -12,25 +12,14 @@ module.exports = function (sequelize, DataTypes) {
             allowNull: false,
             unique: 'identifier'
         },
-        questionId: {
+        surveyId: {
             type: DataTypes.INTEGER,
             allowNull: false,
-            field: 'question_id',
+            field: 'survey_id',
             references: {
-                model: 'question',
+                model: 'survey',
                 key: 'id'
             }
-        },
-        questionChoiceId: {
-            type: DataTypes.INTEGER,
-            field: 'question_choice_id',
-            references: {
-                model: 'question_choice',
-                key: 'id'
-            }
-        },
-        tag: {
-            type: DataTypes.INTEGER
         },
         createdAt: {
             type: DataTypes.DATE,
@@ -44,6 +33,6 @@ module.exports = function (sequelize, DataTypes) {
         freezeTableName: true,
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
-        indexes: [{ fields: ['question_id', 'question_choice_id'] }]
+        indexes: [{ fields: ['survey_id'] }]
     });
 };
