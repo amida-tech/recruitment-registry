@@ -420,7 +420,7 @@ const importAnswersToDb = function (jsonDB, userIdMap) {
                     const records = jsonDB.assessments.map((assessment, index, assessments) => {
                         const createdAt = assessment.updated_at;
                         const record = {
-                            userId: 1,
+                            userId: userIdMap.get(assessment.hb_user_id),
                             assessmentId: 1,
                             sequence: index,
                             status: 'collected',

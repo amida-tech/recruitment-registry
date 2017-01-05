@@ -55,7 +55,7 @@ describe('ccf import-export ccf', function () {
     let dbExport;
 
     it('export assessments from database', function () {
-        const idMap = { 1: 10, 2: 36, 3: 62 };
+        const idMap = { 1: 10, 2: 36, 3: 62, 4: 87, 5: 113, 6: 139 };
         return ccfExport.exportAssessments()
             .then(result => {
                 dbExport = result;
@@ -66,22 +66,28 @@ describe('ccf import-export ccf', function () {
     it('compare db assessments', function () {
         return ccfImport.converters.assessments().fileToRecords(filepaths.assessments)
             .then(rawJson => {
-                expect(dbExport.assessments).to.deep.equal(rawJson);
+                rawJson.forEach(assessment => assessment.hb_user_id = userIdMap.get(assessment.hb_user_id));
+                const expected = _.sortBy(rawJson, ['hb_user_id', 'assessment_id']);
+                const actual = _.sortBy(dbExport.assessments, ['hb_user_id', 'assessment_id']);
+                expect(actual).to.deep.equal(expected);
             });
     });
 
     it('compare db answers', function () {
         return ccfImport.converters.answers().fileToRecords(filepaths.answers)
             .then(rawJson => {
-                const expected = _.sortBy(rawJson, ['hb_assessment_id', 'pillar_hash', 'answer_hash']);
-                const actual = _.sortBy(dbExport.answers, ['hb_assessment_id', 'pillar_hash', 'answer_hash']);
+                rawJson.forEach(answer => answer.hb_user_id = userIdMap.get(answer.hb_user_id));
+                const expected = _.sortBy(rawJson, ['hb_user_id', 'hb_assessment_id', 'pillar_hash', 'answer_hash']);
+                const actual = _.sortBy(dbExport.answers, ['hb_user_id', 'hb_assessment_id', 'pillar_hash', 'answer_hash']);
                 const assessmentMap = new Map([
                     [1, 10],
                     [2, 36],
-                    [3, 62]
+                    [3, 62],
+                    [4, 87],
+                    [5, 113],
+                    [6, 139]
                 ]);
                 actual.forEach(answer => {
-                    answer.hb_user_id = 1;
                     answer.hb_assessment_id = assessmentMap.get(answer.hb_assessment_id);
                     delete answer.id;
                 });
