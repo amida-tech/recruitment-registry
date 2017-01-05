@@ -2,6 +2,10 @@
 
 const _ = require('lodash');
 
+const QuestionGenerator = require('./question-generator');
+
+const questionTypes = QuestionGenerator.questionTypes();
+
 module.exports = class SurveyGenerator {
     constructor(questionGenerator) {
         this.questionGenerator = questionGenerator;
@@ -18,7 +22,7 @@ module.exports = class SurveyGenerator {
 
     count() {
         const sectionType = this.sectionType();
-        return sectionType ? 9 + sectionType - 1 : this.questionGenerator.types.length + 1;
+        return sectionType ? 9 + sectionType - 1 : questionTypes.length + 1;
     }
 
     newSurveyQuestion(index) {

@@ -20,6 +20,13 @@ module.exports = function (sequelize, DataTypes) {
         meta: {
             type: DataTypes.JSON
         },
+        multiple: {
+            type: DataTypes.BOOLEAN
+        },
+        maxCount: {
+            type: DataTypes.INTEGER,
+            field: 'max_count'
+        },
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',
