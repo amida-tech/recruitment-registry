@@ -3,9 +3,15 @@
 const _ = require('lodash');
 
 module.exports = class Answerer {
-    constructor() {
-        this.answerIndex = -1;
-        this.answerChoicesCountIndex = 0;
+    constructor(predecessor) {
+        if (predecessor) {
+            const { answerIndex, answerChoicesCountIndex, multiCount } = predecessor;
+            Object.assign(this, { answerIndex, answerChoicesCountIndex, multiCount });
+        } else {
+            this.answerIndex = -1;
+            this.answerChoicesCountIndex = 0;
+            this.multiCount = 0;
+        }
     }
 
     text() {
@@ -110,9 +116,18 @@ module.exports = class Answerer {
 
     answerQuestion(question) {
         const type = _.camelCase(question.type);
-        ++this.answerIndex;
-        const answer = this[type](question);
-        return { questionId: question.id, answer };
+        if (question.multiple) {
+            ++this.multiCount;
+            const answer = _.range(this.multiCount % 4 + 1).map(() => {
+                ++this.answerIndex;
+                return this[type](question);
+            });
+            return { questionId: question.id, answer };
+        } else {
+            ++this.answerIndex;
+            const answer = this[type](question);
+            return { questionId: question.id, answer };
+        }
     }
 
     answerRawQuestion(question) {
