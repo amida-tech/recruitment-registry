@@ -164,7 +164,7 @@ describe('answer unit', function () {
     it(`user 3 gets answers to survey 6`, tests.getAnswersFn(3, 6));
 
     _.range(22, 34).forEach(index => {
-        it(`create question ${index} (multi)`, function() {
+        it(`create question ${index} (multi)`, function () {
             const question = generator.questionGenerator.newMultiQuestion();
             return questionTests.createQuestionFn(question)();
         });

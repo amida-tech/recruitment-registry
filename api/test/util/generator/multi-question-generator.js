@@ -8,6 +8,6 @@ module.exports = class MultiQuestionGenerator extends QuestionGenerator {
     }
 
     newQuestion(type) {
-    	return this.newMultiQuestion(type);
+        return this.newMultiQuestion(type);
     }
 };

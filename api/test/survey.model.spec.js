@@ -8,6 +8,7 @@ const _ = require('lodash');
 const models = require('../models');
 
 const Generator = require('./util/generator');
+const MultiQuestionSurveyGenerator = require('./util/generator/multi-question-survey-generator');
 const History = require('./util/history');
 const SurveyHistory = require('./util/survey-history');
 const SharedSpec = require('./util/shared-spec');
@@ -345,6 +346,15 @@ describe('survey unit', function () {
                 hxSurvey.push(survey, serverSurvey);
                 comparator.survey(survey, serverSurvey);
             });
+    });
+
+    it('update survey generator for multi questions', function () {
+        generator.updateSurveyGenerator(MultiQuestionSurveyGenerator);
+    });
+
+    _.range(13, 20).forEach(index => {
+        it(`create survey ${index}`, tests.createSurveyFn());
+        it(`get survey ${index}`, tests.getSurveyFn(index));
     });
 
     for (let i = 0; i < userCount; ++i) {

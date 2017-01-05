@@ -7,9 +7,17 @@ const QuestionGenerator = require('./question-generator');
 const questionTypes = QuestionGenerator.questionTypes();
 
 module.exports = class SurveyGenerator {
-    constructor(questionGenerator) {
+    constructor(questionGenerator, predecessor) {
         this.questionGenerator = questionGenerator;
-        this.surveyIndex = -1;
+        if (predecessor) {
+            this.surveyIndex = predecessor.questionIndex;
+        } else {
+            this.surveyIndex = -1;
+        }
+    }
+
+    newSurveyGenerator(SurveyGeneratorClass) {
+        return new SurveyGeneratorClass(this.questionGenerator, this);
     }
 
     currentIndex() {
@@ -25,13 +33,15 @@ module.exports = class SurveyGenerator {
         return sectionType ? 9 + sectionType - 1 : questionTypes.length + 1;
     }
 
-    newSurveyQuestion(index) {
-        const question = this.questionGenerator.newQuestion();
+    newSurveyQuestion(index, question) {
+        if (!question) {
+            question = this.questionGenerator.newQuestion();
+        }
         question.required = Boolean(index % 2);
         return question;
     }
 
-    newSurvey() {
+    newBody() {
         const surveyIndex = ++this.surveyIndex;
         const name = `name_${surveyIndex}`;
         const result = { name };
@@ -45,6 +55,11 @@ module.exports = class SurveyGenerator {
                 saveProgress: metaIndex === 2
             };
         }
+        return result;
+    }
+
+    newSurvey() {
+        const result = this.newBody();
         const sectionType = this.surveyIndex % 3;
         const count = this.count();
         result.questions = _.range(count).map(index => this.newSurveyQuestion(index));

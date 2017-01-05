@@ -209,7 +209,7 @@ module.exports = class QuestionDAO extends Translatable {
         scope = scope || 'summary';
         const attributes = ['id', 'type'];
         if (scope === 'complete' || scope === 'export') {
-            attributes.push('meta');
+            attributes.push('meta', 'multiple', 'maxCount');
         }
         const options = { raw: true, attributes, order: 'id' };
         if (ids) {
@@ -230,6 +230,12 @@ module.exports = class QuestionDAO extends Translatable {
                 questions.forEach(question => {
                     if (question.meta === null) {
                         delete question.meta;
+                    }
+                    if (question.maxCount === null) {
+                        delete question.maxCount;
+                    }
+                    if (question.multiple === null) {
+                        delete question.multiple;
                     }
                 });
                 return this.updateAllTexts(questions, language)
