@@ -4,7 +4,7 @@ const _ = require('lodash');
 
 const toAnswerRecord = function (answers, language) {
     const remaining = answers.reduce((r, answer, index) => {
-        if (answer.answer) {
+        if (answer.answer || answer.answers) {
             r[answer.questionId] = index;
         }
         return r;

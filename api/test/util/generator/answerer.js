@@ -118,11 +118,11 @@ module.exports = class Answerer {
         const type = _.camelCase(question.type);
         if (question.multiple) {
             ++this.multiCount;
-            const answer = _.range(this.multiCount % 4 + 1).map(() => {
+            const answers = _.range(this.multiCount % 4 + 1).map(() => {
                 ++this.answerIndex;
                 return this[type](question);
             });
-            return { questionId: question.id, answer };
+            return { questionId: question.id, answers };
         } else {
             ++this.answerIndex;
             const answer = this[type](question);

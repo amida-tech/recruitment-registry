@@ -398,7 +398,11 @@ module.exports = class SurveyDAO extends Translatable {
                             const qid = answer.questionId;
                             const question = qmap[qid];
                             question.language = answer.language;
-                            question.answer = answer.answer;
+                            if (answer.answer) {
+                                question.answer = answer.answer;
+                            } else if (answer.answers) {
+                                question.answers = answer.answers;
+                            }
                         });
                         return survey;
                     });

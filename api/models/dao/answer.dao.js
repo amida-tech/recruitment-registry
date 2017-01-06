@@ -168,7 +168,7 @@ const generateAnswer = function (type, entries, multiple) {
 const fileAnswer = function ({ userId, surveyId, language, answers }, tx) {
     answers = answers.reduce((r, q) => {
         const questionId = q.questionId;
-        const values = prepareAnswerForDB(q.answer).map(value => ({
+        const values = prepareAnswerForDB(q.answer || q.answers).map(value => ({
             userId,
             surveyId,
             language,
@@ -243,7 +243,7 @@ module.exports = class AnswerDAO {
                     if (!qx) {
                         throw new RRError('answerQxNotInSurvey');
                     }
-                    if (answer.answer) {
+                    if (answer.answer || answer.answers) {
                         qx.required = false;
                     }
                 });
@@ -290,7 +290,7 @@ module.exports = class AnswerDAO {
                 return Answer.destroy({ where, transaction });
             })
             .then(() => {
-                answers = _.filter(answers, answer => answer.answer);
+                answers = _.filter(answers, answer => answer.answer || answer.answers);
                 if (answers.length) {
                     return fileAnswer({ userId, surveyId, language, answers }, transaction);
                 }
@@ -367,9 +367,13 @@ module.exports = class AnswerDAO {
                     const v = groupedResult[key];
                     const r = {
                         questionId: v[0]['question.id'],
-                        language: v[0].language,
-                        answer: generateAnswer(v[0]['question.type'], v, v[0]['question.multiple'])
+                        language: v[0].language
                     };
+                    if (v[0]['question.multiple']) {
+                        r.answers = generateAnswer(v[0]['question.type'], v, true);
+                    } else {
+                        r.answer = generateAnswer(v[0]['question.type'], v, false);
+                    }
                     if (scope === 'history-only') {
                         r.deletedAt = v[0].deletedAt;
                     }

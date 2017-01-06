@@ -22,7 +22,7 @@ module.exports = class MultiQuestionSurveyGenerator extends SurveyGenerator {
                 question = this.questionGenerator.newMultiQuestion();
             }
             if (code === 'S') {
-                question = this.questionGenerator.newMultiQuestion();
+                question = this.questionGenerator.newQuestion();
             }
             return this.newSurveyQuestion(index, question);
         });

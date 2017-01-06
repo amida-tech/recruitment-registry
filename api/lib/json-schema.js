@@ -76,6 +76,13 @@ _.set(schema, 'definitions.newSurveyQuestion', {
             meta: {
                 $ref: '#/definitions/questionMeta'
             },
+            multiple: {
+                type: 'boolean'
+            },
+            maxCount: {
+                type: 'integer',
+                minimum: 1
+            },
             required: { type: 'boolean' },
             skip,
             actions: {
@@ -93,6 +100,13 @@ _.set(schema, 'definitions.newSurveyQuestion', {
             type: { type: 'string', enum: ['choice'] },
             meta: {
                 $ref: '#/definitions/questionMeta'
+            },
+            multiple: {
+                type: 'boolean'
+            },
+            maxCount: {
+                type: 'integer',
+                minimum: 1
             },
             choices: {
                 type: 'array',
@@ -120,6 +134,13 @@ _.set(schema, 'definitions.newSurveyQuestion', {
             instruction: { type: 'string' },
             required: { type: 'boolean' },
             type: { type: 'string', enum: ['choice'] },
+            multiple: {
+                type: 'boolean'
+            },
+            maxCount: {
+                type: 'integer',
+                minimum: 1
+            },
             meta: {
                 $ref: '#/definitions/questionMeta'
             },
@@ -174,6 +195,8 @@ _.set(schema, 'definitions.newQuestion', {
             text: { type: 'string' },
             instruction: { type: 'string' },
             type: { type: 'string', enum: questionTypes },
+            multiple: { type: 'boolean' },
+            maxCount: { type: 'integer', minimum: 1 },
             meta: {
                 $ref: '#/definitions/questionMeta'
             },
@@ -193,6 +216,8 @@ _.set(schema, 'definitions.newQuestion', {
             text: { type: 'string' },
             instruction: { type: 'string' },
             type: { type: 'string', enum: ['choice'] },
+            multiple: { type: 'boolean' },
+            maxCount: { type: 'integer', minimum: 1 },
             meta: {
                 $ref: '#/definitions/questionMeta'
             },
@@ -224,6 +249,8 @@ _.set(schema, 'definitions.newQuestion', {
             text: { type: 'string' },
             instruction: { type: 'string' },
             type: { type: 'string', enum: ['choice'] },
+            multiple: { type: 'boolean' },
+            maxCount: { type: 'integer', minimum: 1 },
             meta: {
                 $ref: '#/definitions/questionMeta'
             },
@@ -247,6 +274,8 @@ _.set(schema, 'definitions.newQuestion', {
             text: { type: 'string' },
             instruction: { type: 'string' },
             type: { type: 'string', enum: ['choices'] },
+            multiple: { type: 'boolean' },
+            maxCount: { type: 'integer', minimum: 1 },
             meta: {
                 $ref: '#/definitions/questionMeta'
             },

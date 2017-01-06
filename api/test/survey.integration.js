@@ -10,6 +10,7 @@ const config = require('../config');
 const SharedIntegration = require('./util/shared-integration');
 const RRSuperTest = require('./util/rr-super-test');
 const Generator = require('./util/generator');
+const MultiQuestionSurveyGenerator = require('./util/generator/multi-question-survey-generator');
 const History = require('./util/history');
 const SurveyHistory = require('./util/survey-history');
 const comparator = require('./util/comparator');
@@ -297,5 +298,37 @@ describe('survey integration', function () {
                 comparator.answeredSurvey(survey, answers, res.body);
             })
             .end(done);
+    });
+
+    it('update survey generator for multi questions', function () {
+        generator.updateSurveyGenerator(MultiQuestionSurveyGenerator);
+    });
+
+    it('login as super', shared.loginFn(store, config.superUser));
+
+    _.range(10, 17).forEach(index => {
+        it(`create survey ${index}`, tests.createSurveyFn());
+        it(`get survey ${index}`, tests.getSurveyFn(index));
+    });
+
+    it('logout as super', shared.logoutFn(store));
+
+    it('login as user', shared.loginFn(store, user));
+    _.range(10, 17).forEach(index => {
+        it('answer survey', function (done) {
+            const survey = hxSurvey.server(index);
+            answers = generator.answerQuestions(survey.questions);
+            const surveyId = survey.id;
+            store.post('/answers', { surveyId, answers }, 204).end(done);
+        });
+
+        it('get answered survey', function (done) {
+            const server = hxSurvey.server(index);
+            store.get(`/answered-surveys/${server.id}`, true, 200)
+                .expect(function (res) {
+                    comparator.answeredSurvey(server, answers, res.body);
+                })
+                .end(done);
+        });
     });
 });

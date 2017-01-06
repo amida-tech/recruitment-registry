@@ -10,7 +10,7 @@ module.exports = class SurveyGenerator {
     constructor(questionGenerator, predecessor) {
         this.questionGenerator = questionGenerator;
         if (predecessor) {
-            this.surveyIndex = predecessor.questionIndex;
+            this.surveyIndex = predecessor.surveyIndex;
         } else {
             this.surveyIndex = -1;
         }

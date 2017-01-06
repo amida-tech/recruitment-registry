@@ -2629,6 +2629,13 @@
                 "type": {
                     "$ref": "#/definitions/questionType"
                 },
+                "multiple": {
+                    "type": "boolean"
+                },
+                "maxCount": {
+                    "type": "integer",
+                    "minimum": 1
+                },
                 "meta": {
                     "$ref": "#/definitions/questionMeta"
                 },
@@ -2780,6 +2787,13 @@
                 "type": {
                     "$ref": "#/definitions/questionType"
                 },
+                "multiple": {
+                    "type": "boolean"
+                },
+                "maxCount": {
+                    "type": "integer",
+                    "minimum": 1
+                },
                 "meta": {
                     "$ref": "#/definitions/questionMeta"
                 },
@@ -2826,6 +2840,12 @@
                  },
                 "answer": {
                     "$ref": "#/definitions/answer"
+                },
+                "answers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/answer"
+                    }
                 },
                 "language": {
                     "type": "string",
@@ -3303,6 +3323,13 @@
                 "type": {
                     "$ref": "#/definitions/questionType"
                 },
+                "multiple": {
+                    "type": "boolean"
+                },
+                "maxCount": {
+                    "type": "integer",
+                    "minimum": 1
+                },
                 "meta": {
                     "$ref": "#/definitions/questionMeta"
                 },
@@ -3318,7 +3345,8 @@
                 "answer": {
                     "$ref": "#/definitions/answer"
                 }
-            }
+            },
+            "additionalProperties": false
         },
         "questions": {
             "type": "array",
@@ -3394,6 +3422,13 @@
                 "type": {
                     "$ref": "#/definitions/questionType"
                 },
+                "multiple": {
+                    "type": "boolean"
+                },
+                "maxCount": {
+                    "type": "integer",
+                    "minimum": 1
+                },
                 "meta": {
                     "$ref": "#/definitions/questionMeta"
                 },
@@ -3429,10 +3464,21 @@
                     "type": "integer",
                     "minimum": 1
                 },
+                "language": {
+                    "type": "string",
+                    "minLength": 2
+                },
                 "answer": {
                     "$ref": "#/definitions/answer"
+                },
+                "answers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/answer"
+                    }
                 }
-            }
+            },
+            "additionalProperties": false
         },
         "linkedAnswers": {
             "type": "array",
