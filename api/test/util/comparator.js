@@ -76,11 +76,15 @@ const comparator = {
     answeredSurvey(survey, answers, serverAnsweredSurvey, language) {
         const expected = _.cloneDeep(survey);
         const answerMap = new Map();
-        answers.forEach(({ questionId, answer, language }) => answerMap.set(questionId, { answer, language }));
+        answers.forEach(({ questionId, answer, answers, language }) => answerMap.set(questionId, { answer, answers, language }));
         expected.questions.forEach(qx => {
             const clientAnswers = answerMap.get(qx.id);
             if (clientAnswers) {
-                qx.answer = answerMap.get(qx.id).answer;
+                if (qx.multiple) {
+                    qx.answers = answerMap.get(qx.id).answers;
+                } else {
+                    qx.answer = answerMap.get(qx.id).answer;
+                }
                 qx.language = answerMap.get(qx.id).language || language || 'en';
                 if (qx.type === 'choices' && qx.answer.choices) {
                     qx.answer.choices.forEach((choice) => {
@@ -103,7 +107,7 @@ const comparator = {
         const expected = _.cloneDeep(answers);
         expected.forEach(answer => {
             answer.language = answer.language || language || 'en';
-            if (answer.answer.choices) {
+            if (answer.answer && answer.answer.choices) {
                 answer.answer.choices.forEach((choice) => {
                     const numValues = ['textValue', 'monthValue', 'yearValue', 'dayValue', 'integerValue', 'boolValue', 'dateValue', 'numberValue', 'feetInchesValue', 'bloodPressureValue'].reduce((r, p) => {
                         if (choice.hasOwnProperty(p)) {

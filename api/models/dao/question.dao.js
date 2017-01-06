@@ -51,8 +51,8 @@ module.exports = class QuestionDAO extends Translatable {
     }
 
     createQuestionTx(question, transaction) {
-        const qxFields = _.omit(question, ['oneOfChoices', 'choices', 'actions', 'questions']);
-        return Question.create(qxFields, { transaction, raw: true })
+        const baseFields = _.omit(question, ['oneOfChoices', 'choices', 'actions']);
+        return Question.create(baseFields, { transaction, raw: true })
             .then(result => {
                 const { text, instruction } = question;
                 const id = result.id;
@@ -75,8 +75,8 @@ module.exports = class QuestionDAO extends Translatable {
     }
 
     createQuestion(question) {
-        return sequelize.transaction(tx => {
-            return this.createQuestionTx(question, tx);
+        return sequelize.transaction(transaction => {
+            return this.createQuestionTx(question, transaction);
         });
     }
 
@@ -86,8 +86,8 @@ module.exports = class QuestionDAO extends Translatable {
                 if (count) {
                     return RRError.reject('qxReplaceWhenActiveSurveys');
                 } else {
-                    return sequelize.transaction(tx => {
-                        return Question.findById(id, { transaction: tx })
+                    return sequelize.transaction(transaction => {
+                        return Question.findById(id, { transaction })
                             .then(question => {
                                 if (!question) {
                                     return RRError.reject('qxNotFound');
@@ -97,17 +97,17 @@ module.exports = class QuestionDAO extends Translatable {
                                     version: version + 1,
                                     groupId: question.groupId || question.id
                                 });
-                                return this.createQuestionTx(newQuestion, tx)
+                                return this.createQuestionTx(newQuestion, transaction)
                                     .then(({ id }) => {
                                         if (!question.groupId) {
-                                            return question.update({ version: 1, groupId: question.id }, { transaction: tx })
+                                            return question.update({ version: 1, groupId: question.id }, { transaction })
                                                 .then(() => id);
                                         } else {
                                             return id;
                                         }
                                     })
                                     .then(id => {
-                                        return question.destroy({ transaction: tx })
+                                        return question.destroy({ transaction })
                                             .then(() => SurveyQuestion.destroy({ where: { questionId: question.id } }))
                                             .then(() => ({ id }));
                                     });
@@ -119,13 +119,19 @@ module.exports = class QuestionDAO extends Translatable {
 
     getQuestion(id, options = {}) {
         const language = options.language;
-        return Question.findById(id, { raw: true, attributes: ['id', 'type', 'meta'] })
+        return Question.findById(id, { raw: true, attributes: ['id', 'type', 'meta', 'multiple', 'maxCount'] })
             .then(question => {
                 if (!question) {
                     return RRError.reject('qxNotFound');
                 }
                 if (question.meta === null) {
                     delete question.meta;
+                }
+                if (question.maxCount === null) {
+                    delete question.maxCount;
+                }
+                if (question.multiple === null) {
+                    delete question.multiple;
                 }
                 return question;
             })
@@ -203,7 +209,7 @@ module.exports = class QuestionDAO extends Translatable {
         scope = scope || 'summary';
         const attributes = ['id', 'type'];
         if (scope === 'complete' || scope === 'export') {
-            attributes.push('meta');
+            attributes.push('meta', 'multiple', 'maxCount');
         }
         const options = { raw: true, attributes, order: 'id' };
         if (ids) {
@@ -224,6 +230,12 @@ module.exports = class QuestionDAO extends Translatable {
                 questions.forEach(question => {
                     if (question.meta === null) {
                         delete question.meta;
+                    }
+                    if (question.maxCount === null) {
+                        delete question.maxCount;
+                    }
+                    if (question.multiple === null) {
+                        delete question.multiple;
                     }
                 });
                 return this.updateAllTexts(questions, language)

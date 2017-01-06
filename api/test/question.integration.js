@@ -10,6 +10,7 @@ const config = require('../config');
 const SharedIntegration = require('./util/shared-integration');
 const RRSuperTest = require('./util/rr-super-test');
 const Generator = require('./util/generator');
+const MultiQuestionGenerator = require('./util/generator/multi-question-generator');
 const comparator = require('./util/comparator');
 const History = require('./util/history');
 const RRError = require('../lib/rr-error');
@@ -362,4 +363,14 @@ describe('question integration', function () {
         return tests.createQuestionFn(question)(done);
     });
     it('get question 27', tests.getQuestionFn());
+
+    it('replace generator to multiple question generator', function () {
+        const multiGenerator = new MultiQuestionGenerator(generator.questionGenerator);
+        generator.questionGenerator = multiGenerator;
+    });
+
+    _.range(28, 40).forEach(index => {
+        it(`create question ${index}`, tests.createQuestionFn());
+        it(`get question ${index}`, tests.getQuestionFn(index));
+    });
 });

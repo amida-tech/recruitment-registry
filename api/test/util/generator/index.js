@@ -23,6 +23,14 @@ class Generator {
         this.assessmentIndex = -1;
     }
 
+    updateSurveyGenerator(SurveyGenerator) {
+        this.surveyGenerator = this.surveyGenerator.newSurveyGenerator(SurveyGenerator);
+    }
+
+    updateAnswererClass(AnswererClass) {
+        this.answerer = new AnswererClass(this.answerer);
+    }
+
     newUser(override) {
         const userIndex = ++this.userIndex;
         let username = 'uSeRnAmE';

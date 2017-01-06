@@ -10,6 +10,7 @@ const db = require('../models/db');
 
 const SharedSpec = require('./util/shared-spec.js');
 const Generator = require('./util/generator');
+const MultiQuestionGenerator = require('./util/generator/multi-question-generator');
 const comparator = require('./util/comparator');
 const History = require('./util/history');
 const translator = require('./util/translator');
@@ -345,4 +346,14 @@ describe('question unit', function () {
         return tests.createQuestionFn(question)();
     });
     it('get question 27', tests.getQuestionFn());
+
+    it('replace generator to multiple question generator', function () {
+        const multiGenerator = new MultiQuestionGenerator(generator.questionGenerator);
+        generator.questionGenerator = multiGenerator;
+    });
+
+    _.range(28, 40).forEach(index => {
+        it(`create question ${index}`, tests.createQuestionFn());
+        it(`get question ${index}`, tests.getQuestionFn(index));
+    });
 });
