@@ -21,6 +21,7 @@ class Generator {
         this.consentIndex = -1;
         this.languageIndex = -1;
         this.assessmentIndex = -1;
+        this.enumerationindex = 0;
     }
 
     updateSurveyGenerator(SurveyGenerator) {
@@ -122,6 +123,20 @@ class Generator {
         const lookback = (index % 2 === 1);
         const surveys = surveyIds.map(id => ({ id, lookback }));
         return { name, sequenceType, surveys };
+    }
+
+    newEnumeration() {
+        const enumerationindex = ++this.enumerationindex;
+        const name = `name_${enumerationindex}`;
+        const numEnumerals = (enumerationindex % 4) + 2;
+        const startValue = enumerationindex % 3;
+        const enumerals = _.range(numEnumerals).map(index => {
+            return {
+                text: `text_${enumerationindex}_${index}`,
+                value: startValue + index
+            };
+        });
+        return { name, enumerals };
     }
 
     nextLanguage() {

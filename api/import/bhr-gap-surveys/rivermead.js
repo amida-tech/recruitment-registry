@@ -15,11 +15,11 @@ const commonText = 'After a head injury or accident some people experience sympt
 module.exports = {
     name: 'Rivermead',
     questions: [{
-        text: 'Whether or not questions were asked based on TBI History',
-        required: false,
-        type: 'boolean',
-        answerIdentifier: 'Applicable'
-    },
+            text: 'Whether or not questions were asked based on TBI History',
+            required: false,
+            type: 'boolean',
+            answerIdentifier: 'Applicable'
+        },
         problemQuestion('Headaches', commonText + 'Headaches'),
         problemQuestion('Dizziness', commonText + 'Feelings of dizziness'),
         problemQuestion('Nausea', commonText + 'Nausea and/or vomiting'),

@@ -136,6 +136,14 @@ const comparator = {
             expected.username = expected.email.toLowerCase();
         }
         expect(server).to.deep.equal(expected);
+    },
+    enumeration(client, server) {
+        const expected = _.cloneDeep(client);
+        expected.id = server.id;
+        _.range(server.enumerals.length).forEach(index => {
+            expected.enumerals[index].id = server.enumerals[index].id;
+        });
+        expect(server).to.deep.equal(expected);
     }
 };
 

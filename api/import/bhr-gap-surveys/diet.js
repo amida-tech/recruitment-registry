@@ -3,11 +3,11 @@
 const _ = require('lodash');
 
 const countChoices = function (count, plus) {
-	const result = _.range(0, count).map(index => ({ text: `${index}` }));
-	if (plus) {
-		result.push({ text: `${count}+` });
-	}
-	return result;
+    const result = _.range(0, count).map(index => ({ text: `${index}` }));
+    if (plus) {
+        result.push({ text: `${count}+` });
+    }
+    return result;
 };
 
 module.exports = {
@@ -49,10 +49,10 @@ module.exports = {
         type: 'choice',
         answerIdentifier: 'QID129',
         choices: [
-			{ text: 'Fast-food' },
-			{ text: 'Restaurant' },
-			{ text: 'Diner/cafeteria' },
-			{ text: 'Other' }
+            { text: 'Fast-food' },
+            { text: 'Restaurant' },
+            { text: 'Diner/cafeteria' },
+            { text: 'Other' }
         ]
     }, {
         text: 'On average, how many servings of fruit do you eat each day?',
@@ -122,17 +122,17 @@ module.exports = {
         type: 'choice',
         answerIdentifier: 'QID139',
         choices: [
-			{ text: 'Water' },
-			{ text: 'Juice' },
-			{ text: 'Soda' },
-			{ text: 'Diet soda' },
-			{ text: 'Sports drinks' },
-			{ text: 'Tea' },
-			{ text: 'Coffee' },
-			{ text: 'Whole milk' },
-			{ text: '2% milk' },
-			{ text: '1% milk' },
-			{ text: 'Skim milk' }
+            { text: 'Water' },
+            { text: 'Juice' },
+            { text: 'Soda' },
+            { text: 'Diet soda' },
+            { text: 'Sports drinks' },
+            { text: 'Tea' },
+            { text: 'Coffee' },
+            { text: 'Whole milk' },
+            { text: '2% milk' },
+            { text: '1% milk' },
+            { text: 'Skim milk' }
         ]
     }]
 };

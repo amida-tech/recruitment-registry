@@ -58,6 +58,9 @@ const UserAssessmentAnswer = sequelize.import('./user-assessment-answer.model');
 const QuestionIdentifier = sequelize.import('./question-identifier.model');
 const AnswerIdentifier = sequelize.import('./answer-identifier.model');
 const SurveyIdentifier = sequelize.import('./survey-identifier.model');
+const Enumeration = sequelize.import('./enumeration.model');
+const Enumeral = sequelize.import('./enumeral.model');
+const EnumeralText = sequelize.import('./enumeral-text.model');
 
 const questionBelongsToArgument = {
     as: 'question',
@@ -148,5 +151,8 @@ module.exports = {
     UserAssessmentAnswer,
     QuestionIdentifier,
     AnswerIdentifier,
-    SurveyIdentifier
+    SurveyIdentifier,
+    Enumeration,
+    Enumeral,
+    EnumeralText
 };

@@ -19,11 +19,11 @@ module.exports = {
         type: 'choice',
         answerIdentifier: 'QID6',
         skip: {
-        	count: 2,
-        	rule: {
-        		logic: 'equals',
-        		answer: 'Yes'
-        	}
+            count: 2,
+            rule: {
+                logic: 'equals',
+                answer: 'Yes'
+            }
         },
         choices: [
             { text: 'Yes', numerical: 1 },
@@ -38,10 +38,10 @@ module.exports = {
         maxCount: 9,
         answerIdentifiers: ['QID1_1_TEXT', 'QID1_3_TEXT', 'QID3_1_TEXT', 'QID3_3_TEXT', 'QID3_5_TEXT', 'QID5_1_TEXT', 'QID5_3_TEXT', 'QID5_5_TEXT', 'QID5_7_TEXT'],
         skip: {
-        	count: 1,
-        	rule: {
-        		logic: 'exists'
-        	}
+            count: 1,
+            rule: {
+                logic: 'exists'
+            }
         }
     }, {
         text: 'For what disease or condition do you take the medication?',
@@ -56,11 +56,11 @@ module.exports = {
         type: 'choice',
         answerIdentifier: 'QID10',
         skip: {
-        	count: 1,
-        	rule: {
-        		logic: 'equals',
-        		answer: 'Yes'
-        	}
+            count: 1,
+            rule: {
+                logic: 'equals',
+                answer: 'Yes'
+            }
         },
         choices: [
             { text: 'Yes', numerical: 1 },

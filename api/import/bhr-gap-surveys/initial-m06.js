@@ -166,10 +166,10 @@ module.exports = {
         required: false,
         type: 'choices',
         skip: {
-        	count: 10,
-        	rule: {
-        		logic: 'each'
-        	}
+            count: 10,
+            rule: {
+                logic: 'each'
+            }
         },
         choices: [
             { text: 'Donepezil (Aricept)', answerIdentifier: 'QID19_1' },
@@ -182,7 +182,7 @@ module.exports = {
             { text: 'Olanzapine (Zyprexa)', answerIdentifier: 'QID19_8' },
             { text: 'Quetiapine (Seroquel)', answerIdentifier: 'QID19_9' },
             { text: 'Aripiprazole (Abilify)', answerIdentifier: 'QID19_10' }
-		]
+        ]
     }, {
         text: 'How long has your current Donepezil (Aricept) prescription been stable (same frequency and dose)??',
         required: false,

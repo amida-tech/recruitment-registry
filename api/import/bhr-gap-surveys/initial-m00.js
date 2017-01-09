@@ -115,15 +115,15 @@ module.exports = {
         required: false,
         type: 'choices',
         skip: {
-        	count: 2,
-        	rule: {
-        		logic: 'each'
-        	}
+            count: 2,
+            rule: {
+                logic: 'each'
+            }
         },
         choices: [
             { text: 'Anti-depressant medication', answerIdentifier: 'QID15_1' },
             { text: 'Anti-anxiety medication', answerIdentifier: 'QID15_2' }
-		]
+        ]
     }, {
         text: 'How long has your current anti-depressant prescription been stable (same medication, frequency, dose)?',
         required: false,
@@ -142,10 +142,10 @@ module.exports = {
         required: false,
         type: 'choices',
         skip: {
-        	count: 10,
-        	rule: {
-        		logic: 'each'
-        	}
+            count: 10,
+            rule: {
+                logic: 'each'
+            }
         },
         choices: [
             { text: 'Donepezil (Aricept)', answerIdentifier: 'QID16_1' },
@@ -158,7 +158,7 @@ module.exports = {
             { text: 'Olanzapine (Zyprexa)', answerIdentifier: 'QID16_8' },
             { text: 'Quetiapine (Seroquel)', answerIdentifier: 'QID16_9' },
             { text: 'Aripiprazole (Abilify)', answerIdentifier: 'QID16_10' }
-		]
+        ]
     }, {
         text: 'How long has your current Donepezil (Aricept) prescription been stable (same frequency and dose)??',
         required: false,

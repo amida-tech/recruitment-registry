@@ -15,11 +15,11 @@ const commonText = 'We would like to know how satisfied you are with different a
 module.exports = {
     name: 'QUOLIBRI',
     questions: [{
-        text: 'Whether or not questions were asked based on TBI History',
-        required: false,
-        type: 'boolean',
-        answerIdentifier: 'Applicable'
-    },
+            text: 'Whether or not questions were asked based on TBI History',
+            required: false,
+            type: 'boolean',
+            answerIdentifier: 'Applicable'
+        },
         satisfiedQuestion('Physical', commonText + 'your physical condition?'),
         satisfiedQuestion('Cognitive', commonText + 'how your brain is working, in terms of your concentration, memory, thinking?'),
         satisfiedQuestion('Emotional', commonText + 'your feelings and emotions?'),

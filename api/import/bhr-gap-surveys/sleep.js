@@ -36,94 +36,94 @@ const commonText2 = 'If you have a roommate or bed partner, ask him/her how ofte
 module.exports = {
     name: 'Sleep',
     questions: [{
-        text: 'During the past month, when have you usually gone to bed at night?',
-        required: true,
-        type: 'choice',
-        answerIdentifier: 'QID141',
-        choices: [
-			{ text: 'Before 6:00 PM' },
-			{ text: '6:00 PM' },
-			{ text: '6:30 PM' },
-			{ text: '7:00 PM' },
-			{ text: '7:30 PM' },
-			{ text: '8:00 PM' },
-			{ text: '8:30 PM' },
-			{ text: '9:00 PM' },
-			{ text: '9:30 PM' },
-			{ text: '10:00 PM' },
-			{ text: '10:30 PM' },
-			{ text: '11:00 PM' },
-			{ text: '11:30 PM' },
-			{ text: '12:00 AM' },
-			{ text: '12:30 AM' },
-			{ text: '1:00 AM' },
-			{ text: 'After 1:00 AM' }
-        ]
-    }, {
-        text: 'During the past month, how long (in minutes) has it usually taken you to fall asleep each night?',
-        required: true,
-        type: 'choice',
-        answerIdentifier: 'QID142',
-        choices: [
-            { text: '< 5 minutes' },
-            { text: '5 minutes' },
-            { text: '10 minutes' },
-            { text: '15 minutes' },
-            { text: '20 minutes' },
-            { text: '30 minutes' },
-            { text: '45 minutes' },
-            { text: '60 minutes' },
-            { text: '> 60 minutes' }
-        ]
-    }, {
-        text: 'During the past month, when have you usually gone to bed at night?',
-        required: true,
-        type: 'choice',
-        answerIdentifier: 'QID143',
-        choices: [
-            { text: 'Before 5:00 AM' },
-            { text: '5:00 AM' },
-            { text: '5:30 AM' },
-            { text: '6:00 AM' },
-            { text: '6:30 AM' },
-            { text: '7:00 AM' },
-            { text: '7:30 AM' },
-            { text: '8:00 AM' },
-            { text: '8:30 AM' },
-            { text: '9:00 AM' },
-            { text: '9:30 AM' },
-            { text: '10:00 AM' },
-            { text: '10:30 AM' },
-            { text: '11:00 AM' },
-            { text: 'After 11:00 AM' }
-        ]
-    }, {
-        text: 'During the past month, how many hours of actual sleep did you get at night? (This may be different than the number of hours you spend in bed.)',
-        required: true,
-        type: 'choice',
-        answerIdentifier: 'QID94',
-        choices: [
-            { text: '< 4' },
-            { text: '4' },
-            { text: '4.5' },
-            { text: '5' },
-            { text: '5.5' },
-            { text: '6' },
-            { text: '6.5' },
-            { text: '7' },
-            { text: '7.5' },
-            { text: '8' },
-            { text: '8.5' },
-            { text: '9' },
-            { text: '9.5' },
-            { text: '10' },
-            { text: '10.5' },
-            { text: '11' },
-            { text: '11.5' },
-            { text: '12' },
-            { text: '> 12' }
-        ]
-    },
+            text: 'During the past month, when have you usually gone to bed at night?',
+            required: true,
+            type: 'choice',
+            answerIdentifier: 'QID141',
+            choices: [
+                { text: 'Before 6:00 PM' },
+                { text: '6:00 PM' },
+                { text: '6:30 PM' },
+                { text: '7:00 PM' },
+                { text: '7:30 PM' },
+                { text: '8:00 PM' },
+                { text: '8:30 PM' },
+                { text: '9:00 PM' },
+                { text: '9:30 PM' },
+                { text: '10:00 PM' },
+                { text: '10:30 PM' },
+                { text: '11:00 PM' },
+                { text: '11:30 PM' },
+                { text: '12:00 AM' },
+                { text: '12:30 AM' },
+                { text: '1:00 AM' },
+                { text: 'After 1:00 AM' }
+            ]
+        }, {
+            text: 'During the past month, how long (in minutes) has it usually taken you to fall asleep each night?',
+            required: true,
+            type: 'choice',
+            answerIdentifier: 'QID142',
+            choices: [
+                { text: '< 5 minutes' },
+                { text: '5 minutes' },
+                { text: '10 minutes' },
+                { text: '15 minutes' },
+                { text: '20 minutes' },
+                { text: '30 minutes' },
+                { text: '45 minutes' },
+                { text: '60 minutes' },
+                { text: '> 60 minutes' }
+            ]
+        }, {
+            text: 'During the past month, when have you usually gone to bed at night?',
+            required: true,
+            type: 'choice',
+            answerIdentifier: 'QID143',
+            choices: [
+                { text: 'Before 5:00 AM' },
+                { text: '5:00 AM' },
+                { text: '5:30 AM' },
+                { text: '6:00 AM' },
+                { text: '6:30 AM' },
+                { text: '7:00 AM' },
+                { text: '7:30 AM' },
+                { text: '8:00 AM' },
+                { text: '8:30 AM' },
+                { text: '9:00 AM' },
+                { text: '9:30 AM' },
+                { text: '10:00 AM' },
+                { text: '10:30 AM' },
+                { text: '11:00 AM' },
+                { text: 'After 11:00 AM' }
+            ]
+        }, {
+            text: 'During the past month, how many hours of actual sleep did you get at night? (This may be different than the number of hours you spend in bed.)',
+            required: true,
+            type: 'choice',
+            answerIdentifier: 'QID94',
+            choices: [
+                { text: '< 4' },
+                { text: '4' },
+                { text: '4.5' },
+                { text: '5' },
+                { text: '5.5' },
+                { text: '6' },
+                { text: '6.5' },
+                { text: '7' },
+                { text: '7.5' },
+                { text: '8' },
+                { text: '8.5' },
+                { text: '9' },
+                { text: '9.5' },
+                { text: '10' },
+                { text: '10.5' },
+                { text: '11' },
+                { text: '11.5' },
+                { text: '12' },
+                { text: '> 12' }
+            ]
+        },
         frequencyQuestion('QID95_1', commonText + 'Cannot get to sleep within 30 minutes'),
         frequencyQuestion('QID95_2', commonText + 'Wake up in the middle of the night or early morning'),
         frequencyQuestion('QID95_3', commonText + 'Have to get up to use the bathroom'),
@@ -136,8 +136,8 @@ module.exports = {
         frequencyQuestion('QID95_10', commonText + 'Other reason(s), please describe'),
         goodQuestion('QID96', 'During the past month, how would you rate your sleep quality overall?'),
         frequencyQuestion('QID97', 'During the past month, how often have you taken medicine (prescribed or "over the counter") to help you sleep?'),
-        frequencyQuestion('QID98', 'During the past month, how often have you had trouble staying awake while driving, eating meals, or engaging in social activity?'),  {
-        text: 'During the past month, how many hours of actual sleep did you get at night? (This may be different than the number of hours you spend in bed.)',
+        frequencyQuestion('QID98', 'During the past month, how often have you had trouble staying awake while driving, eating meals, or engaging in social activity?'), {
+            text: 'During the past month, how many hours of actual sleep did you get at night? (This may be different than the number of hours you spend in bed.)',
             required: true,
             type: 'choice',
             answerIdentifier: 'QID145',
@@ -148,7 +148,7 @@ module.exports = {
                 { text: 'A very big problem' }
             ]
         }, {
-           required: true,
+            required: true,
             type: 'choice',
             answerIdentifier: 'QID146',
             choices: [
@@ -175,7 +175,7 @@ module.exports = {
                 { text: '3-4 hours' },
                 { text: '4-5 hours' },
                 { text: '5-6 hours' },
-                { text: 'more than 6 hours'}
+                { text: 'more than 6 hours' }
             ]
         }, {
             text: 'I feel sleepy during the day and struggle to remain alert.',

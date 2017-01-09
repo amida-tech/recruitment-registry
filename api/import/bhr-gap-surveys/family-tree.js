@@ -1,7 +1,7 @@
 'use strict';
 
 const yesNoQuestion = function (answerIdentifier, text) {
-	return {
+    return {
         text,
         required: false,
         type: 'choice',
@@ -24,7 +24,7 @@ const extendedYesNoQuestion = function (answerIdentifier, text) {
             { text: 'No' },
             { text: 'I don\'t know' },
             { text: 'Decline to answer' }
-         ]
+        ]
     };
 };
 
@@ -33,14 +33,14 @@ const commonText = 'Please indicate which family member(s) have or had memory pr
 module.exports = {
     name: 'Early History',
     questions: [
-    	yesNoQuestion('QID47_4', commonText + 'Me'),
-    	yesNoQuestion('QID47_5', commonText + 'Mother'),
-    	yesNoQuestion('QID47_6', commonText + 'Father'),
-    	yesNoQuestion('QID47_7', commonText + 'M-Grandmother'),
-    	yesNoQuestion('QID47_8', commonText + 'F-Grandmother'),
-    	yesNoQuestion('QID47_9', commonText + 'M-Grandfather'),
-    	yesNoQuestion('QID47_10', commonText + 'F-Grandfather'),
-    	yesNoQuestion('QID47_11', commonText + 'Brother1'),
+        yesNoQuestion('QID47_4', commonText + 'Me'),
+        yesNoQuestion('QID47_5', commonText + 'Mother'),
+        yesNoQuestion('QID47_6', commonText + 'Father'),
+        yesNoQuestion('QID47_7', commonText + 'M-Grandmother'),
+        yesNoQuestion('QID47_8', commonText + 'F-Grandmother'),
+        yesNoQuestion('QID47_9', commonText + 'M-Grandfather'),
+        yesNoQuestion('QID47_10', commonText + 'F-Grandfather'),
+        yesNoQuestion('QID47_11', commonText + 'Brother1'),
         yesNoQuestion('QID47_12', commonText + 'Brother2'),
         yesNoQuestion('QID47_13', commonText + 'Sister1'),
         yesNoQuestion('QID47_14', commonText + 'Sister2'),

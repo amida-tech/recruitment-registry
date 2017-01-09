@@ -1,7 +1,7 @@
 'use strict';
 
 const yesNoQuestion = function (answerIdentifier, text) {
-	return {
+    return {
         text,
         required: false,
         type: 'choice',
@@ -23,7 +23,7 @@ const declineYesNoQuestion = function (answerIdentifier, text) {
             { text: 'Yes' },
             { text: 'No' },
             { text: 'Decline to answer' }
-         ]
+        ]
     };
 };
 
@@ -38,7 +38,7 @@ const extendedYesNoQuestion = function (answerIdentifier, text) {
             { text: 'No' },
             { text: 'I don\'t know' },
             { text: 'Decline to answer' }
-         ]
+        ]
     };
 };
 
@@ -59,14 +59,14 @@ module.exports = {
         yesNoQuestion('QID1_1', commonText + 'Parkinson\'s disease'),
         yesNoQuestion('QID1_2', commonText + 'Movement disorder'),
         yesNoQuestion('QID1_3', commonText + 'Stroke'),
-    	yesNoQuestion('QID1_4', commonText + 'Motor neuron disease'),
-    	yesNoQuestion('QID1_5', commonText + 'Dementia'),
-    	yesNoQuestion('QID1_6', commonText + 'Heart disease'),
-    	yesNoQuestion('QID1_7', commonText + 'High blood pressure'),
-    	yesNoQuestion('QID1_8', commonText + 'High cholesterol'),
-    	yesNoQuestion('QID1_9', commonText + 'Diabetes'),
-    	yesNoQuestion('QID1_10', commonText + 'Cancer'),
-    	yesNoQuestion('QID1_12', commonText + 'Alzheimer\'s Disease'),
+        yesNoQuestion('QID1_4', commonText + 'Motor neuron disease'),
+        yesNoQuestion('QID1_5', commonText + 'Dementia'),
+        yesNoQuestion('QID1_6', commonText + 'Heart disease'),
+        yesNoQuestion('QID1_7', commonText + 'High blood pressure'),
+        yesNoQuestion('QID1_8', commonText + 'High cholesterol'),
+        yesNoQuestion('QID1_9', commonText + 'Diabetes'),
+        yesNoQuestion('QID1_10', commonText + 'Cancer'),
+        yesNoQuestion('QID1_12', commonText + 'Alzheimer\'s Disease'),
         yesNoQuestion('QID1_13', commonText + 'Mild Cognitive Impairment'),
         yesNoQuestion('QID1_14', commonText + 'Traumatic Brain Injury'),
         yesNoQuestion('QID1_15', commonText + 'Lung Disease'),

@@ -1,7 +1,7 @@
 'use strict';
 
 const yes0No1Question = function (answerIdentifier, text) {
-	return {
+    return {
         text,
         required: false,
         type: 'choice',
@@ -36,8 +36,8 @@ const oftenQuestion = function (answerIdentifier, text) {
             { text: 'Not at all', numerical: 0 },
             { text: 'Several days', numerical: 1 },
             { text: 'More than half the days', numerical: 2 },
-            { text: 'Nearly every day', numerical: 3}
-         ]
+            { text: 'Nearly every day', numerical: 3 }
+        ]
     };
 };
 
@@ -51,11 +51,10 @@ const difficultQuestion = function (answerIdentifier, text) {
             { text: 'Not Difficult At All', numerical: 0 },
             { text: 'Somewhat Difficult', numerical: 1 },
             { text: 'Very Difficult', numerical: 2 },
-            { text: 'Extremely Difficult', numerical: 3}
-         ]
+            { text: 'Extremely Difficult', numerical: 3 }
+        ]
     };
 };
-
 
 const commonText = 'Over the last 2 weeks, how often have you been bothered by any of the following problems? Read each item carefully, and select your response. ';
 

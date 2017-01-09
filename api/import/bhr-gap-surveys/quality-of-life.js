@@ -1,7 +1,7 @@
 'use strict';
 
 const yesNoQuestion = function (answerIdentifier, text) {
-	return {
+    return {
         text,
         required: false,
         type: 'choice',
@@ -26,7 +26,7 @@ const limitedQuestion = function (answerIdentifier, text) {
             { text: 'Some of the time' },
             { text: 'A little of the time' },
             { text: 'None of the time' }
-         ]
+        ]
     };
 };
 
@@ -42,7 +42,7 @@ const limited2Question = function (answerIdentifier, text) {
             { text: 'A good bit of the time' },
             { text: 'A little of the time' },
             { text: 'None of the time' }
-         ]
+        ]
     };
 };
 
@@ -56,7 +56,7 @@ const howMuchQuestion = function (answerIdentifier, text) {
             { text: 'Yes, limited a lot' },
             { text: 'Yes, limited a little' },
             { text: 'No, not limited at al' }
-         ]
+        ]
     };
 };
 
@@ -67,12 +67,12 @@ const trueQuestion = function (answerIdentifier, text) {
         type: 'choice',
         answerIdentifier,
         choices: [
-            { text: 'Definitely True'},
+            { text: 'Definitely True' },
             { text: 'Mostly True' },
             { text: 'Don\'t Know' },
             { text: 'Mostly False' },
             { text: 'Definitely False' }
-         ]
+        ]
     };
 };
 
@@ -85,34 +85,34 @@ const commonText5 = 'These questions are about how you feel and how things have 
 module.exports = {
     name: 'QualityOfLife',
     questions: [{
-        text: 'In general, would you say your health is:',
-        required: false,
-        type: 'choice',
-        answerIdentifier: 'QID80',
-        oneOfchoices: ['Excellent', 'Very Good', 'Good', 'Fair', 'Poor']
-    }, {
-        text: 'Compared to one year ago, how would you rate your health in general now?',
-        required: false,
-        type: 'choice',
-        answerIdentifier: 'QID81',
-        oneOfchoices: [
-            'Much better now than one year ago',
-            'Somewhat better than one year ago',
-            'About the same',
-            'Somewhat worse now than one year ago',
-            'Much worse now than one year ago'
-        ]
-    },
+            text: 'In general, would you say your health is:',
+            required: false,
+            type: 'choice',
+            answerIdentifier: 'QID80',
+            oneOfchoices: ['Excellent', 'Very Good', 'Good', 'Fair', 'Poor']
+        }, {
+            text: 'Compared to one year ago, how would you rate your health in general now?',
+            required: false,
+            type: 'choice',
+            answerIdentifier: 'QID81',
+            oneOfchoices: [
+                'Much better now than one year ago',
+                'Somewhat better than one year ago',
+                'About the same',
+                'Somewhat worse now than one year ago',
+                'Much worse now than one year ago'
+            ]
+        },
         limitedQuestion('QID82_1', commonText + 'Vigorous activities, such as running, lifting heavy objects, participating in strenuous sports'),
         limitedQuestion('QID82_2', commonText + 'Moderate activities, such as moving a table, pushing a vacuum cleaner, bowling, or playing golf'),
         limitedQuestion('QID82_3', commonText + 'Lifting or carrying groceries'),
-    	limitedQuestion('QID82_4', commonText + 'Climbing several flights of stairs'),
-    	limitedQuestion('QID82_5', commonText + 'Climbing one flight of stairs'),
-    	limitedQuestion('QID82_6', commonText + 'Bending, kneeling, or stooping'),
-    	limitedQuestion('QID82_7', commonText + 'Walking more than a mile'),
-    	limitedQuestion('QID82_8', commonText + 'Walking several blocks'),
-    	limitedQuestion('QID82_9', commonText + 'Walking one block'),
-    	limitedQuestion('QID82_10', commonText + 'Bathing or dressing yourself'),
+        limitedQuestion('QID82_4', commonText + 'Climbing several flights of stairs'),
+        limitedQuestion('QID82_5', commonText + 'Climbing one flight of stairs'),
+        limitedQuestion('QID82_6', commonText + 'Bending, kneeling, or stooping'),
+        limitedQuestion('QID82_7', commonText + 'Walking more than a mile'),
+        limitedQuestion('QID82_8', commonText + 'Walking several blocks'),
+        limitedQuestion('QID82_9', commonText + 'Walking one block'),
+        limitedQuestion('QID82_10', commonText + 'Bathing or dressing yourself'),
         yesNoQuestion('QID83_1', commonText2 + 'Cut down the amount of time you spent on work or other activities'),
         yesNoQuestion('QID83_2', commonText2 + 'Accomplished less than you would like'),
         yesNoQuestion('QID83_3', commonText2 + 'Were limited in the kind of work or other activities'),
@@ -148,19 +148,19 @@ module.exports = {
                 'Not at all', 'A little bit', 'Moderately', 'Quite a bit', 'Extremely'
             ]
         },
-            howMuchQuestion('QID140_1', commonText4 + 'Did you feel full of pep?'),
-            howMuchQuestion('QID140_2', commonText4 + 'Have you been a very nervous person?'),
-            howMuchQuestion('QID140_3', commonText4 + 'Have you felt so down in the dumps that nothing could cheer you up?'),
-            howMuchQuestion('QID140_4', commonText4 + 'Have you felt calm and peaceful?'),
-            howMuchQuestion('QID140_5', commonText4 + 'Did you have a lot of energy?'),
-            howMuchQuestion('QID140_6', commonText4 + 'Have you felt downhearted and blue?'),
-            howMuchQuestion('QID140_7', commonText4 + 'Did you feel worn out?'),
-            howMuchQuestion('QID140_8', commonText4 + 'Have you been a happy person?'),
-            howMuchQuestion('QID140_9', commonText4 + 'Did you feel tired?'),
-            limited2Question('QID88', 'During the past 4 weeks, how much of the time has your physical health or emotional problems interfered with your social activities (like visiting with friends, relatives, etc.)?'),
-            trueQuestion('QID89_1', commonText5 + 'I seem to get sick a little easier than other people'),
-            trueQuestion('QID89_2', commonText5 + 'I am as healthy as anybody I know'),
-            trueQuestion('QID89_3', commonText5 + 'I expect my health to get worse'),
-            trueQuestion('QID89_4', commonText5 + 'My health is excellent'),
+        howMuchQuestion('QID140_1', commonText4 + 'Did you feel full of pep?'),
+        howMuchQuestion('QID140_2', commonText4 + 'Have you been a very nervous person?'),
+        howMuchQuestion('QID140_3', commonText4 + 'Have you felt so down in the dumps that nothing could cheer you up?'),
+        howMuchQuestion('QID140_4', commonText4 + 'Have you felt calm and peaceful?'),
+        howMuchQuestion('QID140_5', commonText4 + 'Did you have a lot of energy?'),
+        howMuchQuestion('QID140_6', commonText4 + 'Have you felt downhearted and blue?'),
+        howMuchQuestion('QID140_7', commonText4 + 'Did you feel worn out?'),
+        howMuchQuestion('QID140_8', commonText4 + 'Have you been a happy person?'),
+        howMuchQuestion('QID140_9', commonText4 + 'Did you feel tired?'),
+        limited2Question('QID88', 'During the past 4 weeks, how much of the time has your physical health or emotional problems interfered with your social activities (like visiting with friends, relatives, etc.)?'),
+        trueQuestion('QID89_1', commonText5 + 'I seem to get sick a little easier than other people'),
+        trueQuestion('QID89_2', commonText5 + 'I am as healthy as anybody I know'),
+        trueQuestion('QID89_3', commonText5 + 'I expect my health to get worse'),
+        trueQuestion('QID89_4', commonText5 + 'My health is excellent'),
     ]
 };
