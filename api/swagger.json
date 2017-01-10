@@ -2797,7 +2797,15 @@
                     "type": "integer",
                     "minimum": 1
                 },
-                "meta": {
+                "enumerationId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "enumeration": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                 "meta": {
                     "$ref": "#/definitions/questionMeta"
                 },
                 "oneOfChoices": {
@@ -2988,6 +2996,23 @@
                         }
                     },
                     "additionalProperties": false
+                },
+                "enumerals": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": ["text", "value"],
+                        "properties": {
+                            "text": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "value": {
+                                "type": "integer"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
                 },
                 "choices": {
                     "type": "array",

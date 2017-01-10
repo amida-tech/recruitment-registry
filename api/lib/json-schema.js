@@ -83,6 +83,14 @@ _.set(schema, 'definitions.newSurveyQuestion', {
                 type: 'integer',
                 minimum: 1
             },
+            enumerationId: {
+                type: 'integer',
+                minimum: 1
+            },
+            enumeration: {
+                type: 'string',
+                minLength: 1
+            },
             required: { type: 'boolean' },
             skip,
             actions: {
@@ -165,6 +173,14 @@ _.set(schema, 'definitions.newSurveyQuestion', {
             meta: {
                 $ref: '#/definitions/questionMeta'
             },
+            enumerationId: {
+                type: 'integer',
+                minimum: 1
+            },
+            enumeration: {
+                type: 'string',
+                minLength: 1
+            },
             choices: {
                 type: 'array',
                 items: {
@@ -173,7 +189,15 @@ _.set(schema, 'definitions.newSurveyQuestion', {
                     properties: {
                         text: { type: 'string' },
                         type: { type: 'string', enum: choiceTypes },
-                        meta: { type: 'object' }
+                        meta: { type: 'object' },
+                        enumerationId: {
+                            type: 'integer',
+                            minimum: 1
+                        },
+                        enumeration: {
+                            type: 'string',
+                            minLength: 1
+                        }
                     },
                     additionalProperties: false
                 }
