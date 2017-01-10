@@ -227,5 +227,4 @@ describe('answer unit', function () {
     it(`user 3 gets answers to survey 13`, tests.getAnswersFn(3, 13));
     it(`user 2 answers survey 14`, tests.answerSurveyFn(2, 14, [57, 58, 59, 60, 61]));
     it(`user 2 gets answers to survey 14`, tests.getAnswersFn(2, 14));
-
 });

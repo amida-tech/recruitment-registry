@@ -9,11 +9,14 @@ const config = require('../config');
 const SharedIntegration = require('./util/shared-integration');
 const RRSuperTest = require('./util/rr-super-test');
 const Generator = require('./util/generator');
+const EnumerationQuestionGenerator = require('./util/generator/enumeration-question-generator');
 const Answerer = require('./util/generator/answerer');
+const comparator = require('./util/comparator');
 const History = require('./util/history');
 const SurveyHistory = require('./util/survey-history');
 const answerCommon = require('./util/answer-common');
 const questionCommon = require('./util/question-common');
+const enumerationCommon = require('./util/enumeration-common');
 
 describe('answer integration', function () {
     const generator = new Generator();
@@ -26,10 +29,12 @@ describe('answer integration', function () {
     const hxUser = new History();
     const hxSurvey = new SurveyHistory();
     const hxQuestion = new History();
+    const hxEnumeration = new History();
 
     const tests = new answerCommon.IntegrationTests(store, generator, hxUser, hxSurvey, hxQuestion);
 
     const questionTests = new questionCommon.IntegrationTests(store, generator, hxQuestion);
+    const enumerationTests = new enumerationCommon.SpecTests(generator, hxEnumeration);
 
     before(shared.setUpFn(store));
 
@@ -158,5 +163,38 @@ describe('answer integration', function () {
     it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
     it(`user 2 answers survey 12`, tests.answerSurveyFn(2, 12, [31, 49, 32, 50, 33, 51]));
     it(`user 2 gets answers to survey 12`, tests.getAnswersFn(2, 12));
+    it(`logout as  user 2`, shared.logoutFn(store));
+
+    it('login as super', shared.loginFn(store, config.superUser));
+    _.range(8).forEach(index => {
+        it(`create enumeration ${index}`, enumerationTests.createEnumerationFn());
+        it(`get enumeration ${index}`, enumerationTests.getEnumerationFn(index));
+    });
+
+    it('replace generator to enumeration question generator', function () {
+        const enumerations = _.range(8).map(index => hxEnumeration.server(index));
+        const enumerationGenerator = new EnumerationQuestionGenerator(generator.questionGenerator, enumerations);
+        generator.questionGenerator = enumerationGenerator;
+        comparator.updateEnumerationMap(enumerations);
+    });
+
+    _.range(52, 62).forEach(index => {
+        it(`create question ${index}`, questionTests.createQuestionFn());
+        it(`get question ${index}`, questionTests.getQuestionFn(index));
+    });
+
+    it('create survey 13 (5 enumerations)', shared.createSurveyFn(store, hxSurvey, hxQuestion, [52, 53, 54, 55, 56]));
+    it('create survey 14 (5 enumerations)', shared.createSurveyFn(store, hxSurvey, hxQuestion, [57, 58, 59, 60, 61]));
+
+    it('logout as super', shared.logoutFn(store));
+
+    it('login as user 3', shared.loginIndexFn(store, hxUser, 3));
+    it(`user 3 answers survey 13`, tests.answerSurveyFn(3, 13, [52, 53, 54, 55, 56]));
+    it(`user 3 gets answers to survey 13`, tests.getAnswersFn(3, 13));
+    it(`logout as  user 3`, shared.logoutFn(store));
+
+    it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
+    it(`user 2 answers survey 14`, tests.answerSurveyFn(2, 14, [57, 58, 59, 60, 61]));
+    it(`user 2 gets answers to survey 14`, tests.getAnswersFn(2, 14));
     it(`logout as  user 2`, shared.logoutFn(store));
 });
