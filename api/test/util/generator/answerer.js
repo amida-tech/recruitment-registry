@@ -87,6 +87,12 @@ module.exports = class Answerer {
         return { boolValue: answerIndex % 2 === 0 };
     }
 
+    enumeration(question, choice) {
+        const enumerals = (choice && choice.enumerals) || question.enumerals;
+        const enumeral = enumerals[this.answerIndex % enumerals.length];
+        return { integerValue: enumeral.value };
+    }
+
     selectChoice(choices) {
         const answerIndex = this.answerIndex;
         return choices[answerIndex % choices.length];
@@ -106,7 +112,7 @@ module.exports = class Answerer {
             const choice = this.selectChoice(question.choices);
             const answer = { id: choice.id };
             if (choice.type !== 'bool') {
-                Object.assign(answer, this[choice.type]());
+                Object.assign(answer, this[choice.type](question, choice));
             }
             return answer;
         });
