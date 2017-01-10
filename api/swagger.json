@@ -2462,6 +2462,167 @@
                     }
                 }
             }
+        },
+
+        "/enumerations": {
+            "x-swagger-router-controller": "enumeration.controller",
+            "post": {
+                "summary": "Creates new enumeration",
+                "operationId": "createEnumeration",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "newEnumeration",
+                    "in": "body",
+                    "description": "Enumeration object",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/newEnumeration"
+                    }
+                }],
+                "responses": {
+                    "201": {
+                        "$ref": "#/responses/idSuccess"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "get": {
+                "summary": "Lists enumerations",
+                "operationId": "listEnumerations",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "language",
+                    "in": "query",
+                    "description": "Language code",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 2
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/enumerations"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/enumerations/{id}": {
+            "x-swagger-router-controller": "enumeration.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
+            "get": {
+                "summary": "Gets enumeration",
+                "operationId": "getEnumeration",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "language",
+                    "in": "query",
+                    "description": "Language requested",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 1
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/enumeration"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Deletes enumeration",
+                "operationId": "deleteEnumeration",
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successful response."
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/enumerals/multi-text/{language}": {
+            "x-swagger-router-controller": "enumeral.controller",
+            "patch": {
+                "summary": "Updates or translates enumeration enumerals",
+                "operationId": "updateEnumeralTexts",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "language",
+                    "in": "path",
+                    "description": "Language code",
+                    "required": true,
+                    "type": "string",
+                    "minLength": 2
+                }, {
+                    "name": "enumeralTextsUpdate",
+                    "in": "body",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/enumeralTextsUpdate"
+                    }
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successul response"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/enumerals/{id}": {
+            "x-swagger-router-controller": "enumeral.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
+            "delete": {
+                "summary": "Deletes enumeral",
+                "operationId": "deleteEnumeral",
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successful response."
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
         }
     },
     "securityDefinitions": {
@@ -2576,7 +2737,7 @@
             "type": "string",
             "enum": [
                 "text", "bool", "integer", "choice", "choices",
-                "date", "year", "month", "day",
+                "date", "year", "month", "day", "enumeration",
                 "pounds", "zip", "feet-inches", "blood-pressure"
             ]
         },
@@ -2636,7 +2797,15 @@
                     "type": "integer",
                     "minimum": 1
                 },
-                "meta": {
+                "enumerationId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "enumeration": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                 "meta": {
                     "$ref": "#/definitions/questionMeta"
                 },
                 "oneOfChoices": {
@@ -2827,6 +2996,23 @@
                         }
                     },
                     "additionalProperties": false
+                },
+                "enumerals": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": ["text", "value"],
+                        "properties": {
+                            "text": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "value": {
+                                "type": "integer"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
                 },
                 "choices": {
                     "type": "array",
@@ -3044,7 +3230,7 @@
         },
         "choiceType": {
             "type": "string",
-            "enum": ["bool", "bool-sole", "text", "year", "month", "day", "integer", "date", "pounds", "zip", "feet-inches", "blood-pressure"]
+            "enum": ["bool", "bool-sole", "text", "year", "month", "day", "integer", "date", "pounds", "zip", "feet-inches", "blood-pressure", "enumeration"]
         },
         "choice": {
             "type": "object",
@@ -3066,6 +3252,23 @@
                 },
                 "meta": {
                     "type": "object"
+                },
+                "enumerals": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": ["text", "value"],
+                        "properties": {
+                            "text": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "value": {
+                                "type": "integer"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
                 }
             },
             "additionalProperties": false
@@ -3333,6 +3536,23 @@
                 "meta": {
                     "$ref": "#/definitions/questionMeta"
                 },
+                "enumerals": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": ["text", "value"],
+                        "properties": {
+                            "text": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "value": {
+                                "type": "integer"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                },
                 "choices": {
                     "type": "array",
                     "items": {
@@ -3394,13 +3614,21 @@
             "properties": {
                 "text": {
                     "type": "string",
-                     "minLength": 1
+                    "minLength": 1
                 },
                 "type": {
                     "$ref": "#/definitions/choiceType"
                 },
                 "meta": {
                     "type": "object"
+                },
+                "enumerationId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "enumeration": {
+                    "type": "string",
+                     "minLength": 1
                 }
             },
             "additionalProperties": false
@@ -3428,6 +3656,14 @@
                 "maxCount": {
                     "type": "integer",
                     "minimum": 1
+                },
+                "enumerationId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "enumeration": {
+                    "type": "string",
+                    "minLength": 1
                 },
                 "meta": {
                     "$ref": "#/definitions/questionMeta"
@@ -4451,6 +4687,104 @@
                 }
             },
             "additionalProperties": false
+        },
+        "newEnumeration": {
+            "type": "object",
+            "required": ["name", "enumerals"],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "enumerals": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": ["text", "value"],
+                        "properties": {
+                            "text": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "value": {
+                                "type": "integer"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+        "enumeration": {
+            "type": "object",
+            "required": ["id", "name", "enumerals"],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                        "minimum": 1
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "enumerals": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": ["id", "text", "value"],
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                    "minimum": 1
+                            },
+                            "text": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "value": {
+                                "type": "integer"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+        "enumerations": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": ["id", "name"],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "minLength": 1
+                    }
+                }
+            }
+        },
+        "enumeralTextsUpdate": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": ["id", "text"],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "text": {
+                        "type": "string",
+                        "minLength": 1
+                    }
+                }
+            }
         }
     }
 }

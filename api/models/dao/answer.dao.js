@@ -113,6 +113,7 @@ const generateAnswerSingleFn = {
     'bool-sole': value => ({ boolValue: value === 'true' }),
     pounds: value => ({ numberValue: parseInt(value) }),
     integer: value => ({ integerValue: parseInt(value) }),
+    enumeration: value => ({ integerValue: parseInt(value) }),
     'blood-pressure': value => {
         const pieces = value.split('-');
         return {

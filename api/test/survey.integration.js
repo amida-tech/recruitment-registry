@@ -11,11 +11,13 @@ const SharedIntegration = require('./util/shared-integration');
 const RRSuperTest = require('./util/rr-super-test');
 const Generator = require('./util/generator');
 const MultiQuestionSurveyGenerator = require('./util/generator/multi-question-survey-generator');
+const EnumerationQuestionGenerator = require('./util/generator/enumeration-question-generator');
 const History = require('./util/history');
 const SurveyHistory = require('./util/survey-history');
 const comparator = require('./util/comparator');
 const translator = require('./util/translator');
 const surveyCommon = require('./util/survey-common');
+const enumerationCommon = require('./util/enumeration-common');
 
 const invalidSurveysJSON = require('./fixtures/json-schema-invalid/new-survey');
 const invalidSurveysSwagger = require('./fixtures/swagger-invalid/new-survey');
@@ -32,8 +34,10 @@ describe('survey integration', function () {
     const hxUser = new History();
     const surveyCount = 8;
     const hxSurvey = new SurveyHistory();
+    const hxEnumeration = new History();
 
     const tests = new surveyCommon.IntegrationTests(store, generator, hxSurvey);
+    const enumerationTests = new enumerationCommon.SpecTests(generator, hxEnumeration);
 
     before(shared.setUpFn(store));
 
@@ -307,6 +311,24 @@ describe('survey integration', function () {
     it('login as super', shared.loginFn(store, config.superUser));
 
     _.range(10, 17).forEach(index => {
+        it(`create survey ${index}`, tests.createSurveyFn());
+        it(`get survey ${index}`, tests.getSurveyFn(index));
+    });
+
+    _.range(8).forEach(index => {
+        it(`create enumeration ${index}`, enumerationTests.createEnumerationFn());
+        it(`get enumeration ${index}`, enumerationTests.getEnumerationFn(index));
+    });
+
+    it('replace generator to enumeration question generator', function () {
+        const enumerations = _.range(8).map(index => hxEnumeration.server(index));
+        const enumerationGenerator = new EnumerationQuestionGenerator(generator.questionGenerator, enumerations);
+        generator.questionGenerator = enumerationGenerator;
+        generator.surveyGenerator.questionGenerator = enumerationGenerator;
+        comparator.updateEnumerationMap(enumerations);
+    });
+
+    _.range(17, 20).forEach(index => {
         it(`create survey ${index}`, tests.createSurveyFn());
         it(`get survey ${index}`, tests.getSurveyFn(index));
     });

@@ -37,14 +37,20 @@ module.exports = class Translatable {
             });
     }
 
-    createMultipleTextsTx(inputs, tx) {
-        const pxs = inputs.map(input => this.createTextTx(input, tx));
+    createMultipleTextsTx(inputs, transaction) {
+        const pxs = inputs.map(input => this.createTextTx(input, transaction));
         return SPromise.all(pxs);
     }
 
     createText(input) {
-        return sequelize.transaction(tx => {
-            return this.createTextTx(input, tx);
+        return sequelize.transaction(transaction => {
+            return this.createTextTx(input, transaction);
+        });
+    }
+
+    createMultipleTexts(input) {
+        return sequelize.transaction(transaction => {
+            return this.createMultipleTextsTx(input, transaction);
         });
     }
 

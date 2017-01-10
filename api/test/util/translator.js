@@ -53,6 +53,13 @@ const translator = {
         delete result.questions;
         return result;
     },
+    translateEnumeration(enumeration, language) {
+        const result = _.cloneDeep(enumeration);
+        result.enumerals.forEach(enumeral => {
+            enumeral.text = this._translate(enumeral.text, language);
+        });
+        return result;
+    },
     isQuestionTranslated(question, language) {
         const texts = question.choices ? [] : [question.text];
         if (question.choices) {
@@ -74,6 +81,10 @@ const translator = {
         if (survey.sections) {
             texts.push(...survey.sections.map(section => section.name));
         }
+        this.isTranslated(texts, language);
+    },
+    isEnumerationTranslated(enumeration, language) {
+        const texts = enumeration.enumerals.map(({ text }) => text);
         this.isTranslated(texts, language);
     },
     isSurveyListTranslated(surveys, language) {
