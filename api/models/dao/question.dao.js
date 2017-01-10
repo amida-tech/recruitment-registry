@@ -243,7 +243,7 @@ module.exports = class QuestionDAO extends Translatable {
         scope = scope || 'summary';
         const attributes = ['id', 'type'];
         if (scope === 'complete' || scope === 'export') {
-            attributes.push('meta', 'multiple', 'maxCount');
+            attributes.push('meta', 'multiple', 'maxCount', 'enumerationId');
         }
         const options = { raw: true, attributes, order: 'id' };
         if (ids) {
@@ -271,8 +271,25 @@ module.exports = class QuestionDAO extends Translatable {
                     if (question.multiple === null) {
                         delete question.multiple;
                     }
+                    if (question.enumerationId === null) {
+                        delete question.enumerationId;
+                    }
                 });
                 return this.updateAllTexts(questions, language)
+                    .then(() => {
+                        const promises = questions.reduce((r, question) => {
+                            if (question.enumerationId) {
+                                const promise = this.enumeral.listEnumerals(question.enumerationId, language)
+                                    .then(enumerals => {
+                                        question.enumerals = enumerals.map(({ text, value }) => ({ text, value }));
+                                        delete question.enumerationId;
+                                    });
+                                r.push(promise);
+                            }
+                            return r;
+                        }, []);
+                        return SPromise.all(promises);
+                    })
                     .then(() => {
                         if (scope === 'complete') {
                             return this.questionAction.findActionsPerQuestions(ids, language)
