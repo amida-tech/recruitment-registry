@@ -1,5 +1,4 @@
 import Home from './home/index';
-import { RegisterContainer } from './register';
 import { ProfileContainer } from './profile';
 import SurveyBuilderContainer from './surveyBuilder/components/index';
 import { SurveyListContainer } from './surveylist';
@@ -15,13 +14,6 @@ export default [
     transTerm: 'HOME',
     component: Home,
     requiresAuth: false
-  }, {
-    path: '/register',
-    title: 'Register',
-    transTerm: 'REGISTER',
-    component: RegisterContainer,
-    requiresAuth: false,
-    newUsers: true
   }, {
     path: '/profile',
     title: 'Profile',

@@ -9,6 +9,7 @@ import { UserAuthWrapper } from 'redux-auth-wrapper'
 import { applyMiddleware, compose, createStore } from 'redux';
 import thunk from 'redux-thunk';
 import { LoginContainer } from './login';
+import { RegisterContainer } from './register';
 import ChartMonitor from 'redux-devtools-chart-monitor';
 import DockMonitor from 'redux-devtools-dock-monitor';
 import LogMonitor from 'redux-devtools-log-monitor';
@@ -117,9 +118,12 @@ export default (options) => {
           <Router history={history}>
             <Route component={LayoutWrapper}>
               <Route
-                key="/login"
                 path="/login"
                 component={LoginContainer}
+              />
+              <Route
+                path="/register"
+                component={RegisterContainer}
               />
               {routes.map(route => // Authed Routes Only
                   <Route
