@@ -2737,7 +2737,7 @@
             "type": "string",
             "enum": [
                 "text", "bool", "integer", "choice", "choices",
-                "date", "year", "month", "day",
+                "date", "year", "month", "day", "enumeration",
                 "pounds", "zip", "feet-inches", "blood-pressure"
             ]
         },
@@ -3205,7 +3205,7 @@
         },
         "choiceType": {
             "type": "string",
-            "enum": ["bool", "bool-sole", "text", "year", "month", "day", "integer", "date", "pounds", "zip", "feet-inches", "blood-pressure"]
+            "enum": ["bool", "bool-sole", "text", "year", "month", "day", "integer", "date", "pounds", "zip", "feet-inches", "blood-pressure", "enumeration"]
         },
         "choice": {
             "type": "object",
@@ -3227,6 +3227,23 @@
                 },
                 "meta": {
                     "type": "object"
+                },
+                "enumerals": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": ["text", "value"],
+                        "properties": {
+                            "text": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "value": {
+                                "type": "integer"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
                 }
             },
             "additionalProperties": false
@@ -3494,6 +3511,23 @@
                 "meta": {
                     "$ref": "#/definitions/questionMeta"
                 },
+                "enumerals": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": ["text", "value"],
+                        "properties": {
+                            "text": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "value": {
+                                "type": "integer"
+                            }
+                        },
+                        "additionalProperties": false
+                    }
+                },
                 "choices": {
                     "type": "array",
                     "items": {
@@ -3555,13 +3589,21 @@
             "properties": {
                 "text": {
                     "type": "string",
-                     "minLength": 1
+                    "minLength": 1
                 },
                 "type": {
                     "$ref": "#/definitions/choiceType"
                 },
                 "meta": {
                     "type": "object"
+                },
+                "enumerationId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "enumeration": {
+                    "type": "string",
+                     "minLength": 1
                 }
             },
             "additionalProperties": false
@@ -3589,6 +3631,14 @@
                 "maxCount": {
                     "type": "integer",
                     "minimum": 1
+                },
+                "enumerationId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "enumeration": {
+                    "type": "string",
+                    "minLength": 1
                 },
                 "meta": {
                     "$ref": "#/definitions/questionMeta"

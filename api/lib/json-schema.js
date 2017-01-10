@@ -57,12 +57,12 @@ _.set(schema, 'definitions.newSurvey.properties.questions.items', {
 
 const questionTypes = [
     'text', 'bool', 'date', 'pounds', 'integer', 'zip',
-    'year', 'month', 'day', 'feet-inches', 'blood-pressure'
+    'year', 'month', 'day', 'feet-inches', 'blood-pressure', 'enumeration'
 ];
 
 const choiceTypes = [
     'bool', 'bool-sole', 'text', 'year', 'month', 'day', 'integer', 'date',
-    'pounds', 'zip', 'feet-inches', 'blood-pressure'
+    'pounds', 'zip', 'feet-inches', 'blood-pressure', 'enumeration'
 ];
 
 _.set(schema, 'definitions.newSurveyQuestion', {
@@ -197,6 +197,14 @@ _.set(schema, 'definitions.newQuestion', {
             type: { type: 'string', enum: questionTypes },
             multiple: { type: 'boolean' },
             maxCount: { type: 'integer', minimum: 1 },
+            enumerationId: {
+                type: 'integer',
+                minimum: 1
+            },
+            enumeration: {
+                type: 'string',
+                minLength: 1
+            },
             meta: {
                 $ref: '#/definitions/questionMeta'
             },
@@ -276,6 +284,14 @@ _.set(schema, 'definitions.newQuestion', {
             type: { type: 'string', enum: ['choices'] },
             multiple: { type: 'boolean' },
             maxCount: { type: 'integer', minimum: 1 },
+            enumerationId: {
+                type: 'integer',
+                minimum: 1
+            },
+            enumeration: {
+                type: 'string',
+                minLength: 1
+            },
             meta: {
                 $ref: '#/definitions/questionMeta'
             },
@@ -291,7 +307,15 @@ _.set(schema, 'definitions.newQuestion', {
                     properties: {
                         text: { type: 'string' },
                         type: { type: 'string', enum: choiceTypes },
-                        meta: { type: 'object' }
+                        meta: { type: 'object' },
+                        enumerationId: {
+                            type: 'integer',
+                            minimum: 1
+                        },
+                        enumeration: {
+                            type: 'string',
+                            minLength: 1
+                        }
                     },
                     additionalProperties: false
                 }

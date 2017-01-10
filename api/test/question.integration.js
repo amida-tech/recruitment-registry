@@ -11,11 +11,13 @@ const SharedIntegration = require('./util/shared-integration');
 const RRSuperTest = require('./util/rr-super-test');
 const Generator = require('./util/generator');
 const MultiQuestionGenerator = require('./util/generator/multi-question-generator');
+const EnumerationQuestionGenerator = require('./util/generator/enumeration-question-generator');
 const comparator = require('./util/comparator');
 const History = require('./util/history');
 const RRError = require('../lib/rr-error');
 const translator = require('./util/translator');
 const questionCommon = require('./util/question-common');
+const enumerationCommon = require('./util/enumeration-common');
 
 const invalidQuestionsJSON = require('./fixtures/json-schema-invalid/new-question');
 const invalidQuestionsSwagger = require('./fixtures/swagger-invalid/new-question');
@@ -85,8 +87,10 @@ describe('question integration', function () {
     }
 
     const hxQuestion = new History();
+    const hxEnumeration = new History();
     const hxSurvey = new History();
     const tests = new questionCommon.IntegrationTests(store, generator, hxQuestion);
+    const enumerationTests = new enumerationCommon.SpecTests(generator, hxEnumeration);
 
     for (let i = 0; i < 10; ++i) {
         it(`create question ${i}`, tests.createQuestionFn());
@@ -373,4 +377,22 @@ describe('question integration', function () {
         it(`create question ${index}`, tests.createQuestionFn());
         it(`get question ${index}`, tests.getQuestionFn(index));
     });
+
+    _.range(8).forEach(index => {
+        it(`create enumeration ${index}`, enumerationTests.createEnumerationFn());
+        it(`get enumeration ${index}`, enumerationTests.getEnumerationFn(index));
+    });
+
+    it('replace generator to enumeration question generator', function () {
+        const enumerations = _.range(8).map(index => hxEnumeration.server(index));
+        const enumerationGenerator = new EnumerationQuestionGenerator(generator.questionGenerator, enumerations);
+        generator.questionGenerator = enumerationGenerator;
+        comparator.updateEnumerationMap(enumerations);
+    });
+
+    _.range(40, 50).forEach(index => {
+        it(`create question ${index}`, tests.createQuestionFn());
+        it(`get question ${index}`, tests.getQuestionFn(index));
+    });
+
 });
