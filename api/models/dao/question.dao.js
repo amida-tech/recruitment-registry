@@ -32,11 +32,17 @@ module.exports = class QuestionDAO extends Translatable {
     }
 
     createChoicesTx(questionId, choices, transaction) {
-        const pxs = choices.map(({ text, type, meta }, line) => {
+        const pxs = choices.map(({ text, type, meta, enumerationId, enumeration }, line) => {
             type = type || 'bool';
             const choice = { questionId, text, type, line };
             if (meta) {
                 choice.meta = meta;
+            }
+            if (enumerationId) {
+                choice.enumerationId = enumerationId;
+            }
+            if (enumeration) {
+                choice.enumeration = enumeration;
             }
             return this.questionChoice.createQuestionChoiceTx(choice, transaction)
                 .then(({ id }) => {
@@ -50,27 +56,41 @@ module.exports = class QuestionDAO extends Translatable {
         return SPromise.all(pxs);
     }
 
+    updateEnumeration(enumeration, transaction) {
+        if (enumeration) {
+            return this.enumeration.getEnumerationIdByName(enumeration, transaction);
+        } else {
+            return SPromise.resolve(null);
+        }
+    }
+
     createQuestionTx(question, transaction) {
-        const baseFields = _.omit(question, ['oneOfChoices', 'choices', 'actions']);
-        return Question.create(baseFields, { transaction, raw: true })
-            .then(result => {
-                const { text, instruction } = question;
-                const id = result.id;
-                return this.createTextTx({ text, instruction, id }, transaction)
-                    .then(() => this.createActionsTx(result.id, question.actions, transaction))
-                    .then(() => {
-                        let { oneOfChoices, choices } = question;
-                        const nOneOfChoices = (oneOfChoices && oneOfChoices.length) || 0;
-                        const nChoices = (choices && choices.length) || 0;
-                        if (nOneOfChoices || nChoices) {
-                            if (nOneOfChoices) {
-                                choices = oneOfChoices.map(text => ({ text, type: 'bool' }));
-                            }
-                            return this.createChoicesTx(result.id, choices, transaction)
-                                .then(choices => (result.choices = choices));
-                        }
-                    })
-                    .then(() => result);
+        return this.updateEnumeration(question.enumeration, transaction)
+            .then(enumerationId => {
+                const baseFields = _.omit(question, ['oneOfChoices', 'choices', 'actions']);
+                if (enumerationId) {
+                    baseFields.enumerationId = enumerationId;
+                }
+                return Question.create(baseFields, { transaction, raw: true })
+                    .then(result => {
+                        const { text, instruction } = question;
+                        const id = result.id;
+                        return this.createTextTx({ text, instruction, id }, transaction)
+                            .then(() => this.createActionsTx(result.id, question.actions, transaction))
+                            .then(() => {
+                                let { oneOfChoices, choices } = question;
+                                const nOneOfChoices = (oneOfChoices && oneOfChoices.length) || 0;
+                                const nChoices = (choices && choices.length) || 0;
+                                if (nOneOfChoices || nChoices) {
+                                    if (nOneOfChoices) {
+                                        choices = oneOfChoices.map(text => ({ text, type: 'bool' }));
+                                    }
+                                    return this.createChoicesTx(result.id, choices, transaction)
+                                        .then(choices => (result.choices = choices));
+                                }
+                            })
+                            .then(() => result);
+                    });
             });
     }
 
@@ -119,7 +139,7 @@ module.exports = class QuestionDAO extends Translatable {
 
     getQuestion(id, options = {}) {
         const language = options.language;
-        return Question.findById(id, { raw: true, attributes: ['id', 'type', 'meta', 'multiple', 'maxCount'] })
+        return Question.findById(id, { raw: true, attributes: ['id', 'type', 'meta', 'multiple', 'maxCount', 'enumerationId'] })
             .then(question => {
                 if (!question) {
                     return RRError.reject('qxNotFound');
@@ -132,6 +152,20 @@ module.exports = class QuestionDAO extends Translatable {
                 }
                 if (question.multiple === null) {
                     delete question.multiple;
+                }
+                if (question.enumerationId === null) {
+                    delete question.enumerationId;
+                }
+                return question;
+            })
+            .then(question => {
+                if (question.enumerationId) {
+                    return this.enumeral.listEnumerals(question.enumerationId, language)
+                        .then(enumerals => {
+                            question.enumerals = enumerals.map(({ text, value }) => ({ text, value }));
+                            delete question.enumerationId;
+                            return question;
+                        });
                 }
                 return question;
             })

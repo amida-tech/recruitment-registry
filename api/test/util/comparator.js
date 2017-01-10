@@ -5,6 +5,8 @@ const _ = require('lodash');
 
 const expect = chai.expect;
 
+let enumerationMap;
+
 const comparator = {
     question(client, server) {
         const id = server.id;
@@ -16,6 +18,14 @@ const comparator = {
             expected.choices = expected.oneOfChoices.map(choice => ({ text: choice }));
             delete expected.oneOfChoices;
         }
+        if (expected.enumerationId) {
+            expected.enumerals = enumerationMap.get(expected.enumerationId);
+            delete expected.enumerationId;
+        }
+        if (expected.enumeration) {
+            expected.enumerals = enumerationMap.get(expected.enumeration);
+            delete expected.enumeration;
+        }
         if (!expected.id) {
             expected.id = id;
         }
@@ -23,6 +33,14 @@ const comparator = {
         if (expected.type === 'choice' || expected.type === 'choices' || server.type === 'choice' || server.type === 'choices') {
             expected.choices.forEach((choice, index) => {
                 choice.id = server.choices[index].id;
+                if (choice.enumerationId) {
+                    choice.enumerals = enumerationMap.get(choice.enumerationId);
+                    delete choice.enumerationId;
+                }
+                if (choice.enumeration) {
+                    choice.enumerals = enumerationMap.get(choice.enumeration);
+                    delete choice.enumeration;
+                }
             });
             expect(server.choices).to.deep.equal(expected.choices);
         }
@@ -144,6 +162,14 @@ const comparator = {
             expected.enumerals[index].id = server.enumerals[index].id;
         });
         expect(server).to.deep.equal(expected);
+    },
+    updateEnumerationMap(enumerations) {
+        enumerationMap = new Map();
+        enumerations.forEach(enumeration => {
+            const enumerals = enumeration.enumerals.map(({ text, value }) => ({ text, value }));
+            enumerationMap.set(enumeration.id, enumerals);
+            enumerationMap.set(enumeration.name, enumerals);
+        });
     }
 };
 

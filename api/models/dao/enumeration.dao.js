@@ -45,4 +45,9 @@ module.exports = class EnumDAO {
                     });
             });
     }
+
+    getEnumerationIdByName(name, transaction) {
+        return Enumeration.findOne({ where: { name }, raw: true, attributes: ['id'], transaction })
+            .then(({ id }) => id);
+    }
 };

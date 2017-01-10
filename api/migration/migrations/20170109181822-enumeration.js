@@ -133,6 +133,7 @@ const questionChoiceEnum = function (queryInterface, Sequelize) {
 
 module.exports = {
     up: function (queryInterface, Sequelize) {
+        const sequelize = queryInterface.sequelize;
         return enumeration(queryInterface, Sequelize)
             .then(() => enumeral(queryInterface, Sequelize))
             .then(() => enumeralText(queryInterface, Sequelize))
@@ -150,14 +151,20 @@ module.exports = {
                 where: { deleted_at: { $eq: null } },
                 indexName: 'enumeral_text_enumeral_id_language_code_deleted_at',
                 indicesType: 'UNIQUE'
-            }));
+            }))
+            .then(() => sequelize.query('INSERT INTO question_type (name) VALUES (\'enumeration\')'))
+            .then(() => sequelize.query('INSERT INTO answer_type (name) VALUES (\'enumeration\')'));
     },
 
     down: function (queryInterface) {
+        const sequelize = queryInterface.sequelize;
         return queryInterface.removeColumn('question', 'enumeration_id')
             .then(() => queryInterface.removeColumn('question_choice', 'enumeration_id'))
             .then(() => queryInterface.dropTable('enumeration'))
             .then(() => queryInterface.dropTable('enumeral_text'))
-            .then(() => queryInterface.dropTable('enumeral'));
+            .then(() => queryInterface.dropTable('enumeral'))
+            .then(() => sequelize.query('DELETE FROM answer_type WHERE name = \'enumeration\''))
+            .then(() => sequelize.query('DELETE FROM question_type WHERE name = \'enumeration\''));
+
     }
 };

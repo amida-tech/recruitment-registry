@@ -130,6 +130,12 @@ module.exports = class QuestionGenerator {
         return question;
     }
 
+    enumerationChoices() {
+        const question = this.body('choices');
+        question.choices = this.newChoices().map(choice => ({ text: choice, type: 'enumeration' }));
+        return question;
+    }
+
     allChoices() {
         const question = this.body('choices');
         question.choices = [{

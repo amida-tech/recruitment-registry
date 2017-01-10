@@ -11,10 +11,12 @@ const db = require('../models/db');
 const SharedSpec = require('./util/shared-spec.js');
 const Generator = require('./util/generator');
 const MultiQuestionGenerator = require('./util/generator/multi-question-generator');
+const EnumerationQuestionGenerator = require('./util/generator/enumeration-question-generator');
 const comparator = require('./util/comparator');
 const History = require('./util/history');
 const translator = require('./util/translator');
 const questionCommon = require('./util/question-common');
+const enumerationCommon = require('./util/enumeration-common');
 
 const expect = chai.expect;
 const generator = new Generator();
@@ -26,8 +28,10 @@ describe('question unit', function () {
     before(shared.setUpFn());
 
     const hxQuestion = new History();
+    const hxEnumeration = new History();
     const hxSurvey = new History();
     const tests = new questionCommon.SpecTests(generator, hxQuestion);
+    const enumerationTests = new enumerationCommon.SpecTests(generator, hxEnumeration);
 
     it('list all questions when none', function () {
         return models.question.listQuestions()
@@ -353,6 +357,23 @@ describe('question unit', function () {
     });
 
     _.range(28, 40).forEach(index => {
+        it(`create question ${index}`, tests.createQuestionFn());
+        it(`get question ${index}`, tests.getQuestionFn(index));
+    });
+
+    _.range(8).forEach(index => {
+        it(`create enumeration ${index}`, enumerationTests.createEnumerationFn());
+        it(`get enumeration ${index}`, enumerationTests.getEnumerationFn(index));
+    });
+
+    it('replace generator to enumeration question generator', function () {
+        const enumerations = _.range(8).map(index => hxEnumeration.server(index));
+        const enumerationGenerator = new EnumerationQuestionGenerator(generator.questionGenerator, enumerations);
+        generator.questionGenerator = enumerationGenerator;
+        comparator.updateEnumerationMap(enumerations);
+    });
+
+    _.range(40, 50).forEach(index => {
         it(`create question ${index}`, tests.createQuestionFn());
         it(`get question ${index}`, tests.getQuestionFn(index));
     });
