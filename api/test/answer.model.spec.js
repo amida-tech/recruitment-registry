@@ -1,5 +1,6 @@
 /* global describe,before,it*/
 'use strict';
+process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
 const _ = require('lodash');
@@ -7,11 +8,14 @@ const _ = require('lodash');
 const models = require('../models');
 const SharedSpec = require('./util/shared-spec');
 const Generator = require('./util/generator');
+const EnumerationQuestionGenerator = require('./util/generator/enumeration-question-generator');
+const Answerer = require('./util/generator/answerer');
 const comparator = require('./util/comparator');
 const History = require('./util/history');
 const SurveyHistory = require('./util/survey-history');
 const answerCommon = require('./util/answer-common');
 const questionCommon = require('./util/question-common');
+const enumerationCommon = require('./util/enumeration-common');
 
 const expect = chai.expect;
 const generator = new Generator();
@@ -23,11 +27,13 @@ describe('answer unit', function () {
     const hxUser = new History();
     const hxSurvey = new SurveyHistory();
     const hxQuestion = new History();
+    const hxEnumeration = new History();
 
     const tests = new answerCommon.SpecTests(generator, hxUser, hxSurvey, hxQuestion);
     const hxAnswers = tests.hxAnswer;
 
     const questionTests = new questionCommon.SpecTests(generator, hxQuestion);
+    const enumerationTests = new enumerationCommon.SpecTests(generator, hxEnumeration);
 
     before(shared.setUpFn());
 
@@ -144,9 +150,7 @@ describe('answer unit', function () {
     it('get question 20', questionTests.getQuestionFn(20));
     it(`create survey ${testQuestions.length}`, createSurveyFn([20]));
     it('replace choices type answer generator to answer all choices', function () {
-        const answerer = new answerCommon.AllChoicesAnswerer();
-        answerer.answerIndex = tests.generator.answerer.answerIndex;
-        tests.generator.answerer = answerer;
+        generator.updateAnswererClass(answerCommon.AllChoicesAnswerer);
     });
     it(`user 3 answers survey 5`, tests.answerSurveyFn(3, 5, [20]));
     it(`user 3 gets answers to survey 5`, tests.getAnswersFn(3, 5));
@@ -158,10 +162,69 @@ describe('answer unit', function () {
     it('get question 21', questionTests.getQuestionFn());
     it(`create survey ${testQuestions.length+1}`, createSurveyFn([21]));
     it('replace choices type answer generator to answer with bool-sole', function () {
-        const answerer = new answerCommon.BoolSoleChoicesAnswerer();
-        answerer.answerIndex = tests.generator.answerer.answerIndex;
-        tests.generator.answerer = answerer;
+        generator.updateAnswererClass(answerCommon.BoolSoleChoicesAnswerer);
     });
     it(`user 3 answers survey 6`, tests.answerSurveyFn(3, 6, [21]));
     it(`user 3 gets answers to survey 6`, tests.getAnswersFn(3, 6));
+
+    _.range(22, 34).forEach(index => {
+        it(`create question ${index} (multi)`, function () {
+            const question = generator.questionGenerator.newMultiQuestion();
+            return questionTests.createQuestionFn(question)();
+        });
+        it(`get question ${index}`, questionTests.getQuestionFn(index));
+    });
+    _.range(34, 52).forEach(index => {
+        it(`create question ${index}`, questionTests.createQuestionFn());
+        it(`get question ${index}`, questionTests.getQuestionFn(index));
+    });
+
+    it('create survey 7 (1 multi)', createSurveyFn([22, 34, 35, 36]));
+    it('create survey 8 (2 multi)', createSurveyFn([37, 23, 38, 39, 24]));
+    it('create survey 9 (3 multi)', createSurveyFn([25, 40, 41, 42, 26, 27]));
+    it('create survey 10 (1 multi)', createSurveyFn([43, 44, 28, 45]));
+    it('create survey 11 (2 multi)', createSurveyFn([46, 29, 30, 47, 48]));
+    it('create survey 12 (3 multi)', createSurveyFn([31, 49, 32, 50, 33, 51]));
+
+    it('switch back to generic answerer', function () {
+        generator.updateAnswererClass(Answerer);
+    });
+
+    it(`user 3 answers survey 7`, tests.answerSurveyFn(3, 7, [22, 34, 35, 36]));
+    it(`user 3 gets answers to survey 7`, tests.getAnswersFn(3, 7));
+    it(`user 2 answers survey 8`, tests.answerSurveyFn(2, 8, [37, 23, 38, 39, 24]));
+    it(`user 2 gets answers to survey 8`, tests.getAnswersFn(2, 8));
+    it(`user 1 answers survey 9`, tests.answerSurveyFn(1, 9, [25, 40, 41, 42, 26, 27]));
+    it(`user 1 gets answers to survey 9`, tests.getAnswersFn(1, 9));
+    it(`user 0 answers survey 10`, tests.answerSurveyFn(0, 10, [43, 44, 28, 45]));
+    it(`user 0 gets answers to survey 10`, tests.getAnswersFn(0, 10));
+    it(`user 1 answers survey 11`, tests.answerSurveyFn(1, 11, [46, 29, 30, 47, 48]));
+    it(`user 1 gets answers to survey 11`, tests.getAnswersFn(1, 11));
+    it(`user 2 answers survey 12`, tests.answerSurveyFn(2, 12, [31, 49, 32, 50, 33, 51]));
+    it(`user 2 gets answers to survey 12`, tests.getAnswersFn(2, 12));
+
+    _.range(8).forEach(index => {
+        it(`create enumeration ${index}`, enumerationTests.createEnumerationFn());
+        it(`get enumeration ${index}`, enumerationTests.getEnumerationFn(index));
+    });
+
+    it('replace generator to enumeration question generator', function () {
+        const enumerations = _.range(8).map(index => hxEnumeration.server(index));
+        const enumerationGenerator = new EnumerationQuestionGenerator(generator.questionGenerator, enumerations);
+        generator.questionGenerator = enumerationGenerator;
+        comparator.updateEnumerationMap(enumerations);
+    });
+
+    _.range(52, 62).forEach(index => {
+        it(`create question ${index}`, questionTests.createQuestionFn());
+        it(`get question ${index}`, questionTests.getQuestionFn(index));
+    });
+
+    it('create survey 13 (5 enumerations)', createSurveyFn([52, 53, 54, 55, 56]));
+    it('create survey 14 (5 enumerations)', createSurveyFn([57, 58, 59, 60, 61]));
+
+    it(`user 3 answers survey 13`, tests.answerSurveyFn(3, 13, [52, 53, 54, 55, 56]));
+    it(`user 3 gets answers to survey 13`, tests.getAnswersFn(3, 13));
+    it(`user 2 answers survey 14`, tests.answerSurveyFn(2, 14, [57, 58, 59, 60, 61]));
+    it(`user 2 gets answers to survey 14`, tests.getAnswersFn(2, 14));
 });

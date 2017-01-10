@@ -18,6 +18,7 @@ const AnswerRule = db.AnswerRule;
 const AnswerRuleValue = db.AnswerRuleValue;
 const Question = db.Question;
 const QuestionChoice = db.QuestionChoice;
+const SurveyIdentifier = db.SurveyIdentifier;
 
 module.exports = class SurveyDAO extends Translatable {
     constructor(dependencies) {
@@ -248,6 +249,10 @@ module.exports = class SurveyDAO extends Translatable {
         if (scope === 'version-only') {
             return Survey.findAll(options);
         }
+        if (scope === 'id-only') {
+            return Survey.findAll(options)
+                .then(surveys => surveys.map(survey => survey.id));
+        }
         return Survey.findAll(options)
             .then(surveys => this.updateAllTexts(surveys, options.language))
             .then(surveys => {
@@ -393,7 +398,11 @@ module.exports = class SurveyDAO extends Translatable {
                             const qid = answer.questionId;
                             const question = qmap[qid];
                             question.language = answer.language;
-                            question.answer = answer.answer;
+                            if (answer.answer) {
+                                question.answer = answer.answer;
+                            } else if (answer.answers) {
+                                question.answers = answer.answers;
+                            }
                         });
                         return survey;
                     });
@@ -423,7 +432,22 @@ module.exports = class SurveyDAO extends Translatable {
             });
     }
 
-    import (stream, questionIdMap) {
+    importMetaProperties(record, metaOptions) {
+        return metaOptions.reduce((r, propertyInfo) => {
+            const name = propertyInfo.name;
+            const value = record[name];
+            if (value !== undefined && value !== null) {
+                r[name] = value;
+            }
+            return r;
+        }, {});
+    }
+
+    import (stream, questionIdMap, options = {}) {
+        const choicesIdMap = _.values(questionIdMap).reduce((r, { choicesIds }) => {
+            Object.assign(r, choicesIds);
+            return r;
+        }, {});
         questionIdMap = _.toPairs(questionIdMap).reduce((r, pair) => {
             r[pair[0]] = pair[1].questionId;
             return r;
@@ -440,6 +464,12 @@ module.exports = class SurveyDAO extends Translatable {
                     let { survey } = r.get(id) || {};
                     if (!survey) {
                         survey = { name: record.name };
+                        if (options.meta) {
+                            const meta = this.importMetaProperties(record, options.meta);
+                            if (Object.keys(meta).length > 0) {
+                                survey.meta = meta;
+                            }
+                        }
                         if (record.description) {
                             survey.description = record.description;
                         }
@@ -452,6 +482,14 @@ module.exports = class SurveyDAO extends Translatable {
                         id: questionIdMap[record.questionId],
                         required: record.required
                     };
+                    if (record.skipCount) {
+                        const rule = { logic: 'equals' };
+                        const count = record.skipCount;
+                        rule.answer = {
+                            choice: choicesIdMap[record.skipValue]
+                        };
+                        question.skip = { count, rule };
+                    }
                     survey.questions.push(question);
                     return r;
                 }, new Map());
@@ -467,7 +505,20 @@ module.exports = class SurveyDAO extends Translatable {
                         return this.createSurveyTx(survey, transaction)
                             .then(surveyId => mapIds[id] = surveyId);
                     });
-                    return SPromise.all(pxs).then(() => mapIds);
+                    return SPromise.all(pxs)
+                        .then(() => {
+                            if (options.sourceType) {
+                                const type = options.sourceType;
+                                const promises = _.transform(mapIds, (r, surveyId, identifier) => {
+                                    const record = { type, identifier, surveyId };
+                                    const promise = SurveyIdentifier.create(record, { transaction });
+                                    r.push(promise);
+                                    return r;
+                                }, []);
+                                return SPromise.all(promises).then(() => mapIds);
+                            }
+                            return mapIds;
+                        });
                 });
             });
     }

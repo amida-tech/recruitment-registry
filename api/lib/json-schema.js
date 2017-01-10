@@ -57,12 +57,12 @@ _.set(schema, 'definitions.newSurvey.properties.questions.items', {
 
 const questionTypes = [
     'text', 'bool', 'date', 'pounds', 'integer', 'zip',
-    'year', 'month', 'day', 'feet-inches', 'blood-pressure'
+    'year', 'month', 'day', 'feet-inches', 'blood-pressure', 'enumeration'
 ];
 
 const choiceTypes = [
     'bool', 'bool-sole', 'text', 'year', 'month', 'day', 'integer', 'date',
-    'pounds', 'zip', 'feet-inches', 'blood-pressure'
+    'pounds', 'zip', 'feet-inches', 'blood-pressure', 'enumeration'
 ];
 
 _.set(schema, 'definitions.newSurveyQuestion', {
@@ -75,6 +75,21 @@ _.set(schema, 'definitions.newSurveyQuestion', {
             type: { type: 'string', enum: questionTypes },
             meta: {
                 $ref: '#/definitions/questionMeta'
+            },
+            multiple: {
+                type: 'boolean'
+            },
+            maxCount: {
+                type: 'integer',
+                minimum: 1
+            },
+            enumerationId: {
+                type: 'integer',
+                minimum: 1
+            },
+            enumeration: {
+                type: 'string',
+                minLength: 1
             },
             required: { type: 'boolean' },
             skip,
@@ -94,13 +109,21 @@ _.set(schema, 'definitions.newSurveyQuestion', {
             meta: {
                 $ref: '#/definitions/questionMeta'
             },
+            multiple: {
+                type: 'boolean'
+            },
+            maxCount: {
+                type: 'integer',
+                minimum: 1
+            },
             choices: {
                 type: 'array',
                 items: {
                     type: 'object',
                     required: ['text'],
                     properties: {
-                        text: { type: 'string' }
+                        text: { type: 'string' },
+                        meta: { type: 'object' }
                     },
                     additionalProperties: false
                 }
@@ -119,6 +142,13 @@ _.set(schema, 'definitions.newSurveyQuestion', {
             instruction: { type: 'string' },
             required: { type: 'boolean' },
             type: { type: 'string', enum: ['choice'] },
+            multiple: {
+                type: 'boolean'
+            },
+            maxCount: {
+                type: 'integer',
+                minimum: 1
+            },
             meta: {
                 $ref: '#/definitions/questionMeta'
             },
@@ -143,6 +173,14 @@ _.set(schema, 'definitions.newSurveyQuestion', {
             meta: {
                 $ref: '#/definitions/questionMeta'
             },
+            enumerationId: {
+                type: 'integer',
+                minimum: 1
+            },
+            enumeration: {
+                type: 'string',
+                minLength: 1
+            },
             choices: {
                 type: 'array',
                 items: {
@@ -150,7 +188,16 @@ _.set(schema, 'definitions.newSurveyQuestion', {
                     required: ['text'],
                     properties: {
                         text: { type: 'string' },
-                        type: { type: 'string', enum: choiceTypes }
+                        type: { type: 'string', enum: choiceTypes },
+                        meta: { type: 'object' },
+                        enumerationId: {
+                            type: 'integer',
+                            minimum: 1
+                        },
+                        enumeration: {
+                            type: 'string',
+                            minLength: 1
+                        }
                     },
                     additionalProperties: false
                 }
@@ -172,6 +219,16 @@ _.set(schema, 'definitions.newQuestion', {
             text: { type: 'string' },
             instruction: { type: 'string' },
             type: { type: 'string', enum: questionTypes },
+            multiple: { type: 'boolean' },
+            maxCount: { type: 'integer', minimum: 1 },
+            enumerationId: {
+                type: 'integer',
+                minimum: 1
+            },
+            enumeration: {
+                type: 'string',
+                minLength: 1
+            },
             meta: {
                 $ref: '#/definitions/questionMeta'
             },
@@ -191,6 +248,8 @@ _.set(schema, 'definitions.newQuestion', {
             text: { type: 'string' },
             instruction: { type: 'string' },
             type: { type: 'string', enum: ['choice'] },
+            multiple: { type: 'boolean' },
+            maxCount: { type: 'integer', minimum: 1 },
             meta: {
                 $ref: '#/definitions/questionMeta'
             },
@@ -204,7 +263,8 @@ _.set(schema, 'definitions.newQuestion', {
                     type: 'object',
                     required: ['text'],
                     properties: {
-                        text: { type: 'string' }
+                        text: { type: 'string' },
+                        meta: { type: 'object' }
                     },
                     additionalProperties: false
                 }
@@ -221,6 +281,8 @@ _.set(schema, 'definitions.newQuestion', {
             text: { type: 'string' },
             instruction: { type: 'string' },
             type: { type: 'string', enum: ['choice'] },
+            multiple: { type: 'boolean' },
+            maxCount: { type: 'integer', minimum: 1 },
             meta: {
                 $ref: '#/definitions/questionMeta'
             },
@@ -244,6 +306,16 @@ _.set(schema, 'definitions.newQuestion', {
             text: { type: 'string' },
             instruction: { type: 'string' },
             type: { type: 'string', enum: ['choices'] },
+            multiple: { type: 'boolean' },
+            maxCount: { type: 'integer', minimum: 1 },
+            enumerationId: {
+                type: 'integer',
+                minimum: 1
+            },
+            enumeration: {
+                type: 'string',
+                minLength: 1
+            },
             meta: {
                 $ref: '#/definitions/questionMeta'
             },
@@ -258,7 +330,16 @@ _.set(schema, 'definitions.newQuestion', {
                     required: ['text'],
                     properties: {
                         text: { type: 'string' },
-                        type: { type: 'string', enum: choiceTypes }
+                        type: { type: 'string', enum: choiceTypes },
+                        meta: { type: 'object' },
+                        enumerationId: {
+                            type: 'integer',
+                            minimum: 1
+                        },
+                        enumeration: {
+                            type: 'string',
+                            minLength: 1
+                        }
                     },
                     additionalProperties: false
                 }

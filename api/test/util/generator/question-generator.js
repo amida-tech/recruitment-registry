@@ -2,21 +2,38 @@
 
 const _ = require('lodash');
 
+const singleQuestionTypes = [
+    'text', 'choice', 'bool',
+    'integer', 'zip', 'pounds',
+    'date', 'year', 'month', 'day',
+    'feet-inches', 'blood-pressure'
+];
+
+const virtualQuestionTypes = [
+    'dateChoices', 'integerChoices', 'choicesMeta', 'choiceMeta'
+];
+
+const questionTypes = ['choices', ...singleQuestionTypes, ...virtualQuestionTypes];
+
 module.exports = class QuestionGenerator {
-    constructor() {
-        this.types = [
-            'text', 'choice', 'choices', 'bool', 'integer',
-            'zip', 'date', 'year', 'month', 'day', 'pounds',
-            'feet-inches', 'blood-pressure',
-            'dateChoices', 'integerChoices'
-        ];
-        this.index = -1;
+    constructor(predecessor) {
+        if (predecessor) {
+            const { index, choiceIndex, typeChoiceIndex, typeChoicesIndex } = predecessor;
+            Object.assign(this, { index, choiceIndex, typeChoiceIndex, typeChoicesIndex });
+        } else {
+            this.index = -1;
+            this.choiceIndex = 0;
+            this.typeChoiceIndex = -1;
+            this.typeChoicesIndex = -1;
+        }
+    }
 
-        this.choiceIndex = 0;
+    static singleQuestionTypes() {
+        return singleQuestionTypes;
+    }
 
-        this.typeChoiceIndex = -1;
-
-        this.typeChoicesIndex = -1;
+    static questionTypes() {
+        return questionTypes;
     }
 
     body(type) {
@@ -54,6 +71,13 @@ module.exports = class QuestionGenerator {
         return question;
     }
 
+    choiceMeta() {
+        const question = this.body('choice');
+        const choices = this.newChoices();
+        question.choices = choices.map((choice, index) => ({ text: choice, meta: { tag: index * 10 + 10 } }));
+        return question;
+    }
+
     choices() {
         const question = this.body('choices');
         const choices = this.newChoices().map(choice => ({ text: choice }));
@@ -68,6 +92,13 @@ module.exports = class QuestionGenerator {
                 break;
             }
         });
+        question.choices = choices;
+        return question;
+    }
+
+    choicesMeta() {
+        const question = this.body('choices');
+        const choices = this.newChoices().map((choice, index) => ({ text: choice, type: 'bool', meta: { tag: index * 10 + 10 } }));
         question.choices = choices;
         return question;
     }
@@ -96,6 +127,12 @@ module.exports = class QuestionGenerator {
             text: 'inches',
             type: 'integer'
         }];
+        return question;
+    }
+
+    enumerationChoices() {
+        const question = this.body('choices');
+        question.choices = this.newChoices().map(choice => ({ text: choice, type: 'enumeration' }));
         return question;
     }
 
@@ -160,12 +197,30 @@ module.exports = class QuestionGenerator {
         });
     }
 
+    newBody(type) {
+        return this[type] ? this[type]() : this.body(type);
+    }
+
     newQuestion(type) {
-        type = type || this.types[(this.index + 1) % this.types.length];
-        const result = this[type] ? this[type]() : this.body(type);
+        type = type || questionTypes[(this.index + 1) % questionTypes.length];
+        const result = this.newBody(type);
         const actionCount = (this.index % 3) - 1;
         if (actionCount > 0) {
             result.actions = this.newActions(this.index, actionCount);
+        }
+        return result;
+    }
+
+    newMultiQuestion(type) {
+        if (!type) {
+            const types = QuestionGenerator.singleQuestionTypes();
+            type = types[(this.index + 1) % types.length];
+        }
+        const result = this.newBody(type);
+        result.multiple = true;
+        const max = this.index % 5;
+        if (max < 3) {
+            result.maxCount = 8 - max;
         }
         return result;
     }

@@ -3,9 +3,15 @@
 const _ = require('lodash');
 
 module.exports = class Answerer {
-    constructor() {
-        this.answerIndex = -1;
-        this.answerChoicesCountIndex = 0;
+    constructor(predecessor) {
+        if (predecessor) {
+            const { answerIndex, answerChoicesCountIndex, multiCount } = predecessor;
+            Object.assign(this, { answerIndex, answerChoicesCountIndex, multiCount });
+        } else {
+            this.answerIndex = -1;
+            this.answerChoicesCountIndex = 0;
+            this.multiCount = 0;
+        }
     }
 
     text() {
@@ -81,6 +87,12 @@ module.exports = class Answerer {
         return { boolValue: answerIndex % 2 === 0 };
     }
 
+    enumeration(question, choice) {
+        const enumerals = (choice && choice.enumerals) || question.enumerals;
+        const enumeral = enumerals[this.answerIndex % enumerals.length];
+        return { integerValue: enumeral.value };
+    }
+
     selectChoice(choices) {
         const answerIndex = this.answerIndex;
         return choices[answerIndex % choices.length];
@@ -100,7 +112,7 @@ module.exports = class Answerer {
             const choice = this.selectChoice(question.choices);
             const answer = { id: choice.id };
             if (choice.type !== 'bool') {
-                Object.assign(answer, this[choice.type]());
+                Object.assign(answer, this[choice.type](question, choice));
             }
             return answer;
         });
@@ -110,9 +122,18 @@ module.exports = class Answerer {
 
     answerQuestion(question) {
         const type = _.camelCase(question.type);
-        ++this.answerIndex;
-        const answer = this[type](question);
-        return { questionId: question.id, answer };
+        if (question.multiple) {
+            ++this.multiCount;
+            const answers = _.range(this.multiCount % 4 + 1).map(() => {
+                ++this.answerIndex;
+                return this[type](question);
+            });
+            return { questionId: question.id, answers };
+        } else {
+            ++this.answerIndex;
+            const answer = this[type](question);
+            return { questionId: question.id, answer };
+        }
     }
 
     answerRawQuestion(question) {
@@ -127,7 +148,7 @@ module.exports = class Answerer {
                 const choice = this.selectChoice(question.choices);
                 this.answerIndex += 2;
                 const answer = { text: choice.text };
-                if (choice.type !== 'bool') {
+                if (choice.type && choice.type !== 'bool') {
                     Object.assign(answer, this[choice.type]());
                 }
                 return answer;

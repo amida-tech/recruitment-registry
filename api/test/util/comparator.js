@@ -5,6 +5,8 @@ const _ = require('lodash');
 
 const expect = chai.expect;
 
+let enumerationMap;
+
 const comparator = {
     question(client, server) {
         const id = server.id;
@@ -16,6 +18,14 @@ const comparator = {
             expected.choices = expected.oneOfChoices.map(choice => ({ text: choice }));
             delete expected.oneOfChoices;
         }
+        if (expected.enumerationId) {
+            expected.enumerals = enumerationMap.get(expected.enumerationId);
+            delete expected.enumerationId;
+        }
+        if (expected.enumeration) {
+            expected.enumerals = enumerationMap.get(expected.enumeration);
+            delete expected.enumeration;
+        }
         if (!expected.id) {
             expected.id = id;
         }
@@ -23,6 +33,14 @@ const comparator = {
         if (expected.type === 'choice' || expected.type === 'choices' || server.type === 'choice' || server.type === 'choices') {
             expected.choices.forEach((choice, index) => {
                 choice.id = server.choices[index].id;
+                if (choice.enumerationId) {
+                    choice.enumerals = enumerationMap.get(choice.enumerationId);
+                    delete choice.enumerationId;
+                }
+                if (choice.enumeration) {
+                    choice.enumerals = enumerationMap.get(choice.enumeration);
+                    delete choice.enumeration;
+                }
             });
             expect(server.choices).to.deep.equal(expected.choices);
         }
@@ -76,11 +94,15 @@ const comparator = {
     answeredSurvey(survey, answers, serverAnsweredSurvey, language) {
         const expected = _.cloneDeep(survey);
         const answerMap = new Map();
-        answers.forEach(({ questionId, answer, language }) => answerMap.set(questionId, { answer, language }));
+        answers.forEach(({ questionId, answer, answers, language }) => answerMap.set(questionId, { answer, answers, language }));
         expected.questions.forEach(qx => {
             const clientAnswers = answerMap.get(qx.id);
             if (clientAnswers) {
-                qx.answer = answerMap.get(qx.id).answer;
+                if (qx.multiple) {
+                    qx.answers = answerMap.get(qx.id).answers;
+                } else {
+                    qx.answer = answerMap.get(qx.id).answer;
+                }
                 qx.language = answerMap.get(qx.id).language || language || 'en';
                 if (qx.type === 'choices' && qx.answer.choices) {
                     qx.answer.choices.forEach((choice) => {
@@ -103,7 +125,7 @@ const comparator = {
         const expected = _.cloneDeep(answers);
         expected.forEach(answer => {
             answer.language = answer.language || language || 'en';
-            if (answer.answer.choices) {
+            if (answer.answer && answer.answer.choices) {
                 answer.answer.choices.forEach((choice) => {
                     const numValues = ['textValue', 'monthValue', 'yearValue', 'dayValue', 'integerValue', 'boolValue', 'dateValue', 'numberValue', 'feetInchesValue', 'bloodPressureValue'].reduce((r, p) => {
                         if (choice.hasOwnProperty(p)) {
@@ -132,6 +154,22 @@ const comparator = {
             expected.username = expected.email.toLowerCase();
         }
         expect(server).to.deep.equal(expected);
+    },
+    enumeration(client, server) {
+        const expected = _.cloneDeep(client);
+        expected.id = server.id;
+        _.range(server.enumerals.length).forEach(index => {
+            expected.enumerals[index].id = server.enumerals[index].id;
+        });
+        expect(server).to.deep.equal(expected);
+    },
+    updateEnumerationMap(enumerations) {
+        enumerationMap = new Map();
+        enumerations.forEach(enumeration => {
+            const enumerals = enumeration.enumerals.map(({ text, value }) => ({ text, value }));
+            enumerationMap.set(enumeration.id, enumerals);
+            enumerationMap.set(enumeration.name, enumerals);
+        });
     }
 };
 

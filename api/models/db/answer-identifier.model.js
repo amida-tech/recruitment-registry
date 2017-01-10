@@ -29,6 +29,9 @@ module.exports = function (sequelize, DataTypes) {
                 key: 'id'
             }
         },
+        tag: {
+            type: DataTypes.INTEGER
+        },
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',

@@ -81,7 +81,10 @@ const choiceValueToDBFormat = {
     }
 };
 
-const prepareAnswerForDB = function (answer) {
+const prepareAnswerForDB = function prepareAnswerForDB(answer) {
+    if (Array.isArray(answer)) {
+        return answer.map(singleAnswer => prepareAnswerForDB(singleAnswer)[0]);
+    }
     const keys = Object.keys(answer);
     const numKeys = keys.length;
     if (numKeys > 1) {
@@ -110,6 +113,7 @@ const generateAnswerSingleFn = {
     'bool-sole': value => ({ boolValue: value === 'true' }),
     pounds: value => ({ numberValue: parseInt(value) }),
     integer: value => ({ integerValue: parseInt(value) }),
+    enumeration: value => ({ integerValue: parseInt(value) }),
     'blood-pressure': value => {
         const pieces = value.split('-');
         return {
@@ -143,7 +147,17 @@ const generateAnswerChoices = {
     }
 };
 
-const generateAnswer = function (type, entries) {
+const generateAnswer = function (type, entries, multiple) {
+    if (multiple) {
+        const fn = generateAnswerSingleFn[type];
+        return entries.map(entry => {
+            if (type === 'choice') {
+                return generateAnswerChoices.choice([entry]);
+            } else {
+                return fn(entry.value);
+            }
+        });
+    }
     const fnChoices = generateAnswerChoices[type];
     if (fnChoices) {
         return fnChoices(entries);
@@ -155,7 +169,7 @@ const generateAnswer = function (type, entries) {
 const fileAnswer = function ({ userId, surveyId, language, answers }, tx) {
     answers = answers.reduce((r, q) => {
         const questionId = q.questionId;
-        const values = prepareAnswerForDB(q.answer).map(value => ({
+        const values = prepareAnswerForDB(q.answer || q.answers).map(value => ({
             userId,
             surveyId,
             language,
@@ -198,8 +212,8 @@ module.exports = class AnswerDAO {
         return prepareAnswerForDB(answer);
     }
 
-    toInterfaceAnswer(type, entries) {
-        return generateAnswer(type, entries);
+    toInterfaceAnswer(type, entries, multiple) {
+        return generateAnswer(type, entries, multiple);
     }
 
     validateConsent(userId, surveyId, action, transaction) {
@@ -230,7 +244,7 @@ module.exports = class AnswerDAO {
                     if (!qx) {
                         throw new RRError('answerQxNotInSurvey');
                     }
-                    if (answer.answer) {
+                    if (answer.answer || answer.answers) {
                         qx.required = false;
                     }
                 });
@@ -277,7 +291,7 @@ module.exports = class AnswerDAO {
                 return Answer.destroy({ where, transaction });
             })
             .then(() => {
-                answers = _.filter(answers, answer => answer.answer);
+                answers = _.filter(answers, answer => answer.answer || answer.answers);
                 if (answers.length) {
                     return fileAnswer({ userId, surveyId, language, answers }, transaction);
                 }
@@ -307,7 +321,7 @@ module.exports = class AnswerDAO {
             attributes.push([sequelize.fn('to_char', sequelize.col('answer.deleted_at'), 'SSSS.MS'), 'deletedAt']);
         }
         const include = [
-            { model: Question, as: 'question', attributes: ['id', 'type'] },
+            { model: Question, as: 'question', attributes: ['id', 'type', 'multiple'] },
             { model: QuestionChoice, as: 'questionChoice', attributes: ['type'] }
         ];
         return Answer.findAll({ raw: true, where, attributes, include, paranoid: !history })
@@ -354,9 +368,13 @@ module.exports = class AnswerDAO {
                     const v = groupedResult[key];
                     const r = {
                         questionId: v[0]['question.id'],
-                        language: v[0].language,
-                        answer: generateAnswer(v[0]['question.type'], v)
+                        language: v[0].language
                     };
+                    if (v[0]['question.multiple']) {
+                        r.answers = generateAnswer(v[0]['question.type'], v, true);
+                    } else {
+                        r.answer = generateAnswer(v[0]['question.type'], v, false);
+                    }
                     if (scope === 'history-only') {
                         r.deletedAt = v[0].deletedAt;
                     }
@@ -420,6 +438,29 @@ module.exports = class AnswerDAO {
                     }));
                 });
             });
+    }
 
+    importRecords(records) {
+        return sequelize.transaction(transaction => {
+            // TODO: Switch to bulkCreate when Sequelize 4 arrives
+            return SPromise.all(records.map(record => {
+                return Answer.create(record, { transaction })
+                    .then(({ id }) => id);
+            }));
+        });
+    }
+
+    exportBulk(ids) {
+        const createdAtColumn = [sequelize.fn('to_char', sequelize.col('answer.created_at'), 'YYYY-MM-DD"T"HH24:MI:SS"Z"'), 'createdAt'];
+        return Answer.findAll({
+            where: { id: { $in: ids } },
+            attributes: ['id', 'userId', 'surveyId', 'questionId', 'questionChoiceId', 'value', createdAtColumn],
+            include: [
+                { model: Question, as: 'question', attributes: ['id', 'type'] },
+                { model: QuestionChoice, as: 'questionChoice', attributes: ['type'] }
+            ],
+            raw: true,
+            paranoid: false
+        });
     }
 };

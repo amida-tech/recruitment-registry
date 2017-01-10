@@ -19,6 +19,16 @@ module.exports = function (sequelize, DataTypes) {
                 key: 'name'
             },
         },
+        enumerationId: {
+            type: DataTypes.INTEGER,
+            references: {
+                model: 'enumeration',
+                key: 'id'
+            }
+        },
+        meta: {
+            type: DataTypes.JSON
+        },
         line: {
             type: DataTypes.INTEGER
         },

@@ -10,6 +10,13 @@ module.exports = function (sequelize, DataTypes) {
                 key: 'name'
             },
         },
+        enumerationId: {
+            type: DataTypes.INTEGER,
+            references: {
+                model: 'enumeration',
+                key: 'id'
+            }
+        },
         version: {
             type: DataTypes.INTEGER
         },
@@ -19,6 +26,13 @@ module.exports = function (sequelize, DataTypes) {
         },
         meta: {
             type: DataTypes.JSON
+        },
+        multiple: {
+            type: DataTypes.BOOLEAN
+        },
+        maxCount: {
+            type: DataTypes.INTEGER,
+            field: 'max_count'
         },
         createdAt: {
             type: DataTypes.DATE,

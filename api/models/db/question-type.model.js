@@ -23,7 +23,7 @@ module.exports = function (sequelize, DataTypes) {
                     const names = [
                         'text', 'choice', 'choices', 'bool', 'integer',
                         'zip', 'date', 'pounds', 'year', 'month', 'day',
-                        'feet-inches', 'blood-pressure'
+                        'feet-inches', 'blood-pressure', 'enumeration'
                     ];
                     const ps = names.map(name => this.create({ name }));
                     return SPromise.all(ps);

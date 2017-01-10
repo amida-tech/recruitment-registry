@@ -21,7 +21,7 @@ const assessment = function (queryInterface, Sequelize) {
         },
         updatedAt: {
             type: Sequelize.DATE,
-            field: 'cupdated_at',
+            field: 'updated_at',
         },
         deletedAt: {
             type: Sequelize.DATE,
@@ -111,6 +111,9 @@ const userAssessment = function (queryInterface, Sequelize) {
                 model: 'assessment',
                 key: 'id'
             }
+        },
+        meta: {
+            type: Sequelize.JSON
         },
         sequence: {
             type: Sequelize.INTEGER,
