@@ -3,8 +3,16 @@
 const models = require('../models');
 const SPromise = require('../lib/promise');
 
+const enumerations = require('./bhr-gap-enumerations');
 const surveys = require('./bhr-gap-surveys');
 const Converter = require('./csv-converter');
+
+const loadEnumerations = function () {
+    const promises = enumerations.map(enumeration => {
+        return models.enumeration.createEnumeration(enumeration);
+    });
+    return SPromise.all(promises);
+};
 
 const loadSurveys = function () {
     const promises = surveys.map(survey => {
@@ -117,6 +125,7 @@ const convertSubjects = function (filepath, surveyId) {
 };
 
 module.exports = {
+    loadEnumerations,
     loadSurveys,
     convertSubjects
 };

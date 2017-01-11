@@ -10,6 +10,11 @@ const QuestionChoice = db.QuestionChoice;
 module.exports = class QuestionIdentifierDAO {
     constructor() {}
 
+    createAnswerIdentifier(answerIdentifier, transaction) {
+        return AnswerIdentifier.create(answerIdentifier, { transaction })
+            .then(({ id }) => ({ id }));
+    }
+
     getIdsByAnswerIdentifier(type, identifier) {
         return AnswerIdentifier.findOne({
                 where: { type, identifier },

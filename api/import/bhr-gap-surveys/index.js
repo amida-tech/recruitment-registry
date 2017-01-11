@@ -1,5 +1,6 @@
 'use strict';
 
 module.exports = [
-    require('./subjects')
+    require('./subjects'),
+    require('./current-medications')
 ];

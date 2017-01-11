@@ -33,6 +33,10 @@ const comparator = {
         if (options.ignoreQuestionIdentifier) {
             delete expected.questionIdentifier;
         }
+        if (options.ignoreAnswerIdentifier) {
+            delete expected.answerIdentifier;
+            delete expected.answerIdentifiers;
+        }
         if (expected.type === 'choice' || expected.type === 'choices' || server.type === 'choice' || server.type === 'choices') {
             expected.choices.forEach((choice, index) => {
                 choice.id = server.choices[index].id;
@@ -43,6 +47,9 @@ const comparator = {
                 if (choice.enumeration) {
                     choice.enumerals = enumerationMap.get(choice.enumeration);
                     delete choice.enumeration;
+                }
+                if (options.ignoreAnswerIdentifier) {
+                    delete choice.answerIdentifier;
                 }
             });
             expect(server.choices).to.deep.equal(expected.choices);

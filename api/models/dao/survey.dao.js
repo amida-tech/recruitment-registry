@@ -354,8 +354,10 @@ module.exports = class SurveyDAO extends Translatable {
                                             const groupedResult = _.groupBy(result, 'ruleId');
                                             ruleIds.forEach(ruleId => {
                                                 const entries = groupedResult[ruleId];
-                                                const { rule, type } = rules[ruleId];
-                                                rule.answer = this.answer.toInterfaceAnswer(type, entries);
+                                                if (entries) {
+                                                    const { rule, type } = rules[ruleId];
+                                                    rule.answer = this.answer.toInterfaceAnswer(type, entries);
+                                                }
                                             });
                                         }
                                         return surveyQuestions;
