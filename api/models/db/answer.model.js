@@ -52,6 +52,7 @@ module.exports = function (sequelize, DataTypes) {
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',
+            defaultValue: sequelize.literal('NOW()')
         },
         deletedAt: {
             type: DataTypes.DATE,
@@ -59,6 +60,7 @@ module.exports = function (sequelize, DataTypes) {
         }
     }, {
         freezeTableName: true,
+        timestamps: true,
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',

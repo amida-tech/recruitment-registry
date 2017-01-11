@@ -65,14 +65,15 @@ module.exports = function (sequelize, DataTypes) {
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',
+            defaultValue: sequelize.literal('NOW()')
         },
         updatedAt: {
             type: DataTypes.DATE,
-            field: 'updated_at',
+            field: 'updated_at'
         },
         deletedAt: {
             type: DataTypes.DATE,
-            field: 'deleted_at',
+            field: 'deleted_at'
         }
     }, {
         freezeTableName: true,
