@@ -89,6 +89,13 @@ module.exports = class QuestionDAO extends Translatable {
                                         .then(choices => (result.choices = choices));
                                 }
                             })
+                            .then(() => {
+                                if (question.questionIdentifier) {
+                                    const questionId = result.id;
+                                    const { type, value: identifier } = question.questionIdentifier;
+                                    return this.questionIdentifier.createQuestionIdentifier({ type, identifier, questionId }, transaction);
+                                }
+                            })
                             .then(() => result);
                     });
             });

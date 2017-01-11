@@ -1,26 +1,31 @@
 'use strict';
 
 module.exports = {
-    name: 'Sleep',
+    name: 'Subjects',
+    identifier: {
+        type: 'bhr-gap',
+        value: 'subjects'
+    },
     questions: [{
-        text: 'A unique subject identifier. All data on this subject will be labelled with this code.',
-        required: true,
-        type: 'text',
-        answerIdentifier: 'SubjectCode'
-    }, {
         text: 'Gender',
-        required: true,
+        required: false,
         type: 'choice',
-        answerIdentifier: 'Gender',
+        questionIdentifier: {
+            type: 'bhr-gap-subjects-column',
+            value: 'Gender'
+        },
         choices: [
             { text: 'Male' },
             { text: 'Female' }
         ]
     }, {
         text: 'List of US race/ethnicities separated by a semi-colon (;)',
-        required: true,
-        type: 'choice',
-        answerIdentifier: 'RaceEthnicity',
+        required: false,
+        type: 'choices',
+        questionIdentifier: {
+            type: 'bhr-gap-subjects-column',
+            value: 'RaceEthnicity'
+        },
         choices: [
             { text: 'Latino' },
             { text: 'African American' },
@@ -28,13 +33,17 @@ module.exports = {
             { text: 'Caucasian' },
             { text: 'Native American' },
             { text: 'Pacific Islander' },
-            { text: 'Other' }
+            { text: 'Other' },
+            { text: 'Declined To State', type: 'bool-sole' }
         ]
     }, {
         text: 'Years of Education',
-        required: true,
+        required: false,
         type: 'choice',
-        answerIdentifier: 'YearsEducation',
+        questionIdentifier: {
+            type: 'bhr-gap-subjects-column',
+            value: 'YearsEducation'
+        },
         choices: [
             { text: 'Some College' },
             { text: 'Masters Degree' },
@@ -47,18 +56,24 @@ module.exports = {
         ]
     }, {
         text: 'Handedness',
-        required: true,
+        required: false,
         type: 'choice',
-        answerIdentifier: 'Handedness',
+        questionIdentifier: {
+            type: 'bhr-gap-subjects-column',
+            value: 'Handedness'
+        },
         choices: [
             { text: 'Ambidextrous' },
             { text: 'Right' },
             { text: 'Left' }
         ]
     }, {
-        text: 'AGe Baseline',
+        text: 'Age Baseline',
         required: true,
-        type: 'text',
-        answerIdentifier: 'Age_Baseline'
+        type: 'integer',
+        questionIdentifier: {
+            type: 'bhr-gap-subjects-column',
+            value: 'Age_Baseline'
+        }
     }]
 };

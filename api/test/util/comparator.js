@@ -8,7 +8,7 @@ const expect = chai.expect;
 let enumerationMap;
 
 const comparator = {
-    question(client, server) {
+    question(client, server, options = {}) {
         const id = server.id;
         const expected = _.cloneDeep(client);
         if (expected.type === 'choices') {
@@ -30,6 +30,9 @@ const comparator = {
             expected.id = id;
         }
         delete expected.parentId;
+        if (options.ignoreQuestionIdentifier) {
+            delete expected.questionIdentifier;
+        }
         if (expected.type === 'choice' || expected.type === 'choices' || server.type === 'choice' || server.type === 'choices') {
             expected.choices.forEach((choice, index) => {
                 choice.id = server.choices[index].id;
@@ -73,14 +76,17 @@ const comparator = {
         expect(server).to.deep.equal(expected);
         return expected;
     },
-    questions(client, server) {
+    questions(client, server, options = {}) {
         expect(client.length).to.equal(server.length);
-        return client.map((question, index) => this.question(question, server[index]));
+        return client.map((question, index) => this.question(question, server[index], options));
     },
-    survey(client, server) {
+    survey(client, server, options = {}) {
         const expected = _.cloneDeep(client);
         expected.id = server.id;
         delete expected.parentId;
+        if (options.ignoreSurveyIdentifier) {
+            delete expected.identifier;
+        }
         if (client.sections || server.sections) {
             expect(server.sections.length).to.equal(client.sections.length);
             expected.sections.forEach((section, index) => {
@@ -88,7 +94,7 @@ const comparator = {
             });
             expect(server.sections).to.deep.equal(expected.sections);
         }
-        expected.questions = this.questions(expected.questions, server.questions);
+        expected.questions = this.questions(expected.questions, server.questions, options);
         expect(server).to.deep.equal(expected);
     },
     answeredSurvey(survey, answers, serverAnsweredSurvey, language) {

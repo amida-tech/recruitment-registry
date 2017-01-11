@@ -18,7 +18,6 @@ const AnswerRule = db.AnswerRule;
 const AnswerRuleValue = db.AnswerRuleValue;
 const Question = db.Question;
 const QuestionChoice = db.QuestionChoice;
-const SurveyIdentifier = db.SurveyIdentifier;
 
 module.exports = class SurveyDAO extends Translatable {
     constructor(dependencies) {
@@ -116,20 +115,28 @@ module.exports = class SurveyDAO extends Translatable {
             });
     }
 
-    createSurveyTx(survey, tx) {
+    createSurveyTx(survey, transaction) {
         if (!(survey.questions && survey.questions.length)) {
             return RRError.reject('surveyNoQuestions');
         }
-        const fields = _.omit(survey, ['name', 'description', 'sections', 'questions']);
-        return Survey.create(fields, { transaction: tx })
-            .then(({ id }) => this.createTextTx({ id, name: survey.name, description: survey.description }, tx))
+        const fields = _.omit(survey, ['name', 'description', 'sections', 'questions', 'identifier']);
+        return Survey.create(fields, { transaction })
+            .then(({ id }) => this.createTextTx({ id, name: survey.name, description: survey.description }, transaction))
             .then(({ id }) => {
-                return this.updateQuestionsTx(survey.questions, id, tx)
+                return this.updateQuestionsTx(survey.questions, id, transaction)
                     .then(() => id);
+            })
+            .then(surveyId => {
+                if (survey.identifier) {
+                    const { type, value: identifier } = survey.identifier;
+                    return this.surveyIdentifier.createSurveyIdentifier({ type, identifier, surveyId }, transaction)
+                        .then(() => surveyId);
+                }
+                return surveyId;
             })
             .then(id => {
                 if (survey.sections) {
-                    return this.section.bulkCreateSectionsForSurveyTx(id, survey.sections, tx)
+                    return this.section.bulkCreateSectionsForSurveyTx(id, survey.sections, transaction)
                         .then(() => id);
                 } else {
                     return id;
@@ -138,8 +145,8 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     createSurvey(survey) {
-        return sequelize.transaction(tx => {
-            return this.createSurveyTx(survey, tx);
+        return sequelize.transaction(transaction => {
+            return this.createSurveyTx(survey, transaction);
         });
     }
 
@@ -511,7 +518,7 @@ module.exports = class SurveyDAO extends Translatable {
                                 const type = options.sourceType;
                                 const promises = _.transform(mapIds, (r, surveyId, identifier) => {
                                     const record = { type, identifier, surveyId };
-                                    const promise = SurveyIdentifier.create(record, { transaction });
+                                    const promise = this.surveyIdentifier.createSurveyIdentifier(record, transaction);
                                     r.push(promise);
                                     return r;
                                 }, []);

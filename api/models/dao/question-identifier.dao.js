@@ -8,6 +8,11 @@ const QuestionIdentifier = db.QuestionIdentifier;
 module.exports = class QuestionIdentifierDAO {
     constructor() {}
 
+    createQuestionIdentifier(questionIdentifier, transaction) {
+        return QuestionIdentifier.create(questionIdentifier, { transaction })
+            .then(({ id }) => ({ id }));
+    }
+
     getQuestionIdByIdentifier(type, identifier) {
         return QuestionIdentifier.findOne({
                 where: { type, identifier },
@@ -19,6 +24,18 @@ module.exports = class QuestionIdentifierDAO {
                     return RRError.reject('questionIdentifierNotFound');
                 }
                 return ids;
+            });
+    }
+
+    getIdsByQuestionIdentifier(type) {
+        return QuestionIdentifier.findAll({
+                where: { type },
+                attributes: ['questionId', 'identifier'],
+                raw: true
+            })
+            .then(records => {
+                const map = records.map(({ questionId, identifier }) => [identifier, questionId]);
+                return new Map(map);
             });
     }
 

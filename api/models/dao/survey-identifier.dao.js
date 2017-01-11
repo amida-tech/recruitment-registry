@@ -4,8 +4,13 @@ const db = require('../db');
 
 const SurveyIdentifier = db.SurveyIdentifier;
 
-module.exports = class QuestionIdentifierDAO {
+module.exports = class SurveyIdentifierDAO {
     constructor() {}
+
+    createSurveyIdentifier(surveyIdentifier, transaction) {
+        return SurveyIdentifier.create(surveyIdentifier, { transaction })
+            .then(({ id }) => ({ id }));
+    }
 
     getIdentifiersBySurveyId(type, ids) {
         return SurveyIdentifier.findAll({
