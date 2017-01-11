@@ -11,17 +11,17 @@ module.exports = {
         required: false,
         type: 'choices',
         choices: [
-            { text: 'Risperidone (Risperdal)', answerIdentifier: { type: 'bhr-gap-current-meds-columns', value: 'QID9_1' } },
-            { text: 'Paliperidone (Invega)', answerIdentifier: { type: 'bhr-gap-current-meds-columns', value: 'QID9_2' } },
-            { text: 'Olanzapine (Zyprexa)', answerIdentifier: { type: 'bhr-gap-current-meds-columns', value: 'QID9_3' } },
-            { text: 'Quetiapine Fumate (Seroquel)', answerIdentifier: { type: 'bhr-gap-current-meds-columns', value: 'QID9_4' } },
-            { text: 'Aripiprazole (Abilify)', answerIdentifier: { type: 'bhr-gap-current-meds-columns', value: 'QID9_5' } }
+            { text: 'Risperidone (Risperdal)', answerIdentifier: { type: 'bhr-gap-current-meds-column', value: 'QID9_1' } },
+            { text: 'Paliperidone (Invega)', answerIdentifier: { type: 'bhr-gap-current-meds-column', value: 'QID9_2' } },
+            { text: 'Olanzapine (Zyprexa)', answerIdentifier: { type: 'bhr-gap-current-meds-column', value: 'QID9_3' } },
+            { text: 'Quetiapine Fumate (Seroquel)', answerIdentifier: { type: 'bhr-gap-current-meds-column', value: 'QID9_4' } },
+            { text: 'Aripiprazole (Abilify)', answerIdentifier: { type: 'bhr-gap-current-meds-column', value: 'QID9_5' } }
         ]
     }, {
         text: 'Are you currently taking any additional medications?',
         required: true,
         type: 'enumeration',
-        answerIdentifier: { type: 'bhr-gap-current-meds-columns', value: 'QID6' },
+        answerIdentifier: { type: 'bhr-gap-current-meds-column', value: 'QID6' },
         enumeration: 'yes-no-1-2',
         skip: {
             count: 2,
@@ -62,7 +62,7 @@ module.exports = {
         required: false,
         type: 'enumeration',
         enumeration: 'yes-no-1-2',
-        answerIdentifier: { type: 'bhr-gap-current-meds-columns', value: 'QID10' },
+        answerIdentifier: { type: 'bhr-gap-current-meds-column', value: 'QID10' },
         skip: {
             count: 1,
             rule: {

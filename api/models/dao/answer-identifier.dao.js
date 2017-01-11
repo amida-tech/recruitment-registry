@@ -48,7 +48,7 @@ module.exports = class QuestionIdentifierDAO {
             });
     }
 
-    getAnswerIdentifierToIdsMap(type) {
+    getTypeInformationByAnswerIdentifier(type) {
         return AnswerIdentifier.findAll({
                 where: { type },
                 attributes: ['identifier', 'questionId', 'questionChoiceId'],
@@ -66,14 +66,14 @@ module.exports = class QuestionIdentifierDAO {
             .then(records => {
                 return records.reduce((r, record) => {
                     const identifier = record.identifier;
-                    r[identifier] = {
+                    r.set(identifier, {
                         questionId: record.questionId,
                         questionType: record['question.type'],
                         questionChoiceId: record.questionChoiceId,
                         questionChoiceType: record['questionChoice.type']
-                    };
+                    });
                     return r;
-                }, {});
+                }, new Map());
             });
     }
 

@@ -1,5 +1,7 @@
 'use strict';
 
+const _ = require('lodash');
+
 const models = require('../models');
 const SPromise = require('../lib/promise');
 
@@ -124,8 +126,91 @@ const convertSubjects = function (filepath, surveyId) {
         });
 };
 
+const valueConverterByChoiceType = {
+    bool: function (value) {
+        if (value === 1 || value === '1') {
+            return 'true';
+        }
+    }
+};
+
+const valueConverterByType = {
+    choices: function(value, choiceType) {
+        const converter = valueConverterByChoiceType[choiceType];
+        if (! converter) {
+            throw new Error('Choice type ${choiceType} has not been implemented.');
+        }
+        return converter(value);
+    },
+    enumeration: function(value) {
+        return parseInt(value);
+    },
+    text: function (value) {
+        if (value.indexOf('\\') > -1) {
+            value = value.replace(/\\/g, '\\\\');
+        }
+        return value;
+    }
+};
+
+const convertCurrentMedications = function (filepath, survey_id, subjectMap) {
+    return models.answerIdentifier.getTypeInformationByAnswerIdentifier('bhr-gap-current-meds-column')
+        .then(identifierMap => {
+            const converter = new Converter({ checkType: false });
+            return converter.fileToRecords(filepath)
+                .then(records => {
+                    const assessmentKeys = new Set(['SubjectCode', 'Timepoint', 'DaysAfterBaseline', 'Latest', 'Status']);
+                    const answerRecords = records.reduce((r, record) => {
+                        const user_id = subjectMap.get(record.SubjectCode);
+                        if (! user_id) {
+                            throw new Error(`User identifier ${record.SubjectCode} is not recognized.`);
+                        }
+                        const assessmentName = record.Timepoint;
+                        if (! assessmentName) {
+                            throw new Error(`Line without assessment name found.`);
+                        }
+                        if (record.Status === 'Collected') {
+                            let assesmentAnswers = r.get(assessmentName);
+                            if (! assesmentAnswers) {
+                                assesmentAnswers = [];
+                                r.set(assessmentName, assesmentAnswers);
+                            }
+                            _.forOwn(record, (value, key) => {
+                                if (! assessmentKeys.has(key)) {
+                                    const answerInformation = identifierMap.get(key);
+                                    if (! answerInformation) {
+                                        throw new Error(`Unexpected column name ${key} for bhr-gap-current-meds-columns.`);
+                                    }
+                                    const { questionId: question_id, questionChoiceId: question_choice_id, questionType, questionChoiceType } = answerInformation;
+                                    if (value !== '' && value !== undefined) {
+                                        const valueConverter = valueConverterByType[questionType];
+                                        if (! valueConverter) {
+                                            throw new Error(`Question type ${questionType} has not been implemented.`);
+                                        }
+                                        value = valueConverter(value, questionChoiceType);
+                                        const element = {user_id, survey_id, question_id };
+                                        if (question_choice_id) {
+                                            element.question_choice_id = question_choice_id;
+                                        }
+                                        if (value !== null) {
+                                            element.value = value;
+                                        }
+                                        element.language_code = 'en';
+                                        assesmentAnswers.push(element);
+                                    }
+                                }
+                            });
+                        }
+                        return r;
+                    }, new Map());
+                    return answerRecords;
+                });
+        });
+};
+
 module.exports = {
     loadEnumerations,
     loadSurveys,
-    convertSubjects
+    convertSubjects,
+    convertCurrentMedications
 };

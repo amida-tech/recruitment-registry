@@ -25,7 +25,8 @@ describe('bhr gap import-export', function () {
     const outputDir = path.join(__dirname, '../generated');
 
     const store = {
-        surveyMap: null
+        surveyMap: null,
+        answerIdentifierMap: null
     };
 
     before(shared.setUpFn());
@@ -66,7 +67,7 @@ describe('bhr gap import-export', function () {
 
     let subjectsData;
 
-    xit('create user file', function () {
+    it('create user file', function () {
         const filepath = path.join(fixtureDir, 'Subjects.csv');
         const surveyId = store.surveyMap.get('subjects');
         return bhrGapImport.convertSubjects(filepath, surveyId)
@@ -79,7 +80,7 @@ describe('bhr gap import-export', function () {
     });
 
     const subjectMap = new Map();
-    xit('import users', function () {
+    it('import users', function () {
         const query = 'copy registry_user (username, email, password, role) from \'/Work/git/recruitment-registry/api/test/generated/bhruser.csv\' csv header';
         return db.sequelize.query(query)
             .then(() => db.sequelize.query('select id, username from registry_user', { type: db.sequelize.QueryTypes.SELECT }))
@@ -101,5 +102,26 @@ describe('bhr gap import-export', function () {
     xit('import subjects answers', function () {
         const query = 'copy answer (user_id, survey_id, question_id, question_choice_id, value, language_code) from \'/Work/git/recruitment-registry/api/test/generated/bhrsubjects.csv\' csv header';
         return db.sequelize.query(query);
+    });
+
+    it('create current medications files', function () {
+        const filepath = path.join(fixtureDir, 'CurrentMedications.csv');
+        const surveyId = store.surveyMap.get('current-medications');
+        return bhrGapImport.convertCurrentMedications(filepath, surveyId, subjectMap)
+            .then(result => {
+                result.forEach((answers, assessmentName) => {
+                    const converter = new CSVConverterExport({ doubleQuotes: '""', fields: ['user_id', 'survey_id', 'question_id', 'question_choice_id', 'value', 'language_code'] });
+                    const outfilepath = path.join(outputDir, `bhcurrentmedications_${assessmentName}.csv`);
+                    fs.writeFileSync(outfilepath, converter.dataToCSV(answers));
+                });
+            });
+    });
+
+    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
+        it(`import current medications files for assessment ${assessmentName}`, function () {
+            const filepath = path.join(outputDir, `bhcurrentmedications_${assessmentName}.csv`);
+            const query = `copy answer (user_id, survey_id, question_id, question_choice_id, value, language_code) from '${filepath}' csv header`;
+            return db.sequelize.query(query);
+        });
     });
 });
