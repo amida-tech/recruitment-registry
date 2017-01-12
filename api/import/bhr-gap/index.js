@@ -2,12 +2,16 @@
 
 const _ = require('lodash');
 
-const models = require('../models');
-const SPromise = require('../lib/promise');
+const models = require('../../models');
+const SPromise = require('../../lib/promise');
 
-const enumerations = require('./bhr-gap-enumerations');
 const surveys = require('./bhr-gap-surveys');
-const Converter = require('./csv-converter');
+const Converter = require('../csv-converter');
+
+const enumerations = [{
+    name: 'yes-no-1-2',
+    enumerals: [{ text: 'Yes', value: 1 }, { text: 'No', value: 2 }]
+}];
 
 const loadEnumerations = function () {
     const promises = enumerations.map(enumeration => {
@@ -236,5 +240,6 @@ module.exports = {
     loadEnumerations,
     loadSurveys,
     convertSubjects,
-    convertCurrentMedications
+    convertCurrentMedications,
+    surveys
 };

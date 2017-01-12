@@ -1,4 +1,4 @@
-/* global before,xdescribe,it,xit*/
+/* global before,xdescribe,it,it*/
 'use strict';
 process.env.NODE_ENV = 'test';
 
@@ -12,7 +12,6 @@ const SPromise = require('../../lib/promise');
 
 const bhrGapImport = require('../../import/bhr-gap');
 const bhrGapExport = require('../../export/bhr-gap');
-const bhrSurveys = require('../../import/bhr-gap-surveys');
 
 const CSVConverterImport = require('../../import/csv-converter');
 const CSVConverterExport = require('../../export/csv-converter');
@@ -22,8 +21,9 @@ const SharedSpec = require('../util/shared-spec.js');
 const comparator = require('../util/comparator');
 
 const shared = new SharedSpec();
+const bhrSurveys = bhrGapImport.surveys;
 
-xdescribe('bhr gap import-export', function () {
+describe('bhr gap import-export', function () {
     const fixtureDir = '/Work/BHR_GAP-2016.12.09';
     const outputDir = path.join(__dirname, '../generated');
 
@@ -34,7 +34,7 @@ xdescribe('bhr gap import-export', function () {
 
     before(shared.setUpFn(false));
 
-    xit('load all enumerations', function () {
+    it('load all enumerations', function () {
         return bhrGapImport.loadEnumerations()
             .then(() => models.enumeration.listEnumerations())
             .then(enumerations => {
@@ -43,17 +43,17 @@ xdescribe('bhr gap import-export', function () {
             });
     });
 
-    xit('load all surveys', function () {
+    it('load all surveys', function () {
         return bhrGapImport.loadSurveys();
     });
 
-    xit('survey identifier map', function () {
+    it('survey identifier map', function () {
         return models.surveyIdentifier.getIdsBySurveyIdentifier('bhr-gap')
             .then(map => store.surveyMap = map);
     });
 
     bhrSurveys.forEach(bhrSurvey => {
-        xit(`compare survey ${bhrSurvey.identifier.value}`, function () {
+        it(`compare survey ${bhrSurvey.identifier.value}`, function () {
             const identifier = bhrSurvey.identifier.value;
             const surveyId = store.surveyMap.get(identifier);
             return models.survey.getSurvey(surveyId)
@@ -70,7 +70,7 @@ xdescribe('bhr gap import-export', function () {
 
     let subjectsData;
 
-    xit('create user file', function () {
+    it('create user file', function () {
         const filepath = path.join(fixtureDir, 'Subjects.csv');
         const surveyId = store.surveyMap.get('subjects');
         return bhrGapImport.convertSubjects(filepath, surveyId)
@@ -83,14 +83,14 @@ xdescribe('bhr gap import-export', function () {
     });
 
     const subjectMap = new Map();
-    xit('import users', function () {
+    it('import users', function () {
         const query = 'copy registry_user (username, email, password, role) from \'/Work/git/recruitment-registry/api/test/generated/bhruser.csv\' csv header';
         return db.sequelize.query(query)
             .then(() => db.sequelize.query('select id, username from registry_user', { type: db.sequelize.QueryTypes.SELECT }))
             .then(users => users.forEach(({ id, username }) => subjectMap.set(username, id)));
     });
 
-    xit('create subjects file', function () {
+    it('create subjects file', function () {
         const subjectAnswers = subjectsData.answerRecords.map(r => {
             r.user_id = subjectMap.get(r.username);
             delete r.username;
@@ -102,12 +102,12 @@ xdescribe('bhr gap import-export', function () {
         fs.writeFileSync(answerFilepath, answerConverter.dataToCSV(subjectAnswers));
     });
 
-    xit('import subjects answers', function () {
+    it('import subjects answers', function () {
         const query = 'copy answer (user_id, survey_id, question_id, question_choice_id, value, language_code) from \'/Work/git/recruitment-registry/api/test/generated/bhrsubjects.csv\' csv header';
         return db.sequelize.query(query);
     });
 
-    xit('create current medications files and assessments', function () {
+    it('create current medications files and assessments', function () {
         const filepath = path.join(fixtureDir, 'CurrentMedications.csv');
         const surveyId = store.surveyMap.get('current-medications');
         return bhrGapImport.convertCurrentMedications(filepath, surveyId, subjectMap)
@@ -147,13 +147,13 @@ xdescribe('bhr gap import-export', function () {
     });
 
     ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-        xit(`import current medications user assessments for assessment ${assessmentName}`, function () {
+        it(`import current medications user assessments for assessment ${assessmentName}`, function () {
             const filepath = path.join(outputDir, `current-medications-assessment-${assessmentName}.csv`);
             const query = `copy user_assessment (user_id, assessment_id, sequence, status) from '${filepath}' csv header`;
             return db.sequelize.query(query);
         });
 
-        xit(`import current medications files for assessment ${assessmentName}`, function () {
+        it(`import current medications files for assessment ${assessmentName}`, function () {
             const filepath = path.join(outputDir, `current-medications-${assessmentName}.csv`);
             if (fs.existsSync(filepath)) {
                 const query = 'select max(id) as lastid from answer';
