@@ -195,3 +195,8 @@ errors.ccfMultipleSelectionsForChoice = {
 errors.ccfNoSelectionsForChoice = {
     msg: 'No selection is specified choice type question.'
 };
+
+errors.surveyIdentifierNotFound = {
+    msg: 'No survey identifier $1 of type $0 is found.'
+};
+

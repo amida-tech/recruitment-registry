@@ -168,8 +168,8 @@ const assessmentStatusMap = {
     'Unable To Perform': 'unable-to-perform'
 };
 
-const convertCurrentMedications = function (filepath, survey_id, subjectMap) {
-    return models.answerIdentifier.getTypeInformationByAnswerIdentifier('bhr-gap-current-meds-column')
+const convertFileToRecords = function (filepath, survey_id, subjectMap, answerIdentifierType) {
+    return models.answerIdentifier.getTypeInformationByAnswerIdentifier(answerIdentifierType)
         .then(identifierMap => {
             const converter = new Converter({ checkType: false });
             return converter.fileToRecords(filepath)
@@ -204,7 +204,7 @@ const convertCurrentMedications = function (filepath, survey_id, subjectMap) {
                                 if (!assessmentKeys.has(key)) {
                                     const answerInformation = identifierMap.get(key);
                                     if (!answerInformation) {
-                                        throw new Error(`Unexpected column name ${key} for bhr-gap-current-meds-columns.`);
+                                        throw new Error(`Unexpected column name ${key} for ${answerIdentifierType}.`);
                                     }
                                     const { questionId: question_id, questionChoiceId: question_choice_id, multipleIndex: multiple_index, questionType, questionChoiceType } = answerInformation;
                                     if (value !== '' && value !== undefined) {
@@ -240,6 +240,6 @@ module.exports = {
     loadEnumerations,
     loadSurveys,
     convertSubjects,
-    convertCurrentMedications,
+    convertFileToRecords,
     surveys
 };

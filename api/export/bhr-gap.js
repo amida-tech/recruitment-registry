@@ -14,11 +14,11 @@ const assessmentStatusMap = {
     'unable-to-perform': 'Unable To Perform'
 };
 
-const exportCurrentMedications = function () {
+const exportTableData = function (surveyType, answerType) {
     return models.surveyIdentifier.getIdsBySurveyIdentifier('bhr-gap')
         .then(surveyIdentificaterMap => {
-            const surveyId = surveyIdentificaterMap.get('current-medications');
-            return models.answerIdentifier.getIdentifiersByAnswerIds('bhr-gap-current-meds-column')
+            const surveyId = surveyIdentificaterMap.get(surveyType);
+            return models.answerIdentifier.getIdentifiersByAnswerIds(answerType)
                 .then(({ map: identifierMap, identifiers: valueColumns }) => {
                     const query = `select answer.question_id, question.type as question_type, question.multiple, answer.multiple_index, answer.question_choice_id, question_choice.type as choice_type, answer.value, assessment.name as assessment_name, registry_user.username from answer left join user_assessment_answer on user_assessment_answer.answer_id = answer.id left join user_assessment on user_assessment.id = user_assessment_answer.user_assessment_id left join assessment on user_assessment.assessment_id = assessment.id left join registry_user on registry_user.id = answer.user_id left join question on question.id = answer.question_id left join question_choice on question_choice.id = answer.question_choice_id where answer.survey_id = ${surveyId} order by answer.id`;
                     return db.sequelize.query(query, { type: db.sequelize.QueryTypes.SELECT })
@@ -40,7 +40,7 @@ const exportCurrentMedications = function () {
                                     throw new Error(`Column name is not found for question id ${record.question_id}`);
                                 }
                                 const assessmentName = record.assessment_name;
-                                const timePoint = assessmentName && assessmentName.split('current-medications-')[1];
+                                const timePoint = assessmentName && assessmentName.split(`${surveyType}-`)[1];
                                 if (!timePoint) {
                                     throw new Error(`Unexpected assessment name for ${assessmentName}.`);
                                 }
@@ -68,7 +68,7 @@ const exportCurrentMedications = function () {
                                 .then(notCollectedRecords => {
                                     notCollectedRecords.forEach(record => {
                                         const assessmentName = record.assessment_name;
-                                        const timePoint = assessmentName && assessmentName.split('current-medications-')[1];
+                                        const timePoint = assessmentName && assessmentName.split(`${surveyType}-`)[1];
                                         if (!timePoint) {
                                             throw new Error(`Unexpected assessment name for ${assessmentName}.`);
                                         }
@@ -93,5 +93,5 @@ const exportCurrentMedications = function () {
 };
 
 module.exports = {
-    exportCurrentMedications
+    exportTableData
 };
