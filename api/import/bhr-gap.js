@@ -135,14 +135,14 @@ const valueConverterByChoiceType = {
 };
 
 const valueConverterByType = {
-    choices: function(value, choiceType) {
+    choices: function (value, choiceType) {
         const converter = valueConverterByChoiceType[choiceType];
-        if (! converter) {
+        if (!converter) {
             throw new Error('Choice type ${choiceType} has not been implemented.');
         }
         return converter(value);
     },
-    enumeration: function(value) {
+    enumeration: function (value) {
         return parseInt(value);
     },
     text: function (value) {
@@ -153,6 +153,17 @@ const valueConverterByType = {
     }
 };
 
+const assessmentStatusMap = {
+    'Scheduled': 'scheduled',
+    'Collected': 'collected',
+    'Failed To Collect': 'failed-to-collect',
+    'Not In Protocol': 'not-in-protocol',
+    'Started': 'started',
+    'Refused': 'refused',
+    'Technical Difficulties': 'technical-difficulties',
+    'Unable To Perform': 'unable-to-perform'
+};
+
 const convertCurrentMedications = function (filepath, survey_id, subjectMap) {
     return models.answerIdentifier.getTypeInformationByAnswerIdentifier('bhr-gap-current-meds-column')
         .then(identifierMap => {
@@ -160,35 +171,45 @@ const convertCurrentMedications = function (filepath, survey_id, subjectMap) {
             return converter.fileToRecords(filepath)
                 .then(records => {
                     const assessmentKeys = new Set(['SubjectCode', 'Timepoint', 'DaysAfterBaseline', 'Latest', 'Status']);
-                    const answerRecords = records.reduce((r, record) => {
+                    const result = records.reduce((r, record) => {
                         const user_id = subjectMap.get(record.SubjectCode);
-                        if (! user_id) {
+                        if (!user_id) {
                             throw new Error(`User identifier ${record.SubjectCode} is not recognized.`);
                         }
                         const assessmentName = record.Timepoint;
-                        if (! assessmentName) {
+                        if (!assessmentName) {
                             throw new Error(`Line without assessment name found.`);
                         }
+                        let assesmentInfo = r.get(assessmentName);
+                        if (!assesmentInfo) {
+                            assesmentInfo = { userAssessments: [] };
+                            r.set(assessmentName, assesmentInfo);
+                        }
+                        let status = record.Status ? assessmentStatusMap[record.Status] : 'no-status';
+                        if (!status) {
+                            throw new Error(`Status ${record.Status} is not recognized.`);
+                        }
+                        assesmentInfo.userAssessments.push({ user_id, status });
                         if (record.Status === 'Collected') {
-                            let assesmentAnswers = r.get(assessmentName);
-                            if (! assesmentAnswers) {
+                            let assesmentAnswers = assesmentInfo.answers;
+                            if (!assesmentAnswers) {
                                 assesmentAnswers = [];
-                                r.set(assessmentName, assesmentAnswers);
+                                assesmentInfo.answers = assesmentAnswers;
                             }
                             _.forOwn(record, (value, key) => {
-                                if (! assessmentKeys.has(key)) {
+                                if (!assessmentKeys.has(key)) {
                                     const answerInformation = identifierMap.get(key);
-                                    if (! answerInformation) {
+                                    if (!answerInformation) {
                                         throw new Error(`Unexpected column name ${key} for bhr-gap-current-meds-columns.`);
                                     }
                                     const { questionId: question_id, questionChoiceId: question_choice_id, questionType, questionChoiceType } = answerInformation;
                                     if (value !== '' && value !== undefined) {
                                         const valueConverter = valueConverterByType[questionType];
-                                        if (! valueConverter) {
+                                        if (!valueConverter) {
                                             throw new Error(`Question type ${questionType} has not been implemented.`);
                                         }
                                         value = valueConverter(value, questionChoiceType);
-                                        const element = {user_id, survey_id, question_id };
+                                        const element = { user_id, survey_id, question_id };
                                         if (question_choice_id) {
                                             element.question_choice_id = question_choice_id;
                                         }
@@ -203,7 +224,7 @@ const convertCurrentMedications = function (filepath, survey_id, subjectMap) {
                         }
                         return r;
                     }, new Map());
-                    return answerRecords;
+                    return result;
                 });
         });
 };

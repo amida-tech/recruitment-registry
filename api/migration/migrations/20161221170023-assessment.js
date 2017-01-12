@@ -120,7 +120,7 @@ const userAssessment = function (queryInterface, Sequelize) {
             allowNull: false
         },
         status: {
-            type: Sequelize.ENUM('scheduled', 'not-in-protocol', 'failed-to-collect', 'collected'),
+            type: Sequelize.ENUM('scheduled', 'not-in-protocol', 'failed-to-collect', 'collected', 'started', 'refused', 'no-status', 'technical-difficulties', 'unable-to-perform'),
             allowNull: false
         },
         createdAt: {
