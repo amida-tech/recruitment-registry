@@ -72,6 +72,10 @@ const answerIdentifier = function (queryInterface, Sequelize) {
                 key: 'id'
             }
         },
+        multipleIndex: {
+            type: Sequelize.INTEGER,
+            field: 'multiple_index'
+        },
         tag: {
             type: Sequelize.INTEGER
         },

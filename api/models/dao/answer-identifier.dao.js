@@ -51,7 +51,7 @@ module.exports = class QuestionIdentifierDAO {
     getTypeInformationByAnswerIdentifier(type) {
         return AnswerIdentifier.findAll({
                 where: { type },
-                attributes: ['identifier', 'questionId', 'questionChoiceId'],
+                attributes: ['identifier', 'questionId', 'multipleIndex', 'questionChoiceId'],
                 include: [{
                     model: Question,
                     as: 'question',
@@ -69,6 +69,7 @@ module.exports = class QuestionIdentifierDAO {
                     r.set(identifier, {
                         questionId: record.questionId,
                         questionType: record['question.type'],
+                        multipleIndex: record.multipleIndex,
                         questionChoiceId: record.questionChoiceId,
                         questionChoiceType: record['questionChoice.type']
                     });

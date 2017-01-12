@@ -111,7 +111,7 @@ xdescribe('bhr gap import-export', function () {
             .then(result => {
                 result.forEach(({ answers }, assessmentName) => {
                     if (answers && answers.length) {
-                        const converter = new CSVConverterExport({ doubleQuotes: '""', fields: ['user_id', 'survey_id', 'question_id', 'question_choice_id', 'value', 'language_code'] });
+                        const converter = new CSVConverterExport({ doubleQuotes: '""', fields: ['user_id', 'survey_id', 'question_id', 'question_choice_id', 'multiple_index', 'value', 'language_code'] });
                         const outfilepath = path.join(outputDir, `current-medications-${assessmentName}.csv`);
                         fs.writeFileSync(outfilepath, converter.dataToCSV(answers));
                     }
@@ -158,7 +158,7 @@ xdescribe('bhr gap import-export', function () {
                     .then(result => result[0].lastid)
                     .then(lastid => {
                         lastid = lastid || 0;
-                        const query = `copy answer (user_id, survey_id, question_id, question_choice_id, value, language_code) from '${filepath}' csv header`;
+                        const query = `copy answer (user_id, survey_id, question_id, question_choice_id, multiple_index, value, language_code) from '${filepath}' csv header`;
                         return db.sequelize.query(query)
                             .then(() => {
                                 const name = `current-medications-${assessmentName}`;

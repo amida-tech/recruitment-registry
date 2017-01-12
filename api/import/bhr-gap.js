@@ -202,7 +202,7 @@ const convertCurrentMedications = function (filepath, survey_id, subjectMap) {
                                     if (!answerInformation) {
                                         throw new Error(`Unexpected column name ${key} for bhr-gap-current-meds-columns.`);
                                     }
-                                    const { questionId: question_id, questionChoiceId: question_choice_id, questionType, questionChoiceType } = answerInformation;
+                                    const { questionId: question_id, questionChoiceId: question_choice_id, multipleIndex: multiple_index, questionType, questionChoiceType } = answerInformation;
                                     if (value !== '' && value !== undefined) {
                                         const valueConverter = valueConverterByType[questionType];
                                         if (!valueConverter) {
@@ -212,6 +212,9 @@ const convertCurrentMedications = function (filepath, survey_id, subjectMap) {
                                         const element = { user_id, survey_id, question_id };
                                         if (question_choice_id) {
                                             element.question_choice_id = question_choice_id;
+                                        }
+                                        if (multiple_index || multiple_index === 0) {
+                                            element.multiple_index = multiple_index;
                                         }
                                         if (value !== null) {
                                             element.value = value;

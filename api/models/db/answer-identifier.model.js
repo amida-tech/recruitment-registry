@@ -29,6 +29,10 @@ module.exports = function (sequelize, DataTypes) {
                 key: 'id'
             }
         },
+        multipleIndex: {
+            type: DataTypes.INTEGER,
+            field: 'multiple_index'
+        },
         tag: {
             type: DataTypes.INTEGER
         },

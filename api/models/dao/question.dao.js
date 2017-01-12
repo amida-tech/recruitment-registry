@@ -112,8 +112,8 @@ module.exports = class QuestionDAO extends Translatable {
                                     return this.answerIdentifier.createAnswerIdentifier({ type, identifier, questionId }, transaction);
                                 } else if (question.answerIdentifiers) {
                                     const { type, values } = question.answerIdentifiers;
-                                    const promises = values.map(identifier => {
-                                        return this.answerIdentifier.createAnswerIdentifier({ type, identifier, questionId }, transaction);
+                                    const promises = values.map((identifier, multipleIndex) => {
+                                        return this.answerIdentifier.createAnswerIdentifier({ type, identifier, questionId, multipleIndex }, transaction);
                                     });
                                     return SPromise.all(promises);
                                 }

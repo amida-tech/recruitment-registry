@@ -3326,6 +3326,10 @@
         "answer": {
             "type": "object",
             "properties": {
+                "multipleIndex": {
+                    "type": "integer",
+                    "minimum": 0
+                },
                 "choice": {
                     "type": "integer",
                     "minimum": 1
@@ -3393,7 +3397,7 @@
                 }
             },
             "minProperties": 1,
-            "maxProperties": 1,
+            "maxProperties": 2,
             "additionalProperties": false
         },
          "newSkipChoicesItem": {

@@ -176,6 +176,10 @@ errors.answerIdentifierNotFound = {
     msg: 'No such answer identifier is found.'
 };
 
+errors.answerNoMultiQuestionIndex = {
+    msg: 'No question index has been specified for multiple question.'
+};
+
 errors.surveyNoIdentifier = {
     msg: 'No identifiers founds for some surveys.'
 };

@@ -83,7 +83,16 @@ const choiceValueToDBFormat = {
 
 const prepareAnswerForDB = function prepareAnswerForDB(answer) {
     if (Array.isArray(answer)) {
-        return answer.map(singleAnswer => prepareAnswerForDB(singleAnswer)[0]);
+        return answer.map(singleAnswer => {
+            const multipleIndex = singleAnswer.multipleIndex;
+            if (multipleIndex === undefined) {
+                throw new RRError('answerNoMultiQuestionIndex');
+            }
+            const valuePiece = _.omit(singleAnswer, 'multipleIndex');
+            const dbObject = prepareAnswerForDB(valuePiece)[0];
+            dbObject.multipleIndex = multipleIndex;
+            return dbObject;
+        });
     }
     const keys = Object.keys(answer);
     const numKeys = keys.length;
@@ -150,13 +159,16 @@ const generateAnswerChoices = {
 const generateAnswer = function (type, entries, multiple) {
     if (multiple) {
         const fn = generateAnswerSingleFn[type];
-        return entries.map(entry => {
+        const result = entries.map(entry => {
+            const answer = { multipleIndex: entry.multipleIndex };
             if (type === 'choice') {
-                return generateAnswerChoices.choice([entry]);
+                Object.assign(answer, generateAnswerChoices.choice([entry]));
             } else {
-                return fn(entry.value);
+                Object.assign(answer, fn(entry.value));
             }
+            return answer;
         });
+        return _.sortBy(result, 'multipleIndex');
     }
     const fnChoices = generateAnswerChoices[type];
     if (fnChoices) {
@@ -175,6 +187,7 @@ const fileAnswer = function ({ userId, surveyId, language, answers }, tx) {
             language,
             questionId,
             questionChoiceId: value.questionChoiceId || null,
+            multipleIndex: (value.multipleIndex || value.multipleIndex === 0) ? value.multipleIndex : null,
             value: value.hasOwnProperty('value') ? value.value : null
         }));
         values.forEach(value => r.push(value));
@@ -313,7 +326,7 @@ module.exports = class AnswerDAO {
         if (scope === 'history-only') {
             where.deletedAt = { $ne: null };
         }
-        const attributes = ['questionChoiceId', 'language', 'value'];
+        const attributes = ['questionChoiceId', 'language', 'multipleIndex', 'value'];
         if (scope === 'export' || !surveyId) {
             attributes.push('surveyId');
         }
