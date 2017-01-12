@@ -78,6 +78,46 @@ module.exports = class QuestionIdentifierDAO {
             });
     }
 
+    getIdentifiersByAnswerIds(type) {
+        return AnswerIdentifier.findAll({
+                where: { type },
+                attributes: ['identifier', 'questionId', 'multipleIndex', 'questionChoiceId'],
+                include: [{
+                    model: Question,
+                    as: 'question',
+                    attributes: ['type', 'multiple']
+                }, {
+                    model: QuestionChoice,
+                    as: 'questionChoice',
+                    attributes: ['type']
+                }],
+                raw: true
+            })
+            .then(records => {
+                const map = records.reduce((r, record) => {
+                    const identifier = record.identifier;
+                    const questionId = record.questionId;
+                    if (!((record['question.type'] === 'choices') || record['question.multiple'])) {
+                        r.set(questionId, identifier);
+                        return r;
+                    }
+                    let mapByQuestionId = r.get(questionId);
+                    if (!mapByQuestionId) {
+                        mapByQuestionId = new Map();
+                        r.set(questionId, mapByQuestionId);
+                    }
+                    if (record['question.multiple']) {
+                        mapByQuestionId.set(record.multipleIndex, identifier);
+                        return r;
+                    }
+                    mapByQuestionId.set(record.questionChoiceId, identifier);
+                    return r;
+                }, new Map());
+                const identifiers = records.map(record => record.identifier);
+                return { identifiers, map };
+            });
+    }
+
     getMapByQuestionId(type, ids) {
         return AnswerIdentifier.findAll({
                 where: { type, questionId: { $in: ids } },
