@@ -199,3 +199,7 @@ errors.ccfNoSelectionsForChoice = {
 errors.surveyIdentifierNotFound = {
     msg: 'No survey identifier $1 of type $0 is found.'
 };
+
+errors.enumerationNotFound = {
+    msg: 'No enumeration named $0 is found.'
+};

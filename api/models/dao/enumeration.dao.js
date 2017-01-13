@@ -2,6 +2,8 @@
 
 const db = require('../db');
 
+const RRError = require('../../lib/rr-error');
+
 const sequelize = db.sequelize;
 const Enumeration = db.Enumeration;
 
@@ -48,6 +50,12 @@ module.exports = class EnumDAO {
 
     getEnumerationIdByName(name, transaction) {
         return Enumeration.findOne({ where: { name }, raw: true, attributes: ['id'], transaction })
-            .then(({ id }) => id);
+            .then(record => {
+                if (record) {
+                    return record.id;
+                }
+                return RRError.reject('enumerationNotFound', name);
+
+            });
     }
 };

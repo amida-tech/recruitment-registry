@@ -20,6 +20,9 @@ module.exports = [{
     name: 'yes-no-1-3',
     enumerals: [{ text: 'Yes', value: 1 }, { text: 'No', value: 3 }]
 }, {
+    name: 'yes-no-decline',
+    enumerals: [{ text: 'Yes', value: 1 }, { text: 'No', value: 2 }, { text: 'Decline to answer', value: 3 }]
+}, {
     name: 'extended-yes-no',
     enumerals: [
         { text: 'Yes', value: 1 },

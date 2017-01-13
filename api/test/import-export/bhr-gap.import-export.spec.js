@@ -336,12 +336,23 @@ describe('bhr gap import-export', function () {
 
     // Initial m24
 
-    it('create initial m24 files and assessments', createTableFilesAndAssessmentsFn('Initial_m24.csv', 'initial-m24', 'bhr-gap-initial-m24-column'));
+    xit('create initial m24 files and assessments', createTableFilesAndAssessmentsFn('Initial_m24.csv', 'initial-m24', 'bhr-gap-initial-m24-column'));
 
     ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-        it(`import initial m24 user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('initial-m24', assessmentName));
-        it(`import initial m24 files for assessment ${assessmentName}`, importTableAnswersFn('initial-m24', assessmentName));
+        xit(`import initial m24 user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('initial-m24', assessmentName));
+        xit(`import initial m24 files for assessment ${assessmentName}`, importTableAnswersFn('initial-m24', assessmentName));
     });
 
-    it('export initial m24', exportTableDataFn('initial-m24', 'bhr-gap-initial-m24-column', 'Initial_m24'));
+    xit('export initial m24', exportTableDataFn('initial-m24', 'bhr-gap-initial-m24-column', 'Initial_m24'));
+
+    // Medical History
+
+    it('create medical history files and assessments', createTableFilesAndAssessmentsFn('MedicalHistory.csv', 'medical-history', 'bhr-gap-medical-history-column'));
+
+    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
+        it(`import medical history user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('medical-history', assessmentName));
+        it(`import medical history files for assessment ${assessmentName}`, importTableAnswersFn('medical-history', assessmentName));
+    });
+
+    it('export medical history', exportTableDataFn('medical-history', 'bhr-gap-medical-history-column', 'MedicalHistory'));
 });

@@ -13,4 +13,5 @@ module.exports = [
     require('./initial-m12'),
     require('./initial-m18'),
     require('./initial-m24'),
+    require('./medical-history')
 ];
