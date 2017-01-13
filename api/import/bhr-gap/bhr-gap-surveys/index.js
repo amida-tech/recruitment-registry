@@ -11,5 +11,6 @@ module.exports = [
     require('./initial-m00'),
     require('./initial-m06'),
     require('./initial-m12'),
-    require('./initial-m18')
+    require('./initial-m18'),
+    require('./initial-m24'),
 ];

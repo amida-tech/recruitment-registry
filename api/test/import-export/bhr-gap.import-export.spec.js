@@ -325,12 +325,23 @@ describe('bhr gap import-export', function () {
 
     // Initial m18
 
-    it('create initial m18 files and assessments', createTableFilesAndAssessmentsFn('Initial_m18.csv', 'initial-m18', 'bhr-gap-initial-m18-column'));
+    xit('create initial m18 files and assessments', createTableFilesAndAssessmentsFn('Initial_m18.csv', 'initial-m18', 'bhr-gap-initial-m18-column'));
 
-    ['m00', 'm06', 'm18', 'm18', 'm24', 'm30'].map(assessmentName => {
-        it(`import initial m18 user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('initial-m18', assessmentName));
-        it(`import initial m18 files for assessment ${assessmentName}`, importTableAnswersFn('initial-m18', assessmentName));
+    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
+        xit(`import initial m18 user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('initial-m18', assessmentName));
+        xit(`import initial m18 files for assessment ${assessmentName}`, importTableAnswersFn('initial-m18', assessmentName));
     });
 
-    it('export initial m18', exportTableDataFn('initial-m18', 'bhr-gap-initial-m18-column', 'Initial_m18'));
+    xit('export initial m18', exportTableDataFn('initial-m18', 'bhr-gap-initial-m18-column', 'Initial_m18'));
+
+    // Initial m24
+
+    it('create initial m24 files and assessments', createTableFilesAndAssessmentsFn('Initial_m24.csv', 'initial-m24', 'bhr-gap-initial-m24-column'));
+
+    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
+        it(`import initial m24 user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('initial-m24', assessmentName));
+        it(`import initial m24 files for assessment ${assessmentName}`, importTableAnswersFn('initial-m24', assessmentName));
+    });
+
+    it('export initial m24', exportTableDataFn('initial-m24', 'bhr-gap-initial-m24-column', 'Initial_m24'));
 });

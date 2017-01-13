@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports = {
     name: 'Initial_m18',
     identifier: {
