@@ -10,5 +10,6 @@ module.exports = [
     require('./family-tree'),
     require('./initial-m00'),
     require('./initial-m06'),
-    require('./initial-m12')
+    require('./initial-m12'),
+    require('./initial-m18')
 ];
