@@ -17,6 +17,9 @@ module.exports = [{
     name: 'no-yes-1-2',
     enumerals: [{ text: 'No', value: 1 }, { text: 'Yes', value: 2 }]
 }, {
+    name: 'yes-no-1-3',
+    enumerals: [{ text: 'Yes', value: 1 }, { text: 'No', value: 3 }]
+}, {
     name: 'extended-yes-no',
     enumerals: [
         { text: 'Yes', value: 1 },
@@ -161,5 +164,59 @@ module.exports = [{
         { text: 'Consistently a little worse', value: 3 },
         { text: 'Consistently much worse', value: 4 },
         { text: 'I don\'t know', value: 5 }
+    ]
+}, {
+    name: 'frequency-dwm',
+    enumerals: [
+        { text: 'Daily', value: 1 },
+        { text: 'Weekly', value: 2 },
+        { text: 'Monthly', value: 3 },
+        { text: 'Almost never', value: 4 }
+    ]
+}, {
+    name: 'confidence-computer',
+    enumerals: [
+        { text: 'Not confident at all', value: 1 },
+        { text: 'I usually need help', value: 2 },
+        { text: 'It depends on the task', value: 3 },
+        { text: 'Confident', value: 4 }
+    ]
+}, {
+    name: 'condition',
+    enumerals: [
+        { text: 'Excellent', value: 1 },
+        { text: 'Very Good', value: 2 },
+        { text: 'Good', value: 3 },
+        { text: 'Fair', value: 4 },
+        { text: 'Poor', value: 5 }
+    ]
+}, {
+    name: 'comparative-condition',
+    enumerals: [
+        { text: 'Much Better', value: 1 },
+        { text: 'Better', value: 2 },
+        { text: 'Same', value: 3 },
+        { text: 'Worse', value: 4 },
+        { text: 'Much Worse', value: 5 }
+    ]
+}, {
+    name: 'drinks-per-day',
+    enumerals: [
+        { text: 'Not at all', value: 1 },
+        { text: 'Less than 1 drink/day', value: 2 },
+        { text: '1-2 drinks/day', value: 3 },
+        { text: '3 or more drinks/day', value: 4 }
+    ]
+}, {
+    name: 'duration-ym',
+    enumerals: [
+        { text: 'Years', value: 1},
+        { text: 'Months', value: 2}
+    ]
+}, {
+    name: 'duration-ym-1-3',
+    enumerals: [
+        { text: 'Years', value: 1},
+        { text: 'Months', value: 3}
     ]
 }];

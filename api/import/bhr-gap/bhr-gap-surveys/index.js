@@ -7,5 +7,6 @@ module.exports = [
     require('./diet.js'),
     require('./early-history'),
     require('./everyday-cognition'),
-    require('./family-tree')
+    require('./family-tree'),
+    require('./initial-m00')
 ];

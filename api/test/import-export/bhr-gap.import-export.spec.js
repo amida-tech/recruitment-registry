@@ -151,8 +151,10 @@ describe('bhr gap import-export', function () {
     const importTableAssessmentsFn = function (surveyIdentifierType, assessmentName) {
         return function () {
             const filepath = path.join(outputDir, `${surveyIdentifierType}-assessment-${assessmentName}.csv`);
-            const query = `copy user_assessment (user_id, assessment_id, sequence, status) from '${filepath}' csv header`;
-            return db.sequelize.query(query);
+           if (fs.existsSync(filepath)) {
+                const query = `copy user_assessment (user_id, assessment_id, sequence, status) from '${filepath}' csv header`;
+                return db.sequelize.query(query);
+            }
         };
     };
 
@@ -211,6 +213,8 @@ describe('bhr gap import-export', function () {
         };
     };
 
+    // Current Medications
+
     xit('create current medications files and assessments', createTableFilesAndAssessmentsFn('CurrentMedications.csv', 'current-medications', 'bhr-gap-current-meds-column'));
 
     ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
@@ -219,6 +223,8 @@ describe('bhr gap import-export', function () {
     });
 
     xit('export current medications', exportTableDataFn('current-medications', 'bhr-gap-current-meds-column', 'CurrentMedications'));
+
+    // Demographics
 
     xit('create demographics files and assessments', createTableFilesAndAssessmentsFn('Demographics.csv', 'demographics', 'bhr-gap-demographics-column'));
 
@@ -229,6 +235,8 @@ describe('bhr gap import-export', function () {
 
     xit('export demographics', exportTableDataFn('demographics', 'bhr-gap-demographics-column', 'Demographics'));
 
+    // Diet
+
     xit('create diet files and assessments', createTableFilesAndAssessmentsFn('Diet.csv', 'diet', 'bhr-gap-diet-column'));
 
     ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
@@ -237,6 +245,8 @@ describe('bhr gap import-export', function () {
     });
 
     xit('export diet', exportTableDataFn('diet', 'bhr-gap-diet-column', 'Diet'));
+
+    // Early History
 
     xit('create early history files and assessments', createTableFilesAndAssessmentsFn('EarlyHistory.csv', 'early-history', 'bhr-gap-early-history-column'));
 
@@ -247,6 +257,8 @@ describe('bhr gap import-export', function () {
 
     xit('export early history', exportTableDataFn('early-history', 'bhr-gap-early-history-column', 'EarlyHistory'));
 
+    // Everyday cognition
+
     xit('create everyday cognition files and assessments', createTableFilesAndAssessmentsFn('EverydayCognition.csv', 'everyday-cognition', 'bhr-gap-everyday-cognition-column'));
 
     ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
@@ -256,12 +268,26 @@ describe('bhr gap import-export', function () {
 
     xit('export everyday cognition', exportTableDataFn('everyday-cognition', 'bhr-gap-everyday-cognition-column', 'EverydayCognition'));
 
-    it('create family tree files and assessments', createTableFilesAndAssessmentsFn('FamilyTree.csv', 'family-tree', 'bhr-gap-family-tree-column'));
+    // Family tree
+
+    xit('create family tree files and assessments', createTableFilesAndAssessmentsFn('FamilyTree.csv', 'family-tree', 'bhr-gap-family-tree-column'));
 
     ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-        it(`import family tree user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('family-tree', assessmentName));
-        it(`import family tree files for assessment ${assessmentName}`, importTableAnswersFn('family-tree', assessmentName));
+        xit(`import family tree user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('family-tree', assessmentName));
+        xit(`import family tree files for assessment ${assessmentName}`, importTableAnswersFn('family-tree', assessmentName));
     });
 
-    it('export family tree', exportTableDataFn('family-tree', 'bhr-gap-family-tree-column', 'FamilyTree'));
+    xit('export family tree', exportTableDataFn('family-tree', 'bhr-gap-family-tree-column', 'FamilyTree'));
+
+    // Initial M00
+
+    it('create initial m00 files and assessments', createTableFilesAndAssessmentsFn('Initial_m00.csv', 'initial-m00', 'bhr-gap-initial-m00-column'));
+
+    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
+        it(`import initial m00 user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('initial-m00', assessmentName));
+        it(`import initial m00 files for assessment ${assessmentName}`, importTableAnswersFn('initial-m00', assessmentName));
+    });
+
+    it('export initial m00', exportTableDataFn('initial-m00', 'bhr-gap-initial-m00-column', 'Initial_m00'));
+
 });
