@@ -281,23 +281,45 @@ describe('bhr gap import-export', function () {
 
     // Initial m00
 
-    it('create initial m00 files and assessments', createTableFilesAndAssessmentsFn('Initial_m00.csv', 'initial-m00', 'bhr-gap-initial-m00-column'));
+    xit('create initial m00 files and assessments', createTableFilesAndAssessmentsFn('Initial_m00.csv', 'initial-m00', 'bhr-gap-initial-m00-column'));
 
     ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-        it(`import initial m00 user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('initial-m00', assessmentName));
-        it(`import initial m00 files for assessment ${assessmentName}`, importTableAnswersFn('initial-m00', assessmentName));
+        xit(`import initial m00 user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('initial-m00', assessmentName));
+        xit(`import initial m00 files for assessment ${assessmentName}`, importTableAnswersFn('initial-m00', assessmentName));
     });
 
-    it('export initial m00', exportTableDataFn('initial-m00', 'bhr-gap-initial-m00-column', 'Initial_m00'));
+    xit('export initial m00', exportTableDataFn('initial-m00', 'bhr-gap-initial-m00-column', 'Initial_m00'));
 
     // Initial m06
 
-    it('create initial m06 files and assessments', createTableFilesAndAssessmentsFn('Initial_m06.csv', 'initial-m06', 'bhr-gap-initial-m06-column'));
+    xit('create initial m06 files and assessments', createTableFilesAndAssessmentsFn('Initial_m06.csv', 'initial-m06', 'bhr-gap-initial-m06-column'));
 
     ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-        it(`import initial m06 user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('initial-m06', assessmentName));
-        it(`import initial m06 files for assessment ${assessmentName}`, importTableAnswersFn('initial-m06', assessmentName));
+        xit(`import initial m06 user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('initial-m06', assessmentName));
+        xit(`import initial m06 files for assessment ${assessmentName}`, importTableAnswersFn('initial-m06', assessmentName));
     });
 
-    it('export initial m06', exportTableDataFn('initial-m06', 'bhr-gap-initial-m06-column', 'Initial_m06'));
+    xit('export initial m06', exportTableDataFn('initial-m06', 'bhr-gap-initial-m06-column', 'Initial_m06'));
+
+    // Initial m06
+
+    xit('create initial m06 files and assessments', createTableFilesAndAssessmentsFn('Initial_m06.csv', 'initial-m06', 'bhr-gap-initial-m06-column'));
+
+    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
+        xit(`import initial m06 user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('initial-m06', assessmentName));
+        xit(`import initial m06 files for assessment ${assessmentName}`, importTableAnswersFn('initial-m06', assessmentName));
+    });
+
+    xit('export initial m06', exportTableDataFn('initial-m06', 'bhr-gap-initial-m06-column', 'Initial_m06'));
+
+    // Initial m12
+
+    it('create initial m12 files and assessments', createTableFilesAndAssessmentsFn('Initial_m12.csv', 'initial-m12', 'bhr-gap-initial-m12-column'));
+
+    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
+        it(`import initial m12 user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('initial-m12', assessmentName));
+        it(`import initial m12 files for assessment ${assessmentName}`, importTableAnswersFn('initial-m12', assessmentName));
+    });
+
+    it('export initial m12', exportTableDataFn('initial-m12', 'bhr-gap-initial-m12-column', 'Initial_m12'));
 });

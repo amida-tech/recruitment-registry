@@ -9,5 +9,6 @@ module.exports = [
     require('./everyday-cognition'),
     require('./family-tree'),
     require('./initial-m00'),
-    require('./initial-m06')
+    require('./initial-m06'),
+    require('./initial-m12')
 ];
