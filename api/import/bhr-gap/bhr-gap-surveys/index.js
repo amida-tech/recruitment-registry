@@ -2,5 +2,6 @@
 
 module.exports = [
     require('./subjects'),
-    require('./current-medications')
+    require('./current-medications'),
+    require('./demographics')
 ];

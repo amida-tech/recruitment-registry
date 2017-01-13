@@ -1,4 +1,4 @@
-/* global before,describe,it,it*/
+/* global before,xdescribe,it,it,xit*/
 'use strict';
 process.env.NODE_ENV = 'test';
 
@@ -23,7 +23,7 @@ const comparator = require('../util/comparator');
 const shared = new SharedSpec();
 const bhrSurveys = bhrGapImport.surveys;
 
-describe('bhr gap import-export', function () {
+xdescribe('bhr gap import-export', function () {
     const fixtureDir = '/Work/BHR_GAP-2016.12.09';
     const outputDir = path.join(__dirname, '../generated');
 
@@ -90,7 +90,7 @@ describe('bhr gap import-export', function () {
             .then(users => users.forEach(({ id, username }) => subjectMap.set(username, id)));
     });
 
-    it('create subjects file', function () {
+    xit('create subjects file', function () {
         const subjectAnswers = subjectsData.answerRecords.map(r => {
             r.user_id = subjectMap.get(r.username);
             delete r.username;
@@ -102,14 +102,14 @@ describe('bhr gap import-export', function () {
         fs.writeFileSync(answerFilepath, answerConverter.dataToCSV(subjectAnswers));
     });
 
-    it('import subjects answers', function () {
+    xit('import subjects answers', function () {
         const query = 'copy answer (user_id, survey_id, question_id, question_choice_id, value, language_code) from \'/Work/git/recruitment-registry/api/test/generated/bhrsubjects.csv\' csv header';
         return db.sequelize.query(query);
     });
 
-    const createTableFilesAndAssessmentsFn = function(filename, surveyType, answerType) {
+    const createTableFilesAndAssessmentsFn = function (filename, surveyType, answerType) {
         return function () {
-            const filepath = path.join(fixtureDir,filename);
+            const filepath = path.join(fixtureDir, filename);
             const surveyId = store.surveyMap.get(surveyType);
             return bhrGapImport.convertFileToRecords(filepath, surveyId, subjectMap, answerType)
                 .then(result => {
@@ -156,7 +156,7 @@ describe('bhr gap import-export', function () {
         };
     };
 
-    const importTableAnswersFn = function( surveyIdentifierType, assessmentName) {
+    const importTableAnswersFn = function (surveyIdentifierType, assessmentName) {
         return function () {
             const filepath = path.join(outputDir, `${surveyIdentifierType}-${assessmentName}.csv`);
             if (fs.existsSync(filepath)) {
@@ -211,13 +211,21 @@ describe('bhr gap import-export', function () {
         };
     };
 
-    it('create current medications files and assessments', createTableFilesAndAssessmentsFn('CurrentMedications.csv', 'current-medications', 'bhr-gap-current-meds-column'));
+    xit('create current medications files and assessments', createTableFilesAndAssessmentsFn('CurrentMedications.csv', 'current-medications', 'bhr-gap-current-meds-column'));
 
     ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-        it(`import current medications user assessments for assessment ${assessmentName}`,  importTableAssessmentsFn('current-medications', assessmentName));
-        it(`import current medications files for assessment ${assessmentName}`, importTableAnswersFn('current-medications', assessmentName));
+        xit(`import current medications user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('current-medications', assessmentName));
+        xit(`import current medications files for assessment ${assessmentName}`, importTableAnswersFn('current-medications', assessmentName));
     });
 
-    it('export current medications', exportTableDataFn('current-medications', 'bhr-gap-current-meds-column', 'CurrentMedications'));
+    xit('export current medications', exportTableDataFn('current-medications', 'bhr-gap-current-meds-column', 'CurrentMedications'));
 
+    it('create demographics files and assessments', createTableFilesAndAssessmentsFn('Demographics.csv', 'demographics', 'bhr-gap-demographics-column'));
+
+    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
+        it(`import demographics user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('demographics', assessmentName));
+        it(`import demographics files for assessment ${assessmentName}`, importTableAnswersFn('demographics', assessmentName));
+    });
+
+    it('export demographics', exportTableDataFn('demographics', 'bhr-gap-demographics-column', 'Demographics'));
 });

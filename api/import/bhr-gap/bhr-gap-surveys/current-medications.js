@@ -26,7 +26,7 @@ module.exports = {
         skip: {
             count: 2,
             rule: {
-                logic: 'equals',
+                logic: 'not-equals',
                 answer: { integerValue: 1 }
             }
         }
@@ -44,7 +44,7 @@ module.exports = {
         skip: {
             count: 1,
             rule: {
-                logic: 'exists'
+                logic: 'not-exists'
             }
         }
     }, {
@@ -66,7 +66,7 @@ module.exports = {
         skip: {
             count: 1,
             rule: {
-                logic: 'equals',
+                logic: 'not-equals',
                 answer: { integerValue: 1 }
             }
         }

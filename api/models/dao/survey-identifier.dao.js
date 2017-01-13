@@ -49,7 +49,7 @@ module.exports = class SurveyIdentifierDAO {
     getIdBySurveyIdentifier(type, identifier) {
         return SurveyIdentifier.findOne({ where: { type, identifier }, raw: true, attributes: ['surveyId'] })
             .then(record => {
-                if (! record) {
+                if (!record) {
                     return RRError.reject('surveyIdentifierNotFound', type, identifier);
                 }
                 return record.surveyId;
