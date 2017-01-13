@@ -14,6 +14,17 @@ module.exports = [{
     name: 'yes-no-1-2',
     enumerals: [{ text: 'Yes', value: 1 }, { text: 'No', value: 2 }]
 }, {
+    name: 'no-yes-1-2',
+    enumerals: [{ text: 'No', value: 1 }, { text: 'Yes', value: 2 }]
+}, {
+    name: 'extended-yes-no',
+    enumerals: [
+        { text: 'Yes', value: 1 },
+        { text: 'No', value: 2 },
+        { text: 'I don\'t know', value: 3 },
+        { text: 'Decline to answer', value: 4 }
+    ]
+}, {
     name: 'weight-ranges-lbs',
     enumerals: [
         { text: '110-', value: 1 },

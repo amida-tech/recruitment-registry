@@ -247,12 +247,21 @@ describe('bhr gap import-export', function () {
 
     xit('export early history', exportTableDataFn('early-history', 'bhr-gap-early-history-column', 'EarlyHistory'));
 
-    it('create everyday cognition files and assessments', createTableFilesAndAssessmentsFn('EverydayCognition.csv', 'everyday-cognition', 'bhr-gap-everyday-cognition-column'));
+    xit('create everyday cognition files and assessments', createTableFilesAndAssessmentsFn('EverydayCognition.csv', 'everyday-cognition', 'bhr-gap-everyday-cognition-column'));
 
     ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-        it(`import everyday cognition user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('everyday-cognition', assessmentName));
-        it(`import everyday cognition files for assessment ${assessmentName}`, importTableAnswersFn('everyday-cognition', assessmentName));
+        xit(`import everyday cognition user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('everyday-cognition', assessmentName));
+        xit(`import everyday cognition files for assessment ${assessmentName}`, importTableAnswersFn('everyday-cognition', assessmentName));
     });
 
-    it('export everyday cognition', exportTableDataFn('everyday-cognition', 'bhr-gap-everyday-cognition-column', 'EverydayCognition'));
+    xit('export everyday cognition', exportTableDataFn('everyday-cognition', 'bhr-gap-everyday-cognition-column', 'EverydayCognition'));
+
+    it('create family tree files and assessments', createTableFilesAndAssessmentsFn('FamilyTree.csv', 'family-tree', 'bhr-gap-family-tree-column'));
+
+    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
+        it(`import family tree user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('family-tree', assessmentName));
+        it(`import family tree files for assessment ${assessmentName}`, importTableAnswersFn('family-tree', assessmentName));
+    });
+
+    it('export family tree', exportTableDataFn('family-tree', 'bhr-gap-family-tree-column', 'FamilyTree'));
 });
