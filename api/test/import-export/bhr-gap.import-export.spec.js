@@ -1,4 +1,4 @@
-/* global before,xdescribe,it,it,xit*/
+/* global before,describe,it,it,xit*/
 'use strict';
 process.env.NODE_ENV = 'test';
 
@@ -23,7 +23,7 @@ const comparator = require('../util/comparator');
 const shared = new SharedSpec();
 const bhrSurveys = bhrGapImport.surveys;
 
-xdescribe('bhr gap import-export', function () {
+describe('bhr gap import-export', function () {
     const fixtureDir = '/Work/BHR_GAP-2016.12.09';
     const outputDir = path.join(__dirname, '../generated');
 
@@ -229,12 +229,21 @@ xdescribe('bhr gap import-export', function () {
 
     xit('export demographics', exportTableDataFn('demographics', 'bhr-gap-demographics-column', 'Demographics'));
 
-    it('create diet files and assessments', createTableFilesAndAssessmentsFn('Diet.csv', 'diet', 'bhr-gap-diet-column'));
+    xit('create diet files and assessments', createTableFilesAndAssessmentsFn('Diet.csv', 'diet', 'bhr-gap-diet-column'));
 
     ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-        it(`import diet user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('diet', assessmentName));
-        it(`import diet files for assessment ${assessmentName}`, importTableAnswersFn('diet', assessmentName));
+        xit(`import diet user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('diet', assessmentName));
+        xit(`import diet files for assessment ${assessmentName}`, importTableAnswersFn('diet', assessmentName));
     });
 
-    it('export diet', exportTableDataFn('diet', 'bhr-gap-diet-column', 'Diet'));
+    xit('export diet', exportTableDataFn('diet', 'bhr-gap-diet-column', 'Diet'));
+
+    it('create early history files and assessments', createTableFilesAndAssessmentsFn('EarlyHistory.csv', 'early-history', 'bhr-gap-early-history-column'));
+
+    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
+        it(`import early history user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('early-history', assessmentName));
+        it(`import early history files for assessment ${assessmentName}`, importTableAnswersFn('early-history', assessmentName));
+    });
+
+    it('export early history', exportTableDataFn('early-history', 'bhr-gap-early-history-column', 'EarlyHistory'));
 });
