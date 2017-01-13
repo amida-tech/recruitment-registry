@@ -52,7 +52,7 @@ const answerRule = function (queryInterface, Sequelize) {
             autoIncrement: true
         },
         logic: {
-            type: Sequelize.ENUM('equals', 'exists', 'not-equals', 'not-exists'),
+            type: Sequelize.ENUM('equals', 'exists', 'not-equals', 'not-exists', 'not-selected', 'each-not-selected'),
             allowNull: false
         },
         createdAt: {

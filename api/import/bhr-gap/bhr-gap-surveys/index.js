@@ -3,5 +3,6 @@
 module.exports = [
     require('./subjects'),
     require('./current-medications'),
-    require('./demographics')
+    require('./demographics'),
+    require('./diet.js')
 ];

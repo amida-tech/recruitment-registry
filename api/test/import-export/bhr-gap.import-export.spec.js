@@ -220,12 +220,21 @@ xdescribe('bhr gap import-export', function () {
 
     xit('export current medications', exportTableDataFn('current-medications', 'bhr-gap-current-meds-column', 'CurrentMedications'));
 
-    it('create demographics files and assessments', createTableFilesAndAssessmentsFn('Demographics.csv', 'demographics', 'bhr-gap-demographics-column'));
+    xit('create demographics files and assessments', createTableFilesAndAssessmentsFn('Demographics.csv', 'demographics', 'bhr-gap-demographics-column'));
 
     ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-        it(`import demographics user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('demographics', assessmentName));
-        it(`import demographics files for assessment ${assessmentName}`, importTableAnswersFn('demographics', assessmentName));
+        xit(`import demographics user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('demographics', assessmentName));
+        xit(`import demographics files for assessment ${assessmentName}`, importTableAnswersFn('demographics', assessmentName));
     });
 
-    it('export demographics', exportTableDataFn('demographics', 'bhr-gap-demographics-column', 'Demographics'));
+    xit('export demographics', exportTableDataFn('demographics', 'bhr-gap-demographics-column', 'Demographics'));
+
+    it('create diet files and assessments', createTableFilesAndAssessmentsFn('Diet.csv', 'diet', 'bhr-gap-diet-column'));
+
+    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
+        it(`import diet user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('diet', assessmentName));
+        it(`import diet files for assessment ${assessmentName}`, importTableAnswersFn('diet', assessmentName));
+    });
+
+    it('export diet', exportTableDataFn('diet', 'bhr-gap-diet-column', 'Diet'));
 });

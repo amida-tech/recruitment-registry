@@ -42,6 +42,9 @@ const answerValueToDBFormat = {
     integerValue(value) {
         return [{ value }];
     },
+    floatValue(value) {
+        return [{ value }];
+    },
     feetInchesValue(value) {
         const feet = value.feet || 0;
         const inches = value.inches || 0;
@@ -122,6 +125,7 @@ const generateAnswerSingleFn = {
     'bool-sole': value => ({ boolValue: value === 'true' }),
     pounds: value => ({ numberValue: parseInt(value) }),
     integer: value => ({ integerValue: parseInt(value) }),
+    float: value => ({ integerValue: parseFloat(value) }),
     enumeration: value => ({ integerValue: parseInt(value) }),
     'blood-pressure': value => {
         const pieces = value.split('-');

@@ -2736,7 +2736,7 @@
         "questionType": {
             "type": "string",
             "enum": [
-                "text", "bool", "integer", "choice", "choices",
+                "text", "bool", "integer", "choice", "choices", "float",
                 "date", "year", "month", "day", "enumeration",
                 "pounds", "zip", "feet-inches", "blood-pressure"
             ]
@@ -3230,7 +3230,7 @@
         },
         "choiceType": {
             "type": "string",
-            "enum": ["bool", "bool-sole", "text", "year", "month", "day", "integer", "date", "pounds", "zip", "feet-inches", "blood-pressure", "enumeration"]
+            "enum": ["bool", "bool-sole", "text", "year", "month", "day", "integer", "float", "date", "pounds", "zip", "feet-inches", "blood-pressure", "enumeration"]
         },
         "choice": {
             "type": "object",
@@ -3305,6 +3305,9 @@
                 "integerValue": {
                     "type": "integer"
                 },
+                "floatValue": {
+                    "type": "number"
+                },
                 "textValue": {
                     "type": "string"
                 },
@@ -3356,6 +3359,9 @@
                 },
                 "integerValue": {
                     "type": "integer"
+                },
+                "floatValue": {
+                    "type": "number"
                 },
                 "feetInchesValue": {
                     "type": "object",
