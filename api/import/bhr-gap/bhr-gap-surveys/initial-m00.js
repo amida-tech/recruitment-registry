@@ -146,15 +146,13 @@ module.exports = {
         required: false,
         type: 'integer',
         multiple: true,
-        answerIdentifiers: { type: 'bhr-gap-initial-m00-column', values: ['QID26_1', 'QID26_2'] },
-        enumeration: 'duration-ym'
+        answerIdentifiers: { type: 'bhr-gap-initial-m00-column', values: ['QID26_1', 'QID26_2'] }
     }, {
         text: 'How long in months has your current prescription been stable in dose?',
         required: false,
         type: 'integer',
         multiple: true,
-        answerIdentifiers: { type: 'bhr-gap-initial-m00-column', values: ['QID27_1', 'QID27_3'] },
-        enumeration: 'duration-ym-1-3'
+        answerIdentifiers: { type: 'bhr-gap-initial-m00-column', values: ['QID27_1', 'QID27_3'] }
     }, {
         text: 'Are you currently taking any of the following medications?',
         instruction: '(Select all that apply)',

@@ -279,7 +279,7 @@ describe('bhr gap import-export', function () {
 
     xit('export family tree', exportTableDataFn('family-tree', 'bhr-gap-family-tree-column', 'FamilyTree'));
 
-    // Initial M00
+    // Initial m00
 
     it('create initial m00 files and assessments', createTableFilesAndAssessmentsFn('Initial_m00.csv', 'initial-m00', 'bhr-gap-initial-m00-column'));
 
@@ -290,4 +290,14 @@ describe('bhr gap import-export', function () {
 
     it('export initial m00', exportTableDataFn('initial-m00', 'bhr-gap-initial-m00-column', 'Initial_m00'));
 
+    // Initial m06
+
+    it('create initial m06 files and assessments', createTableFilesAndAssessmentsFn('Initial_m06.csv', 'initial-m06', 'bhr-gap-initial-m06-column'));
+
+    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
+        it(`import initial m06 user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('initial-m06', assessmentName));
+        it(`import initial m06 files for assessment ${assessmentName}`, importTableAnswersFn('initial-m06', assessmentName));
+    });
+
+    it('export initial m06', exportTableDataFn('initial-m06', 'bhr-gap-initial-m06-column', 'Initial_m06'));
 });

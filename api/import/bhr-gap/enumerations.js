@@ -174,6 +174,15 @@ module.exports = [{
         { text: 'Almost never', value: 4 }
     ]
 }, {
+    name: 'frequency-monthly',
+    enumerals: [
+        { text: 'Every month', value: 1 },
+        { text: 'Every 3 months', value: 2 },
+        { text: 'Every 4 months', value: 3 },
+        { text: 'Every 6 months', value: 4 },
+        { text: 'Once a year', value: 5 }
+    ]
+}, {
     name: 'confidence-computer',
     enumerals: [
         { text: 'Not confident at all', value: 1 },
@@ -195,9 +204,27 @@ module.exports = [{
     enumerals: [
         { text: 'Much Better', value: 1 },
         { text: 'Better', value: 2 },
-        { text: 'Same', value: 3 },
+        { text: 'About the Same', value: 3 },
         { text: 'Worse', value: 4 },
         { text: 'Much Worse', value: 5 }
+    ]
+}, {
+    name: 'comparative-trouble',
+    enumerals: [
+        { text: 'Much more trouble', value: 1 },
+        { text: 'More trouble', value: 2 },
+        { text: 'About the same', value: 3 },
+        { text: 'Less trouble', value: 4 },
+        { text: 'Much less trouble', value: 5 }
+    ]
+}, {
+    name: 'fewer-more',
+    enumerals: [
+        { text: 'Much fewer', value: 1 },
+        { text: 'Fewer', value: 2 },
+        { text: 'About the same', value: 3 },
+        { text: 'More', value: 4 },
+        { text: 'Much more', value: 5 }
     ]
 }, {
     name: 'drinks-per-day',
@@ -206,6 +233,13 @@ module.exports = [{
         { text: 'Less than 1 drink/day', value: 2 },
         { text: '1-2 drinks/day', value: 3 },
         { text: '3 or more drinks/day', value: 4 }
+    ]
+}, {
+    name: 'increased-decreased',
+    enumerals: [
+        { text: 'Increased', value: 1 },
+        { text: 'Remained about the same', value: 2 },
+        { text: 'Decreased', value: 3 }
     ]
 }, {
     name: 'duration-ym',

@@ -8,5 +8,6 @@ module.exports = [
     require('./early-history'),
     require('./everyday-cognition'),
     require('./family-tree'),
-    require('./initial-m00')
+    require('./initial-m00'),
+    require('./initial-m06')
 ];
