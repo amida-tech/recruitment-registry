@@ -293,4 +293,19 @@ module.exports = [{
         { text: 'Abuse', value: 9 },
         { text: 'Other', value: 10 }
     ]
+}, {
+    name: 'injury-cause',
+    enumerals: [
+        { text: 'Car Accident', value: 1 },
+        { text: 'Other vehicle accident', value: 2 },
+        { text: 'Fall', value: 3 },
+        { text: 'Sports accident', value: 4 },
+        { text: 'Playground accident', value: 5 },
+        { text: 'Gunshot', value: 6 },
+        { text: 'Fight', value: 7 },
+        { text: 'Shaken violently', value: 8 },
+        { text: 'Explosion', value: 9 },
+        { text: 'Other', value: 10 },
+        { text: 'Hit by something', value: 11 }
+    ]
 }];

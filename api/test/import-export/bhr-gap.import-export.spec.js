@@ -369,12 +369,34 @@ describe('bhr gap import-export', function () {
 
     // Osutbi Impacts
 
-    it('create osutbi impact files and assessments', createTableFilesAndAssessmentsFn('OSUTBI_Impacts.csv', 'osutbi-impacts', 'bhr-gap-osutbi-impacts-column'));
+    xit('create osutbi impacts files and assessments', createTableFilesAndAssessmentsFn('OSUTBI_Impacts.csv', 'osutbi-impacts', 'bhr-gap-osutbi-impacts-column'));
 
     ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-        it(`import osutbi impact user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('osutbi-impacts', assessmentName));
-        it(`import osutbi impact files for assessment ${assessmentName}`, importTableAnswersFn('osutbi-impacts', assessmentName));
+        xit(`import osutbi impacts user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('osutbi-impacts', assessmentName));
+        xit(`import osutbi impacts files for assessment ${assessmentName}`, importTableAnswersFn('osutbi-impacts', assessmentName));
     });
 
-    it('export osutbi impact', exportTableDataFn('osutbi-impacts', 'bhr-gap-osutbi-impacts-column', 'OSUTBI_Impacts'));
+    xit('export osutbi impacts', exportTableDataFn('osutbi-impacts', 'bhr-gap-osutbi-impacts-column', 'OSUTBI_Impacts'));
+
+    // Osutbi Injuries
+
+    xit('create osutbi injuries files and assessments', createTableFilesAndAssessmentsFn('OSUTBI_Injuries.csv', 'osutbi-injuries', 'bhr-gap-osutbi-injuries-column'));
+
+    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
+        xit(`import osutbi injuries user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('osutbi-injuries', assessmentName));
+        xit(`import osutbi injuries files for assessment ${assessmentName}`, importTableAnswersFn('osutbi-injuries', assessmentName));
+    });
+
+    xit('export osutbi injuries', exportTableDataFn('osutbi-injuries', 'bhr-gap-osutbi-injuries-column', 'OSUTBI_Injuries'));
+
+    // Osutbi
+
+    it('create osutbi files and assessments', createTableFilesAndAssessmentsFn('OSUTBI.csv', 'osutbi', 'bhr-gap-osutbi-column'));
+
+    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
+        it(`import osutbi user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('osutbi', assessmentName));
+        it(`import osutbi files for assessment ${assessmentName}`, importTableAnswersFn('osutbi', assessmentName));
+    });
+
+    it('export osutbi', exportTableDataFn('osutbi', 'bhr-gap-osutbi-column', 'OSUTBI'));
 });

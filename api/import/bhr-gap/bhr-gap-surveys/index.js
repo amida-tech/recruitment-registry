@@ -15,5 +15,7 @@ module.exports = [
     require('./initial-m24'),
     require('./medical-history'),
 	require('./mood'),
-	require('./osutbi-impacts')
+	require('./osutbi-impacts'),
+	require('./osutbi-injuries'),
+	require('./osutbi')
 ];
