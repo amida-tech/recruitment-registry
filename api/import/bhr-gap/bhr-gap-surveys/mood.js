@@ -1,65 +1,41 @@
 'use strict';
 
-const yes0No1Question = function (answerIdentifier, text) {
+const yes0No1Question = function (identifier, text) {
     return {
         text,
         required: false,
-        type: 'choice',
-        answerIdentifier,
-        choices: [
-            { text: 'Yes', numerical: 0 },
-            { text: 'No', numerical: 1 }
-        ]
+        type: 'enumeration',
+        answerIdentifier: { type: 'bhr-gap-mood-column', value: identifier },
+        enumeration: 'yes-no-0-1'
     };
 };
 
-const yes1No0Question = function (answerIdentifier, text) {
+const yes1No0Question = function (identifier, text) {
     return {
         text,
         required: false,
-        type: 'choice',
-        answerIdentifier,
-        choices: [
-            { text: 'Yes', numerical: 1 },
-            { text: 'No', numerical: 0 }
-        ]
+        type: 'enumeration',
+        answerIdentifier: { type: 'bhr-gap-mood-column', value: identifier },
+        enumeration: 'yes-no-1-0'
     };
 };
 
-const oftenQuestion = function (answerIdentifier, text) {
+const difficultQuestion = function (identifier, text) {
     return {
         text,
         required: false,
-        type: 'choice',
-        answerIdentifier,
-        choices: [
-            { text: 'Not at all', numerical: 0 },
-            { text: 'Several days', numerical: 1 },
-            { text: 'More than half the days', numerical: 2 },
-            { text: 'Nearly every day', numerical: 3 }
-        ]
+        type: 'enumeration',
+        answerIdentifier: { type: 'bhr-gap-mood-column', value: identifier },
+        enumeration: 'difficulty-level'
     };
 };
-
-const difficultQuestion = function (answerIdentifier, text) {
-    return {
-        text,
-        required: false,
-        type: 'choice',
-        answerIdentifier,
-        choices: [
-            { text: 'Not Difficult At All', numerical: 0 },
-            { text: 'Somewhat Difficult', numerical: 1 },
-            { text: 'Very Difficult', numerical: 2 },
-            { text: 'Extremely Difficult', numerical: 3 }
-        ]
-    };
-};
-
-const commonText = 'Over the last 2 weeks, how often have you been bothered by any of the following problems? Read each item carefully, and select your response. ';
 
 module.exports = {
     name: 'Mood',
+    identifier: {
+        type: 'bhr-gap',
+        value: 'mood'
+    },
     questions: [
         yes0No1Question('QID56', 'Are you basically satisfied with your life?'),
         yes1No0Question('QID57', 'Have you dropped many of your activities and interests?'),
@@ -76,15 +52,23 @@ module.exports = {
         yes0No1Question('QID68', 'Do you feel full of energy?'),
         yes1No0Question('QID69', 'Do you feel that your situation is hopeless?'),
         yes1No0Question('QID70', 'Do you think that most people are better off than you are?'),
-        oftenQuestion('Q21_1', commonText + 'a. Little interest or pleasure in doing things'),
-        oftenQuestion('Q21_2', commonText + 'b. Feeling down, depressed, or hopeless'),
-        oftenQuestion('Q21_3', commonText + 'c. Trouble falling asleep, staying asleep, or sleeping too much'),
-        oftenQuestion('Q21_4', commonText + 'd. Feeling tired or having little energy'),
-        oftenQuestion('Q21_5', commonText + 'e. Poor appetite or overeating'),
-        oftenQuestion('Q21_6', commonText + 'f. Feeling bad about yourself, feeling that you are a failure, or feeling that you have let yourself or your family down'),
-        oftenQuestion('Q21_7', commonText + 'g. Trouble concentrating on things such as reading the newspaper or watching television'),
-        oftenQuestion('Q21_8', commonText + 'h. Moving or speaking so slowly that other people could have noticed. Or being so fidgety or restless that you have been moving around a lot more than usual'),
-        oftenQuestion('Q21_9', commonText + 'i. Thinking that you would be better off dead or that you want to hurt yourself in some way'),
+        {
+            text: 'Over the last 2 weeks, how often have you been bothered by any of the following problems? Read each item carefully, and select your response.',
+            required: false,
+            type: 'choices',
+            enumeration: 'frequency-daily',
+            choices: [
+                { answerIdentifier: { type: 'bhr-gap-mood-column', value: 'Q21_1' }, type: 'enumeration', text: 'a. Little interest or pleasure in doing things' },
+                { answerIdentifier: { type: 'bhr-gap-mood-column', value: 'Q21_2' }, type: 'enumeration', text: 'b. Feeling down, depressed, or hopeless' },
+                { answerIdentifier: { type: 'bhr-gap-mood-column', value: 'Q21_3' }, type: 'enumeration', text: 'c. Trouble falling asleep, staying asleep, or sleeping too much' },
+                { answerIdentifier: { type: 'bhr-gap-mood-column', value: 'Q21_4' }, type: 'enumeration', text: 'd. Feeling tired or having little energy' },
+                { answerIdentifier: { type: 'bhr-gap-mood-column', value: 'Q21_5' }, type: 'enumeration', text: 'e. Poor appetite or overeating' },
+                { answerIdentifier: { type: 'bhr-gap-mood-column', value: 'Q21_6' }, type: 'enumeration', text: 'f. Feeling bad about yourself, feeling that you are a failure, or feeling that you have let yourself or your family down' },
+                { answerIdentifier: { type: 'bhr-gap-mood-column', value: 'Q21_7' }, type: 'enumeration', text: 'g. Trouble concentrating on things such as reading the newspaper or watching television' },
+                { answerIdentifier: { type: 'bhr-gap-mood-column', value: 'Q21_8' }, type: 'enumeration', text: 'h. Moving or speaking so slowly that other people could have noticed. Or being so fidgety or restless that you have been moving around a lot more than usual' },
+                { answerIdentifier: { type: 'bhr-gap-mood-column', value: 'Q21_9' }, type: 'enumeration', text: 'i. Thinking that you would be better off dead or that you want to hurt yourself in some way' }
+            ]
+        },
         difficultQuestion('QID198', 'If you selected any of the above problems, how difficult have these problems made it for you to do your work, take care of things at home, or get along with other people?')
     ]
 };

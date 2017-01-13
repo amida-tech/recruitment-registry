@@ -347,12 +347,23 @@ describe('bhr gap import-export', function () {
 
     // Medical History
 
-    it('create medical history files and assessments', createTableFilesAndAssessmentsFn('MedicalHistory.csv', 'medical-history', 'bhr-gap-medical-history-column'));
+    xit('create medical history files and assessments', createTableFilesAndAssessmentsFn('MedicalHistory.csv', 'medical-history', 'bhr-gap-medical-history-column'));
 
     ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-        it(`import medical history user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('medical-history', assessmentName));
-        it(`import medical history files for assessment ${assessmentName}`, importTableAnswersFn('medical-history', assessmentName));
+        xit(`import medical history user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('medical-history', assessmentName));
+        xit(`import medical history files for assessment ${assessmentName}`, importTableAnswersFn('medical-history', assessmentName));
     });
 
-    it('export medical history', exportTableDataFn('medical-history', 'bhr-gap-medical-history-column', 'MedicalHistory'));
+    xit('export medical history', exportTableDataFn('medical-history', 'bhr-gap-medical-history-column', 'MedicalHistory'));
+
+    // Mood
+
+    it('create mood files and assessments', createTableFilesAndAssessmentsFn('Mood.csv', 'mood', 'bhr-gap-mood-column'));
+
+    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
+        it(`import mood user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('mood', assessmentName));
+        it(`import mood files for assessment ${assessmentName}`, importTableAnswersFn('mood', assessmentName));
+    });
+
+    it('export mood', exportTableDataFn('mood', 'bhr-gap-mood-column', 'Mood'));
 });

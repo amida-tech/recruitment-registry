@@ -20,6 +20,12 @@ module.exports = [{
     name: 'yes-no-1-3',
     enumerals: [{ text: 'Yes', value: 1 }, { text: 'No', value: 3 }]
 }, {
+    name: 'yes-no-1-0',
+    enumerals: [{ text: 'Yes', value: 1 }, { text: 'No', value: 0 }]
+}, {
+    name: 'yes-no-0-1',
+    enumerals: [{ text: 'Yes', value: 0 }, { text: 'No', value: 1 }]
+}, {
     name: 'yes-no-decline',
     enumerals: [{ text: 'Yes', value: 1 }, { text: 'No', value: 2 }, { text: 'Decline to answer', value: 3 }]
 }, {
@@ -186,6 +192,14 @@ module.exports = [{
         { text: 'Once a year', value: 5 }
     ]
 }, {
+    name: 'frequency-daily',
+    enumerals: [
+        { text: 'Not at all', value: 0 },
+        { text: 'Several days', value: 1 },
+        { text: 'More than half the days', value: 2 },
+        { text: 'Nearly every day', value: 3 }
+    ]
+}, {
     name: 'confidence-computer',
     enumerals: [
         { text: 'Not confident at all', value: 1 },
@@ -255,5 +269,13 @@ module.exports = [{
     enumerals: [
         { text: 'Years', value: 1},
         { text: 'Months', value: 3}
+    ]
+}, {
+    name: 'difficulty-level',
+    enumerals: [
+        { text: 'Not Difficult At All', value: 0 },
+        { text: 'Somewhat Difficult', value: 1 },
+        { text: 'Very Difficult', value: 2 },
+        { text: 'Extremely Difficult', value: 3 }
     ]
 }];
