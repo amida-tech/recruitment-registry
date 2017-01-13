@@ -133,4 +133,22 @@ module.exports = [{
 }, {
     name: 'count-0-7',
     enumerals: countEnumerals(8)
+}, {
+    name: 'change-for-worse',
+    enumerals: [
+        { text: 'Better or no change', value: 1 },
+        { text: 'Questionable/ occasionally worse', value: 2 },
+        { text: 'Consistently a little worse', value: 3 },
+        { text: 'Consistently much worse', value: 4 },
+        { text: 'I don\'t know', value: 5 }
+    ]
+}, {
+    name: 'change-for-worse-2',
+    enumerals: [
+        { text: 'Better or no change', value: 8 },
+        { text: 'Questionable/ occasionally worse', value: 2 },
+        { text: 'Consistently a little worse', value: 3 },
+        { text: 'Consistently much worse', value: 4 },
+        { text: 'I don\'t know', value: 5 }
+    ]
 }];

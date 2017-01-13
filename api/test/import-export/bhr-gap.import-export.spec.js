@@ -238,12 +238,21 @@ describe('bhr gap import-export', function () {
 
     xit('export diet', exportTableDataFn('diet', 'bhr-gap-diet-column', 'Diet'));
 
-    it('create early history files and assessments', createTableFilesAndAssessmentsFn('EarlyHistory.csv', 'early-history', 'bhr-gap-early-history-column'));
+    xit('create early history files and assessments', createTableFilesAndAssessmentsFn('EarlyHistory.csv', 'early-history', 'bhr-gap-early-history-column'));
 
     ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-        it(`import early history user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('early-history', assessmentName));
-        it(`import early history files for assessment ${assessmentName}`, importTableAnswersFn('early-history', assessmentName));
+        xit(`import early history user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('early-history', assessmentName));
+        xit(`import early history files for assessment ${assessmentName}`, importTableAnswersFn('early-history', assessmentName));
     });
 
-    it('export early history', exportTableDataFn('early-history', 'bhr-gap-early-history-column', 'EarlyHistory'));
+    xit('export early history', exportTableDataFn('early-history', 'bhr-gap-early-history-column', 'EarlyHistory'));
+
+    it('create everyday cognition files and assessments', createTableFilesAndAssessmentsFn('EverydayCognition.csv', 'everyday-cognition', 'bhr-gap-everyday-cognition-column'));
+
+    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
+        it(`import everyday cognition user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('everyday-cognition', assessmentName));
+        it(`import everyday cognition files for assessment ${assessmentName}`, importTableAnswersFn('everyday-cognition', assessmentName));
+    });
+
+    it('export everyday cognition', exportTableDataFn('everyday-cognition', 'bhr-gap-everyday-cognition-column', 'EverydayCognition'));
 });

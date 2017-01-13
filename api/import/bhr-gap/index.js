@@ -138,6 +138,9 @@ const valueConverterByChoiceType = {
     },
     float: function (value) {
         return parseFloat(value);
+    },
+    enumeration: function (value) {
+        return parseInt(value);
     }
 };
 
@@ -145,7 +148,7 @@ const valueConverterByType = {
     choices: function (value, choiceType) {
         const converter = valueConverterByChoiceType[choiceType];
         if (!converter) {
-            throw new Error('Choice type ${choiceType} has not been implemented.');
+            throw new Error(`Choice type ${choiceType} has not been implemented.`);
         }
         return converter(value);
     },
