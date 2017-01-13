@@ -358,12 +358,23 @@ describe('bhr gap import-export', function () {
 
     // Mood
 
-    it('create mood files and assessments', createTableFilesAndAssessmentsFn('Mood.csv', 'mood', 'bhr-gap-mood-column'));
+    xit('create mood files and assessments', createTableFilesAndAssessmentsFn('Mood.csv', 'mood', 'bhr-gap-mood-column'));
 
     ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-        it(`import mood user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('mood', assessmentName));
-        it(`import mood files for assessment ${assessmentName}`, importTableAnswersFn('mood', assessmentName));
+        xit(`import mood user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('mood', assessmentName));
+        xit(`import mood files for assessment ${assessmentName}`, importTableAnswersFn('mood', assessmentName));
     });
 
-    it('export mood', exportTableDataFn('mood', 'bhr-gap-mood-column', 'Mood'));
+    xit('export mood', exportTableDataFn('mood', 'bhr-gap-mood-column', 'Mood'));
+
+    // Osutbi Impacts
+
+    it('create osutbi impact files and assessments', createTableFilesAndAssessmentsFn('OSUTBI_Impacts.csv', 'osutbi-impacts', 'bhr-gap-osutbi-impacts-column'));
+
+    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
+        it(`import osutbi impact user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('osutbi-impacts', assessmentName));
+        it(`import osutbi impact files for assessment ${assessmentName}`, importTableAnswersFn('osutbi-impacts', assessmentName));
+    });
+
+    it('export osutbi impact', exportTableDataFn('osutbi-impacts', 'bhr-gap-osutbi-impacts-column', 'OSUTBI_Impacts'));
 });

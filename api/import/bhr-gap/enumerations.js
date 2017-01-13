@@ -271,11 +271,26 @@ module.exports = [{
         { text: 'Months', value: 3}
     ]
 }, {
+    name: 'duration-mh',
+    enumerals: [
+        { text: 'Less than 30 minutes', value: 1 },
+        { text: '30 minutes to 24 hours', value: 2 },
+        { text: 'More than 24 hours', value: 3 }
+    ]
+}, {
     name: 'difficulty-level',
     enumerals: [
         { text: 'Not Difficult At All', value: 0 },
         { text: 'Somewhat Difficult', value: 1 },
         { text: 'Very Difficult', value: 2 },
         { text: 'Extremely Difficult', value: 3 }
+    ]
+}, {
+    name: 'impact-cause',
+    enumerals: [
+        { text: 'Military duty', value: 7 },
+        { text: 'Contact sports', value: 8 },
+        { text: 'Abuse', value: 9 },
+        { text: 'Other', value: 10 }
     ]
 }];
