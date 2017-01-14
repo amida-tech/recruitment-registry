@@ -19,5 +19,6 @@ module.exports = [
 	require('./osutbi-injuries'),
 	require('./osutbi'),
 	require('./quality-of-life'),
+	require('./rivermead'),
 	require('./sleep')
 ];

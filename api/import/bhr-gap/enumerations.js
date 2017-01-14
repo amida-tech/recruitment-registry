@@ -491,6 +491,15 @@ module.exports = [{
         { text: 'A very big problem', value: 4 }
     ]
 }, {
+    name: 'is-problem-2',
+    enumerals: [
+        { text: 'not experienced at all', value: 1 },
+        { text: 'no more of a problem', value: 2 },
+        { text: 'a mild problem', value: 3 },
+        { text: 'a moderate problem', value: 4 },
+        { text: 'a severe problem', value: 5 }
+    ]
+}, {
     name: 'bed-partner',
     enumerals: [
         { text: 'No bed partner or roommate', value: 1 },

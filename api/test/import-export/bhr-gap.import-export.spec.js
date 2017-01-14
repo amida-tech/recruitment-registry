@@ -413,13 +413,23 @@ describe('bhr gap import-export', function () {
 
     // Sleep
 
-    it('create sleep files and assessments', createTableFilesAndAssessmentsFn('Sleep.csv', 'sleep', 'bhr-gap-sleep-column'));
+    xit('create sleep files and assessments', createTableFilesAndAssessmentsFn('Sleep.csv', 'sleep', 'bhr-gap-sleep-column'));
 
     ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-        it(`import sleep user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('sleep', assessmentName));
-        it(`import sleep files for assessment ${assessmentName}`, importTableAnswersFn('sleep', assessmentName));
+        xit(`import sleep user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('sleep', assessmentName));
+        xit(`import sleep files for assessment ${assessmentName}`, importTableAnswersFn('sleep', assessmentName));
     });
 
-    it('export sleep', exportTableDataFn('sleep', 'bhr-gap-sleep-column', 'Sleep'));
+    xit('export sleep', exportTableDataFn('sleep', 'bhr-gap-sleep-column', 'Sleep'));
 
+    // Rivermead
+
+    it('create rivermead files and assessments', createTableFilesAndAssessmentsFn('Rivermead.csv', 'rivermead', 'bhr-gap-rivermead-column'));
+
+    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
+        it(`import rivermead user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('rivermead', assessmentName));
+        it(`import rivermead files for assessment ${assessmentName}`, importTableAnswersFn('rivermead', assessmentName));
+    });
+
+    it('export rivermead', exportTableDataFn('rivermead', 'bhr-gap-rivermead-column', 'Rivermead'));
 });
