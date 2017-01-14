@@ -1,4 +1,4 @@
-/* global before,describe,it,it,xit*/
+/* global before,xdescribe,it,it,xit*/
 'use strict';
 process.env.NODE_ENV = 'test';
 
@@ -23,7 +23,7 @@ const comparator = require('../util/comparator');
 const shared = new SharedSpec();
 const bhrSurveys = bhrGapImport.surveys;
 
-describe('bhr gap import-export', function () {
+xdescribe('bhr gap import-export', function () {
     const fixtureDir = '/Work/BHR_GAP-2016.12.09';
     const outputDir = path.join(__dirname, '../generated');
 
@@ -151,7 +151,7 @@ describe('bhr gap import-export', function () {
     const importTableAssessmentsFn = function (surveyIdentifierType, assessmentName) {
         return function () {
             const filepath = path.join(outputDir, `${surveyIdentifierType}-assessment-${assessmentName}.csv`);
-           if (fs.existsSync(filepath)) {
+            if (fs.existsSync(filepath)) {
                 const query = `copy user_assessment (user_id, assessment_id, sequence, status) from '${filepath}' csv header`;
                 return db.sequelize.query(query);
             }

@@ -5,7 +5,7 @@ const yesNoQuestion = function (identifier, text) {
         text,
         required: false,
         type: 'enumeration',
-        answerIdentifier: { type: 'bhr-gap-osutbi-column', value: identifier},
+        answerIdentifier: { type: 'bhr-gap-osutbi-column', value: identifier },
         enumeration: 'yes-no-1-2'
     };
 };

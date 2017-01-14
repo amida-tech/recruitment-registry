@@ -80,17 +80,17 @@ module.exports = {
         enumeration: 'fewer-more'
     }, {
         text: 'During the past month, did you experience any sleep problems?',
-       required: false,
+        required: false,
         type: 'enumeration',
         answerIdentifier: { type: 'bhr-gap-initial-m24-column', value: 'QID11' },
         enumeration: 'yes-no-1-2'
-     }, {
+    }, {
         text: 'During the past month, did you take any sleep medications?',
-       required: false,
+        required: false,
         type: 'enumeration',
         answerIdentifier: { type: 'bhr-gap-initial-m24-column', value: 'QID12' },
         enumeration: 'yes-no-1-2'
-     }, {
+    }, {
         text: 'Compared to six months ago, how would you rate your sleep in general?',
         required: false,
         type: 'enumeration',
@@ -127,7 +127,7 @@ module.exports = {
         required: false,
         type: 'text',
         answerIdentifier: { type: 'bhr-gap-initial-m24-column', value: 'QID27' }
-   }, {
+    }, {
         text: 'Please indicate whether you currently have or had experienced drug abuse in the past.',
         required: false,
         type: 'enumeration',

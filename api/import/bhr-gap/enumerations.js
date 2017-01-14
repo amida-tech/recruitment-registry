@@ -221,10 +221,10 @@ module.exports = [{
 }, {
     name: 'frequency-weekly',
     enumerals: [
-       { text: 'Not during the past month', value: 0 },
-       { text: 'Less than once a week', value: 1 },
-       { text: 'Once or twice a week', value: 2 },
-       { text: 'Three or more times a week', value: 3 }
+        { text: 'Not during the past month', value: 0 },
+        { text: 'Less than once a week', value: 1 },
+        { text: 'Once or twice a week', value: 2 },
+        { text: 'Three or more times a week', value: 3 }
     ]
 }, {
     name: 'confidence-computer',
@@ -305,14 +305,14 @@ module.exports = [{
 }, {
     name: 'duration-ym',
     enumerals: [
-        { text: 'Years', value: 1},
-        { text: 'Months', value: 2}
+        { text: 'Years', value: 1 },
+        { text: 'Months', value: 2 }
     ]
 }, {
     name: 'duration-ym-1-3',
     enumerals: [
-        { text: 'Years', value: 1},
-        { text: 'Months', value: 3}
+        { text: 'Years', value: 1 },
+        { text: 'Months', value: 3 }
     ]
 }, {
     name: 'duration-mh',
@@ -360,7 +360,7 @@ module.exports = [{
         { text: 'Moderately', value: 3 },
         { text: 'Quite a bit', value: 4 },
         { text: 'Extremely', value: 5 }
-     ]
+    ]
 }, {
     name: 'satisfied',
     enumerals: [
@@ -369,7 +369,7 @@ module.exports = [{
         { text: 'Moderately', value: 3 },
         { text: 'Quite', value: 4 },
         { text: 'Very', value: 5 }
-     ]
+    ]
 }, {
     name: 'severity',
     enumerals: [
@@ -378,7 +378,7 @@ module.exports = [{
         { text: 'Moderate', value: 3 },
         { text: 'Severe', value: 4 },
         { text: 'Very Severe', value: 5 }
-     ]
+    ]
 }, {
     name: 'how-limited',
     enumerals: [

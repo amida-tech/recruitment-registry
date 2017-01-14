@@ -103,7 +103,7 @@ module.exports = {
         type: 'enumeration',
         answerIdentifier: { type: 'bhr-gap-initial-m00-column', value: 'QID12' },
         enumeration: 'drinks-per-day'
-     }, {
+    }, {
         text: 'Do you have hypertension (high blood pressure)?',
         required: false,
         type: 'enumeration',
