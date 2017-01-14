@@ -362,6 +362,15 @@ module.exports = [{
         { text: 'Extremely', value: 5 }
      ]
 }, {
+    name: 'satisfied',
+    enumerals: [
+        { text: 'Not at all', value: 1 },
+        { text: 'Slightly', value: 2 },
+        { text: 'Moderately', value: 3 },
+        { text: 'Quite', value: 4 },
+        { text: 'Very', value: 5 }
+     ]
+}, {
     name: 'severity',
     enumerals: [
         { text: 'Node', value: 1 },
