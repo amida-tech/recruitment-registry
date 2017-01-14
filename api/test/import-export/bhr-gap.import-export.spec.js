@@ -1,4 +1,4 @@
-/* global before,xdescribe,it,it,xit*/
+/* global before,describe,it,it,xit*/
 'use strict';
 process.env.NODE_ENV = 'test';
 
@@ -23,7 +23,7 @@ const comparator = require('../util/comparator');
 const shared = new SharedSpec();
 const bhrSurveys = bhrGapImport.surveys;
 
-xdescribe('bhr gap import-export', function () {
+describe('bhr gap import-export', function () {
     const fixtureDir = '/Work/BHR_GAP-2016.12.09';
     const outputDir = path.join(__dirname, '../generated');
 
@@ -213,300 +213,43 @@ xdescribe('bhr gap import-export', function () {
         };
     };
 
-    // Current Medications
-
-    xit('create current medications files and assessments', createTableFilesAndAssessmentsFn('CurrentMedications.csv', 'current-medications', 'bhr-gap-current-meds-column'));
-
-    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-        xit(`import current medications user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('current-medications', assessmentName));
-        xit(`import current medications files for assessment ${assessmentName}`, importTableAnswersFn('current-medications', assessmentName));
-    });
-
-    xit('export current medications', exportTableDataFn('current-medications', 'bhr-gap-current-meds-column', 'CurrentMedications'));
-
-    // Demographics
-
-    xit('create demographics files and assessments', createTableFilesAndAssessmentsFn('Demographics.csv', 'demographics', 'bhr-gap-demographics-column'));
-
-    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-        xit(`import demographics user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('demographics', assessmentName));
-        xit(`import demographics files for assessment ${assessmentName}`, importTableAnswersFn('demographics', assessmentName));
-    });
-
-    xit('export demographics', exportTableDataFn('demographics', 'bhr-gap-demographics-column', 'Demographics'));
-
-    // Diet
-
-    xit('create diet files and assessments', createTableFilesAndAssessmentsFn('Diet.csv', 'diet', 'bhr-gap-diet-column'));
-
-    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-        xit(`import diet user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('diet', assessmentName));
-        xit(`import diet files for assessment ${assessmentName}`, importTableAnswersFn('diet', assessmentName));
-    });
-
-    xit('export diet', exportTableDataFn('diet', 'bhr-gap-diet-column', 'Diet'));
-
-    // Early History
-
-    xit('create early history files and assessments', createTableFilesAndAssessmentsFn('EarlyHistory.csv', 'early-history', 'bhr-gap-early-history-column'));
-
-    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-        xit(`import early history user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('early-history', assessmentName));
-        xit(`import early history files for assessment ${assessmentName}`, importTableAnswersFn('early-history', assessmentName));
-    });
-
-    xit('export early history', exportTableDataFn('early-history', 'bhr-gap-early-history-column', 'EarlyHistory'));
-
-    // Everyday cognition
-
-    xit('create everyday cognition files and assessments', createTableFilesAndAssessmentsFn('EverydayCognition.csv', 'everyday-cognition', 'bhr-gap-everyday-cognition-column'));
-
-    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-        xit(`import everyday cognition user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('everyday-cognition', assessmentName));
-        xit(`import everyday cognition files for assessment ${assessmentName}`, importTableAnswersFn('everyday-cognition', assessmentName));
-    });
-
-    xit('export everyday cognition', exportTableDataFn('everyday-cognition', 'bhr-gap-everyday-cognition-column', 'EverydayCognition'));
-
-    // Family tree
-
-    xit('create family tree files and assessments', createTableFilesAndAssessmentsFn('FamilyTree.csv', 'family-tree', 'bhr-gap-family-tree-column'));
-
-    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-        xit(`import family tree user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('family-tree', assessmentName));
-        xit(`import family tree files for assessment ${assessmentName}`, importTableAnswersFn('family-tree', assessmentName));
-    });
-
-    xit('export family tree', exportTableDataFn('family-tree', 'bhr-gap-family-tree-column', 'FamilyTree'));
-
-    // Initial m00
-
-    xit('create initial m00 files and assessments', createTableFilesAndAssessmentsFn('Initial_m00.csv', 'initial-m00', 'bhr-gap-initial-m00-column'));
-
-    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-        xit(`import initial m00 user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('initial-m00', assessmentName));
-        xit(`import initial m00 files for assessment ${assessmentName}`, importTableAnswersFn('initial-m00', assessmentName));
-    });
-
-    xit('export initial m00', exportTableDataFn('initial-m00', 'bhr-gap-initial-m00-column', 'Initial_m00'));
-
-    // Initial m06
-
-    xit('create initial m06 files and assessments', createTableFilesAndAssessmentsFn('Initial_m06.csv', 'initial-m06', 'bhr-gap-initial-m06-column'));
-
-    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-        xit(`import initial m06 user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('initial-m06', assessmentName));
-        xit(`import initial m06 files for assessment ${assessmentName}`, importTableAnswersFn('initial-m06', assessmentName));
-    });
-
-    xit('export initial m06', exportTableDataFn('initial-m06', 'bhr-gap-initial-m06-column', 'Initial_m06'));
-
-    // Initial m06
-
-    xit('create initial m06 files and assessments', createTableFilesAndAssessmentsFn('Initial_m06.csv', 'initial-m06', 'bhr-gap-initial-m06-column'));
-
-    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-        xit(`import initial m06 user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('initial-m06', assessmentName));
-        xit(`import initial m06 files for assessment ${assessmentName}`, importTableAnswersFn('initial-m06', assessmentName));
-    });
-
-    xit('export initial m06', exportTableDataFn('initial-m06', 'bhr-gap-initial-m06-column', 'Initial_m06'));
-
-    // Initial m12
-
-    xit('create initial m12 files and assessments', createTableFilesAndAssessmentsFn('Initial_m12.csv', 'initial-m12', 'bhr-gap-initial-m12-column'));
-
-    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-        xit(`import initial m12 user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('initial-m12', assessmentName));
-        xit(`import initial m12 files for assessment ${assessmentName}`, importTableAnswersFn('initial-m12', assessmentName));
-    });
-
-    xit('export initial m12', exportTableDataFn('initial-m12', 'bhr-gap-initial-m12-column', 'Initial_m12'));
-
-    // Initial m18
-
-    xit('create initial m18 files and assessments', createTableFilesAndAssessmentsFn('Initial_m18.csv', 'initial-m18', 'bhr-gap-initial-m18-column'));
-
-    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-        xit(`import initial m18 user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('initial-m18', assessmentName));
-        xit(`import initial m18 files for assessment ${assessmentName}`, importTableAnswersFn('initial-m18', assessmentName));
-    });
-
-    xit('export initial m18', exportTableDataFn('initial-m18', 'bhr-gap-initial-m18-column', 'Initial_m18'));
-
-    // Initial m24
-
-    xit('create initial m24 files and assessments', createTableFilesAndAssessmentsFn('Initial_m24.csv', 'initial-m24', 'bhr-gap-initial-m24-column'));
-
-    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-        xit(`import initial m24 user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('initial-m24', assessmentName));
-        xit(`import initial m24 files for assessment ${assessmentName}`, importTableAnswersFn('initial-m24', assessmentName));
-    });
-
-    xit('export initial m24', exportTableDataFn('initial-m24', 'bhr-gap-initial-m24-column', 'Initial_m24'));
-
-    // Medical History
-
-    xit('create medical history files and assessments', createTableFilesAndAssessmentsFn('MedicalHistory.csv', 'medical-history', 'bhr-gap-medical-history-column'));
-
-    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-        xit(`import medical history user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('medical-history', assessmentName));
-        xit(`import medical history files for assessment ${assessmentName}`, importTableAnswersFn('medical-history', assessmentName));
-    });
-
-    xit('export medical history', exportTableDataFn('medical-history', 'bhr-gap-medical-history-column', 'MedicalHistory'));
-
-    // Mood
-
-    xit('create mood files and assessments', createTableFilesAndAssessmentsFn('Mood.csv', 'mood', 'bhr-gap-mood-column'));
-
-    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-        xit(`import mood user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('mood', assessmentName));
-        xit(`import mood files for assessment ${assessmentName}`, importTableAnswersFn('mood', assessmentName));
-    });
-
-    xit('export mood', exportTableDataFn('mood', 'bhr-gap-mood-column', 'Mood'));
-
-    // Osutbi Impacts
-
-    xit('create osutbi impacts files and assessments', createTableFilesAndAssessmentsFn('OSUTBI_Impacts.csv', 'osutbi-impacts', 'bhr-gap-osutbi-impacts-column'));
-
-    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-        xit(`import osutbi impacts user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('osutbi-impacts', assessmentName));
-        xit(`import osutbi impacts files for assessment ${assessmentName}`, importTableAnswersFn('osutbi-impacts', assessmentName));
-    });
-
-    xit('export osutbi impacts', exportTableDataFn('osutbi-impacts', 'bhr-gap-osutbi-impacts-column', 'OSUTBI_Impacts'));
-
-    // Osutbi Injuries
-
-    xit('create osutbi injuries files and assessments', createTableFilesAndAssessmentsFn('OSUTBI_Injuries.csv', 'osutbi-injuries', 'bhr-gap-osutbi-injuries-column'));
-
-    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-        xit(`import osutbi injuries user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('osutbi-injuries', assessmentName));
-        xit(`import osutbi injuries files for assessment ${assessmentName}`, importTableAnswersFn('osutbi-injuries', assessmentName));
-    });
-
-    xit('export osutbi injuries', exportTableDataFn('osutbi-injuries', 'bhr-gap-osutbi-injuries-column', 'OSUTBI_Injuries'));
-
-    // Osutbi
-
-    xit('create osutbi files and assessments', createTableFilesAndAssessmentsFn('OSUTBI.csv', 'osutbi', 'bhr-gap-osutbi-column'));
-
-    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-        xit(`import osutbi user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('osutbi', assessmentName));
-        xit(`import osutbi files for assessment ${assessmentName}`, importTableAnswersFn('osutbi', assessmentName));
-    });
-
-    xit('export osutbi', exportTableDataFn('osutbi', 'bhr-gap-osutbi-column', 'OSUTBI'));
-
-    // Quality of Life
-
-    xit('create quality of life files and assessments', createTableFilesAndAssessmentsFn('QualityOfLife.csv', 'quality-of-life', 'bhr-gap-quality-of-life-column'));
-
-    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-        xit(`import quality of life user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('quality-of-life', assessmentName));
-        xit(`import quality of life files for assessment ${assessmentName}`, importTableAnswersFn('quality-of-life', assessmentName));
-    });
-
-    xit('export quality of life', exportTableDataFn('quality-of-life', 'bhr-gap-quality-of-life-column', 'QualityOfLife'));
-
-    // Sleep
-
-    xit('create sleep files and assessments', createTableFilesAndAssessmentsFn('Sleep.csv', 'sleep', 'bhr-gap-sleep-column'));
-
-    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-        xit(`import sleep user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('sleep', assessmentName));
-        xit(`import sleep files for assessment ${assessmentName}`, importTableAnswersFn('sleep', assessmentName));
-    });
-
-    xit('export sleep', exportTableDataFn('sleep', 'bhr-gap-sleep-column', 'Sleep'));
-
-    // Rivermead
-
-    xit('create rivermead files and assessments', createTableFilesAndAssessmentsFn('Rivermead.csv', 'rivermead', 'bhr-gap-rivermead-column'));
-
-    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-        xit(`import rivermead user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('rivermead', assessmentName));
-        xit(`import rivermead files for assessment ${assessmentName}`, importTableAnswersFn('rivermead', assessmentName));
-    });
-
-    xit('export rivermead', exportTableDataFn('rivermead', 'bhr-gap-rivermead-column', 'Rivermead'));
-
-    // Quolibri
-
-    xit('create quolibri files and assessments', createTableFilesAndAssessmentsFn('QUOLIBRI.csv', 'quolibri', 'bhr-gap-quolibri-column'));
-
-    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-        xit(`import quolibri user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('quolibri', assessmentName));
-        xit(`import quolibri files for assessment ${assessmentName}`, importTableAnswersFn('quolibri', assessmentName));
-    });
-
-    xit('export quolibri', exportTableDataFn('quolibri', 'bhr-gap-quolibri-column', 'QUOLIBRI'));
-
-    // NCPT GoNoGo
-
-    xit('create ncpt gonogo files and assessments', createTableFilesAndAssessmentsFn('NCPT_GoNoGo.csv', 'ncpt-gonogo', 'bhr-gap-ncpt-gonogo-column'));
-
-    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-        xit(`import ncpt gonogo user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('ncpt-gonogo', assessmentName));
-        xit(`import ncpt gonogo files for assessment ${assessmentName}`, importTableAnswersFn('ncpt-gonogo', assessmentName));
-    });
-
-    xit('export ncpt gonogo', exportTableDataFn('ncpt-gonogo', 'bhr-gap-ncpt-gonogo-column', 'NCPT_GoNoGo'));
-
-    // NCPT Memory Span
-
-    xit('create ncpt memory span files and assessments', createTableFilesAndAssessmentsFn('NCPT_MemorySpan.csv', 'ncpt-memoryspan', 'bhr-gap-ncpt-memoryspan-column'));
-
-    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-        xit(`import ncpt memory span user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('ncpt-memoryspan', assessmentName));
-        xit(`import ncpt memory span files for assessment ${assessmentName}`, importTableAnswersFn('ncpt-memoryspan', assessmentName));
-    });
-
-    xit('export ncpt memory span', exportTableDataFn('ncpt-memoryspan', 'bhr-gap-ncpt-memoryspan-column', 'NCPT_MemorySpan'));
-
-    // NCPT Overall
-
-    xit('create ncpt overall files and assessments', createTableFilesAndAssessmentsFn('NCPT_Overall.csv', 'ncpt-overall', 'bhr-gap-ncpt-overall-column'));
-
-    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-        xit(`import ncpt overall user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('ncpt-overall', assessmentName));
-        xit(`import ncpt overall files for assessment ${assessmentName}`, importTableAnswersFn('ncpt-overall', assessmentName));
-    });
-
-    xit('export ncpt overall', exportTableDataFn('ncpt-overall', 'bhr-gap-ncpt-overall-column', 'NCPT_Overall'));
-
-    // NCPT Reverse Memory Span
-
-    xit('create ncpt reverse memory span files and assessments', createTableFilesAndAssessmentsFn('NCPT_ReverseMemorySpan.csv', 'ncpt-reversememoryspan', 'bhr-gap-ncpt-reversememoryspan-column'));
-
-    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-        xit(`import ncpt reverse memory span user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('ncpt-reversememoryspan', assessmentName));
-        xit(`import ncpt reverse memory span files for assessment ${assessmentName}`, importTableAnswersFn('ncpt-reversememoryspan', assessmentName));
-    });
-
-    xit('export ncpt reverse memory span', exportTableDataFn('ncpt-reversememoryspan', 'bhr-gap-ncpt-reversememoryspan-column', 'NCPT_ReverseMemorySpan'));
-
-    // NCPT Trail Making B
-
-    xit('create ncpt trail making b files and assessments', createTableFilesAndAssessmentsFn('NCPT_TrailMakingB.csv', 'ncpt-trailmakingb', 'bhr-gap-ncpt-trailmakingb-column'));
-
-    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-        xit(`import ncpt trail making b user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('ncpt-trailmakingb', assessmentName));
-        xit(`import ncpt trail making b files for assessment ${assessmentName}`, importTableAnswersFn('ncpt-trailmakingb', assessmentName));
-    });
-
-    xit('export ncpt trail making b', exportTableDataFn('ncpt-trailmakingb', 'bhr-gap-ncpt-trailmakingb-column', 'NCPT_TrailMakingB'));
-
-    // MemTrax
-
-    it('create mem trax files and assessments', createTableFilesAndAssessmentsFn('MemTrax.csv', 'memtrax', 'bhr-gap-memtrax-column'));
-
-    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-        it(`import mem trax user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('memtrax', assessmentName));
-        it(`import mem trax files for assessment ${assessmentName}`, importTableAnswersFn('memtrax', assessmentName));
-    });
-
-    it('export mem trax', exportTableDataFn('memtrax', 'bhr-gap-memtrax-column', 'MemTrax'));
+    const BHRGAPTable = (filebase, tableIdentifier, columIdentifier) => {
+        const csvFilename = `${filebase}.csv`;
+        it(`create ${filebase} files and assessments`, createTableFilesAndAssessmentsFn(csvFilename, tableIdentifier, columIdentifier));
+
+        ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
+            it(`import ${filebase} user assessments for assessment ${assessmentName}`, importTableAssessmentsFn(tableIdentifier, assessmentName));
+            it(`import ${filebase} files for assessment ${assessmentName}`, importTableAnswersFn(tableIdentifier, assessmentName));
+        });
+
+        it(`export ${filebase}`, exportTableDataFn(tableIdentifier, columIdentifier, filebase));
+    };
+
+
+    BHRGAPTable('CurrentMedications', 'current-medications', 'bhr-gap-current-meds-column');
+    BHRGAPTable('Demographics', 'demographics', 'bhr-gap-demographics-column');
+    BHRGAPTable('Diet', 'diet', 'bhr-gap-diet-column');
+    BHRGAPTable('EarlyHistory', 'early-history', 'bhr-gap-early-history-column');
+    BHRGAPTable('EverydayCognition', 'everyday-cognition', 'bhr-gap-everyday-cognition-column');
+    BHRGAPTable('FamilyTree', 'family-tree', 'bhr-gap-family-tree-column');
+    BHRGAPTable('Initial_m00', 'initial-m00', 'bhr-gap-initial-m00-column');
+    BHRGAPTable('Initial_m06', 'initial-m06', 'bhr-gap-initial-m06-column');
+    BHRGAPTable('Initial_m12', 'initial-m12', 'bhr-gap-initial-m12-column');
+    BHRGAPTable('Initial_m18', 'initial-m18', 'bhr-gap-initial-m18-column');
+    BHRGAPTable('Initial_m24', 'initial-m24', 'bhr-gap-initial-m24-column');
+    BHRGAPTable('MedicalHistory', 'medical-history', 'bhr-gap-medical-history-column');
+    BHRGAPTable('Mood', 'mood', 'bhr-gap-mood-column');
+    BHRGAPTable('OSUTBI_Impacts', 'osutbi-impacts', 'bhr-gap-osutbi-impacts-column');
+    BHRGAPTable('OSUTBI_Injuries', 'osutbi-injuries', 'bhr-gap-osutbi-injuries-column');
+    BHRGAPTable('OSUTBI', 'osutbi', 'bhr-gap-osutbi-column');
+    BHRGAPTable('QualityOfLife', 'quality-of-life', 'bhr-gap-quality-of-life-column');
+    BHRGAPTable('Sleep', 'sleep', 'bhr-gap-sleep-column');
+    BHRGAPTable('Rivermead', 'rivermead', 'bhr-gap-rivermead-column');
+    BHRGAPTable('QUOLIBRI', 'quolibri', 'bhr-gap-quolibri-column');
+    BHRGAPTable('NCPT_GoNoGo', 'ncpt-gonogo', 'bhr-gap-ncpt-gonogo-column');
+    BHRGAPTable('NCPT_MemorySpan', 'ncpt-memoryspan', 'bhr-gap-ncpt-memoryspan-column');
+    BHRGAPTable('NCPT_Overall', 'ncpt-overall', 'bhr-gap-ncpt-overall-column');
+    BHRGAPTable('NCPT_ReverseMemorySpan', 'ncpt-reversememoryspan', 'bhr-gap-ncpt-reversememoryspan-column');
+    BHRGAPTable('NCPT_TrailMakingB', 'ncpt-trailmakingb', 'bhr-gap-ncpt-trailmakingb-column');
+    BHRGAPTable('MemTrax', 'memtrax', 'bhr-gap-memtrax-column');
 });
