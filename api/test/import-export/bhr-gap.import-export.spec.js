@@ -435,12 +435,78 @@ describe('bhr gap import-export', function () {
 
     // Quolibri
 
-    it('create quolibri files and assessments', createTableFilesAndAssessmentsFn('QUOLIBRI.csv', 'quolibri', 'bhr-gap-quolibri-column'));
+    xit('create quolibri files and assessments', createTableFilesAndAssessmentsFn('QUOLIBRI.csv', 'quolibri', 'bhr-gap-quolibri-column'));
 
     ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-        it(`import quolibri user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('quolibri', assessmentName));
-        it(`import quolibri files for assessment ${assessmentName}`, importTableAnswersFn('quolibri', assessmentName));
+        xit(`import quolibri user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('quolibri', assessmentName));
+        xit(`import quolibri files for assessment ${assessmentName}`, importTableAnswersFn('quolibri', assessmentName));
     });
 
-    it('export quolibri', exportTableDataFn('quolibri', 'bhr-gap-quolibri-column', 'QUOLIBRI'));
+    xit('export quolibri', exportTableDataFn('quolibri', 'bhr-gap-quolibri-column', 'QUOLIBRI'));
+
+    // NCPT GoNoGo
+
+    xit('create ncpt gonogo files and assessments', createTableFilesAndAssessmentsFn('NCPT_GoNoGo.csv', 'ncpt-gonogo', 'bhr-gap-ncpt-gonogo-column'));
+
+    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
+        xit(`import ncpt gonogo user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('ncpt-gonogo', assessmentName));
+        xit(`import ncpt gonogo files for assessment ${assessmentName}`, importTableAnswersFn('ncpt-gonogo', assessmentName));
+    });
+
+    xit('export ncpt gonogo', exportTableDataFn('ncpt-gonogo', 'bhr-gap-ncpt-gonogo-column', 'NCPT_GoNoGo'));
+
+    // NCPT Memory Span
+
+    xit('create ncpt memory span files and assessments', createTableFilesAndAssessmentsFn('NCPT_MemorySpan.csv', 'ncpt-memoryspan', 'bhr-gap-ncpt-memoryspan-column'));
+
+    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
+        xit(`import ncpt memory span user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('ncpt-memoryspan', assessmentName));
+        xit(`import ncpt memory span files for assessment ${assessmentName}`, importTableAnswersFn('ncpt-memoryspan', assessmentName));
+    });
+
+    xit('export ncpt memory span', exportTableDataFn('ncpt-memoryspan', 'bhr-gap-ncpt-memoryspan-column', 'NCPT_MemorySpan'));
+
+    // NCPT Overall
+
+    xit('create ncpt overall files and assessments', createTableFilesAndAssessmentsFn('NCPT_Overall.csv', 'ncpt-overall', 'bhr-gap-ncpt-overall-column'));
+
+    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
+        xit(`import ncpt overall user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('ncpt-overall', assessmentName));
+        xit(`import ncpt overall files for assessment ${assessmentName}`, importTableAnswersFn('ncpt-overall', assessmentName));
+    });
+
+    xit('export ncpt overall', exportTableDataFn('ncpt-overall', 'bhr-gap-ncpt-overall-column', 'NCPT_Overall'));
+
+    // NCPT Reverse Memory Span
+
+    xit('create ncpt reverse memory span files and assessments', createTableFilesAndAssessmentsFn('NCPT_ReverseMemorySpan.csv', 'ncpt-reversememoryspan', 'bhr-gap-ncpt-reversememoryspan-column'));
+
+    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
+        xit(`import ncpt reverse memory span user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('ncpt-reversememoryspan', assessmentName));
+        xit(`import ncpt reverse memory span files for assessment ${assessmentName}`, importTableAnswersFn('ncpt-reversememoryspan', assessmentName));
+    });
+
+    xit('export ncpt reverse memory span', exportTableDataFn('ncpt-reversememoryspan', 'bhr-gap-ncpt-reversememoryspan-column', 'NCPT_ReverseMemorySpan'));
+
+    // NCPT Trail Making B
+
+    xit('create ncpt trail making b files and assessments', createTableFilesAndAssessmentsFn('NCPT_TrailMakingB.csv', 'ncpt-trailmakingb', 'bhr-gap-ncpt-trailmakingb-column'));
+
+    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
+        xit(`import ncpt trail making b user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('ncpt-trailmakingb', assessmentName));
+        xit(`import ncpt trail making b files for assessment ${assessmentName}`, importTableAnswersFn('ncpt-trailmakingb', assessmentName));
+    });
+
+    xit('export ncpt trail making b', exportTableDataFn('ncpt-trailmakingb', 'bhr-gap-ncpt-trailmakingb-column', 'NCPT_TrailMakingB'));
+
+    // MemTrax
+
+    it('create mem trax files and assessments', createTableFilesAndAssessmentsFn('MemTrax.csv', 'memtrax', 'bhr-gap-memtrax-column'));
+
+    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
+        it(`import mem trax user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('memtrax', assessmentName));
+        it(`import mem trax files for assessment ${assessmentName}`, importTableAnswersFn('memtrax', assessmentName));
+    });
+
+    it('export mem trax', exportTableDataFn('memtrax', 'bhr-gap-memtrax-column', 'MemTrax'));
 });
