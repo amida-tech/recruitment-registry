@@ -391,12 +391,35 @@ describe('bhr gap import-export', function () {
 
     // Osutbi
 
-    it('create osutbi files and assessments', createTableFilesAndAssessmentsFn('OSUTBI.csv', 'osutbi', 'bhr-gap-osutbi-column'));
+    xit('create osutbi files and assessments', createTableFilesAndAssessmentsFn('OSUTBI.csv', 'osutbi', 'bhr-gap-osutbi-column'));
 
     ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-        it(`import osutbi user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('osutbi', assessmentName));
-        it(`import osutbi files for assessment ${assessmentName}`, importTableAnswersFn('osutbi', assessmentName));
+        xit(`import osutbi user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('osutbi', assessmentName));
+        xit(`import osutbi files for assessment ${assessmentName}`, importTableAnswersFn('osutbi', assessmentName));
     });
 
-    it('export osutbi', exportTableDataFn('osutbi', 'bhr-gap-osutbi-column', 'OSUTBI'));
+    xit('export osutbi', exportTableDataFn('osutbi', 'bhr-gap-osutbi-column', 'OSUTBI'));
+
+    // Quality of Life
+
+    xit('create quality of life files and assessments', createTableFilesAndAssessmentsFn('QualityOfLife.csv', 'quality-of-life', 'bhr-gap-quality-of-life-column'));
+
+    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
+        xit(`import quality of life user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('quality-of-life', assessmentName));
+        xit(`import quality of life files for assessment ${assessmentName}`, importTableAnswersFn('quality-of-life', assessmentName));
+    });
+
+    xit('export quality of life', exportTableDataFn('quality-of-life', 'bhr-gap-quality-of-life-column', 'QualityOfLife'));
+
+    // Sleep
+
+    it('create sleep files and assessments', createTableFilesAndAssessmentsFn('Sleep.csv', 'sleep', 'bhr-gap-sleep-column'));
+
+    ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
+        it(`import sleep user assessments for assessment ${assessmentName}`, importTableAssessmentsFn('sleep', assessmentName));
+        it(`import sleep files for assessment ${assessmentName}`, importTableAnswersFn('sleep', assessmentName));
+    });
+
+    it('export sleep', exportTableDataFn('sleep', 'bhr-gap-sleep-column', 'Sleep'));
+
 });

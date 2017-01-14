@@ -1,193 +1,159 @@
 'use strict';
 
-const frequencyQuestion = function (answerIdentifier, text) {
-    return {
-        text,
-        required: false,
-        type: 'choice',
-        answerIdentifier,
-        choices: [
-            { text: 'Not during the past month', numerical: 0 },
-            { text: 'Less than once a week', numerical: 1 },
-            { text: 'Once or twice a week', numerical: 2 },
-            { text: 'Three or more times a week', numerical: 3 }
-        ]
-    };
-};
-
-const goodQuestion = function (answerIdentifier, text) {
-    return {
-        text,
-        required: false,
-        type: 'choice',
-        answerIdentifier,
-        choices: [
-            { text: 'Very good', numerical: 0 },
-            { text: 'Fairly good', numerical: 1 },
-            { text: 'Fairly bad', numerical: 2 },
-            { text: 'Very bad', numerical: 3 }
-        ]
-    };
-};
-
-const commonText = 'During the past month, how often have you had trouble sleeping because you...';
-const commonText2 = 'If you have a roommate or bed partner, ask him/her how often in the past month you have had... ';
-
 module.exports = {
     name: 'Sleep',
+    identifier: {
+        type: 'bhr-gap',
+        value: 'sleep'
+    },
     questions: [{
             text: 'During the past month, when have you usually gone to bed at night?',
-            required: true,
-            type: 'choice',
-            answerIdentifier: 'QID141',
-            choices: [
-                { text: 'Before 6:00 PM' },
-                { text: '6:00 PM' },
-                { text: '6:30 PM' },
-                { text: '7:00 PM' },
-                { text: '7:30 PM' },
-                { text: '8:00 PM' },
-                { text: '8:30 PM' },
-                { text: '9:00 PM' },
-                { text: '9:30 PM' },
-                { text: '10:00 PM' },
-                { text: '10:30 PM' },
-                { text: '11:00 PM' },
-                { text: '11:30 PM' },
-                { text: '12:00 AM' },
-                { text: '12:30 AM' },
-                { text: '1:00 AM' },
-                { text: 'After 1:00 AM' }
-            ]
+            required: false,
+            type: 'enumeration',
+            answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID141' },
+            enumeration: 'sleep-time'
         }, {
             text: 'During the past month, how long (in minutes) has it usually taken you to fall asleep each night?',
             required: true,
-            type: 'choice',
-            answerIdentifier: 'QID142',
-            choices: [
-                { text: '< 5 minutes' },
-                { text: '5 minutes' },
-                { text: '10 minutes' },
-                { text: '15 minutes' },
-                { text: '20 minutes' },
-                { text: '30 minutes' },
-                { text: '45 minutes' },
-                { text: '60 minutes' },
-                { text: '> 60 minutes' }
-            ]
+            type: 'enumeration',
+            answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID142' },
+            enumeration: 'duration-5-minutes'
         }, {
-            text: 'During the past month, when have you usually gone to bed at night?',
+            text: 'During the past month, when have you usually gotten up in the morning?',
             required: true,
-            type: 'choice',
-            answerIdentifier: 'QID143',
-            choices: [
-                { text: 'Before 5:00 AM' },
-                { text: '5:00 AM' },
-                { text: '5:30 AM' },
-                { text: '6:00 AM' },
-                { text: '6:30 AM' },
-                { text: '7:00 AM' },
-                { text: '7:30 AM' },
-                { text: '8:00 AM' },
-                { text: '8:30 AM' },
-                { text: '9:00 AM' },
-                { text: '9:30 AM' },
-                { text: '10:00 AM' },
-                { text: '10:30 AM' },
-                { text: '11:00 AM' },
-                { text: 'After 11:00 AM' }
-            ]
+            type: 'enumeration',
+            answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID143' },
+            enumeration: 'wakeup-time'
         }, {
             text: 'During the past month, how many hours of actual sleep did you get at night? (This may be different than the number of hours you spend in bed.)',
             required: true,
-            type: 'choice',
-            answerIdentifier: 'QID94',
-            choices: [
-                { text: '< 4' },
-                { text: '4' },
-                { text: '4.5' },
-                { text: '5' },
-                { text: '5.5' },
-                { text: '6' },
-                { text: '6.5' },
-                { text: '7' },
-                { text: '7.5' },
-                { text: '8' },
-                { text: '8.5' },
-                { text: '9' },
-                { text: '9.5' },
-                { text: '10' },
-                { text: '10.5' },
-                { text: '11' },
-                { text: '11.5' },
-                { text: '12' },
-                { text: '> 12' }
-            ]
-        },
-        frequencyQuestion('QID95_1', commonText + 'Cannot get to sleep within 30 minutes'),
-        frequencyQuestion('QID95_2', commonText + 'Wake up in the middle of the night or early morning'),
-        frequencyQuestion('QID95_3', commonText + 'Have to get up to use the bathroom'),
-        frequencyQuestion('QID95_4', commonText + 'Cannot breathe comfortably'),
-        frequencyQuestion('QID95_5', commonText + 'Cough or snore loudly'),
-        frequencyQuestion('QID95_6', commonText + 'Feel too cold'),
-        frequencyQuestion('QID95_7', commonText + 'Feel too hot'),
-        frequencyQuestion('QID95_8', commonText + 'Had bad dreams'),
-        frequencyQuestion('QID95_9', commonText + 'Have pain'),
-        frequencyQuestion('QID95_10', commonText + 'Other reason(s), please describe'),
-        goodQuestion('QID96', 'During the past month, how would you rate your sleep quality overall?'),
-        frequencyQuestion('QID97', 'During the past month, how often have you taken medicine (prescribed or "over the counter") to help you sleep?'),
-        frequencyQuestion('QID98', 'During the past month, how often have you had trouble staying awake while driving, eating meals, or engaging in social activity?'), {
-            text: 'During the past month, how many hours of actual sleep did you get at night? (This may be different than the number of hours you spend in bed.)',
-            required: true,
-            type: 'choice',
-            answerIdentifier: 'QID145',
-            choices: [
-                { text: 'No problem at all' },
-                { text: 'Only a very slight problem' },
-                { text: 'Somewhat of a problem' },
-                { text: 'A very big problem' }
-            ]
+            type: 'enumeration',
+            answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID94' },
+            enumeration: 'amount-3-12-.5'
         }, {
-            required: true,
-            type: 'choice',
-            answerIdentifier: 'QID146',
-            choices: [
-                { text: 'No bed partner or roommate' },
-                { text: 'Partner/roommate in other room' },
-                { text: 'Partner in same room, but not same bed' },
-                { text: 'Partner in same bed' }
-            ]
-        },
-        frequencyQuestion('QID101_1', commonText2 + 'Loud snoring'),
-        frequencyQuestion('QID101_2', commonText2 + 'Long pauses between breaths while asleep'),
-        frequencyQuestion('QID101_3', commonText2 + 'Legs twitching or jerking while you sleep'),
-        frequencyQuestion('QID101_4', commonText2 + 'Episodes of disorientation or confusion during sleep'),
-        frequencyQuestion('QID101_5_TEXT', commonText2 + 'Other restlessness while you sleep; please describe'), {
+            text: 'During the past month, how often have you had trouble sleeping because you...',
+            required: false,
+            type: 'choices',
+            enumeration: 'frequency-weekly',
+            choices: [{
+                type: 'enumeration',
+                answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID95_1' },
+                text: 'Cannot get to sleep within 30 minutes',
+            }, {
+                type: 'enumeration',
+                answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID95_2' },
+                text: 'Wake up in the middle of the night or early morning',
+            }, {
+                type: 'enumeration',
+                answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID95_3' },
+                text: 'Have to get up to use the bathroom',
+            }, {
+                type: 'enumeration',
+                answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID95_4' },
+                text: 'Cannot breathe comfortably',
+            }, {
+                type: 'enumeration',
+                answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID95_5' },
+                text: 'Cough or snore loudly',
+            }, {
+                type: 'enumeration',
+                answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID95_6' },
+                text: 'Feel too cold',
+            }, {
+                type: 'enumeration',
+                answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID95_7' },
+                text: 'Feel too hot',
+            }, {
+                type: 'enumeration',
+                answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID95_8' },
+                text: 'Had bad dreams',
+            }, {
+                type: 'enumeration',
+                answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID95_9' },
+                text: 'Have pain',
+            }, {
+                type: 'enumeration',
+                answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID95_10' },
+                text: 'Other reason(s), please describe',
+            }]
+        }, {
+            text: 'If other reason, please describe',
+            type: 'text',
+            required: false,
+            answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID95_10_TEXT' }
+        }, {
+            text: 'During the past month, how would you rate your sleep quality overall?',
+            type: 'enumeration',
+            required: false,
+            answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID96' },
+            enumeration: 'condition-4'
+        }, {
+            text: 'During the past month, how often have you taken medicine (prescribed or "over the counter") to help you sleep?',
+            type: 'enumeration',
+            required: false,
+            answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID97' },
+            enumeration: 'frequency-weekly'
+        }, {
+            text: 'During the past month, how often have you had trouble staying awake while driving, eating meals, or engaging in social activity?',
+            type: 'enumeration',
+            required: false,
+            answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID98' },
+            enumeration: 'frequency-weekly'
+        }, {
+            text: 'During the past month, how much of a problem has it been for you to keep up enough enthusiasm to get things done?',
+            type: 'enumeration',
+            required: false,
+            answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID145' },
+            enumeration: 'is-problem'
+        }, {
+            text: 'Do you have a bed partner or roommate?',
+            type: 'enumeration',
+            required: false,
+            answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID146' },
+            enumeration: 'bed-partner'
+        }, {
+            text: 'If you have a roommate or bed partner, ask him/her how often in the past month you have had...',
+            required: false,
+            type: 'choices',
+            enumeration: 'frequency-weekly',
+            choices: [{
+                type: 'enumeration',
+                answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID101_1' },
+                text: 'Loud snoring',
+            }, {
+                type: 'enumeration',
+                answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID101_2' },
+                text: 'Long pauses between breaths while asleep',
+            }, {
+                type: 'enumeration',
+                answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID101_3' },
+                text: 'Legs twitching or jerking while you sleep',
+            }, {
+                type: 'enumeration',
+                answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID101_4' },
+                text: 'Other restlessness while you sleep; please describe',
+            }, {
+                type: 'enumeration',
+                answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID101_5' },
+                text: 'Other restlessness while you sleep',
+            }]
+        }, {
+            text: 'If other reason, please describe',
+            type: 'text',
+            required: false,
+            answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID101_5_TEXT' }
+        }, {
             text: 'How many hours do you spend napping in a typical day?',
-            required: true,
-            type: 'choice',
-            answerIdentifier: 'QID196',
-            choices: [
-                { text: 'None' },
-                { text: 'Less than 1 hour' },
-                { text: '1-2 hours' },
-                { text: '2-3 hours' },
-                { text: '3-4 hours' },
-                { text: '4-5 hours' },
-                { text: '5-6 hours' },
-                { text: 'more than 6 hours' }
-            ]
+            required: false,
+            type: 'enumeration',
+            answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID196' },
+            enumeration: 'duration-hour'
         }, {
             text: 'I feel sleepy during the day and struggle to remain alert.',
-            required: true,
-            type: 'choice',
-            answerIdentifier: 'QID197',
-            choices: [
-                { text: 'Not At All' },
-                { text: 'Somewhat' },
-                { text: 'Rather Much' },
-                { text: 'Very Much' }
-            ]
+            required: false,
+            type: 'enumeration',
+            answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID197' },
+            enumeration: 'much-to-none'
         }
     ]
 };

@@ -200,6 +200,33 @@ module.exports = [{
         { text: 'Nearly every day', value: 3 }
     ]
 }, {
+    name: 'frequency-time-6',
+    enumerals: [
+        { text: 'All of the time', value: 1 },
+        { text: 'Most of the time', value: 2 },
+        { text: 'No, not limited at al', value: 3 },
+        { text: 'Some of the time', value: 4 },
+        { text: 'A little of the time', value: 5 },
+        { text: 'None of the time', value: 6 }
+    ]
+}, {
+    name: 'frequency-time-5',
+    enumerals: [
+        { text: 'All of the time', value: 1 },
+        { text: 'Most of the time', value: 2 },
+        { text: 'A good bit of the time', value: 3 },
+        { text: 'A little of the time', value: 4 },
+        { text: 'None of the time', value: 5 }
+    ]
+}, {
+    name: 'frequency-weekly',
+    enumerals: [
+       { text: 'Not during the past month', value: 0 },
+       { text: 'Less than once a week', value: 1 },
+       { text: 'Once or twice a week', value: 2 },
+       { text: 'Three or more times a week', value: 3 }
+    ]
+}, {
     name: 'confidence-computer',
     enumerals: [
         { text: 'Not confident at all', value: 1 },
@@ -217,6 +244,14 @@ module.exports = [{
         { text: 'Poor', value: 5 }
     ]
 }, {
+    name: 'condition-4',
+    enumerals: [
+        { text: 'Very good', value: 0 },
+        { text: 'Fairly good', value: 1 },
+        { text: 'Fairly bad', value: 2 },
+        { text: 'Very bad', value: 3 }
+    ]
+}, {
     name: 'comparative-condition',
     enumerals: [
         { text: 'Much Better', value: 1 },
@@ -224,6 +259,15 @@ module.exports = [{
         { text: 'About the Same', value: 3 },
         { text: 'Worse', value: 4 },
         { text: 'Much Worse', value: 5 }
+    ]
+}, {
+    name: 'comparative-condition-year',
+    enumerals: [
+        { text: 'Much better now than one year ago', value: 1 },
+        { text: 'Somewhat better than one year ago', value: 2 },
+        { text: 'About the same', value: 3 },
+        { text: 'Somewhat worse now than one year ago', value: 4 },
+        { text: 'Much worse now than one year ago', value: 5 }
     ]
 }, {
     name: 'comparative-trouble',
@@ -307,5 +351,151 @@ module.exports = [{
         { text: 'Explosion', value: 9 },
         { text: 'Other', value: 10 },
         { text: 'Hit by something', value: 11 }
+    ]
+}, {
+    name: 'interference',
+    enumerals: [
+        { text: 'Not at all', value: 1 },
+        { text: 'Slightly', value: 2 },
+        { text: 'Moderately', value: 3 },
+        { text: 'Quite a bit', value: 4 },
+        { text: 'Extremely', value: 5 }
+     ]
+}, {
+    name: 'severity',
+    enumerals: [
+        { text: 'Node', value: 1 },
+        { text: 'Very mild', value: 2 },
+        { text: 'Moderate', value: 3 },
+        { text: 'Severe', value: 4 },
+        { text: 'Very Severe', value: 5 }
+     ]
+}, {
+    name: 'how-limited',
+    enumerals: [
+        { text: 'Yes, limited a lot', value: 1 },
+        { text: 'Yes, limited a little', value: 2 },
+        { text: 'No, not limited at all', value: 3 }
+    ]
+}, {
+    name: 'how-true',
+    enumerals: [
+        { text: 'Definitely True', value: 1 },
+        { text: 'Mostly True', value: 2 },
+        { text: 'Don\'t Know', value: 3 },
+        { text: 'Mostly False', value: 4 },
+        { text: 'Definitely False', value: 5 }
+    ]
+}, {
+    name: 'sleep-time',
+    enumerals: [
+        { text: 'Before 6:00 PM', value: 1 },
+        { text: '6:00 PM', value: 2 },
+        { text: '6:30 PM', value: 3 },
+        { text: '7:00 PM', value: 4 },
+        { text: '7:30 PM', value: 5 },
+        { text: '8:00 PM', value: 6 },
+        { text: '8:30 PM', value: 7 },
+        { text: '9:00 PM', value: 8 },
+        { text: '9:30 PM', value: 9 },
+        { text: '10:00 PM', value: 10 },
+        { text: '10:30 PM', value: 11 },
+        { text: '11:00 PM', value: 12 },
+        { text: '11:30 PM', value: 13 },
+        { text: '12:00 AM', value: 14 },
+        { text: '12:30 AM', value: 15 },
+        { text: '1:00 AM', value: 16 },
+        { text: 'After 1:00 AM', value: 17 }
+    ]
+}, {
+    name: 'duration-5-minutes',
+    enumerals: [
+        { text: '< 5 minutes', value: 1 },
+        { text: '5 minutes', value: 2 },
+        { text: '10 minutes', value: 3 },
+        { text: '15 minutes', value: 4 },
+        { text: '20 minutes', value: 5 },
+        { text: '30 minutes', value: 6 },
+        { text: '45 minutes', value: 7 },
+        { text: '60 minutes', value: 8 },
+        { text: '> 60 minutes', value: 9 }
+    ]
+}, {
+    name: 'wakeup-time',
+    enumerals: [
+        { text: 'Before 5:00 AM', value: 1 },
+        { text: '5:00 AM', value: 2 },
+        { text: '5:30 AM', value: 3 },
+        { text: '6:00 AM', value: 4 },
+        { text: '6:30 AM', value: 5 },
+        { text: '7:00 AM', value: 6 },
+        { text: '7:30 AM', value: 7 },
+        { text: '8:00 AM', value: 8 },
+        { text: '8:30 AM', value: 9 },
+        { text: '9:00 AM', value: 10 },
+        { text: '9:30 AM', value: 11 },
+        { text: '10:00 AM', value: 12 },
+        { text: '10:30 AM', value: 13 },
+        { text: '11:00 AM', value: 14 },
+        { text: 'After 11:00 AM', value: 15 }
+    ]
+}, {
+    name: 'amount-3-12-.5',
+    enumerals: [
+        { text: '< 4', value: 1 },
+        { text: '4', value: 2 },
+        { text: '4.5', value: 3 },
+        { text: '5', value: 4 },
+        { text: '5.5', value: 5 },
+        { text: '6', value: 6 },
+        { text: '6.5', value: 7 },
+        { text: '7', value: 8 },
+        { text: '7.5', value: 9 },
+        { text: '8', value: 10 },
+        { text: '8.5', value: 11 },
+        { text: '9', value: 12 },
+        { text: '9.5', value: 13 },
+        { text: '10', value: 14 },
+        { text: '10.5', value: 15 },
+        { text: '11', value: 16 },
+        { text: '11.5', value: 17 },
+        { text: '12', value: 18 },
+        { text: '> 12', value: 19 }
+    ]
+}, {
+    name: 'much-to-none',
+    enumerals: [
+        { text: 'Not At All', value: 1 },
+        { text: 'Somewhat', value: 2 },
+        { text: 'Rather Much', value: 3 },
+        { text: 'Very Much', value: 4 }
+    ]
+}, {
+    name: 'duration-hour',
+    enumerals: [
+        { text: 'None', value: 1 },
+        { text: 'Less than 1 hour', value: 2 },
+        { text: '1-2 hours', value: 3 },
+        { text: '2-3 hours', value: 4 },
+        { text: '3-4 hours', value: 5 },
+        { text: '4-5 hours', value: 6 },
+        { text: '5-6 hours', value: 7 },
+        { text: 'more than 6 hours', value: 8 }
+    ]
+}, {
+    name: 'is-problem',
+    enumerals: [
+        { text: 'No problem at all', value: 1 },
+        { text: 'Only a very slight problem', value: 2 },
+        { text: 'Somewhat of a problem', value: 3 },
+        { text: 'A very big problem', value: 4 }
+    ]
+}, {
+    name: 'bed-partner',
+    enumerals: [
+        { text: 'No bed partner or roommate', value: 1 },
+        { text: 'Partner/roommate in other room', value: 2 },
+        { text: 'Partner in same room, but not same bed', value: 3 },
+        { text: 'Partner in same bed', value: 4 }
     ]
 }];

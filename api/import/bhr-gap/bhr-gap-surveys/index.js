@@ -17,5 +17,7 @@ module.exports = [
 	require('./mood'),
 	require('./osutbi-impacts'),
 	require('./osutbi-injuries'),
-	require('./osutbi')
+	require('./osutbi'),
+	require('./quality-of-life'),
+	require('./sleep')
 ];
