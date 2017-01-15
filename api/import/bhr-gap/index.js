@@ -248,10 +248,76 @@ const convertFileToRecords = function (filepath, survey_id, subjectMap, answerId
         });
 };
 
+const transformSurveyFile = function (filepath, outputFilepath, answerIdentifierType) {
+    return models.answerIdentifier.getTypeInformationByAnswerIdentifier(answerIdentifierType)
+        .then(identifierMap => {
+            const converter = new Converter({ checkType: false });
+            return converter.fileToRecords(filepath)
+                .then(records => {
+                    const assessmentKeys = new Set(['SubjectCode', 'Timepoint', 'DaysAfterBaseline', 'Latest', 'Status']);
+                    const result = records.reduce((r, record, line_index) => {
+                        const username = record.SubjectCode;
+                        if (! username) {
+                            throw new Error(`Subject code is missing on line ${line_index + 1}.`);
+                        }
+                        const assessment_name = record.Timepoint;
+                        if (! assessment_name) {
+                            throw new Error(`Assessment name is missing on line ${line_index + 1}.`);
+                        }
+                        let status = record.Status ? assessmentStatusMap[record.Status] : 'no-status';
+                        if (! status) {
+                            throw new Error(`Status ${record.Status} is not recognized.`);
+                        }
+                        const baseObject = { username, assessment_name, status, line_index};
+                        if (record.Status !== 'Collected') {
+                            r.push(baseObject);
+                            return r;
+                        }
+                        let inserted = false;
+                        _.forOwn(record, (value, key) => {
+                            if (! assessmentKeys.has(key)) {
+                                const answerInformation = identifierMap.get(key);
+                                if (! answerInformation) {
+                                    throw new Error(`Unexpected column name ${key} for ${answerIdentifierType}.`);
+                                }
+                                const { questionId: question_id, questionChoiceId: question_choice_id, multipleIndex: multiple_index, questionType, questionChoiceType } = answerInformation;
+                                if (value !== '' && value !== undefined) {
+                                    const valueConverter = valueConverterByType[questionType];
+                                    if (!valueConverter) {
+                                        throw new Error(`Question type ${questionType} has not been implemented.`);
+                                    }
+                                    value = valueConverter(value, questionChoiceType);
+                                    const answer = Object.assign({ question_id }, baseObject);
+                                    if (question_choice_id) {
+                                        answer.question_choice_id = question_choice_id;
+                                    }
+                                    if (multiple_index || multiple_index === 0) {
+                                        answer.multiple_index = multiple_index;
+                                    }
+                                    if (value !== null) {
+                                        answer.value = value;
+                                    }
+                                    answer.language_code = 'en';
+                                    r.push(answer);
+                                    inserted = true;
+                                }
+                            }
+                        });
+                        if (! inserted) {
+                            r.push(baseObject);
+                        }
+                        return r;
+                    }, []);
+                    return result;
+                });
+        });
+};
+
 module.exports = {
     loadEnumerations,
     loadSurveys,
     convertSubjects,
     convertFileToRecords,
+    transformSurveyFile,
     surveys
 };

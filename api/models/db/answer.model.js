@@ -53,6 +53,9 @@ module.exports = function (sequelize, DataTypes) {
         value: {
             type: DataTypes.TEXT
         },
+        meta: {
+            type: DataTypes.JSON
+        },
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',

@@ -32,9 +32,9 @@ describe('bhr gap import-export', function () {
         answerIdentifierMap: null
     };
 
-    before(shared.setUpFn());
+    before(shared.setUpFn(false));
 
-    it('load all enumerations', function () {
+    xit('load all enumerations', function () {
         return bhrGapImport.loadEnumerations()
             .then(() => models.enumeration.listEnumerations())
             .then(enumerations => {
@@ -43,17 +43,17 @@ describe('bhr gap import-export', function () {
             });
     });
 
-    it('load all surveys', function () {
+    xit('load all surveys', function () {
         return bhrGapImport.loadSurveys();
     });
 
-    it('survey identifier map', function () {
+    xit('survey identifier map', function () {
         return models.surveyIdentifier.getIdsBySurveyIdentifier('bhr-gap')
             .then(map => store.surveyMap = map);
     });
 
     bhrSurveys.forEach(bhrSurvey => {
-        it(`compare survey ${bhrSurvey.identifier.value}`, function () {
+        xit(`compare survey ${bhrSurvey.identifier.value}`, function () {
             const identifier = bhrSurvey.identifier.value;
             const surveyId = store.surveyMap.get(identifier);
             return models.survey.getSurvey(surveyId)
@@ -68,9 +68,24 @@ describe('bhr gap import-export', function () {
         });
     });
 
+    const transformFile = (filebase, answerType) => {
+        const filepath = path.join(fixtureDir, `${filebase}.csv`);
+        const outputFilepath = path.join(outputDir, `${filebase}-trans.csv`);
+        it(`transform ${filebase}: ${filepath} -> ${outputFilepath}`, function() {
+            return bhrGapImport.transformSurveyFile(filepath, outputFilepath, answerType)
+                .then(result => {
+                    const converter = new CSVConverterExport({ doubleQuotes: '""', fields: ['username', 'assessment_name', 'status', 'line_index', 'question_id', 'question_choice_id', 'multiple_index', 'value', 'language_code'] });
+                    fs.writeFileSync(outputFilepath, converter.dataToCSV(result));
+
+                });
+        });
+    };
+
+    //transformFile('EarlyHistory', 'bhr-gap-early-history-column');
+
     let subjectsData;
 
-    it('create user file', function () {
+    xit('create user file', function () {
         const filepath = path.join(fixtureDir, 'Subjects.csv');
         const surveyId = store.surveyMap.get('subjects');
         return bhrGapImport.convertSubjects(filepath, surveyId)
@@ -83,7 +98,7 @@ describe('bhr gap import-export', function () {
     });
 
     const subjectMap = new Map();
-    it('import users', function () {
+    xit('import users', function () {
         const query = 'copy registry_user (username, email, password, role) from \'/Work/git/recruitment-registry/api/test/generated/bhruser.csv\' csv header';
         return db.sequelize.query(query)
             .then(() => db.sequelize.query('select id, username from registry_user', { type: db.sequelize.QueryTypes.SELECT }))
@@ -215,41 +230,41 @@ describe('bhr gap import-export', function () {
 
     const BHRGAPTable = (filebase, tableIdentifier, columIdentifier) => {
         const csvFilename = `${filebase}.csv`;
-        it(`create ${filebase} files and assessments`, createTableFilesAndAssessmentsFn(csvFilename, tableIdentifier, columIdentifier));
+        xit(`create ${filebase} files and assessments`, createTableFilesAndAssessmentsFn(csvFilename, tableIdentifier, columIdentifier));
 
         ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-            it(`import ${filebase} user assessments for assessment ${assessmentName}`, importTableAssessmentsFn(tableIdentifier, assessmentName));
-            it(`import ${filebase} files for assessment ${assessmentName}`, importTableAnswersFn(tableIdentifier, assessmentName));
+            xit(`import ${filebase} user assessments for assessment ${assessmentName}`, importTableAssessmentsFn(tableIdentifier, assessmentName));
+            xit(`import ${filebase} files for assessment ${assessmentName}`, importTableAnswersFn(tableIdentifier, assessmentName));
         });
 
         it(`export ${filebase}`, exportTableDataFn(tableIdentifier, columIdentifier, filebase));
     };
 
 
-    BHRGAPTable('CurrentMedications', 'current-medications', 'bhr-gap-current-meds-column');
-    BHRGAPTable('Demographics', 'demographics', 'bhr-gap-demographics-column');
-    BHRGAPTable('Diet', 'diet', 'bhr-gap-diet-column');
+    //BHRGAPTable('CurrentMedications', 'current-medications', 'bhr-gap-current-meds-column');
+    //BHRGAPTable('Demographics', 'demographics', 'bhr-gap-demographics-column');
+    //BHRGAPTable('Diet', 'diet', 'bhr-gap-diet-column');
     BHRGAPTable('EarlyHistory', 'early-history', 'bhr-gap-early-history-column');
-    BHRGAPTable('EverydayCognition', 'everyday-cognition', 'bhr-gap-everyday-cognition-column');
-    BHRGAPTable('FamilyTree', 'family-tree', 'bhr-gap-family-tree-column');
-    BHRGAPTable('Initial_m00', 'initial-m00', 'bhr-gap-initial-m00-column');
-    BHRGAPTable('Initial_m06', 'initial-m06', 'bhr-gap-initial-m06-column');
-    BHRGAPTable('Initial_m12', 'initial-m12', 'bhr-gap-initial-m12-column');
-    BHRGAPTable('Initial_m18', 'initial-m18', 'bhr-gap-initial-m18-column');
-    BHRGAPTable('Initial_m24', 'initial-m24', 'bhr-gap-initial-m24-column');
-    BHRGAPTable('MedicalHistory', 'medical-history', 'bhr-gap-medical-history-column');
-    BHRGAPTable('Mood', 'mood', 'bhr-gap-mood-column');
-    BHRGAPTable('OSUTBI_Impacts', 'osutbi-impacts', 'bhr-gap-osutbi-impacts-column');
-    BHRGAPTable('OSUTBI_Injuries', 'osutbi-injuries', 'bhr-gap-osutbi-injuries-column');
-    BHRGAPTable('OSUTBI', 'osutbi', 'bhr-gap-osutbi-column');
-    BHRGAPTable('QualityOfLife', 'quality-of-life', 'bhr-gap-quality-of-life-column');
-    BHRGAPTable('Sleep', 'sleep', 'bhr-gap-sleep-column');
-    BHRGAPTable('Rivermead', 'rivermead', 'bhr-gap-rivermead-column');
-    BHRGAPTable('QUOLIBRI', 'quolibri', 'bhr-gap-quolibri-column');
-    BHRGAPTable('NCPT_GoNoGo', 'ncpt-gonogo', 'bhr-gap-ncpt-gonogo-column');
-    BHRGAPTable('NCPT_MemorySpan', 'ncpt-memoryspan', 'bhr-gap-ncpt-memoryspan-column');
-    BHRGAPTable('NCPT_Overall', 'ncpt-overall', 'bhr-gap-ncpt-overall-column');
-    BHRGAPTable('NCPT_ReverseMemorySpan', 'ncpt-reversememoryspan', 'bhr-gap-ncpt-reversememoryspan-column');
-    BHRGAPTable('NCPT_TrailMakingB', 'ncpt-trailmakingb', 'bhr-gap-ncpt-trailmakingb-column');
-    BHRGAPTable('MemTrax', 'memtrax', 'bhr-gap-memtrax-column');
+    //BHRGAPTable('EverydayCognition', 'everyday-cognition', 'bhr-gap-everyday-cognition-column');
+    //BHRGAPTable('FamilyTree', 'family-tree', 'bhr-gap-family-tree-column');
+    //BHRGAPTable('Initial_m00', 'initial-m00', 'bhr-gap-initial-m00-column');
+    //BHRGAPTable('Initial_m06', 'initial-m06', 'bhr-gap-initial-m06-column');
+    //BHRGAPTable('Initial_m12', 'initial-m12', 'bhr-gap-initial-m12-column');
+    //BHRGAPTable('Initial_m18', 'initial-m18', 'bhr-gap-initial-m18-column');
+    //BHRGAPTable('Initial_m24', 'initial-m24', 'bhr-gap-initial-m24-column');
+    //BHRGAPTable('MedicalHistory', 'medical-history', 'bhr-gap-medical-history-column');
+    //BHRGAPTable('Mood', 'mood', 'bhr-gap-mood-column');
+    //BHRGAPTable('OSUTBI_Impacts', 'osutbi-impacts', 'bhr-gap-osutbi-impacts-column');
+    //BHRGAPTable('OSUTBI_Injuries', 'osutbi-injuries', 'bhr-gap-osutbi-injuries-column');
+    //BHRGAPTable('OSUTBI', 'osutbi', 'bhr-gap-osutbi-column');
+    //BHRGAPTable('QualityOfLife', 'quality-of-life', 'bhr-gap-quality-of-life-column');
+    //BHRGAPTable('Sleep', 'sleep', 'bhr-gap-sleep-column');
+    //BHRGAPTable('Rivermead', 'rivermead', 'bhr-gap-rivermead-column');
+    //BHRGAPTable('QUOLIBRI', 'quolibri', 'bhr-gap-quolibri-column');
+    //BHRGAPTable('NCPT_GoNoGo', 'ncpt-gonogo', 'bhr-gap-ncpt-gonogo-column');
+    //BHRGAPTable('NCPT_MemorySpan', 'ncpt-memoryspan', 'bhr-gap-ncpt-memoryspan-column');
+    //BHRGAPTable('NCPT_Overall', 'ncpt-overall', 'bhr-gap-ncpt-overall-column');
+    //BHRGAPTable('NCPT_ReverseMemorySpan', 'ncpt-reversememoryspan', 'bhr-gap-ncpt-reversememoryspan-column');
+    //BHRGAPTable('NCPT_TrailMakingB', 'ncpt-trailmakingb', 'bhr-gap-ncpt-trailmakingb-column');
+    //BHRGAPTable('MemTrax', 'memtrax', 'bhr-gap-memtrax-column');
 });
