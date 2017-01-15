@@ -1,5 +1,4 @@
 DROP TABLE IF EXISTS staging_bhr_gap;
-DROP TABLE IF EXISTS afsin;
 
 CREATE TABLE staging_bhr_gap (
 	id INTEGER NOT NULL,

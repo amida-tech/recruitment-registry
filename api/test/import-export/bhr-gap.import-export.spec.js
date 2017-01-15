@@ -9,6 +9,7 @@ const _ = require('lodash');
 const models = require('../../models');
 const db = require('../../models/db');
 const SPromise = require('../../lib/promise');
+const queryrize = require('../../lib/queryrize');
 
 const bhrGapImport = require('../../import/bhr-gap');
 const bhrGapExport = require('../../export/bhr-gap');
@@ -32,9 +33,9 @@ describe('bhr gap import-export', function () {
         answerIdentifierMap: null
     };
 
-    before(shared.setUpFn(false));
+    before(shared.setUpFn());
 
-    xit('load all enumerations', function () {
+    it('load all enumerations', function () {
         return bhrGapImport.loadEnumerations()
             .then(() => models.enumeration.listEnumerations())
             .then(enumerations => {
@@ -43,17 +44,17 @@ describe('bhr gap import-export', function () {
             });
     });
 
-    xit('load all surveys', function () {
+    it('load all surveys', function () {
         return bhrGapImport.loadSurveys();
     });
 
-    xit('survey identifier map', function () {
+    it('survey identifier map', function () {
         return models.surveyIdentifier.getIdsBySurveyIdentifier('bhr-gap')
             .then(map => store.surveyMap = map);
     });
 
     bhrSurveys.forEach(bhrSurvey => {
-        xit(`compare survey ${bhrSurvey.identifier.value}`, function () {
+        it(`compare survey ${bhrSurvey.identifier.value}`, function () {
             const identifier = bhrSurvey.identifier.value;
             const surveyId = store.surveyMap.get(identifier);
             return models.survey.getSurvey(surveyId)
@@ -68,24 +69,9 @@ describe('bhr gap import-export', function () {
         });
     });
 
-    const transformFile = (filebase, answerType) => {
-        const filepath = path.join(fixtureDir, `${filebase}.csv`);
-        const outputFilepath = path.join(outputDir, `${filebase}-trans.csv`);
-        it(`transform ${filebase}: ${filepath} -> ${outputFilepath}`, function() {
-            return bhrGapImport.transformSurveyFile(filepath, outputFilepath, answerType)
-                .then(result => {
-                    const converter = new CSVConverterExport({ doubleQuotes: '""', fields: ['username', 'assessment_name', 'status', 'line_index', 'question_id', 'question_choice_id', 'multiple_index', 'value', 'language_code'] });
-                    fs.writeFileSync(outputFilepath, converter.dataToCSV(result));
-
-                });
-        });
-    };
-
-    //transformFile('EarlyHistory', 'bhr-gap-early-history-column');
-
     let subjectsData;
 
-    xit('create user file', function () {
+    it('create user file', function () {
         const filepath = path.join(fixtureDir, 'Subjects.csv');
         const surveyId = store.surveyMap.get('subjects');
         return bhrGapImport.convertSubjects(filepath, surveyId)
@@ -98,14 +84,14 @@ describe('bhr gap import-export', function () {
     });
 
     const subjectMap = new Map();
-    xit('import users', function () {
+    it('import users', function () {
         const query = 'copy registry_user (username, email, password, role) from \'/Work/git/recruitment-registry/api/test/generated/bhruser.csv\' csv header';
         return db.sequelize.query(query)
             .then(() => db.sequelize.query('select id, username from registry_user', { type: db.sequelize.QueryTypes.SELECT }))
             .then(users => users.forEach(({ id, username }) => subjectMap.set(username, id)));
     });
 
-    xit('create subjects file', function () {
+    it('create subjects file', function () {
         const subjectAnswers = subjectsData.answerRecords.map(r => {
             r.user_id = subjectMap.get(r.username);
             delete r.username;
@@ -117,84 +103,43 @@ describe('bhr gap import-export', function () {
         fs.writeFileSync(answerFilepath, answerConverter.dataToCSV(subjectAnswers));
     });
 
-    xit('import subjects answers', function () {
+    it('import subjects answers', function () {
         const query = 'copy answer (user_id, survey_id, question_id, question_choice_id, value, language_code) from \'/Work/git/recruitment-registry/api/test/generated/bhrsubjects.csv\' csv header';
         return db.sequelize.query(query);
     });
 
-    const createTableFilesAndAssessmentsFn = function (filename, surveyType, answerType) {
+    const transformTableDataFn = function(columIdentifier, filebase) {
         return function () {
-            const filepath = path.join(fixtureDir, filename);
-            const surveyId = store.surveyMap.get(surveyType);
-            return bhrGapImport.convertFileToRecords(filepath, surveyId, subjectMap, answerType)
+           const filepath = path.join(fixtureDir, `${filebase}.csv`);
+           const outputFilepath = path.join(outputDir, `${filebase}-trans.csv`);
+            return bhrGapImport.transformSurveyFile(filepath, outputFilepath, columIdentifier)
                 .then(result => {
-                    result.forEach(({ answers }, assessmentName) => {
-                        if (answers && answers.length) {
-                            const converter = new CSVConverterExport({ doubleQuotes: '""', fields: ['user_id', 'survey_id', 'question_id', 'question_choice_id', 'multiple_index', 'value', 'language_code'] });
-                            const outfilepath = path.join(outputDir, `${surveyType}-${assessmentName}.csv`);
-                            fs.writeFileSync(outfilepath, converter.dataToCSV(answers));
-                        }
-                    });
-                    return result;
-                })
-                .then(result => {
-                    store.assessmentMap = new Map();
-                    const promises = [...result.keys()].map(assessmentName => {
-                        const name = `${surveyType}-${assessmentName}`;
-                        return models.assessment.createAssessment({ name, surveys: [{ id: surveyId }] })
-                            .then(({ id }) => store.assessmentMap.set(name, id));
-                    });
-                    return SPromise.all(promises).then(() => result);
-                })
-                .then(result => {
-                    result.forEach(({ userAssessments }, assessmentName) => {
-                        const name = `${surveyType}-${assessmentName}`;
-                        const assessment_id = store.assessmentMap.get(name);
-                        userAssessments.forEach(userAssessment => {
-                            userAssessment.assessment_id = assessment_id;
-                            userAssessment.sequence = 1;
-                        });
-                        const converter = new CSVConverterExport({ doubleQuotes: '""', fields: ['user_id', 'assessment_id', 'sequence', 'status'] });
-                        const outfilepath = path.join(outputDir, `${surveyType}-assessment-${assessmentName}.csv`);
-                        fs.writeFileSync(outfilepath, converter.dataToCSV(userAssessments));
-                    });
+                    const converter = new CSVConverterExport({ doubleQuotes: '""', fields: ['username', 'assessment_name', 'status', 'line_index', 'question_id', 'question_choice_id', 'multiple_index', 'value', 'language_code'] });
+                    fs.writeFileSync(outputFilepath, converter.dataToCSV(result));
                 });
-
         };
     };
 
-    const importTableAssessmentsFn = function (surveyIdentifierType, assessmentName) {
+    const importTableDataFn = function(tableIdentifier, filebase) {
         return function () {
-            const filepath = path.join(outputDir, `${surveyIdentifierType}-assessment-${assessmentName}.csv`);
-            if (fs.existsSync(filepath)) {
-                const query = `copy user_assessment (user_id, assessment_id, sequence, status) from '${filepath}' csv header`;
-                return db.sequelize.query(query);
-            }
-        };
-    };
-
-    const importTableAnswersFn = function (surveyIdentifierType, assessmentName) {
-        return function () {
-            const filepath = path.join(outputDir, `${surveyIdentifierType}-${assessmentName}.csv`);
-            if (fs.existsSync(filepath)) {
-                const query = 'select max(id) as lastid from answer';
-                return db.sequelize.query(query, { type: db.sequelize.QueryTypes.SELECT })
-                    .then(result => result[0].lastid)
-                    .then(lastid => {
-                        lastid = lastid || 0;
-                        const query = `copy answer (user_id, survey_id, question_id, question_choice_id, multiple_index, value, language_code) from '${filepath}' csv header`;
-                        return db.sequelize.query(query)
-                            .then(() => {
-                                const name = `${surveyIdentifierType}-${assessmentName}`;
-                                const assessmentId = store.assessmentMap.get(name);
-                                const insert = 'insert into user_assessment_answer (answer_id, user_assessment_id)';
-                                const select = 'select answer.id as answer_id, user_assessment.id as user_assessment_id from answer, user_assessment';
-                                const where = `where answer.id > ${lastid} and user_assessment.user_id = answer.user_id and user_assessment.assessment_id = ${assessmentId}`;
-                                const query = `${insert} ${select} ${where}`;
-                                return db.sequelize.query(query);
-                            });
-                    });
-            }
+            const filepath = path.join(__dirname, '../../sql-scripts/bhr-gap-import.sql');
+            const rawScript = queryrize.readFileSync(filepath);
+            const transFile = path.join(outputDir, `${filebase}-trans.csv`);
+            const parameters = {
+                survey_id: 5,
+                filepath: `'${transFile}'`,
+                identifier: `'${tableIdentifier}'`
+            };
+            const script = rawScript.map(query => queryrize.replaceParameters(query, parameters));
+            let promise = script.reduce((r, query) => {
+                if (r === null) {
+                    r = db.sequelize.query(query);
+                } else {
+                    r = r.then(() => db.sequelize.query(query));
+                }
+                return r;
+            }, null);
+            return promise;
         };
     };
 
@@ -229,14 +174,8 @@ describe('bhr gap import-export', function () {
     };
 
     const BHRGAPTable = (filebase, tableIdentifier, columIdentifier) => {
-        const csvFilename = `${filebase}.csv`;
-        xit(`create ${filebase} files and assessments`, createTableFilesAndAssessmentsFn(csvFilename, tableIdentifier, columIdentifier));
-
-        ['m00', 'm06', 'm12', 'm18', 'm24', 'm30'].map(assessmentName => {
-            xit(`import ${filebase} user assessments for assessment ${assessmentName}`, importTableAssessmentsFn(tableIdentifier, assessmentName));
-            xit(`import ${filebase} files for assessment ${assessmentName}`, importTableAnswersFn(tableIdentifier, assessmentName));
-        });
-
+        it(`transform ${filebase}`, transformTableDataFn(columIdentifier, filebase));
+        it(`import ${filebase}`, importTableDataFn(tableIdentifier, filebase));
         it(`export ${filebase}`, exportTableDataFn(tableIdentifier, columIdentifier, filebase));
     };
 
