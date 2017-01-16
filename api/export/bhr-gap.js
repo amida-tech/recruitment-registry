@@ -42,7 +42,8 @@ const exportTableData = function (surveyType, answerType) {
                                         throw new Error('No user found.');
                                     }
                                     const lastAnswer = record.last_answer ? 'True' : 'False';
-                                    r[key] = { SubjectCode: subjectCode, Timepoint: timePoint, Status: assessmentStatusMap[record.status], Latest: lastAnswer };
+                                    const daysAfterBaseline = record.days_after_baseline.toString();
+                                    r[key] = { SubjectCode: subjectCode, Timepoint: timePoint, DaysAfterBaseline: daysAfterBaseline, Status: assessmentStatusMap[record.status], Latest: lastAnswer };
                                 }
                                 if (record.question_id) {
                                     const columnIdentifier = identifierMap.get(record.question_id);
@@ -82,7 +83,7 @@ const exportTableData = function (surveyType, answerType) {
                         })
                         .then(rows => {
                             valueColumns.sort();
-                            const columns = ['SubjectCode', 'Timepoint', 'Latest', 'Status', ...valueColumns];
+                            const columns = ['SubjectCode', 'Timepoint', 'DaysAfterBaseline', 'Latest', 'Status', ...valueColumns];
                             return { columns, rows };
                         });
                 });

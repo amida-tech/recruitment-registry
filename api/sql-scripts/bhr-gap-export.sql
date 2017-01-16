@@ -4,7 +4,8 @@ WITH
 			user_assessment.id AS user_assessment_id,
 			assessment.name AS assessment_name,
 			registry_user.username AS username,
-			user_assessment.status AS status
+			user_assessment.status AS status,
+			(user_assessment.meta->'bhr_days_after_baseline')::text::int AS days_after_baseline
 		FROM
 			user_assessment
 			LEFT JOIN assessment ON assessment.id = user_assessment.assessment_id
@@ -34,6 +35,7 @@ SELECT
 	user_assessment_result.user_assessment_id AS user_assessment_id,
 	user_assessment_result.username AS username,
 	user_assessment_result.assessment_name AS assessment_name,
+	user_assessment_result.days_after_baseline AS days_after_baseline,
 	CASE
 		WHEN (answer_result.deleted_at IS NULL AND answer_result.question_id IS NOT NULL) OR (user_assessment_result.status = 'collected' AND answer_result.question_id IS NULL) THEN TRUE
 		ELSE FALSE

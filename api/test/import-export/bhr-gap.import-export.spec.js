@@ -114,7 +114,7 @@ describe('bhr gap import-export', function () {
            const outputFilepath = path.join(outputDir, `${filebase}-trans.csv`);
             return bhrGapImport.transformSurveyFile(filepath, outputFilepath, columIdentifier)
                 .then(result => {
-                    const converter = new CSVConverterExport({ doubleQuotes: '""', fields: ['username', 'assessment_name', 'status', 'line_index', 'question_id', 'question_choice_id', 'multiple_index', 'value', 'language_code', 'last_answer'] });
+                    const converter = new CSVConverterExport({ doubleQuotes: '""', fields: ['username', 'assessment_name', 'status', 'line_index', 'question_id', 'question_choice_id', 'multiple_index', 'value', 'language_code', 'last_answer', 'days_after_baseline'] });
                     fs.writeFileSync(outputFilepath, converter.dataToCSV(result));
                 });
         };
@@ -159,10 +159,6 @@ describe('bhr gap import-export', function () {
                     const converter = new CSVConverterImport({ checkType: false, ignoreEmpty: true });
                     return converter.fileToRecords(filepath)
                         .then(result => {
-                            result = result.map(row => {
-                                delete row.DaysAfterBaseLine;
-                                return row;
-                            });
                             result = _.sortBy(result, ['SubjectCode', 'Timepoint']);
                             return result;
                         })

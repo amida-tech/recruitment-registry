@@ -39,6 +39,10 @@ module.exports = function (sequelize, DataTypes) {
         lastAnswer: {
             type: DataTypes.BOOLEAN,
             field: 'last_answer'
+        },
+        daysAfterBaseline: {
+            type: DataTypes.INTEGER,
+            field: 'days_after_baseline'
         }
     }, {
         freezeTableName: true,

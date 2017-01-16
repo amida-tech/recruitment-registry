@@ -200,8 +200,8 @@ const transformSurveyFile = function (filepath, outputFilepath, answerIdentifier
                         if (! status) {
                             throw new Error(`Status ${record.Status} is not recognized.`);
                         }
-                        const last_answer = record.Latest ? record.Latest.toLowerCase() === "true" : false;
-                        const baseObject = { username, assessment_name, status, line_index, last_answer};
+                        const last_answer = record.Latest ? record.Latest.toLowerCase() === 'true' : false;
+                        const baseObject = { username, assessment_name, status, line_index, last_answer, days_after_baseline: record.DaysAfterBaseline};
                         let inserted = false;
                         _.forOwn(record, (value, key) => {
                             if (! assessmentKeys.has(key)) {
