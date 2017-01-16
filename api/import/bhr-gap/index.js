@@ -180,74 +180,6 @@ const assessmentStatusMap = {
     'Unable To Perform': 'unable-to-perform'
 };
 
-const convertFileToRecords = function (filepath, survey_id, subjectMap, answerIdentifierType) {
-    return models.answerIdentifier.getTypeInformationByAnswerIdentifier(answerIdentifierType)
-        .then(identifierMap => {
-            const converter = new Converter({ checkType: false });
-            return converter.fileToRecords(filepath)
-                .then(records => {
-                    const assessmentKeys = new Set(['SubjectCode', 'Timepoint', 'DaysAfterBaseline', 'Latest', 'Status']);
-                    const result = records.reduce((r, record) => {
-                        const user_id = subjectMap.get(record.SubjectCode);
-                        if (!user_id) {
-                            throw new Error(`User identifier ${record.SubjectCode} is not recognized.`);
-                        }
-                        const assessmentName = record.Timepoint;
-                        if (!assessmentName) {
-                            throw new Error(`Line without assessment name found.`);
-                        }
-                        let assesmentInfo = r.get(assessmentName);
-                        if (!assesmentInfo) {
-                            assesmentInfo = { userAssessments: [] };
-                            r.set(assessmentName, assesmentInfo);
-                        }
-                        let status = record.Status ? assessmentStatusMap[record.Status] : 'no-status';
-                        if (!status) {
-                            throw new Error(`Status ${record.Status} is not recognized.`);
-                        }
-                        assesmentInfo.userAssessments.push({ user_id, status });
-                        if (record.Status === 'Collected') {
-                            let assesmentAnswers = assesmentInfo.answers;
-                            if (!assesmentAnswers) {
-                                assesmentAnswers = [];
-                                assesmentInfo.answers = assesmentAnswers;
-                            }
-                            _.forOwn(record, (value, key) => {
-                                if (!assessmentKeys.has(key)) {
-                                    const answerInformation = identifierMap.get(key);
-                                    if (!answerInformation) {
-                                        throw new Error(`Unexpected column name ${key} for ${answerIdentifierType}.`);
-                                    }
-                                    const { questionId: question_id, questionChoiceId: question_choice_id, multipleIndex: multiple_index, questionType, questionChoiceType } = answerInformation;
-                                    if (value !== '' && value !== undefined) {
-                                        const valueConverter = valueConverterByType[questionType];
-                                        if (!valueConverter) {
-                                            throw new Error(`Question type ${questionType} has not been implemented.`);
-                                        }
-                                        value = valueConverter(value, questionChoiceType);
-                                        const element = { user_id, survey_id, question_id };
-                                        if (question_choice_id) {
-                                            element.question_choice_id = question_choice_id;
-                                        }
-                                        if (multiple_index || multiple_index === 0) {
-                                            element.multiple_index = multiple_index;
-                                        }
-                                        if (value !== null) {
-                                            element.value = value;
-                                        }
-                                        element.language_code = 'en';
-                                        assesmentAnswers.push(element);
-                                    }
-                                }
-                            });
-                        }
-                        return r;
-                    }, new Map());
-                    return result;
-                });
-        });
-};
-
 const transformSurveyFile = function (filepath, outputFilepath, answerIdentifierType) {
     return models.answerIdentifier.getTypeInformationByAnswerIdentifier(answerIdentifierType)
         .then(identifierMap => {
@@ -317,7 +249,6 @@ module.exports = {
     loadEnumerations,
     loadSurveys,
     convertSubjects,
-    convertFileToRecords,
     transformSurveyFile,
     surveys
 };

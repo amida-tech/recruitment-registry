@@ -38,6 +38,7 @@ module.exports = function (sequelize, DataTypes) {
         }
     }, {
         freezeTableName: true,
-        timestamps: false
+        timestamps: false,
+        indexes: [{ fields: ['username', 'assessment_name', 'line_index'] }]
     });
 };
