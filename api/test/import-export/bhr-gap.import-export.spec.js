@@ -1,4 +1,4 @@
-/* global before,describe,it,it,xit*/
+/* global before,describe,it,it*/
 'use strict';
 process.env.NODE_ENV = 'test';
 
@@ -150,6 +150,7 @@ describe('bhr gap import-export', function () {
                 .then(({ columns, rows }) => {
                     const filepath = path.join(outputDir, `${filenamebase}_exported.csv`);
                     const converter = new CSVConverterExport({ fields: columns });
+                    rows = _.sortBy(rows, ['SubjectCode', 'Timepoint']);
                     fs.writeFileSync(filepath, converter.dataToCSV(rows));
                     return converter;
                 })

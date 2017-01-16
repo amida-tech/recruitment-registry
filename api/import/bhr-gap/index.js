@@ -201,10 +201,6 @@ const transformSurveyFile = function (filepath, outputFilepath, answerIdentifier
                             throw new Error(`Status ${record.Status} is not recognized.`);
                         }
                         const baseObject = { username, assessment_name, status, line_index};
-                        if (record.Status !== 'Collected') {
-                            r.push(baseObject);
-                            return r;
-                        }
                         let inserted = false;
                         _.forOwn(record, (value, key) => {
                             if (! assessmentKeys.has(key)) {

@@ -87,7 +87,7 @@ exports.readFileSync = function (filepath) {
 };
 
 exports.readQuerySync = function (scriptPath) {
-    scriptPath = path.join(__dirname, '../scripts', scriptPath);
+    scriptPath = path.join(__dirname, '../sql-scripts', scriptPath);
     const queries = exports.readFileSync(scriptPath);
     return queries && queries[queries.length - 1];
 };

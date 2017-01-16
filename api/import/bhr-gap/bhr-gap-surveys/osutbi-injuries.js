@@ -44,7 +44,7 @@ module.exports = {
     }, {
         text: 'How old were you?',
         required: false,
-        type: 'integer',
+        type: 'float',
         answerIdentifier: { type: 'bhr-gap-osutbi-injuries-column', value: 'Age' }
     }]
 };
