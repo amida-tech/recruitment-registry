@@ -21,7 +21,8 @@ WITH
 			answer.multiple_index,
 			answer.question_choice_id,
 			question_choice.type AS choice_type,
-			answer.value
+			answer.value,
+			answer.deleted_at AS deleted_at
 		FROM answer
 			INNER JOIN user_assessment_answer ON user_assessment_answer.answer_id = answer.id
 			LEFT JOIN question ON question.id = answer.question_id
@@ -33,6 +34,10 @@ SELECT
 	user_assessment_result.user_assessment_id AS user_assessment_id,
 	user_assessment_result.username AS username,
 	user_assessment_result.assessment_name AS assessment_name,
+	CASE
+		WHEN (answer_result.deleted_at IS NULL AND answer_result.question_id IS NOT NULL) OR (user_assessment_result.status = 'collected' AND answer_result.question_id IS NULL) THEN TRUE
+		ELSE FALSE
+	END AS last_answer,
 	user_assessment_result.status AS status,
 	answer_result.question_id,
 	answer_result.question_type,

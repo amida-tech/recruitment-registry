@@ -196,11 +196,12 @@ const transformSurveyFile = function (filepath, outputFilepath, answerIdentifier
                         if (! assessment_name) {
                             throw new Error(`Assessment name is missing on line ${line_index + 1}.`);
                         }
-                        let status = record.Status ? assessmentStatusMap[record.Status] : 'no-status';
+                        const status = record.Status ? assessmentStatusMap[record.Status] : 'no-status';
                         if (! status) {
                             throw new Error(`Status ${record.Status} is not recognized.`);
                         }
-                        const baseObject = { username, assessment_name, status, line_index};
+                        const last_answer = record.Latest ? record.Latest.toLowerCase() === "true" : false;
+                        const baseObject = { username, assessment_name, status, line_index, last_answer};
                         let inserted = false;
                         _.forOwn(record, (value, key) => {
                             if (! assessmentKeys.has(key)) {

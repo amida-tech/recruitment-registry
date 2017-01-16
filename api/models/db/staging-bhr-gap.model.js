@@ -35,6 +35,10 @@ module.exports = function (sequelize, DataTypes) {
         language: {
             type: DataTypes.TEXT,
             field: 'language_code'
+        },
+        lastAnswer: {
+            type: DataTypes.BOOLEAN,
+            field: 'last_answer'
         }
     }, {
         freezeTableName: true,

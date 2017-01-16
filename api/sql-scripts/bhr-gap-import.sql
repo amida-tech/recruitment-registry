@@ -1,6 +1,6 @@
 TRUNCATE staging_bhr_gap RESTART IDENTITY;
 
-COPY staging_bhr_gap (username, assessment_name, status, line_index, question_id, question_choice_id, multiple_index, value, language_code) FROM :filepath CSV HEADER;
+COPY staging_bhr_gap (username, assessment_name, status, line_index, question_id, question_choice_id, multiple_index, value, language_code, last_answer) FROM :filepath CSV HEADER;
 
 WITH
 	assessment_id AS (
@@ -52,7 +52,7 @@ WITH
 	),
 	answer_result AS (
 		INSERT INTO
-			answer (user_id, survey_id, language_code, question_id, question_choice_id, value, multiple_index, meta, created_at)
+			answer (user_id, survey_id, language_code, question_id, question_choice_id, value, multiple_index, meta, created_at, deleted_at)
 		SELECT
 			registry_user.id as user_id,
 			:survey_id as survey_id,
@@ -62,7 +62,11 @@ WITH
 			staging_bhr_gap.value as value,
 			staging_bhr_gap.multiple_index as multiple_index,
 			('{"bhr_source_line_index":' || staging_bhr_gap.line_index::text || '}')::json as meta,
-			NOW() as created_at
+			NOW() as created_at,
+			CASE
+				WHEN staging_bhr_gap.last_answer THEN NULL
+		 		ELSE NOW()
+			END
 		FROM
 			staging_bhr_gap
 			LEFT JOIN registry_user ON registry_user.username = staging_bhr_gap.username

@@ -41,7 +41,8 @@ const exportTableData = function (surveyType, answerType) {
                                     if (!subjectCode) {
                                         throw new Error('No user found.');
                                     }
-                                    r[key] = { SubjectCode: subjectCode, Timepoint: timePoint, Status: assessmentStatusMap[record.status] };
+                                    const lastAnswer = record.last_answer ? 'True' : 'False';
+                                    r[key] = { SubjectCode: subjectCode, Timepoint: timePoint, Status: assessmentStatusMap[record.status], Latest: lastAnswer };
                                 }
                                 if (record.question_id) {
                                     const columnIdentifier = identifierMap.get(record.question_id);
@@ -81,7 +82,7 @@ const exportTableData = function (surveyType, answerType) {
                         })
                         .then(rows => {
                             valueColumns.sort();
-                            const columns = ['SubjectCode', 'Timepoint', 'Status', ...valueColumns];
+                            const columns = ['SubjectCode', 'Timepoint', 'Latest', 'Status', ...valueColumns];
                             return { columns, rows };
                         });
                 });
