@@ -1,32 +1,6 @@
-DROP TABLE IF EXISTS staging_bhr_gap;
-
-CREATE TABLE staging_bhr_gap (
-	id INTEGER NOT NULL,
-	username TEXT,
-	assessment_name TEXT,
-	status TEXT,
-	line_index INTEGER,
-	question_id INTEGER,
-	question_choice_id INTEGER,
-	multiple_index INTEGER,
-	value TEXT,
-	language_code TEXT
-);
-
-CREATE SEQUENCE staging_bhr_gap_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-ALTER SEQUENCE staging_bhr_gap_id_seq OWNED BY staging_bhr_gap.id;
-ALTER TABLE ONLY staging_bhr_gap ALTER COLUMN id SET DEFAULT nextval('staging_bhr_gap_id_seq'::regclass);
-ALTER TABLE ONLY staging_bhr_gap ADD CONSTRAINT staging_bhr_gap_pkey PRIMARY KEY (id);
+TRUNCATE staging_bhr_gap RESTART IDENTITY;
 
 COPY staging_bhr_gap (username, assessment_name, status, line_index, question_id, question_choice_id, multiple_index, value, language_code) FROM :filepath CSV HEADER;
-
-TRUNCATE user_assessment_answer, user_assessment, answer, assessment_survey, assessment RESTART IDENTITY;
 
 WITH
 	assessment_id AS (
