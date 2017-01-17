@@ -133,7 +133,7 @@ const convertSubjects = function (filepath) {
                             return { userRecords, answerRecords };
                         });
                 });
-    });
+        });
 };
 
 const transformSubjectsFile = function (filepath, userFilepath) {
@@ -207,24 +207,24 @@ const transformSurveyFile = function (filepath, answerIdentifierType, outputFile
                     const assessmentKeys = new Set(['SubjectCode', 'Timepoint', 'DaysAfterBaseline', 'Latest', 'Status']);
                     const result = records.reduce((r, record, line_index) => {
                         const username = record.SubjectCode;
-                        if (! username) {
+                        if (!username) {
                             throw new Error(`Subject code is missing on line ${line_index + 1}.`);
                         }
                         const assessment_name = record.Timepoint;
-                        if (! assessment_name) {
+                        if (!assessment_name) {
                             throw new Error(`Assessment name is missing on line ${line_index + 1}.`);
                         }
                         const status = record.Status ? assessmentStatusMap[record.Status] : 'no-status';
-                        if (! status) {
+                        if (!status) {
                             throw new Error(`Status ${record.Status} is not recognized.`);
                         }
                         const last_answer = record.Latest ? record.Latest.toLowerCase() === 'true' : false;
-                        const baseObject = { username, assessment_name, status, line_index, last_answer, days_after_baseline: record.DaysAfterBaseline};
+                        const baseObject = { username, assessment_name, status, line_index, last_answer, days_after_baseline: record.DaysAfterBaseline };
                         let inserted = false;
                         _.forOwn(record, (value, key) => {
-                            if (! assessmentKeys.has(key)) {
+                            if (!assessmentKeys.has(key)) {
                                 const answerInformation = identifierMap.get(key);
-                                if (! answerInformation) {
+                                if (!answerInformation) {
                                     throw new Error(`Unexpected column name ${key} for ${answerIdentifierType}.`);
                                 }
                                 const { questionId: question_id, questionChoiceId: question_choice_id, multipleIndex: multiple_index, questionType, questionChoiceType } = answerInformation;
@@ -250,7 +250,7 @@ const transformSurveyFile = function (filepath, answerIdentifierType, outputFile
                                 }
                             }
                         });
-                        if (! inserted) {
+                        if (!inserted) {
                             r.push(baseObject);
                         }
                         return r;
@@ -288,7 +288,7 @@ const importTransformedSurveyFile = function (tableIdentifier, filepath) {
                 return r;
             }, null);
             return promise;
-    });
+        });
 };
 
 module.exports = {

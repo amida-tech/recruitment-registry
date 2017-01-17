@@ -39,7 +39,7 @@ module.exports = class QuestionIdentifierDAO {
             });
     }
 
-   getQuestionIdToIdentifierMap(type, ids) {
+    getQuestionIdToIdentifierMap(type, ids) {
         const options = {
             where: { type },
             attributes: ['identifier', 'questionId'],

@@ -1,4 +1,4 @@
-/* global before,describe,it,it*/
+/* global before,xdescribe,it,it*/
 'use strict';
 process.env.NODE_ENV = 'test';
 
@@ -108,7 +108,7 @@ xdescribe('bhr gap import-export', function () {
     it('export subject answer', function () {
         const filepath = path.join(outputDir, 'Subjects_exported.csv');
         return bhrGapExport.writeSubjectsData(filepath, 'SubjectCode')
-            .then(( { rows, columns }) => {
+            .then(({ rows, columns }) => {
                 const exportConverter = new CSVConverterExport({ fields: columns });
                 const filepath = path.join(fixtureDir, 'Subjects.csv');
                 const converter = new CSVConverterImport({ checkType: false, ignoreEmpty: true });
@@ -125,7 +125,7 @@ xdescribe('bhr gap import-export', function () {
             });
     });
 
-    const transformTableDataFn = function(columIdentifier, filebase) {
+    const transformTableDataFn = function (columIdentifier, filebase) {
         return function () {
             const filepath = path.join(fixtureDir, `${filebase}.csv`);
             const outputFilepath = path.join(outputDir, `${filebase}-trans.csv`);
@@ -133,7 +133,7 @@ xdescribe('bhr gap import-export', function () {
         };
     };
 
-    const importTableDataFn = function(tableIdentifier, filebase) {
+    const importTableDataFn = function (tableIdentifier, filebase) {
         return function () {
             const transFile = path.join(outputDir, `${filebase}-trans.csv`);
             return bhrGapImport.importTransformedSurveyFile(tableIdentifier, transFile);
@@ -166,7 +166,6 @@ xdescribe('bhr gap import-export', function () {
         it(`import ${filebase}`, importTableDataFn(tableIdentifier, filebase));
         it(`export ${filebase}`, exportTableDataFn(tableIdentifier, columIdentifier, filebase));
     };
-
 
     BHRGAPTable('CurrentMedications', 'current-medications', 'bhr-gap-current-meds-column');
     BHRGAPTable('Demographics', 'demographics', 'bhr-gap-demographics-column');

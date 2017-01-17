@@ -185,7 +185,11 @@ module.exports = {
         return assessment(queryInterface, Sequelize)
             .then(() => assessmentSurvey(queryInterface, Sequelize))
             .then(() => userAssessment(queryInterface, Sequelize))
-            .then(() => userAssessmentAnswer(queryInterface, Sequelize));
+            .then(() => userAssessmentAnswer(queryInterface, Sequelize))
+            .then(() => queryInterface.addIndex('assessment', ['name'], {
+                indexName: 'assessment_name_key',
+                indicesType: 'UNIQUE'
+            }));
     },
 
     down: function (queryInterface) {

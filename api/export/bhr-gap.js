@@ -37,7 +37,7 @@ const exportSubjectsData = function () {
                             const result = subjects.reduce((r, subject) => {
                                 const username = subject.username;
                                 let record = r.get(username);
-                                if (! record) {
+                                if (!record) {
                                     record = { SubjectCode: username };
                                     r.set(username, record);
                                 }
