@@ -14,81 +14,81 @@ export class AdminSurveyContainer extends Component {
 
   _changeAnswer(event) {
     this.props.dispatch(actions.updateAnswer(event.target.dataset.itype,
-      event.target.id, event.target.value, event.target.name))
+      event.target.name, event.target.value, null))
+  }
+
+  _changeAnswerChoices(itype, questionId, answerId, value) {
+    this.props.dispatch(actions.updateAnswer(itype, questionId,
+      answerId, value));
+  }
+
+  makeQuestionsJSX(question, index) {
+    switch(question.type) {
+      case "text":
+        return (
+            <div key={question.id} className="container">
+              <label className="special questionNumber">Question {index+1}</label>
+              <SurveyFields.Input
+                  id={question.id}
+                  changeForm={::this._changeAnswer}
+                  text={question.text}
+                  required={question.required}/>
+            </div>
+        );
+      case "bool":
+        return (
+            <div key={question.id} className="container">
+              <label className="special questionNumber">Question {index+1}</label>
+              <SurveyFields.Bool
+                  id={question.id}
+                  changeForm={::this._changeAnswer}
+                  text={question.text}
+                  vocab={this.props.vocab}
+                  required={question.required}/>
+            </div>
+        );
+      case "choice":
+        return (
+            <div key={question.id} className="container">
+              <label className="special questionNumber">Question {index+1}</label>
+              <SurveyFields.Choice
+                  id={question.id}
+                  changeForm={::this._changeAnswer}
+                  text={question.text}
+                  vocab={this.props.vocab}
+                  choices={question.choices} />
+            </div>
+        );
+      case "choices":
+        return (
+            <div key={question.id} className="container">
+              <label className="special questionNumber">Question {index+1}</label>
+              <SurveyFields.Choices
+                  id={question.id}
+                  changeForm={::this._changeAnswer}
+                  text={question.text}
+                  vocab={this.props.vocab}
+                  choices={question.choices}
+                  changeFormChoices={::this._changeAnswerChoices}
+                  required={question.required}/>
+            </div>
+        );
+    }
   }
 
   render() {
     // id is also available:
-    const { name, questions } = this.props.selectedSurvey.toJS();
+    const { id, name, questions } = this.props.selectedSurvey.toJS()
+    const surveyAnswers = this.props.surveyAnswers.get('answers');
+    const surveyQuestions = this.props.selectedSurvey.get('questions');
+    // need to implement: lastUpdated
+
     var questionnaire = [];
+
     if(questions){
-      questionnaire = questions.map(question => {
-        switch(question.type) {
-          case "text":
-            return (
-              <div className="box">
-                <article className="media">
-                  <div className="media-content">
-                    <div className="content">
-                      <h4 className="title is-6 is-marginless gapMediumGray">Question {question.id}</h4>
-                      <SurveyFields.Input key={question.id} id={question.id}
-                        changeForm={::this._changeAnswer} text={question.text}
-                         required={question.required}/>
-                    </div>
-                  </div>
-                </article>
-              </div>
-            );
-          case "bool":
-            return (
-              <div className="box">
-                <article className="media">
-                  <div className="media-content">
-                    <div className="content">
-                      <h4 className="title is-6 is-marginless gapMediumGray">Question {question.id}</h4>
-                      <SurveyFields.Bool key={question.id} id={question.id}
-                        changeForm={::this._changeAnswer} text={question.text}
-                        vocab={this.props.vocab} required={question.required}/>
-                    </div>
-                  </div>
-                </article>
-              </div>
-            );
-          case "choice":
-            return (
-              <div className="box">
-                <article className="media">
-                  <div className="media-content">
-                    <div className="content">
-                      <h4 className="title is-6 is-marginless gapMediumGray">Question {question.id}</h4>
-                      <SurveyFields.Choice key={question.id} id={question.id}
-                        changeForm={::this._changeAnswer} text={question.text}
-                        vocab={this.props.vocab} choices={question.choices}
-                        required={question.required} />
-                    </div>
-                  </div>
-                </article>
-              </div>
-            );
-          case "choices":
-            return (
-              <div className="box">
-                <article className="media">
-                  <div className="media-content">
-                    <div className="content">
-                      <h4 className="title is-6 is-marginless gapMediumGray">Question {question.id}</h4>
-                      <SurveyFields.Choices key={question.id} id={question.id}
-                        changeForm={::this._changeAnswer} text={question.text}
-                        vocab={this.props.vocab} choices={question.choices}
-                        required={question.required}/>
-                    </div>
-                  </div>
-                </article>
-              </div>
-            );
-        }
-      });
+      questionnaire = questions.map(::this.makeQuestionsJSX);
     }
+
     return (
       <div>
         <AdminAddQuestionModal modalStatus={this.state.modalStatus}/>
@@ -104,12 +104,23 @@ export class AdminSurveyContainer extends Component {
             <h2 className="title is-2">Section 1:</h2>
             <h1 className="title is-1">{name}</h1>
             <p><b>Last Updated: 3/15/16</b></p>
-            <p><b className="gapRed">4 questions remaining</b></p>
+            <p><b className="gapRed">{ surveyQuestions && (surveyQuestions.size - surveyAnswers.size) } questions remaining</b></p>
             <p><button className="button buttonSecondary">Save Progress</button></p>
             <p><button onClick={() => this.showModal()} >Add New Questionnaire</button></p>
+            { this.props.data.get('hasErrors') &&
+            <div>
+                <p>{this.props.vocab.get('SUBMISSION_FAILURE')}</p>
+            </div>
+            }
           </div>
-          <div className="column is-two-thirds">
-            {questionnaire}
+          <div id="survey" className="survey column is-two-thirds">
+            <form name="questionForm" onSubmit={(event) => this.submitAnswers(event)} key={id} className="">
+              {questionnaire}
+                  <ol>
+                  {questionnaire}
+                  </ol>
+              <button className="submit">{this.props.vocab.get('SUBMIT')}</button>
+            </form>
             <div className="control is-grouped">
               <p className="control">
                 <button className="button buttonSecondary">Save Progress</button>

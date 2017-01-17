@@ -23,58 +23,58 @@ export class SurveyContainer extends Component {
   }
 
   makeQuestionsJSX(question, index) {
-  switch(question.type) {
-    case "text":
-      return (
-          <div key={question.id} className="container">
-            <label className="special questionNumber">Question {index+1}</label>
-            <SurveyFields.Input
-                id={question.id}
-                changeForm={::this._changeAnswer}
-                text={question.text}
-                required={question.required}/>
-          </div>
-      );
-    case "bool":
-      return (
-          <div key={question.id} className="container">
-            <label className="special questionNumber">Question {index+1}</label>
-            <SurveyFields.Bool
-                id={question.id}
-                changeForm={::this._changeAnswer}
-                text={question.text}
-                vocab={this.props.vocab}
-                required={question.required}/>
-          </div>
-      );
-    case "choice":
-      return (
-          <div key={question.id} className="container">
-            <label className="special questionNumber">Question {index+1}</label>
-            <SurveyFields.Choice
-                id={question.id}
-                changeForm={::this._changeAnswer}
-                text={question.text}
-                vocab={this.props.vocab}
-                choices={question.choices} />
-          </div>
-      );
-    case "choices":
-      return (
-          <div key={question.id} className="container">
-            <label className="special questionNumber">Question {index+1}</label>
-            <SurveyFields.Choices
-                id={question.id}
-                changeForm={::this._changeAnswer}
-                text={question.text}
-                vocab={this.props.vocab}
-                choices={question.choices}
-                changeFormChoices={::this._changeAnswerChoices}
-                required={question.required}/>
-          </div>
-      );
+    switch(question.type) {
+      case "text":
+        return (
+            <div key={question.id} className="container">
+              <label className="special questionNumber">Question {index+1}</label>
+              <SurveyFields.Input
+                  id={question.id}
+                  changeForm={::this._changeAnswer}
+                  text={question.text}
+                  required={question.required}/>
+            </div>
+        );
+      case "bool":
+        return (
+            <div key={question.id} className="container">
+              <label className="special questionNumber">Question {index+1}</label>
+              <SurveyFields.Bool
+                  id={question.id}
+                  changeForm={::this._changeAnswer}
+                  text={question.text}
+                  vocab={this.props.vocab}
+                  required={question.required}/>
+            </div>
+        );
+      case "choice":
+        return (
+            <div key={question.id} className="container">
+              <label className="special questionNumber">Question {index+1}</label>
+              <SurveyFields.Choice
+                  id={question.id}
+                  changeForm={::this._changeAnswer}
+                  text={question.text}
+                  vocab={this.props.vocab}
+                  choices={question.choices} />
+            </div>
+        );
+      case "choices":
+        return (
+            <div key={question.id} className="container">
+              <label className="special questionNumber">Question {index+1}</label>
+              <SurveyFields.Choices
+                  id={question.id}
+                  changeForm={::this._changeAnswer}
+                  text={question.text}
+                  vocab={this.props.vocab}
+                  choices={question.choices}
+                  changeFormChoices={::this._changeAnswerChoices}
+                  required={question.required}/>
+            </div>
+        );
+    }
   }
-}
 
   render() {
 
