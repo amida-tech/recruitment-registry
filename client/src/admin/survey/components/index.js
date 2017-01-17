@@ -1,6 +1,6 @@
 import React, { Component} from 'react';
 import { connect } from 'react-redux';
-import * as actions from '../actions';
+import * as actions from '../../../survey/actions';
 import './index.scss';
 import * as SurveyFields from '../../../common/SurveyFields';
 import AdminAddQuestionModal from './question.js';
