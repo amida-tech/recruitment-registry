@@ -1,13 +1,15 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Immutable from 'immutable';
-import { LOCATION_CHANGE, syncHistoryWithStore, routerMiddleware } from 'react-router-redux';
+import { LOCATION_CHANGE, syncHistoryWithStore, routerMiddleware, routerActions } from 'react-router-redux';
 import { Provider } from 'react-redux';
 import { Router, Route, browserHistory } from 'react-router';
-import { combineReducers } from 'redux-immutable'
+import { combineReducers } from 'redux-immutable';
+import { UserAuthWrapper } from 'redux-auth-wrapper'
 import { applyMiddleware, compose, createStore } from 'redux';
 import thunk from 'redux-thunk';
-
+import { LoginContainer } from './login';
+import { RegisterContainer } from './register';
 import ChartMonitor from 'redux-devtools-chart-monitor';
 import DockMonitor from 'redux-devtools-dock-monitor';
 import LogMonitor from 'redux-devtools-log-monitor';
@@ -52,7 +54,7 @@ export default (options) => {
   } = options;
 
   const persistedAuthState = JSON.parse(localStorage.getItem('rec-reg'));
-  
+
   initialState.auth = persistedAuthState || initialState.auth;
 
 
@@ -89,6 +91,16 @@ export default (options) => {
     selectLocationState: state => state.has('routing') ? state.get('routing').toJS() : null
   });
 
+  // Redirects to /login by default
+  const UserIsAuthenticated = UserAuthWrapper({
+    authSelector: state => state.get("auth"), // how to get the user state ( make immutable.js )
+    failureRedirectPath: '/login',
+    predicate: auth => auth.get("isAuthenticated"),
+    redirectAction: routerActions.replace, // the redux action to dispatch for redirect ( explicitly require from react-redux-router )
+    wrapperDisplayName: 'UserIsAuthenticated', // a nice name for this auth check
+    allowRedirectBack: true
+  });
+
   const LayoutWrapper = (props) => (
     <div id="wrapper">
       <Layout {...props} />
@@ -105,11 +117,19 @@ export default (options) => {
         <Provider store={store}>
           <Router history={history}>
             <Route component={LayoutWrapper}>
-              {routes.map(route => 
-                  <Route 
-                      key={route.path} 
-                      path={route.path} 
-                      component={route.component} 
+              <Route
+                path="/login"
+                component={LoginContainer}
+              />
+              <Route
+                path="/register"
+                component={RegisterContainer}
+              />
+              {routes.map(route => // Authed Routes Only
+                  <Route
+                      key={route.path}
+                      path={route.path}
+                      component={UserIsAuthenticated(route.component)}
                   />
               )}
             </Route>

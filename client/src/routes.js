@@ -1,6 +1,4 @@
 import Home from './home/index';
-import { LoginContainer } from './login';
-import { RegisterContainer } from './register';
 import { ProfileContainer } from './profile';
 import SurveyBuilderContainer from './surveyBuilder/components/index';
 import { SurveyListContainer } from './surveylist';
@@ -17,20 +15,6 @@ export default [
     component: Home,
     requiresAuth: false
   }, {
-    path: '/login',
-    title: 'Login',
-    transTerm: 'LOGIN',
-    component: LoginContainer,
-    requiresAuth: false,
-    newUsers: true
-  }, {
-    path: '/register',
-    title: 'Register',
-    transTerm: 'REGISTER',
-    component: RegisterContainer,
-    requiresAuth: false,
-    newUsers: true
-  }, {
     path: '/profile',
     title: 'Profile',
     transTerm: 'PROFILE',
@@ -45,7 +29,7 @@ export default [
     requiresAuth: true,
     newUsers: false,
     isSuper: true
-  }, { 
+  }, {
     path: '/surveys',
     title: 'Surveys',
     transTerm: 'SURVEYS',
