@@ -56,13 +56,13 @@ _.set(schema, 'definitions.newSurvey.properties.questions.items', {
 });
 
 const questionTypes = [
-    'text', 'bool', 'date', 'pounds', 'integer', 'zip',
+    'text', 'bool', 'date', 'pounds', 'integer', 'zip', 'float',
     'year', 'month', 'day', 'feet-inches', 'blood-pressure', 'enumeration'
 ];
 
 const choiceTypes = [
     'bool', 'bool-sole', 'text', 'year', 'month', 'day', 'integer', 'date',
-    'pounds', 'zip', 'feet-inches', 'blood-pressure', 'enumeration'
+    'pounds', 'zip', 'feet-inches', 'blood-pressure', 'enumeration', 'float'
 ];
 
 _.set(schema, 'definitions.newSurveyQuestion', {

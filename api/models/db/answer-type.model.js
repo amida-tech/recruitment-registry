@@ -24,7 +24,7 @@ module.exports = function (sequelize, DataTypes) {
                         'choice', 'text', 'zip', 'enumeration',
                         'bool', 'bool-sole',
                         'date', 'year', 'month', 'day',
-                        'integer',
+                        'integer', 'float',
                         'pounds', 'feet-inches', 'blood-pressure'
                     ];
                     const ps = names.map(name => this.create({ name }));

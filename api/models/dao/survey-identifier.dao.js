@@ -1,11 +1,17 @@
 'use strict';
 
 const db = require('../db');
+const RRError = require('../../lib/rr-error');
 
 const SurveyIdentifier = db.SurveyIdentifier;
 
-module.exports = class QuestionIdentifierDAO {
+module.exports = class SurveyIdentifierDAO {
     constructor() {}
+
+    createSurveyIdentifier(surveyIdentifier, transaction) {
+        return SurveyIdentifier.create(surveyIdentifier, { transaction })
+            .then(({ id }) => ({ id }));
+    }
 
     getIdentifiersBySurveyId(type, ids) {
         return SurveyIdentifier.findAll({
@@ -37,6 +43,16 @@ module.exports = class QuestionIdentifierDAO {
             .then(records => {
                 const map = records.map(({ surveyId, identifier }) => [identifier, surveyId]);
                 return new Map(map);
+            });
+    }
+
+    getIdBySurveyIdentifier(type, identifier) {
+        return SurveyIdentifier.findOne({ where: { type, identifier }, raw: true, attributes: ['surveyId'] })
+            .then(record => {
+                if (!record) {
+                    return RRError.reject('surveyIdentifierNotFound', type, identifier);
+                }
+                return record.surveyId;
             });
     }
 };

@@ -176,6 +176,10 @@ errors.answerIdentifierNotFound = {
     msg: 'No such answer identifier is found.'
 };
 
+errors.answerNoMultiQuestionIndex = {
+    msg: 'No question index has been specified for multiple question.'
+};
+
 errors.surveyNoIdentifier = {
     msg: 'No identifiers founds for some surveys.'
 };
@@ -190,4 +194,12 @@ errors.ccfMultipleSelectionsForChoice = {
 
 errors.ccfNoSelectionsForChoice = {
     msg: 'No selection is specified choice type question.'
+};
+
+errors.surveyIdentifierNotFound = {
+    msg: 'No survey identifier $1 of type $0 is found.'
+};
+
+errors.enumerationNotFound = {
+    msg: 'No enumeration named $0 is found.'
 };

@@ -120,7 +120,7 @@ const userAssessment = function (queryInterface, Sequelize) {
             allowNull: false
         },
         status: {
-            type: Sequelize.ENUM('scheduled', 'not-in-protocol', 'failed-to-collect', 'collected'),
+            type: Sequelize.ENUM('scheduled', 'not-in-protocol', 'failed-to-collect', 'collected', 'started', 'refused', 'no-status', 'technical-difficulties', 'unable-to-perform'),
             allowNull: false
         },
         createdAt: {
@@ -185,7 +185,11 @@ module.exports = {
         return assessment(queryInterface, Sequelize)
             .then(() => assessmentSurvey(queryInterface, Sequelize))
             .then(() => userAssessment(queryInterface, Sequelize))
-            .then(() => userAssessmentAnswer(queryInterface, Sequelize));
+            .then(() => userAssessmentAnswer(queryInterface, Sequelize))
+            .then(() => queryInterface.addIndex('assessment', ['name'], {
+                indexName: 'assessment_name_key',
+                indicesType: 'UNIQUE'
+            }));
     },
 
     down: function (queryInterface) {

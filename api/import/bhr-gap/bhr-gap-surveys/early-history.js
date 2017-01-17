@@ -1,20 +1,21 @@
 'use strict';
 
-const yesNoQuestion = function (answerIdentifier, text) {
+const yesNoQuestion = function (identifier, text) {
     return {
         text,
         required: false,
-        type: 'choice',
-        answerIdentifier,
-        choices: [
-            { text: 'Yes' },
-            { text: 'No' }
-        ]
+        type: 'enumeration',
+        answerIdentifier: { type: 'bhr-gap-early-history-column', value: identifier },
+        enumeration: 'yes-no-1-2'
     };
 };
 
 module.exports = {
     name: 'Early History',
+    identifier: {
+        type: 'bhr-gap',
+        value: 'early-history'
+    },
     questions: [
         yesNoQuestion('QID72', 'Dyslexia or Reading Disability (e.g. difficulties with reading, learning to read?'),
         yesNoQuestion('QID73', 'Were you diagnosed with a learning disorder (reading, written expression, math)?'),

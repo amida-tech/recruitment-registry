@@ -3,7 +3,7 @@
 module.exports = function (sequelize, DataTypes) {
     return sequelize.define('answer_rule', {
         logic: {
-            type: DataTypes.ENUM('equals', 'exists'),
+            type: DataTypes.ENUM('equals', 'exists', 'not-equals', 'not-exists', 'not-selected', 'each-not-selected'),
             allowNull: false
         },
         createdAt: {

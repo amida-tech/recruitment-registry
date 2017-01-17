@@ -32,7 +32,7 @@ module.exports = class QuestionDAO extends Translatable {
     }
 
     createChoicesTx(questionId, choices, transaction) {
-        const pxs = choices.map(({ text, type, meta, enumerationId, enumeration }, line) => {
+        const pxs = choices.map(({ text, type, meta, enumerationId, enumeration, answerIdentifier }, line) => {
             type = type || 'bool';
             const choice = { questionId, text, type, line };
             if (meta) {
@@ -45,6 +45,15 @@ module.exports = class QuestionDAO extends Translatable {
                 choice.enumeration = enumeration;
             }
             return this.questionChoice.createQuestionChoiceTx(choice, transaction)
+                .then(({ id }) => {
+                    if (answerIdentifier) {
+                        const { type, value: identifier } = answerIdentifier;
+                        const questionChoiceId = id;
+                        return this.answerIdentifier.createAnswerIdentifier({ type, identifier, questionId, questionChoiceId }, transaction)
+                            .then(() => ({ id }));
+                    }
+                    return { id };
+                })
                 .then(({ id }) => {
                     const result = { id, text: choice.text };
                     if (meta) {
@@ -87,6 +96,26 @@ module.exports = class QuestionDAO extends Translatable {
                                     }
                                     return this.createChoicesTx(result.id, choices, transaction)
                                         .then(choices => (result.choices = choices));
+                                }
+                            })
+                            .then(() => {
+                                if (question.questionIdentifier) {
+                                    const questionId = result.id;
+                                    const { type, value: identifier } = question.questionIdentifier;
+                                    return this.questionIdentifier.createQuestionIdentifier({ type, identifier, questionId }, transaction);
+                                }
+                            })
+                            .then(() => {
+                                const questionId = result.id;
+                                if (question.answerIdentifier) {
+                                    const { type, value: identifier } = question.answerIdentifier;
+                                    return this.answerIdentifier.createAnswerIdentifier({ type, identifier, questionId }, transaction);
+                                } else if (question.answerIdentifiers) {
+                                    const { type, values } = question.answerIdentifiers;
+                                    const promises = values.map((identifier, multipleIndex) => {
+                                        return this.answerIdentifier.createAnswerIdentifier({ type, identifier, questionId, multipleIndex }, transaction);
+                                    });
+                                    return SPromise.all(promises);
                                 }
                             })
                             .then(() => result);

@@ -17,11 +17,9 @@ class SharedSpec {
         this.generator = generator || new Generator();
     }
 
-    setUpFn() {
+    setUpFn(force = true) {
         return function () {
-            return models.sequelize.sync({
-                force: true
-            });
+            return models.sequelize.sync({ force });
         };
     }
 

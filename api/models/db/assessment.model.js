@@ -4,7 +4,8 @@ module.exports = function (sequelize, DataTypes) {
     return sequelize.define('assessment', {
         name: {
             type: DataTypes.TEXT,
-            allowNull: false
+            allowNull: false,
+            unique: true
         },
         sequenceType: {
             type: DataTypes.ENUM('ondemand', 'biyearly'),

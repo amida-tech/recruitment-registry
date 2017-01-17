@@ -20,7 +20,9 @@ module.exports = {
             .then(() => sequelize.query('UPDATE answer_type SET name = \'feet-inches\' WHERE name = \'dual-integers\''))
             .then(() => sequelize.query('INSERT INTO answer_type (name) VALUES (\'bool-sole\')'))
             .then(() => sequelize.query('INSERT INTO answer_type (name) VALUES (\'blood-pressure\')'))
-            .then(() => sequelize.query('INSERT INTO answer_type (name) VALUES (\'zip\')'));
+            .then(() => sequelize.query('INSERT INTO answer_type (name) VALUES (\'zip\')'))
+            .then(() => sequelize.query('INSERT INTO question_type (name) VALUES (\'float\')'))
+            .then(() => sequelize.query('INSERT INTO answer_type (name) VALUES (\'float\')'));
     },
 
     down: function (queryInterface, Sequelize) {
@@ -30,6 +32,8 @@ module.exports = {
             .then(() => sequelize.query('UPDATE answer_type SET name = \'dual-integers\' WHERE name = \'feet-inches\''))
             .then(() => sequelize.query('DELETE FROM answer_type WHERE name = \'bool-sole\''))
             .then(() => sequelize.query('DELETE FROM answer_type WHERE name = \'blood-pressure\''))
+            .then(() => sequelize.query('DELETE FROM answer_type WHERE name = \'float\''))
+            .then(() => sequelize.query('DELETE FROM question_type WHERE name = \'float\''))
             .then(() => sequelize.query('DELETE FROM answer_type WHERE name = \'zip\''));
     }
 };

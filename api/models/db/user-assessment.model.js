@@ -28,7 +28,7 @@ module.exports = function (sequelize, DataTypes) {
             allowNull: false
         },
         status: {
-            type: DataTypes.ENUM('scheduled', 'not-in-protocol', 'failed-to-collect', 'collected'),
+            type: DataTypes.ENUM('scheduled', 'not-in-protocol', 'failed-to-collect', 'collected', 'started', 'refused', 'no-status', 'technical-difficulties', 'unable-to-perform'),
             allowNull: false
         },
         createdAt: {

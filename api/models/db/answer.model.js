@@ -46,12 +46,20 @@ module.exports = function (sequelize, DataTypes) {
                 key: 'id'
             }
         },
+        multipleIndex: {
+            type: DataTypes.INTEGER,
+            field: 'multiple_index'
+        },
         value: {
             type: DataTypes.TEXT
+        },
+        meta: {
+            type: DataTypes.JSON
         },
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',
+            defaultValue: sequelize.literal('NOW()')
         },
         deletedAt: {
             type: DataTypes.DATE,
@@ -59,6 +67,7 @@ module.exports = function (sequelize, DataTypes) {
         }
     }, {
         freezeTableName: true,
+        timestamps: true,
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',

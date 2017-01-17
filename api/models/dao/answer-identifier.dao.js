@@ -10,6 +10,11 @@ const QuestionChoice = db.QuestionChoice;
 module.exports = class QuestionIdentifierDAO {
     constructor() {}
 
+    createAnswerIdentifier(answerIdentifier, transaction) {
+        return AnswerIdentifier.create(answerIdentifier, { transaction })
+            .then(({ id }) => ({ id }));
+    }
+
     getIdsByAnswerIdentifier(type, identifier) {
         return AnswerIdentifier.findOne({
                 where: { type, identifier },
@@ -43,10 +48,10 @@ module.exports = class QuestionIdentifierDAO {
             });
     }
 
-    getAnswerIdentifierToIdsMap(type) {
+    getTypeInformationByAnswerIdentifier(type) {
         return AnswerIdentifier.findAll({
                 where: { type },
-                attributes: ['identifier', 'questionId', 'questionChoiceId'],
+                attributes: ['identifier', 'questionId', 'multipleIndex', 'questionChoiceId'],
                 include: [{
                     model: Question,
                     as: 'question',
@@ -61,14 +66,55 @@ module.exports = class QuestionIdentifierDAO {
             .then(records => {
                 return records.reduce((r, record) => {
                     const identifier = record.identifier;
-                    r[identifier] = {
+                    r.set(identifier, {
                         questionId: record.questionId,
                         questionType: record['question.type'],
+                        multipleIndex: record.multipleIndex,
                         questionChoiceId: record.questionChoiceId,
                         questionChoiceType: record['questionChoice.type']
-                    };
+                    });
                     return r;
-                }, {});
+                }, new Map());
+            });
+    }
+
+    getIdentifiersByAnswerIds(type) {
+        return AnswerIdentifier.findAll({
+                where: { type },
+                attributes: ['identifier', 'questionId', 'multipleIndex', 'questionChoiceId'],
+                include: [{
+                    model: Question,
+                    as: 'question',
+                    attributes: ['type', 'multiple']
+                }, {
+                    model: QuestionChoice,
+                    as: 'questionChoice',
+                    attributes: ['type']
+                }],
+                raw: true
+            })
+            .then(records => {
+                const map = records.reduce((r, record) => {
+                    const identifier = record.identifier;
+                    const questionId = record.questionId;
+                    if (!((record['question.type'] === 'choices') || record['question.multiple'])) {
+                        r.set(questionId, identifier);
+                        return r;
+                    }
+                    let mapByQuestionId = r.get(questionId);
+                    if (!mapByQuestionId) {
+                        mapByQuestionId = new Map();
+                        r.set(questionId, mapByQuestionId);
+                    }
+                    if (record['question.multiple']) {
+                        mapByQuestionId.set(record.multipleIndex, identifier);
+                        return r;
+                    }
+                    mapByQuestionId.set(record.questionChoiceId, identifier);
+                    return r;
+                }, new Map());
+                const identifiers = records.map(record => record.identifier);
+                return { identifiers, map };
             });
     }
 

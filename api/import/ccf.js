@@ -358,7 +358,7 @@ const toDbFormat = function (userId, surveyId, createdAt, answersByQuestionId) {
 const importAnswersToDb = function (jsonDB, userIdMap) {
     return models.surveyIdentifier.getIdsBySurveyIdentifier(identifierType)
         .then(surveyIdMap => {
-            return models.answerIdentifier.getAnswerIdentifierToIdsMap(identifierType)
+            return models.answerIdentifier.getTypeInformationByAnswerIdentifier(identifierType)
                 .then(answerIdMap => ({ surveyIdMap, answerIdMap }));
         })
         .then(({ surveyIdMap, answerIdMap }) => {
@@ -369,7 +369,7 @@ const importAnswersToDb = function (jsonDB, userIdMap) {
                 const createdAt = answer.updated_at;
                 const answersByQuestionId = answer.answers.reduce((r, record) => {
                     const answerIdentifier = record.answer_hash;
-                    const answerInfo = answerIdMap[answerIdentifier];
+                    const answerInfo = answerIdMap.get(answerIdentifier);
                     const questionId = answerInfo.questionId;
                     let dbAnswer = answerIndex.get(questionId);
                     if (!dbAnswer) {
