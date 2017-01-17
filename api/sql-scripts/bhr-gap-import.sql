@@ -5,9 +5,9 @@ COPY staging_bhr_gap (username, assessment_name, status, line_index, question_id
 WITH
 	assessment_id AS (
 		INSERT INTO
-			assessment (name, "sequenceType", created_at, updated_at)
+			assessment (name, sequence_type, created_at, updated_at)
 		SELECT DISTINCT
-			:identifier || '-' || assessment_name, 'ondemand'::"enum_assessment_sequenceType", NOW(), NOW()
+			:identifier || '-' || assessment_name, 'ondemand'::"enum_assessment_sequence_type", NOW(), NOW()
 		FROM staging_bhr_gap
 			RETURNING id
 	)
