@@ -9,7 +9,6 @@ const _ = require('lodash');
 const models = require('../../models');
 const db = require('../../models/db');
 const SPromise = require('../../lib/promise');
-const queryrize = require('../../lib/queryrize');
 
 const bhrGapImport = require('../../import/bhr-gap');
 const bhrGapExport = require('../../export/bhr-gap');
@@ -110,51 +109,25 @@ describe('bhr gap import-export', function () {
 
     const transformTableDataFn = function(columIdentifier, filebase) {
         return function () {
-           const filepath = path.join(fixtureDir, `${filebase}.csv`);
-           const outputFilepath = path.join(outputDir, `${filebase}-trans.csv`);
-            return bhrGapImport.transformSurveyFile(filepath, outputFilepath, columIdentifier)
-                .then(result => {
-                    const converter = new CSVConverterExport({ doubleQuotes: '""', fields: ['username', 'assessment_name', 'status', 'line_index', 'question_id', 'question_choice_id', 'multiple_index', 'value', 'language_code', 'last_answer', 'days_after_baseline'] });
-                    fs.writeFileSync(outputFilepath, converter.dataToCSV(result));
-                });
+            const filepath = path.join(fixtureDir, `${filebase}.csv`);
+            const outputFilepath = path.join(outputDir, `${filebase}-trans.csv`);
+            return bhrGapImport.transformSurveyFile(filepath, columIdentifier, outputFilepath);
         };
     };
 
     const importTableDataFn = function(tableIdentifier, filebase) {
         return function () {
-            const filepath = path.join(__dirname, '../../sql-scripts/bhr-gap-import.sql');
-            const rawScript = queryrize.readFileSync(filepath);
             const transFile = path.join(outputDir, `${filebase}-trans.csv`);
-            const surveyId = store.surveyMap.get(tableIdentifier);
-            const parameters = {
-                survey_id: surveyId,
-                filepath: `'${transFile}'`,
-                identifier: `'${tableIdentifier}'`
-            };
-            const script = rawScript.map(query => queryrize.replaceParameters(query, parameters));
-            let promise = script.reduce((r, query) => {
-                if (r === null) {
-                    r = db.sequelize.query(query);
-                } else {
-                    r = r.then(() => db.sequelize.query(query));
-                }
-                return r;
-            }, null);
-            return promise;
+            return bhrGapImport.importTransformedSurveyFile(tableIdentifier, transFile);
         };
     };
 
     const exportTableDataFn = function (surveyType, answerType, filenamebase) {
         return function () {
-            return bhrGapExport.exportTableData(surveyType, answerType)
-                .then(({ columns, rows }) => {
-                    const filepath = path.join(outputDir, `${filenamebase}_exported.csv`);
-                    const converter = new CSVConverterExport({ fields: columns });
-                    rows = _.sortBy(rows, ['SubjectCode', 'Timepoint']);
-                    fs.writeFileSync(filepath, converter.dataToCSV(rows));
-                    return converter;
-                })
-                .then(exportConverter => {
+            const filepath = path.join(outputDir, `${filenamebase}_exported.csv`);
+            return bhrGapExport.writeTableData(surveyType, answerType, filepath, ['SubjectCode', 'Timepoint'])
+                .then(({ columns }) => {
+                    const exportConverter = new CSVConverterExport({ fields: columns });
                     const filepath = path.join(fixtureDir, `${filenamebase}.csv`);
                     const converter = new CSVConverterImport({ checkType: false, ignoreEmpty: true });
                     return converter.fileToRecords(filepath)

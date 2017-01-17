@@ -1,8 +1,12 @@
 'use strict';
 
+const fs = require('fs');
+const _ = require('lodash');
+
 const models = require('../models');
 const db = require('../models/db');
 const queryrize = require('../lib/queryrize');
+const CSVConverterExport = require('../export/csv-converter');
 
 const rawExportTableScript = queryrize.readQuerySync('bhr-gap-export.sql');
 
@@ -90,6 +94,20 @@ const exportTableData = function (surveyType, answerType) {
         });
 };
 
+const writeTableData = function (surveyType, answerType, filepath, order) {
+    return exportTableData(surveyType, answerType)
+        .then(({ columns, rows }) => {
+            const converter = new CSVConverterExport({ fields: columns });
+            if (order) {
+                rows = _.sortBy(rows, order);
+            }
+            fs.writeFileSync(filepath, converter.dataToCSV(rows));
+            return { columns, rows };
+        });
+
+};
+
 module.exports = {
-    exportTableData
+    exportTableData,
+    writeTableData
 };

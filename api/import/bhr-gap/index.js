@@ -1,12 +1,17 @@
 'use strict';
 
+const path = require('path');
+const fs = require('fs');
 const _ = require('lodash');
+const queryrize = require('../../lib/queryrize');
 
 const models = require('../../models');
+const db = require('../../models/db');
 const SPromise = require('../../lib/promise');
 
 const surveys = require('./bhr-gap-surveys');
 const Converter = require('../csv-converter');
+const CSVConverterExport = require('../../export/csv-converter');
 
 const enumerations = require('./enumerations');
 
@@ -180,7 +185,7 @@ const assessmentStatusMap = {
     'Unable To Perform': 'unable-to-perform'
 };
 
-const transformSurveyFile = function (filepath, outputFilepath, answerIdentifierType) {
+const transformSurveyFile = function (filepath, answerIdentifierType, outputFilepath) {
     return models.answerIdentifier.getTypeInformationByAnswerIdentifier(answerIdentifierType)
         .then(identifierMap => {
             const converter = new Converter({ checkType: false });
@@ -239,7 +244,38 @@ const transformSurveyFile = function (filepath, outputFilepath, answerIdentifier
                     }, []);
                     return result;
                 });
+        })
+        .then(result => {
+            if (outputFilepath) {
+                const converter = new CSVConverterExport({ doubleQuotes: '""', fields: ['username', 'assessment_name', 'status', 'line_index', 'question_id', 'question_choice_id', 'multiple_index', 'value', 'language_code', 'last_answer', 'days_after_baseline'] });
+                fs.writeFileSync(outputFilepath, converter.dataToCSV(result));
+            }
+            return result;
         });
+};
+
+const importTransformedSurveyFile = function (tableIdentifier, filepath) {
+    return models.surveyIdentifier.getIdsBySurveyIdentifier('bhr-gap')
+        .then(surveyIdentificaterMap => {
+            const surveyId = surveyIdentificaterMap.get(tableIdentifier);
+            const scriptPath = path.join(__dirname, '../../sql-scripts/bhr-gap-import.sql');
+            const rawScript = queryrize.readFileSync(scriptPath);
+            const parameters = {
+                survey_id: surveyId,
+                filepath: `'${filepath}'`,
+                identifier: `'${tableIdentifier}'`
+            };
+            const script = rawScript.map(query => queryrize.replaceParameters(query, parameters));
+            let promise = script.reduce((r, query) => {
+                if (r === null) {
+                    r = db.sequelize.query(query);
+                } else {
+                    r = r.then(() => db.sequelize.query(query));
+                }
+                return r;
+            }, null);
+            return promise;
+    });
 };
 
 module.exports = {
@@ -247,5 +283,6 @@ module.exports = {
     loadSurveys,
     convertSubjects,
     transformSurveyFile,
+    importTransformedSurveyFile,
     surveys
 };
