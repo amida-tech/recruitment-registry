@@ -84,51 +84,64 @@ const generateAnswerConverter = function (identifierMap, choiceMap) {
     return result;
 };
 
-const convertSubjects = function (filepath, surveyId) {
-    return models.questionIdentifier.getIdsByQuestionIdentifier('bhr-gap-subjects-column')
-        .then(identifierMap => {
-            const ids = [...identifierMap.values()];
-            return models.questionChoice.getAllQuestionChoices(ids)
-                .then(allChoices => {
-                    const choiceMap = allChoices.reduce((r, choice) => {
-                        const questionId = choice.questionId;
-                        let perQuestion = r.get(questionId);
-                        if (!perQuestion) {
-                            perQuestion = new Map();
-                            r.set(questionId, perQuestion);
-                        }
-                        perQuestion.set(choice.text, choice.id);
-                        return r;
-                    }, new Map());
-                    return generateAnswerConverter(identifierMap, choiceMap);
-                });
-        })
-        .then(answerConverter => {
-            const converter = new Converter();
-            return converter.fileToRecords(filepath)
-                .then(records => {
-                    const userRecords = records.map(record => {
-                        const identifier = record.SubjectCode;
-                        return {
-                            username: identifier,
-                            email: identifier + '@example.com',
-                            password: 'pwd',
-                            role: 'participant'
-                        };
-                    });
-                    const answerRecords = records.reduce((r, record) => {
-                        const username = record.SubjectCode;
-                        ['Gender', 'YearsEducation', 'Handedness', 'RaceEthnicity', 'Age_Baseline'].forEach(key => {
-                            const value = record[key];
-                            const answer = answerConverter[key](value, surveyId, username);
-                            if (answer) {
-                                r.push(...answer);
-                            }
+const convertSubjects = function (filepath) {
+    return models.surveyIdentifier.getIdsBySurveyIdentifier('bhr-gap')
+        .then(surveyIdentificaterMap => {
+            const surveyId = surveyIdentificaterMap.get('subjects');
+            return models.questionIdentifier.getIdsByQuestionIdentifier('bhr-gap-subjects-column')
+                .then(identifierMap => {
+                    const ids = [...identifierMap.values()];
+                    return models.questionChoice.getAllQuestionChoices(ids)
+                        .then(allChoices => {
+                            const choiceMap = allChoices.reduce((r, choice) => {
+                                const questionId = choice.questionId;
+                                let perQuestion = r.get(questionId);
+                                if (!perQuestion) {
+                                    perQuestion = new Map();
+                                    r.set(questionId, perQuestion);
+                                }
+                                perQuestion.set(choice.text, choice.id);
+                                return r;
+                            }, new Map());
+                            return generateAnswerConverter(identifierMap, choiceMap);
                         });
-                        return r;
-                    }, []);
-                    return { userRecords, answerRecords };
+                })
+                .then(answerConverter => {
+                    const converter = new Converter();
+                    return converter.fileToRecords(filepath)
+                        .then(records => {
+                            const userRecords = records.map(record => {
+                                const identifier = record.SubjectCode;
+                                return {
+                                    username: identifier,
+                                    email: identifier + '@example.com',
+                                    password: 'pwd',
+                                    role: 'participant'
+                                };
+                            });
+                            const answerRecords = records.reduce((r, record) => {
+                                const username = record.SubjectCode;
+                                ['Gender', 'YearsEducation', 'Handedness', 'RaceEthnicity', 'Age_Baseline'].forEach(key => {
+                                    const value = record[key];
+                                    const answer = answerConverter[key](value, surveyId, username);
+                                    if (answer) {
+                                        r.push(...answer);
+                                    }
+                                });
+                                return r;
+                            }, []);
+                            return { userRecords, answerRecords };
+                        });
                 });
+    });
+};
+
+const transformSubjectsFile = function (filepath, userFilepath) {
+    return convertSubjects(filepath)
+        .then(result => {
+            const userConverter = new CSVConverterExport({ fields: ['username', 'email', 'password', 'role'] });
+            fs.writeFileSync(userFilepath, userConverter.dataToCSV(result.userRecords));
+            return result;
         });
 };
 
@@ -282,6 +295,7 @@ module.exports = {
     loadEnumerations,
     loadSurveys,
     convertSubjects,
+    transformSubjectsFile,
     transformSurveyFile,
     importTransformedSurveyFile,
     surveys
