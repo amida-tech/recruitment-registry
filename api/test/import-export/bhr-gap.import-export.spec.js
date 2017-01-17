@@ -32,9 +32,9 @@ describe('bhr gap import-export', function () {
         answerIdentifierMap: null
     };
 
-    before(shared.setUpFn());
+    before(shared.setUpFn(false));
 
-    it('load all enumerations', function () {
+    xit('load all enumerations', function () {
         return bhrGapImport.loadEnumerations()
             .then(() => models.enumeration.listEnumerations())
             .then(enumerations => {
@@ -43,17 +43,17 @@ describe('bhr gap import-export', function () {
             });
     });
 
-    it('load all surveys', function () {
+    xit('load all surveys', function () {
         return bhrGapImport.loadSurveys();
     });
 
-    it('survey identifier map', function () {
+    xit('survey identifier map', function () {
         return models.surveyIdentifier.getIdsBySurveyIdentifier('bhr-gap')
             .then(map => store.surveyMap = map);
     });
 
     bhrSurveys.forEach(bhrSurvey => {
-        it(`compare survey ${bhrSurvey.identifier.value}`, function () {
+        xit(`compare survey ${bhrSurvey.identifier.value}`, function () {
             const identifier = bhrSurvey.identifier.value;
             const surveyId = store.surveyMap.get(identifier);
             return models.survey.getSurvey(surveyId)
@@ -70,7 +70,7 @@ describe('bhr gap import-export', function () {
 
     let subjectsData;
 
-    it('create user file', function () {
+    xit('create user file', function () {
         const filepath = path.join(fixtureDir, 'Subjects.csv');
         const surveyId = store.surveyMap.get('subjects');
         return bhrGapImport.convertSubjects(filepath, surveyId)
@@ -83,14 +83,14 @@ describe('bhr gap import-export', function () {
     });
 
     const subjectMap = new Map();
-    it('import users', function () {
+    xit('import users', function () {
         const query = 'copy registry_user (username, email, password, role) from \'/Work/git/recruitment-registry/api/test/generated/bhruser.csv\' csv header';
         return db.sequelize.query(query)
             .then(() => db.sequelize.query('select id, username from registry_user', { type: db.sequelize.QueryTypes.SELECT }))
             .then(users => users.forEach(({ id, username }) => subjectMap.set(username, id)));
     });
 
-    it('create subjects file', function () {
+    xit('create subjects file', function () {
         const subjectAnswers = subjectsData.answerRecords.map(r => {
             r.user_id = subjectMap.get(r.username);
             delete r.username;
@@ -102,9 +102,29 @@ describe('bhr gap import-export', function () {
         fs.writeFileSync(answerFilepath, answerConverter.dataToCSV(subjectAnswers));
     });
 
-    it('import subjects answers', function () {
+    xit('import subjects answers', function () {
         const query = 'copy answer (user_id, survey_id, question_id, question_choice_id, value, language_code) from \'/Work/git/recruitment-registry/api/test/generated/bhrsubjects.csv\' csv header';
         return db.sequelize.query(query);
+    });
+
+    it('export subject answer', function () {
+        const filepath = path.join(outputDir, 'Subjects_exported.csv');
+        return bhrGapExport.writeSubjectsData(filepath, 'SubjectCode')
+            .then(( { rows, columns }) => {
+                const exportConverter = new CSVConverterExport({ fields: columns });
+                const filepath = path.join(fixtureDir, 'Subjects.csv');
+                const converter = new CSVConverterImport({ checkType: false, ignoreEmpty: true });
+                return converter.fileToRecords(filepath)
+                    .then(result => {
+                        result = _.sortBy(result, 'SubjectCode');
+                        return result;
+                    })
+                    .then(result => {
+                        const filepath = path.join(outputDir, 'Subjects_original.csv');
+                        fs.writeFileSync(filepath, exportConverter.dataToCSV(result));
+                    });
+
+            });
     });
 
     const transformTableDataFn = function(columIdentifier, filebase) {
@@ -153,7 +173,7 @@ describe('bhr gap import-export', function () {
     //BHRGAPTable('CurrentMedications', 'current-medications', 'bhr-gap-current-meds-column');
     //BHRGAPTable('Demographics', 'demographics', 'bhr-gap-demographics-column');
     //BHRGAPTable('Diet', 'diet', 'bhr-gap-diet-column');
-    BHRGAPTable('EarlyHistory', 'early-history', 'bhr-gap-early-history-column');
+    //BHRGAPTable('EarlyHistory', 'early-history', 'bhr-gap-early-history-column');
     //BHRGAPTable('EverydayCognition', 'everyday-cognition', 'bhr-gap-everyday-cognition-column');
     //BHRGAPTable('FamilyTree', 'family-tree', 'bhr-gap-family-tree-column');
     //BHRGAPTable('Initial_m00', 'initial-m00', 'bhr-gap-initial-m00-column');

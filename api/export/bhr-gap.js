@@ -9,6 +9,7 @@ const queryrize = require('../lib/queryrize');
 const CSVConverterExport = require('../export/csv-converter');
 
 const rawExportTableScript = queryrize.readQuerySync('bhr-gap-export.sql');
+const rawExportSubjectsScript = queryrize.readQuerySync('bhr-gap-subject-export.sql');
 
 const assessmentStatusMap = {
     'scheduled': 'Scheduled',
@@ -19,6 +20,60 @@ const assessmentStatusMap = {
     'refused': 'Refused',
     'technical-difficulties': 'Technical Difficulties',
     'unable-to-perform': 'Unable To Perform'
+};
+
+const exportSubjectsData = function () {
+    return models.surveyIdentifier.getIdsBySurveyIdentifier('bhr-gap')
+        .then(surveyIdentificaterMap => {
+            const surveyId = surveyIdentificaterMap.get('subjects');
+            const parameters = {
+                survey_id: surveyId
+            };
+            const query = queryrize.replaceParameters(rawExportSubjectsScript, parameters);
+            return db.sequelize.query(query, { type: db.sequelize.QueryTypes.SELECT })
+                .then(subjects => {
+                    return models.questionIdentifier.getQuestionIdToIdentifierMap('bhr-gap-subjects-column')
+                        .then(identifierMap => {
+                            const result = subjects.reduce((r, subject) => {
+                                const username = subject.username;
+                                let record = r.get(username);
+                                if (! record) {
+                                    record = { SubjectCode: username };
+                                    r.set(username, record);
+                                }
+                                const identifier = identifierMap[subject.question_id];
+                                if (identifier === 'RaceEthnicity') {
+                                    let value = record[identifier];
+                                    if (value) {
+                                        value = value + ';' + subject.value;
+                                    } else {
+                                        value = subject.value;
+                                    }
+                                    record[identifier] = value;
+                                } else {
+                                    record[identifier] = subject.value;
+                                }
+                                return r;
+                            }, new Map());
+                            const columns = ['SubjectCode', ..._.values(identifierMap)];
+                            const rows = [...result.values()];
+                            return { rows, columns };
+                        });
+                });
+        });
+};
+
+const writeSubjectsData = function (filepath, order) {
+    return exportSubjectsData()
+        .then(({ columns, rows }) => {
+            const converter = new CSVConverterExport({ fields: columns });
+            if (order) {
+                rows = _.sortBy(rows, order);
+            }
+            fs.writeFileSync(filepath, converter.dataToCSV(rows));
+            return { columns, rows };
+        });
+
 };
 
 const exportTableData = function (surveyType, answerType) {
@@ -108,6 +163,8 @@ const writeTableData = function (surveyType, answerType, filepath, order) {
 };
 
 module.exports = {
+    exportSubjectsData,
+    writeSubjectsData,
     exportTableData,
     writeTableData
 };
