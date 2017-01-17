@@ -5,7 +5,7 @@ module.exports = function (sequelize, DataTypes) {
         questionChoiceId: {
             type: DataTypes.INTEGER,
             allowNull: false,
-            field: 'question_choice_text',
+            field: 'question_choice_id',
             references: {
                 model: 'question_choice',
                 key: 'id'
