@@ -28,23 +28,28 @@ export class AdminAddQuestionModal extends Component {
 
   changeState = (newState) => {
     this.setState(newState);
-  };
+  }
 
   isStringAcceptable = (string) => {
     return (string.length >= 1);  // Minimum 4 letters long
-  };
+  }
 
   render() {
-    const modalStatus = this.props.modalStatus;
+    const {modalStatus, handleChange} = this.props;
     return (
       <Modal
-        isOpen={modalStatus}>
+        isOpen={modalStatus}
+        shouldCloseOnOverlayClick={true}>
           <div className="questionContent">
             <div>
               <select className="form--select light">
                 <option>Dropdown / Select (Single Choice)</option>
               </select>
               <button className="loadButton buttonSecondary light">Load Template</button>
+              <div className="changeQuestion">
+                <a><i className="fa fa-caret-up" /></a>
+                <a><i className="fa fa-caret-down" /></a>
+              </div>
             </div>
             <div className="control is-grouped">
               <div className="control">
@@ -57,8 +62,8 @@ export class AdminAddQuestionModal extends Component {
               </div>
               <div className="control">
                 <a className="button is-white is-outlined">
-                  <span className="icon">
-                    <i className="fa fa-check" />
+                  <span className="icon is-small">
+                    <i className="fa fa-circle" />
                   </span>
                   <span>Beginning of Section</span>
                 </a>
@@ -78,10 +83,10 @@ export class AdminAddQuestionModal extends Component {
                   <td>"northCarolina"</td>
                   <td className="has-text-right">
                     <span className="icon is-medium">
-                      <i className="fa fa-sort-asc" />
+                      <i className="fa fa-caret-up" />
                     </span>
                     <span className="icon is-medium">
-                      <i className="fa fa-sort-desc" />
+                      <i className="fa fa-caret-down" />
                     </span>
                     <span className="icon is-medium">
                       <i className="fa fa-trash" />
@@ -99,25 +104,29 @@ export class AdminAddQuestionModal extends Component {
               <article className="media">
                 <div className="media-content">
                   <div className="content">
-                    <h4 className="title is-6 is-marginless gapMediumGray">Question 1</h4>
+                    <h6 className="questionHead is-marginless gapMediumGray">Question <span>1</span></h6>
                     <br />
-                    <RIEInput
-                      value={this.state.questionTitle}
-                      change={this.virtualServerCallback}
-                      propName="questionTitle"
-                      className={this.state.highlight ? "editable" : ""}
-                      validate={this.isStringAcceptable}
-                      classLoading="loading"
-                      classInvalid="invalid" />
-                    <br /><br />
-                    <RIEInput
-                      value={this.state.questionSubTitle}
-                      change={this.virtualServerCallback}
-                      propName="questionSubTitle"
-                      className={this.state.highlight ? "editable" : ""}
-                      validate={this.isStringAcceptable}
-                      classLoading="loading"
-                      classInvalid="invalid" />
+                    <div className="questionTitle">
+                      <RIEInput
+                        value={this.state.questionTitle}
+                        change={this.virtualServerCallback}
+                        propName="questionTitle"
+                        className={this.state.highlight ? "editable" : ""}
+                        validate={this.isStringAcceptable}
+                        classLoading="loading"
+                        classInvalid="invalid" />
+                    </div>
+                    <br />
+                    <div className="questionSubTitle">
+                      <RIEInput
+                        value={this.state.questionSubTitle}
+                        change={this.virtualServerCallback}
+                        propName="questionSubTitle"
+                        className={this.state.highlight ? "editable" : ""}
+                        validate={this.isStringAcceptable}
+                        classLoading="loading"
+                        classInvalid="invalid" />
+                    </div>
                     <SurveyFields.Input />
                   </div>
                 </div>
@@ -125,7 +134,7 @@ export class AdminAddQuestionModal extends Component {
             </div>
             <div>
               <button className="loadButton buttonSecondary light">Delete Question</button>
-              <button className="buttonPrimary confirm is-pulled-right">Done Editing</button>
+              <button className="buttonPrimary confirm is-pulled-right" onClick={(ev)=>handleChange(false)}>Done Editing</button>
             </div>
           </div>
       </Modal>
@@ -133,7 +142,8 @@ export class AdminAddQuestionModal extends Component {
 }
 
 AdminAddQuestionModal.propTypes = {
-  modalStatus: React.PropTypes.bool.isRequired
+  modalStatus: React.PropTypes.bool.isRequired,
+  handleChange: React.PropTypes.func.isRequired
 }
 
 export default AdminAddQuestionModal;

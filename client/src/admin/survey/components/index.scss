@@ -3,6 +3,9 @@
   font-weight: bold !important;
 }
 /* Remove scroll on the body when react-modal is open */
+.ReactModal__Content {
+  bottom: initial !important;
+}
 .ReactModal__Body--open {
   overflow: hidden;
 }
@@ -17,10 +20,53 @@
 }
 .questionContent {
   background: #04A777;
-  height: 100%;
   padding: 0px 10px 10px;
 
   .loadButton {
     margin-left: 10px;
+  }
+  .changeQuestion {
+    margin-top: 20px;
+    float: right;
+    a {
+      margin-left: 10px;
+      width: 36px;
+      height: 36px;
+      text-align: center;
+      border: 1px solid white;
+      border-radius: 18px;
+      display: inline-block;
+
+      i {
+        line-height: 32px;
+        color: white;
+        font-size: 24px;
+      }
+    }
+  }
+  .questionHead {
+    font-size: 17px;
+    font-weight: bold;
+    text-transform: uppercase;
+
+    span {
+      border-bottom: 2px solid #04A777;
+      padding: 0 3px;
+    }
+  }
+  .questionTitle {
+    span, input {
+      font-weight: bold;
+      color: black;
+      font-size: 20px;
+    }
+    input {
+      border-bottom: 1px solid #04A777;
+    }
+  }
+  .questionSubTitle {
+    input {
+      border-bottom: 1px solid #04A777;
+    }
   }
 }

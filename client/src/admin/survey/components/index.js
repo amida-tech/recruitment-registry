@@ -12,6 +12,10 @@ export class AdminSurveyContainer extends Component {
     this.setState({modalStatus: true});
   }
 
+  changeModal(val) {
+    this.setState({modalStatus: val});
+  }
+
   _changeAnswer(event) {
     this.props.dispatch(actions.updateAnswer(event.target.dataset.itype,
       event.target.name, event.target.value, null))
@@ -91,7 +95,7 @@ export class AdminSurveyContainer extends Component {
 
     return (
       <div>
-        <AdminAddQuestionModal modalStatus={this.state.modalStatus}/>
+        <AdminAddQuestionModal modalStatus={this.state.modalStatus} handleChange={this.changeModal.bind(this)}/>
         <div className="columns">
           <div className="column is-one-thirds has-text-right">
             <h3 className="title is-3">Questionnaire</h3>
