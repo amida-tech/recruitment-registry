@@ -11,8 +11,15 @@ export class AdminAddQuestionModal extends Component {
     this.state = {
       highlight: false,
       simulateXHR: false,
+      confirmDelete: false,
       questionTitle: "Your Question Title Here.",
-      questionSubTitle: "Your Question SubText Here."
+      questionSubTitle: "Your Question SubText Here.",
+      questionData: [
+        {
+          label: "Sample Label",
+          data: "Data Value"
+        }
+      ]
     }
   }
 
@@ -30,16 +37,109 @@ export class AdminAddQuestionModal extends Component {
     this.setState(newState);
   }
 
+  onDeleteQuestion = () => {
+    this.setState({confirmDelete: true});
+  }
+
+  deleteQuestion = () => {
+    this.setState({confirmDelete: false});
+    this.props.handleChange(false);
+  }
+
+  cancelDelete = () => {
+    this.setState({confirmDelete: false});
+  }
+  
   isStringAcceptable = (string) => {
     return (string.length >= 1);  // Minimum 4 letters long
   }
 
+  addNewData = () => {
+    var questionData = this.state.questionData;
+    questionData.push(
+      {
+          label: "Sample Label" + questionData.length,
+          data: "Data Value"
+      });
+    this.setState({questionData: questionData});
+  }
+
+  removeQuestion = (index) => {
+    var questionData = this.state.questionData;
+    questionData.splice(index, 1);
+    this.setState({questionData: questionData});
+  }
+
+  moveQuestion = (index, direction) => {
+    var questionData = this.state.questionData;
+    var indexB;
+    if (direction === -1) {
+      indexB = Math.max(0, index - 1);
+    }
+    else {
+      indexB = Math.min(questionData.length, index + 1);
+    }
+    const temp = questionData[index];
+    questionData[index] = questionData[indexB];
+    questionData[indexB] = temp;
+    this.setState({questionData: questionData});
+  }
+
+  makeQuestionData = (question, index) => {
+    return (
+        <tr>
+          <td>{question.label}</td>
+          <td>{question.data}</td>
+          <td className="has-text-right">
+            <a onClick={() => {this.moveQuestion(index, -1)}}>
+              <span className="icon is-medium">
+                <i className="fa fa-caret-up" />
+              </span>
+            </a>
+            <a onClick={() => {this.moveQuestion(index, 1)}}>
+              <span className="icon is-medium">
+                <i className="fa fa-caret-down" />
+              </span>
+            </a>
+            <a onClick={() => {this.removeQuestion(index)}}>
+              <span className="icon is-medium">
+                <i className="fa fa-trash" />
+              </span>
+            </a>
+          </td>
+        </tr>
+      );
+  }
+
   render() {
     const {modalStatus, handleChange} = this.props;
+
+    var questionData = [];
+    if(this.state.questionData){
+      questionData = this.state.questionData.map(::this.makeQuestionData);
+    }
     return (
       <Modal
         isOpen={modalStatus}
         shouldCloseOnOverlayClick={true}>
+          <Modal
+            isOpen={this.state.confirmDelete}>
+            <div className="section">
+              <h4 className="title is-4 is-marginless">Do you really want to delete the question?</h4>
+              <div className="is-pulled-right control is-grouped">
+                <p className="control">
+                  <button onClick={this.deleteQuestion} className="buttonPrimary confirm">
+                    Delete
+                  </button>
+                </p>
+                <p className="control">
+                  <button onClick={this.cancelDelete} className="buttonSecondary">
+                    Cancel
+                  </button>
+                </p>
+              </div>
+            </div>
+          </Modal>
           <div className="questionContent">
             <div>
               <select className="form--select light">
@@ -73,29 +173,15 @@ export class AdminAddQuestionModal extends Component {
               <thead>
                 <tr>
                   <th>OPTION LABEL</th>
-                  <th>Instrument</th>
+                  <th>DATA VALUE</th>
                   <th>DATA VALUES</th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td>North Carolina</td>
-                  <td>"northCarolina"</td>
-                  <td className="has-text-right">
-                    <span className="icon is-medium">
-                      <i className="fa fa-caret-up" />
-                    </span>
-                    <span className="icon is-medium">
-                      <i className="fa fa-caret-down" />
-                    </span>
-                    <span className="icon is-medium">
-                      <i className="fa fa-trash" />
-                    </span>
-                  </td>
-                </tr>
+                {questionData}
                 <tr>
                   <td className="has-text-right" colSpan="3">
-                    <button className="buttonPrimary confirm">Add New Value</button>
+                    <button className="buttonPrimary confirm" onClick={this.addNewData}>Add New Value</button>
                   </td>
                 </tr>
               </tbody>
@@ -133,7 +219,7 @@ export class AdminAddQuestionModal extends Component {
               </article>
             </div>
             <div>
-              <button className="loadButton buttonSecondary light">Delete Question</button>
+              <button className="loadButton buttonSecondary light" onClick={this.onDeleteQuestion}>Delete Question</button>
               <button className="buttonPrimary confirm is-pulled-right" onClick={(ev)=>handleChange(false)}>Done Editing</button>
             </div>
           </div>
