@@ -176,6 +176,17 @@ const comparator = {
         });
         expect(server).to.deep.equal(expected);
     },
+    conditionalSurveyTwiceCreated(firstServer, secondServer) {
+        secondServer.questions.forEach((question, index) => {
+            const ruleId = _.get(question, 'skip.rule.id');
+            if (ruleId) {
+                const newRuleId = firstServer.questions[index].skip.rule.id;
+                question.skip.rule.id = newRuleId;
+            }
+        });
+        delete firstServer.sections;
+        expect(secondServer).to.deep.equal(firstServer);
+    },
     updateEnumerationMap(enumerations) {
         enumerationMap = new Map();
         enumerations.forEach(enumeration => {
