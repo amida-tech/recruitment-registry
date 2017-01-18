@@ -25,6 +25,41 @@ module.exports = class SurveyDAO extends Translatable {
         Object.assign(this, dependencies);
     }
 
+    validateCreateQuestionsPreTransaction(survey) {
+        let rejection = null;
+        const questions = survey.questions;
+        const numOfQuestions = questions && questions.length;
+        if (!numOfQuestions) {
+            return RRError.reject('surveyNoQuestions');
+        }
+        questions.every((question, index) => {
+            const skip = question.skip;
+            if (skip) {
+                const logic = skip.rule.logic;
+                const count = skip.count;
+                const answer = _.get(skip, 'rule.answer');
+                if (logic === 'equals' || logic === 'not-equals') {
+                    if ((count + index) >= numOfQuestions) {
+                        rejection = RRError.reject('skipValidationNotEnoughQuestions', count, index, numOfQuestions - index - 1);
+                        return false;
+                    }
+                    if (!answer) {
+                        rejection = RRError.reject('skipValidationNoAnswerSpecified', index, logic);
+                        return false;
+                    }
+                }
+                if (logic === 'exists' || logic === 'not-exists') {
+                    if (answer) {
+                        rejection = RRError.reject('skipValidationAnswerSpecified', index, logic);
+                        return false;
+                    }
+                }
+            }
+            return true;
+        });
+        return rejection;
+    }
+
     createNewQuestionsTx(questions, tx) {
         const newQuestions = questions.reduce((r, qx, index) => {
             if (!qx.id) {
@@ -116,9 +151,6 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     createSurveyTx(survey, transaction) {
-        if (!(survey.questions && survey.questions.length)) {
-            return RRError.reject('surveyNoQuestions');
-        }
         const fields = _.omit(survey, ['name', 'description', 'sections', 'questions', 'identifier']);
         return Survey.create(fields, { transaction })
             .then(({ id }) => this.createTextTx({ id, name: survey.name, description: survey.description }, transaction))
@@ -145,6 +177,10 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     createSurvey(survey) {
+        const rejection = this.validateCreateQuestionsPreTransaction(survey);
+        if (rejection) {
+            return rejection;
+        }
         return sequelize.transaction(transaction => {
             return this.createSurveyTx(survey, transaction);
         });
@@ -208,8 +244,9 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     replaceSurvey(id, replacement) {
-        if (!_.get(replacement, 'questions.length')) {
-            return RRError.reject('surveyNoQuestions');
+        const rejection = this.validateCreateQuestionsPreTransaction(replacement);
+        if (rejection) {
+            return rejection;
         }
         return sequelize.transaction(tx => {
             return this.replaceSurveyTx(id, replacement, tx);

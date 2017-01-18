@@ -8,7 +8,7 @@ const questionTypes = QuestionGenerator.questionTypes();
 
 module.exports = class SurveyGenerator {
     constructor(questionGenerator, predecessor) {
-        this.questionGenerator = questionGenerator;
+        this.questionGenerator = questionGenerator || new QuestionGenerator();
         if (predecessor) {
             this.surveyIndex = predecessor.surveyIndex;
         } else {
