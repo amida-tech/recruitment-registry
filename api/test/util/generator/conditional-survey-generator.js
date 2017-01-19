@@ -7,10 +7,10 @@ const Answerer = require('./answerer');
 
 const defaultConditionalQuestions = {
     '0-3': { type: 'choice', logic: 'equals', count: 3 },
-    '1-5': { type: 'choice', logic: 'equals', count: 1 },
-    '2-3': { type: 'bool', logic: 'equals', count: 2 },
+    '1-5': { type: 'choice', logic: 'not-equals', count: 1 },
+    '2-3': { type: 'bool', logic: 'not-equals', count: 2 },
     '3-0': { type: 'text', logic: 'exists', count: 1 },
-    '4-2': { type: 'choices', logic: 'equals', count: 2 }
+    '4-2': { type: 'text', logic: 'not-exists', count: 2 }
 };
 
 const defaultRequiredOverrides = {
@@ -21,32 +21,98 @@ const defaultRequiredOverrides = {
     '1-5': true,
     '1-6': true,
     '2-3': true,
-    '2-4': true,
+    '2-4': false,
     '2-5': true,
     '3-0': true,
     '3-1': true,
     '4-2': false,
-    '4-3': true,
+    '4-3': false,
     '4-4': true
 };
 
 const errorAnswerSetup = [{
     surveyIndex: 0,
+    caseIndex: 0,
     questionIndex: 3,
     noAnswers: [3, 6],
     error: 'answerToBeSkippedAnswered'
 }, {
     surveyIndex: 0,
+    caseIndex: 1,
     questionIndex: 3,
     skipCondition: false,
     noAnswers: [4],
     error: 'answerRequiredMissing'
 }, {
     surveyIndex: 0,
+    caseIndex: 2,
     questionIndex: 3,
     skipCondition: true,
     noAnswers: [4],
     error: 'answerToBeSkippedAnswered'
+}, {
+    surveyIndex: 1,
+    caseIndex: 0,
+    questionIndex: 5,
+    noAnswers: [5],
+    error: 'answerToBeSkippedAnswered'
+}, {
+    surveyIndex: 1,
+    caseIndex: 1,
+    questionIndex: 5,
+    noAnswers: [6],
+    skipCondition: true,
+    error: 'answerRequiredMissing'
+}, {
+    surveyIndex: 1,
+    caseIndex: 2,
+    questionIndex: 5,
+    skipCondition: false,
+    error: 'answerToBeSkippedAnswered'
+}, {
+    surveyIndex: 2,
+    caseIndex: 0,
+    questionIndex: 3,
+    noAnswers: [3, 4],
+    error: 'answerToBeSkippedAnswered'
+}, {
+    surveyIndex: 2,
+    caseIndex: 1,
+    questionIndex: 3,
+    noAnswers: [5],
+    skipCondition: true,
+    error: 'answerRequiredMissing'
+}, {
+    surveyIndex: 2,
+    caseIndex: 2,
+    questionIndex: 3,
+    skipCondition: false,
+    noAnswers: [4],
+    error: 'answerToBeSkippedAnswered'
+}, {
+    surveyIndex: 3,
+    caseIndex: 0,
+    questionIndex: 0,
+    noAnswers: [0],
+    error: 'answerRequiredMissing'
+}, {
+    surveyIndex: 3,
+    caseIndex: 1,
+    questionIndex: 0,
+    noAnswers: [],
+    error: 'answerToBeSkippedAnswered'
+}, {
+    surveyIndex: 4,
+    caseIndex: 0,
+    questionIndex: 2,
+    noAnswers: [2],
+    error: 'answerToBeSkippedAnswered'
+}, {
+    surveyIndex: 4,
+    caseIndex: 1,
+    questionIndex: 2,
+    noAnswers: [4],
+    error: 'answerRequiredMissing'
 }];
 
 module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
@@ -117,7 +183,7 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
                 }
                 if (skipCondition === false) {
                     let answer = this.answerer.answerQuestion(question);
-                    if (_.isEqual(answer, question.skip.rule.answer)) {
+                    if (_.isEqual(answer.answer, question.skip.rule.answer)) {
                         answer = this.answerer.answerQuestion(question);
                     }
                     r.push(answer);

@@ -98,8 +98,8 @@ describe('survey (conditional questions) unit', function () {
         it(`create user ${index}`, shared.createUserFn(hxUser));
     });
 
-    ConditionalSurveyGenerator.conditionalErrorSetup().forEach((errorSetup, index) => {
-        it(`error: validation ${index} for survey ${errorSetup.surveyIndex}`, function () {
+    ConditionalSurveyGenerator.conditionalErrorSetup().forEach(errorSetup => {
+        it(`error: survey ${errorSetup.surveyIndex} validation ${errorSetup.caseIndex}`, function () {
             const { surveyIndex, error } = errorSetup;
             const survey = hxSurvey.server(surveyIndex);
             const answers = surveyGenerator.answersWithConditions(survey, errorSetup);

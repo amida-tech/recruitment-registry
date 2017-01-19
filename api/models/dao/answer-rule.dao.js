@@ -8,22 +8,29 @@ module.exports = class AnswerRuleDAO {
     evaluateAnswerRule({ count, rule: { logic, answer } }, questionAnswer) {
         if (logic === 'exists') {
             if (questionAnswer && (questionAnswer.answer || questionAnswer.answers)) {
-                return _.range(count);
+                return _.range(1, count + 1);
             }
         }
-        if (logic !== 'not-exists') {
+        if (logic === 'not-exists') {
             if (!(questionAnswer && (questionAnswer.answer || questionAnswer.answers))) {
-                return _.range(count);
+                return _.range(1, count + 1);
             }
         }
         if (logic === 'equals') {
-            if (questionAnswer && _.isEqual(answer, questionAnswer.answer)) {
-                return _.range(count);
+            if (!questionAnswer) {
+                return _.range(1, count + 1);
+            }
+
+            if (_.isEqual(answer, questionAnswer.answer)) {
+                return _.range(1, count + 1);
             }
         }
         if (logic === 'not-equals') {
-            if (!(questionAnswer && _.isEqual(answer, questionAnswer.answer))) {
-                return _.range(count);
+            if (!questionAnswer) {
+                return _.range(1, count + 1);
+            }
+            if (!_.isEqual(answer, questionAnswer.answer)) {
+                return _.range(1, count + 1);
             }
         }
         return [];

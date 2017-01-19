@@ -15,6 +15,7 @@ const ErroneousConditionalSurveyGenerator = require('./util/generator/erroneous-
 const Generator = require('./util/generator');
 const comparator = require('./util/comparator');
 const SurveyHistory = require('./util/survey-history');
+const History = require('./util/History');
 const SharedIntegration = require('./util/shared-integration');
 const surveyCommon = require('./util/survey-common');
 const RRError = require('../lib/rr-error');
@@ -32,6 +33,7 @@ describe('survey (conditional questions) integration', function () {
     let surveyCount = 5;
 
     const rrSuperTest = new RRSuperTest();
+    const hxUser = new History();
     const hxSurvey = new SurveyHistory();
     const tests = new surveyCommon.IntegrationTests(rrSuperTest, generator, hxSurvey);
 
@@ -87,5 +89,31 @@ describe('survey (conditional questions) integration', function () {
         it(`verify survey ${surveyIndex}`, verifySurveyFn(surveyIndex));
     });
 
+    _.range(3).forEach(index => {
+        it(`create user ${index}`, shared.createUserFn(rrSuperTest, hxUser));
+    });
+
     it('logout as super', shared.logoutFn(rrSuperTest));
+
+    it('login as user 0', shared.loginIndexFn(rrSuperTest, hxUser, 0));
+
+    ConditionalSurveyGenerator.conditionalErrorSetup().forEach(errorSetup => {
+        it(`error: survey ${errorSetup.surveyIndex} validation ${errorSetup.caseIndex}`, function (done) {
+            const { surveyIndex, error } = errorSetup;
+            const survey = hxSurvey.server(surveyIndex);
+            const answers = surveyGenerator.answersWithConditions(survey, errorSetup);
+            const input = {
+                surveyId: survey.id,
+                answers
+            };
+            rrSuperTest.post('/answers', input, 400)
+                .expect(function (res) {
+                    const message = RRError.message(error);
+                    expect(res.body.message).to.equal(message);
+                })
+                .end(done);
+        });
+    });
+
+    it('logout as user 0', shared.logoutFn(rrSuperTest));
 });
