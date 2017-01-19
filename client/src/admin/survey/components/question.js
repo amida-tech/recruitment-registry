@@ -111,9 +111,6 @@ export class AdminAddQuestionModal extends Component {
   }
 
   renderInput = (question, type) => {
-    console.log(question);
-    console.log(type);
-    console.log(this.props.vocab);
     switch(type) {
       case "text":
         return (
