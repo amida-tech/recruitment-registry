@@ -30,7 +30,7 @@ describe('survey (conditional questions) unit', function () {
     const generator = new Generator({ surveyGenerator, questionGenerator, answerer });
     const shared = new SharedSpec(generator);
 
-    let surveyCount = 5;
+    let surveyCount = 6;
 
     const hxUser = new History();
     const hxSurvey = new SurveyHistory();

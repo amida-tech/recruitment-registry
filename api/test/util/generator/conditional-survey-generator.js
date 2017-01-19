@@ -10,7 +10,9 @@ const defaultConditionalQuestions = {
     '1-5': { type: 'choice', logic: 'not-equals', count: 1 },
     '2-3': { type: 'bool', logic: 'not-equals', count: 2 },
     '3-0': { type: 'text', logic: 'exists', count: 1 },
-    '4-2': { type: 'text', logic: 'not-exists', count: 2 }
+    '4-2': { type: 'text', logic: 'not-exists', count: 2 },
+    '5-2': { type: 'choices', logic: 'equals', count: 1 }
+
 };
 
 const defaultRequiredOverrides = {
@@ -27,7 +29,9 @@ const defaultRequiredOverrides = {
     '3-1': true,
     '4-2': false,
     '4-3': false,
-    '4-4': true
+    '4-4': true,
+    '5-2': false,
+    '5-3': true
 };
 
 const errorAnswerSetup = [{
@@ -113,6 +117,26 @@ const errorAnswerSetup = [{
     questionIndex: 2,
     noAnswers: [4],
     error: 'answerRequiredMissing'
+}, {
+    surveyIndex: 5,
+    caseIndex: 0,
+    questionIndex: 2,
+    noAnswers: [2],
+    error: 'answerToBeSkippedAnswered'
+}, {
+    surveyIndex: 5,
+    caseIndex: 1,
+    questionIndex: 2,
+    skipCondition: false,
+    noAnswers: [3],
+    error: 'answerRequiredMissing'
+}, {
+    surveyIndex: 5,
+    caseIndex: 2,
+    questionIndex: 2,
+    skipCondition: true,
+    noAnswers: [],
+    error: 'answerToBeSkippedAnswered'
 }];
 
 module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
