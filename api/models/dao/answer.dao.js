@@ -6,11 +6,12 @@ const db = require('../db');
 const RRError = require('../../lib/rr-error');
 const SPromise = require('../../lib/promise');
 
+const answerCommon = require('./answer-common');
+
 const sequelize = db.sequelize;
 const Answer = db.Answer;
 const Question = db.Question;
 const QuestionChoice = db.QuestionChoice;
-const SurveyQuestion = db.SurveyQuestion;
 const UserSurvey = db.UserSurvey;
 
 const exportCSVConverter = require('../../export/csv-converter.js');
@@ -114,74 +115,6 @@ const prepareAnswerForDB = function prepareAnswerForDB(answer) {
     return fn(answer[key]);
 };
 
-const generateAnswerSingleFn = {
-    text: value => ({ textValue: value }),
-    zip: value => ({ textValue: value }),
-    date: value => ({ dateValue: value }),
-    year: value => ({ yearValue: value }),
-    month: value => ({ monthValue: value }),
-    day: value => ({ dayValue: value }),
-    bool: value => ({ boolValue: value === 'true' }),
-    'bool-sole': value => ({ boolValue: value === 'true' }),
-    pounds: value => ({ numberValue: parseInt(value) }),
-    integer: value => ({ integerValue: parseInt(value) }),
-    float: value => ({ integerValue: parseFloat(value) }),
-    enumeration: value => ({ integerValue: parseInt(value) }),
-    'blood-pressure': value => {
-        const pieces = value.split('-');
-        return {
-            bloodPressureValue: {
-                systolic: parseInt(pieces[0]),
-                diastolic: parseInt(pieces[1])
-            }
-        };
-    },
-    'feet-inches': value => {
-        const pieces = value.split('-');
-        return {
-            feetInchesValue: {
-                feet: parseInt(pieces[0]),
-                inches: parseInt(pieces[1])
-            }
-        };
-    }
-};
-
-const generateAnswerChoices = {
-    choice: entries => ({ choice: entries[0].questionChoiceId }),
-    choices: entries => {
-        let choices = entries.map(r => {
-            const answer = { id: r.questionChoiceId };
-            const fn = generateAnswerSingleFn[r.choiceType || 'bool'];
-            return Object.assign(answer, fn(r.value));
-        });
-        choices = _.sortBy(choices, 'id');
-        return { choices };
-    }
-};
-
-const generateAnswer = function (type, entries, multiple) {
-    if (multiple) {
-        const fn = generateAnswerSingleFn[type];
-        const result = entries.map(entry => {
-            const answer = { multipleIndex: entry.multipleIndex };
-            if (type === 'choice') {
-                Object.assign(answer, generateAnswerChoices.choice([entry]));
-            } else {
-                Object.assign(answer, fn(entry.value));
-            }
-            return answer;
-        });
-        return _.sortBy(result, 'multipleIndex');
-    }
-    const fnChoices = generateAnswerChoices[type];
-    if (fnChoices) {
-        return fnChoices(entries);
-    }
-    const fn = generateAnswerSingleFn[type];
-    return fn(entries[0].value);
-};
-
 const fileAnswer = function ({ userId, surveyId, language, answers }, tx) {
     answers = answers.reduce((r, q) => {
         const questionId = q.questionId;
@@ -229,10 +162,6 @@ module.exports = class AnswerDAO {
         return prepareAnswerForDB(answer);
     }
 
-    toInterfaceAnswer(type, entries, multiple) {
-        return generateAnswer(type, entries, multiple);
-    }
-
     validateConsent(userId, surveyId, action, transaction) {
         return this.surveyConsentDocument.listSurveyConsentDocuments({
                 userId,
@@ -249,10 +178,32 @@ module.exports = class AnswerDAO {
     }
 
     validateAnswers(userId, surveyId, answers, status) {
-        return SurveyQuestion.findAll({
-                where: { surveyId },
-                raw: true,
-                attributes: ['questionId', 'required']
+        return this.surveyQuestion.listSurveyQuestions(surveyId)
+            .then(surveyQuestions => {
+                const answersByQuestionId = _.keyBy(answers, 'questionId');
+                surveyQuestions.forEach((surveyQuestion, questionIndex) => {
+                    const questionId = surveyQuestion.questionId;
+                    const skip = surveyQuestion.skip;
+                    const answer = answersByQuestionId[questionId];
+                    if (surveyQuestion.ignore) {
+                        if (answer) {
+                            throw new RRError('answerToBeSkippedAnswered');
+                        }
+                        surveyQuestion.required = false;
+                        return;
+                    }
+                    if (skip) {
+                        const skipIndices = this.answerRule.evaluateAnswerRule(skip, answer);
+                        skipIndices.forEach(skipIndex => {
+                            const targetSurveyQuestion = surveyQuestions[questionIndex + skipIndex];
+                            targetSurveyQuestion.ignore = true;
+                        });
+                    }
+                    if (answer && (answer.answer || answer.answers)) {
+                        surveyQuestion.required = false;
+                    }
+                });
+                return surveyQuestions;
             })
             .then(surveyQuestions => _.keyBy(surveyQuestions, 'questionId'))
             .then(qxMap => {
@@ -260,9 +211,6 @@ module.exports = class AnswerDAO {
                     const qx = qxMap[answer.questionId];
                     if (!qx) {
                         throw new RRError('answerQxNotInSurvey');
-                    }
-                    if (answer.answer || answer.answers) {
-                        qx.required = false;
                     }
                 });
                 return qxMap;
@@ -388,9 +336,9 @@ module.exports = class AnswerDAO {
                         language: v[0].language
                     };
                     if (v[0]['question.multiple']) {
-                        r.answers = generateAnswer(v[0]['question.type'], v, true);
+                        r.answers = answerCommon.generateAnswer(v[0]['question.type'], v, true);
                     } else {
-                        r.answer = generateAnswer(v[0]['question.type'], v, false);
+                        r.answer = answerCommon.generateAnswer(v[0]['question.type'], v, false);
                     }
                     if (scope === 'history-only') {
                         r.deletedAt = v[0].deletedAt;

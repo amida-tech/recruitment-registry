@@ -95,6 +95,10 @@ errors.answerRequiredMissing = {
     msg: 'Not all required questions are answered.'
 };
 
+errors.answerToBeSkippedAnswered = {
+    msg: 'Conditionally to be skipped questions are answered.'
+};
+
 errors.answerQxNotInSurvey = {
     msg: 'Invalid question ids for answers.'
 };

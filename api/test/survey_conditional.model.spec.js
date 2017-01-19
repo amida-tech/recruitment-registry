@@ -16,6 +16,7 @@ const ErroneousConditionalSurveyGenerator = require('./util/generator/erroneous-
 const Generator = require('./util/generator');
 const comparator = require('./util/comparator');
 const SurveyHistory = require('./util/survey-history');
+const History = require('./util/History');
 const SharedSpec = require('./util/shared-spec');
 const surveyCommon = require('./util/survey-common');
 
@@ -31,6 +32,7 @@ describe('survey (conditional questions) unit', function () {
 
     let surveyCount = 5;
 
+    const hxUser = new History();
     const hxSurvey = new SurveyHistory();
     const tests = new surveyCommon.SpecTests(generator, hxSurvey);
 
@@ -91,4 +93,24 @@ describe('survey (conditional questions) unit', function () {
     _.range(surveyCount, 2 * surveyCount).forEach(surveyIndex => {
         it(`verify survey ${surveyIndex}`, verifySurveyFn(surveyIndex));
     });
+
+    _.range(3).forEach(index => {
+        it(`create user ${index}`, shared.createUserFn(hxUser));
+    });
+
+    ConditionalSurveyGenerator.conditionalErrorSetup().forEach((errorSetup, index) => {
+        it(`error: validation ${index} for survey ${errorSetup.surveyIndex}`, function () {
+            const { surveyIndex, error } = errorSetup;
+            const survey = hxSurvey.server(surveyIndex);
+            const answers = surveyGenerator.answersWithConditions(survey, errorSetup);
+            const input = {
+                userId: hxUser.id(0),
+                surveyId: survey.id,
+                answers
+            };
+            return models.answer.createAnswers(input)
+                .then(shared.throwingHandler, shared.expectedErrorHandler(error));
+        });
+    });
+
 });

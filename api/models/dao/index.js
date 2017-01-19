@@ -12,6 +12,7 @@ const ConsentDocumentDAO = require('./consent-document.dao');
 const ConsentSignatureDAO = require('./consent-signature.dao');
 const UserConsentDocumentDAO = require('./user-consent-document.dao');
 const ConsentDAO = require('./consent.dao');
+const SurveyQuestionDAO = require('./survey-question.dao');
 const SurveyConsentDAO = require('./survey-consent.dao');
 const SurveyConsentDocumentDAO = require('./survey-consent-document.dao');
 const ProfileSurveyDAO = require('./profile-survey.dao');
@@ -24,6 +25,7 @@ const AssessmentDAO = require('./assessment.dao');
 const UserAssessmentDAO = require('./user-assessment.dao');
 const QuestionIdentifierDAO = require('./question-identifier.dao');
 const AnswerIdentifierDAO = require('./answer-identifier.dao');
+const AnswerRuleDAO = require('./answer-rule.dao');
 const SurveyIdentifierDAO = require('./survey-identifier.dao');
 const EnumeralDAO = require('./enumeral.dao');
 const EnumerationDAO = require('./enumeration.dao');
@@ -45,8 +47,10 @@ const section = new SectionDAO();
 const questionChoice = new QuestionChoiceDAO({ enumeral, enumeration });
 const questionAction = new QuestionActionDAO();
 const question = new QuestionDAO({ questionChoice, questionAction, enumeral, enumeration, questionIdentifier, answerIdentifier });
-const answer = new AnswerDAO({ surveyConsentDocument });
-const survey = new SurveyDAO({ answer, section, question, enumeral, surveyIdentifier });
+const answerRule = new AnswerRuleDAO();
+const surveyQuestion = new SurveyQuestionDAO();
+const answer = new AnswerDAO({ surveyConsentDocument, surveyQuestion, answerRule });
+const survey = new SurveyDAO({ answer, section, question, enumeral, surveyIdentifier, surveyQuestion });
 const userSurvey = new UserSurveyDAO({ survey, answer });
 const consent = new ConsentDAO({ consentDocument });
 const profileSurvey = new ProfileSurveyDAO({ survey, consentDocument, answer });
@@ -83,5 +87,7 @@ module.exports = {
     answerIdentifier,
     surveyIdentifier,
     enumeral,
-    enumeration
+    enumeration,
+    surveyQuestion,
+    answerRule
 };

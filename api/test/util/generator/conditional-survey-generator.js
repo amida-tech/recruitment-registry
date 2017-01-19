@@ -15,6 +15,9 @@ const defaultConditionalQuestions = {
 
 const defaultRequiredOverrides = {
     '0-3': false,
+    '0-4': true,
+    '0-5': false,
+    '0-6': true,
     '1-5': true,
     '1-6': true,
     '2-3': true,
@@ -26,6 +29,25 @@ const defaultRequiredOverrides = {
     '4-3': true,
     '4-4': true
 };
+
+const errorAnswerSetup = [{
+    surveyIndex: 0,
+    questionIndex: 3,
+    noAnswers: [3, 6],
+    error: 'answerToBeSkippedAnswered'
+}, {
+    surveyIndex: 0,
+    questionIndex: 3,
+    skipCondition: false,
+    noAnswers: [4],
+    error: 'answerRequiredMissing'
+}, {
+    surveyIndex: 0,
+    questionIndex: 3,
+    skipCondition: true,
+    noAnswers: [4],
+    error: 'answerToBeSkippedAnswered'
+}];
 
 module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
     constructor({ questionGenerator, answerer, conditionalQuestions, requiredOverrides } = {}) {
@@ -75,6 +97,38 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
             question.required = requiredOverride;
         }
         return question;
+    }
+
+    static conditionalErrorSetup() {
+        return errorAnswerSetup;
+    }
+
+    answersWithConditions(survey, { questionIndex, skipCondition, noAnswers }) {
+        const doNotAnswer = new Set(noAnswers);
+        const answers = survey.questions.reduce((r, question, index) => {
+            if (doNotAnswer.has(index)) {
+                return r;
+            }
+            if (questionIndex === index) {
+                if (skipCondition === true) {
+                    const answer = { questionId: question.id, answer: question.skip.rule.answer };
+                    r.push(answer);
+                    return r;
+                }
+                if (skipCondition === false) {
+                    let answer = this.answerer.answerQuestion(question);
+                    if (_.isEqual(answer, question.skip.rule.answer)) {
+                        answer = this.answerer.answerQuestion(question);
+                    }
+                    r.push(answer);
+                    return r;
+                }
+            }
+            const answer = this.answerer.answerQuestion(question);
+            r.push(answer);
+            return r;
+        }, []);
+        return answers;
     }
 
     static newSurveyFromPrevious(clientSurvey, serverSurvey) {
