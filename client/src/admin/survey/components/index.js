@@ -9,7 +9,21 @@ export class AdminSurveyContainer extends Component {
   //Form submit seems to be such a good way to get what you need that I'm not
   //certain redux is the best call. However I'm doing it the redux way to learn.
   showModal(){
+    this.setState({curQuestion: {
+        text: "Your Question Title Here.",
+        id: -1,
+        questionType: "text"
+      }
+    });
     this.setState({modalStatus: true});
+  }
+
+  editQuestion(question, type) {
+    this.setState({
+      questionType: type,
+      curQuestion: question,
+      modalStatus: true
+    });
   }
 
   changeModal(val) {
@@ -30,7 +44,7 @@ export class AdminSurveyContainer extends Component {
     switch(question.type) {
       case "text":
         return (
-            <div key={question.id} className="container">
+            <div key={question.id} className="container" onClick={() => this.editQuestion(question, question.type)}>
               <label className="special questionNumber">Question {index+1}</label>
               <SurveyFields.Input
                   id={question.id}
@@ -41,7 +55,7 @@ export class AdminSurveyContainer extends Component {
         );
       case "bool":
         return (
-            <div key={question.id} className="container">
+            <div key={question.id} className="container" onClick={() => this.editQuestion(question, question.type)}>
               <label className="special questionNumber">Question {index+1}</label>
               <SurveyFields.Bool
                   id={question.id}
@@ -53,7 +67,7 @@ export class AdminSurveyContainer extends Component {
         );
       case "choice":
         return (
-            <div key={question.id} className="container">
+            <div key={question.id} className="container" onClick={() => this.editQuestion(question, question.type)}>
               <label className="special questionNumber">Question {index+1}</label>
               <SurveyFields.Choice
                   id={question.id}
@@ -65,7 +79,7 @@ export class AdminSurveyContainer extends Component {
         );
       case "choices":
         return (
-            <div key={question.id} className="container">
+            <div key={question.id} className="container" onClick={() => this.editQuestion(question, question.type)}>
               <label className="special questionNumber">Question {index+1}</label>
               <SurveyFields.Choices
                   id={question.id}
@@ -95,7 +109,7 @@ export class AdminSurveyContainer extends Component {
 
     return (
       <div>
-        <AdminAddQuestionModal modalStatus={this.state.modalStatus} handleChange={this.changeModal.bind(this)}/>
+        <AdminAddQuestionModal modalStatus={this.state.modalStatus} questionType={this.state.questionType} currentQuestion={this.state.curQuestion} handleChange={this.changeModal.bind(this)}/>
         <div className="columns">
           <div className="column is-one-thirds has-text-right">
             <h3 className="title is-3">Questionnaire</h3>
@@ -110,7 +124,7 @@ export class AdminSurveyContainer extends Component {
             <p><b>Last Updated: 3/15/16</b></p>
             <p><b className="gapRed">{ surveyQuestions && (surveyQuestions.size - surveyAnswers.size) } questions remaining</b></p>
             <p><button className="button buttonSecondary">Save Progress</button></p>
-            <p><button onClick={() => this.showModal()} >Add New Questionnaire</button></p>
+            <p><button onClick={() => this.showModal()}>Add New Questionnaire</button></p>
             { this.props.data.get('hasErrors') &&
             <div>
                 <p>{this.props.vocab.get('SUBMISSION_FAILURE')}</p>
@@ -120,9 +134,6 @@ export class AdminSurveyContainer extends Component {
           <div id="survey" className="survey column is-two-thirds">
             <form name="questionForm" onSubmit={(event) => this.submitAnswers(event)} key={id} className="">
               {questionnaire}
-                  <ol>
-                  {questionnaire}
-                  </ol>
               <button className="submit">{this.props.vocab.get('SUBMIT')}</button>
             </form>
             <div className="control is-grouped">
@@ -141,7 +152,9 @@ export class AdminSurveyContainer extends Component {
   constructor(props) {
     super(props);
     this.state  = {
-      modalStatus: false
+      modalStatus: false,
+      curQuestion: {},
+      questionType: "text"
     }
   }
   componentWillMount() {

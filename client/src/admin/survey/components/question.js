@@ -1,5 +1,6 @@
 import React, { Component} from 'react';
 import Modal from 'react-modal';
+import { connect } from 'react-redux';
 import './index.scss';
 import * as SurveyFields from '../../../common/SurveyFields';
 import {RIEInput} from 'riek';
@@ -12,8 +13,6 @@ export class AdminAddQuestionModal extends Component {
       highlight: false,
       simulateXHR: false,
       confirmDelete: false,
-      questionTitle: "Your Question Title Here.",
-      questionSubTitle: "Your Question SubText Here.",
       questionData: [
         {
           label: "Sample Label",
@@ -111,10 +110,39 @@ export class AdminAddQuestionModal extends Component {
       );
   }
 
-  render() {
-    const {modalStatus, handleChange} = this.props;
+  renderInput = (question, type) => {
+    console.log(question);
+    console.log(type);
+    console.log(this.props.vocab);
+    switch(type) {
+      case "text":
+        return (
+          <SurveyFields.Input/>
+        );
+      case "bool":
+        return (
+            <SurveyFields.Bool
+              vocab={this.props.vocab}/>
+        );
+      case "choice":
+        return (
+            <SurveyFields.Choice
+              choices={question.choices}
+              vocab={this.props.vocab}/>
+        );
+      case "choices":
+        return (
+            <SurveyFields.Choices
+              choices={question.choices}
+              vocab={this.props.vocab}/>
+        );
+    }
+  }
 
+  render() {
+    const {modalStatus, handleChange, currentQuestion, questionType} = this.props;
     var questionData = [];
+    const renderedInput = ::this.renderInput(currentQuestion, questionType);
     if(this.state.questionData){
       questionData = this.state.questionData.map(::this.makeQuestionData);
     }
@@ -190,11 +218,11 @@ export class AdminAddQuestionModal extends Component {
               <article className="media">
                 <div className="media-content">
                   <div className="content">
-                    <h6 className="questionHead is-marginless gapMediumGray">Question <span>1</span></h6>
+                    <h6 className="questionHead is-marginless gapMediumGray">Question <span>{currentQuestion.id || '1'}</span></h6>
                     <br />
                     <div className="questionTitle">
                       <RIEInput
-                        value={this.state.questionTitle}
+                        value={currentQuestion.text}
                         change={this.virtualServerCallback}
                         propName="questionTitle"
                         className={this.state.highlight ? "editable" : ""}
@@ -202,34 +230,32 @@ export class AdminAddQuestionModal extends Component {
                         classLoading="loading"
                         classInvalid="invalid" />
                     </div>
-                    <br />
-                    <div className="questionSubTitle">
-                      <RIEInput
-                        value={this.state.questionSubTitle}
-                        change={this.virtualServerCallback}
-                        propName="questionSubTitle"
-                        className={this.state.highlight ? "editable" : ""}
-                        validate={this.isStringAcceptable}
-                        classLoading="loading"
-                        classInvalid="invalid" />
-                    </div>
-                    <SurveyFields.Input />
+                    {renderedInput}
                   </div>
                 </div>
               </article>
             </div>
             <div>
               <button className="loadButton buttonSecondary light" onClick={this.onDeleteQuestion}>Delete Question</button>
-              <button className="buttonPrimary confirm is-pulled-right" onClick={(ev)=>handleChange(false)}>Done Editing</button>
+              <button className="buttonPrimary confirm is-pulled-right" onClick={()=>handleChange(false)}>Done Editing</button>
             </div>
           </div>
       </Modal>
   )}
 }
 
-AdminAddQuestionModal.propTypes = {
-  modalStatus: React.PropTypes.bool.isRequired,
-  handleChange: React.PropTypes.func.isRequired
+const mapStateToProps = function(state, ownProps) {
+  return {
+    vocab: state.getIn(['settings', 'language', 'vocabulary']),
+    ...ownProps
+  };
 }
 
-export default AdminAddQuestionModal;
+AdminAddQuestionModal.propTypes = {
+  modalStatus: React.PropTypes.bool.isRequired,
+  currentQuestion: React.PropTypes.object.isRequired,
+  handleChange: React.PropTypes.func.isRequired,
+  questionType: React.PropTypes.string.isRequired
+}
+
+export default connect(mapStateToProps)(AdminAddQuestionModal);
