@@ -2762,8 +2762,24 @@
                         },
                         "answer": {
                             "$ref": "#/definitions/newSkipAnswer"
+                        },
+                        "selectionIds": {
+                            "type": "array",
+                            "items": {
+                                "type": "integer",
+                                "minimum": 1
+                            },
+                            "minItems": 1
+                        },
+                        "selectionTexts": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "minLength": 1
+                            }
                         }
                     },
+                    "maxProperties": 2,
                     "additionalProperties": false
                 }
             },
@@ -2957,8 +2973,17 @@
                         },
                         "answer": {
                             "$ref": "#/definitions/answer"
+                        },
+                        "selectionIds": {
+                            "type": "array",
+                            "items": {
+                                "type": "integer",
+                                "minimum": 1
+                            },
+                            "minItems": 1
                         }
                     },
+                    "maxProperties": 3,
                     "additionalProperties": false
                 }
             },

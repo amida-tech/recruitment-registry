@@ -11,8 +11,10 @@ const defaultConditionalQuestions = {
     '2-3': { type: 'bool', logic: 'not-equals', count: 2 },
     '3-0': { type: 'text', logic: 'exists', count: 1 },
     '4-2': { type: 'text', logic: 'not-exists', count: 2 },
-    '5-2': { type: 'choices', logic: 'equals', count: 1 }
-
+    '5-2': { type: 'choices', logic: 'equals', count: 1 },
+    '6-1': { type: 'choices', logic: 'not-selected', count: 2, selectionCount: 2 },
+    '7-3': { type: 'choices', logic: 'not-selected', count: 1, selectionCount: 1 },
+    '8-4': { type: 'choices', logic: 'not-selected', count: 1, selectionCount: 3 }
 };
 
 const defaultRequiredOverrides = {
@@ -31,7 +33,10 @@ const defaultRequiredOverrides = {
     '4-3': false,
     '4-4': true,
     '5-2': false,
-    '5-3': true
+    '5-3': true,
+    '6-1': true,
+    '7-3': true,
+    '8-4': true
 };
 
 const errorAnswerSetup = [{
@@ -155,10 +160,19 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
         return 8;
     }
 
+    numOfCases() {
+        return 9;
+    }
+
     addAnswer(rule, questionInfo, question) {
         const logic = questionInfo.logic;
         if (logic === 'equals' || logic === 'not-equals') {
             rule.answer = this.answerer.answerRawQuestion(question);
+        }
+        if (logic === 'not-selected') {
+            const choices = question.choices;
+            const selectionCount = questionInfo.selectionCount;
+            rule.selectionTexts = _.range(choices.length - selectionCount, choices.length).map(index => choices[index].text);
         }
     }
 

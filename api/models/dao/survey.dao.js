@@ -73,38 +73,43 @@ module.exports = class SurveyDAO extends Translatable {
                             questions[q.index] = { id, required: inputQuestion.required };
                             let skip = inputQuestion.skip;
                             if (skip) {
-                                skip = _.cloneDeep(skip);
                                 const choiceText = _.get(skip, 'rule.answer.choiceText');
-                                if (choiceText) {
-                                    if (!choices) {
-                                        return RRError.reject('surveySkipChoiceForNonChoice');
-                                    }
-                                    const serverChoice = choices.find(choice => choice.text === choiceText);
-                                    if (!serverChoice) {
-                                        return RRError.reject('surveySkipChoiceNotFound');
-                                    }
-                                    const skipWithId = Object.assign({}, skip);
-                                    skipWithId.rule.answer.choice = serverChoice.id;
-                                    delete skipWithId.rule.answer.choiceText;
-                                    questions[q.index].skip = skipWithId;
-                                    return;
-                                }
                                 const rawChoices = _.get(skip, 'rule.answer.choices');
-                                if (rawChoices) {
+                                const selectionTexts = _.get(skip, 'rule.selectionTexts');
+                                if (choiceText || rawChoices || selectionTexts) {
+                                    skip = _.cloneDeep(skip);
                                     if (!choices) {
                                         return RRError.reject('surveySkipChoiceForNonChoice');
                                     }
-                                    const skipWithId = Object.assign({}, skip);
-                                    skipWithId.rule.answer.choices.forEach(skipChoice => {
-                                        const serverChoice = choices.find(choice => choice.text === skipChoice.text);
+                                    if (choiceText) {
+                                        const serverChoice = choices.find(choice => choice.text === choiceText);
                                         if (!serverChoice) {
-                                            throw new RRError('surveySkipChoiceNotFound');
+                                            return RRError.reject('surveySkipChoiceNotFound');
                                         }
-                                        skipChoice.id = serverChoice.id;
-                                        delete skipChoice.text;
-                                    });
-                                    questions[q.index].skip = skipWithId;
-                                    return;
+                                        skip.rule.answer.choice = serverChoice.id;
+                                        delete skip.rule.answer.choiceText;
+                                    }
+                                    if (rawChoices) {
+                                        skip.rule.answer.choices.forEach(skipChoice => {
+                                            const serverChoice = choices.find(choice => choice.text === skipChoice.text);
+                                            if (!serverChoice) {
+                                                throw new RRError('surveySkipChoiceNotFound');
+                                            }
+                                            skipChoice.id = serverChoice.id;
+                                        });
+                                        skip.rule.answer.choices.forEach(skipChoice => delete skipChoice.text);
+                                    }
+                                    if (selectionTexts) {
+                                        const selectionIds = selectionTexts.map(text => {
+                                            const serverChoice = choices.find(choice => choice.text === text);
+                                            if (!serverChoice) {
+                                                throw new RRError('surveySkipChoiceNotFound');
+                                            }
+                                            return serverChoice.id;
+                                        });
+                                        skip.rule.selectionIds = selectionIds;
+                                        delete skip.rule.selectionTexts;
+                                    }
                                 }
                                 questions[q.index].skip = skip;
                             }
@@ -136,6 +141,12 @@ module.exports = class SurveyDAO extends Translatable {
                                                 questionChoiceId = questionChoiceId || null;
                                                 value = (value !== undefined ? value : null);
                                                 return AnswerRuleValue.create({ ruleId, questionChoiceId, value }, { transaction });
+                                            });
+                                            return SPromise.all(pxs);
+                                        }
+                                        if (rule.selectionIds) {
+                                            const pxs = rule.selectionIds.map(questionChoiceId => {
+                                                return AnswerRuleValue.create({ ruleId, questionChoiceId }, { transaction });
                                             });
                                             return SPromise.all(pxs);
                                         }

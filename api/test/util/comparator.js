@@ -79,6 +79,11 @@ const comparator = {
                 });
                 answer.choices = _.sortBy(answer.choices, 'id');
             }
+            const selectionTexts = expected.skip.rule.selectionTexts;
+            if (selectionTexts) {
+                expected.skip.rule.selectionIds = selectionTexts.map(text => server.choices.find(choice => (choice.text === text)).id);
+                delete expected.skip.rule.selectionTexts;
+            }
         }
         expect(server).to.deep.equal(expected);
         return expected;

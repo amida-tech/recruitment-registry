@@ -66,7 +66,11 @@ module.exports = class SurveyQuestionsDAO {
                                     const entries = groupedResult[ruleId];
                                     if (entries) {
                                         const { rule, type } = rules[ruleId];
-                                        rule.answer = answerCommon.generateAnswer(type, entries);
+                                        if (rule.logic === 'not-selected') {
+                                            rule.selectionIds = entries.map(entry => entry.questionChoiceId);
+                                        } else {
+                                            rule.answer = answerCommon.generateAnswer(type, entries);
+                                        }
                                     }
                                 });
                             }
