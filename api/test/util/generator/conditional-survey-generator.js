@@ -14,7 +14,9 @@ const defaultConditionalQuestions = {
     '5-2': { type: 'choices', logic: 'equals', count: 1 },
     '6-1': { type: 'choices', logic: 'not-selected', count: 2, selectionCount: 2 },
     '7-3': { type: 'choices', logic: 'not-selected', count: 1, selectionCount: 1 },
-    '8-4': { type: 'choices', logic: 'not-selected', count: 1, selectionCount: 3 }
+    '8-4': { type: 'choices', logic: 'not-selected', count: 1, selectionCount: 3 },
+    '9-4': { type: 'choices', logic: 'each-not-selected', count: 1, selectionCount: 3 },
+    '10-0': { type: 'choices', logic: 'each-not-selected', count: 4, selectionCount: 3 }
 };
 
 const defaultRequiredOverrides = {
@@ -36,7 +38,9 @@ const defaultRequiredOverrides = {
     '5-3': true,
     '6-1': true,
     '7-3': true,
-    '8-4': true
+    '8-4': true,
+    '9-4': true,
+    '10-0': true
 };
 
 const errorAnswerSetup = [{
@@ -161,7 +165,7 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
     }
 
     numOfCases() {
-        return 9;
+        return 11;
     }
 
     addAnswer(rule, questionInfo, question) {
@@ -173,6 +177,9 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
             const choices = question.choices;
             const selectionCount = questionInfo.selectionCount;
             rule.selectionTexts = _.range(choices.length - selectionCount, choices.length).map(index => choices[index].text);
+        }
+        if (logic === 'each-not-selected') {
+            question.choices = question.choices.slice(0, 4);
         }
     }
 
