@@ -79,6 +79,11 @@ const comparator = {
                 });
                 answer.choices = _.sortBy(answer.choices, 'id');
             }
+            const selectionTexts = expected.skip.rule.selectionTexts;
+            if (selectionTexts) {
+                expected.skip.rule.selectionIds = selectionTexts.map(text => server.choices.find(choice => (choice.text === text)).id);
+                delete expected.skip.rule.selectionTexts;
+            }
         }
         expect(server).to.deep.equal(expected);
         return expected;
@@ -175,6 +180,17 @@ const comparator = {
             expected.enumerals[index].id = server.enumerals[index].id;
         });
         expect(server).to.deep.equal(expected);
+    },
+    conditionalSurveyTwiceCreated(firstServer, secondServer) {
+        secondServer.questions.forEach((question, index) => {
+            const ruleId = _.get(question, 'skip.rule.id');
+            if (ruleId) {
+                const newRuleId = firstServer.questions[index].skip.rule.id;
+                question.skip.rule.id = newRuleId;
+            }
+        });
+        delete firstServer.sections;
+        expect(secondServer).to.deep.equal(firstServer);
     },
     updateEnumerationMap(enumerations) {
         enumerationMap = new Map();

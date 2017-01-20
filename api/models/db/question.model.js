@@ -8,7 +8,7 @@ module.exports = function (sequelize, DataTypes) {
             references: {
                 model: 'question_type',
                 key: 'name'
-            },
+            }
         },
         enumerationId: {
             type: DataTypes.INTEGER,

@@ -153,7 +153,7 @@ class SharedSpec {
         return function (err) {
             expect(err).to.be.instanceof(RRError);
             expect(err.code).to.equal(code);
-            const expected = new RRError(code, params);
+            const expected = new RRError(code, ...params);
             expect(err.message).to.equal(expected.message);
             return err;
         };

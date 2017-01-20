@@ -16,8 +16,8 @@ class RRError extends Error {
         this.code = code;
     }
 
-    static reject(code, params) {
-        const err = new RRError(code, params);
+    static reject(code, ...params) {
+        const err = new RRError(code, ...params);
         return SPromise.reject(err);
     }
 
@@ -93,6 +93,10 @@ errors.registryNoProfileSurvey = {
 
 errors.answerRequiredMissing = {
     msg: 'Not all required questions are answered.'
+};
+
+errors.answerToBeSkippedAnswered = {
+    msg: 'Conditionally to be skipped questions are answered.'
 };
 
 errors.answerQxNotInSurvey = {
@@ -202,4 +206,16 @@ errors.surveyIdentifierNotFound = {
 
 errors.enumerationNotFound = {
     msg: 'No enumeration named $0 is found.'
+};
+
+errors.skipValidationNotEnoughQuestions = {
+    msg: 'At least $0 questions should follow conditional question $1; only $2 found.'
+};
+
+errors.skipValidationNoAnswerSpecified = {
+    msg: 'No answer specified for question $0 of type $1'
+};
+
+errors.skipValidationAnswerSpecified = {
+    msg: 'Answer specified for question $0 of type $1'
 };

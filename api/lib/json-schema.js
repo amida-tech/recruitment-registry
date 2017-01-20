@@ -15,31 +15,6 @@ const swaggerJson = require('../swagger.json');
 
 const schema = _.cloneDeep(_.pick(swaggerJson, 'definitions'));
 
-const skip = {
-    type: 'object',
-    required: ['count', 'rule'],
-    properties: {
-        count: {
-            type: 'integer',
-            minimum: 1
-        },
-        rule: {
-            type: 'object',
-            required: ['logic'],
-            properties: {
-                logic: {
-                    type: 'string'
-                },
-                answer: {
-                    $ref: '#/definitions/newSkipAnswer'
-                }
-            },
-            additionalProperties: false
-        }
-    },
-    additionalProperties: false
-};
-
 _.set(schema, 'definitions.newSurvey.properties.questions.items', {
     oneOf: [{
         type: 'object',
@@ -47,7 +22,9 @@ _.set(schema, 'definitions.newSurvey.properties.questions.items', {
         properties: {
             'id': { type: 'integer' },
             'required': { type: 'boolean' },
-            skip
+            skip: {
+                '$ref': '#/definitions/newSkipCondition'
+            },
         },
         additionalProperties: false
     }, {
@@ -92,7 +69,9 @@ _.set(schema, 'definitions.newSurveyQuestion', {
                 minLength: 1
             },
             required: { type: 'boolean' },
-            skip,
+            skip: {
+                '$ref': '#/definitions/newSkipCondition'
+            },
             actions: {
                 $ref: '#/definitions/newActions'
             }
@@ -128,7 +107,9 @@ _.set(schema, 'definitions.newSurveyQuestion', {
                     additionalProperties: false
                 }
             },
-            skip,
+            skip: {
+                '$ref': '#/definitions/newSkipCondition'
+            },
             actions: {
                 $ref: '#/definitions/newActions'
             }
@@ -156,7 +137,9 @@ _.set(schema, 'definitions.newSurveyQuestion', {
                 type: 'array',
                 items: { type: 'string', minLength: 1 }
             },
-            skip,
+            skip: {
+                '$ref': '#/definitions/newSkipCondition'
+            },
             actions: {
                 $ref: '#/definitions/newActions'
             }
@@ -202,7 +185,9 @@ _.set(schema, 'definitions.newSurveyQuestion', {
                     additionalProperties: false
                 }
             },
-            skip,
+            skip: {
+                '$ref': '#/definitions/newSkipCondition'
+            },
             actions: {
                 $ref: '#/definitions/newActions'
             }
