@@ -36,17 +36,17 @@ module.exports = class SurveyDAO extends Translatable {
                 const logic = skip.rule.logic;
                 const count = skip.count;
                 const answer = _.get(skip, 'rule.answer');
+                if ((count + index) >= numOfQuestions) {
+                    rejection = RRError.reject('skipValidationNotEnoughQuestions', count, index, numOfQuestions - index - 1);
+                    return false;
+                }
                 if (logic === 'equals' || logic === 'not-equals') {
-                    if ((count + index) >= numOfQuestions) {
-                        rejection = RRError.reject('skipValidationNotEnoughQuestions', count, index, numOfQuestions - index - 1);
-                        return false;
-                    }
                     if (!answer) {
                         rejection = RRError.reject('skipValidationNoAnswerSpecified', index, logic);
                         return false;
                     }
                 }
-                if (logic === 'exists' || logic === 'not-exists') {
+                if (logic === 'exists' || logic === 'not-exists' || logic === 'not-selected' || logic === 'each-not-selected') {
                     if (answer) {
                         rejection = RRError.reject('skipValidationAnswerSpecified', index, logic);
                         return false;

@@ -15,6 +15,7 @@ const defaultConditionalQuestions = {
     '6-1': { type: 'choices', logic: 'not-selected', count: 2, selectionCount: 2 },
     '7-3': { type: 'choices', logic: 'not-selected', count: 1, selectionCount: 1 },
     '8-4': { type: 'choices', logic: 'not-selected', count: 1, selectionCount: 3 },
+    '8-5': { type: 'text', multipleSupport: true },
     '9-4': { type: 'choices', logic: 'each-not-selected', count: 1, selectionCount: 3 },
     '10-0': { type: 'choices', logic: 'each-not-selected', count: 4, selectionCount: 3 }
 };
@@ -37,8 +38,12 @@ const defaultRequiredOverrides = {
     '5-2': false,
     '5-3': true,
     '6-1': true,
+    '6-2': true,
+    '6-3': false,
     '7-3': true,
+    '7-4': true,
     '8-4': true,
+    '8-5': true,
     '9-4': true,
     '10-0': true
 };
@@ -146,6 +151,100 @@ const errorAnswerSetup = [{
     skipCondition: true,
     noAnswers: [],
     error: 'answerToBeSkippedAnswered'
+}, {
+    surveyIndex: 6,
+    caseIndex: 0,
+    questionIndex: 1,
+    noAnswers: [1],
+    error: 'answerToBeSkippedAnswered'
+}, {
+    surveyIndex: 6,
+    caseIndex: 1,
+    questionIndex: 1,
+    noAnswers: [],
+    selectionChoice: [0, -1],
+    error: 'answerToBeSkippedAnswered'
+}, {
+    surveyIndex: 6,
+    caseIndex: 2,
+    questionIndex: 1,
+    noAnswers: [2, 3],
+    selectionChoice: [1, -2],
+    error: 'answerRequiredMissing'
+}, {
+    surveyIndex: 6,
+    caseIndex: 3,
+    questionIndex: 1,
+    noAnswers: [2],
+    selectionChoice: [1],
+    error: 'answerToBeSkippedAnswered'
+}, {
+    surveyIndex: 7,
+    caseIndex: 0,
+    questionIndex: 3,
+    noAnswers: [3],
+    error: 'answerToBeSkippedAnswered'
+}, {
+    surveyIndex: 7,
+    caseIndex: 1,
+    questionIndex: 3,
+    noAnswers: [4],
+    selectionChoice: [1, -1],
+    error: 'answerRequiredMissing'
+}, {
+    surveyIndex: 7,
+    caseIndex: 2,
+    questionIndex: 3,
+    noAnswers: [],
+    selectionChoice: [1],
+    error: 'answerToBeSkippedAnswered'
+}, {
+    surveyIndex: 8,
+    caseIndex: 0,
+    questionIndex: 4,
+    noAnswers: [4],
+    multipleIndices: [0, 1],
+    error: 'answerToBeSkippedAnswered'
+}, {
+    surveyIndex: 8,
+    caseIndex: 1,
+    questionIndex: 4,
+    noAnswers: [],
+    selectionChoice: [0, -1],
+    multipleIndices: [],
+    error: 'answerRequiredMissing'
+}, {
+    surveyIndex: 8,
+    caseIndex: 2,
+    questionIndex: 4,
+    noAnswers: [],
+    multipleIndices: [2],
+    selectionChoice: [0],
+    error: 'answerToBeSkippedAnswered'
+}, {
+    surveyIndex: 8,
+    caseIndex: 3,
+    questionIndex: 4,
+    noAnswers: [],
+    selectionChoice: [0, -2, -1],
+    multipleIndices: [1],
+    error: 'answerRequiredMissing'
+}, {
+    surveyIndex: 8,
+    caseIndex: 4,
+    questionIndex: 4,
+    noAnswers: [],
+    selectionChoice: [0, -2, -1],
+    multipleIndices: [2],
+    error: 'answerRequiredMissing'
+}, {
+    surveyIndex: 8,
+    caseIndex: 5,
+    questionIndex: 4,
+    noAnswers: [],
+    selectionChoice: [0, -3, -1],
+    multipleIndices: [0, 1, 2],
+    error: 'answerToBeSkippedAnswered'
 }];
 
 module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
@@ -189,17 +288,21 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
         const questionInfo = this.conditionalQuestions[key];
         let question;
         if (questionInfo) {
-            const { type, logic, count } = questionInfo;
-            const skip = { rule: {} };
-            if (count !== undefined) {
-                skip.count = count;
+            const { type, logic, count, multipleSupport, selectionCount } = questionInfo;
+            if (multipleSupport) {
+                question = this.questionGenerator.newMultiQuestion('text', selectionCount);
+            } else {
+                question = this.questionGenerator.newQuestion(type);
+                const skip = { rule: {} };
+                if (count !== undefined) {
+                    skip.count = count;
+                }
+                if (logic !== undefined) {
+                    skip.rule.logic = logic;
+                }
+                this.addAnswer(skip.rule, questionInfo, question);
+                question.skip = skip;
             }
-            if (logic !== undefined) {
-                skip.rule.logic = logic;
-            }
-            question = this.questionGenerator.newQuestion(type);
-            this.addAnswer(skip.rule, questionInfo, question);
-            question.skip = skip;
         } else {
             question = super.newSurveyQuestion(index);
         }
@@ -214,7 +317,7 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
         return errorAnswerSetup;
     }
 
-    answersWithConditions(survey, { questionIndex, skipCondition, noAnswers }) {
+    answersWithConditions(survey, { questionIndex, skipCondition, noAnswers, selectionChoice, multipleIndices }) {
         const doNotAnswer = new Set(noAnswers);
         const answers = survey.questions.reduce((r, question, index) => {
             if (doNotAnswer.has(index)) {
@@ -234,6 +337,18 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
                     r.push(answer);
                     return r;
                 }
+                if (selectionChoice) {
+                    const answer = this.answerer.answerChoicesQuestion(question, selectionChoice);
+                    r.push(answer);
+                    return r;
+                }
+            }
+            if ((questionIndex + 1 === index) && multipleIndices) {
+                if (multipleIndices.length) {
+                    const answer = this.answerer.answerMultipleQuestion(question, multipleIndices);
+                    r.push(answer);
+                }
+                return r;
             }
             const answer = this.answerer.answerQuestion(question);
             r.push(answer);

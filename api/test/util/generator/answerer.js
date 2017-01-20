@@ -136,6 +136,31 @@ module.exports = class Answerer {
         }
     }
 
+    answerMultipleQuestion(question, multipleIndices) {
+        const type = _.camelCase(question.type);
+        const answers = multipleIndices.map((multipleIndex) => {
+            ++this.answerIndex;
+            return Object.assign({ multipleIndex }, this[type](question));
+        });
+        return { questionId: question.id, answers };
+    }
+
+    answerChoicesQuestion(question, selectionChoice) {
+        const count = question.choices.length;
+        const choices = selectionChoice.map(choiceIndex => {
+            if (choiceIndex < 0) {
+                choiceIndex += count;
+            }
+            const choice = question.choices[choiceIndex];
+            const answer = { id: choice.id };
+            if (choice.type !== 'bool') {
+                Object.assign(answer, this[choice.type](question, choice));
+            }
+            return answer;
+        });
+        return { questionId: question.id, answer: { choices } };
+    }
+
     answerRawQuestion(question) {
         const type = _.camelCase(question.type);
         ++this.answerIndex;

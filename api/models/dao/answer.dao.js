@@ -192,12 +192,44 @@ module.exports = class AnswerDAO {
                         surveyQuestion.required = false;
                         return;
                     }
-                    if (skip) {
-                        const skipIndices = this.answerRule.evaluateAnswerRule(skip, answer);
-                        skipIndices.forEach(skipIndex => {
-                            const targetSurveyQuestion = surveyQuestions[questionIndex + skipIndex];
-                            targetSurveyQuestion.ignore = true;
+                    const ignoreIndices = surveyQuestion.ignoreIndices;
+                    if (ignoreIndices) {
+                        if (!(answer && answer.answers)) {
+                            if (surveyQuestion.maxSelectionCount === ignoreIndices.length) {
+                                surveyQuestion.required = false;
+                                return;
+                            }
+                            if (surveyQuestion.required) {
+                                throw new RRError('answerRequiredMissing');
+                            }
+                            return;
+                        }
+                        const toBeIgnored = new Set(ignoreIndices);
+                        answer.answers.forEach(({ multipleIndex }) => {
+                            if (toBeIgnored.has(multipleIndex)) {
+                                throw new RRError('answerToBeSkippedAnswered');
+                            }
                         });
+                        if (surveyQuestion.required) {
+                            const existing = new Set(answer.answers.map(({ multipleIndex }) => multipleIndex));
+                            _.range(surveyQuestion.maxSelectionCount).forEach(index => {
+                                if (!toBeIgnored.has(index) && !existing.has(index)) {
+                                    throw new RRError('answerRequiredMissing');
+                                }
+                            });
+                        }
+                    }
+                    if (skip) {
+                        const { multiple, indices, maxCount } = this.answerRule.evaluateAnswerRule(skip, answer);
+                        if (multiple) {
+                            surveyQuestions[questionIndex + 1].ignoreIndices = indices;
+                            surveyQuestions[questionIndex + 1].maxSelectionCount = maxCount;
+                        } else {
+                            indices.forEach(skipIndex => {
+                                const targetSurveyQuestion = surveyQuestions[questionIndex + skipIndex];
+                                targetSurveyQuestion.ignore = true;
+                            });
+                        }
                     }
                     if (answer && (answer.answer || answer.answers)) {
                         surveyQuestion.required = false;
