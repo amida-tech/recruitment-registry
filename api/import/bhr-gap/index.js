@@ -16,32 +16,165 @@ const CSVConverterExport = require('../../export/csv-converter');
 
 const enumerations = require('./enumerations');
 
+const valueConverterByChoiceType = {
+    bool: function (value) {
+        if (value === 1 || value === '1') {
+            return 'true';
+        }
+    },
+    integer: function (value) {
+        return parseInt(value);
+    },
+    float: function (value) {
+        return parseFloat(value);
+    },
+    enumeration: function (value) {
+        return parseInt(value);
+    }
+};
+
+const valueConverterByType = {
+    choices: function (value, choiceType) {
+        const converter = valueConverterByChoiceType[choiceType];
+        if (!converter) {
+            throw new Error(`Choice type ${choiceType} has not been implemented.`);
+        }
+        return converter(value);
+    },
+    enumeration: function (value) {
+        return parseInt(value);
+    },
+    text: function (value) {
+        if (value.indexOf('\\') > -1) {
+            value = value.replace(/\\/g, '\\\\');
+        }
+        return value;
+    },
+    integer: function (value) {
+        return parseInt(value);
+    },
+    float: function (value) {
+        return parseFloat(value);
+    }
+};
+
+const assessmentStatusMap = {
+    'Scheduled': 'scheduled',
+    'Collected': 'collected',
+    'Failed To Collect': 'failed-to-collect',
+    'Not In Protocol': 'not-in-protocol',
+    'Started': 'started',
+    'Refused': 'refused',
+    'Technical Difficulties': 'technical-difficulties',
+    'Unable To Perform': 'unable-to-perform'
+};
+
 const SurveyCSVConverter = class SurveyCSVConverter {
-    constructor(options, jsonHandler) {
-        this.options = options || {};
-        this.jsonHandler = jsonHandler;
+    constructor(identifierMap, answerIdentifierType) {
+        this.assessmentKeys = new Set(['SubjectCode', 'Timepoint', 'DaysAfterBaseline', 'Latest', 'Status']);
+        this.identifierMap = identifierMap;
+        this.answerIdentifierType = answerIdentifierType;
+        this.fields = ['username', 'assessment_name', 'status', 'line_index', 'question_id', 'question_choice_id', 'multiple_index', 'value', 'language_code', 'last_answer', 'days_after_baseline'];
+
+    }
+
+    handleLine(fileStream, line) {
+        const lastIndex = this.fields.length - 1;
+        this.fields.forEach((field, index) => {
+            let value = line[field];
+            if (value !== undefined && value !== null) {
+                value = value.toString();
+                if (field === 'value') {
+                    value = value.replace(/\"/g, '""');
+                    fileStream.write(`"${value}"`);
+                } else {
+                    fileStream.write(value);
+                }
+            }
+            if (index !== lastIndex) {
+                fileStream.write(',');
+            }
+        });
+        fileStream.write('\n');
+    }
+
+    jsonHandler(outputStream, record, line_index) {
+        const username = record.SubjectCode;
+        if (!username) {
+            throw new Error(`Subject code is missing on line ${line_index + 1}.`);
+        }
+        const assessment_name = record.Timepoint;
+        if (!assessment_name) {
+            throw new Error(`Assessment name is missing on line ${line_index + 1}.`);
+        }
+        const status = record.Status ? assessmentStatusMap[record.Status] : 'no-status';
+        if (!status) {
+            throw new Error(`Status ${record.Status} is not recognized.`);
+        }
+        const last_answer = record.Latest ? record.Latest.toLowerCase() === 'true' : false;
+        const baseObject = { username, assessment_name, status, line_index, last_answer };
+        if (record.DaysAfterBaseline) {
+            baseObject.days_after_baseline = record.DaysAfterBaseline;
+        }
+        let inserted = false;
+        _.forOwn(record, (value, key) => {
+            if (!this.assessmentKeys.has(key)) {
+                const answerInformation = this.identifierMap.get(key);
+                if (!answerInformation) {
+                    throw new Error(`Unexpected column name ${key} for ${this.answerIdentifierType}.`);
+                }
+                const { questionId: question_id, questionChoiceId: question_choice_id, multipleIndex: multiple_index, questionType, questionChoiceType } = answerInformation;
+                if (value !== '' && value !== undefined) {
+                    const valueConverter = valueConverterByType[questionType];
+                    if (!valueConverter) {
+                        throw new Error(`Question type ${questionType} has not been implemented.`);
+                    }
+                    const answerValue = valueConverter(value, questionChoiceType);
+                    const answer = Object.assign({ question_id }, baseObject);
+                    if (question_choice_id) {
+                        answer.question_choice_id = question_choice_id;
+                    }
+                    if (multiple_index || multiple_index === 0) {
+                        answer.multiple_index = multiple_index;
+                    }
+                    if (answerValue !== null) {
+                        answer.value = answerValue;
+                    }
+                    answer.language_code = 'en';
+                    this.handleLine(outputStream, answer);
+                    inserted = true;
+                }
+            }
+        });
+        if (!inserted) {
+            this.handleLine(outputStream, baseObject);
+        }
     }
 
     streamToRecords(stream, outputStream) {
-        const converter = new csvToJson.Converter(this.options);
+        outputStream.write(this.fields.join(','));
+        outputStream.write('\n');
+        const converter = new csvToJson.Converter({ checkType: false, constructResult: false });
         const px = new SPromise((resolve, reject) => {
             converter.on('end', () => {
                 outputStream.end();
             });
             converter.on('error', reject);
             if (this.jsonHandler) {
-                converter.on('json', this.jsonHandler);
+                converter.on('json', (json, rowIndex) => {
+                    this.jsonHandler(outputStream, json, rowIndex);
+                });
             }
             outputStream.on('finish', resolve);
             outputStream.on('error', reject);
-
         });
         stream.pipe(converter);
         return px;
     }
 
-    fileToRecords(filepath, outputStream) {
+    convert(filepath, outputFilepath) {
         const stream = fs.createReadStream(filepath);
+        const outputStream = fs.createWriteStream(outputFilepath);
         return this.streamToRecords(stream, outputStream);
     }
 };
@@ -176,144 +309,11 @@ const transformSubjectsFile = function (filepath, userFilepath) {
         });
 };
 
-const valueConverterByChoiceType = {
-    bool: function (value) {
-        if (value === 1 || value === '1') {
-            return 'true';
-        }
-    },
-    integer: function (value) {
-        return parseInt(value);
-    },
-    float: function (value) {
-        return parseFloat(value);
-    },
-    enumeration: function (value) {
-        return parseInt(value);
-    }
-};
-
-const valueConverterByType = {
-    choices: function (value, choiceType) {
-        const converter = valueConverterByChoiceType[choiceType];
-        if (!converter) {
-            throw new Error(`Choice type ${choiceType} has not been implemented.`);
-        }
-        return converter(value);
-    },
-    enumeration: function (value) {
-        return parseInt(value);
-    },
-    text: function (value) {
-        if (value.indexOf('\\') > -1) {
-            value = value.replace(/\\/g, '\\\\');
-        }
-        return value;
-    },
-    integer: function (value) {
-        return parseInt(value);
-    },
-    float: function (value) {
-        return parseFloat(value);
-    }
-};
-
-const assessmentStatusMap = {
-    'Scheduled': 'scheduled',
-    'Collected': 'collected',
-    'Failed To Collect': 'failed-to-collect',
-    'Not In Protocol': 'not-in-protocol',
-    'Started': 'started',
-    'Refused': 'refused',
-    'Technical Difficulties': 'technical-difficulties',
-    'Unable To Perform': 'unable-to-perform'
-};
-
-const transformSurveyLine = function (assessmentKeys, identifierMap, answerIdentifierType, handleLine) {
-    return function (record, line_index) {
-        const username = record.SubjectCode;
-        if (!username) {
-            throw new Error(`Subject code is missing on line ${line_index + 1}.`);
-        }
-        const assessment_name = record.Timepoint;
-        if (!assessment_name) {
-            throw new Error(`Assessment name is missing on line ${line_index + 1}.`);
-        }
-        const status = record.Status ? assessmentStatusMap[record.Status] : 'no-status';
-        if (!status) {
-            throw new Error(`Status ${record.Status} is not recognized.`);
-        }
-        const last_answer = record.Latest ? record.Latest.toLowerCase() === 'true' : false;
-        const baseObject = { username, assessment_name, status, line_index, last_answer };
-        if (record.DaysAfterBaseline) {
-            baseObject.days_after_baseline = record.DaysAfterBaseline;
-        }
-        let inserted = false;
-        _.forOwn(record, (value, key) => {
-            if (!assessmentKeys.has(key)) {
-                const answerInformation = identifierMap.get(key);
-                if (!answerInformation) {
-                    throw new Error(`Unexpected column name ${key} for ${answerIdentifierType}.`);
-                }
-                const { questionId: question_id, questionChoiceId: question_choice_id, multipleIndex: multiple_index, questionType, questionChoiceType } = answerInformation;
-                if (value !== '' && value !== undefined) {
-                    const valueConverter = valueConverterByType[questionType];
-                    if (!valueConverter) {
-                        throw new Error(`Question type ${questionType} has not been implemented.`);
-                    }
-                    const answerValue = valueConverter(value, questionChoiceType);
-                    const answer = Object.assign({ question_id }, baseObject);
-                    if (question_choice_id) {
-                        answer.question_choice_id = question_choice_id;
-                    }
-                    if (multiple_index || multiple_index === 0) {
-                        answer.multiple_index = multiple_index;
-                    }
-                    if (answerValue !== null) {
-                        answer.value = answerValue;
-                    }
-                    answer.language_code = 'en';
-                    handleLine(answer);
-                    inserted = true;
-                }
-            }
-        });
-        if (!inserted) {
-            handleLine(baseObject);
-        }
-    };
-};
-
 const transformSurveyFile = function (filepath, answerIdentifierType, outputFilepath) {
     return models.answerIdentifier.getTypeInformationByAnswerIdentifier(answerIdentifierType)
         .then(identifierMap => {
-            const fields = ['username', 'assessment_name', 'status', 'line_index', 'question_id', 'question_choice_id', 'multiple_index', 'value', 'language_code', 'last_answer', 'days_after_baseline'];
-            const lastIndex = fields.length - 1;
-            const fileStream = fs.createWriteStream(outputFilepath);
-            fileStream.write(fields.join(','));
-            fileStream.write('\n');
-            const handleLine = function(line) {
-                fields.forEach((field, index) => {
-                    let value = line[field];
-                    if (value !== undefined && value !== null) {
-                        value = value.toString();
-                        if (field === 'value') {
-                            value = value.replace(/\"/g, '""');
-                            fileStream.write(`"${value}"`);
-                        } else {
-                            fileStream.write(value);
-                        }
-                    }
-                    if (index !== lastIndex) {
-                        fileStream.write(',');
-                    }
-                });
-                fileStream.write('\n');
-            };
-            const assessmentKeys = new Set(['SubjectCode', 'Timepoint', 'DaysAfterBaseline', 'Latest', 'Status']);
-            const recordHandler = transformSurveyLine(assessmentKeys, identifierMap, answerIdentifierType, handleLine);
-            const converter = new SurveyCSVConverter({ checkType: false, constructResult: false }, recordHandler);
-            return converter.fileToRecords(filepath, fileStream);
+            const converter = new SurveyCSVConverter(identifierMap, answerIdentifierType);
+            return converter.convert(filepath, outputFilepath);
         });
 };
 
