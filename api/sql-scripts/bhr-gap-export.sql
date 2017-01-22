@@ -8,7 +8,8 @@ WITH
 			user_assessment
 			LEFT JOIN assessment ON assessment.id = user_assessment.assessment_id
 		WHERE
-			status = 'collected'
+			user_assessment.assessment_id IN (SELECT assessment_id FROM assessment_survey WHERE survey_id = :survey_id)
+			AND user_assessment.status = 'collected'
 	),
 	user_assessment_result AS (
 		SELECT
@@ -23,7 +24,7 @@ WITH
 			LEFT JOIN assessment ON assessment.id = user_assessment.assessment_id
 			LEFT JOIN registry_user ON registry_user.id = user_assessment.user_id
 		WHERE
-			assessment_id IN (SELECT assessment_id FROM assessment_survey WHERE survey_id = :survey_id)
+			user_assessment.assessment_id IN (SELECT assessment_id FROM assessment_survey WHERE survey_id = :survey_id)
 	),
 	answer_result AS (
 		SELECT

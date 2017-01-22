@@ -48,6 +48,10 @@ module.exports = function (sequelize, DataTypes) {
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
         deletedAt: 'deletedAt',
-        paranoid: true
+        paranoid: true,
+        indexes: [
+            { fields: ['assessment_id'] },
+            { fields: ['user_id'] },
+        ]
     });
 };
