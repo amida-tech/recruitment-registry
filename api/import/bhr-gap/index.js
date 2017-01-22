@@ -2,6 +2,7 @@
 
 const path = require('path');
 const fs = require('fs');
+const csvToJson = require('csvtojson');
 const _ = require('lodash');
 const queryrize = require('../../lib/queryrize');
 
@@ -14,6 +15,36 @@ const Converter = require('../csv-converter');
 const CSVConverterExport = require('../../export/csv-converter');
 
 const enumerations = require('./enumerations');
+
+const SurveyCSVConverter = class SurveyCSVConverter {
+    constructor(options, jsonHandler) {
+        this.options = options || {};
+        this.jsonHandler = jsonHandler;
+    }
+
+    streamToRecords(stream, outputStream) {
+        const converter = new csvToJson.Converter(this.options);
+        const px = new SPromise((resolve, reject) => {
+            converter.on('end', () => {
+                outputStream.end();
+            });
+            converter.on('error', reject);
+            if (this.jsonHandler) {
+                converter.on('json', this.jsonHandler);
+            }
+            outputStream.on('finish', resolve);
+            outputStream.on('error', reject);
+
+        });
+        stream.pipe(converter);
+        return px;
+    }
+
+    fileToRecords(filepath, outputStream) {
+        const stream = fs.createReadStream(filepath);
+        return this.streamToRecords(stream, outputStream);
+    }
+};
 
 const loadEnumerations = function () {
     const promises = enumerations.map(enumeration => {
@@ -281,17 +312,8 @@ const transformSurveyFile = function (filepath, answerIdentifierType, outputFile
             };
             const assessmentKeys = new Set(['SubjectCode', 'Timepoint', 'DaysAfterBaseline', 'Latest', 'Status']);
             const recordHandler = transformSurveyLine(assessmentKeys, identifierMap, answerIdentifierType, handleLine);
-            const converter = new Converter({ checkType: false, constructResult: false }, recordHandler);
-            return converter.fileToRecords(filepath)
-                .then(records => {
-                    const px = new SPromise((resolve, reject) => {
-                        fileStream.on('finish', resolve);
-                        fileStream.on('error', reject);
-                        //records.forEach(recordHandler);
-                        fileStream.end();
-                    });
-                    return px;
-                });
+            const converter = new SurveyCSVConverter({ checkType: false, constructResult: false }, recordHandler);
+            return converter.fileToRecords(filepath, fileStream);
         });
 };
 
