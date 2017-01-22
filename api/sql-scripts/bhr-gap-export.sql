@@ -1,11 +1,23 @@
 WITH
+	user_assessment_last AS (
+		SELECT
+			last_value(user_assessment.id) OVER (
+				PARTITION BY user_id ORDER BY assessment.id RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+			) AS id
+		FROM
+			user_assessment
+			LEFT JOIN assessment ON assessment.id = user_assessment.assessment_id
+		WHERE
+			status = 'collected'
+	),
 	user_assessment_result AS (
 		SELECT
 			user_assessment.id AS user_assessment_id,
 			assessment.name AS assessment_name,
 			registry_user.username AS username,
 			user_assessment.status AS status,
-			(user_assessment.meta->'bhr_days_after_baseline')::text::int AS days_after_baseline
+			(user_assessment.meta->'bhr_days_after_baseline')::text::int AS days_after_baseline,
+			user_assessment.id IN (SELECT id FROM user_assessment_last) AS last_answer
 		FROM
 			user_assessment
 			LEFT JOIN assessment ON assessment.id = user_assessment.assessment_id
@@ -37,7 +49,8 @@ SELECT
 	user_assessment_result.assessment_name AS assessment_name,
 	user_assessment_result.days_after_baseline AS days_after_baseline,
 	CASE
-		WHEN (answer_result.deleted_at IS NULL AND answer_result.question_id IS NOT NULL) OR (user_assessment_result.status = 'collected' AND answer_result.question_id IS NULL) THEN TRUE
+		WHEN (answer_result.deleted_at IS NULL AND answer_result.question_id IS NOT NULL) THEN TRUE
+		WHEN (user_assessment_result.status = 'collected' AND answer_result.question_id IS NULL AND user_assessment_result.last_answer) THEN TRUE
 		ELSE FALSE
 	END AS last_answer,
 	user_assessment_result.status AS status,

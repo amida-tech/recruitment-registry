@@ -3,13 +3,22 @@ TRUNCATE staging_bhr_gap RESTART IDENTITY;
 COPY staging_bhr_gap (username, assessment_name, status, line_index, question_id, question_choice_id, multiple_index, value, language_code, last_answer, days_after_baseline) FROM :filepath CSV HEADER;
 
 WITH
+	assesment_row AS (
+		SELECT DISTINCT
+			assessment_name
+		FROM
+			staging_bhr_gap
+		ORDER BY
+			assessment_name
+	),
 	assessment_id AS (
 		INSERT INTO
 			assessment (name, sequence_type, created_at, updated_at)
-		SELECT DISTINCT
+		SELECT
 			:identifier || '-' || assessment_name, 'ondemand'::"enum_assessment_sequence_type", NOW(), NOW()
-		FROM staging_bhr_gap
-			RETURNING id
+		FROM
+			assesment_row
+		RETURNING id
 	)
 INSERT INTO
 	assessment_survey (assessment_id, survey_id, created_at)
@@ -27,7 +36,7 @@ WITH
 	),
 	user_assessment_row AS (
 		SELECT
-			username, :identifier || '-' || assessment_name as assessment_name, status, line_index, days_after_baseline, ROW_NUMBER() OVER (PARTITION BY username, assessment_name ORDER BY id) as sequence
+			username, :identifier || '-' || assessment_name as assessment_name, status, line_index, last_answer, days_after_baseline, ROW_NUMBER() OVER (PARTITION BY username, assessment_name ORDER BY id) as sequence
 		FROM
 			staging_bhr_gap
 		WHERE
@@ -41,7 +50,7 @@ WITH
 			assessment.id as assessment_id,
 			user_assessment_row.sequence AS sequence,
 			user_assessment_row.status::enum_user_assessment_status,
-			('{"bhr_source_line_index":' || line_index::text || ', "bhr_days_after_baseline":' || days_after_baseline::text || '}')::json,
+			('{"bhr_source_line_index":' || line_index::text || COALESCE(', "bhr_days_after_baseline":' || days_after_baseline, '') || '}')::json,
 			NOW()
 		FROM
 			user_assessment_row, registry_user, assessment

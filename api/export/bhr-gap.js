@@ -101,8 +101,11 @@ const exportTableData = function (surveyType, answerType) {
                                         throw new Error('No user found.');
                                     }
                                     const lastAnswer = record.last_answer ? 'True' : 'False';
-                                    const daysAfterBaseline = record.days_after_baseline.toString();
-                                    r[key] = { SubjectCode: subjectCode, Timepoint: timePoint, DaysAfterBaseline: daysAfterBaseline, Status: assessmentStatusMap[record.status], Latest: lastAnswer };
+                                    r[key] = { SubjectCode: subjectCode, Timepoint: timePoint, Status: assessmentStatusMap[record.status], Latest: lastAnswer };
+                                    const daysAfterBaseline = record.days_after_baseline;
+                                    if (daysAfterBaseline !== null) {
+                                        r[key].DaysAfterBaseline = daysAfterBaseline.toString();
+                                    }
                                 }
                                 if (record.question_id) {
                                     const columnIdentifier = identifierMap.get(record.question_id);
