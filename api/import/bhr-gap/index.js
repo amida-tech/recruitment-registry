@@ -198,94 +198,96 @@ const assessmentStatusMap = {
     'Unable To Perform': 'unable-to-perform'
 };
 
+const transformSurveyLine = function (assessmentKeys, identifierMap, answerIdentifierType, handleLine) {
+    return function (record, line_index) {
+        const username = record.SubjectCode;
+        if (!username) {
+            throw new Error(`Subject code is missing on line ${line_index + 1}.`);
+        }
+        const assessment_name = record.Timepoint;
+        if (!assessment_name) {
+            throw new Error(`Assessment name is missing on line ${line_index + 1}.`);
+        }
+        const status = record.Status ? assessmentStatusMap[record.Status] : 'no-status';
+        if (!status) {
+            throw new Error(`Status ${record.Status} is not recognized.`);
+        }
+        const last_answer = record.Latest ? record.Latest.toLowerCase() === 'true' : false;
+        const baseObject = { username, assessment_name, status, line_index, last_answer };
+        if (record.DaysAfterBaseline) {
+            baseObject.days_after_baseline = record.DaysAfterBaseline;
+        }
+        let inserted = false;
+        _.forOwn(record, (value, key) => {
+            if (!assessmentKeys.has(key)) {
+                const answerInformation = identifierMap.get(key);
+                if (!answerInformation) {
+                    throw new Error(`Unexpected column name ${key} for ${answerIdentifierType}.`);
+                }
+                const { questionId: question_id, questionChoiceId: question_choice_id, multipleIndex: multiple_index, questionType, questionChoiceType } = answerInformation;
+                if (value !== '' && value !== undefined) {
+                    const valueConverter = valueConverterByType[questionType];
+                    if (!valueConverter) {
+                        throw new Error(`Question type ${questionType} has not been implemented.`);
+                    }
+                    const answerValue = valueConverter(value, questionChoiceType);
+                    const answer = Object.assign({ question_id }, baseObject);
+                    if (question_choice_id) {
+                        answer.question_choice_id = question_choice_id;
+                    }
+                    if (multiple_index || multiple_index === 0) {
+                        answer.multiple_index = multiple_index;
+                    }
+                    if (answerValue !== null) {
+                        answer.value = answerValue;
+                    }
+                    answer.language_code = 'en';
+                    handleLine(answer);
+                    inserted = true;
+                }
+            }
+        });
+        if (!inserted) {
+            handleLine(baseObject);
+        }
+    };
+};
+
 const transformSurveyFile = function (filepath, answerIdentifierType, outputFilepath) {
     return models.answerIdentifier.getTypeInformationByAnswerIdentifier(answerIdentifierType)
         .then(identifierMap => {
-            const converter = new Converter({ checkType: false });
+            const fields = ['username', 'assessment_name', 'status', 'line_index', 'question_id', 'question_choice_id', 'multiple_index', 'value', 'language_code', 'last_answer', 'days_after_baseline'];
+            const lastIndex = fields.length - 1;
+            const fileStream = fs.createWriteStream(outputFilepath);
+            fileStream.write(fields.join(','));
+            fileStream.write('\n');
+            const handleLine = function(line) {
+                fields.forEach((field, index) => {
+                    let value = line[field];
+                    if (value !== undefined && value !== null) {
+                        value = value.toString();
+                        if (field === 'value') {
+                            value = value.replace(/\"/g, '""');
+                            fileStream.write(`"${value}"`);
+                        } else {
+                            fileStream.write(value);
+                        }
+                    }
+                    if (index !== lastIndex) {
+                        fileStream.write(',');
+                    }
+                });
+                fileStream.write('\n');
+            };
+            const assessmentKeys = new Set(['SubjectCode', 'Timepoint', 'DaysAfterBaseline', 'Latest', 'Status']);
+            const recordHandler = transformSurveyLine(assessmentKeys, identifierMap, answerIdentifierType, handleLine);
+            const converter = new Converter({ checkType: false, constructResult: false }, recordHandler);
             return converter.fileToRecords(filepath)
                 .then(records => {
-                    const fields = ['username', 'assessment_name', 'status', 'line_index', 'question_id', 'question_choice_id', 'multiple_index', 'value', 'language_code', 'last_answer', 'days_after_baseline'];
-                    const lastIndex = fields.length - 1;
-                    const fileStream = fs.createWriteStream(outputFilepath);
-                    fileStream.write(fields.join(','));
-                    fileStream.write('\n');
                     const px = new SPromise((resolve, reject) => {
                         fileStream.on('finish', resolve);
                         fileStream.on('error', reject);
-                        const handleLine = function(line) {
-                            fields.forEach((field, index) => {
-                                let value = line[field];
-                                if (value !== undefined && value !== null) {
-                                    value = value.toString();
-                                    if (field === 'value') {
-                                        value = value.replace(/\"/g, '""');
-                                        fileStream.write(`"${value}"`);
-                                    } else {
-                                        fileStream.write(value);
-                                    }
-                                }
-                                if (index !== lastIndex) {
-                                    fileStream.write(',');
-                                }
-                            });
-                            fileStream.write('\n');
-                        };
-                        const assessmentKeys = new Set(['SubjectCode', 'Timepoint', 'DaysAfterBaseline', 'Latest', 'Status']);
-                        records.forEach((record, line_index) => {
-                            if((line_index + 100) % 100 === 0) {
-                                console.log(line_index);
-                            }
-                            const username = record.SubjectCode;
-                            if (!username) {
-                                throw new Error(`Subject code is missing on line ${line_index + 1}.`);
-                            }
-                            const assessment_name = record.Timepoint;
-                            if (!assessment_name) {
-                                throw new Error(`Assessment name is missing on line ${line_index + 1}.`);
-                            }
-                            const status = record.Status ? assessmentStatusMap[record.Status] : 'no-status';
-                            if (!status) {
-                                throw new Error(`Status ${record.Status} is not recognized.`);
-                            }
-                            const last_answer = record.Latest ? record.Latest.toLowerCase() === 'true' : false;
-                            const baseObject = { username, assessment_name, status, line_index, last_answer };
-                            if (record.DaysAfterBaseline) {
-                                baseObject.days_after_baseline = record.DaysAfterBaseline;
-                            }
-                            let inserted = false;
-                            _.forOwn(record, (value, key) => {
-                                if (!assessmentKeys.has(key)) {
-                                    const answerInformation = identifierMap.get(key);
-                                    if (!answerInformation) {
-                                        throw new Error(`Unexpected column name ${key} for ${answerIdentifierType}.`);
-                                    }
-                                    const { questionId: question_id, questionChoiceId: question_choice_id, multipleIndex: multiple_index, questionType, questionChoiceType } = answerInformation;
-                                    if (value !== '' && value !== undefined) {
-                                        const valueConverter = valueConverterByType[questionType];
-                                        if (!valueConverter) {
-                                            throw new Error(`Question type ${questionType} has not been implemented.`);
-                                        }
-                                        const answerValue = valueConverter(value, questionChoiceType);
-                                        const answer = Object.assign({ question_id }, baseObject);
-                                        if (question_choice_id) {
-                                            answer.question_choice_id = question_choice_id;
-                                        }
-                                        if (multiple_index || multiple_index === 0) {
-                                            answer.multiple_index = multiple_index;
-                                        }
-                                        if (answerValue !== null) {
-                                            answer.value = answerValue;
-                                        }
-                                        answer.language_code = 'en';
-                                        handleLine(answer);
-                                        inserted = true;
-                                    }
-                                }
-                            });
-                            if (!inserted) {
-                                handleLine(baseObject);
-                            }
-                        });
+                        //records.forEach(recordHandler);
                         fileStream.end();
                     });
                     return px;
