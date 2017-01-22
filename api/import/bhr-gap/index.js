@@ -262,11 +262,35 @@ const transformSurveyFile = function (filepath, answerIdentifierType, outputFile
                 });
         })
         .then(result => {
-            if (outputFilepath) {
-                const converter = new CSVConverterExport({ doubleQuotes: '""', fields: ['username', 'assessment_name', 'status', 'line_index', 'question_id', 'question_choice_id', 'multiple_index', 'value', 'language_code', 'last_answer', 'days_after_baseline'] });
-                fs.writeFileSync(outputFilepath, converter.dataToCSV(result));
-            }
-            return result;
+            const fields = ['username', 'assessment_name', 'status', 'line_index', 'question_id', 'question_choice_id', 'multiple_index', 'value', 'language_code', 'last_answer', 'days_after_baseline'];
+            const lastIndex = fields.length - 1;
+            const fileStream = fs.createWriteStream(outputFilepath);
+            fileStream.write(fields.join(','));
+            fileStream.write('\n');
+            const px = new SPromise((resolve, reject) => {
+                fileStream.on('finish', () => resolve(result));
+                fileStream.on('error', reject);
+                result.forEach(line => {
+                    fields.forEach((field, index) => {
+                        let value = line[field];
+                        if (value !== undefined && value !== null) {
+                            value = value.toString();
+                            if (field === 'value') {
+                                value = value.replace(/\"/g, '""');
+                                fileStream.write(`"${value}"`);
+                            } else {
+                                fileStream.write(value);
+                            }
+                        }
+                        if (index !== lastIndex) {
+                            fileStream.write(',');
+                        }
+                    });
+                    fileStream.write('\n');
+                });
+                fileStream.end();
+            });
+            return px;
         });
 };
 
