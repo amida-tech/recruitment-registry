@@ -53,10 +53,9 @@ WITH
 			('{"bhr_source_line_index":' || line_index::text || COALESCE(', "bhr_days_after_baseline":' || days_after_baseline, '') || '}')::json,
 			NOW()
 		FROM
-			user_assessment_row, registry_user, assessment
-		WHERE
-			registry_user.username = user_assessment_row.username AND
-			assessment.name = user_assessment_row.assessment_name
+			user_assessment_row
+			LEFT JOIN registry_user ON (registry_user.username = user_assessment_row.username)
+			LEFT JOIN assessment ON (assessment.name = user_assessment_row.assessment_name)
 		RETURNING id, (meta->'bhr_source_line_index')::text::int AS line_index
 	),
 	answer_result AS (
