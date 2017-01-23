@@ -14,13 +14,15 @@ export class RegisterContainer extends Component {
     var userInfo = ['username', 'password', 'email'];
 
     slides = userInfo.map(field => {
+
       var inputField = (<SurveyFields.Input
         key={field}
         id={field}
         type={field == 'username' ? 'text' : field}
         changeForm={::this._changeUser}
         text={this.props.vocab.get('PICK_'+field.toUpperCase())}
-        required={true}/>);
+        required={true}/>
+      );
 
       return(
         <div key={'slick.'+ field}>
