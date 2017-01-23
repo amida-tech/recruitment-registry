@@ -118,14 +118,14 @@ const enumeralText = function (queryInterface, Sequelize) {
 };
 
 const questionEnum = function (queryInterface, Sequelize) {
-    return queryInterface.addColumn('question', 'enumerationId', {
+    return queryInterface.addColumn('question', 'enumeration_id', {
         field: 'enumeration_id',
         type: Sequelize.INTEGER
     });
 };
 
 const questionChoiceEnum = function (queryInterface, Sequelize) {
-    return queryInterface.addColumn('question_choice', 'enumerationId', {
+    return queryInterface.addColumn('question_choice', 'enumeration_id', {
         field: 'enumeration_id',
         type: Sequelize.INTEGER
     });

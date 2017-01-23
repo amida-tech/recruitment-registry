@@ -13,6 +13,7 @@ const assessment = function (queryInterface, Sequelize) {
         },
         sequenceType: {
             type: Sequelize.ENUM('ondemand', 'biyearly'),
+            field: 'sequence_type',
             allowNull: false
         },
         createdAt: {

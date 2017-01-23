@@ -44,6 +44,24 @@ const answerRuleValue = function (queryInterface, Sequelize) {
     });
 };
 
+const answerRuleLogic = function (queryInterface, Sequelize) {
+    return queryInterface.createTable('answer_rule_logic', {
+        name: {
+            type: Sequelize.TEXT,
+            allowNull: false,
+            primaryKey: true
+        },
+        createdAt: {
+            type: Sequelize.DATE,
+            field: 'created_at',
+        }
+    }, {
+        freezeTableName: true,
+        createdAt: 'createdAt',
+        updatedAt: false
+    });
+};
+
 const answerRule = function (queryInterface, Sequelize) {
     return queryInterface.createTable('answer_rule', {
         id: {
@@ -52,8 +70,12 @@ const answerRule = function (queryInterface, Sequelize) {
             autoIncrement: true
         },
         logic: {
-            type: Sequelize.ENUM('equals', 'exists', 'not-equals', 'not-exists', 'not-selected', 'each-not-selected'),
-            allowNull: false
+            type: Sequelize.TEXT,
+            allowNull: false,
+            references: {
+                model: 'answer_rule_logic',
+                key: 'name'
+            }
         },
         createdAt: {
             type: Sequelize.DATE,
@@ -86,16 +108,24 @@ const skipCount = function (queryInterface, Sequelize) {
 
 module.exports = {
     up: function (queryInterface, Sequelize) {
-        return answerRule(queryInterface, Sequelize)
+        const sequelize = queryInterface.sequelize;
+        return answerRuleLogic(queryInterface, Sequelize)
+            .then(() => answerRule(queryInterface, Sequelize))
             .then(() => answerRuleValue(queryInterface, Sequelize))
             .then(() => skipRuleId(queryInterface, Sequelize))
-            .then(() => skipCount(queryInterface, Sequelize));
-
+            .then(() => skipCount(queryInterface, Sequelize))
+            .then(() => sequelize.query('INSERT INTO answer_rule_logic (name) VALUES (\'equals\')'))
+            .then(() => sequelize.query('INSERT INTO answer_rule_logic (name) VALUES (\'exists\')'))
+            .then(() => sequelize.query('INSERT INTO answer_rule_logic (name) VALUES (\'not-equals\')'))
+            .then(() => sequelize.query('INSERT INTO answer_rule_logic (name) VALUES (\'not-exists\')'))
+            .then(() => sequelize.query('INSERT INTO answer_rule_logic (name) VALUES (\'not-selected\')'))
+            .then(() => sequelize.query('INSERT INTO answer_rule_logic (name) VALUES (\'each-not-selected\')'));
     },
     down: function (queryInterface) {
         return queryInterface.removeColumn('survey_question', 'skip_count')
             .then(() => queryInterface.removeColumn('survey_question', 'skip_rule_id'))
             .then(() => queryInterface.dropTable('answer_rule_value'))
-            .then(() => queryInterface.dropTable('answer_rule'));
+            .then(() => queryInterface.dropTable('answer_rule'))
+            .then(() => queryInterface.dropTable('answer_rule_logic'));
     }
 };
