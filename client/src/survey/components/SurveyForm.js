@@ -4,9 +4,6 @@ import * as SurveyFields from '../../common/SurveyFields';
 import * as actions from '../actions';
 
 class SurveyForm extends Component {
-    constructor() {
-        super();
-    }
 
     submitAnswers(event){
         event.preventDefault();
