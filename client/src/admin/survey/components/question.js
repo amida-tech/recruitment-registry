@@ -1,6 +1,7 @@
 import React, { Component} from 'react';
 import Modal from 'react-modal';
 import { connect } from 'react-redux';
+import * as actions from '../actions';
 import './index.scss';
 import * as SurveyFields from '../../../common/SurveyFields';
 import {RIEInput} from 'riek';
@@ -36,17 +37,20 @@ export class AdminAddQuestionModal extends Component {
     this.setState(newState);
   }
 
+  onSaveQuestion = () => {
+    this.props.dispatch(actions.saveEditing({}));
+  }
+
   onDeleteQuestion = () => {
-    this.setState({confirmDelete: true});
+    this.props.dispatch(actions.showDelete(true));
   }
 
   deleteQuestion = () => {
-    this.setState({confirmDelete: false});
-    this.props.handleChange(false);
+    this.props.dispatch(actions.saveEditing({}));
   }
 
   cancelDelete = () => {
-    this.setState({confirmDelete: false});
+    this.props.dispatch(actions.showDelete(false));
   }
   
   isStringAcceptable = (string) => {
@@ -54,23 +58,24 @@ export class AdminAddQuestionModal extends Component {
   }
 
   addNewData = () => {
-    let questionData = this.state.questionData;
+    let {curQuestion} = this.props.modalData.toJS();
+    let questionData = curQuestion.choices;
     questionData.push(
       {
-          label: "Sample Label" + questionData.length,
-          data: "Data Value"
+          text: "Sample Label" + questionData.length
       });
-    this.setState({questionData: questionData});
+    this.props.dispatch(actions.updateQuestion(curQuestion));
   }
 
   removeQuestion = (index) => {
-    let questionData = this.state.questionData;
-    questionData.splice(index, 1);
-    this.setState({questionData: questionData});
+    let {curQuestion} = this.props.modalData.toJS();
+    curQuestion.choices.splice(index, 1);
+    this.props.dispatch(actions.updateQuestion(curQuestion));
   }
 
   moveQuestion = (index, direction) => {
-    let questionData = this.state.questionData;
+    let {curQuestion} = this.props.modalData.toJS();
+    let questionData = curQuestion.choices;
     let indexB;
     if (direction === -1) {
       indexB = Math.max(0, index - 1);
@@ -81,7 +86,7 @@ export class AdminAddQuestionModal extends Component {
     const temp = questionData[index];
     questionData[index] = questionData[indexB];
     questionData[indexB] = temp;
-    this.setState({questionData: questionData});
+    this.props.dispatch(actions.updateQuestion(curQuestion));
   }
 
   makeQuestionData = (question, index) => {
@@ -110,8 +115,8 @@ export class AdminAddQuestionModal extends Component {
       );
   }
 
-  renderInput = (question, type) => {
-    switch(type) {
+  renderInput = (question) => {
+    switch(question.type) {
       case "text":
         return (
           <SurveyFields.Input/>
@@ -136,10 +141,10 @@ export class AdminAddQuestionModal extends Component {
     }
   }
 
-  renderOption = (question, type) => {
+  renderOption = (question) => {
     console.log(question);
     let questionData = [];
-    switch(type) {
+    switch(question.type) {
       case "choice":
         if(question.choices){
           questionData = question.choices.map(::this.makeQuestionData);
@@ -191,15 +196,15 @@ export class AdminAddQuestionModal extends Component {
   }
 
   render() {
-    const {modalStatus, handleChange, currentQuestion, questionType} = this.props;
-    const renderedInput = ::this.renderInput(currentQuestion, questionType);
-    const renderedOption = ::this.renderOption(currentQuestion, questionType);
+    const {isEditing, curQuestion, isDeleting} = this.props.modalData.toJS();
+    const renderedInput = ::this.renderInput(curQuestion);
+    const renderedOption = ::this.renderOption(curQuestion);
     return (
       <Modal
-        isOpen={modalStatus}
+        isOpen={isEditing}
         shouldCloseOnOverlayClick={true}>
           <Modal
-            isOpen={this.state.confirmDelete}>
+            isOpen={isDeleting}>
             <div className="section">
               <h4 className="title is-4 is-marginless">Do you really want to delete the question?</h4>
               <div className="is-pulled-right control is-grouped">
@@ -250,11 +255,11 @@ export class AdminAddQuestionModal extends Component {
               <article className="media">
                 <div className="media-content">
                   <div className="content">
-                    <h6 className="questionHead is-marginless gapMediumGray">Question <span>{currentQuestion.id || '1'}</span></h6>
+                    <h6 className="questionHead is-marginless gapMediumGray">Question <span>{curQuestion.id || '1'}</span></h6>
                     <br />
                     <div className="questionTitle">
                       <RIEInput
-                        value={currentQuestion.text}
+                        value={curQuestion.text}
                         change={this.virtualServerCallback}
                         propName="questionTitle"
                         className={this.state.highlight ? "editable" : ""}
@@ -269,7 +274,7 @@ export class AdminAddQuestionModal extends Component {
             </div>
             <div>
               <button className="loadButton buttonSecondary light" onClick={this.onDeleteQuestion}>Delete Question</button>
-              <button className="buttonPrimary confirm is-pulled-right" onClick={()=>handleChange(false)}>Done Editing</button>
+              <button className="buttonPrimary confirm is-pulled-right" onClick={this.onSaveQuestion}>Done Editing</button>
             </div>
           </div>
       </Modal>
@@ -278,16 +283,10 @@ export class AdminAddQuestionModal extends Component {
 
 const mapStateToProps = function(state, ownProps) {
   return {
+    modalData: state.getIn(['adminSurvey', 'editingData']),
     vocab: state.getIn(['settings', 'language', 'vocabulary']),
     ...ownProps
   };
-}
-
-AdminAddQuestionModal.propTypes = {
-  modalStatus: React.PropTypes.bool.isRequired,
-  currentQuestion: React.PropTypes.object.isRequired,
-  handleChange: React.PropTypes.func.isRequired,
-  questionType: React.PropTypes.string.isRequired
 }
 
 export default connect(mapStateToProps)(AdminAddQuestionModal);

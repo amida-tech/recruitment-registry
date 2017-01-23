@@ -1,3 +1,3 @@
-export * as AdminSurveyActions from '../../survey/actions';
+export * as AdminSurveyActions from './actions';
 export AdminSurveyContainer from './components';
-export AdminSurveyReducer from '../../survey/reducer';
+export AdminSurveyReducer from './reducer';
