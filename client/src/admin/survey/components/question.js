@@ -54,7 +54,7 @@ export class AdminAddQuestionModal extends Component {
   }
 
   addNewData = () => {
-    var questionData = this.state.questionData;
+    let questionData = this.state.questionData;
     questionData.push(
       {
           label: "Sample Label" + questionData.length,
@@ -64,14 +64,14 @@ export class AdminAddQuestionModal extends Component {
   }
 
   removeQuestion = (index) => {
-    var questionData = this.state.questionData;
+    let questionData = this.state.questionData;
     questionData.splice(index, 1);
     this.setState({questionData: questionData});
   }
 
   moveQuestion = (index, direction) => {
-    var questionData = this.state.questionData;
-    var indexB;
+    let questionData = this.state.questionData;
+    let indexB;
     if (direction === -1) {
       indexB = Math.max(0, index - 1);
     }
@@ -138,7 +138,7 @@ export class AdminAddQuestionModal extends Component {
 
   renderOption = (question, type) => {
     console.log(question);
-    var questionData = [];
+    let questionData = [];
     switch(type) {
       case "choice":
         if(question.choices){

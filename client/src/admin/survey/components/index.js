@@ -104,7 +104,7 @@ export class AdminSurveyContainer extends Component {
     const surveyQuestions = this.props.selectedSurvey.get('questions');
     // need to implement: lastUpdated
 
-    var questionnaire = [];
+    let questionnaire = [];
 
     if(questions){
       questionnaire = questions.map(::this.makeQuestionsJSX);
