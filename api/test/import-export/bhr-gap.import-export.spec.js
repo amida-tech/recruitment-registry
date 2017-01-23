@@ -1,4 +1,4 @@
-/* global before,describe,it,it*/
+/* global before,xdescribe,it,it*/
 'use strict';
 process.env.NODE_ENV = 'test';
 
@@ -23,7 +23,7 @@ const comparator = require('../util/comparator');
 const shared = new SharedSpec();
 const bhrSurveys = bhrGapImport.surveys;
 
-describe('bhr gap import-export', function () {
+xdescribe('bhr gap import-export', function () {
     const fixtureDir = '/Work/BHR_GAP-2016.12.09';
     const outputDir = path.join(__dirname, '../generated');
 
