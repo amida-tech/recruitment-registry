@@ -87,8 +87,8 @@ export class AdminAddQuestionModal extends Component {
   makeQuestionData = (question, index) => {
     return (
         <tr>
-          <td>{question.label}</td>
-          <td>{question.data}</td>
+          <td>{question.text}</td>
+          <td>{question.text}</td>
           <td className="has-text-right">
             <a onClick={() => {this.moveQuestion(index, -1)}}>
               <span className="icon is-medium">
@@ -136,13 +136,64 @@ export class AdminAddQuestionModal extends Component {
     }
   }
 
+  renderOption = (question, type) => {
+    console.log(question);
+    var questionData = [];
+    switch(type) {
+      case "choice":
+        if(question.choices){
+          questionData = question.choices.map(::this.makeQuestionData);
+        }
+        return (
+          <table className="table">
+            <thead>
+              <tr>
+                <th>OPTION LABEL</th>
+                <th>DATA VALUE</th>
+                <th>DATA VALUES</th>
+              </tr>
+            </thead>
+            <tbody>
+              {questionData}
+              <tr>
+                <td className="has-text-right" colSpan="3">
+                  <button className="buttonPrimary confirm" onClick={this.addNewData}>Add New Value</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        );
+      case "choices":
+        if(question.choices){
+          questionData = question.choices.map(::this.makeQuestionData);
+        }
+        return (
+          <table className="table">
+            <thead>
+              <tr>
+                <th>OPTION LABEL</th>
+                <th>DATA VALUE</th>
+                <th>DATA VALUES</th>
+              </tr>
+            </thead>
+            <tbody>
+              {questionData}
+              <tr>
+                <td className="has-text-right" colSpan="3">
+                  <button className="buttonPrimary confirm" onClick={this.addNewData}>Add New Value</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        );
+    }
+    return "";
+  }
+
   render() {
     const {modalStatus, handleChange, currentQuestion, questionType} = this.props;
-    var questionData = [];
     const renderedInput = ::this.renderInput(currentQuestion, questionType);
-    if(this.state.questionData){
-      questionData = this.state.questionData.map(::this.makeQuestionData);
-    }
+    const renderedOption = ::this.renderOption(currentQuestion, questionType);
     return (
       <Modal
         isOpen={modalStatus}
@@ -194,23 +245,7 @@ export class AdminAddQuestionModal extends Component {
                 </a>
               </div>
             </div>
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>OPTION LABEL</th>
-                  <th>DATA VALUE</th>
-                  <th>DATA VALUES</th>
-                </tr>
-              </thead>
-              <tbody>
-                {questionData}
-                <tr>
-                  <td className="has-text-right" colSpan="3">
-                    <button className="buttonPrimary confirm" onClick={this.addNewData}>Add New Value</button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+            { renderedOption }
             <div className="box">
               <article className="media">
                 <div className="media-content">

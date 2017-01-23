@@ -9,19 +9,22 @@ export class AdminSurveyContainer extends Component {
   //Form submit seems to be such a good way to get what you need that I'm not
   //certain redux is the best call. However I'm doing it the redux way to learn.
   showModal(){
-    this.setState({curQuestion: {
+    this.setState({
+      curQuestion: {
         text: "Your Question Title Here.",
-        id: -1,
-        questionType: "text"
-      }
+        id: -1
+      },
+      curIndex: -1,
+      questionType: "text"
     });
     this.setState({modalStatus: true});
   }
 
-  editQuestion(question, type) {
+  editQuestion(question, type, index) {
     this.setState({
       questionType: type,
       curQuestion: question,
+      curIndex: index,
       modalStatus: true
     });
   }
@@ -44,7 +47,7 @@ export class AdminSurveyContainer extends Component {
     switch(question.type) {
       case "text":
         return (
-            <div key={question.id} className="container" onClick={() => this.editQuestion(question, question.type)}>
+            <div key={question.id} className="container" onClick={() => this.editQuestion(question, question.type, index)}>
               <label className="special questionNumber">Question {index+1}</label>
               <SurveyFields.Input
                   id={question.id}
@@ -55,7 +58,7 @@ export class AdminSurveyContainer extends Component {
         );
       case "bool":
         return (
-            <div key={question.id} className="container" onClick={() => this.editQuestion(question, question.type)}>
+            <div key={question.id} className="container" onClick={() => this.editQuestion(question, question.type, index)}>
               <label className="special questionNumber">Question {index+1}</label>
               <SurveyFields.Bool
                   id={question.id}
@@ -67,7 +70,7 @@ export class AdminSurveyContainer extends Component {
         );
       case "choice":
         return (
-            <div key={question.id} className="container" onClick={() => this.editQuestion(question, question.type)}>
+            <div key={question.id} className="container" onClick={() => this.editQuestion(question, question.type, index)}>
               <label className="special questionNumber">Question {index+1}</label>
               <SurveyFields.Choice
                   id={question.id}
@@ -79,7 +82,7 @@ export class AdminSurveyContainer extends Component {
         );
       case "choices":
         return (
-            <div key={question.id} className="container" onClick={() => this.editQuestion(question, question.type)}>
+            <div key={question.id} className="container" onClick={() => this.editQuestion(question, question.type, index)}>
               <label className="special questionNumber">Question {index+1}</label>
               <SurveyFields.Choices
                   id={question.id}
