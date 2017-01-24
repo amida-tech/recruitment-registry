@@ -23,7 +23,6 @@ Recruitment Registry is a tool that consists of two node projects, api and clien
 6. Create database in Postgres with the command `createdb recreg`
 7. Create .env root files in both api and client directories
   	1. The contents of the api .env file should be:
-
       ```
       RECREG_DB_DATABASE=recreg
       RECREG_DB_USER= [THIS SHOULD BE YOUR USER ID]
@@ -51,14 +50,14 @@ Recruitment Registry is a tool that consists of two node projects, api and clien
       API_HTTP_URL="http://localhost:9005/api/v1.0""
       API_HTTPS_URL="http://localhost:9005/api/v1.0""
       ```
-
 8. Run sync files (in api directory):
   1. Use these calls:
       `node syncAndLoadAlzheimers.js`
       `node syncDecember15.js`
       `node syncDemo.js`
-
-9. Run program:
+9. Cd into client directory:
+  1. Call `npm run build`
+10. Run program:
   1. Need to run both front and back end at the same time
     a. Front-End:
       1. Open client directory
