@@ -1,6 +1,6 @@
 #Recruitment Registry
 
-Recruitment Registry is a platform for participants to complete surveys and find local and matching clinical trials. It is also a platform for clinicians to perform cohort shaping on the survey’s answers, and to find participants for their clinical trials.
+Recruitment Registry is a platform for participants to complete surveys and find local and matching clinical trials. Recruitment Registry also functions as a platform for clinicians to perform cohort shaping to find participants for their clinical trials.
 
 ##Getting Started
 
@@ -15,7 +15,7 @@ Recruitment Registry is a tool that consists of two node projects, api and clien
 ##Installing
 
 1. Clone the repository
-2. Cd into api directory
+2. cd into api directory
 3. Call `npm install`  to download dependencies
 4. Repeat Step 2 and 3 in the client directory
 5. Get Postgres up and running
@@ -55,7 +55,7 @@ Recruitment Registry is a tool that consists of two node projects, api and clien
       `node syncAndLoadAlzheimers.js`
       `node syncDecember15.js`
       `node syncDemo.js`
-9. Cd into client directory:
+9. cd into client directory:
   1. Call `npm run build`
 10. Run program:
   1. Need to run both front and back end at the same time
@@ -68,7 +68,7 @@ Recruitment Registry is a tool that consists of two node projects, api and clien
 
 ##Running the tests
 
-Run tests both in the api and client directory calling:
+Run tests both in the api and client directory by calling:
 
     `npm test`
 
@@ -77,7 +77,7 @@ Run tests both in the api and client directory calling:
 Run both the client and the api app independently.
 
 
-##Versioning
+##Built With
 
 
 
