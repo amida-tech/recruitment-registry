@@ -25,7 +25,6 @@ Recruitment Registry is a tool that consists of two node projects, api and clien
   	1. The contents of the api .env file should be:
 
 	   `RECREG_DB_DATABASE=recreg
-     hellooooo
       RECREG_DB_USER= [THIS SHOULD BE YOUR USER ID]
 	    RECREG_DB_PW=TDP#2016!
 	    RECREG_DB_HOST=localhost
@@ -53,8 +52,8 @@ Recruitment Registry is a tool that consists of two node projects, api and clien
 
 8. Run sync files (in api directory):
   1. Use these calls:
-          `node syncAndLoadAlzheimers.js`
-          `node syncDecember15.js`
+          `node syncAndLoadAlzheimers.js`,
+          `node syncDecember15.js`,
           `node syncDemo.js`
 9. Run program:
   1. Need to run both front and back end at the same time
