@@ -20,13 +20,9 @@ Recruitment Registry is a tool that consists of two node projects, api and clien
 4. Repeat Step 2 and 3 in the client directory
 5. Get Postgres up and running
   1. Open Postgres and hit initialize
-6. Modify $PATH before creating database in Postgres
-  1. Call `echo $PATH` to view current path
-  2. If `/Applications/Postgres.app/Contents/Versions/latest/bin`  is not part of your current $PATH call do step i:
-    1. Call `export PATH=$PATH:/Applications/Postgres.app/Contents/Versions/latest/bin`
-7. Create database in Postgres with the command `createdb recreg`
-8. Create .env root files in both api and client directories
-  	1. The contents of the api .env file should be: 
+6. Create database in Postgres with the command `createdb recreg`
+7. Create .env root files in both api and client directories
+  	1. The contents of the api .env file should be:
 	    ```RECREG_DB_DATABASE=recreg
 	    RECREG_DB_USER= [THIS SHOULD BE YOUR USER ID]
 	    RECREG_DB_PW=TDP#2016!
@@ -51,17 +47,17 @@ Recruitment Registry is a tool that consists of two node projects, api and clien
 		PROD_API_HTTPS_URL="http://localhost:9005/api/v1.0""
 		API_HTTP_URL="http://localhost:9005/api/v1.0""
 		API_HTTPS_URL="http://localhost:9005/api/v1.0""```
-9. Run sync files (in api directory):
+8. Run sync files (in api directory):
   1. Use these calls:
-          node syncAndLoadAlzheimers.js
-          node syncDecember15.js
-          node syncDemo.js
-10. Run program:
+          `node syncAndLoadAlzheimers.js`
+          `node syncDecember15.js`
+          `node syncDemo.js`
+9. Run program:
   1. Need to run both front and back end at the same time
-    1. Front-End:
+    a. Front-End:
       1. Open client directory
       2. Call `npm start`
-    2. Back-End:
+    b. Back-End:
       1. Open api directory
       2. Call `npm start`
 
@@ -73,7 +69,7 @@ Run tests both in the api and client directory calling:
 
 ##Deployment
 
-Run both the client and the api app independently. 
+Run both the client and the api app independently.
 
 
 ##Versioning
