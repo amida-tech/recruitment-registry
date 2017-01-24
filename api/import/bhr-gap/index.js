@@ -4,8 +4,9 @@ const path = require('path');
 const fs = require('fs');
 const csvToJson = require('csvtojson');
 const _ = require('lodash');
-const queryrize = require('../../lib/queryrize');
 
+const config = require('../../config');
+const queryrize = require('../../lib/queryrize');
 const models = require('../../models');
 const db = require('../../models/db');
 const SPromise = require('../../lib/promise');
@@ -267,11 +268,12 @@ const convertSubjects = function (filepath) {
                             });
                             const answerRecords = records.reduce((r, record) => {
                                 const username = record.SubjectCode;
-                                ['Gender', 'YearsEducation', 'Handedness', 'RaceEthnicity', 'Age_Baseline'].forEach(key => {
-                                    const value = record[key];
-                                    const answer = answerConverter[key](value, surveyId, username);
-                                    if (answer) {
-                                        r.push(...answer);
+                                _.forOwn(record, (value, key) => {
+                                    if ((key !== 'SubjectCode') && (value !== undefined)) {
+                                        const answer = answerConverter[key](value, surveyId, username);
+                                        if (answer) {
+                                            r.push(...answer);
+                                        }
                                     }
                                 });
                                 return r;
@@ -282,13 +284,41 @@ const convertSubjects = function (filepath) {
         });
 };
 
-const transformSubjectsFile = function (filepath, userFilepath) {
+const importSubjects = function (filepath) {
+    const basename = path.basename(filepath, '.csv');
+    const userFilepath = path.join(config.tmpDirectory, `${basename}-trans-user.csv`);
+    const answerFilepath = path.join(config.tmpDirectory, `${basename}-trans-answer.csv`);
     return convertSubjects(filepath)
         .then(result => {
             const userConverter = new CSVConverterExport({ fields: ['username', 'email', 'password', 'role'] });
             fs.writeFileSync(userFilepath, userConverter.dataToCSV(result.userRecords));
             return result;
+        })
+        .then(subjectsData => {
+            const query = 'copy registry_user (username, email, password, role) from :filepath csv header';
+            return db.sequelize.query(query, { replacements: { filepath: userFilepath } })
+                .then(() => db.sequelize.query('select id, username from registry_user', { type: db.sequelize.QueryTypes.SELECT }))
+                .then(users => {
+                    const subjectMap = new Map();
+                    users.forEach(({ id, username }) => subjectMap.set(username, id));
+                    return subjectMap;
+                })
+                .then(subjectMap => {
+                    const subjectAnswers = subjectsData.answerRecords.map(r => {
+                        r.user_id = subjectMap.get(r.username);
+                        delete r.username;
+                        r.language_code = 'en';
+                        return r;
+                    });
+                    const answerConverter = new CSVConverterExport({ fields: ['user_id', 'survey_id', 'question_id', 'question_choice_id', 'value', 'language_code'] });
+                    fs.writeFileSync(answerFilepath, answerConverter.dataToCSV(subjectAnswers));
+                })
+                .then(() => {
+                    const query = 'copy answer (user_id, survey_id, question_id, question_choice_id, value, language_code) from :filepath csv header';
+                    return db.sequelize.query(query, { replacements: { filepath: answerFilepath } });
+                });
         });
+
 };
 
 const transformSurveyFile = function (filepath, answerIdentifierType, outputFilepath) {
@@ -324,8 +354,7 @@ const importTransformedSurveyFile = function (tableIdentifier, filepath) {
 };
 
 module.exports = {
-    convertSubjects,
-    transformSubjectsFile,
+    importSubjects,
     transformSurveyFile,
     importTransformedSurveyFile
 };

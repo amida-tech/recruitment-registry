@@ -31,7 +31,8 @@ const all = {
         resetPasswordLength: 10,
         resetExpires: 3600,
         resetExpiresUnit: 'seconds'
-    }
+    },
+    tmpDirectory: '/tmp'
 };
 
 const main = {
@@ -66,7 +67,8 @@ const main = {
         resetExpires: process.env.RECREG_CRYPT_RESET_EXPIRES,
         resetExpiresUnit: process.env.RECREG_CRYPT_RESET_EXPIRES_UNIT
     },
-    clientBaseUrl: process.env.RECREG_CLIENT_BASE_URL
+    clientBaseUrl: process.env.RECREG_CLIENT_BASE_URL,
+    tmpDirectory: process.env.RECREG_TMP_DIRECTORY
 };
 
 const configBase = _.merge(all, main);
