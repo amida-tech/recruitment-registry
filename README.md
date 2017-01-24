@@ -54,11 +54,9 @@ Recruitment Registry is a tool that consists of two node projects, api and clien
 
 8. Run sync files (in api directory):
   1. Use these calls:
-      ```
-      node syncAndLoadAlzheimers.js
-      node syncDecember15.js
-      node syncDemo.js
-      ```
+      `node syncAndLoadAlzheimers.js`
+      `node syncDecember15.js`
+      `node syncDemo.js`
 
 9. Run program:
   1. Need to run both front and back end at the same time
