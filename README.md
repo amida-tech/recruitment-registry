@@ -24,8 +24,8 @@ Recruitment Registry is a tool that consists of two node projects, api and clien
 7. Create .env root files in both api and client directories
   	1. The contents of the api .env file should be:
 
-	   `RECREG_DB_DATABASE=recreg
-      RECREG_DB_USER= [THIS SHOULD BE YOUR USER ID]
+	   `RECREG_DB_DATABASE=recreg \n
+      RECREG_DB_USER= [THIS SHOULD BE YOUR USER ID] \n
 	    RECREG_DB_PW=TDP#2016!
 	    RECREG_DB_HOST=localhost
 	    RECREG_DB_PORT=5432
