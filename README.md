@@ -12,17 +12,18 @@ Recruitment Registry is a tool that consists of two node projects, api and clien
 2. PostgreSQL v9.4 or newer
 3. Grunt
 
-##Installing
+##Installing the API and Client Applications
 
 1. Clone the repository
 2. cd into api directory
 3. Call `npm install`  to download dependencies
 4. Repeat Step 2 and 3 in the client directory
-5. Get Postgres up and running
+5. Get Postgres up and running. [Postgres.app](https://postgresapp.com/)
   1. Open Postgres and hit initialize
+  2. Add to `PATH` `export PATH=$PATH:/Applications/Postgres.app/Contents/Versions/latest/bin`. Note: You'll have to preform this operation for each new shell session, or add the Postgres  `bin` file to your `$PATH` variable.
 6. Create database in Postgres with the command `createdb recreg`
 7. Create .env root files in both api and client directories
-  	1. The contents of the api .env file should be:
+    1. The contents of the api .env file should be:
       ```
       RECREG_DB_DATABASE=recreg
       RECREG_DB_USER= [THIS SHOULD BE YOUR USER ID]
@@ -39,7 +40,7 @@ Recruitment Registry is a tool that consists of two node projects, api and clien
       RECREG_CORS_ORIGIN=http://localhost:4000
       ```
 
-    2. The contens of the client .env file should be:
+    2. The contents of the client .env file should be:
       ```
       NODE_ENV=development
       API_HTTP_URL="http://localhost:9005/api/v1.0"
