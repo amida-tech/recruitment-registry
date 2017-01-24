@@ -117,14 +117,14 @@ xdescribe('bhr gap import-export', function () {
     const importTableDataFn = function (tableIdentifier, filebase) {
         return function () {
             const transFile = path.join(outputDir, `${filebase}-trans.csv`);
-            return bhrGapImport.importTransformedSurveyFile(tableIdentifier, transFile);
+            return bhrGapImport.importTransformedSurveyFile({ type: 'bhr-gap', value: tableIdentifier }, transFile);
         };
     };
 
     const exportTableDataFn = function (surveyType, answerType, filenamebase) {
         return function () {
             const filepath = path.join(outputDir, `${filenamebase}_exported.csv`);
-            return bhrGapExport.writeTableData(surveyType, answerType, filepath, ['SubjectCode', 'Timepoint'])
+            return bhrGapExport.writeTableData({ type: 'bhr-gap', value: surveyType }, answerType, filepath, ['SubjectCode', 'Timepoint'])
                 .then(({ columns }) => {
                     const exportConverter = new CSVConverterExport({ fields: columns });
                     const filepath = path.join(fixtureDir, `${filenamebase}.csv`);

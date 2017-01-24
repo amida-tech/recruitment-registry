@@ -39,7 +39,8 @@ const exportSubjectsData = function ({ surveyIdentifier, questionIdentifierType,
                                 let record = r.get(username);
                                 if (!record) {
                                     record = {
-                                        [subjectCode]: username };
+                                        [subjectCode]: username
+                                    };
                                     r.set(username, record);
                                 }
                                 const { identifier, type } = identifierMap[subject.question_id];
@@ -78,8 +79,8 @@ const writeSubjectsData = function (filepath, options) {
 
 };
 
-const exportTableData = function (surveyType, answerType) {
-    return models.surveyIdentifier.getIdsBySurveyIdentifier('bhr-gap')
+const exportTableData = function ({ type, value: surveyType }, answerType) {
+    return models.surveyIdentifier.getIdsBySurveyIdentifier(type)
         .then(surveyIdentificaterMap => {
             const surveyId = surveyIdentificaterMap.get(surveyType);
             return models.answerIdentifier.getIdentifiersByAnswerIds(answerType)
@@ -154,8 +155,8 @@ const exportTableData = function (surveyType, answerType) {
         });
 };
 
-const writeTableData = function (surveyType, answerType, filepath, order) {
-    return exportTableData(surveyType, answerType)
+const writeTableData = function (surveyIdentifier, answerType, filepath, order) {
+    return exportTableData(surveyIdentifier, answerType)
         .then(({ columns, rows }) => {
             const converter = new CSVConverterExport({ fields: columns });
             if (order) {

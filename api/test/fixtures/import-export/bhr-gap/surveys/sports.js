@@ -8,7 +8,7 @@ module.exports = {
     },
     questions: [{
         text: 'How many hours a week do you participate in a team sports?',
-        required: false,
+        required: true,
         type: 'enumeration',
         answerIdentifier: { type: 'sports-column', value: 'QID1' },
         enumeration: 'count-0-8-plus'
@@ -51,10 +51,7 @@ module.exports = {
             { text: 'Water', answerIdentifier: { type: 'sports-column', value: 'QID4_1' } },
             { text: 'Juice', answerIdentifier: { type: 'sports-column', value: 'QID4_2' } },
             { text: 'Soda', answerIdentifier: { type: 'sports-column', value: 'QID4_3' } },
-            { text: 'Diet soda', answerIdentifier: { type: 'sports-column', value: 'QID4_4' } },
-            { text: 'Sports drinks', answerIdentifier: { type: 'sports-column', value: 'QID4_5' } },
-            { text: 'Tea', answerIdentifier: { type: 'sports-column', value: 'QID4_6' } },
-            { text: 'Coffee', answerIdentifier: { type: 'sports-column', value: 'QID4_7' } },
+            { text: 'Diet soda', answerIdentifier: { type: 'sports-column', value: 'QID4_4' } }
         ],
         skip: {
             count: 1,
@@ -69,7 +66,7 @@ module.exports = {
         multiple: true,
         answerIdentifiers: {
             type: 'sports-column',
-            values: ['QID139_1_TEXT', 'QID139_2_TEXT', 'QID139_3_TEXT', 'QID139_4_TEXT', 'QID139_5_TEXT']
+            values: ['QID5_1_TEXT', 'QID5_2_TEXT', 'QID5_3_TEXT', 'QID5_4_TEXT']
         }
     }]
 };

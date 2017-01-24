@@ -333,16 +333,16 @@ const transformSurveyFile = function (filepath, answerIdentifierType, outputFile
         });
 };
 
-const importTransformedSurveyFile = function (tableIdentifier, filepath) {
-    return models.surveyIdentifier.getIdsBySurveyIdentifier('bhr-gap')
+const importTransformedSurveyFile = function (surveyIdentifier, filepath) {
+    return models.surveyIdentifier.getIdsBySurveyIdentifier(surveyIdentifier.type)
         .then(surveyIdentificaterMap => {
-            const surveyId = surveyIdentificaterMap.get(tableIdentifier);
+            const surveyId = surveyIdentificaterMap.get(surveyIdentifier.value);
             const scriptPath = path.join(__dirname, '../../sql-scripts/bhr-gap-import.sql');
             const rawScript = queryrize.readFileSync(scriptPath);
             const parameters = {
                 survey_id: surveyId,
                 filepath: `'${filepath}'`,
-                identifier: `'${tableIdentifier}'`
+                identifier: `'${surveyIdentifier.value}'`
             };
             const script = rawScript.map(query => queryrize.replaceParameters(query, parameters));
             let promise = script.reduce((r, query) => {
