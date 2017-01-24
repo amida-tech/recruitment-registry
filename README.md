@@ -72,17 +72,12 @@ Run tests both in the api and client directory calling:
 
 ##Deployment
 
-Add additional notes about how to deploy this on a live system
-
-Built With
-- Dropwizard - The web framework used
-- Maven - Dependency Management
-- ROME - Used to generate RSS Feeds
+Run both the client and the api app independently. 
 
 
 ##Versioning
 
-We use SemVer for versioning. For the versions available, see the tags on this repository.
+
 
 ##Contributors
 
@@ -92,14 +87,7 @@ Amida Team
 - Kevin Moore
 - Jon Berry  
 - Lacey Irvin
-- Jonah Bregstone
-- Giulio Capolino
+- Jonah Bregstone ('17 Winter Intern)
+- Giulio Capolino ('17 Winter Intern)
 
 ##License
-
-This project is licensed under the MIT License - see the LICENSE.md file for details
-
-##Acknowledgments
-- Hat tip to anyone who's code was used
-- Inspiration
-- etc
