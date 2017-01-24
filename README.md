@@ -85,11 +85,4 @@ Run both the client and the api app independently.
 
 Amida Team
 
-- Mike Hiner
-- Kevin Moore
-- Jon Berry  
-- Lacey Irvin
-- Jonah Bregstone (winter '17 intern)
-- Giulio Capolino (winter '17 intern)
-
 ##License
