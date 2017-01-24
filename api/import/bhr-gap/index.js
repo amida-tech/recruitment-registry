@@ -177,8 +177,7 @@ const SurveyCSVConverter = class SurveyCSVConverter {
     }
 };
 
-const generateChoiceAnswerer = function (columnName, identifierMap, choiceMap) {
-    const question_id = identifierMap.get(columnName);
+const generateChoiceAnswerer = function (question_id, columnName, choiceMap) {
     const choiceIdMap = choiceMap.get(question_id);
     return function (value, survey_id, username) {
         if (value) {
@@ -191,8 +190,7 @@ const generateChoiceAnswerer = function (columnName, identifierMap, choiceMap) {
     };
 };
 
-const generateChoicesAnswerer = function (columnName, identifierMap, choiceMap) {
-    const question_id = identifierMap.get(columnName);
+const generateChoicesAnswerer = function (question_id, columnName, choiceMap) {
     const choiceIdMap = choiceMap.get(question_id);
     return function (semicolonValues, survey_id, username) {
         if (semicolonValues) {
@@ -208,8 +206,7 @@ const generateChoicesAnswerer = function (columnName, identifierMap, choiceMap) 
     };
 };
 
-const generateIntegerAnswerer = function (columnName, identifierMap) {
-    const question_id = identifierMap.get(columnName);
+const generateIntegerAnswerer = function (question_id) {
     return function (value, survey_id, username) {
         if (value !== undefined) {
             return [{ survey_id, question_id, value, username }];
@@ -219,25 +216,32 @@ const generateIntegerAnswerer = function (columnName, identifierMap) {
 
 const generateAnswerConverter = function (identifierMap, choiceMap) {
     const result = {};
-    ['Gender', 'YearsEducation', 'Handedness'].forEach(columnName => {
-        result[columnName] = generateChoiceAnswerer(columnName, identifierMap, choiceMap);
-    });
-    ['RaceEthnicity'].forEach(columnName => {
-        result[columnName] = generateChoicesAnswerer(columnName, identifierMap, choiceMap);
-    });
-    ['Age_Baseline'].forEach(columnName => {
-        result[columnName] = generateIntegerAnswerer(columnName, identifierMap);
+    identifierMap.forEach((questionInfo, identifier) => {
+        const questionId = questionInfo.id;
+        const type = questionInfo.type;
+        if (type === 'integer') {
+            result[identifier] = generateIntegerAnswerer(questionId);
+            return;
+        }
+        if (type === 'choice') {
+            result[identifier] = generateChoiceAnswerer(questionId, identifier, choiceMap);
+            return;
+        }
+        if (type === 'choices') {
+            result[identifier] = generateChoicesAnswerer(questionId, identifier, choiceMap);
+            return;
+        }
     });
     return result;
 };
 
-const convertSubjects = function (filepath) {
-    return models.surveyIdentifier.getIdsBySurveyIdentifier('bhr-gap')
+const convertSubjects = function (filepath, { surveyIdentifier, questionIdentifierType }) {
+    return models.surveyIdentifier.getIdsBySurveyIdentifier(surveyIdentifier.type)
         .then(surveyIdentificaterMap => {
-            const surveyId = surveyIdentificaterMap.get('subjects');
-            return models.questionIdentifier.getIdsByQuestionIdentifier('bhr-gap-subjects-column')
+            const surveyId = surveyIdentificaterMap.get(surveyIdentifier.value);
+            return models.questionIdentifier.getInformationByQuestionIdentifier(questionIdentifierType)
                 .then(identifierMap => {
-                    const ids = [...identifierMap.values()];
+                    const ids = [...identifierMap.values()].map(info => info.id);
                     return models.questionChoice.getAllQuestionChoices(ids)
                         .then(allChoices => {
                             const choiceMap = allChoices.reduce((r, choice) => {
@@ -284,11 +288,11 @@ const convertSubjects = function (filepath) {
         });
 };
 
-const importSubjects = function (filepath) {
+const importSubjects = function (filepath, options) {
     const basename = path.basename(filepath, '.csv');
     const userFilepath = path.join(config.tmpDirectory, `${basename}-trans-user.csv`);
     const answerFilepath = path.join(config.tmpDirectory, `${basename}-trans-answer.csv`);
-    return convertSubjects(filepath)
+    return convertSubjects(filepath, options)
         .then(result => {
             const userConverter = new CSVConverterExport({ fields: ['username', 'email', 'password', 'role'] });
             fs.writeFileSync(userFilepath, userConverter.dataToCSV(result.userRecords));

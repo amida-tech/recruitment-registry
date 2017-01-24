@@ -4,6 +4,7 @@ const db = require('../db');
 const RRError = require('../../lib/rr-error');
 
 const QuestionIdentifier = db.QuestionIdentifier;
+const Question = db.Question;
 
 module.exports = class QuestionIdentifierDAO {
     constructor() {}
@@ -27,14 +28,18 @@ module.exports = class QuestionIdentifierDAO {
             });
     }
 
-    getIdsByQuestionIdentifier(type) {
+    getInformationByQuestionIdentifier(type) {
         return QuestionIdentifier.findAll({
                 where: { type },
                 attributes: ['questionId', 'identifier'],
+                include: [{ model: Question, as: 'question', attributes: ['id', 'type'] }],
                 raw: true
             })
             .then(records => {
-                const map = records.map(({ questionId, identifier }) => [identifier, questionId]);
+                const map = records.map(record => [record.identifier, {
+                    id: record['question.id'],
+                    type: record['question.type']
+                }]);
                 return new Map(map);
             });
     }

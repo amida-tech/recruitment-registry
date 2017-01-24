@@ -71,7 +71,7 @@ xdescribe('bhr gap import-export', function () {
 
     it('import users', function () {
         const filepath = path.join(fixtureDir, 'Subjects.csv');
-        return bhrGapImport.importSubjects(filepath);
+        return bhrGapImport.importSubjects(filepath, { surveyIdentifier: { type: 'bhr-gap', value: 'subjects' }, questionIdentifierType: 'bhr-gap-subjects-column' });
     });
 
     it('export subject answer', function () {
