@@ -3,8 +3,6 @@ var dotenv = require('dotenv');
 
 dotenv.config();
 
-console.log("COME ON DAWG");
-
 fs.writeFile(
     'src/config/production.js',
     "export default { NODE_ENV: 'production', API_HTTP_URL:'" + process.env.PROD_API_HTTP_URL + "', API_HTTPS_URL:'" + process.env.PROD_API_HTTPS_URL + "'}",
