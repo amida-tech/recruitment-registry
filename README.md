@@ -23,40 +23,43 @@ Recruitment Registry is a tool that consists of two node projects, api and clien
 6. Create database in Postgres with the command `createdb recreg`
 7. Create .env root files in both api and client directories
   	1. The contents of the api .env file should be:
+
       ```
-	    RECREG_DB_DATABASE=recreg
+      RECREG_DB_DATABASE=recreg
       RECREG_DB_USER= [THIS SHOULD BE YOUR USER ID]
-	    RECREG_DB_PW=TDP#2016!
-	    RECREG_DB_HOST=localhost
-	    RECREG_DB_PORT=5432
-	    RECREG_DB_DIALECT=postgres
-	    RECREG_DB_POOL_MAX=5
-	    RECREG_DB_MIN=0
-	    RECREG_DB_IDLE=10000
-	    DEBUGXX="swagger-tools:middleware:*"
-	    RECREG_LOGGING_LEVEL=emerg
-	    RECREG_CLIENT_BASE_URL="http://localhost:4000/reset-tokens/"
-	    RECREG_CORS_ORIGIN=http://localhost:4000
+      RECREG_DB_PW=TDP#2016!
+      RECREG_DB_HOST=localhost
+      RECREG_DB_PORT=5432
+      RECREG_DB_DIALECT=postgres
+      RECREG_DB_POOL_MAX=5
+      RECREG_DB_MIN=0
+      RECREG_DB_IDLE=10000
+      DEBUGXX="swagger-tools:middleware:*"
+      RECREG_LOGGING_LEVEL=emerg
+      RECREG_CLIENT_BASE_URL="http://localhost:4000/reset-tokens/"
+      RECREG_CORS_ORIGIN=http://localhost:4000
       ```
 
     2. The contens of the client .env file should be:
       ```
-   	  NODE_ENV=development
-  		API_HTTP_URL="http://localhost:9005/api/v1.0"
-  		API_HTTPS_URL="https://localhost:9005/api/v1.0"
-  		NODE_ENV=development
-  		PROD_API_HTTP_URL="http://localhost:9005/api/v1.0""
-  		PROD_API_HTTPS_URL="http://localhost:9005/api/v1.0""
-  		API_HTTP_URL="http://localhost:9005/api/v1.0""
-  		API_HTTPS_URL="http://localhost:9005/api/v1.0""
+      NODE_ENV=development
+      API_HTTP_URL="http://localhost:9005/api/v1.0"
+      API_HTTPS_URL="https://localhost:9005/api/v1.0"
+      NODE_ENV=development
+      PROD_API_HTTP_URL="http://localhost:9005/api/v1.0""
+      PROD_API_HTTPS_URL="http://localhost:9005/api/v1.0""
+      API_HTTP_URL="http://localhost:9005/api/v1.0""
+      API_HTTPS_URL="http://localhost:9005/api/v1.0""
       ```
 
 8. Run sync files (in api directory):
   1. Use these calls:
-          `node syncAndLoadAlzheimers.js`,
-          `node syncDecember15.js`,
-          `node syncDemo.js`
-          
+      ```
+      node syncAndLoadAlzheimers.js
+      node syncDecember15.js
+      node syncDemo.js
+      ```
+
 9. Run program:
   1. Need to run both front and back end at the same time
     a. Front-End:
