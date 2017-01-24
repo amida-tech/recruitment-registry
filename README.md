@@ -90,7 +90,7 @@ Amida Team
 - Kevin Moore
 - Jon Berry  
 - Lacey Irvin
-- Jonah Bregstone ('17 Winter Intern)
-- Giulio Capolino ('17 Winter Intern)
+- Jonah Bregstone (winter '17 intern)
+- Giulio Capolino (winter '17 intern)
 
 ##License
