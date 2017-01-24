@@ -3,17 +3,18 @@
 process.env.NODE_ENV = 'test';
 
 //const fs = require('fs');
-//const path = require('path');
-//const _ = require('lodash');
+const path = require('path');
+const _ = require('lodash');
+const chai = require('chai');
 
 const models = require('../../models');
 //const db = require('../../models/db');
 const SPromise = require('../../lib/promise');
 
-//const bhrGapImport = require('../../import/bhr-gap');
-//const bhrGapExport = require('../../export/bhr-gap');
+const bhrGapImport = require('../../import/bhr-gap');
+const bhrGapExport = require('../../export/bhr-gap');
 
-//const CSVConverterImport = require('../../import/csv-converter');
+const CSVConverterImport = require('../../import/csv-converter');
 //const CSVConverterExport = require('../../export/csv-converter');
 
 const SharedSpec = require('../util/shared-spec.js');
@@ -23,11 +24,13 @@ const comparator = require('../util/comparator');
 const enumerations = require('../fixtures/import-export/bhr-gap/enumerations');
 const surveys = require('../fixtures/import-export/bhr-gap/surveys');
 
+const expect = chai.expect;
+
 const shared = new SharedSpec();
 
 describe('bhr gap import-export unit', function () {
-    //const fixtureDir = '/Work/BHR_GAP-2016.12.09';
-    //const outputDir = path.join(__dirname, '../generated');
+    const fixtureDir = path.join(__dirname, '../fixtures/import-export/bhr-gap');
+    const outputDir = path.join(__dirname, '../generated');
 
     const store = {
         surveyMap: null,
@@ -70,42 +73,46 @@ describe('bhr gap import-export unit', function () {
         });
     });
 
-    //let subjectsData;
+    it('import user profiles', function () {
+        const filepath = path.join(fixtureDir, 'users.csv');
+        return bhrGapImport.importSubjects(filepath, {
+            surveyIdentifier: { type: 'bhr-unit-test', value: 'users' },
+            questionIdentifierType: 'users-column',
+            subjectCode: 'UserCode'
+        });
+    });
 
-    //it('create user file', function () {
-    //    const filepath = path.join(fixtureDir, 'Subjects.csv');
-    //    const userFilepath = path.join(outputDir, 'bhruser.csv');
-    //    const answerFilepath = path.join(outputDir, 'bhrsubjects.csv');
-    //    return bhrGapImport.transformSubjectsFile(filepath, userFilepath, answerFilepath)
-    //        .then(result => {
-    //            subjectsData = result;
-    //        });
-    //});
+    it('export user profiles', function () {
+        const filepath = path.join(outputDir, 'users-exported.csv');
+        return bhrGapExport.writeSubjectsData(filepath, {
+            order: 'UserCode',
+            surveyIdentifier: {
+                type: 'bhr-unit-test',
+                value: 'users'
+            },
+            questionIdentifierType: 'users-column',
+            subjectCode: 'UserCode'
+        });
+    });
 
-    //const subjectMap = new Map();
-    //it('import users', function () {
-    //    const query = 'copy registry_user (username, email, password, role) from \'/Work/git/recruitment-registry/api/test/generated/bhruser.csv\' csv header';
-    //    return db.sequelize.query(query)
-    //        .then(() => db.sequelize.query('select id, username from registry_user', { type: db.sequelize.QueryTypes.SELECT }))
-    //        .then(users => users.forEach(({ id, username }) => subjectMap.set(username, id)));
-    //});
-
-    //it('create subjects file', function () {
-    //    const subjectAnswers = subjectsData.answerRecords.map(r => {
-    //        r.user_id = subjectMap.get(r.username);
-    //        delete r.username;
-    //        r.language_code = 'en';
-    //        return r;
-    //    });
-    //    const answerConverter = new CSVConverterExport({ fields: ['user_id', 'survey_id', 'question_id', 'question_choice_id', 'value', 'language_code'] });
-    //    const answerFilepath = path.join(outputDir, 'bhrsubjects.csv');
-    //    fs.writeFileSync(answerFilepath, answerConverter.dataToCSV(subjectAnswers));
-    //});
-
-    //it('import subjects answers', function () {
-    //    const query = 'copy answer (user_id, survey_id, question_id, question_choice_id, value, language_code) from \'/Work/git/recruitment-registry/api/test/generated/bhrsubjects.csv\' csv header';
-    //    return db.sequelize.query(query);
-    //});
+    it('verify profiles', function () {
+        const originalPath = path.join(fixtureDir, 'users.csv');
+        const exportedPath = path.join(outputDir, 'users-exported.csv');
+        const converter = new CSVConverterImport({ checkType: false, ignoreEmpty: true });
+        return converter.fileToRecords(originalPath)
+            .then(original => {
+                return converter.fileToRecords(exportedPath)
+                    .then(exported => {
+                        const originalOrdered = _.sortBy(original, 'UserCode');
+                        const exportedOrdered = _.sortBy(exported, 'UserCode');
+                        exported.forEach(r => {
+                            const races = r.RaceEthnicity.split(';').sort().join(';');
+                            r.RaceEthnicity = races;
+                        });
+                        expect(exportedOrdered).to.deep.equal(originalOrdered);
+                    });
+            });
+    });
 
     //it('export subject answer', function () {
     //    const filepath = path.join(outputDir, 'Subjects_exported.csv');

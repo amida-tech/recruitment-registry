@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = [
-    require('./subjects'),
+    require('./users'),
     require('./sports'),
     require('./television-history'),
     require('./employment-history')

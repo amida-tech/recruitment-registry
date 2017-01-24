@@ -1,17 +1,17 @@
 'use strict';
 
 module.exports = {
-    name: 'Subjects',
+    name: 'Users',
     identifier: {
         type: 'bhr-unit-test',
-        value: 'subjects'
+        value: 'users'
     },
     questions: [{
         text: 'Eye Color',
         required: false,
         type: 'choice',
         questionIdentifier: {
-            type: 'subjects-column',
+            type: 'users-column',
             value: 'EyeColor'
         },
         choices: [
@@ -26,7 +26,7 @@ module.exports = {
         required: false,
         type: 'choice',
         questionIdentifier: {
-            type: 'subjects-column',
+            type: 'users-column',
             value: 'HairColor'
         },
         choices: [
@@ -40,7 +40,7 @@ module.exports = {
         required: false,
         type: 'choices',
         questionIdentifier: {
-            type: 'subjects-column',
+            type: 'users-column',
             value: 'RaceEthnicity'
         },
         choices: [
@@ -58,7 +58,7 @@ module.exports = {
         required: true,
         type: 'integer',
         questionIdentifier: {
-            type: 'subjects-column',
+            type: 'users-column',
             value: 'Age'
         }
     }]

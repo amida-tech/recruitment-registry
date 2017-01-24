@@ -71,13 +71,25 @@ xdescribe('bhr gap import-export', function () {
 
     it('import users', function () {
         const filepath = path.join(fixtureDir, 'Subjects.csv');
-        return bhrGapImport.importSubjects(filepath, { surveyIdentifier: { type: 'bhr-gap', value: 'subjects' }, questionIdentifierType: 'bhr-gap-subjects-column' });
+        return bhrGapImport.importSubjects(filepath, {
+            surveyIdentifier: { type: 'bhr-gap', value: 'subjects' },
+            questionIdentifierType: 'bhr-gap-subjects-column',
+            subjectCode: 'SubjectCode'
+        });
     });
 
     it('export subject answer', function () {
         const filepath = path.join(outputDir, 'Subjects_exported.csv');
-        return bhrGapExport.writeSubjectsData(filepath, 'SubjectCode')
-            .then(({ rows, columns }) => {
+        return bhrGapExport.writeSubjectsData(filepath, {
+                order: 'SubjectCode',
+                surveyIdentifier: {
+                    type: 'bhr-gap',
+                    value: 'subjects'
+                },
+                questionIdentifierType: 'bhr-gap-subjects-column',
+                subjectCode: 'SubjectCode'
+            })
+            .then(({ columns }) => {
                 const exportConverter = new CSVConverterExport({ fields: columns });
                 const filepath = path.join(fixtureDir, 'Subjects.csv');
                 const converter = new CSVConverterImport({ checkType: false, ignoreEmpty: true });

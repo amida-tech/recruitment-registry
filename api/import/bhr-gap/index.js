@@ -235,7 +235,7 @@ const generateAnswerConverter = function (identifierMap, choiceMap) {
     return result;
 };
 
-const convertSubjects = function (filepath, { surveyIdentifier, questionIdentifierType }) {
+const convertSubjects = function (filepath, { surveyIdentifier, questionIdentifierType, subjectCode }) {
     return models.surveyIdentifier.getIdsBySurveyIdentifier(surveyIdentifier.type)
         .then(surveyIdentificaterMap => {
             const surveyId = surveyIdentificaterMap.get(surveyIdentifier.value);
@@ -262,18 +262,18 @@ const convertSubjects = function (filepath, { surveyIdentifier, questionIdentifi
                     return converter.fileToRecords(filepath)
                         .then(records => {
                             const userRecords = records.map(record => {
-                                const identifier = record.SubjectCode;
+                                const identifier = record[subjectCode];
                                 return {
                                     username: identifier,
-                                    email: identifier + '@example.com',
+                                    email: `${identifier}@example.com`,
                                     password: 'pwd',
                                     role: 'participant'
                                 };
                             });
                             const answerRecords = records.reduce((r, record) => {
-                                const username = record.SubjectCode;
+                                const username = record[subjectCode];
                                 _.forOwn(record, (value, key) => {
-                                    if ((key !== 'SubjectCode') && (value !== undefined)) {
+                                    if ((key !== subjectCode) && (value !== undefined)) {
                                         const answer = answerConverter[key](value, surveyId, username);
                                         if (answer) {
                                             r.push(...answer);

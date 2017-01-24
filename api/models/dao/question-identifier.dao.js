@@ -44,10 +44,11 @@ module.exports = class QuestionIdentifierDAO {
             });
     }
 
-    getQuestionIdToIdentifierMap(type, ids) {
+    getInformationByQuestionId(type, ids) {
         const options = {
             where: { type },
             attributes: ['identifier', 'questionId'],
+            include: [{ model: Question, as: 'question', attributes: ['type'] }],
             raw: true
         };
         if (ids) {
@@ -56,7 +57,10 @@ module.exports = class QuestionIdentifierDAO {
         return QuestionIdentifier.findAll(options)
             .then(records => {
                 return records.reduce((r, record) => {
-                    r[record.questionId] = record.identifier;
+                    r[record.questionId] = {
+                        identifier: record.identifier,
+                        type: record['question.type']
+                    };
                     return r;
                 }, {});
             });
