@@ -1,1 +1,1 @@
-export const NAME = 'survey';
+export const NAME = 'adminSurveyBuilder';
