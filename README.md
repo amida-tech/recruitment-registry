@@ -24,7 +24,8 @@ Recruitment Registry is a tool that consists of two node projects, api and clien
 7. Create .env root files in both api and client directories
   	1. The contents of the api .env file should be:
 
-	    `RECREG_DB_DATABASE=recreg
+	   `RECREG_DB_DATABASE=recreg
+     
 	    RECREG_DB_USER= [THIS SHOULD BE YOUR USER ID]
 	    RECREG_DB_PW=TDP#2016!
 	    RECREG_DB_HOST=localhost
@@ -41,14 +42,14 @@ Recruitment Registry is a tool that consists of two node projects, api and clien
 
     2. The contens of the client .env file should be:
 
-   	`NODE_ENV=development
-		API_HTTP_URL="http://localhost:9005/api/v1.0"
-		API_HTTPS_URL="https://localhost:9005/api/v1.0"
-		NODE_ENV=development
-		PROD_API_HTTP_URL="http://localhost:9005/api/v1.0""
-		PROD_API_HTTPS_URL="http://localhost:9005/api/v1.0""
-		API_HTTP_URL="http://localhost:9005/api/v1.0""
-		API_HTTPS_URL="http://localhost:9005/api/v1.0""`
+   	 `NODE_ENV=development
+  		API_HTTP_URL="http://localhost:9005/api/v1.0"
+  		API_HTTPS_URL="https://localhost:9005/api/v1.0"
+  		NODE_ENV=development
+  		PROD_API_HTTP_URL="http://localhost:9005/api/v1.0""
+  		PROD_API_HTTPS_URL="http://localhost:9005/api/v1.0""
+  		API_HTTP_URL="http://localhost:9005/api/v1.0""
+  		API_HTTPS_URL="http://localhost:9005/api/v1.0""`
 
 8. Run sync files (in api directory):
   1. Use these calls:
