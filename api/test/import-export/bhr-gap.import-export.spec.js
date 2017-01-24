@@ -20,8 +20,10 @@ const SharedSpec = require('../util/shared-spec.js');
 
 const comparator = require('../util/comparator');
 
+const enumerations = require('../../import/bhr-gap/enumerations.js');
+const surveys = require('../../import/bhr-gap/bhr-gap-surveys');
+
 const shared = new SharedSpec();
-const bhrSurveys = bhrGapImport.surveys;
 
 xdescribe('bhr gap import-export', function () {
     const fixtureDir = '/Work/BHR_GAP-2016.12.09';
@@ -35,7 +37,7 @@ xdescribe('bhr gap import-export', function () {
     before(shared.setUpFn());
 
     it('load all enumerations', function () {
-        return bhrGapImport.loadEnumerations()
+        return models.enumeration.createEnumerations(enumerations)
             .then(() => models.enumeration.listEnumerations())
             .then(enumerations => {
                 const promises = enumerations.map(({ id }) => models.enumeration.getEnumeration(id));
@@ -44,7 +46,7 @@ xdescribe('bhr gap import-export', function () {
     });
 
     it('load all surveys', function () {
-        return bhrGapImport.loadSurveys();
+        return models.macro.createSurveys(surveys);
     });
 
     it('survey identifier map', function () {
@@ -52,7 +54,7 @@ xdescribe('bhr gap import-export', function () {
             .then(map => store.surveyMap = map);
     });
 
-    bhrSurveys.forEach(bhrSurvey => {
+    surveys.forEach(bhrSurvey => {
         it(`compare survey ${bhrSurvey.identifier.value}`, function () {
             const identifier = bhrSurvey.identifier.value;
             const surveyId = store.surveyMap.get(identifier);

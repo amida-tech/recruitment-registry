@@ -10,11 +10,8 @@ const models = require('../../models');
 const db = require('../../models/db');
 const SPromise = require('../../lib/promise');
 
-const surveys = require('./bhr-gap-surveys');
 const Converter = require('../csv-converter');
 const CSVConverterExport = require('../../export/csv-converter');
-
-const enumerations = require('./enumerations');
 
 const valueConverterByChoiceType = {
     bool: function (value) {
@@ -179,21 +176,6 @@ const SurveyCSVConverter = class SurveyCSVConverter {
     }
 };
 
-const loadEnumerations = function () {
-    const promises = enumerations.map(enumeration => {
-        return models.enumeration.createEnumeration(enumeration);
-    });
-    return SPromise.all(promises);
-};
-
-const loadSurveys = function () {
-    const promises = surveys.map(survey => {
-        return models.survey.createSurvey(survey);
-    });
-    return SPromise.all(promises)
-        .then(ids => models.profileSurvey.createProfileSurveyId(ids[0]));
-};
-
 const generateChoiceAnswerer = function (columnName, identifierMap, choiceMap) {
     const question_id = identifierMap.get(columnName);
     const choiceIdMap = choiceMap.get(question_id);
@@ -342,11 +324,8 @@ const importTransformedSurveyFile = function (tableIdentifier, filepath) {
 };
 
 module.exports = {
-    loadEnumerations,
-    loadSurveys,
     convertSubjects,
     transformSubjectsFile,
     transformSurveyFile,
-    importTransformedSurveyFile,
-    surveys
+    importTransformedSurveyFile
 };
