@@ -74,13 +74,7 @@ export const initialState = {
       'answers': []
     }
   },
-  adminSurvey: {
-    selectedSurvey: [],
-    surveyAnswers: {
-      'surveyId': 0,
-      'answers': []
-    }
-  }
+  adminSurvey: AdminSurveyReducer.initialState,
 };
 
 export const reducers = {

@@ -7,6 +7,7 @@
     @extend            .utility--shadow-flat.activeS;
     @extend            .utility--shadow-flat.small;
     height:            36px;
+    line-height:       34px;
     min-width:         145px;
     color:             $color-dark-grey;
     cursor:            pointer;
@@ -15,11 +16,11 @@
     font-size:         14px;
     font-weight:       700;
     letter-spacing:    .5px;
-    padding-top:       8px;
-    margin-top:        -8px;
     border-bottom:     1px solid $color-key-medium;
     border-top:        1px solid $color-key-medium;
     border-right:      1px solid $color-key-medium;
+    border-left:       1px solid $color-key-medium;
+    margin-bottom:     1px;
     &:first-of-type {
       border-radius:   4px 0 0 4px;
       border-left:     1px solid $color-key-medium;

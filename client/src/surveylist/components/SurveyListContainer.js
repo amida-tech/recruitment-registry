@@ -12,7 +12,6 @@ export class SurveysListContainer extends Component {
 
     render() {
 
-        console.log("Um", this.props.surveys);
         return (
             <SurveyList
                 surveys={this.props.surveys}
