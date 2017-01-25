@@ -1,2 +1,0 @@
-export const GET_ALL_SURVEYS         = 'GET_ALL_SURVEYS';
-export const GET_ALL_SURVEYS_SUCCESS = 'GET_ALL_SURVEYS_SUCCESS';

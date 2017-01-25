@@ -1,35 +1,20 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-.env
-
-# Runtime data
-pids
-*.pid
-*.seed
-
-# Coverage
-lib-cov
-.coverage
-.nyc_output
-
-# node-waf configuration
-.lock-wscript
-
-# build directory
-build
-
-# Dependency directories
 node_modules
-jspm_packages
-bower_components
-
-# Optional npm cache directory
-.npm
-
-# Optional REPL history
-.node_repl_history
+coverage
+public
+.tmp
+.sass-cache
 .idea
-*config.js
-client/src/config/production.js
+client/bower_components
+dist
+/server/config/local.env.js
+npm-debug.log
+coverage
+.env
+.env.gfi
+.env.transmitting
+env.sh
+sandbox
+env.production.user
+env.production.head
+test/generated
+migration/sequelize-meta.json
