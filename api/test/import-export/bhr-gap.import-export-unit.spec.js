@@ -108,7 +108,26 @@ describe('bhr gap import-export unit', function () {
                             r.RaceEthnicity = races;
                         });
                         expect(exportedOrdered).to.deep.equal(originalOrdered);
+                        return original;
+                    })
+                    .then(originalUsers => {
+                        const query = 'SELECT username FROM registry_user WHERE role = \'import\'';
+                        return models.sequelize.query(query, { type: models.sequelize.QueryTypes.SELECT })
+                            .then(users => {
+                                const dbUsernames = users.map(user => user.username).sort();
+                                const fileUsernames = originalUsers.map(originalUsers => originalUsers.UserCode).sort();
+                                expect(dbUsernames).to.deep.equal(fileUsernames);
+                            });
                     });
+            });
+    });
+
+    it('error: try to login with a imported user', function() {
+        const getAUserQuery = 'SELECT username, password, role FROM registry_user WHERE role = \'import\' LIMIT 1';
+        return models.sequelize.query(getAUserQuery, { type: models.sequelize.QueryTypes.SELECT })
+            .then(([{ username, password }]) => {
+                return models.auth.authenticateUser(username, password)
+                    .then(shared.throwingHandler, shared.expectedErrorHandler('authenticationImportedUser'));
             });
     });
 
