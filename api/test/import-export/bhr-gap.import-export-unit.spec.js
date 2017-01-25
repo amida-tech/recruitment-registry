@@ -122,7 +122,7 @@ describe('bhr gap import-export unit', function () {
             });
     });
 
-    it('error: try to login with a imported user', function() {
+    it('error: try to login with a imported user', function () {
         const getAUserQuery = 'SELECT username, password, role FROM registry_user WHERE role = \'import\' LIMIT 1';
         return models.sequelize.query(getAUserQuery, { type: models.sequelize.QueryTypes.SELECT })
             .then(([{ username, password }]) => {
