@@ -159,4 +159,5 @@ describe('bhr gap import-export unit', function () {
     };
 
     BHRGAPTable('sports', 'sports', 'sports-column');
+    BHRGAPTable('television-history', 'television-history', 'television-column');
 });
