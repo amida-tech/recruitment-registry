@@ -92,6 +92,7 @@ const questionChoiceBelongsToArgument = {
 Answer.belongsTo(Question, questionBelongsToArgument);
 Answer.belongsTo(QuestionChoice, questionChoiceBelongsToArgument);
 
+QuestionIdentifier.belongsTo(Question, questionBelongsToArgument);
 AnswerIdentifier.belongsTo(Question, questionBelongsToArgument);
 AnswerIdentifier.belongsTo(QuestionChoice, questionChoiceBelongsToArgument);
 

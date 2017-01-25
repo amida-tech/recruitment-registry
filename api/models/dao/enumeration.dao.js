@@ -6,19 +6,33 @@ const RRError = require('../../lib/rr-error');
 
 const sequelize = db.sequelize;
 const Enumeration = db.Enumeration;
+const SPromise = require('../../lib/promise');
 
 module.exports = class EnumDAO {
     constructor(dependencies) {
         Object.assign(this, dependencies);
     }
 
-    createEnumeration({ name, enumerals }) {
+    createEnumerationTx({ name, enumerals }, transaction) {
+        return Enumeration.create({ name }, { transaction })
+            .then(({ id }) => {
+                return this.enumeral.createEnumerals(id, enumerals, transaction)
+                    .then(() => ({ id }));
+            });
+    }
+
+    createEnumeration(enumeration) {
         return sequelize.transaction(transaction => {
-            return Enumeration.create({ name }, { transaction })
-                .then(({ id }) => {
-                    return this.enumeral.createEnumerals(id, enumerals, transaction)
-                        .then(() => ({ id }));
-                });
+            return this.createEnumerationTx(enumeration, transaction);
+        });
+    }
+
+    createEnumerations(enumerations) {
+        return sequelize.transaction(transaction => {
+            const promises = enumerations.map(enumeration => {
+                return this.createEnumerationTx(enumeration, transaction);
+            });
+            return SPromise.all(promises);
         });
     }
 

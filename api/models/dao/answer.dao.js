@@ -397,7 +397,7 @@ module.exports = class AnswerDAO {
     }
 
     importForUser(userId, stream, surveyIdMap, questionIdMap) {
-        const converter = new importCSVConverter();
+        const converter = new importCSVConverter({ checkType: false });
         return converter.streamToRecords(stream)
             .then(records => {
                 return records.map(record => {

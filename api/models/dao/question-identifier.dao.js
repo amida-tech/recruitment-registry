@@ -4,6 +4,7 @@ const db = require('../db');
 const RRError = require('../../lib/rr-error');
 
 const QuestionIdentifier = db.QuestionIdentifier;
+const Question = db.Question;
 
 module.exports = class QuestionIdentifierDAO {
     constructor() {}
@@ -27,22 +28,27 @@ module.exports = class QuestionIdentifierDAO {
             });
     }
 
-    getIdsByQuestionIdentifier(type) {
+    getInformationByQuestionIdentifier(type) {
         return QuestionIdentifier.findAll({
                 where: { type },
                 attributes: ['questionId', 'identifier'],
+                include: [{ model: Question, as: 'question', attributes: ['id', 'type'] }],
                 raw: true
             })
             .then(records => {
-                const map = records.map(({ questionId, identifier }) => [identifier, questionId]);
+                const map = records.map(record => [record.identifier, {
+                    id: record['question.id'],
+                    type: record['question.type']
+                }]);
                 return new Map(map);
             });
     }
 
-    getQuestionIdToIdentifierMap(type, ids) {
+    getInformationByQuestionId(type, ids) {
         const options = {
             where: { type },
             attributes: ['identifier', 'questionId'],
+            include: [{ model: Question, as: 'question', attributes: ['type'] }],
             raw: true
         };
         if (ids) {
@@ -51,7 +57,10 @@ module.exports = class QuestionIdentifierDAO {
         return QuestionIdentifier.findAll(options)
             .then(records => {
                 return records.reduce((r, record) => {
-                    r[record.questionId] = record.identifier;
+                    r[record.questionId] = {
+                        identifier: record.identifier,
+                        type: record['question.type']
+                    };
                     return r;
                 }, {});
             });

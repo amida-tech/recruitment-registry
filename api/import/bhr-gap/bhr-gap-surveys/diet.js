@@ -51,9 +51,7 @@ module.exports = {
             count: 1,
             rule: {
                 logic: 'not-selected',
-                answer: {
-                    choices: [{ text: 'Other' }]
-                }
+                selectionTexts: ['Other']
             }
         }
     }, {

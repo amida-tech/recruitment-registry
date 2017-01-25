@@ -23,7 +23,7 @@ const exportSurveys = function () {
                 survey.questions.forEach(question => r.push(question.id));
                 return r;
             }, []);
-            return models.questionIdentifier.getQuestionIdToIdentifierMap(identifierType, ids)
+            return models.questionIdentifier.getInformationByQuestionId(identifierType, ids)
                 .then(questionIdentifierMap => {
                     return models.answerIdentifier.getAnswerIdsToIdentifierMap(identifierType)
                         .then(answerIdentifierMap => ({ surveys, questionIdentifierMap, answerIdentifierMap }));
@@ -38,7 +38,7 @@ const exportSurveys = function () {
                     let line = {
                         number: index.toString(),
                         question: question.text,
-                        [cHash]: questionIdentifierMap[question.id]
+                        [cHash]: questionIdentifierMap[question.id].identifier
                     };
                     const instruction = question.instruction;
                     if (instruction) {

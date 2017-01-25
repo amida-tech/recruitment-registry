@@ -25,7 +25,7 @@
         "byline": "^5.0.0",
         "cookie-parser": "^1.4.3",
         "cors": "^2.8.0",
-        "csvtojson": "^1.0.3",
+        "csvtojson": "^1.1.2",
         "dotenv": "^2.0.0",
         "express": "^4.14.0",
         "express-winston": "^2.0.0",

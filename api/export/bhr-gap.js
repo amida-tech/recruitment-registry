@@ -22,27 +22,29 @@ const assessmentStatusMap = {
     'unable-to-perform': 'Unable To Perform'
 };
 
-const exportSubjectsData = function () {
-    return models.surveyIdentifier.getIdsBySurveyIdentifier('bhr-gap')
+const exportSubjectsData = function ({ surveyIdentifier, questionIdentifierType, subjectCode }) {
+    return models.surveyIdentifier.getIdsBySurveyIdentifier(surveyIdentifier.type)
         .then(surveyIdentificaterMap => {
-            const surveyId = surveyIdentificaterMap.get('subjects');
+            const surveyId = surveyIdentificaterMap.get(surveyIdentifier.value);
             const parameters = {
                 survey_id: surveyId
             };
             const query = queryrize.replaceParameters(rawExportSubjectsScript, parameters);
             return db.sequelize.query(query, { type: db.sequelize.QueryTypes.SELECT })
                 .then(subjects => {
-                    return models.questionIdentifier.getQuestionIdToIdentifierMap('bhr-gap-subjects-column')
+                    return models.questionIdentifier.getInformationByQuestionId(questionIdentifierType)
                         .then(identifierMap => {
                             const result = subjects.reduce((r, subject) => {
                                 const username = subject.username;
                                 let record = r.get(username);
                                 if (!record) {
-                                    record = { SubjectCode: username };
+                                    record = {
+                                        [subjectCode]: username
+                                    };
                                     r.set(username, record);
                                 }
-                                const identifier = identifierMap[subject.question_id];
-                                if (identifier === 'RaceEthnicity') {
+                                const { identifier, type } = identifierMap[subject.question_id];
+                                if (type === 'choices') {
                                     let value = record[identifier];
                                     if (value) {
                                         value = value + ';' + subject.value;
@@ -55,7 +57,8 @@ const exportSubjectsData = function () {
                                 }
                                 return r;
                             }, new Map());
-                            const columns = ['SubjectCode', ..._.values(identifierMap)];
+                            const questionColumns = _.values(identifierMap).map(r => r.identifier);
+                            const columns = [subjectCode, ...questionColumns];
                             const rows = [...result.values()];
                             return { rows, columns };
                         });
@@ -63,12 +66,12 @@ const exportSubjectsData = function () {
         });
 };
 
-const writeSubjectsData = function (filepath, order) {
-    return exportSubjectsData()
+const writeSubjectsData = function (filepath, options) {
+    return exportSubjectsData(options)
         .then(({ columns, rows }) => {
             const converter = new CSVConverterExport({ fields: columns });
-            if (order) {
-                rows = _.sortBy(rows, order);
+            if (options.order) {
+                rows = _.sortBy(rows, options.order);
             }
             fs.writeFileSync(filepath, converter.dataToCSV(rows));
             return { columns, rows };
@@ -76,8 +79,8 @@ const writeSubjectsData = function (filepath, order) {
 
 };
 
-const exportTableData = function (surveyType, answerType) {
-    return models.surveyIdentifier.getIdsBySurveyIdentifier('bhr-gap')
+const exportTableData = function ({ type, value: surveyType }, answerType) {
+    return models.surveyIdentifier.getIdsBySurveyIdentifier(type)
         .then(surveyIdentificaterMap => {
             const surveyId = surveyIdentificaterMap.get(surveyType);
             return models.answerIdentifier.getIdentifiersByAnswerIds(answerType)
@@ -101,8 +104,11 @@ const exportTableData = function (surveyType, answerType) {
                                         throw new Error('No user found.');
                                     }
                                     const lastAnswer = record.last_answer ? 'True' : 'False';
-                                    const daysAfterBaseline = record.days_after_baseline.toString();
-                                    r[key] = { SubjectCode: subjectCode, Timepoint: timePoint, DaysAfterBaseline: daysAfterBaseline, Status: assessmentStatusMap[record.status], Latest: lastAnswer };
+                                    r[key] = { SubjectCode: subjectCode, Timepoint: timePoint, Status: assessmentStatusMap[record.status], Latest: lastAnswer };
+                                    const daysAfterBaseline = record.days_after_baseline;
+                                    if (daysAfterBaseline !== null) {
+                                        r[key].DaysAfterBaseline = daysAfterBaseline.toString();
+                                    }
                                 }
                                 if (record.question_id) {
                                     const columnIdentifier = identifierMap.get(record.question_id);
@@ -149,8 +155,8 @@ const exportTableData = function (surveyType, answerType) {
         });
 };
 
-const writeTableData = function (surveyType, answerType, filepath, order) {
-    return exportTableData(surveyType, answerType)
+const writeTableData = function (surveyIdentifier, answerType, filepath, order) {
+    return exportTableData(surveyIdentifier, answerType)
         .then(({ columns, rows }) => {
             const converter = new CSVConverterExport({ fields: columns });
             if (order) {

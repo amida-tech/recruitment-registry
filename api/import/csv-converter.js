@@ -6,8 +6,9 @@ const csvToJson = require('csvtojson');
 const SPromise = require('../lib/promise');
 
 module.exports = class CSVConverter {
-    constructor(options = {}) {
-        this.options = options;
+    constructor(options, jsonHandler) {
+        this.options = options || {};
+        this.jsonHandler = jsonHandler;
     }
 
     streamToRecords(stream) {
@@ -15,6 +16,9 @@ module.exports = class CSVConverter {
         const px = new SPromise((resolve, reject) => {
             converter.on('end_parsed', resolve);
             converter.on('error', reject);
+            if (this.jsonHandler) {
+                converter.on('json', this.jsonHandler);
+            }
         });
         stream.pipe(converter);
         return px;

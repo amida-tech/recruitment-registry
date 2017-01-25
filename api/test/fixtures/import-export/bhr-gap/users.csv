@@ -1,0 +1,21 @@
+UserCode,EyeColor,HairColor,RaceEthnicity,Age
+Code-000,Blue,,Caucasian,73
+Code-001,Green,Blonde,Caucasian,51
+Code-002,,White,Asian,75
+Code-003,Hazel,Black,Asian;Caucasian,51
+Code-004,Brown,Black,Latino,55
+Code-005,Blue,Blonde,Caucasian,53
+Code-006,,,Caucasian,51
+Code-007,,Brown,Pacific Islander,66
+Code-008,Blue,Brown,Declined To State,67
+Code-009,Black,Black,African American,70
+Code-010,Brown,Black,Caucasian,51
+Code-011,Hazel,Brown,African American,70
+Code-012,,,Native American,56
+Code-013,Brown,Black,Latino,53
+Code-014,Blue,Blonde,Caucasian,60
+Code-015,Black,White,African American;Caucasian;Latino,59
+Code-016,Green,,Caucasian,64
+Code-017,Blue,Brown,Caucasian,63
+Code-018,Brown,Black,Latino,57
+Code-019,Brown,Brown,African American;Asian,55
