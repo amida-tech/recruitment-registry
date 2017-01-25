@@ -267,7 +267,7 @@ const convertSubjects = function (filepath, { surveyIdentifier, questionIdentifi
                                     username: identifier,
                                     email: `${identifier}@example.com`,
                                     password: 'pwd',
-                                    role: 'participant'
+                                    role: 'import'
                                 };
                             });
                             const answerRecords = records.reduce((r, record) => {

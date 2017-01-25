@@ -139,6 +139,10 @@ errors.authenticationError = {
     msg: 'Authentication error.'
 };
 
+errors.authenticationImportedUser = {
+    msg: 'Imported users cannot be authenticated.'
+};
+
 errors.uniqueUsername = {
     msg: 'The specified username is already in use.'
 };

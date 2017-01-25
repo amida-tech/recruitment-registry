@@ -34,6 +34,9 @@ module.exports = class UserDAO {
             })
             .then(user => {
                 if (user) {
+                    if (user.role === 'import') {
+                        return RRError.reject('authenticationImportedUser');
+                    }
                     return user.authenticate(password)
                         .then(() => ({
                             id: user.id,
