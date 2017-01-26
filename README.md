@@ -13,11 +13,17 @@ Recruitment Registry API
 ## Installation
 
 1. Install Node.js v6 - previous node versions may require Babel
-2. Install Postgres v9.4 or better (see Postgres dependencies to switch to another Sequelize compatible relational database)
-3. Create a database `recreg`
+2. Install and initialize Postgres v9.4 or better (see Postgres dependencies to switch to another Sequelize compatible relational database)
+3. Create a database `createdb recreg`
 4. Install Grunt
-5. Install dependencies: `npm install`
-6. Create a `.env` file in this directory
+5. Cd into api directory and install dependencies: `npm install`
+6. Create a `.env` file in the root level of this directory
+7. Run sync files:
+  `node syncDecember15.js`
+  `node syncDemo.js` 
+  `node syncAndLoadAlzheimers.js`
+8. Run program:
+`npm start`
 
 ## Windows Caveat
 
@@ -34,14 +40,23 @@ installing the needed components for node-gyp. And all users will probably have 
 
 Use `export NODE_ENV=development` (or `production` or `test`) to set node environment in Bash compatible shells or equivalent in others.
 
+Add to `PATH` `export PATH=$PATH:/Applications/Postgres.app/Contents/Versions/latest/bin`. Note: You'll have to preform this operation for each new shell session, or add the Postgres  `bin` file to your `$PATH` variable.
+
 A minimal sample `.env` file is below.  Change according to your database
 ```
 RECREG_DB_NAME=recreg
-RECREG_DB_USER=foouser
-RECREG_DB_PASS=TDP#2016!
+RECREG_DB_USER=postgres
+RECREG_DB_PW=postgres
 RECREG_DB_HOST=localhost
 RECREG_DB_PORT=5432
 RECREG_DB_DIALECT=postgres
+RECREG_DB_POOL_MAX=5
+RECREG_DB_MIN=0
+RECREG_DB_IDLE=10000
+DEBUGXX="swagger-tools:middleware:*"
+RECREG_LOGGING_LEVEL=emerg
+RECREG_CLIENT_BASE_URL="http://localhost:4000/reset-tokens/"
+RECREG_CORS_ORIGIN=http://localhost:4000 
 ```
 
 A list of full environment variable settings is below.  They can be either manually set in the shell or can be included in the `.env` file.  Defaults indicated in paranthesis.
