@@ -5,7 +5,7 @@ module.exports = function (sequelize, DataTypes) {
         questionActionId: {
             type: DataTypes.INTEGER,
             allowNull: false,
-            field: 'question_action_text',
+            field: 'question_action_id',
             references: {
                 model: 'question_action',
                 key: 'id'
