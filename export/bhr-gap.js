@@ -4,12 +4,13 @@ const fs = require('fs');
 const _ = require('lodash');
 
 const models = require('../models');
-const db = require('../models/db');
 const queryrize = require('../lib/queryrize');
 const CSVConverterExport = require('../export/csv-converter');
 
 const rawExportTableScript = queryrize.readQuerySync('bhr-gap-export.sql');
 const rawExportSubjectsScript = queryrize.readQuerySync('bhr-gap-subject-export.sql');
+
+const sequelize = models.sequelize;
 
 const assessmentStatusMap = {
     'scheduled': 'Scheduled',
@@ -30,7 +31,7 @@ const exportSubjectsData = function ({ surveyIdentifier, questionIdentifierType,
                 survey_id: surveyId
             };
             const query = queryrize.replaceParameters(rawExportSubjectsScript, parameters);
-            return db.sequelize.query(query, { type: db.sequelize.QueryTypes.SELECT })
+            return sequelize.query(query, { type: sequelize.QueryTypes.SELECT })
                 .then(subjects => {
                     return models.questionIdentifier.getInformationByQuestionId(questionIdentifierType)
                         .then(identifierMap => {
@@ -89,7 +90,7 @@ const exportTableData = function ({ type, value: surveyType }, answerType) {
                         survey_id: surveyId
                     };
                     const query = queryrize.replaceParameters(rawExportTableScript, parameters);
-                    return db.sequelize.query(query, { type: db.sequelize.QueryTypes.SELECT })
+                    return sequelize.query(query, { type: sequelize.QueryTypes.SELECT })
                         .then(collectedRecords => {
                             return collectedRecords.reduce((r, record) => {
                                 const key = record.user_assessment_id;
