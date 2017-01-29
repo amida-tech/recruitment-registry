@@ -38,6 +38,22 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.INTEGER,
             field: 'skip_count'
         },
+        enableWhenQuestionId: {
+            type: DataTypes.INTEGER,
+            field: 'enable_when_question_id',
+            refrences: {
+                model: 'question',
+                key: 'id'
+            }
+        },
+        enableWhenFuleId: {
+            type: DataTypes.INTEGER,
+            field: 'enable_when_rule_id',
+            references: {
+                model: 'answer_rule',
+                key: 'id'
+            }
+        },
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',
