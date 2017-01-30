@@ -8,11 +8,12 @@ const _ = require('lodash');
 const config = require('../../config');
 const queryrize = require('../../lib/queryrize');
 const models = require('../../models');
-const db = require('../../models/db');
 const SPromise = require('../../lib/promise');
 
 const Converter = require('../csv-converter');
 const CSVConverterExport = require('../../export/csv-converter');
+
+const sequelize = models.sequelize;
 
 const valueConverterByChoiceType = {
     bool: function (value) {
@@ -300,8 +301,8 @@ const importSubjects = function (filepath, options) {
         })
         .then(subjectsData => {
             const query = 'copy registry_user (username, email, password, role) from :filepath csv header';
-            return db.sequelize.query(query, { replacements: { filepath: userFilepath } })
-                .then(() => db.sequelize.query('select id, username from registry_user', { type: db.sequelize.QueryTypes.SELECT }))
+            return sequelize.query(query, { replacements: { filepath: userFilepath } })
+                .then(() => sequelize.query('select id, username from registry_user', { type: sequelize.QueryTypes.SELECT }))
                 .then(users => {
                     const subjectMap = new Map();
                     users.forEach(({ id, username }) => subjectMap.set(username, id));
@@ -319,7 +320,7 @@ const importSubjects = function (filepath, options) {
                 })
                 .then(() => {
                     const query = 'copy answer (user_id, survey_id, question_id, question_choice_id, value, language_code) from :filepath csv header';
-                    return db.sequelize.query(query, { replacements: { filepath: answerFilepath } });
+                    return sequelize.query(query, { replacements: { filepath: answerFilepath } });
                 });
         });
 
@@ -347,9 +348,9 @@ const importTransformedSurveyFile = function (surveyIdentifier, filepath) {
             const script = rawScript.map(query => queryrize.replaceParameters(query, parameters));
             let promise = script.reduce((r, query) => {
                 if (r === null) {
-                    r = db.sequelize.query(query);
+                    r = sequelize.query(query);
                 } else {
-                    r = r.then(() => db.sequelize.query(query));
+                    r = r.then(() => sequelize.query(query));
                 }
                 return r;
             }, null);

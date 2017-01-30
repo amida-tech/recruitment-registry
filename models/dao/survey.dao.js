@@ -17,10 +17,76 @@ const ProfileSurvey = db.ProfileSurvey;
 const AnswerRule = db.AnswerRule;
 const AnswerRuleValue = db.AnswerRuleValue;
 
+const translateRuleChoices = function (ruleParent, choices) {
+    const choiceText = _.get(ruleParent, 'rule.answer.choiceText');
+    const rawChoices = _.get(ruleParent, 'rule.answer.choices');
+    const selectionTexts = _.get(ruleParent, 'rule.selectionTexts');
+    if (choiceText || rawChoices || selectionTexts) {
+        if (!choices) {
+            return RRError.reject('surveySkipChoiceForNonChoice');
+        }
+        if (choiceText) {
+            const serverChoice = choices.find(choice => choice.text === choiceText);
+            if (!serverChoice) {
+                return RRError.reject('surveySkipChoiceNotFound');
+            }
+            ruleParent.rule.answer.choice = serverChoice.id;
+            delete ruleParent.rule.answer.choiceText;
+        }
+        if (rawChoices) {
+            ruleParent.rule.answer.choices.forEach(ruleParentChoice => {
+                const serverChoice = choices.find(choice => choice.text === ruleParentChoice.text);
+                if (!serverChoice) {
+                    throw new RRError('surveySkipChoiceNotFound');
+                }
+                ruleParentChoice.id = serverChoice.id;
+            });
+            ruleParent.rule.answer.choices.forEach(ruleParentChoice => delete ruleParentChoice.text);
+        }
+        if (selectionTexts) {
+            const selectionIds = selectionTexts.map(text => {
+                const serverChoice = choices.find(choice => choice.text === text);
+                if (!serverChoice) {
+                    throw new RRError('surveySkipChoiceNotFound');
+                }
+                return serverChoice.id;
+            });
+            ruleParent.rule.selectionIds = selectionIds;
+            delete ruleParent.rule.selectionTexts;
+        }
+        return ruleParent;
+    }
+    return null;
+};
+
 module.exports = class SurveyDAO extends Translatable {
     constructor(dependencies) {
         super('survey_text', 'surveyId', ['name', 'description'], { description: true });
         Object.assign(this, dependencies);
+    }
+
+    createRuleAnswerValue(ruleParent, transaction) {
+        if (!ruleParent) {
+            return null;
+        }
+        const rule = ruleParent.rule;
+        const ruleId = ruleParent.ruleId;
+        if (rule.answer) {
+            let dbAnswers = this.answer.toDbAnswer(rule.answer);
+            const pxs = dbAnswers.map(({ questionChoiceId, value }) => {
+                questionChoiceId = questionChoiceId || null;
+                value = (value !== undefined ? value : null);
+                return AnswerRuleValue.create({ ruleId, questionChoiceId, value }, { transaction });
+            });
+            return SPromise.all(pxs);
+        }
+        if (rule.selectionIds) {
+            const pxs = rule.selectionIds.map(questionChoiceId => {
+                return AnswerRuleValue.create({ ruleId, questionChoiceId }, { transaction });
+            });
+            return SPromise.all(pxs);
+        }
+        return null;
     }
 
     validateCreateQuestionsPreTransaction(survey) {
@@ -73,88 +139,65 @@ module.exports = class SurveyDAO extends Translatable {
                             questions[q.index] = { id, required: inputQuestion.required };
                             let skip = inputQuestion.skip;
                             if (skip) {
-                                const choiceText = _.get(skip, 'rule.answer.choiceText');
-                                const rawChoices = _.get(skip, 'rule.answer.choices');
-                                const selectionTexts = _.get(skip, 'rule.selectionTexts');
-                                if (choiceText || rawChoices || selectionTexts) {
-                                    skip = _.cloneDeep(skip);
-                                    if (!choices) {
-                                        return RRError.reject('surveySkipChoiceForNonChoice');
-                                    }
-                                    if (choiceText) {
-                                        const serverChoice = choices.find(choice => choice.text === choiceText);
-                                        if (!serverChoice) {
-                                            return RRError.reject('surveySkipChoiceNotFound');
-                                        }
-                                        skip.rule.answer.choice = serverChoice.id;
-                                        delete skip.rule.answer.choiceText;
-                                    }
-                                    if (rawChoices) {
-                                        skip.rule.answer.choices.forEach(skipChoice => {
-                                            const serverChoice = choices.find(choice => choice.text === skipChoice.text);
-                                            if (!serverChoice) {
-                                                throw new RRError('surveySkipChoiceNotFound');
-                                            }
-                                            skipChoice.id = serverChoice.id;
-                                        });
-                                        skip.rule.answer.choices.forEach(skipChoice => delete skipChoice.text);
-                                    }
-                                    if (selectionTexts) {
-                                        const selectionIds = selectionTexts.map(text => {
-                                            const serverChoice = choices.find(choice => choice.text === text);
-                                            if (!serverChoice) {
-                                                throw new RRError('surveySkipChoiceNotFound');
-                                            }
-                                            return serverChoice.id;
-                                        });
-                                        skip.rule.selectionIds = selectionIds;
-                                        delete skip.rule.selectionTexts;
-                                    }
-                                }
+                                skip = _.cloneDeep(skip);
+                                skip = translateRuleChoices(skip, choices) || skip;
                                 questions[q.index].skip = skip;
+                            }
+                            let enableWhen = inputQuestion.enableWhen;
+                            if (enableWhen) {
+                                enableWhen = _.cloneDeep(enableWhen);
+                                enableWhen = translateRuleChoices(enableWhen, choices) || enableWhen;
+                                questions[q.index].enableWhen = enableWhen;
                             }
                         });
                 }))
-                .then(() => questions);
+                .then(() => {
+                    questions.forEach(question => {
+                        let questionIndex = _.get(question, 'enableWhen.questionIndex', null);
+                        if (questionIndex !== null) {
+                            question.enableWhen.questionId = questions[questionIndex].id;
+                            delete question.enableWhen.questionIndex;
+                        }
+                    });
+                    return questions;
+                });
         } else {
             return SPromise.resolve(questions);
         }
     }
 
+    createRulesForQuestions(questions, property, transaction) {
+        const questionsWithRule = questions.filter(question => question[property] && question[property].rule);
+        if (questionsWithRule.length) {
+            const promises = questionsWithRule.map(question => {
+                const rule = question[property].rule;
+                return AnswerRule.create({ logic: rule.logic }, { transaction })
+                    .then(({ id }) => question[property].ruleId = id);
+            });
+            return SPromise.all(promises).then(() => questions);
+        }
+        return questions;
+    }
+
     updateQuestionsTx(inputQxs, surveyId, transaction) {
         const questions = inputQxs.slice();
         return this.createNewQuestionsTx(questions, transaction)
-            .then((questions) => {
+            .then(questions => this.createRulesForQuestions(questions, 'skip', transaction))
+            .then(questions => this.createRulesForQuestions(questions, 'enableWhen', transaction))
+            .then(questions => {
                 return SPromise.all(questions.map((qx, line) => {
                     const record = { questionId: qx.id, surveyId, line, required: Boolean(qx.required) };
                     if (qx.skip) {
                         record.skipCount = qx.skip.count;
-                        const rule = qx.skip.rule;
-                        return AnswerRule.create({ logic: rule.logic }, { transaction })
-                            .then(({ id: ruleId }) => {
-                                record.skipRuleId = ruleId;
-                                return SurveyQuestion.create(record, { transaction })
-                                    .then(() => {
-                                        if (rule.answer) {
-                                            let dbAnswers = this.answer.toDbAnswer(rule.answer);
-                                            const pxs = dbAnswers.map(({ questionChoiceId, value }) => {
-                                                questionChoiceId = questionChoiceId || null;
-                                                value = (value !== undefined ? value : null);
-                                                return AnswerRuleValue.create({ ruleId, questionChoiceId, value }, { transaction });
-                                            });
-                                            return SPromise.all(pxs);
-                                        }
-                                        if (rule.selectionIds) {
-                                            const pxs = rule.selectionIds.map(questionChoiceId => {
-                                                return AnswerRuleValue.create({ ruleId, questionChoiceId }, { transaction });
-                                            });
-                                            return SPromise.all(pxs);
-                                        }
-                                    });
-                            });
-                    } else {
-                        return SurveyQuestion.create(record, { transaction });
+                        record.skipRuleId = qx.skip.ruleId;
                     }
+                    if (qx.enableWhen) {
+                        record.enableWhenQuestionId = qx.enableWhen.questionId;
+                        record.enableWhenRuleId = qx.enableWhen.ruleId;
+                    }
+                    return SurveyQuestion.create(record, { transaction })
+                        .then(() => this.createRuleAnswerValue(qx.skip, transaction))
+                        .then(() => this.createRuleAnswerValue(qx.enableWhen, transaction));
                 }));
             });
     }
@@ -363,6 +406,9 @@ module.exports = class SurveyDAO extends Translatable {
                                     const result = Object.assign(qxMap[surveyQuestion.questionId], { required: surveyQuestion.required });
                                     if (surveyQuestion.skip) {
                                         result.skip = surveyQuestion.skip;
+                                    }
+                                    if (surveyQuestion.enableWhen) {
+                                        result.enableWhen = surveyQuestion.enableWhen;
                                     }
                                     return result;
                                 });

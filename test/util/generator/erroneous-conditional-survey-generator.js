@@ -56,7 +56,7 @@ const expectedErrors = [{
 
 module.exports = class ErroneousConditionalSurveyGenerator extends ConditionalSurveyGenerator {
     constructor() {
-        super({ conditionalQuestions, requiredOverrides });
+        super();
     }
 
     numOfCases() {
@@ -76,6 +76,14 @@ module.exports = class ErroneousConditionalSurveyGenerator extends ConditionalSu
     count() {
         const surveyIndex = this.currentIndex();
         return counts[surveyIndex];
+    }
+
+    getConditionalQuestion(key) {
+        return conditionalQuestions[key];
+    }
+
+    getRequiredOverride(key) {
+        return requiredOverrides[key];
     }
 
     expectedError(index) {

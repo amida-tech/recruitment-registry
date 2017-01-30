@@ -106,6 +106,28 @@ const skipCount = function (queryInterface, Sequelize) {
     });
 };
 
+const enableWhenRuleId = function (queryInterface, Sequelize) {
+    return queryInterface.addColumn('survey_question', 'enable_when_rule_id', {
+        type: Sequelize.INTEGER,
+        field: 'enable_when_rule_id',
+        references: {
+            model: 'answer_rule',
+            key: 'id'
+        }
+    });
+};
+
+const enableWhenQuestionId = function (queryInterface, Sequelize) {
+    return queryInterface.addColumn('survey_question', 'enable_when_question_id', {
+        type: Sequelize.INTEGER,
+        field: 'enable_when_question_id',
+        references: {
+            model: 'answer_rule',
+            key: 'id'
+        }
+    });
+};
+
 module.exports = {
     up: function (queryInterface, Sequelize) {
         const sequelize = queryInterface.sequelize;
@@ -114,6 +136,8 @@ module.exports = {
             .then(() => answerRuleValue(queryInterface, Sequelize))
             .then(() => skipRuleId(queryInterface, Sequelize))
             .then(() => skipCount(queryInterface, Sequelize))
+            .then(() => enableWhenRuleId(queryInterface, Sequelize))
+            .then(() => enableWhenQuestionId(queryInterface, Sequelize))
             .then(() => sequelize.query('INSERT INTO answer_rule_logic (name) VALUES (\'equals\')'))
             .then(() => sequelize.query('INSERT INTO answer_rule_logic (name) VALUES (\'exists\')'))
             .then(() => sequelize.query('INSERT INTO answer_rule_logic (name) VALUES (\'not-equals\')'))

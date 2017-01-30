@@ -11,6 +11,40 @@ const QuestionChoice = db.QuestionChoice;
 const AnswerRule = db.AnswerRule;
 const AnswerRuleValue = db.AnswerRuleValue;
 
+const rearrangeSkip = function (surveyQuestion, rules, ruleIds) {
+    const ruleId = surveyQuestion['skip.id'];
+    if (ruleId) {
+        const count = surveyQuestion.skipCount;
+        const rule = {
+            id: ruleId,
+            logic: surveyQuestion['skip.logic']
+        };
+        surveyQuestion.skip = { count, rule };
+        rules[ruleId] = { rule, type: surveyQuestion['question.type'] };
+        ruleIds.push(ruleId);
+    }
+    delete surveyQuestion.skipCount;
+    delete surveyQuestion['skip.id'];
+    delete surveyQuestion['skip.logic'];
+};
+
+const rearrangeEnableWhen = function (surveyQuestion, rules, ruleIds) {
+    const ruleId = surveyQuestion['enableWhen.id'];
+    if (ruleId) {
+        const questionId = surveyQuestion.enableWhenQuestionId;
+        const rule = {
+            id: ruleId,
+            logic: surveyQuestion['enableWhen.logic']
+        };
+        surveyQuestion.enableWhen = { questionId, rule };
+        rules[ruleId] = { rule, type: surveyQuestion['question.type'] };
+        ruleIds.push(ruleId);
+    }
+    delete surveyQuestion.enableWhenQuestionId;
+    delete surveyQuestion['enableWhen.id'];
+    delete surveyQuestion['enableWhen.logic'];
+};
+
 module.exports = class SurveyQuestionsDAO {
     constructor() {}
 
@@ -18,10 +52,11 @@ module.exports = class SurveyQuestionsDAO {
         const options = {
             where: { surveyId },
             raw: true,
-            attributes: ['questionId', 'required', 'skipCount'],
+            attributes: ['questionId', 'required', 'skipCount', 'enableWhenQuestionId'],
             order: 'line',
             include: [
                 { model: AnswerRule, as: 'skip', attributes: ['id', 'logic'] },
+                { model: AnswerRule, as: 'enableWhen', attributes: ['id', 'logic'] },
                 { model: Question, as: 'question', attributes: ['type'] }
             ]
         };
@@ -30,20 +65,8 @@ module.exports = class SurveyQuestionsDAO {
                 const rules = {};
                 const ruleIds = [];
                 surveyQuestions.forEach(surveyQuestion => {
-                    const ruleId = surveyQuestion['skip.id'];
-                    if (ruleId) {
-                        const count = surveyQuestion.skipCount;
-                        const rule = {
-                            id: ruleId,
-                            logic: surveyQuestion['skip.logic']
-                        };
-                        surveyQuestion.skip = { count, rule };
-                        rules[ruleId] = { rule, type: surveyQuestion['question.type'] };
-                        ruleIds.push(ruleId);
-                    }
-                    delete surveyQuestion.skipCount;
-                    delete surveyQuestion['skip.id'];
-                    delete surveyQuestion['skip.logic'];
+                    rearrangeSkip(surveyQuestion, rules, ruleIds);
+                    rearrangeEnableWhen(surveyQuestion, rules, ruleIds);
                     delete surveyQuestion['question.type'];
                 });
                 if (ruleIds.length) {

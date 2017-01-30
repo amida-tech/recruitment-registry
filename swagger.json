@@ -2785,6 +2785,51 @@
             },
             "additionalProperties": false
         },
+        "newEnableWhenCondition": {
+            "type": "object",
+            "required": ["rule"],
+            "properties": {
+                "questionIndex": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "questionId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "rule": {
+                    "type": "object",
+                    "required": ["logic"],
+                    "properties": {
+                        "logic": {
+                            "type": "string"
+                        },
+                        "answer": {
+                            "$ref": "#/definitions/newSkipAnswer"
+                        },
+                        "selectionIds": {
+                            "type": "array",
+                            "items": {
+                                "type": "integer",
+                                "minimum": 1
+                            },
+                            "minItems": 1
+                        },
+                        "selectionTexts": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        }
+                    },
+                    "maxProperties": 2,
+                    "additionalProperties": false
+                }
+            },
+            "maxProperties": 2,
+            "additionalProperties": false
+        },
         "newSurveyQuestion": {
             "type": "object",
             "description": "Describes either a brand new question (no 'id') or an existing question ('id' only with 'required').",
@@ -2798,6 +2843,9 @@
                 },
                 "skip": {
                     "$ref": "#/definitions/newSkipCondition"
+                },
+                "enableWhen": {
+                    "$ref": "#/definitions/newEnableWhenCondition"
                 },
                 "text": {
                     "type": "string",
@@ -2989,6 +3037,47 @@
             },
             "additionalProperties": false
         },
+        "enableWhenCondition": {
+            "type": "object",
+            "required": ["rule"],
+            "properties": {
+                "questionId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "questionIndex": {
+                    "type": "integer"
+                },
+                "rule": {
+                    "type": "object",
+                    "required": ["id", "logic"],
+                    "properties": {
+                        "id": {
+                            "type": "integer",
+                            "minimum": 1
+                        },
+                        "logic": {
+                            "type": "string"
+                        },
+                        "answer": {
+                            "$ref": "#/definitions/answer"
+                        },
+                        "selectionIds": {
+                            "type": "array",
+                            "items": {
+                                "type": "integer",
+                                "minimum": 1
+                            },
+                            "minItems": 1
+                        }
+                    },
+                    "maxProperties": 3,
+                    "additionalProperties": false
+                }
+            },
+            "additionalProperties": false,
+            "maxProperties": 2
+        },
         "surveyQuestion": {
             "type": "object",
             "required": [
@@ -3027,6 +3116,9 @@
                 },
                 "skip": {
                     "$ref": "#/definitions/skipCondition"
+                },
+                "enableWhen": {
+                    "$ref": "#/definitions/enableWhenCondition"
                 },
                 "enumerals": {
                     "type": "array",
