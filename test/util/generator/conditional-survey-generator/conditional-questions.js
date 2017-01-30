@@ -10,7 +10,10 @@ module.exports = {
     '6-1': { type: 'choices', logic: 'not-selected', count: 2, selectionCount: 2 },
     '7-3': { type: 'choices', logic: 'not-selected', count: 1, selectionCount: 1 },
     '8-4': { type: 'choices', logic: 'not-selected', count: 1, selectionCount: 3 },
-    '8-5': { type: 'text', multipleSupport: true },
+    '8-5': { type: 'text', purpose: 'multipleSupport' },
     '9-4': { type: 'choices', logic: 'each-not-selected', count: 1, selectionCount: 3 },
-    '10-0': { type: 'choices', logic: 'each-not-selected', count: 4, selectionCount: 3 }
+    '10-0': { type: 'choices', logic: 'each-not-selected', count: 4, selectionCount: 3 },
+    '11-5': { type: 'text', purpose: 'enableWhen', logic: 'not-equals', relativeIndex: 1 },
+    '11-6': { type: 'text', purpose: 'enableWhen', logic: 'not-equals', relativeIndex: 2 },
+    '12-3': { type: 'choice', purpose: 'enableWhen', logic: 'not-equals', relativeIndex: 1 }
 };

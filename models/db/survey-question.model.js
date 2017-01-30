@@ -46,7 +46,7 @@ module.exports = function (sequelize, DataTypes) {
                 key: 'id'
             }
         },
-        enableWhenFuleId: {
+        enableWhenRuleId: {
             type: DataTypes.INTEGER,
             field: 'enable_when_rule_id',
             references: {

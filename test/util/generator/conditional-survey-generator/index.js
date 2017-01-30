@@ -9,7 +9,36 @@ const conditionalQuestions = require('./conditional-questions');
 const requiredOverrides = require('./required-overrides');
 const errorAnswerSetup = require('./error-answer-setup');
 
-const counts = [8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8];
+const counts = [8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8];
+
+const specialQuestionGenerator = {
+    multipleSupport(surveyGenerator, questionInfo) {
+        return surveyGenerator.questionGenerator.newMultiQuestion('text', questionInfo.selectionCount);
+    },
+    skip(surveyGenerator, questionInfo) {
+        const { type, logic, count } = questionInfo;
+        const question = surveyGenerator.questionGenerator.newQuestion(type);
+        const skip = { rule: {} };
+        if (count !== undefined) {
+            skip.count = count;
+        }
+        if (logic !== undefined) {
+            skip.rule.logic = logic;
+        }
+        surveyGenerator.addAnswer(skip.rule, questionInfo, question);
+        question.skip = skip;
+        return question;
+    },
+    enableWhen(surveyGenerator, questionInfo, index) {
+        const { type, relativeIndex, logic } = questionInfo;
+        const question = surveyGenerator.questionGenerator.newQuestion(type);
+        const questionIndex = index - relativeIndex;
+        const enableWhen = { questionIndex, rule: { logic } };
+        surveyGenerator.addAnswer(enableWhen.rule, questionInfo, question);
+        question.enableWhen = enableWhen;
+        return question;
+    }
+};
 
 module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
     constructor({ questionGenerator, answerer } = {}) {
@@ -59,21 +88,9 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
         const questionInfo = this.getConditionalQuestion(key);
         let question;
         if (questionInfo) {
-            const { type, logic, count, multipleSupport, selectionCount } = questionInfo;
-            if (multipleSupport) {
-                question = this.questionGenerator.newMultiQuestion('text', selectionCount);
-            } else {
-                question = this.questionGenerator.newQuestion(type);
-                const skip = { rule: {} };
-                if (count !== undefined) {
-                    skip.count = count;
-                }
-                if (logic !== undefined) {
-                    skip.rule.logic = logic;
-                }
-                this.addAnswer(skip.rule, questionInfo, question);
-                question.skip = skip;
-            }
+            const purpose = questionInfo.purpose || 'skip';
+            question = specialQuestionGenerator[purpose](this, questionInfo, index);
+            question.required = false;
         } else {
             question = super.newSurveyQuestion(index);
         }
@@ -129,11 +146,15 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
     }
 
     static newSurveyFromPrevious(clientSurvey, serverSurvey) {
-        const questions = serverSurvey.questions.map(({ id, required, skip }) => {
+        const questions = serverSurvey.questions.map(({ id, required, skip, enableWhen }) => {
             const question = { id, required };
             if (skip) {
                 question.skip = _.cloneDeep(skip);
                 delete question.skip.rule.id;
+            }
+            if (enableWhen) {
+                question.enableWhen = _.cloneDeep(enableWhen);
+                delete question.enableWhen.rule.id;
             }
             return question;
         });
