@@ -5,7 +5,7 @@ const _ = require('lodash');
 const SurveyGenerator = require('./survey-generator');
 const Answerer = require('./answerer');
 
-const defaultConditionalQuestions = {
+const conditionalQuestions = {
     '0-3': { type: 'choice', logic: 'equals', count: 3 },
     '1-5': { type: 'choice', logic: 'not-equals', count: 1 },
     '2-3': { type: 'bool', logic: 'not-equals', count: 2 },
@@ -20,7 +20,7 @@ const defaultConditionalQuestions = {
     '10-0': { type: 'choices', logic: 'each-not-selected', count: 4, selectionCount: 3 }
 };
 
-const defaultRequiredOverrides = {
+const requiredOverrides = {
     '0-3': false,
     '0-4': true,
     '0-5': false,
@@ -247,12 +247,12 @@ const errorAnswerSetup = [{
     error: 'answerToBeSkippedAnswered'
 }];
 
+const counts = [8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8];
+
 module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
-    constructor({ questionGenerator, answerer, conditionalQuestions, requiredOverrides } = {}) {
+    constructor({ questionGenerator, answerer } = {}) {
         super(questionGenerator);
         this.answerer = answerer || new Answerer();
-        this.conditionalQuestions = conditionalQuestions || defaultConditionalQuestions;
-        this.requiredOverrides = requiredOverrides || defaultRequiredOverrides;
     }
 
     sectionType() {
@@ -260,11 +260,12 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
     }
 
     count() {
-        return 8;
+        const surveyIndex = this.currentIndex();
+        return counts[surveyIndex];
     }
 
     numOfCases() {
-        return 11;
+        return counts.length;
     }
 
     addAnswer(rule, questionInfo, question) {
@@ -282,10 +283,18 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
         }
     }
 
+    getConditionalQuestion(key) {
+        return conditionalQuestions[key];
+    }
+
+    getRequiredOverride(key) {
+        return requiredOverrides[key];
+    }
+
     newSurveyQuestion(index) {
         const surveyIndex = this.currentIndex();
         const key = `${surveyIndex}-${index}`;
-        const questionInfo = this.conditionalQuestions[key];
+        const questionInfo = this.getConditionalQuestion(key);
         let question;
         if (questionInfo) {
             const { type, logic, count, multipleSupport, selectionCount } = questionInfo;
@@ -306,7 +315,7 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
         } else {
             question = super.newSurveyQuestion(index);
         }
-        const requiredOverride = this.requiredOverrides[key];
+        const requiredOverride = this.getRequiredOverride(key);
         if (requiredOverride !== undefined) {
             question.required = requiredOverride;
         }
