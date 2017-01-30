@@ -2,48 +2,40 @@
 
 const path = require('path');
 
+const session = require('supertest-session');
 const _ = require('lodash');
 
 module.exports = class RRSupertest {
     constructor() {
         this.server = null;
-        this.jwt = null;
         this.baseUrl = '/api/v1.0';
     }
 
-    initialize(server) {
-        this.server = server;
-    }
-
-    updateJWTFromCookie(res) {
-        const cookie = _.get(res, 'header.set-cookie.0');
-        if (cookie) {
-            const token = cookie.split(';')[0].split('=')[1];
-            if (token) {
-                this.jwt = token;
-            }
-        }
+    initialize(app) {
+        this.app = app;
+        this.server = session(app);
     }
 
     authBasic(credentials, status = 200) {
         return this.server
             .get(this.baseUrl + '/auth/basic')
             .auth(credentials.username, credentials.password)
-            .expect(status)
-            .expect(res => {
-                if (status < 400) {
-                    this.updateJWTFromCookie(res);
-                }
-            });
+            .expect(status);
     }
 
     resetAuth() {
-        this.jwt = null;
+        this.server = session(this.app);
+    }
+
+    getJWT() {
+        const jwt = _.find(this.server.cookies, function (cookie) {
+            return cookie.name === 'rr-jwt-token';
+        });
+        return jwt;
     }
 
     update(operation, resource, payload, status, header) {
         let r = this.server[operation](this.baseUrl + resource);
-        r = r.set('Cookie', `rr-jwt-token=${this.jwt}`);
         if (header) {
             _.toPairs(header).forEach(([key, value]) => r.set(key, value));
         }
@@ -58,7 +50,6 @@ module.exports = class RRSupertest {
         const filename = path.basename(filepath);
         const request = this.server
             .post(this.baseUrl + resource)
-            .set('Cookie', `rr-jwt-token=${this.jwt}`)
             .attach(field, filepath, filename);
         if (payload) {
             return request.field(payload).expect(status);
@@ -72,12 +63,7 @@ module.exports = class RRSupertest {
     }
 
     authPost(resource, payload, status, header) {
-        return this.update('post', resource, payload, status, header)
-            .expect(res => {
-                if (status < 400) {
-                    this.updateJWTFromCookie(res);
-                }
-            });
+        return this.update('post', resource, payload, status, header).expect(status);
     }
 
     delete(resource, status, query) {
@@ -85,15 +71,11 @@ module.exports = class RRSupertest {
         if (query) {
             r = r.query(query);
         }
-        return r.set('Cookie', `rr-jwt-token=${this.jwt}`).expect(status);
+        return r.expect(status);
     }
 
     get(resource, auth, status, query) {
         let r = this.server.get(this.baseUrl + resource);
-        if (auth) {
-            const token = (typeof auth === 'string') ? auth : this.jwt;
-            r = r.set('Cookie', `rr-jwt-token=${token}`);
-        }
         if (query) {
             r = r.query(query);
         }

@@ -1,6 +1,5 @@
 'use strict';
 
-const request = require('supertest');
 const chai = require('chai');
 
 const appgen = require('../../app-generator');
@@ -21,7 +20,7 @@ class SharedIntegration {
                 if (err) {
                     return done(err);
                 }
-                store.initialize(request(app));
+                store.initialize(app);
                 done();
             });
         };

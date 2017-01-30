@@ -70,6 +70,8 @@ describe('question integration unit', function () {
 
     it('reset database', shared.setUpFn(rrSuperTest));
 
+    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+
     let idMap;
 
     it('import csv into db', function (done) {
