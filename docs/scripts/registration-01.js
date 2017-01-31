@@ -1,12 +1,11 @@
 'use strict';
 
-const request = require('superagent');
 
 module.exports = function (locals) {
     console.log(`------ start ${module.filename}`);
 
     let profileSurvey;
-    return request
+    return locals.agent
         .get('http://localhost:9005/api/v1.0/profile-survey')
         .then(res => {
             console.log(res.status); // 200

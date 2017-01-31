@@ -1,6 +1,5 @@
 'use strict';
 
-const request = require('superagent');
 
 module.exports = function (locals) {
     console.log(`------ start ${module.filename}`);
@@ -40,7 +39,7 @@ module.exports = function (locals) {
     const registration = { user, answers, signatures };
 
     let jwtUser = null;
-    return request
+    return locals.agent
         .post('http://localhost:9005/api/v1.0/profiles')
         .send(registration)
         .then(res => {

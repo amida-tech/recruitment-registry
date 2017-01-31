@@ -1,10 +1,8 @@
 'use strict';
 
-const request = require('superagent');
 
 module.exports = function (locals) {
     console.log(`------ start ${module.filename}`);
-    const jwt = locals.jwt;
 
     const boolQx = {
         type: 'bool',
@@ -12,9 +10,8 @@ module.exports = function (locals) {
     };
 
     let boolQxId = null;
-    return request
+    return locals.agent
         .post('http://localhost:9005/api/v1.0/questions')
-        .set('Authorization', 'Bearer ' + jwt)
         .send(boolQx)
         .then(res => {
             console.log(res.status); // 201

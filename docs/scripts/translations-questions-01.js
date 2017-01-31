@@ -1,10 +1,8 @@
 'use strict';
 
-const request = require('superagent');
 
 module.exports = function (locals) {
     console.log(`------ start ${module.filename}`);
-    const jwt = locals.jwt;
 
     const choicesQxTurkish = {
         'id': 4,
@@ -37,9 +35,8 @@ module.exports = function (locals) {
         ]
     };
 
-    return request
+    return locals.agent
         .patch('http://localhost:9005/api/v1.0/questions/text/tr')
-        .set('Authorization', 'Bearer ' + jwt)
         .send(choicesQxTurkish)
         .then(res => {
             console.log(res.status); // 204

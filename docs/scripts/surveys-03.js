@@ -1,10 +1,8 @@
 'use strict';
 
-const request = require('superagent');
 
 module.exports = function (locals) {
     console.log(`------ start ${module.filename}`);
-    const jwtUser = locals.jwtUser;
 
     const answers = [{
         questionId: 1,
@@ -30,9 +28,8 @@ module.exports = function (locals) {
         }
     }];
 
-    return request
+    return locals.agent
         .post('http://localhost:9005/api/v1.0/answers')
-        .set('Authorization', 'Bearer ' + jwtUser)
         .send({ surveyId: 1, answers })
         .then(res => {
             console.log(res.status); // 204

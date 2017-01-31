@@ -1,10 +1,8 @@
 'use strict';
 
-const request = require('superagent');
 
 module.exports = function (locals) {
     console.log(`------ start ${module.filename}`);
-    const jwt = locals.jwt;
 
     const consentTypeTOUId = locals.consentTypeTOUId;
 
@@ -13,9 +11,8 @@ module.exports = function (locals) {
         content: 'This is a terms of use document.'
     };
 
-    return request
+    return locals.agent
         .post('http://localhost:9005/api/v1.0/consent-documents')
-        .set('Authorization', 'Bearer ' + jwt)
         .send(consentDocTOU)
         .then(res => {
             console.log(res.status); // 201
