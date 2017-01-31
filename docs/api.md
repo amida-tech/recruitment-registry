@@ -729,6 +729,7 @@ agent
 This completes the registration.
 
 ### Profiles
+<a name="profile"/>
 
 Participant profile is the account information and the profile survey answers that are created during [Registration](#registration).  Consent document signatures, which can also be collected during registration, are not considered part of profile and discussed in [Consent Documents](#consent-document) section.
 
