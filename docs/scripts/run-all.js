@@ -3,7 +3,7 @@
 const models = require('../../models');
 
 const authentication01 = require('./authentication-01');
-const authorization01 = require('./authorization-01');
+const authentication03 = require('./authentication-03');
 const adminQuestion01 = require('./admin-question-01');
 const adminQuestion02 = require('./admin-question-02');
 const adminQuestion03 = require('./admin-question-03');
@@ -75,7 +75,6 @@ const locals = {};
 models.sequelize.sync({ force: true })
     .then(() => locals)
     .then(authentication01)
-    .then(authorization01)
     .then(adminQuestion01)
     .then(adminQuestion02)
     .then(adminQuestion03)
@@ -97,13 +96,16 @@ models.sequelize.sync({ force: true })
     .then(profile02)
     .then(profile01)
     .then(userManagement01)
+    .then(authentication01)
     .then(questions01)
     .then(questions02)
+    .then(registration04)
     .then(surveys01)
     .then(surveys02)
     .then(surveys03)
     .then(surveys04)
     .then(surveys05)
+    .then(authentication03)
     .then(userSurvey01)
     .then(userSurvey02)
     .then(userSurvey03)
@@ -114,10 +116,14 @@ models.sequelize.sync({ force: true })
     .then(consentDocuments02)
     .then(consentDocuments03)
     .then(consentDocuments04)
+    .then(consentDocuments01)
     .then(consentDocuments05)
+    .then(authentication01)
     .then(consentDocuments06)
+    .then(registration04)
     .then(consentDocuments01)
     .then(consentDocuments07)
+    .then(authentication01)
     .then(smtp01)
     .then(smtp02)
     .then(languages01)

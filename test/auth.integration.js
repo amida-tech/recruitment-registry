@@ -47,7 +47,8 @@ describe('auth integration', function () {
                     if (err) {
                         return done(err);
                     }
-                    jwt.verify(store.jwt, config.jwt.secret, {}, function (err, jwtObject) {
+                    const jwtCookie = store.getJWT();
+                    jwt.verify(jwtCookie.value, config.jwt.secret, {}, function (err, jwtObject) {
                         if (err) {
                             return done(err);
                         }
@@ -94,6 +95,9 @@ describe('auth integration', function () {
 
     _.range(userCount).forEach(index => {
         it(`user ${index} successfull login`, successfullLoginFn(index));
+        it(`log out user ${index}`, function () {
+            store.resetAuth();
+        });
         it(`user ${index} wrong username`, wrongUsernameFn(index));
         it(`user ${index} wrong password`, wrongPasswordFn(index));
     });

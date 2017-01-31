@@ -1,10 +1,7 @@
 'use strict';
 
-const request = require('superagent');
-
 module.exports = function (locals) {
     console.log(`------ start ${module.filename}`);
-    const jwt = locals.jwt;
 
     const smtpSpec = {
         protocol: 'smtp',
@@ -17,9 +14,8 @@ module.exports = function (locals) {
         content: 'Click on this: ${link}'
     };
 
-    return request
+    return locals.agent
         .post('http://localhost:9005/api/v1.0/smtp')
-        .set('Authorization', 'Bearer ' + jwt)
         .send(smtpSpec)
         .then(res => {
             console.log(res.status); // 204

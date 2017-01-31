@@ -14,7 +14,9 @@ $ npm install superagent
 Package needs to be required before running the snippets
 ```js
 const request = require('superagent');
+const agent = request.agent();
 ```
+`agent` stores cookies as they are returned from server.
 
 Snippets in later stages of the document can depend on variables that are defined in previous snippets.  Each snippet is a promise and can be chained.  A full chain, [run-all.js](./run-all.js), that starts from a clean database and exercises most of the snippets is included in the repository.
 
@@ -28,46 +30,21 @@ Recruitment Registry installations come with a super user who has `admin` privil
 This API uses Basic Authentication where username and password are passed to resource `/auth/basic` in the HTTP Authorization header as `Basic code` where code is the base64 encoded string for `username:password`.  Most HTTP clients provide a specific option for this authentication including superagent
 
 ```js
-let jwt;
-request
+agent
     .get('http://localhost:9005/api/v1.0/auth/basic')
     .auth('super', 'Am!d@2017PW')
     .then(res => {
     	console.log(res.status); // 200
     	console.log(res.body);   // {token: ...}
-    	jwt = res.body.token;
     });
 ```
-or curl
 
-```
-$ curl --user 'super:Am!d@2017PW' http://localhost:9005/api/v1.0/auth/basic`
-```
-
-Server responds with a [JSON Web Token](https://jwt.io/) (JWT) in the response body
-
-```js
-{
-	"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJzdXBlciIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTQ3Nzk2MTYxNSwiZXhwIjoxNDgwNTUzNjE1fQ.HJubwTIVEf7Z-83oUTWDVu0AEx-_8DZL46lmZo2WVTo"
-}
-```
-
-JWT needs to be stored on the client and is used in other API calls for [authorization](#authorization).
+Server responds with a `set-cookie` header which includes a [JSON Web Token](https://jwt.io/) (JWT) as value of a cookie named `rr-jwt-token`.
 
 ### Authorization
 <a name="authorization"/>
 
-For all API resources that require authorization, the JWT has to be specified in the HTTP Authorization header
-
-```js
-request
-	.get('http://localhost:9005/api/v1.0/surveys')
-	.set('Authorization', 'Bearer ' + jwt)
-	.then(res => {
-		console.log(res.status); // 200
-		console.log(res.body);   // []
-	});
-```
+For all API resources that require authorization, the JWT cookie has to be included in the HTTP request.  Browsers and `superagent` do this automatically.
 
 ### HTTP Status Codes and Error Messages
 
@@ -100,7 +77,7 @@ All API requests in this section requires `admin` authorization.
 
 Questions can be created either individually or as part of a [survey](#admin-surveys).  Either way they are stored independently than surveys and can be shared.
 
-There are four types of questions: `text`, `bool`, `choice` and `choices`.
+There are four basic types of questions: `text`, `bool`, `choice` and `choices`.
 
 Text questions are the simplest kind where answers are expected to be free text
 
@@ -195,9 +172,8 @@ Questions are created using the `/questions` resource
 
 ```js
 let choiceQxId = null;
-request
+agent
 	.post('http://localhost:9005/api/v1.0/questions')
-	.set('Authorization', 'Bearer ' + jwt)
 	.send(choiceQx)
 	.then(res => {
 		console.log(res.status);  // 201
@@ -385,9 +361,8 @@ Surveys are created using `/surveys` resource
 
 ```
 let surveyId = null;
-request
+agent
 	.post('http://localhost:9005/api/v1.0/surveys')
-	.set('Authorization', 'Bearer ' + jwt)
 	.send(survey)
 	.then(res => {
 		console.log(res.status);  // 201
@@ -407,9 +382,8 @@ Recruitment Registries can have a special survey called profile survey that can 
 Any existing survey can be assigned to be the profile survey using `/profile-survey-id` resource
 
 ```
-request
+agent
     .post('http://localhost:9005/api/v1.0/profile-survey-id')
-    .set('Authorization', 'Bearer ' + jwt)
     .send({ profileSurveyId: 1})
     .then(res => {
         console.log(res.status);  // 201
@@ -420,9 +394,8 @@ request
 The id of the survey that is assigned to be the profile survey is available using `/profile-survey-id` resource
 
 ```
-request
+agent
     .get('http://localhost:9005/api/v1.0/profile-survey-id')
-    .set('Authorization', 'Bearer ' + jwt)
     .then(res => {
         console.log(res.status);  // 200
         console.log(res.body);    // id of the profile survey
@@ -432,9 +405,8 @@ request
 Profile survey assignment can be removed in case your modified use case does not require it anymore
 
 ```
-request
+agent
     .delete('http://localhost:9005/api/v1.0/profile-survey-id')
-    .set('Authorization', 'Bearer ' + jwt)
     .then(res => {
         console.log(res.status);  // 204
     });
@@ -475,9 +447,8 @@ const profileSurvey = {
     }]
 };
 
-request
+agent
 	.post('http://localhost:9005/api/v1.0/profile-survey')
-	.set('Authorization', 'Bearer ' + jwt)
 	.send(profileSurvey)
 	.then(res => {
 		console.log(res.status);  // 201
@@ -502,7 +473,7 @@ let consentTypeTOU = {
 };
 
 let consentTypeConsent = {
-    name: 'init-consent',
+    name: 'consent',
     title: 'Consent Form',
     type: 'single'
 }
@@ -512,9 +483,8 @@ Property `title` is shown in listings of consent documents and `type` is designe
 
 ```js
 let consentTypeTOUId = null;
-request
+agent
 	.post('http://localhost:9005/api/v1.0/consent-types')
-	.set('Authorization', 'Bearer ' + jwt)
 	.send(consentTypeTOU)
 	.then(res => {
 		console.log(res.status);  // 201
@@ -531,9 +501,8 @@ let consentDocTOU = {
 	content: 'This is a terms of use document.'
 };
 
-request
+agent
 	.post('http://localhost:9005/api/v1.0/consent-documents')
-	.set('Authorization', 'Bearer ' + jwt)
 	.send(consentDocTOU)
 	.then(res => {
 		console.log(res.status);  // 201
@@ -542,7 +511,7 @@ request
 	});
 ```
 
-The server responds with the consent document `id` in the response body.  The rest of this document assumes that the second type in this section (`init-consent`) is similary created.
+The server responds with the consent document `id` in the response body.  The rest of this document assumes that the second type in this section (`consent`) is similary created.
 
 This API does not provide a resource to delete Consent Documents since there is no need.  If a certain Consent Type is not needed resource `/consent_types/{id}` can be used.  This will soft delete the Consent Type and the active Consent Document with that type.
 
@@ -555,7 +524,7 @@ The profile survey is available without authorization using `/profile-survey` re
 
 ```js
 let profileSurvey;
-request
+agent
 	.get('http://localhost:9005/api/v1.0/profile-survey')
 	.then(res => {
 		console.log(res.status);  // 200
@@ -665,7 +634,7 @@ Based on use-cases clients can require consent documents of certain types to be 
 
 ```js
 let touDocument;
-request
+agent
 	.get('http://localhost:9005/api/v1.0/consent-documents/type-name/terms-of-use')
 	.then(res => {
 		console.log(res.status);  // 200
@@ -738,41 +707,37 @@ Registration is completed using `/profiles` resource
 ```js
 const registration = { user, answers, signatures };
 
-let jwtUser = null;
-request
+agent
 	.post('http://localhost:9005/api/v1.0/profiles')
 	.send(registration)
 	.then(res => {
 		console.log(res.status);  // 201
-		console.log(res.body);    // {token: ...}
-		jwtUser = res.body.token;
 	})
 ```
 
-Server responds with the JWT for the participant so that participant does not have to be authenticated again after the registration.  For later sessions participants are authenticated as described in [Authentication](#authentication)
+Server responds with the JWT cookie for the participant so that participant does not have to be authenticated again after the registration.  For later sessions participants are authenticated as described in [Authentication](#authentication)
 
 ```js
-request
+agent
     .get('http://localhost:9005/api/v1.0/auth/basic')
     .auth('testuser', 'testpassword')
     .then(res => {
     	console.log(res.status);     // 200
-    	console.log(res.body.token); // identical to jwtUser from registration
     });
 ```
 
 This completes the registration.
 
 ### Profiles
+<a name="profile"/>
 
 Participant profile is the account information and the profile survey answers that are created during [Registration](#registration).  Consent document signatures, which can also be collected during registration, are not considered part of profile and discussed in [Consent Documents](#consent-document) section.
 
 Existing profiles are available to authorized participants using `/profiles` resource
 
 ```js
-request
+agent
 	.get('http://localhost:9005/api/v1.0/profiles')
-	.set('Authorization', 'Bearer ' + jwtUser)
 	.then(res => {
 		console.log(res.status);                                // 200
 		console.log(JSON.stringify(res.body, undefined, 4));    // profile
@@ -937,9 +902,8 @@ const answers = [{
 	}
 }];
 
-request
+agent
 	.patch('http://localhost:9005/api/v1.0/profiles')
-	.set('Authorization', 'Bearer ' + jwtUser)
 	.send({ user, answers })
 	.then(res => {
 		console.log(res.status);  // 204
@@ -1078,9 +1042,8 @@ const user = {
 };
 
 let jwtUser2 = null;
-request
+agent
     .post('http://localhost:9005/api/v1.0/users')
-    .set('Authorization', 'Bearer ' + jwt)
     .send(user)
     .then(res => {
         console.log(res.status);  // 201
@@ -1094,9 +1057,8 @@ request
 A list of all questions is available to admins using resource `/questions`
 
 ```js
-request
+agent
     .get('http://localhost:9005/api/v1.0/questions')
-    .set('Authorization', 'Bearer ' + jwt)
     .then(res => {
         console.log(res.status);  // 200
         const questionList = res.body;
@@ -1285,9 +1247,8 @@ Server responds with the list in the response body
 Individual questions can be shown using `/questions/{id}` resource
 
 ```js
-request
+agent
     .get('http://localhost:9005/api/v1.0/questions/1')
-    .set('Authorization', 'Bearer ' + jwt)
     .then(res => {
         console.log(res.status);  // 200
         const question = res.body;
@@ -1301,9 +1262,8 @@ request
 A list of all surveys in the registry is available to authorized participants and admins using resource `/surveys`
 
 ```js
-request
+agent
 	.get('http://localhost:9005/api/v1.0/surveys')
-	.set('Authorization', 'Bearer ' + jwtUser)
 	.then(res => {
 		console.log(res.status);  // 200
 		const surveyList = res.body;
@@ -1329,9 +1289,8 @@ Server responds with the list in the response body.  Each entry in the list incl
 Individual surveys can be shown using `/surveys/{id}` resource
 
 ```js
-request
+agent
 	.get('http://localhost:9005/api/v1.0/surveys/1')
-	.set('Authorization', 'Bearer ' + jwtUser)
 	.then(res => {
 		console.log(res.status);  // 200
 		const survey = res.body;
@@ -1481,9 +1440,8 @@ const answers = [{
 Notice that the format of the answer depends on the type of question.  It is an error to use properties for one type of question for the other.  For `choices` type questions `boolValue` property of individual choices can be safely omitted and defaults to `true`.  For bool type questions `boolValue` property is required.  Answers can be posted using `/answers` resource
 
 ```js
-request
+agent
 	.post('http://localhost:9005/api/v1.0/answers')
-	.set('Authorization', 'Bearer ' + jwtUser)
 	.send({ surveyId: 1, answers })
 	.then(res => {
 		console.log(res.status);  // 204
@@ -1493,9 +1451,8 @@ request
 Answers to a survey can be shown using `/answers` resource
 
 ```js
-request
+agent
 	.get('http://localhost:9005/api/v1.0/answers')
-	.set('Authorization', 'Bearer ' + jwtUser)
 	.query({ 'survey-id': 1})
 	.then(res => {
 		console.log(res.status);  // 200
@@ -1554,9 +1511,8 @@ Server responds with answers in the the response body and the format is identica
 It is possible to show a survey with its answers using resource `/answered-surveys/{id}`
 
 ```js
-request
+agent
 	.get('http://localhost:9005/api/v1.0/answered-surveys/1')
-	.set('Authorization', 'Bearer ' + jwtUser)
 	.then(res => {
 		console.log(res.status);  // 200
 		console.log(JSON.stringify(res.body, undefined, 4)); // survey with answers
@@ -1702,15 +1658,15 @@ Survey responds with the survey details in the response body.  Survey details is
 ```
 
 ### User Surveys
+<a name="user-surveys"/>
 
 This API supports use cases where a survey has a status for each participant. Possible status values are `new`, `in-progress` and `completed`. It is clients responsibility to assign status.  To mark a survey `completed` each required question has to be answered; status `in-progress` status allows partial answers where required questions might be left unanswered.
 
 Resource `/user-surveys` is used to list surveys and their status for a user
 
 ```js
-request
+agent
     .get('http://localhost:9005/api/v1.0/user-surveys')
-    .set('Authorization', 'Bearer ' + jwtUser2)
     .then(res => {
         console.log(res.status);  // 200
         console.log(JSON.stringify(res.body, undefined, 4)); // survey list with status with answers
@@ -1746,9 +1702,8 @@ const answers = [{
     answer: { choice: 6 }
 }];
 
-request
+agent
     .post('http://localhost:9005/api/v1.0/user-surveys/1/answers')
-    .set('Authorization', 'Bearer ' + jwtUser2)
     .send({ status: 'in-progress', answers })
     .then(res => {
         console.log(res.status);  // 204
@@ -1758,9 +1713,8 @@ request
 Answers and status are available using resource `/user-surveys/{id}/answers`
 
 ```js
-request
+agent
     .get('http://localhost:9005/api/v1.0/user-surveys/1/answers')
-    .set('Authorization', 'Bearer ' + jwtUser2)
     .then(res => {
         console.log(res.status);  // 200
         console.log(JSON.stringify(res.body, undefined, 4)); // answers with status
@@ -1827,9 +1781,8 @@ const answers = [{
     }
 }];
 
-request
+agent
     .post('http://localhost:9005/api/v1.0/user-surveys/1/answers')
-    .set('Authorization', 'Bearer ' + jwtUser2)
     .send({ status: 'completed', answers })
     .then(res => {
         console.log(res.status);  // 204
@@ -1839,9 +1792,8 @@ request
 Answers and status are also available using resource `/user-surveys/{id}`.  This resource responds with answers as parts of questions
 
 ```js
-request
+agent
     .get('http://localhost:9005/api/v1.0/user-surveys/1')
-    .set('Authorization', 'Bearer ' + jwtUser2)
     .then(res => {
         console.log(res.status);  // 200
         console.log(JSON.stringify(res.body, undefined, 4)); // answers with status
@@ -1993,9 +1945,8 @@ Participant have to sign registry specific Consent Documents to be able to get a
 All consent documents that has to be signed for a user is shown by resource `/user-consent-documents`
 
 ```js
-request
+agent
 	.get('http://localhost:9005/api/v1.0/user-consent-documents')
-	.set('Authorization', 'Bearer ' + jwtUser)
 	.then(res => {
 		console.log(res.status);  // 200
 		console.log(JSON.stringify(res.body, undefined, 4)); // unsigned consent documents
@@ -2017,9 +1968,8 @@ Server responsds withs a list in the response body that shows id of the consent 
 Content of the documents can be shown using user `/consent-documents/{id}` resource
 
 ```js
-request
+agent
     .get('http://localhost:9005/api/v1.0/consent-documents/2')
-    .set('Authorization', 'Bearer ' + jwtUser)
     .then(res => {
         console.log(res.status);  // 200
         console.log(JSON.stringify(res.body, undefined, 4)); // unsigned consent documents
@@ -2040,9 +1990,8 @@ Server responds with details of consent document include the content in the resp
 Same information is also available using the type name of the consent document
 
 ```js
-request
+agent
     .get('http://localhost:9005/api/v1.0/consent-documents/type-name/consent')
-    .set('Authorization', 'Bearer ' + jwtUser)
     .then(res => {
         console.log(res.status);  // 200
         console.log(JSON.stringify(res.body, undefined, 4)); // unsigned consent documents
@@ -2052,9 +2001,8 @@ request
 Consent documents can be signed with `consent-signatures` resource.  This resource accepts the `id` of the consent document
 
 ```js
-request
+agent
     .post('http://localhost:9005/api/v1.0/consent-signatures')
-    .set('Authorization', 'Bearer ' + jwtUser)
     .send( {consentDocumentId : 2} )
     .then(res => {
         console.log(res.status);  // 201
@@ -2065,9 +2013,8 @@ request
 Consent documents can be shown with the signature information
 
 ```js
-request
-    .get('http://localhost:9005/api/v1.0/consent-documents/2/with-signature')
-    .set('Authorization', 'Bearer ' + jwtUser)
+agent
+    .get('http://localhost:9005/api/v1.0/user-consent-documents/type-name/consent')
     .then(res => {
         console.log(res.status);  // 200
         console.log(JSON.stringify(res.body, undefined, 4)); // consent document with signature
@@ -2096,9 +2043,8 @@ let consentDocUpdate = {
     updateComment: 'Updated notice added'
 };
 
-request
+agent
     .post('http://localhost:9005/api/v1.0/consent-documents')
-    .set('Authorization', 'Bearer ' + jwt)
     .send(consentDocUpdate)
     .then(res => {
         console.log(res.status);  // 201
@@ -2121,9 +2067,8 @@ Server responds with the id of the updated consent document.  Once a Consent Doc
 Resource `/consent-documents/{id}/with-signature` shows the content and the new signature status
 
 ```js
-request
+agent
     .get('http://localhost:9005/api/v1.0/user-consent-documents/3')
-    .set('Authorization', 'Bearer ' + jwtUser)
     .then(res => {
         console.log(res.status);  // 200
         console.log(JSON.stringify(res.body, undefined, 4)); // consent document with signature information
@@ -2143,6 +2088,7 @@ Server responds with the new signature status which is false
 ```
 
 ### Password Reset
+<a name="password-reset"/>
 
 ##### SMTP
 
@@ -2160,9 +2106,8 @@ const smtpSpec = {
     content: 'Click on this: ${link}'
 };
 
-request
+agent
     .post('http://localhost:9005/api/v1.0/smtp')
-    .set('Authorization', 'Bearer ' + jwt)
     .send(smtpSpec)
     .then(res => {
         console.log(res.status);  // 204
@@ -2174,9 +2119,8 @@ Notice that content of the email includes a template `${link}` which is replaced
 SMTP specification is available using `/smtp` resource
 
 ```js
-request
+agent
     .get('http://localhost:9005/api/v1.0/smtp')
-    .set('Authorization', 'Bearer ' + jwt)
     .then(res => {
         console.log(res.status);  // 200
         console.log(JSON.stringify(res.body, undefined, 4));
@@ -2190,7 +2134,7 @@ Server response is identical to what has been creted (`smtpSpec`).  `smtp` resou
 Resource `/reset-tokens` is used to generate reset tokens and send an email to the user with instructions on how to reset e-mail.
 
 ```js
-request
+agent
     .post('http://localhost:9005/api/v1.0/reset-tokens')
     .send({ email: 'test2@example2.com' })
     .then(res => {
@@ -2228,7 +2172,7 @@ const passwordInfo = {
     token: '1b5326eba6bea2cdfaf34f45cbf7b43e7ed308de'
 };
 
-request
+agent
     .post('http://localhost:9005/api/v1.0/users/password')
     .send(passwordInfo)
     .then(res => {
@@ -2249,9 +2193,8 @@ This section describes preloaded language definitions and how to add a new langu
 Recruitment Registry installations are preloaded with languages that can be listed by `/languages` resource
 
 ```js
-request
+agent
     .get('http://localhost:9005/api/v1.0/languages')
-    .set('Authorization', 'Bearer ' + jwtUser)
     .then(res => {
         console.log(res.status);  // 200
         console.log(JSON.stringify(res.body, undefined, 4)); // list of languages
@@ -2299,9 +2242,8 @@ const newLanguage = {
     nativeName: 'Türkçe'
 };
 
-request
+agent
     .post('http://localhost:9005/api/v1.0/languages')
-    .set('Authorization', 'Bearer ' + jwt)
     .send(newLanguage)
     .then(res => {
         console.log(res.status);  // 201
@@ -2314,9 +2256,8 @@ Languages API does not check validity of the two digit ISO codes.  There letter 
 Any existing language detail can be shown individually
 
 ```js
-request
+agent
     .get('http://localhost:9005/api/v1.0/languages/es')
-    .set('Authorization', 'Bearer ' + jwtUser)
     .then(res => {
         console.log(res.status); // 200
         console.log(res.body);  // definition of spanish
@@ -2341,9 +2282,8 @@ const languageUpdate = {
     nativeName: 'Castillan'
 };
 
-request
+agent
     .patch('http://localhost:9005/api/v1.0/languages/es')
-    .set('Authorization', 'Bearer ' + jwt)
     .send(languageUpdate)
     .then(res => {
         console.log(res.status);  // 204
@@ -2353,9 +2293,8 @@ request
 Language code updates are not allowed.  To use a new code for an existing language, the existing language resource has to deleted and recreated with the new code. Deleting a language is possible using `/languages/{code}` resource
 
 ```js
-request
+agent
     .delete('http://localhost:9005/api/v1.0/languages/fr')
-    .set('Authorization', 'Bearer ' + jwt)
     .then(res => {
         console.log(res.status);  // 204
     });
@@ -2439,9 +2378,8 @@ const choicesQxTurkish = {
     ]
 };
 
-request
+agent
     .patch('http://localhost:9005/api/v1.0/questions/text/tr')
-    .set('Authorization', 'Bearer ' + jwt)
     .send(choicesQxTurkish)
     .then(res => {
         console.log(res.status);  // 204
@@ -2451,9 +2389,8 @@ request
 Translations are available to any [GET] method that responds with any one of questions text fields by specifying language url query parameter. As an example for `/questions` resource
 
 ```js
-request
+agent
     .get('http://localhost:9005/api/v1.0/questions/4')
-    .set('Authorization', 'Bearer ' + jwtUser)
     .query({language: 'tr'})
     .then(res => {
         console.log(res.status);  // 200
@@ -2522,9 +2459,8 @@ const surveyTurkish = {
     }]
 };
 
-request
+agent
     .patch('http://localhost:9005/api/v1.0/surveys/text/tr')
-    .set('Authorization', 'Bearer ' + jwt)
     .send(surveyTurkish)
     .then(res => {
         console.log(res.status);  // 204
@@ -2534,9 +2470,8 @@ request
 Currently questions cannot be translated using `/surveys/text/{language}` resource and `/questions/text/{language}` has to be used.  Translations are available to any [GET] method that responds with any one of surveys text fields by specifying language url query parameter. As an example for `/surveys` resource
 
 ```js
-request
+agent
     .get('http://localhost:9005/api/v1.0/surveys/1')
-    .set('Authorization', 'Bearer ' + jwtUser)
     .query({language: 'tr'})
     .then(res => {
         console.log(res.status);  // 200
@@ -2665,9 +2600,8 @@ const consentTypeConsentTurkish = {
     title: 'İzin Metni'
 };
 
-request
+agent
     .patch('http://localhost:9005/api/v1.0/consent-types/text/tr')
-    .set('Authorization', 'Bearer ' + jwt)
     .send(consentTypeConsentTurkish)
     .then(res => {
         console.log(res.status);  // 204
@@ -2677,9 +2611,8 @@ request
 Translations are available to any [GET] request that responds with the `title` field. As an example for `/consent-type` resource
 
 ```js
-request
+agent
     .get(`http://localhost:9005/api/v1.0/consent-types/2`)
-    .set('Authorization', 'Bearer ' + jwt)
     .query({ language: 'tr' })
     .then(res => {
         console.log(res.status); // 200
@@ -2709,9 +2642,8 @@ const consentDocTurkish = {
     updateComment: 'Güncelleştirilmiş ibaresi eklendi'
 };
 
-request
+agent
     .patch('http://localhost:9005/api/v1.0/consent-documents/text/tr')
-    .set('Authorization', 'Bearer ' + jwt)
     .send(consentDocTurkish)
     .then(res => {
         console.log(res.status);  // 204
@@ -2720,9 +2652,8 @@ request
 Translations are available to any [GET] request that responds with one of consent document text fields by specifying language as url query parameter. As an example for `/consent-documents/{id}` resource
 
 ```js
-request
+agent
     .get('http://localhost:9005/api/v1.0/consent-documents/3')
-    .set('Authorization', 'Bearer ' + jwtUser)
     .query({language: 'tr'})
     .then(res => {
         console.log(res.status);  // 200
@@ -2750,9 +2681,8 @@ const emailContentTurkish = {
     content: 'Buna tıklayınız: ${link}'
 };
 
-request
+agent
     .patch('http://localhost:9005/api/v1.0/smtp/text/tr')
-    .set('Authorization', 'Bearer ' + jwt)
     .send(emailContentTurkish)
     .then(res => {
         console.log(res.status);  // 204
@@ -2762,7 +2692,7 @@ request
 When reset token generation is requested by the client, the language of the email content and subject can also be specified
 
 ```js
-request
+agent
     .post('http://localhost:9005/api/v1.0/reset-tokens')
     .send({ email: 'test2@example2.com', language: 'tr' })
     .then(res => {
@@ -2793,9 +2723,8 @@ const consent = {
     sections: [1, 2]
 };
 
-request
+agent
     .post('http://localhost:9005/api/v1.0/consents')
-    .set('Authorization', 'Bearer ' + jwt)
     .send(consent)
     .then(res => {
         console.log(res.status);  // 201
@@ -2808,9 +2737,8 @@ Consent `name` property is not designed to be user facing and identify the conse
 A list of all consents is available using `/consents` resource
 
 ```js
-request
+agent
     .get('http://localhost:9005/api/v1.0/consents')
-    .set('Authorization', 'Bearer ' + jwt)
     .then(res => {
         console.log(res.status);  // 200
         console.log(JSON.stringify(res.body, undefined, 4)); // list of consents
@@ -2835,9 +2763,8 @@ Server responds with the list of consents in the body
 Consents can be shown using resource `/consents/{id}`
 
 ```js
-request
+agent
     .get('http://localhost:9005/api/v1.0/consents/1')
-    .set('Authorization', 'Bearer ' + jwt)
     .then(res => {
         console.log(res.status);  // 200
         console.log(JSON.stringify(res.body, undefined, 4)); // consent details
@@ -2860,9 +2787,8 @@ Server responds with the details of the Consent in the body
 Consent can also be shown using resource `/consents/name/{name}`
 
 ```js
-request
+agent
     .get('http://localhost:9005/api/v1.0/consents/name/primary-consent')
-    .set('Authorization', 'Bearer ' + jwt)
     .then(res => {
         console.log(res.status);  // 200
         console.log(JSON.stringify(res.body, undefined, 4)); // consent details
@@ -2874,7 +2800,7 @@ Server responds with the same details as `/consents/{id}`.
 Actual content of the documents in Consent is available unauthorized using `/consents/{id}/documents` resource
 
 ```
-request
+agent
     .get('http://localhost:9005/api/v1.0/consents/1/documents')
     .then(res => {
         console.log(res.status);  // 200
@@ -2912,7 +2838,7 @@ Server responds with the Consent and details of its documents in the body.
 Same response is also available using the name of the consent and resource `/consents/name/{name}/documents`
 
 ```
-request
+agent
     .get('http://localhost:9005/api/v1.0/consents/name/primary-consent/documents')
     .then(res => {
         console.log(res.status);  // 200
@@ -2923,9 +2849,8 @@ request
 Resource `/consents/{id}/documents` only provide document content.  It is available unauthorized since certain use cases may require documents before a user is authenticated or registered.  Authorized users can use resource `/consents/{id}/user-documents` to show both the consent document content and signature status
 
 ```js
-request
+agent
     .get('http://localhost:9005/api/v1.0/consents/1/user-documents')
-    .set('Authorization', 'Bearer ' + jwtUser)
     .then(res => {
         console.log(res.status);  // 200
         console.log(JSON.stringify(res.body, undefined, 4)); // full consent details with signature information
@@ -2963,9 +2888,8 @@ request
 Same response is available using the name of the consent and resource `/consents/name/{name}/user-documents`
 
 ```js
-request
+agent
     .get('http://localhost:9005/api/v1.0/consents/name/primary-consent/user-documents')
-    .set('Authorization', 'Bearer ' + jwtUser)
     .then(res => {
         console.log(res.status);  // 200
         console.log(JSON.stringify(res.body, undefined, 4)); // full consent details with signature information
@@ -2981,9 +2905,8 @@ const consentDocUpdate = {
     updateComment: 'Updated TOU notice added'
 };
 
-request
+agent
     .post('http://localhost:9005/api/v1.0/consent-documents')
-    .set('Authorization', 'Bearer ' + jwt)
     .send(consentDocUpdate)
     .then(res => {
         console.log(res.status);  // 201
@@ -2994,9 +2917,8 @@ request
 Resource `/consents/{id}/user-documents` or `/consents/name/{name}/user-documents` can be used to show the updated
 
 ```js
-request
+agent
     .get('http://localhost:9005/api/v1.0/consents/name/primary-consent/user-documents')
-    .set('Authorization', 'Bearer ' + jwtUser)
     .then(res => {
         console.log(res.status);  // 200
         console.log(JSON.stringify(res.body, undefined, 4)); // full consent details with signature information
@@ -3035,9 +2957,8 @@ Server responds with the updated content and signature information
 Since Consent sections are expected to be signed at the same time, an additional resource `/consent-signatures/bulk` is provided
 
 ```js
-request
+agent
     .post('http://localhost:9005/api/v1.0/consent-signatures/bulk')
-    .set('Authorization', 'Bearer ' + jwtUser)
     .send({ consentDocumentIds: [3, 4] })
     .then(res => {
         console.log(res.status);  // 201

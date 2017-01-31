@@ -44,8 +44,9 @@ app.use(passport.initialize());
 
 /* jshint unused:vars */
 app.use(function (req, res, next) {
+    const isAuth = req.url.indexOf('/auth/basic') >= 0;
     const token = _.get(req, 'cookies.rr-jwt-token');
-    if (token) {
+    if (token && !isAuth) {
         _.set(req, 'headers.authorization', 'Bearer ' + token);
     }
     next();

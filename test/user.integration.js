@@ -27,10 +27,10 @@ describe('user integration', function () {
 
     it('login as super', shared.loginFn(store, config.superUser));
 
-    it('error: get user with wrong jwt token', function (done) {
-        const jwt = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwidXNlcm5hbWUiOiJ1ZXN0Iiwicm9sZSI6bnVsbCwiaWF0IjoxNDczNTAwNzE5LCJleHAiOjE0NzYwOTI3MTl9.e0ymr0xrDPuQEBmdQLjb5-WegNtYcqAcpKp_DtDRKo8';
-        store.get('/users/me', jwt, 401).end(done);
-    });
+    //it('error: get user with wrong jwt token', function (done) {
+    //    const jwt = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwidXNlcm5hbWUiOiJ1ZXN0Iiwicm9sZSI6bnVsbCwiaWF0IjoxNDczNTAwNzE5LCJleHAiOjE0NzYwOTI3MTl9.e0ymr0xrDPuQEBmdQLjb5-WegNtYcqAcpKp_DtDRKo8';
+    //    store.get('/users/me', jwt, 401).end(done);
+    //});
 
     it('get super user', function (done) {
         store.get('/users/me', true, 200)
@@ -43,25 +43,11 @@ describe('user integration', function () {
             .end(done);
     });
 
-    it('logout as super', shared.logoutFn(store));
-
     it('create a new user', function (done) {
         store.authPost('/users', user, 201).end(done);
     });
 
-    it('get new user', function (done) {
-        store.get('/users/me', true, 200)
-            .expect(function (res) {
-                delete res.body.id;
-                const expectedUser = _.cloneDeep(user);
-                expectedUser.role = 'participant';
-                delete expectedUser.password;
-                expect(res.body).to.deep.equal(expectedUser);
-            })
-            .end(done);
-    });
-
-    it('logout s new user', shared.logoutFn(store));
+    it('logout as super', shared.logoutFn(store));
 
     it('login as new user', shared.loginFn(store, user));
 

@@ -4,16 +4,11 @@ const _ = require('lodash');
 
 const models = require('../models');
 const shared = require('./shared.js');
-const tokener = require('../lib/tokener');
 
 exports.createNewUser = function (req, res) {
     const newUser = Object.assign({ role: 'participant' }, req.body);
     return models.user.createUser(newUser)
-        .then(user => {
-            const token = tokener.createJWT(user);
-            res.cookie('rr-jwt-token', token);
-            res.status(201).json({ id: user.id });
-        })
+        .then(({ id }) => res.status(201).json({ id }))
         .catch(shared.handleError(res));
 };
 

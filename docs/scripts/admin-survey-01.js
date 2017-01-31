@@ -1,10 +1,7 @@
 'use strict';
 
-const request = require('superagent');
-
 module.exports = function (locals) {
     console.log(`------ start ${module.filename}`);
-    const jwt = locals.jwt;
 
     const textQxId = locals.textQxId;
     const boolQxId = locals.boolQxId;
@@ -152,9 +149,8 @@ module.exports = function (locals) {
     };
 
     let surveyId = null;
-    return request
+    return locals.agent
         .post('http://localhost:9005/api/v1.0/surveys')
-        .set('Authorization', 'Bearer ' + jwt)
         .send(survey)
         .then(res => {
             console.log(res.status); // 201
@@ -162,7 +158,6 @@ module.exports = function (locals) {
             surveyId = res.body.id;
         })
         .then(() => {
-            locals.jwt = jwt;
             console.log(`------ end ${module.filename}`);
             return locals;
         });

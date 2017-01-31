@@ -77,6 +77,8 @@ describe('survey import-export integration', function () {
 
     it('reset database', shared.setUpFn(rrSuperTest));
 
+    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+
     let questionIdMap;
 
     it('import question csv into db', function (done) {

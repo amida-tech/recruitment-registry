@@ -128,6 +128,8 @@ describe('consent document integration', function () {
         };
     };
 
+    it('logout as super', shared.logoutFn(store));
+
     for (let i = 0; i < 4; ++i) {
         it(`login as user ${i}`, shared.loginIndexFn(store, history.hxUser, i));
         it(`verify consent documents required for user ${i}`, getUserConsentDocumentsFn([0, 1]));
