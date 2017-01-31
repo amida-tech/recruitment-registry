@@ -1,9 +1,7 @@
 'use strict';
 
-
 module.exports = function (locals) {
     console.log(`------ start ${module.filename}`);
-    const jwtUser = locals.jwt;
 
     return locals.agent
         .get('http://localhost:9005/api/v1.0/languages/es')

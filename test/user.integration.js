@@ -43,25 +43,11 @@ describe('user integration', function () {
             .end(done);
     });
 
-    it('logout as super', shared.logoutFn(store));
-
     it('create a new user', function (done) {
         store.authPost('/users', user, 201).end(done);
     });
 
-    //it('get new user', function (done) {
-    //    store.get('/users/me', true, 200)
-    //        .expect(function (res) {
-    //            delete res.body.id;
-    //            const expectedUser = _.cloneDeep(user);
-    //            expectedUser.role = 'participant';
-    //            delete expectedUser.password;
-    //            expect(res.body).to.deep.equal(expectedUser);
-    //        })
-    //        .end(done);
-    //});
-
-    //it('logout s new user', shared.logoutFn(store));
+    it('logout as super', shared.logoutFn(store));
 
     it('login as new user', shared.loginFn(store, user));
 

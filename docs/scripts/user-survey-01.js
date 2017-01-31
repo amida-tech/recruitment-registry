@@ -1,6 +1,5 @@
 'use strict';
 
-
 module.exports = function (locals) {
     console.log(`------ start ${module.filename}`);
     const jwtUser2 = locals.jwtUser2;
