@@ -1379,6 +1379,12 @@
                     "required": false,
                     "type": "string",
                     "minLength": 2
+                }, {
+                    "name": "include-signed",
+                    "in": "query",
+                    "description": "Flag to include signed documents",
+                    "required": false,
+                    "type": "boolean"
                 }],
                 "responses": {
                     "200": {
@@ -4309,6 +4315,13 @@
                 "type": {
                     "type": "string",
                     "minLength": 1
+                },
+                "signature": {
+                    "type": "boolean"
+                },
+                "language": {
+                    "type": "string",
+                    "minLength": 2
                 }
             },
             "additionalProperties": false
