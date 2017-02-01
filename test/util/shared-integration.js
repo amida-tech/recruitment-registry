@@ -104,6 +104,7 @@ class SharedIntegration {
         const generator = this.generator;
         return function (done) {
             const inputSurvey = generator.newSurvey();
+            delete inputSurvey.sections;
             if (hxQuestion) {
                 inputSurvey.questions = qxIndices.map(index => ({
                     id: hxQuestion.server(index).id,

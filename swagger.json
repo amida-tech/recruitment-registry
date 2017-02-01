@@ -2901,7 +2901,7 @@
         },
         "newSection": {
             "type": "object",
-            "required": ["name", "indices"],
+            "required": ["name"],
             "properties": {
                 "name": {
                     "type": "string",
@@ -2913,8 +2913,15 @@
                         "type": "integer",
                         "minimum": 0
                     }
+                },
+                "sections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/newSection"
+                    }
                 }
             },
+            "maxProperties": 2,
             "additionalProperties": false
         },
         "newSections": {
@@ -2926,7 +2933,7 @@
         },
         "section": {
             "type": "object",
-            "required": ["id", "name", "indices"],
+            "required": ["id", "name"],
             "properties": {
                 "id": {
                     "type": "integer",
@@ -2936,14 +2943,21 @@
                     "type": "string",
                     "minLength": 1
                 },
-                "indices": {
+                "questions": {
                     "type": "array",
                     "items": {
                         "type": "integer",
-                        "minimum": 0
+                        "minimum": 1
+                    }
+                },
+                "sections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/section"
                     }
                 }
             },
+            "maxProperties": 3,
             "additionalProperties": false
         },
         "sectionTextUpdate": {

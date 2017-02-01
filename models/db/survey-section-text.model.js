@@ -1,31 +1,31 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('survey_section', {
-        surveyId: {
+    return sequelize.define('survey_section_text', {
+        surveySectionId: {
             type: DataTypes.INTEGER,
             allowNull: false,
-            field: 'survey_id',
-            references: {
-                model: 'survey',
-                key: 'id'
-            }
-        },
-        type: {
-            type: DataTypes.ENUM('question', 'section'),
-            allowNull: false
-        },
-        parentId: {
-            type: DataTypes.INTEGER,
-            field: 'parent_id',
+            field: 'survey_section_id',
             references: {
                 model: 'survey_section',
                 key: 'id'
             }
         },
-        line: {
-            type: DataTypes.INTEGER,
+        language: {
+            type: DataTypes.TEXT,
+            allowNull: false,
+            field: 'language_code',
+            references: {
+                model: 'language',
+                key: 'code'
+            }
+        },
+        name: {
+            type: DataTypes.TEXT,
             allowNull: false
+        },
+        description: {
+            type: DataTypes.TEXT
         },
         createdAt: {
             type: DataTypes.DATE,
@@ -33,14 +33,13 @@ module.exports = function (sequelize, DataTypes) {
         },
         deletedAt: {
             type: DataTypes.DATE,
-            field: 'deleted_at',
+            field: 'deleted_at'
         }
     }, {
         freezeTableName: true,
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',
-        indexes: [{ fields: ['survey_id'], where: { deleted_at: { $eq: null } } }],
         paranoid: true
     });
 };
