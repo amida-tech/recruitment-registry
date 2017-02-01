@@ -48,6 +48,7 @@ const translator = {
             result.sections.forEach(section => {
                 section.name = this._translate(section.name, language);
                 delete section.indices;
+                delete section.questions;
             });
         }
         delete result.questions;

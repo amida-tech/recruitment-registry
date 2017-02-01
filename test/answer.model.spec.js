@@ -49,6 +49,7 @@ describe('answer unit', function () {
     const createSurveyFn = function (qxIndices) {
         return function () {
             const inputSurvey = generator.newSurvey();
+            delete inputSurvey.sections;
             inputSurvey.questions = qxIndices.map(index => ({
                 id: hxQuestion.server(index).id,
                 required: false

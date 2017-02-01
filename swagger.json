@@ -2926,7 +2926,7 @@
         },
         "section": {
             "type": "object",
-            "required": ["id", "name", "indices"],
+            "required": ["id", "name"],
             "properties": {
                 "id": {
                     "type": "integer",
@@ -2936,11 +2936,11 @@
                     "type": "string",
                     "minLength": 1
                 },
-                "indices": {
+                "questions": {
                     "type": "array",
                     "items": {
                         "type": "integer",
-                        "minimum": 0
+                        "minimum": 1
                     }
                 }
             },

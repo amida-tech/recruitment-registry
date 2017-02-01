@@ -132,6 +132,10 @@ const comparator = {
             expect(server.sections.length).to.equal(client.sections.length);
             expected.sections.forEach((section, index) => {
                 section.id = server.sections[index].id;
+                if (section.indices) {
+                    section.questions = section.indices.map(questionIndex => server.questions[questionIndex].id);
+                    delete section.indices;
+                }
             });
             expect(server.sections).to.deep.equal(expected.sections);
         }

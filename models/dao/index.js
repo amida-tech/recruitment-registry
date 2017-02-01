@@ -18,7 +18,7 @@ const SurveyConsentDocumentDAO = require('./survey-consent-document.dao');
 const ProfileSurveyDAO = require('./profile-survey.dao');
 const ProfileDAO = require('./profile.dao');
 const LanguageDAO = require('./language.dao');
-const SectionDAO = require('./section.dao');
+const SurveySectionDAO = require('./survey-section.dao');
 const SmtpDAO = require('./smtp.dao');
 const UserSurveyDAO = require('./user-survey.dao');
 const AssessmentDAO = require('./assessment.dao');
@@ -43,14 +43,14 @@ const user = new UserDAO({ consentDocument });
 const auth = new AuthDAO();
 const surveyConsent = new SurveyConsentDAO({ consentType });
 const surveyConsentDocument = new SurveyConsentDocumentDAO({ surveyConsent, userConsentDocument });
-const section = new SectionDAO();
+const surveySection = new SurveySectionDAO();
 const questionChoice = new QuestionChoiceDAO({ enumeral, enumeration });
 const questionAction = new QuestionActionDAO();
 const question = new QuestionDAO({ questionChoice, questionAction, enumeral, enumeration, questionIdentifier, answerIdentifier });
 const answerRule = new AnswerRuleDAO();
 const surveyQuestion = new SurveyQuestionDAO();
 const answer = new AnswerDAO({ surveyConsentDocument, surveyQuestion, answerRule });
-const survey = new SurveyDAO({ answer, section, question, enumeral, surveyIdentifier, surveyQuestion });
+const survey = new SurveyDAO({ answer, surveySection, question, enumeral, surveyIdentifier, surveyQuestion });
 const userSurvey = new UserSurveyDAO({ survey, answer });
 const consent = new ConsentDAO({ consentDocument });
 const profileSurvey = new ProfileSurveyDAO({ survey, consentDocument, answer });
@@ -63,7 +63,7 @@ const userAssessment = new UserAssessmentDAO({ answer });
 module.exports = {
     user,
     auth,
-    section,
+    surveySection,
     questionChoice,
     questionAction,
     question,
