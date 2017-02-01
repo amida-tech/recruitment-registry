@@ -32,17 +32,11 @@ const surveySectionQuestion = function (queryInterface, Sequelize) {
         createdAt: {
             type: Sequelize.DATE,
             field: 'created_at',
-        },
-        deletedAt: {
-            type: Sequelize.DATE,
-            field: 'deleted_at',
-        },
+        }
     }, {
         freezeTableName: true,
         createdAt: 'createdAt',
-        updatedAt: false,
-        deletedAt: 'deletedAt',
-        paranoid: true
+        updatedAt: false
     });
 };
 
@@ -130,7 +124,14 @@ module.exports = {
             .then(() => queryInterface.dropTable('rr_section'))
             .then(() => surveySectionParentId(queryInterface, Sequelize))
             .then(() => surveySectionLine(queryInterface, Sequelize))
-            .then(() => surveySectionType(queryInterface, Sequelize));
+            .then(() => surveySectionType(queryInterface, Sequelize))
+            .then(() => queryInterface.addIndex('survey_section_question', ['survey_section_id'], {
+                indexName: 'survey_section_question_survey_section_id'
+            }))
+            .then(() => queryInterface.addIndex('survey_section', ['survey_id'], {
+                where: { deleted_at: { $eq: null } },
+                indexName: 'survey_section_survey_id'
+            }));
     },
 
     down: function () {

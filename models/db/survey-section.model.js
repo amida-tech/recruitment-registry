@@ -34,12 +34,13 @@ module.exports = function (sequelize, DataTypes) {
         deletedAt: {
             type: DataTypes.DATE,
             field: 'deleted_at',
-        },
+        }
     }, {
         freezeTableName: true,
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',
+        indexes: [{ fields: ['survey_id'], where: { deleted_at: { $eq: null } } }],
         paranoid: true
     });
 };

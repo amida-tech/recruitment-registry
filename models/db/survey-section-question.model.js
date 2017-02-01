@@ -25,16 +25,11 @@ module.exports = function (sequelize, DataTypes) {
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',
-        },
-        deletedAt: {
-            type: DataTypes.DATE,
-            field: 'deleted_at',
-        },
+        }
     }, {
         freezeTableName: true,
         createdAt: 'createdAt',
         updatedAt: false,
-        deletedAt: 'deletedAt',
-        paranoid: true
+        indexes: [{ fields: ['survey_section_id'] }]
     });
 };
