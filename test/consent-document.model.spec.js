@@ -95,8 +95,8 @@ describe('consent document/type/signature unit', function () {
             .then(shared.throwingHandler, shared.expectedErrorHandler('consentTypeNotFound'));
     });
 
-    const verifyConsentDocuments = function(userIndex, expectedIndices) {
-        it(`verify consent document list (required) for user ${userIndex}`, function() {
+    const verifyConsentDocuments = function (userIndex, expectedIndices) {
+        it(`verify consent document list (required) for user ${userIndex}`, function () {
             return models.userConsentDocument.listUserConsentDocuments(history.userId(userIndex))
                 .then(consentDocuments => {
                     const expected = history.serversInList(expectedIndices);
@@ -104,7 +104,7 @@ describe('consent document/type/signature unit', function () {
                     return expected;
                 });
         });
-        it(`verify consent documents (required) for user ${userIndex}`, function() {
+        it(`verify consent documents (required) for user ${userIndex}`, function () {
             const css = expectedIndices.map(index => history.server(index));
             return SPromise.all(css.map(cs => {
                 return models.consentDocument.getConsentDocument(cs.id)
@@ -113,10 +113,18 @@ describe('consent document/type/signature unit', function () {
                     });
             }));
         });
+        it(`verify consent document list (all) for user ${userIndex}`, function () {
+            return models.userConsentDocument.listUserConsentDocuments(history.userId(userIndex), { includeSigned: true })
+                .then(consentDocuments => {
+                    const expected = history.serversInListWithSigned(userIndex);
+                    expect(consentDocuments).to.deep.equal(expected);
+                    return expected;
+                });
+        });
     };
 
-   const verifyTranslatedConsentDocuments = function(userIndex, expectedIndices, language) {
-        it(`verify translated consent document list (required) for user ${userIndex}`, function() {
+    const verifyTranslatedConsentDocuments = function (userIndex, expectedIndices, language) {
+        it(`verify translated consent document list (required) for user ${userIndex}`, function () {
             return models.userConsentDocument.listUserConsentDocuments(history.userId(userIndex), { language })
                 .then(consentDocuments => {
                     const expected = history.translatedServersInList(expectedIndices, language);
@@ -124,7 +132,7 @@ describe('consent document/type/signature unit', function () {
                     return expected;
                 });
         });
-        it(`verify translated consent documents (required) for user ${userIndex}`, function() {
+        it(`verify translated consent documents (required) for user ${userIndex}`, function () {
             const css = expectedIndices.map(index => history.hxDocument.translatedServer(index, language));
             return SPromise.all(css.map(cs => {
                 return models.consentDocument.getConsentDocument(cs.id, { language })
@@ -134,7 +142,6 @@ describe('consent document/type/signature unit', function () {
             }));
         });
     };
-
 
     for (let i = 0; i < 4; ++i) {
         verifyConsentDocuments(i, [0, 1]);
