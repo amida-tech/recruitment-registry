@@ -95,49 +95,50 @@ describe('consent document/type/signature unit', function () {
             .then(shared.throwingHandler, shared.expectedErrorHandler('consentTypeNotFound'));
     });
 
-    const verifyConsentDocumentsFn = function (userIndex, expectedIndices) {
-        return function () {
+    const verifyConsentDocuments = function(userIndex, expectedIndices) {
+        it(`verify consent document list (required) for user ${userIndex}`, function() {
             return models.userConsentDocument.listUserConsentDocuments(history.userId(userIndex))
                 .then(consentDocuments => {
                     const expected = history.serversInList(expectedIndices);
                     expect(consentDocuments).to.deep.equal(expected);
                     return expected;
-                })
-                .then(() => {
-                    const css = expectedIndices.map(index => history.server(index));
-                    return SPromise.all(css.map(cs => {
-                        return models.consentDocument.getConsentDocument(cs.id)
-                            .then(result => {
-                                expect(result).to.deep.equal(cs);
-                            });
-                    }));
                 });
-        };
+        });
+        it(`verify consent documents (required) for user ${userIndex}`, function() {
+            const css = expectedIndices.map(index => history.server(index));
+            return SPromise.all(css.map(cs => {
+                return models.consentDocument.getConsentDocument(cs.id)
+                    .then(result => {
+                        expect(result).to.deep.equal(cs);
+                    });
+            }));
+        });
     };
 
-    const verifyTranslatedConsentDocumentsFn = function (userIndex, expectedIndices, language) {
-        return function () {
+   const verifyTranslatedConsentDocuments = function(userIndex, expectedIndices, language) {
+        it(`verify translated consent document list (required) for user ${userIndex}`, function() {
             return models.userConsentDocument.listUserConsentDocuments(history.userId(userIndex), { language })
                 .then(consentDocuments => {
                     const expected = history.translatedServersInList(expectedIndices, language);
                     expect(consentDocuments).to.deep.equal(expected);
                     return expected;
-                })
-                .then(() => {
-                    const css = expectedIndices.map(index => history.hxDocument.translatedServer(index, language));
-                    return SPromise.all(css.map(cs => {
-                        return models.consentDocument.getConsentDocument(cs.id, { language })
-                            .then(result => {
-                                expect(result).to.deep.equal(cs);
-                            });
-                    }));
                 });
-        };
+        });
+        it(`verify translated consent documents (required) for user ${userIndex}`, function() {
+            const css = expectedIndices.map(index => history.hxDocument.translatedServer(index, language));
+            return SPromise.all(css.map(cs => {
+                return models.consentDocument.getConsentDocument(cs.id, { language })
+                    .then(result => {
+                        expect(result).to.deep.equal(cs);
+                    });
+            }));
+        });
     };
 
+
     for (let i = 0; i < 4; ++i) {
-        it(`verify consent documents required for user ${i}`, verifyConsentDocumentsFn(i, [0, 1]));
-        it(`verify translated consent documents required for user ${i}`, verifyTranslatedConsentDocumentsFn(i, [0, 1], 'es'));
+        verifyConsentDocuments(i, [0, 1]);
+        verifyTranslatedConsentDocuments(i, [0, 1], 'es');
     }
 
     const signConsentTypeFn = function (userIndex, typeIndex, language) {
@@ -160,10 +161,10 @@ describe('consent document/type/signature unit', function () {
     it('user 2 signs consent document of type 0', signConsentTypeFn(2, 0));
     it('user 3 signs consent document of type 1', signConsentTypeFn(3, 1));
 
-    it('verify consent documents required for user 0', verifyConsentDocumentsFn(0, []));
-    it('verify consent documents required for user 1', verifyConsentDocumentsFn(1, []));
-    it('verify consent documents required for user 2', verifyConsentDocumentsFn(2, [1]));
-    it('verify consent documents required for user 3', verifyConsentDocumentsFn(3, [0]));
+    verifyConsentDocuments(0, []);
+    verifyConsentDocuments(1, []);
+    verifyConsentDocuments(2, [1]);
+    verifyConsentDocuments(3, [0]);
 
     it('error: invalid user signs already signed consent document of type 0 ', function () {
         const consentDocumentId = history.activeConsentDocuments[0].id;
@@ -192,55 +193,55 @@ describe('consent document/type/signature unit', function () {
     it('create consent document of type 2', shared.createConsentDocumentFn(history, 2));
     it(`verify consent document of type 2)`, verifyConsentDocumentFn(2));
 
-    it('verify consent documents required for user 0', verifyConsentDocumentsFn(0, [2]));
-    it('verify consent documents required for user 1', verifyConsentDocumentsFn(1, [2]));
-    it('verify consent documents required for user 2', verifyConsentDocumentsFn(2, [1, 2]));
-    it('verify consent documents required for user 3', verifyConsentDocumentsFn(3, [0, 2]));
+    verifyConsentDocuments(0, [2]);
+    verifyConsentDocuments(1, [2]);
+    verifyConsentDocuments(2, [1, 2]);
+    verifyConsentDocuments(3, [0, 2]);
 
     it('user 2 signs consent document of type 2', signConsentTypeFn(2, 2, 'en'));
-    it('verify consent documents required for user 2', verifyConsentDocumentsFn(2, [1]));
+    verifyConsentDocuments(2, [1]);
 
     it('create consent document of type 1', shared.createConsentDocumentFn(history, 1));
     it(`verify consent document of type 1`, verifyConsentDocumentFn(1));
 
-    it('verify consent document required for user 0', verifyConsentDocumentsFn(0, [1, 2]));
-    it('verify consent document required for user 1', verifyConsentDocumentsFn(1, [1, 2]));
-    it('verify consent document required for user 2', verifyConsentDocumentsFn(2, [1]));
-    it('verify consent document required for user 3', verifyConsentDocumentsFn(3, [0, 1, 2]));
+    verifyConsentDocuments(0, [1, 2]);
+    verifyConsentDocuments(1, [1, 2]);
+    verifyConsentDocuments(2, [1]);
+    verifyConsentDocuments(3, [0, 1, 2]);
 
     it('user 1 signs consent document of type 2', signConsentTypeFn(1, 2, 'sp'));
-    it('verify consent documents required for user 1', verifyConsentDocumentsFn(1, [1]));
+    verifyConsentDocuments(1, [1]);
 
     it('create consent document of type 0', shared.createConsentDocumentFn(history, 0));
     it(`verify consent document of type 0)`, verifyConsentDocumentFn(0));
 
-    it('verify consent documents required for user 0', verifyConsentDocumentsFn(0, [0, 1, 2]));
-    it('verify consent documents required for user 1', verifyConsentDocumentsFn(1, [0, 1]));
-    it('verify consent documents required for user 2', verifyConsentDocumentsFn(2, [0, 1]));
-    it('verify consent documents required for user 3', verifyConsentDocumentsFn(3, [0, 1, 2]));
+    verifyConsentDocuments(0, [0, 1, 2]);
+    verifyConsentDocuments(1, [0, 1]);
+    verifyConsentDocuments(2, [0, 1]);
+    verifyConsentDocuments(3, [0, 1, 2]);
 
     it('user 2 signs consent document of type 1', signConsentTypeFn(2, 1));
     it('user 3 signs consent document of type 1', signConsentTypeFn(3, 1));
 
-    it('verify consent documents required for user 0', verifyConsentDocumentsFn(0, [0, 1, 2]));
-    it('verify consent documents required for user 1', verifyConsentDocumentsFn(1, [0, 1]));
-    it('verify consent documents required for user 2', verifyConsentDocumentsFn(2, [0]));
-    it('verify consent documents required for user 3', verifyConsentDocumentsFn(3, [0, 2]));
+    verifyConsentDocuments(0, [0, 1, 2]);
+    verifyConsentDocuments(1, [0, 1]);
+    verifyConsentDocuments(2, [0]);
+    verifyConsentDocuments(3, [0, 2]);
 
     it('create consent document of type 1', shared.createConsentDocumentFn(history, 1));
     it(`verify consent document of type 1)`, verifyConsentDocumentFn(1));
 
-    it('verify consent document required for user 0', verifyConsentDocumentsFn(0, [0, 1, 2]));
-    it('verify consent document required for user 1', verifyConsentDocumentsFn(1, [0, 1]));
-    it('verify consent document required for user 2', verifyConsentDocumentsFn(2, [0, 1]));
-    it('verify consent document required for user 3', verifyConsentDocumentsFn(3, [0, 1, 2]));
+    verifyConsentDocuments(0, [0, 1, 2]);
+    verifyConsentDocuments(1, [0, 1]);
+    verifyConsentDocuments(2, [0, 1]);
+    verifyConsentDocuments(3, [0, 1, 2]);
 
     it('user 0 signs consent document of type 1', signConsentTypeFn(0, 1));
-    it('verify consent documents required for user 0', verifyConsentDocumentsFn(0, [0, 2]));
+    verifyConsentDocuments(0, [0, 2]);
     it('user 0 signs consent document of type 2', signConsentTypeFn(0, 2, 'en'));
-    it('verify consent documents required for user 0', verifyConsentDocumentsFn(0, [0]));
+    verifyConsentDocuments(0, [0]);
     it('user 0 signs consent document of type 0', signConsentTypeFn(0, 0, 'sp'));
-    it('verify consent documents required for user 0', verifyConsentDocumentsFn(0, []));
+    verifyConsentDocuments(0, []);
 
     it(`create consent from types 0, 1, 2`, function () {
         const sections = [0, 1, 2].map(typeIndex => history.typeId(typeIndex));
@@ -272,10 +273,10 @@ describe('consent document/type/signature unit', function () {
             });
     });
 
-    it('verify consent documents required for user 0', verifyConsentDocumentsFn(0, []));
-    it('verify consent documents required for user 1', verifyConsentDocumentsFn(1, [0]));
-    it('verify consent documents required for user 2', verifyConsentDocumentsFn(2, [0]));
-    it('verify consent documents required for user 3', verifyConsentDocumentsFn(3, [0, 2]));
+    verifyConsentDocuments(0, []);
+    verifyConsentDocuments(1, [0]);
+    verifyConsentDocuments(2, [0]);
+    verifyConsentDocuments(3, [0, 2]);
 
     const verifySignatureExistenceFn = function (userIndex) {
         return function () {
