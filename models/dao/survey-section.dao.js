@@ -9,35 +9,64 @@ const Translatable = require('./translatable');
 const SurveySection = db.SurveySection;
 const SurveySectionQuestion = db.SurveySectionQuestion;
 
+const flattenHiearachy = function flattenHiearachy(sections, result, parentIndex = null) {
+    if (!result) {
+        result = [];
+    }
+    sections.forEach((section, line) => {
+        result.push({ parentIndex, line, section });
+        if (section.sections) {
+            flattenHiearachy(section.sections, result, result.length - 1);
+        }
+    });
+    return result;
+};
+
 module.exports = class SectionDAO extends Translatable {
     constructor() {
         super('survey_section_text', 'surveySectionId', ['name']);
     }
 
-    createSurveySectionTx({ name, surveyId, line, questionIds }, transaction) {
-        return SurveySection.create({ surveyId, type: 'question', line }, { transaction })
+    createSurveySectionTx({ name, surveyId, line, type, parentIndex }, ids, transaction) {
+        const parentId = parentIndex === null ? null : ids[parentIndex];
+        return SurveySection.create({ surveyId, line, type, parentId }, { transaction })
             .then(({ id }) => {
+                ids.push(id);
                 return this.createTextTx({ id, name }, transaction)
-                    .then(() => {
-                        const promises = questionIds.map((questionId, line) => {
-                            const record = { surveySectionId: id, questionId, line };
-                            return SurveySectionQuestion.create(record, { transaction });
-                        });
-                        return SPromise.all(promises);
-                    })
-                    .then(() => id);
+                    .then(() => ids);
             });
     }
 
     bulkCreateSectionsForSurveyTx(surveyId, questionIds, sections, transaction) { // TODO: Use sequelize bulkCreate with 4.0
+        const flattenedSections = flattenHiearachy(sections);
         return SurveySection.destroy({ where: { surveyId }, transaction })
             .then(() => {
-                const pxs = sections.map(({ name, indices }, line) => {
-                    const sectionQuestionIds = indices.map(index => questionIds[index]);
-                    return this.createSurveySectionTx({ name, surveyId, line, questionIds: sectionQuestionIds }, transaction);
-                });
-                return SPromise.all(pxs);
-            });
+                return flattenedSections.reduce((r, { parentIndex, line, section }) => {
+                    const { name, indices } = section;
+                    const type = indices ? 'question' : 'section';
+                    const record = { name, surveyId, line, type, parentIndex };
+                    if (r === null) {
+                        return this.createSurveySectionTx(record, [], transaction);
+                    } else {
+                        return r.then(ids => this.createSurveySectionTx(record, ids, transaction));
+                    }
+                }, null);
+            })
+            .then((sectionIds => {
+                const promises = flattenedSections.reduce((r, { section }, line) => {
+                    const indices = section.indices;
+                    if (indices) {
+                        const surveySectionId = sectionIds[line];
+                        indices.forEach(index => {
+                            const record = { surveySectionId, questionId: questionIds[index], line };
+                            const promise = SurveySectionQuestion.create(record, { transaction });
+                            r.push(promise);
+                        });
+                    }
+                    return r;
+                }, []);
+                return SPromise.all(promises).then(() => sectionIds);
+            }));
     }
 
     getSectionsForSurveyTx(surveyId, language) {
@@ -45,10 +74,16 @@ module.exports = class SectionDAO extends Translatable {
                 where: { surveyId },
                 raw: true,
                 order: 'line',
-                attributes: ['id']
+                attributes: ['id', 'type', 'parentId']
             })
+            .then(sections => this.updateAllTexts(sections, language))
             .then(sections => {
-                const ids = sections.map(({ id }) => id);
+                const ids = sections.reduce((r, { id, type }) => {
+                    if (type === 'question') {
+                        r.push(id);
+                    }
+                    return r;
+                }, []);
                 return SurveySectionQuestion.findAll({
                         where: { surveySectionId: { $in: ids } },
                         raw: true,
@@ -58,17 +93,32 @@ module.exports = class SectionDAO extends Translatable {
                     .then(records => {
                         const map = sections.reduce((r, section) => {
                             r[section.id] = section;
-                            section.questions = [];
+                            if (section.type === 'question') {
+                                section.questions = [];
+                            }
+                            delete section.type;
                             return r;
                         }, {});
                         records.forEach(record => {
                             const section = map[record.surveySectionId];
                             section.questions.push(record.questionId);
                         });
-                        return sections;
+                        return sections.reduce((r, section) => {
+                            if (section.parentId) {
+                                const parent = map[section.parentId];
+                                if (!parent.sections) {
+                                    parent.sections = [];
+                                }
+                                parent.sections.push(section);
+                                delete section.parentId;
+                            } else {
+                                r.push(section);
+                                delete section.parentId;
+                            }
+                            return r;
+                        }, []);
                     });
-            })
-            .then(sections => this.updateAllTexts(sections, language));
+            });
     }
 
     updateMultipleSectionNamesTx(sections, language, transaction) {

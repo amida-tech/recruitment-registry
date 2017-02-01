@@ -121,6 +121,19 @@ const comparator = {
         expect(client.length).to.equal(server.length);
         return client.map((question, index) => this.question(question, server[index], options));
     },
+    surveySections(clientSections, serverSections, server) {
+        expect(serverSections.length).to.equal(clientSections.length);
+        clientSections.forEach((section, index) => {
+            section.id = serverSections[index].id;
+            if (section.indices) {
+                section.questions = section.indices.map(questionIndex => server.questions[questionIndex].id);
+                delete section.indices;
+            }
+            if (section.sections) {
+                this.surveySections(section.sections, serverSections[index].sections, server);
+            }
+        });
+    },
     survey(client, server, options = {}) {
         const expected = _.cloneDeep(client);
         expected.id = server.id;
@@ -129,14 +142,7 @@ const comparator = {
             delete expected.identifier;
         }
         if (client.sections || server.sections) {
-            expect(server.sections.length).to.equal(client.sections.length);
-            expected.sections.forEach((section, index) => {
-                section.id = server.sections[index].id;
-                if (section.indices) {
-                    section.questions = section.indices.map(questionIndex => server.questions[questionIndex].id);
-                    delete section.indices;
-                }
-            });
+            this.surveySections(expected.sections, server.sections, server);
             expect(server.sections).to.deep.equal(expected.sections);
         }
         expected.questions = this.questions(expected.questions, server.questions, options);

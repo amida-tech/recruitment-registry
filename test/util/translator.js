@@ -37,6 +37,22 @@ const translator = {
         }
         return result;
     },
+    translateSurveySections(surveySections, language, result) {
+        if (!result) {
+            result = [];
+        }
+        surveySections.forEach(({ id, name, sections }) => {
+            const translated = {
+                id,
+                name: this._translate(name, language)
+            };
+            result.push(translated);
+            if (sections) {
+                this.translateSurveySections(sections);
+            }
+        });
+        return result;
+    },
     translateSurvey(survey, language) {
         const result = _.cloneDeep(survey);
         result.name = this._translate(result.name, language);
@@ -45,11 +61,7 @@ const translator = {
         }
         delete result.meta;
         if (result.sections) {
-            result.sections.forEach(section => {
-                section.name = this._translate(section.name, language);
-                delete section.indices;
-                delete section.questions;
-            });
+            result.sections = this.translateSurveySections(result.sections, language);
         }
         delete result.questions;
         return result;

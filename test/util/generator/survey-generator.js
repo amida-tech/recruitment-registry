@@ -68,7 +68,14 @@ module.exports = class SurveyGenerator {
             sections[0] = { name: 'section_0', indices: _.range(0, 6, 2) };
             sections[1] = { name: 'section_1', indices: _.range(1, 6, 2) };
             sections[2] = { name: 'section_2', indices: _.rangeRight(count - 3, count) };
-            result.sections = sections;
+            if (sectionType === 1) {
+                result.sections = [
+                    { name: 'parent_0', sections: sections.slice(0, 2) },
+                    sections[2]
+                ];
+            } else {
+                result.sections = sections;
+            }
         }
         return result;
     }

@@ -2901,7 +2901,7 @@
         },
         "newSection": {
             "type": "object",
-            "required": ["name", "indices"],
+            "required": ["name"],
             "properties": {
                 "name": {
                     "type": "string",
@@ -2913,8 +2913,15 @@
                         "type": "integer",
                         "minimum": 0
                     }
+                },
+                "sections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/newSection"
+                    }
                 }
             },
+            "maxProperties": 2,
             "additionalProperties": false
         },
         "newSections": {
@@ -2942,8 +2949,15 @@
                         "type": "integer",
                         "minimum": 1
                     }
+                },
+                "sections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/section"
+                    }
                 }
             },
+            "maxProperties": 3,
             "additionalProperties": false
         },
         "sectionTextUpdate": {
