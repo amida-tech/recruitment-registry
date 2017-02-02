@@ -9,7 +9,6 @@ module.exports = class ConsentDocumentHistory {
         this.hxUser = new History();
         this.hxType = new History();
         this.hxDocument = new History();
-        this.clientConsentDocuments = [];
         this.activeConsentDocuments = [];
         this.signatures = _.range(userCount).map(() => []);
     }
@@ -21,6 +20,7 @@ module.exports = class ConsentDocumentHistory {
 
     deleteType(typeIndex) {
         this.hxType.remove(typeIndex);
+        this.activeConsentDocuments[typeIndex] = {};
     }
 
     typeId(typeIndex) {
@@ -75,6 +75,27 @@ module.exports = class ConsentDocumentHistory {
                 title: type.title
             };
         });
+        return _.sortBy(result, 'id');
+    }
+
+    serversInListWithSigned(userIndex) {
+        const signatureMap = new Map(this.signatures[userIndex].map(signature => [signature.id, signature]));
+        const result = this.activeConsentDocuments.reduce((r, { id }, index) => {
+            if (!id) {
+                return r;
+            }
+            const { name, title } = this.hxType.server(index);
+            const info = { id, name, title };
+            const signature = signatureMap.get(info.id);
+            if (signature) {
+                info.signature = true;
+                info.language = signature.language;
+            } else {
+                info.signature = false;
+            }
+            r.push(info);
+            return r;
+        }, []);
         return _.sortBy(result, 'id');
     }
 

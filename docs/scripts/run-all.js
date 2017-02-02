@@ -32,6 +32,7 @@ const surveys03 = require('./surveys-03');
 const surveys04 = require('./surveys-04');
 const surveys05 = require('./surveys-05');
 const consentDocuments01 = require('./consent-documents-01');
+const consentDocuments011 = require('./consent-documents-01-1');
 const consentDocuments02 = require('./consent-documents-02');
 const consentDocuments03 = require('./consent-documents-03');
 const consentDocuments04 = require('./consent-documents-04');
@@ -95,8 +96,8 @@ models.sequelize.sync({ force: true })
     .then(profile01)
     .then(profile02)
     .then(profile01)
-    .then(userManagement01)
     .then(authentication01)
+    .then(userManagement01)
     .then(questions01)
     .then(questions02)
     .then(registration04)
@@ -113,10 +114,12 @@ models.sequelize.sync({ force: true })
     .then(userSurvey04)
     .then(userSurvey05)
     .then(consentDocuments01)
+    .then(consentDocuments011)
     .then(consentDocuments02)
     .then(consentDocuments03)
     .then(consentDocuments04)
     .then(consentDocuments01)
+    .then(consentDocuments011)
     .then(consentDocuments05)
     .then(authentication01)
     .then(consentDocuments06)

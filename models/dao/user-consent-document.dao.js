@@ -1,7 +1,5 @@
 'use strict';
 
-const _ = require('lodash');
-
 const db = require('../db');
 
 const ConsentSignature = db.ConsentSignature;
@@ -11,49 +9,62 @@ module.exports = class UserConsentDocumentDAO {
         Object.assign(this, dependencies);
     }
 
+    addSignatureInfo(consentDocument, signature) {
+        if (signature) {
+            consentDocument.signature = true;
+            consentDocument.language = signature.language;
+        } else {
+            consentDocument.signature = false;
+        }
+        return consentDocument;
+    }
+
     listUserConsentDocuments(userId, options = {}) {
-        const _options = Object.assign({ summary: true }, options);
-        return this.consentDocument.listConsentDocuments(_options)
-            .then(activeDocs => {
-                const query = {
-                    where: { userId },
-                    raw: true,
-                    attributes: ['consentDocumentId'],
-                    order: 'consent_document_id'
-                };
+        const includeSigned = options.includeSigned;
+        const consentDocOptions = Object.assign({ summary: true }, options);
+        delete consentDocOptions.includeSigned;
+        return this.consentDocument.listConsentDocuments(consentDocOptions)
+            .then(activeDocuments => {
+                const attributes = ['consentDocumentId'];
+                if (includeSigned) {
+                    attributes.push('language');
+                }
+                const query = { where: { userId }, raw: true, attributes };
                 if (options.transaction) {
                     query.transaction = options.transaction;
                 }
                 return ConsentSignature.findAll(query)
-                    .then(signedDocs => _.map(signedDocs, 'consentDocumentId'))
-                    .then(signedDocIds => activeDocs.filter(activeDoc => signedDocIds.indexOf(activeDoc.id) < 0));
+                    .then(signedDocuments => new Map(signedDocuments.map(signedDocument => [signedDocument.consentDocumentId, signedDocument])))
+                    .then(signedDocumentMap => {
+                        if (includeSigned) {
+                            activeDocuments.forEach(activeDocument => {
+                                const signature = signedDocumentMap.get(activeDocument.id);
+                                this.addSignatureInfo(activeDocument, signature);
+                            });
+                            return activeDocuments;
+                        } else {
+                            return activeDocuments.filter(activeDocument => !signedDocumentMap.has(activeDocument.id));
+                        }
+                    });
             });
     }
 
-    _fillSignature(result, userId, id) {
+    fillSignature(result, userId, id) {
         return ConsentSignature.findOne({
                 where: { userId, consentDocumentId: id },
                 raw: true,
                 attributes: ['language']
             })
-            .then(signature => {
-                if (signature) {
-                    result.signature = true;
-                    result.language = signature.language;
-                } else {
-                    result.signature = false;
-                }
-                return result;
-            });
+            .then(signature => this.addSignatureInfo(result, signature));
     }
 
     getUserConsentDocument(userId, id, options) {
         return this.consentDocument.getConsentDocument(id, options)
-            .then(result => this._fillSignature(result, userId, id));
+            .then(result => this.fillSignature(result, userId, id));
     }
 
     getUserConsentDocumentByTypeName(userId, typeName, options = {}) {
         return this.consentDocument.getConsentDocumentByTypeName(typeName, options)
-            .then(result => this._fillSignature(result, userId, result.id));
+            .then(result => this.fillSignature(result, userId, result.id));
     }
 };

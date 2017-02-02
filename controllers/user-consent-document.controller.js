@@ -9,7 +9,8 @@ const userConsentDocument = models.userConsentDocument;
 
 exports.listUserConsentDocuments = function (req, res) {
     const language = _.get(req, 'swagger.params.language.value');
-    userConsentDocument.listUserConsentDocuments(req.user.id, { language })
+    const includeSigned = _.get(req, 'swagger.params.include-signed.value');
+    userConsentDocument.listUserConsentDocuments(req.user.id, { language, includeSigned })
         .then(consentDocuments => res.status(200).json(consentDocuments))
         .catch(shared.handleError(res));
 };

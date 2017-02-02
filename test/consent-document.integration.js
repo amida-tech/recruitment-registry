@@ -117,6 +117,17 @@ describe('consent document integration', function () {
         };
     };
 
+    const getUserConsentDocumentsAllFn = function (userIndex) {
+        return function (done) {
+            store.get('/user-consent-documents', true, 200, { 'include-signed': true })
+                .expect(function (res) {
+                    const expected = history.serversInListWithSigned(userIndex);
+                    expect(res.body).to.deep.equal(expected);
+                })
+                .end(done);
+        };
+    };
+
     const getTranslatedUserConsentDocumentsFn = function (expectedIndices, language) {
         return function (done) {
             store.get('/user-consent-documents', true, 200, { language })
@@ -221,7 +232,8 @@ describe('consent document integration', function () {
 
     const verifyConsentDocuments = ((userIndex, consentDocumentIndices) => {
         it(`login as user ${userIndex}`, shared.loginIndexFn(store, history.hxUser, userIndex));
-        it(`verify consent documents required for user ${userIndex}`, getUserConsentDocumentsFn(consentDocumentIndices));
+        it(`verify consent documents list (required) for user ${userIndex}`, getUserConsentDocumentsFn(consentDocumentIndices));
+        it(`verify consent documents list (all) for user ${userIndex}`, getUserConsentDocumentsAllFn(userIndex));
         for (let i = 0; i < consentDocumentIndices.length; ++i) {
             it(`user ${userIndex} get consent document of ${i}`, getConsentDocumentFn(consentDocumentIndices[i]));
         }
