@@ -2996,6 +2996,10 @@
                     "type": "string",
                     "minLength": 1
                 },
+                "status": {
+                    "type": "string",
+                    "enum": ["draft", "published", "retired"]
+                },
                 "description": {
                     "type": "string"
                 },
