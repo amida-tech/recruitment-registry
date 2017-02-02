@@ -108,19 +108,19 @@ describe('survey unit', function () {
             .then(shared.throwingHandler, shared.expectedErrorHandler('surveyNoQuestions'));
     });
 
-    for (let i = 0; i < surveyCount; ++i) {
-        it(`create survey ${i}`, tests.createSurveyFn());
-        it(`get survey ${i}`, tests.getSurveyFn(i));
-        it(`update survey ${i}`, updateSurveyFn(i));
-        it(`get/verify survey ${i}`, verifyUpdatedSurveyFn(i));
-        it(`revert updated survey back ${i}`, revertUpdateSurveyFn(i));
-        it(`get/verify survey ${i}`, verifyUpdatedSurveyFn(i));
-        it(`update survey text ${i}`, updateSurveyTextFn(i));
-        it(`get/verify survey ${i}`, verifyUpdatedSurveyFn(i));
-        it(`revert updated survey text back ${i}`, revertUpdateSurveyTextFn(i));
-        it(`get/verify survey ${i}`, verifyUpdatedSurveyFn(i));
+    _.range(surveyCount).forEach(index => {
+        it(`create survey ${index}`, tests.createSurveyFn());
+        it(`get survey ${index}`, tests.getSurveyFn(index));
+        it(`update survey ${index}`, updateSurveyFn(index));
+        it(`get/verify survey ${index}`, verifyUpdatedSurveyFn(index));
+        it(`revert updated survey back ${index}`, revertUpdateSurveyFn(index));
+        it(`get/verify survey ${index}`, verifyUpdatedSurveyFn(index));
+        it(`update survey text ${index}`, updateSurveyTextFn(index));
+        it(`get/verify survey ${index}`, verifyUpdatedSurveyFn(index));
+        it(`revert updated survey text back ${index}`, revertUpdateSurveyTextFn(index));
+        it(`get/verify survey ${index}`, verifyUpdatedSurveyFn(index));
         it('list surveys', tests.listSurveysFn());
-    }
+    });
 
     it('replace sections of first survey with sections', function () {
         const index = _.findIndex(hxSurvey.listClients(), client => client.sections);
@@ -219,10 +219,10 @@ describe('survey unit', function () {
         };
     };
 
-    for (let i = 0; i < surveyCount; i += 2) {
-        it(`add translated name to survey ${i}`, translateTextFn(i, 'es'));
-        it(`get and verify translated survey ${i}`, getTranslatedFn(i, 'es'));
-    }
+    _.range(0, surveyCount, 2).forEach(index => {
+        it(`add translated name to survey ${index}`, translateTextFn(index, 'es'));
+        it(`get and verify translated survey ${index}`, getTranslatedFn(index, 'es'));
+    });
 
     it('list and verify translated surveys', listTranslatedFn('es'));
 
@@ -280,6 +280,8 @@ describe('survey unit', function () {
     it(`survey ${surveyCount} is version 2`, dbVersionCompareFn(surveyCount, 2));
     it(`survey ${surveyCount+2} is version 3`, dbVersionCompareFn(surveyCount + 2, 3));
 
+    surveyCount += 3;
+
     const dbVersionParentlessCompareFn = function (index, replaced) {
         return function () {
             const id = hxSurvey.id(index);
@@ -298,10 +300,6 @@ describe('survey unit', function () {
 
     it('survey 1 is version null', dbVersionParentlessCompareFn(1, false));
     it('survey 3 is version 1', dbVersionParentlessCompareFn(3, true));
-
-    it('update survey count', function () {
-        surveyCount += 3;
-    });
 
     it('listSurvey override where', function () {
         return models.survey.listSurveys({ scope: 'version', version: 3, history: true })
@@ -332,9 +330,10 @@ describe('survey unit', function () {
                 survey.questions = questions;
                 comparator.survey(survey, serverSurvey);
                 hxSurvey.push(survey, serverSurvey);
-                ++surveyCount;
             });
     });
+
+    ++surveyCount;
 
     it('create survey by existing/new questions', function () {
         const survey = generator.newSurvey();
@@ -344,7 +343,6 @@ describe('survey unit', function () {
         return models.survey.createSurvey(survey)
             .then(id => models.survey.getSurvey(id))
             .then((serverSurvey) => {
-                ++surveyCount;
                 survey.questions[1] = hxSurvey.questions[10];
                 survey.questions[2] = hxSurvey.questions[11];
                 hxSurvey.push(survey, serverSurvey);
@@ -352,14 +350,18 @@ describe('survey unit', function () {
             });
     });
 
+    ++surveyCount;
+
     it('update survey generator for multi questions', function () {
         generator.updateSurveyGenerator(MultiQuestionSurveyGenerator);
     });
 
-    _.range(13, 20).forEach(index => {
+    _.range(surveyCount, surveyCount + 7).forEach(index => {
         it(`create survey ${index}`, tests.createSurveyFn());
         it(`get survey ${index}`, tests.getSurveyFn(index));
     });
+
+    surveyCount += 7;
 
     _.range(8).forEach(index => {
         it(`create enumeration ${index}`, enumerationTests.createEnumerationFn());
@@ -374,10 +376,12 @@ describe('survey unit', function () {
         comparator.updateEnumerationMap(enumerations);
     });
 
-    _.range(20, 23).forEach(index => {
+    _.range(surveyCount, surveyCount + 3).forEach(index => {
         it(`create survey ${index}`, tests.createSurveyFn());
         it(`get survey ${index}`, tests.getSurveyFn(index));
     });
+
+    surveyCount += 3;
 
     for (let i = 0; i < userCount; ++i) {
         it(`create user ${i}`, shared.createUserFn(hxUser));
@@ -477,5 +481,9 @@ describe('survey unit', function () {
         answers[0].questionId = 999;
         return models.answer.createAnswers(input)
             .then(shared.throwingHandler, shared.expectedErrorHandler('answerQxNotInSurvey'));
+    });
+
+    it('survey count sanity check', function () {
+        expect(hxSurvey.length()).to.equal(surveyCount);
     });
 });

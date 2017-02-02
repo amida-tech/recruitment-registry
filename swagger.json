@@ -2997,8 +2997,7 @@
                     "minLength": 1
                 },
                 "status": {
-                    "type": "string",
-                    "enum": ["draft", "published", "retired"]
+                    "$ref": "#/definitions/surveyStatus"
                 },
                 "description": {
                     "type": "string"
@@ -3227,6 +3226,9 @@
                 "description": {
                     "type": "string"
                 },
+                "status": {
+                    "$ref": "#/definitions/surveyStatus"
+                },
                 "meta": {
                     "$ref": "#/definitions/surveyMeta"
                 },
@@ -3325,6 +3327,9 @@
                 "description": {
                     "type": "string"
                 },
+                "status": {
+                    "$ref": "#/definitions/surveyStatus"
+                },
                 "questions": {
                     "type": "array",
                     "items": {
@@ -3381,6 +3386,10 @@
         "choiceType": {
             "type": "string",
             "enum": ["bool", "bool-sole", "text", "year", "month", "day", "integer", "float", "date", "pounds", "zip", "feet-inches", "blood-pressure", "enumeration"]
+        },
+        "surveyStatus": {
+            "type": "string",
+            "enum": ["draft", "published", "retired"]
         },
         "choice": {
             "type": "object",
