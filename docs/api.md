@@ -1965,6 +1965,37 @@ Server responsds withs a list in the response body that shows id of the consent 
 ]
 ```
 
+It is also possible to show already signed documents in the list with parameter `include-server`.
+
+```js
+agent
+    .get('http://localhost:9005/api/v1.0/user-consent-documents?include-signed')
+    .then(res => {
+        console.log(res.status);  // 200
+        console.log(JSON.stringify(res.body, undefined, 4)); // all consent documents
+    });
+```
+
+In this case sigature status also shown
+
+```js
+[
+    {
+        "id": 1,
+        "name": "terms-of-use",
+        "title": "Terms of Use",
+        "signature": false
+    },
+    {
+        "id": 2,
+        "name": "consent",
+        "title": "Consent Form",
+        "signature": true,
+        "language": "en"
+    }
+]
+```
+
 Content of the documents can be shown using user `/consent-documents/{id}` resource
 
 ```js
