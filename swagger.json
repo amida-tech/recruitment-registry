@@ -55,9 +55,7 @@
             "post": {
                 "operationId": "createNewUser",
                 "summary": "Creates new user",
-                "security": [{
-                    "admin": []
-                }],
+                "security": [{}],
                 "parameters": [{
                     "name": "user",
                     "in": "body",
