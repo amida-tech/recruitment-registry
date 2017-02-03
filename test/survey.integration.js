@@ -59,7 +59,7 @@ describe('survey integration', function () {
         };
     };
 
-    const updateSurveyFn = function (index, meta) {
+    const patchSurveyFn = function (index, meta) {
         return function (done) {
             if (hxSurvey.client(index).meta === undefined) {
                 return done();
@@ -72,7 +72,7 @@ describe('survey integration', function () {
         };
     };
 
-    const updateSurveyTextFn = function (index) {
+    const patchSurveyTextFn = function (index) {
         return function (done) {
             const survey = hxSurvey.server(index);
             const name = hxSurvey.client(index).name + 'xyz';
@@ -141,10 +141,10 @@ describe('survey integration', function () {
         const meta = {
             anyProperty: true
         };
-        it(`update survey ${index}`, updateSurveyFn(index, meta));
+        it(`update survey ${index}`, patchSurveyFn(index, meta));
         it(`verify survey ${index}`, verifySurveyFn(index));
-        it(`update survey ${index}`, updateSurveyFn(index));
-        it(`update survey text ${index}`, updateSurveyTextFn(index));
+        it(`update survey ${index}`, patchSurveyFn(index));
+        it(`update survey text ${index}`, patchSurveyTextFn(index));
         it(`verify survey ${index}`, verifySurveyFn(index));
         it(`revert update survey ${index}`, revertUpdateSurveyTextFn(index));
         it(`verify survey ${index}`, verifySurveyFn(index));

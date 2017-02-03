@@ -179,7 +179,7 @@ module.exports = class SurveyDAO extends Translatable {
         return questions;
     }
 
-    updateQuestionsTx(inputQxs, surveyId, transaction) {
+    createSurveyQuestionsTx(inputQxs, surveyId, transaction) {
         const questions = inputQxs.slice();
         return this.createNewQuestionsTx(questions, transaction)
             .then(questions => this.createRulesForQuestions(questions, 'skip', transaction))
@@ -208,7 +208,7 @@ module.exports = class SurveyDAO extends Translatable {
         return Survey.create(fields, { transaction })
             .then(({ id }) => this.createTextTx({ id, name: survey.name, description: survey.description }, transaction))
             .then(({ id }) => {
-                return this.updateQuestionsTx(survey.questions, id, transaction)
+                return this.createSurveyQuestionsTx(survey.questions, id, transaction)
                     .then(questions => {
                         const questionIds = questions.map(question => question.id);
                         return { questionIds, surveyId: id };
@@ -257,22 +257,22 @@ module.exports = class SurveyDAO extends Translatable {
         });
     }
 
-    updateSurveyTextTx({ id, name, description, sections }, language, tx) {
-        return this.createTextTx({ id, name, description, language }, tx)
+    patchSurveyTextTx({ id, name, description, sections }, language, transaction) {
+        return this.createTextTx({ id, name, description, language }, transaction)
             .then(() => {
                 if (sections) {
-                    return this.surveySection.updateMultipleSectionNamesTx(sections, language, tx);
+                    return this.surveySection.updateMultipleSectionNamesTx(sections, language, transaction);
                 }
             });
     }
 
-    updateSurveyText({ id, name, description, sections }, language) {
-        return sequelize.transaction(tx => {
-            return this.updateSurveyTextTx({ id, name, description, sections }, language, tx);
+    patchSurveyText({ id, name, description, sections }, language) {
+        return sequelize.transaction(transaction => {
+            return this.patchSurveyTextTx({ id, name, description, sections }, language, transaction);
         });
     }
 
-    updateSurvey(id, surveyUpdate) {
+    patchSurvey(id, surveyUpdate) {
         return Survey.findById(id, { raw: true, attributes: ['status'] })
             .then(survey => {
                 const updateStatus = surveyUpdate.status;

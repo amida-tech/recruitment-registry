@@ -25,16 +25,16 @@ exports.createSurvey = function (req, res) {
         .catch(shared.handleError(res));
 };
 
-exports.updateSurveyText = function (req, res) {
+exports.patchSurveyText = function (req, res) {
     const language = _.get(req, 'swagger.params.language.value');
-    models.survey.updateSurveyText(req.body, language)
+    models.survey.patchSurveyText(req.body, language)
         .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };
 
-exports.updateSurvey = function (req, res) {
+exports.patchSurvey = function (req, res) {
     const id = _.get(req, 'swagger.params.id.value');
-    models.survey.updateSurvey(id, req.body)
+    models.survey.patchSurvey(id, req.body)
         .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };

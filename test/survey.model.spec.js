@@ -50,13 +50,13 @@ describe('survey unit', function () {
         };
     };
 
-    const updateSurveyFn = function (index) {
+    const patchSurveyFn = function (index) {
         return function () {
             const surveyId = hxSurvey.id(index);
             const survey = hxSurvey.server(index);
             const update = { meta: { anyProperty: 2 } };
             Object.assign(survey, update);
-            return models.survey.updateSurvey(surveyId, update);
+            return models.survey.patchSurvey(surveyId, update);
         };
     };
 
@@ -71,11 +71,11 @@ describe('survey unit', function () {
             } else {
                 Object.assign(survey, { meta });
             }
-            return models.survey.updateSurvey(surveyId, { meta });
+            return models.survey.patchSurvey(surveyId, { meta });
         };
     };
 
-    const updateSurveyTextFn = function (index) {
+    const patchSurveyTextFn = function (index) {
         return function () {
             const id = hxSurvey.id(index);
             const survey = hxSurvey.server(index);
@@ -86,7 +86,7 @@ describe('survey unit', function () {
                 survey.description = newDescription;
                 update.description = newDescription;
             }
-            return models.survey.updateSurveyText(update);
+            return models.survey.patchSurveyText(update);
         };
     };
 
@@ -99,7 +99,7 @@ describe('survey unit', function () {
             if (description) {
                 survey.description = description;
             }
-            return models.survey.updateSurveyText({ id, name, description });
+            return models.survey.patchSurveyText({ id, name, description });
         };
     };
 
@@ -111,11 +111,11 @@ describe('survey unit', function () {
     _.range(surveyCount).forEach(index => {
         it(`create survey ${index}`, tests.createSurveyFn());
         it(`get survey ${index}`, tests.getSurveyFn(index));
-        it(`update survey ${index}`, updateSurveyFn(index));
+        it(`update survey ${index}`, patchSurveyFn(index));
         it(`verify survey ${index}`, verifyUpdatedSurveyFn(index));
         it(`revert updated survey back ${index}`, revertUpdateSurveyFn(index));
         it(`verify survey ${index}`, verifyUpdatedSurveyFn(index));
-        it(`update survey text ${index}`, updateSurveyTextFn(index));
+        it(`update survey text ${index}`, patchSurveyTextFn(index));
         it(`verify survey ${index}`, verifyUpdatedSurveyFn(index));
         it(`revert updated survey text back ${index}`, revertUpdateSurveyTextFn(index));
         it(`verify survey ${index}`, verifyUpdatedSurveyFn(index));
@@ -143,7 +143,7 @@ describe('survey unit', function () {
     ].forEach(([status, updateStatus, index]) => {
         it(`error: change status ${status} to ${updateStatus}`, function () {
             const id = hxSurvey.id(index);
-            return models.survey.updateSurvey(id, { status: updateStatus })
+            return models.survey.patchSurvey(id, { status: updateStatus })
                 .then(shared.throwingHandler, shared.expectedErrorHandler('surveyInvalidStatusUpdate', status, updateStatus));
         });
     });
@@ -155,7 +155,7 @@ describe('survey unit', function () {
     ].forEach(([status, updateStatus, index]) => {
         it(`update survey ${index} status ${status} to ${updateStatus}`, function () {
             const id = hxSurvey.id(index);
-            return models.survey.updateSurvey(id, { status: updateStatus })
+            return models.survey.patchSurvey(id, { status: updateStatus })
                 .then(() => hxSurvey.server(index).status = updateStatus);
         });
     });
@@ -238,7 +238,7 @@ describe('survey unit', function () {
         return function () {
             const survey = hxSurvey.server(index);
             const translation = translator.translateSurvey(survey, language);
-            return models.survey.updateSurveyText(translation, language)
+            return models.survey.patchSurveyText(translation, language)
                 .then(() => {
                     hxSurvey.translate(index, language, translation);
                 });

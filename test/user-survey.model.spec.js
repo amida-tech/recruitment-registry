@@ -341,7 +341,7 @@ describe('user survey unit', function () {
         return function () {
             const survey = hxSurvey.server(index);
             const translation = translator.translateSurvey(survey, language);
-            return models.survey.updateSurveyText(translation, language)
+            return models.survey.patchSurveyText(translation, language)
                 .then(() => {
                     hxSurvey.translate(index, language, translation);
                 });

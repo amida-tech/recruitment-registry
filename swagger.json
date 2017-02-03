@@ -310,16 +310,16 @@
             },
             "patch": {
                 "summary": "Updates survey",
-                "operationId": "updateSurvey",
+                "operationId": "patchSurvey",
                 "security": [{
                     "admin": []
                 }],
                 "parameters": [{
-                    "name": "surveyUpdate",
+                    "name": "surveyPatch",
                     "in": "body",
                     "required": true,
                     "schema": {
-                        "$ref": "#/definitions/surveyUpdate"
+                        "$ref": "#/definitions/surveyPatch"
                     }
                 }],
                 "responses": {
@@ -351,7 +351,7 @@
             "x-swagger-router-controller": "survey.controller",
             "patch": {
                 "summary": "Updates or translates survey text fields",
-                "operationId": "updateSurveyText",
+                "operationId": "patchSurveyText",
                 "security": [{
                     "admin": []
                 }],
@@ -367,7 +367,7 @@
                     "in": "body",
                     "required": true,
                     "schema": {
-                        "$ref": "#/definitions/surveyTextUpdate"
+                        "$ref": "#/definitions/surveyTextPatch"
                     }
                 }],
                 "responses": {
@@ -3262,7 +3262,7 @@
             },
             "additionalProperties": false
         },
-        "surveyUpdate": {
+        "surveyPatch": {
             "type": "object",
             "properties": {
                 "status": {
@@ -3275,7 +3275,7 @@
             "minProperties": 1,
             "additionalProperties": false
         },
-        "surveyTextUpdate": {
+        "surveyTextPatch": {
             "type": "object",
             "required": ["id", "name"],
             "properties": {
