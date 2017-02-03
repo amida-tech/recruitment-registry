@@ -203,10 +203,8 @@ module.exports = class SurveyDAO extends Translatable {
             });
     }
 
-    createSurveyTx(survey, transaction) {
-        const fields = _.omit(survey, ['name', 'description', 'sections', 'questions', 'identifier']);
-        return Survey.create(fields, { transaction })
-            .then(({ id }) => this.createTextTx({ id, name: survey.name, description: survey.description }, transaction))
+    updateSurveyTx(id, survey, transaction) {
+        return this.createTextTx({ id, name: survey.name, description: survey.description }, transaction)
             .then(({ id }) => {
                 return this.createSurveyQuestionsTx(survey.questions, id, transaction)
                     .then(questions => {
@@ -230,6 +228,12 @@ module.exports = class SurveyDAO extends Translatable {
                 }
                 return surveyId;
             });
+
+    }
+
+    createSurveyTx(survey, transaction) {
+        const fields = _.omit(survey, ['name', 'description', 'sections', 'questions', 'identifier']);
+        return Survey.create(fields, { transaction }).then(({ id }) => this.updateSurveyTx(id, survey, transaction));
     }
 
     createSurvey(survey) {
