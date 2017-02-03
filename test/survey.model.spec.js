@@ -128,9 +128,13 @@ describe('survey unit', function () {
         it(`get survey ${surveyCount+index}`, tests.getSurveyFn(surveyCount + index));
     });
 
-    it('list surveys', tests.listSurveysFn());
-
     surveyCount += 9;
+
+    it('list surveys', tests.listSurveysFn(undefined, surveyCount - 6));
+    it('list surveys (published)', tests.listSurveysFn({ status: 'published' }, surveyCount - 6));
+    it('list surveys (all)', tests.listSurveysFn({ status: 'all' }, surveyCount));
+    it('list surveys (retired)', tests.listSurveysFn({ status: 'retired' }, 3));
+    it('list surveys (draft)', tests.listSurveysFn({ status: 'draft' }, 3));
 
     it('replace sections of first survey with sections', function () {
         const index = _.findIndex(hxSurvey.listClients(), client => client.sections);
@@ -331,7 +335,8 @@ describe('survey unit', function () {
     it('list surveys', tests.listSurveysFn());
 
     it('extract existing questions', function () {
-        hxSurvey.questions = _.flatten(_.map(hxSurvey.listServers('questions'), 'questions'));
+        const surveys = hxSurvey.listServers(['status', 'questions']);
+        hxSurvey.questions = _.flatten(_.map(surveys, 'questions'));
     });
 
     it('create survey by existing questions only', function () {

@@ -159,7 +159,11 @@ describe('survey integration', function () {
 
     surveyCount += 9;
 
-    it('list surveys', tests.listSurveysFn());
+    it('list surveys', tests.listSurveysFn(undefined, surveyCount - 6));
+    it('list surveys (published)', tests.listSurveysFn({ status: 'published' }, surveyCount - 6));
+    it('list surveys (all)', tests.listSurveysFn({ status: 'all' }, surveyCount));
+    it('list surveys (retired)', tests.listSurveysFn({ status: 'retired' }, 3));
+    it('list surveys (draft)', tests.listSurveysFn({ status: 'draft' }, 3));
 
     it('replace sections of first survey with sections', function (done) {
         const index = _.findIndex(hxSurvey.listClients(), client => client.sections);

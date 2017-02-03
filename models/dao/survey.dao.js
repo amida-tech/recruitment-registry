@@ -336,20 +336,26 @@ module.exports = class SurveyDAO extends Translatable {
         });
     }
 
-    listSurveys({ scope, language, history, where, order, groupId, version } = {}) {
-        const attributes = ['id'];
+    listSurveys({ scope, status, language, history, where, order, groupId, version } = {}) {
+        if (!status) {
+            status = 'published';
+        }
+        const attributes = (status === 'all') ? ['id', 'status'] : ['id'];
         if (scope === 'version-only' || scope === 'version') {
             attributes.push('groupId');
             attributes.push('version');
         }
         const options = { raw: true, attributes, order: order || 'id', paranoid: !history };
-        if (groupId || version) {
+        if (groupId || version || (status !== 'all')) {
             options.where = {};
             if (groupId) {
                 options.where.groupId = groupId;
             }
             if (version) {
                 options.where.version = version;
+            }
+            if (status !== 'all') {
+                options.where.status = status;
             }
         }
         if (language) {

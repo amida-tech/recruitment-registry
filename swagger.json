@@ -196,6 +196,13 @@
                     "required": false,
                     "type": "string",
                     "minLength": 2
+                }, {
+                    "name": "status",
+                    "in": "query",
+                    "description": "Status",
+                    "required": false,
+                    "type": "string",
+                    "enum": ["published", "draft", "retired", "all"]
                 }],
                 "responses": {
                     "200": {

@@ -32,7 +32,7 @@ describe('survey import-export unit', function () {
         it(`delete survey ${index}`, tests.deleteSurveyFn(index));
     });
 
-    it('list all surveys (export)', tests.listSurveysFn('export'));
+    it('list all surveys (export)', tests.listSurveysFn({ scope: 'export' }));
 
     _.range(8, 14).forEach(index => {
         it(`create survey ${index}`, tests.createSurveyFn());
@@ -43,7 +43,7 @@ describe('survey import-export unit', function () {
         it(`delete survey ${index}`, tests.deleteSurveyFn(index));
     });
 
-    it('list all surveys (export)', tests.listSurveysFn('export'));
+    it('list all surveys (export)', tests.listSurveysFn({ scope: 'export' }));
 
     let questionCsvContent;
     let surveyCsvContent;
@@ -79,7 +79,7 @@ describe('survey import-export unit', function () {
     it('list imported surveys and verify', function () {
         return models.survey.listSurveys({ scope: 'export' })
             .then(list => {
-                const expected = hxSurvey.listServersByScope('export');
+                const expected = hxSurvey.listServersByScope({ scope: 'export' });
                 surveyCommon.updateIds(expected, idMap, questionIdMap);
                 expect(list).to.deep.equal(expected);
             });

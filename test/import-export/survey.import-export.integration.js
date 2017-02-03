@@ -38,7 +38,7 @@ describe('survey import-export integration', function () {
         it(`delete survey ${index}`, tests.deleteSurveyFn(index));
     });
 
-    it('list all surveys (export)', tests.listSurveysFn('export'));
+    it('list all surveys (export)', tests.listSurveysFn({ scope: 'export' }));
 
     _.range(8, 14).forEach(index => {
         it(`create survey ${index}`, tests.createSurveyFn());
@@ -49,7 +49,7 @@ describe('survey import-export integration', function () {
         it(`delete survey ${index}`, tests.deleteSurveyFn(index));
     });
 
-    it('list all surveys (export)', tests.listSurveysFn('export'));
+    it('list all surveys (export)', tests.listSurveysFn({ scope: 'export' }));
 
     const generatedDirectory = path.join(__dirname, '../generated');
 
@@ -109,7 +109,7 @@ describe('survey import-export integration', function () {
             const query = { scope: 'export' };
             rrSuperTest.get('/surveys', true, 200, query)
                 .expect(function (res) {
-                    const expected = hxSurvey.listServersByScope('export');
+                    const expected = hxSurvey.listServersByScope({ scope: 'export' });
                     surveyCommon.updateIds(expected, idMap, questionIdMap);
                     expect(res.body).to.deep.equal(expected);
                 })

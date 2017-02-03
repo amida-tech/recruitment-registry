@@ -112,16 +112,15 @@ const SpecTests = class SurveySpecTests {
         };
     }
 
-    listSurveysFn(scope) {
+    listSurveysFn(options, count = -1) {
         const hxSurvey = this.hxSurvey;
         return function () {
-            const options = scope ? {} : undefined;
-            if (scope) {
-                options.scope = scope;
-            }
             return models.survey.listSurveys(options)
                 .then(surveys => {
-                    const expected = hxSurvey.listServersByScope(scope);
+                    if (count >= 0) {
+                        expect(surveys).to.have.length(count);
+                    }
+                    const expected = hxSurvey.listServersByScope(options);
                     expect(surveys).to.deep.equal(expected);
                 });
         };
@@ -180,14 +179,16 @@ const IntegrationTests = class SurveyIntegrationTests {
         };
     }
 
-    listSurveysFn(scope) {
+    listSurveysFn(options, count = -1) {
         const rrSuperTest = this.rrSuperTest;
         const hxSurvey = this.hxSurvey;
         return function (done) {
-            const query = scope ? { scope } : undefined;
-            rrSuperTest.get('/surveys', true, 200, query)
+            rrSuperTest.get('/surveys', true, 200, options)
                 .expect(function (res) {
-                    const expected = hxSurvey.listServersByScope(scope);
+                    if (count >= 0) {
+                        expect(res.body).to.have.length(count);
+                    }
+                    const expected = hxSurvey.listServersByScope(options);
                     expect(res.body).to.deep.equal(expected);
                 })
                 .end(done);
