@@ -81,11 +81,11 @@ const SpecTests = class SurveySpecTests {
         this.hxSurvey = hxSurvey;
     }
 
-    createSurveyFn() {
+    createSurveyFn(options) {
         const generator = this.generator;
         const hxSurvey = this.hxSurvey;
         return function () {
-            const survey = generator.newSurvey();
+            const survey = generator.newSurvey(options);
             return models.survey.createSurvey(survey)
                 .then(id => hxSurvey.push(survey, { id }));
         };

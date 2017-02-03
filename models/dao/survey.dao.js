@@ -395,7 +395,7 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     getSurvey(id, options = {}) {
-        let _options = { where: { id }, raw: true, attributes: ['id', 'meta'] };
+        let _options = { where: { id }, raw: true, attributes: ['id', 'meta', 'status'] };
         if (options.override) {
             _options = _.assign({}, _options, options.override);
         }

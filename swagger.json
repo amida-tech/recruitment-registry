@@ -2018,7 +2018,7 @@
                             "required": ["status"],
                             "properties": {
                                 "status": {
-                                    "$ref": "#/definitions/surveyStatus"
+                                    "$ref": "#/definitions/userSurveyStatus"
                                 }
                             },
                             "additionalProperties": false
@@ -3371,7 +3371,7 @@
                     "type": "string"
                 },
                 "status": {
-                    "$ref": "#/definitions/surveyStatus"
+                    "$ref": "#/definitions/userSurveyStatus"
                 }
             },
             "additionalProperties": false
@@ -4551,7 +4551,7 @@
             },
             "additionalProperties": false
         },
-        "surveyStatus": {
+        "userSurveyStatus": {
             "type": "string",
             "enum": ["new", "in-progress", "completed"]
         },
@@ -4560,7 +4560,7 @@
             "required": ["status", "survey"],
             "properties": {
                 "status": {
-                    "$ref": "#/definitions/surveyStatus"
+                    "$ref": "#/definitions/userSurveyStatus"
                 },
                 "survey": {
                     "$ref": "#/definitions/survey"
@@ -4573,7 +4573,7 @@
             "required": ["status", "answers"],
             "properties": {
                 "status": {
-                    "$ref": "#/definitions/surveyStatus"
+                    "$ref": "#/definitions/userSurveyStatus"
                 },
                 "answers": {
                     "$ref": "#/definitions/linkedAnswers"
@@ -4590,7 +4590,7 @@
             "required": ["status", "answers"],
             "properties": {
                 "status": {
-                    "$ref": "#/definitions/surveyStatus"
+                    "$ref": "#/definitions/userSurveyStatus"
                 },
                 "answers": {
                     "$ref": "#/definitions/linkedAnswers"

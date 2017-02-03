@@ -60,6 +60,7 @@ const translator = {
             result.description = this._translate(result.description, language);
         }
         delete result.meta;
+        delete result.status;
         if (result.sections) {
             result.sections = this.translateSurveySections(result.sections, language);
         }

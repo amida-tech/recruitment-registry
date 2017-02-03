@@ -58,8 +58,11 @@ module.exports = class SurveyGenerator {
         return result;
     }
 
-    newSurvey() {
+    newSurvey(options = {}) {
         const result = this.newBody();
+        if (options.status) {
+            result.status = options.status;
+        }
         const sectionType = this.surveyIndex % 3;
         const count = this.count();
         result.questions = _.range(count).map(index => this.newSurveyQuestion(index));

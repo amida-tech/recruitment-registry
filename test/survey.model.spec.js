@@ -122,6 +122,16 @@ describe('survey unit', function () {
         it('list surveys', tests.listSurveysFn());
     });
 
+    _.range(9).forEach(index => {
+        const status = ['draft', 'published', 'retired'][parseInt(index / 3)];
+        it(`create survey ${surveyCount+index}`, tests.createSurveyFn({ status }));
+        it(`get survey ${surveyCount+index}`, tests.getSurveyFn(surveyCount + index));
+    });
+
+    it('list surveys', tests.listSurveysFn());
+
+    surveyCount += 9;
+
     it('replace sections of first survey with sections', function () {
         const index = _.findIndex(hxSurvey.listClients(), client => client.sections);
         const survey = hxSurvey.server(index);
@@ -280,8 +290,6 @@ describe('survey unit', function () {
     it(`survey ${surveyCount} is version 2`, dbVersionCompareFn(surveyCount, 2));
     it(`survey ${surveyCount+2} is version 3`, dbVersionCompareFn(surveyCount + 2, 3));
 
-    surveyCount += 3;
-
     const dbVersionParentlessCompareFn = function (index, replaced) {
         return function () {
             const id = hxSurvey.id(index);
@@ -301,16 +309,22 @@ describe('survey unit', function () {
     it('survey 1 is version null', dbVersionParentlessCompareFn(1, false));
     it('survey 3 is version 1', dbVersionParentlessCompareFn(3, true));
 
-    it('listSurvey override where', function () {
-        return models.survey.listSurveys({ scope: 'version', version: 3, history: true })
-            .then(list => {
-                expect(list).to.have.length(1);
-                const { name, version } = list[0];
-                expect(version).to.equal(3);
-                const expected = hxSurvey.server(10).name;
-                expect(name).to.equal(expected);
-            });
-    });
+    const listSurveyScopeVersionFn = function (index) {
+        return function () {
+            return models.survey.listSurveys({ scope: 'version', version: 3, history: true })
+                .then(list => {
+                    expect(list).to.have.length(1);
+                    const { name, version } = list[0];
+                    expect(version).to.equal(3);
+                    const expected = hxSurvey.server(index).name;
+                    expect(name).to.equal(expected);
+                });
+        };
+    };
+
+    it('listSurvey override where', listSurveyScopeVersionFn(surveyCount + 2));
+
+    surveyCount += 3;
 
     it('delete survey 5', tests.deleteSurveyFn(5));
 

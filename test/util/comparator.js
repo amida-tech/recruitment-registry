@@ -141,6 +141,9 @@ const comparator = {
         if (options.ignoreSurveyIdentifier) {
             delete expected.identifier;
         }
+        if (!expected.status) {
+            expected.status = 'published';
+        }
         if (client.sections || server.sections) {
             this.surveySections(expected.sections, server.sections, server);
             expect(server.sections).to.deep.equal(expected.sections);
