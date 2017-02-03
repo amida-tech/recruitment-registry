@@ -66,6 +66,7 @@ A list of full environment variable settings is below.  They can be either manua
 - RECREG_CONSTANT_CONSTANT_TOKEN: Access token for Constant Contact API.
 - RECREG_CONSTANT_CONTACT_KEY: API key for Constant Contact API.
 - RECREG_CONSTANT_CONTACT_LIST_ID: Unique identifier for Constant Contact list
+- RECREG_CONSTANT_CONTACT_LIST_ID="https://api.constantcontact.com/v2"
 
 ## Commands
 
