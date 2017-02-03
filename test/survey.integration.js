@@ -151,6 +151,16 @@ describe('survey integration', function () {
         it(`list surveys and verify`, tests.listSurveysFn());
     });
 
+    _.range(9).forEach(index => {
+        const status = ['draft', 'published', 'retired'][parseInt(index / 3)];
+        it(`create survey ${surveyCount+index}`, tests.createSurveyFn({ status }));
+        it(`get survey ${surveyCount+index}`, tests.getSurveyFn(surveyCount + index));
+    });
+
+    surveyCount += 9;
+
+    it('list surveys', tests.listSurveysFn());
+
     it('replace sections of first survey with sections', function (done) {
         const index = _.findIndex(hxSurvey.listClients(), client => client.sections);
         const survey = hxSurvey.server(index);
@@ -273,8 +283,9 @@ describe('survey integration', function () {
 
     it('translate survey', function (done) {
         const name = 'puenno';
+        const description = 'descripto';
         const id = hxSurvey.lastId();
-        store.patch('/surveys/text/es', { id, name }, 204).end(done);
+        store.patch('/surveys/text/es', { id, name, description }, 204).end(done);
     });
 
     let answers;
@@ -303,6 +314,7 @@ describe('survey integration', function () {
                 const server = hxSurvey.lastServer();
                 const survey = _.cloneDeep(server);
                 survey.name = 'puenno';
+                survey.description = 'descripto';
                 comparator.answeredSurvey(survey, answers, res.body);
             })
             .end(done);
@@ -314,7 +326,7 @@ describe('survey integration', function () {
 
     it('login as super', shared.loginFn(store, config.superUser));
 
-    _.range(surveyCount, surveyCount+7).forEach(index => {
+    _.range(surveyCount, surveyCount + 7).forEach(index => {
         it(`create survey ${index}`, tests.createSurveyFn());
         it(`get survey ${index}`, tests.getSurveyFn(index));
     });
@@ -334,7 +346,7 @@ describe('survey integration', function () {
         comparator.updateEnumerationMap(enumerations);
     });
 
-    _.range(surveyCount, surveyCount+3).forEach(index => {
+    _.range(surveyCount, surveyCount + 3).forEach(index => {
         it(`create survey ${index}`, tests.createSurveyFn());
         it(`get survey ${index}`, tests.getSurveyFn(index));
     });
@@ -344,7 +356,7 @@ describe('survey integration', function () {
     it('logout as super', shared.logoutFn(store));
 
     it('login as user', shared.loginFn(store, user));
-    _.range(surveyCount-10, surveyCount-3).forEach(index => {
+    _.range(surveyCount - 10, surveyCount - 3).forEach(index => {
         it('answer survey', function (done) {
             const survey = hxSurvey.server(index);
             answers = generator.answerQuestions(survey.questions);

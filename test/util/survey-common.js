@@ -135,12 +135,12 @@ const IntegrationTests = class SurveyIntegrationTests {
         this.hxSurvey = hxSurvey;
     }
 
-    createSurveyFn() {
+    createSurveyFn(options) {
         const generator = this.generator;
         const rrSuperTest = this.rrSuperTest;
         const hxSurvey = this.hxSurvey;
         return function (done) {
-            const survey = generator.newSurvey();
+            const survey = generator.newSurvey(options);
             rrSuperTest.post('/surveys', survey, 201)
                 .expect(function (res) {
                     hxSurvey.push(survey, res.body);
