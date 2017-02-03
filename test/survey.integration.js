@@ -165,6 +165,46 @@ describe('survey integration', function () {
     it('list surveys (retired)', tests.listSurveysFn({ status: 'retired' }, 3));
     it('list surveys (draft)', tests.listSurveysFn({ status: 'draft' }, 3));
 
+    [
+        ['published', 'draft', surveyCount - 4],
+        ['retired', 'draft', surveyCount - 3],
+        ['retired', 'published', surveyCount - 2]
+    ].forEach(([status, updateStatus, index]) => {
+        it(`error: change status ${status} to ${updateStatus}`, function (done) {
+            const id = hxSurvey.id(index);
+            store.patch(`/surveys/${id}`, { status: updateStatus }, 400)
+                .expect(function (res) {
+                    expect(res.body.message).to.equal(RRError.message('surveyInvalidStatusUpdate', status, updateStatus));
+                })
+                .end(done);
+        });
+    });
+
+    [
+        ['draft', 'published', surveyCount - 9],
+        ['draft', 'retired', surveyCount - 8],
+        ['published', 'retired', surveyCount - 6]
+    ].forEach(([status, updateStatus, index]) => {
+        it(`update survey ${index} status ${status} to ${updateStatus}`, function (done) {
+            const id = hxSurvey.id(index);
+            store.patch(`/surveys/${id}`, { status: updateStatus }, 204)
+                .expect(function () {
+                    hxSurvey.server(index).status = updateStatus;
+                })
+                .end(done);
+        });
+    });
+
+    [surveyCount - 9, surveyCount - 8, surveyCount - 5].forEach(index => {
+        it(`verify survey ${index}`, verifySurveyFn(index));
+    });
+
+    it('list surveys', tests.listSurveysFn(undefined, surveyCount - 6));
+    it('list surveys (published)', tests.listSurveysFn({ status: 'published' }, surveyCount - 6));
+    it('list surveys (all)', tests.listSurveysFn({ status: 'all' }, surveyCount));
+    it('list surveys (retired)', tests.listSurveysFn({ status: 'retired' }, 5));
+    it('list surveys (draft)', tests.listSurveysFn({ status: 'draft' }, 1));
+
     it('replace sections of first survey with sections', function (done) {
         const index = _.findIndex(hxSurvey.listClients(), client => client.sections);
         const survey = hxSurvey.server(index);

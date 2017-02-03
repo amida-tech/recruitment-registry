@@ -273,7 +273,20 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     updateSurvey(id, surveyUpdate) {
-        return Survey.update(surveyUpdate, { where: { id } });
+        return Survey.findById(id, { raw: true, attributes: ['status'] })
+            .then(survey => {
+                const updateStatus = surveyUpdate.status;
+                if (updateStatus) {
+                    const statuses = ['draft', 'published', 'retired'];
+                    const status = survey.status;
+                    const index = statuses.indexOf(status);
+                    const updateIndex = statuses.indexOf(updateStatus);
+                    if (updateIndex < index) {
+                        return RRError.reject('surveyInvalidStatusUpdate', status, updateStatus);
+                    }
+                }
+                return Survey.update(surveyUpdate, { where: { id } });
+            });
     }
 
     replaceSurveyTx(id, replacement, transaction) {

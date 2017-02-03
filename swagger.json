@@ -3265,6 +3265,9 @@
         "surveyUpdate": {
             "type": "object",
             "properties": {
+                "status": {
+                    "$ref": "#/definitions/surveyStatus"
+                },
                 "meta": {
                     "$ref": "#/definitions/surveyMeta"
                 }
