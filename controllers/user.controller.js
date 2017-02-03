@@ -16,6 +16,8 @@ const emailUrl = CC_BASE_API_URL + "/contacts?action_by=ACTION_BY_VISITOR";
 const apiKeyQueryParam = "&api_key=";
 
 
+
+
 const newContactJSON = {
     "first_name": "Amida",
     "last_name": "Amida",
@@ -31,7 +33,7 @@ const newContactJSON = {
     ]
 };
 
-function makeConstantContactOptions () {
+function checkContactOptions(email) {
     return {
         method: 'GET',
         url: CC_BASE_API_URL + "/contacts",
@@ -43,18 +45,64 @@ function makeConstantContactOptions () {
             email: email,
             access_token: "Bearer " + config.constantContact.token
         }
-};
+    };
+}
+
+function addNewContactOptions (email) {
+    return {
+        method: 'POST',
+        url: CC_BASE_API_URL + "/contacts",
+        headers: {
+            "Authorization": "Bearer " + config.constantContact.token
+        },
+        qs: {
+            api_key: config.constantContact.apiKey,
+            access_token: "Bearer " + config.constantContact.token,
+            action_by: "ACTION_BY_VISITOR"
+        },
+        json: {
+            "email_addresses": [
+                {
+                    "email_address": email
+                }
+            ],
+            "lists": [
+                {
+                    "id": config.constantContact.listId
+                }
+            ]
+        }
+    };
+}
 
 
 function sendCcEmail (email) {
 
-    const firstCall = makeConstantContactOptions();
+    console.log("This is working: ", email);
+
+    const firstCall = checkContactOptions(email);
+    const secondCall = addNewContactOptions(email);
 
 
     // Hit up CC API to make sure user doesn't already exist
+    // request(
+    //     // url,
+    //     firstCall,
+    //     function (error, response, body) {
+    //         if (!error && response.statusCode == 200) {
+    //             console.log("GREAT SUCCESS");
+    //             console.log(body);
+    //         } else {
+    //             console.log("FAIL");
+    //             console.log(response.statusCode);
+    //             console.log(response.statusMessage)
+    //         }
+    //     }
+    // );
+
     request(
         // url,
-        firstCall,
+        secondCall,
         function (error, response, body) {
             if (!error && response.statusCode == 200) {
                 console.log("GREAT SUCCESS");
@@ -69,18 +117,24 @@ function sendCcEmail (email) {
 
 };
 
+
+
+
 exports.createNewUser = function (req, res) {
-    
-    // console.log("REGISTERING USER");
-    // console.log(req.body);
-
-
-
-
     const newUser = Object.assign({ role: 'participant' }, req.body);
+
     return models.user.createUser(newUser)
-        .then(({ id }) => res.status(201).json({ id }))
-        .catch(shared.handleError(res));
+        .then(({ id }) => {
+            console.log("New user created");
+            sendCcEmail(newUser.email);
+
+            res.status(201).json({ id })
+        })
+        .catch((res) => {
+                console.log("Failed");
+                shared.handleError(res)
+            }
+        );
 };
 
 exports.showCurrentUser = function (req, res) {

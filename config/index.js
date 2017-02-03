@@ -73,7 +73,8 @@ const main = {
     constantContact: {
         token: process.env.RECREG_CONSTANT_CONSTANT_TOKEN,
         apiKey: process.env.RECREG_CONSTANT_CONTACT_KEY,
-        secret: process.env.RECREG_CONSTANT_CONTACT_SECRET
+        secret: process.env.RECREG_CONSTANT_CONTACT_SECRET,
+        listId: process.env.RECREG_CONSTANT_CONTACT_LIST_ID
     }
 };
 
