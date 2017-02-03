@@ -36,11 +36,17 @@ module.exports = {
     up: function (queryInterface, Sequelize) {
         return surveyStatusTable(queryInterface, Sequelize)
             .then(() => queryInterface.bulkInsert('survey_status', surveyStatusRecords))
-            .then(() => surveyStatusColumn(queryInterface, Sequelize));
+            .then(() => surveyStatusColumn(queryInterface, Sequelize))
+            .then(() => queryInterface.addIndex('survey_question', ['survey_id', 'question_id'], {
+                where: { deleted_at: { $eq: null } },
+                indexName: 'survey_question_survey_id_question_id',
+                indicesType: 'UNIQUE'
+            }));
     },
 
     down: function (queryInterface) {
-        return queryInterface.removeColumn('survey', 'status')
+        return queryInterface.removeIndex('survey_question', 'survey_question_survey_id_question_id')
+            .then(() => queryInterface.removeColumn('survey', 'status'))
             .then(() => queryInterface.dropTable());
     }
 };

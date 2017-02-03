@@ -24,7 +24,7 @@ const enumeration = function (queryInterface, Sequelize) {
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',
-        indexes: [{ unique: true, fields: ['name', 'deleted_at'], where: { deleted_at: { $eq: null } } }],
+        indexes: [{ unique: true, fields: ['name'], where: { deleted_at: { $eq: null } } }],
         paranoid: true
     });
 };
@@ -112,7 +112,7 @@ const enumeralText = function (queryInterface, Sequelize) {
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',
-        indexes: [{ unique: true, fields: ['enumeral_id', 'language_code', 'deleted_at'], where: { deleted_at: { $eq: null } } }],
+        indexes: [{ unique: true, fields: ['enumeral_id', 'language_code'], where: { deleted_at: { $eq: null } } }],
         paranoid: true
     });
 };
@@ -139,17 +139,17 @@ module.exports = {
             .then(() => enumeralText(queryInterface, Sequelize))
             .then(() => questionEnum(queryInterface, Sequelize))
             .then(() => questionChoiceEnum(queryInterface, Sequelize))
-            .then(() => queryInterface.addIndex('enumeration', ['name', 'deleted_at'], {
+            .then(() => queryInterface.addIndex('enumeration', ['name'], {
                 where: { deleted_at: { $eq: null } },
-                indexName: 'enumeration_name_deleted_at',
+                indexName: 'enumeration_name',
                 indicesType: 'UNIQUE'
             }))
             .then(() => queryInterface.addIndex('enumeral', ['enumeration_id'], {
                 indexName: 'enumeral_enumeration_id'
             }))
-            .then(() => queryInterface.addIndex('enumeral_text', ['enumeral_id', 'language_code', 'deleted_at'], {
+            .then(() => queryInterface.addIndex('enumeral_text', ['enumeral_id', 'language_code'], {
                 where: { deleted_at: { $eq: null } },
-                indexName: 'enumeral_text_enumeral_id_language_code_deleted_at',
+                indexName: 'enumeral_text_enumeral_id_language_code',
                 indicesType: 'UNIQUE'
             }))
             .then(() => sequelize.query('INSERT INTO question_type (name) VALUES (\'enumeration\')'))
