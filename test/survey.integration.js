@@ -32,7 +32,7 @@ describe('survey integration', function () {
     const store = new RRSuperTest();
     const user = generator.newUser();
     const hxUser = new History();
-    const surveyCount = 8;
+    let surveyCount = 8;
     const hxSurvey = new SurveyHistory();
     const hxEnumeration = new History();
 
@@ -116,9 +116,9 @@ describe('survey integration', function () {
         };
     };
 
-    for (let i = 0; i < invalidSurveysJSON.length; ++i) {
-        it(`error: invalid (json) survey input ${i}`, invalidSurveyJSONFn(i));
-    }
+    _.range(invalidSurveysJSON.length).forEach(index => {
+        it(`error: invalid (json) survey input ${index}`, invalidSurveyJSONFn(index));
+    });
 
     const invalidSurveySwaggerFn = function (index) {
         return function (done) {
@@ -131,25 +131,25 @@ describe('survey integration', function () {
         };
     };
 
-    for (let i = 0; i < invalidSurveysSwagger.length; ++i) {
-        it(`error: invalid (swagger) survey input ${i}`, invalidSurveySwaggerFn(i));
-    }
+    _.range(invalidSurveysSwagger.length).forEach(index => {
+        it(`error: invalid (swagger) survey input ${index}`, invalidSurveySwaggerFn(index));
+    });
 
-    for (let i = 0; i < surveyCount; ++i) {
-        it(`create survey ${i}`, tests.createSurveyFn());
-        it(`get survey ${i}`, tests.getSurveyFn(i));
+    _.range(surveyCount).forEach(index => {
+        it(`create survey ${index}`, tests.createSurveyFn());
+        it(`get survey ${index}`, tests.getSurveyFn(index));
         const meta = {
             anyProperty: true
         };
-        it(`update survey ${i}`, updateSurveyFn(i, meta));
-        it(`verify survey ${i}`, verifySurveyFn(i));
-        it(`update survey ${i}`, updateSurveyFn(i));
-        it(`update survey text ${i}`, updateSurveyTextFn(i));
-        it(`verify survey ${i}`, verifySurveyFn(i));
-        it(`revert update survey ${i}`, revertUpdateSurveyTextFn(i));
-        it(`verify survey ${i}`, verifySurveyFn(i));
+        it(`update survey ${index}`, updateSurveyFn(index, meta));
+        it(`verify survey ${index}`, verifySurveyFn(index));
+        it(`update survey ${index}`, updateSurveyFn(index));
+        it(`update survey text ${index}`, updateSurveyTextFn(index));
+        it(`verify survey ${index}`, verifySurveyFn(index));
+        it(`revert update survey ${index}`, revertUpdateSurveyTextFn(index));
+        it(`verify survey ${index}`, verifySurveyFn(index));
         it(`list surveys and verify`, tests.listSurveysFn());
-    }
+    });
 
     it('replace sections of first survey with sections', function (done) {
         const index = _.findIndex(hxSurvey.listClients(), client => client.sections);
@@ -221,10 +221,10 @@ describe('survey integration', function () {
         };
     };
 
-    for (let i = 0; i < surveyCount; i += 2) {
-        it(`add translation (es) to survey ${i}`, translateTextFn(i, 'es'));
-        it(`get and verify translated (es) survey ${i}`, verifyTranslatedSurveyFn(i, 'es'));
-    }
+    _.range(0, surveyCount, 2).forEach(index => {
+        it(`add translation (es) to survey ${index}`, translateTextFn(index, 'es'));
+        it(`get and verify translated (es) survey ${index}`, verifyTranslatedSurveyFn(index, 'es'));
+    });
 
     it('list and verify translated surveys', listTranslatedSurveysFn('es'));
 
@@ -247,6 +247,8 @@ describe('survey integration', function () {
     it('verify survey 3 replacement', tests.getSurveyFn(surveyCount));
     it(`list surveys and verify`, tests.listSurveysFn());
 
+    ++surveyCount;
+
     it('delete survey 5', tests.deleteSurveyFn(5));
     it('remove deleted survey locally', function () {
         hxSurvey.remove(5);
@@ -266,6 +268,8 @@ describe('survey integration', function () {
 
     it('create survey', tests.createSurveyFn());
     it('verify survey', tests.getSurveyFn());
+
+    ++surveyCount;
 
     it('translate survey', function (done) {
         const name = 'puenno';
@@ -310,10 +314,12 @@ describe('survey integration', function () {
 
     it('login as super', shared.loginFn(store, config.superUser));
 
-    _.range(10, 17).forEach(index => {
+    _.range(surveyCount, surveyCount+7).forEach(index => {
         it(`create survey ${index}`, tests.createSurveyFn());
         it(`get survey ${index}`, tests.getSurveyFn(index));
     });
+
+    surveyCount += 7;
 
     _.range(8).forEach(index => {
         it(`create enumeration ${index}`, enumerationTests.createEnumerationFn());
@@ -328,15 +334,17 @@ describe('survey integration', function () {
         comparator.updateEnumerationMap(enumerations);
     });
 
-    _.range(17, 20).forEach(index => {
+    _.range(surveyCount, surveyCount+3).forEach(index => {
         it(`create survey ${index}`, tests.createSurveyFn());
         it(`get survey ${index}`, tests.getSurveyFn(index));
     });
 
+    surveyCount += 3;
+
     it('logout as super', shared.logoutFn(store));
 
     it('login as user', shared.loginFn(store, user));
-    _.range(10, 17).forEach(index => {
+    _.range(surveyCount-10, surveyCount-3).forEach(index => {
         it('answer survey', function (done) {
             const survey = hxSurvey.server(index);
             answers = generator.answerQuestions(survey.questions);
