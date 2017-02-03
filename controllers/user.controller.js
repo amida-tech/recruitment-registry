@@ -7,20 +7,15 @@ const shared = require('./shared.js');
 
 const sendMail = require('../lib/email');
 
-
-
 exports.createNewUser = function (req, res) {
     const newUser = Object.assign({ role: 'participant' }, req.body);
 
     return models.user.createUser(newUser)
         .then(({ id }) => {
             sendMail(newUser, 'new_contact', {});
-            res.status(201).json({ id })
+            res.status(201).json({ id });
         })
-        .catch((res) => {
-                shared.handleError(res)
-            }
-        );
+        .catch(shared.handleError(res));
 };
 
 exports.showCurrentUser = function (req, res) {
