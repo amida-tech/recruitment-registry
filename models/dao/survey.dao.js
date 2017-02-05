@@ -373,7 +373,7 @@ module.exports = class SurveyDAO extends Translatable {
                                         return Answer.destroy({ where: { surveyId, questionId: { $in: removedQuestionIds } }, transaction });
                                     }
                                 })
-                                .then(() => this.createSurveyQuestionsTx(questions, transaction))
+                                .then(() => this.createSurveyQuestionsTx(questions, surveyId, transaction))
                                 .then(questions => questions.map(question => question.id));
                         } else {
                             return survey.questionIds;

@@ -9,14 +9,20 @@ const Translatable = require('./translatable');
 const SurveySection = db.SurveySection;
 const SurveySectionQuestion = db.SurveySectionQuestion;
 
-const flattenHiearachy = function flattenHiearachy(sections, result, parentIndex = null) {
+const flattenHiearachy = function flattenHiearachy(sections, surveyQuestionIds, result, parentIndex = null) {
     if (!result) {
         result = [];
     }
     sections.forEach((section, line) => {
-        result.push({ parentIndex, line, section });
+        let { name, indices, questionIds } = section;
+        const type = (indices || questionIds) ? 'question' : 'section';
+        if (indices) {
+            questionIds = indices.map(index => surveyQuestionIds[index]);
+        }
+        const record = { parentIndex, line, section: { type, name, questionIds } };
+        result.push(record);
         if (section.sections) {
-            flattenHiearachy(section.sections, result, result.length - 1);
+            flattenHiearachy(section.sections, surveyQuestionIds, result, result.length - 1);
         }
     });
     return result;
@@ -37,16 +43,15 @@ module.exports = class SectionDAO extends Translatable {
             });
     }
 
-    bulkCreateSectionsForSurveyTx(surveyId, questionIds, sections, transaction) { // TODO: Use sequelize bulkCreate with 4.0
+    bulkCreateSectionsForSurveyTx(surveyId, surveyQuestionIds, sections, transaction) { // TODO: Use sequelize bulkCreate with 4.0
+        const flattenedSections = flattenHiearachy(sections, surveyQuestionIds);
         if (!sections.length) {
             return SurveySection.destroy({ where: { surveyId }, transaction });
         }
-        const flattenedSections = flattenHiearachy(sections);
         return SurveySection.destroy({ where: { surveyId }, transaction })
             .then(() => {
                 return flattenedSections.reduce((r, { parentIndex, line, section }) => {
-                    const { name, indices } = section;
-                    const type = indices ? 'question' : 'section';
+                    const { name, type } = section;
                     const record = { name, surveyId, line, type, parentIndex };
                     if (r === null) {
                         return this.createSurveySectionTx(record, [], transaction);
@@ -57,11 +62,11 @@ module.exports = class SectionDAO extends Translatable {
             })
             .then((sectionIds => {
                 const promises = flattenedSections.reduce((r, { section }, line) => {
-                    const indices = section.indices;
-                    if (indices) {
+                    const questionIds = section.questionIds;
+                    if (questionIds) {
                         const surveySectionId = sectionIds[line];
-                        indices.forEach(index => {
-                            const record = { surveySectionId, questionId: questionIds[index], line };
+                        questionIds.forEach(questionId => {
+                            const record = { surveySectionId, questionId, line };
                             const promise = SurveySectionQuestion.create(record, { transaction });
                             r.push(promise);
                         });
@@ -97,14 +102,14 @@ module.exports = class SectionDAO extends Translatable {
                         const map = sections.reduce((r, section) => {
                             r[section.id] = section;
                             if (section.type === 'question') {
-                                section.questions = [];
+                                section.questionIds = [];
                             }
                             delete section.type;
                             return r;
                         }, {});
                         records.forEach(record => {
                             const section = map[record.surveySectionId];
-                            section.questions.push(record.questionId);
+                            section.questionIds.push(record.questionId);
                         });
                         return sections.reduce((r, section) => {
                             if (section.parentId) {

@@ -75,6 +75,33 @@ const updateIds = function (surveys, idMap, questionIdMap) {
     });
 };
 
+const removeSectionIds = function removeSectionIds(sections) {
+    if (sections) {
+        sections.forEach(section => {
+            delete section.id;
+            if (section.sections) {
+                removeSectionIds(section.sections);
+            }
+        });
+    }
+};
+
+const formQuestionsSectionsSurveyPatch = function (survey, { questions, sections }) {
+    const surveyPatch = { forceQuestions: true };
+    surveyPatch.questions = questions.map(({ id, required }) => ({ id, required }));
+    survey.questions = questions;
+    if (sections) {
+        sections = _.cloneDeep(sections);
+        removeSectionIds(sections);
+        surveyPatch.sections = sections;
+        survey.sections = sections;
+    } else if (survey.sections) {
+        surveyPatch.sections = [];
+        delete survey.sections;
+    }
+    return surveyPatch;
+};
+
 const SpecTests = class SurveySpecTests {
     constructor(generator, hxSurvey) {
         this.generator = generator;
@@ -200,6 +227,8 @@ module.exports = {
     formAnswersToPost,
     formAnsweredSurvey,
     updateIds,
+    removeSectionIds,
+    formQuestionsSectionsSurveyPatch,
     SpecTests,
     IntegrationTests
 };

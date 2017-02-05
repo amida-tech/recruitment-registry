@@ -33,6 +33,7 @@ describe('survey unit', function () {
     const hxUser = new History();
     const tests = new surveyCommon.SpecTests(generator, hxSurvey);
     const enumerationTests = new enumerationCommon.SpecTests(generator, hxEnumeration);
+    let surveyTemp = null;
 
     it('verify no surveys', function () {
         return models.survey.listSurveys()
@@ -41,16 +42,21 @@ describe('survey unit', function () {
             });
     });
 
-    const verifyUpdatedSurveyFn = function (index) {
+    const verifySurveyFn = function (index, { noSectionId } = {}) {
         return function () {
             const expected = hxSurvey.server(index);
             const surveyId = hxSurvey.id(index);
             return models.survey.getSurvey(surveyId)
-                .then(survey => expect(survey).to.deep.equal(expected));
+                .then(survey => {
+                    if (noSectionId) {
+                        surveyCommon.removeSectionIds(survey.sections);
+                    }
+                    expect(survey).to.deep.equal(expected);
+                });
         };
     };
 
-    const patchSurveyFn = function (index) {
+    const patchSurveyMetaFn = function (index) {
         return function () {
             const surveyId = hxSurvey.id(index);
             const survey = hxSurvey.server(index);
@@ -60,7 +66,7 @@ describe('survey unit', function () {
         };
     };
 
-    const revertUpdateSurveyFn = function (index) {
+    const revertPatchedSurveyMetaFn = function (index) {
         return function () {
             const surveyId = hxSurvey.id(index);
             const survey = hxSurvey.server(index);
@@ -80,17 +86,17 @@ describe('survey unit', function () {
             const id = hxSurvey.id(index);
             const survey = hxSurvey.server(index);
             survey.name = survey.name + 'xyz';
-            const update = { id, name: survey.name };
+            const surveyPatch = { name: survey.name };
             if (survey.description) {
                 const newDescription = survey.description + 'zyx';
                 survey.description = newDescription;
-                update.description = newDescription;
+                surveyPatch.description = newDescription;
             }
-            return models.survey.patchSurveyText(update);
+            return models.survey.patchSurvey(id, surveyPatch);
         };
     };
 
-    const revertUpdateSurveyTextFn = function (index) {
+    const revertPatchedSurveyTextFn = function (index) {
         return function () {
             const id = hxSurvey.id(index);
             const survey = hxSurvey.server(index);
@@ -99,7 +105,26 @@ describe('survey unit', function () {
             if (description) {
                 survey.description = description;
             }
-            return models.survey.patchSurveyText({ id, name, description });
+            return models.survey.patchSurvey(id, { name, description });
+        };
+    };
+
+    const patchSurveyQuestionsSectionsFn = function (index, sourceIndex) {
+        return function () {
+            const survey = hxSurvey.server(index);
+            const sourceSurvey = hxSurvey.server(sourceIndex);
+            surveyTemp = _.cloneDeep(survey);
+            const surveyPatch = surveyCommon.formQuestionsSectionsSurveyPatch(survey, sourceSurvey);
+            return models.survey.patchSurvey(survey.id, surveyPatch);
+        };
+    };
+
+    const revertPatchedSurveyQuestionSectionsFn = function (index) {
+        return function () {
+            const survey = hxSurvey.server(index);
+            const sourceSurvey = surveyTemp;
+            const surveyPatch = surveyCommon.formQuestionsSectionsSurveyPatch(survey, sourceSurvey);
+            return models.survey.patchSurvey(survey.id, surveyPatch);
         };
     };
 
@@ -111,17 +136,22 @@ describe('survey unit', function () {
     _.range(surveyCount).forEach(index => {
         it(`create survey ${index}`, tests.createSurveyFn());
         it(`get survey ${index}`, tests.getSurveyFn(index));
-        it(`update survey ${index}`, patchSurveyFn(index));
-        it(`verify survey ${index}`, verifyUpdatedSurveyFn(index));
-        it(`revert updated survey back ${index}`, revertUpdateSurveyFn(index));
-        it(`verify survey ${index}`, verifyUpdatedSurveyFn(index));
-        it(`update survey text ${index}`, patchSurveyTextFn(index));
-        it(`verify survey ${index}`, verifyUpdatedSurveyFn(index));
-        it(`revert updated survey text back ${index}`, revertUpdateSurveyTextFn(index));
-        it(`verify survey ${index}`, verifyUpdatedSurveyFn(index));
+        it(`patch survey ${index} (meta)`, patchSurveyMetaFn(index));
+        it(`verify survey ${index}`, verifySurveyFn(index));
+        it(`revert patched survey back ${index} (meta)`, revertPatchedSurveyMetaFn(index));
+        it(`verify survey ${index}`, verifySurveyFn(index));
+        it(`patch survey ${index} (text)`, patchSurveyTextFn(index));
+        it(`verify survey ${index}`, verifySurveyFn(index));
+        it(`revert patched survey text back ${index} (text)`, revertPatchedSurveyTextFn(index));
+        it(`verify survey ${index}`, verifySurveyFn(index));
+        if (index > 0) {
+            it(`patch survey ${index} from survey ${index-1} (questions/sections)`, patchSurveyQuestionsSectionsFn(index, index - 1));
+            it(`verify survey ${index}`, verifySurveyFn(index, { noSectionId: true }));
+            it(`revert patched survey ${index} back (question/sections)`, revertPatchedSurveyQuestionSectionsFn(index));
+            it(`get survey ${index}`, tests.getSurveyFn(index));
+        }
         it('list surveys', tests.listSurveysFn());
     });
-
     _.range(9).forEach(index => {
         const status = ['draft', 'published', 'retired'][parseInt(index / 3)];
         it(`create survey ${surveyCount+index}`, tests.createSurveyFn({ status }));
@@ -172,7 +202,7 @@ describe('survey unit', function () {
     });
 
     [surveyCount - 9, surveyCount - 8, surveyCount - 5].forEach(index => {
-        it(`verify survey ${index}`, verifyUpdatedSurveyFn(index));
+        it(`verify survey ${index}`, verifySurveyFn(index));
     });
 
     it('list surveys', tests.listSurveysFn(undefined, surveyCount - 6));

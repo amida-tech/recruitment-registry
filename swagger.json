@@ -2912,6 +2912,13 @@
             "minProperties": 2,
             "additionalProperties": false
         },
+        "newSurveyQuestions": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/newSurveyQuestion"
+            },
+            "minItems": 1
+        },
         "newSection": {
             "type": "object",
             "required": ["name"],
@@ -2925,6 +2932,13 @@
                     "items": {
                         "type": "integer",
                         "minimum": 0
+                    }
+                },
+                "questionIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer",
+                        "minimum": 1
                     }
                 },
                 "sections": {
@@ -2956,7 +2970,7 @@
                     "type": "string",
                     "minLength": 1
                 },
-                "questions": {
+                "questionIds": {
                     "type": "array",
                     "items": {
                         "type": "integer",
@@ -3284,11 +3298,17 @@
                 "sections": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/section"
+                        "$ref": "#/definitions/newSection"
                     }
                 },
                 "questions": {
-                    "$ref": "#/definitions/surveyQuestions"
+                    "$ref": "#/definitions/newSurveyQuestions"
+                },
+                "forceStatus": {
+                    "type": "boolean"
+                },
+                "forceQuestions": {
+                    "type": "boolean"
                 }
             },
             "minProperties": 1,

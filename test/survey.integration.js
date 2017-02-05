@@ -38,6 +38,7 @@ describe('survey integration', function () {
 
     const tests = new surveyCommon.IntegrationTests(store, generator, hxSurvey);
     const enumerationTests = new enumerationCommon.SpecTests(generator, hxEnumeration);
+    let surveyTemp = null;
 
     before(shared.setUpFn(store));
 
@@ -48,25 +49,42 @@ describe('survey integration', function () {
 
     it('login as super', shared.loginFn(store, config.superUser));
 
-    const verifySurveyFn = function (index) {
+    const verifySurveyFn = function (index, { noSectionId } = {}) {
         return function (done) {
             const server = hxSurvey.server(index);
             store.get(`/surveys/${server.id}`, true, 200)
                 .expect(function (res) {
+                    if (noSectionId) {
+                        surveyCommon.removeSectionIds(res.body.sections);
+                    }
                     expect(res.body).to.deep.equal(server);
                 })
                 .end(done);
         };
     };
 
-    const patchSurveyFn = function (index, meta) {
+    const patchSurveyMetaFn = function (index) {
         return function (done) {
-            if (hxSurvey.client(index).meta === undefined) {
-                return done();
-            }
             const id = hxSurvey.id(index);
-            meta = meta || hxSurvey.client(index).meta;
-            hxSurvey.server(index).meta = meta;
+            const survey = hxSurvey.server(index);
+            const update = { meta: { anyProperty: 2 } };
+            Object.assign(survey, update);
+            store.patch(`/surveys/${id}`, update, 204)
+                .end(done);
+        };
+    };
+
+    const revertPatchedSurveyMetaFn = function (index) {
+        return function (done) {
+            const id = hxSurvey.id(index);
+            const survey = hxSurvey.server(index);
+            let { meta } = hxSurvey.client(index);
+            if (!meta) {
+                delete survey.meta;
+                meta = {};
+            } else {
+                Object.assign(survey, { meta });
+            }
             store.patch(`/surveys/${id}`, { meta }, 204)
                 .end(done);
         };
@@ -105,6 +123,25 @@ describe('survey integration', function () {
         };
     };
 
+    const patchSurveyQuestionsSectionsFn = function (index, sourceIndex) {
+        return function (done) {
+            const survey = hxSurvey.server(index);
+            const sourceSurvey = hxSurvey.server(sourceIndex);
+            surveyTemp = _.cloneDeep(survey);
+            const surveyPatch = surveyCommon.formQuestionsSectionsSurveyPatch(survey, sourceSurvey);
+            store.patch(`/surveys/${survey.id}`, surveyPatch, 204).end(done);
+        };
+    };
+
+    const revertPatchedSurveyQuestionSectionsFn = function (index) {
+        return function (done) {
+            const survey = hxSurvey.server(index);
+            const sourceSurvey = surveyTemp;
+            const surveyPatch = surveyCommon.formQuestionsSectionsSurveyPatch(survey, sourceSurvey);
+            store.patch(`/surveys/${survey.id}`, surveyPatch, 204).end(done);
+        };
+    };
+
     const invalidSurveyJSONFn = function (index) {
         return function (done) {
             const survey = invalidSurveysJSON[index];
@@ -138,16 +175,19 @@ describe('survey integration', function () {
     _.range(surveyCount).forEach(index => {
         it(`create survey ${index}`, tests.createSurveyFn());
         it(`get survey ${index}`, tests.getSurveyFn(index));
-        const meta = {
-            anyProperty: true
-        };
-        it(`update survey ${index}`, patchSurveyFn(index, meta));
+        it(`update survey ${index}`, patchSurveyMetaFn(index));
         it(`verify survey ${index}`, verifySurveyFn(index));
-        it(`update survey ${index}`, patchSurveyFn(index));
+        it(`update survey ${index}`, revertPatchedSurveyMetaFn(index));
         it(`update survey text ${index}`, patchSurveyTextFn(index));
         it(`verify survey ${index}`, verifySurveyFn(index));
         it(`revert update survey ${index}`, revertUpdateSurveyTextFn(index));
         it(`verify survey ${index}`, verifySurveyFn(index));
+        if (index > 0) {
+            it(`patch survey ${index} from survey ${index-1} (questions/sections)`, patchSurveyQuestionsSectionsFn(index, index - 1));
+            it(`verify survey ${index}`, verifySurveyFn(index, { noSectionId: true }));
+            it(`revert patched survey ${index} back (question/sections)`, revertPatchedSurveyQuestionSectionsFn(index));
+            it(`get survey ${index}`, tests.getSurveyFn(index));
+        }
         it(`list surveys and verify`, tests.listSurveysFn());
     });
 

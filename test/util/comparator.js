@@ -126,7 +126,7 @@ const comparator = {
         clientSections.forEach((section, index) => {
             section.id = serverSections[index].id;
             if (section.indices) {
-                section.questions = section.indices.map(questionIndex => server.questions[questionIndex].id);
+                section.questionIds = section.indices.map(questionIndex => server.questions[questionIndex].id);
                 delete section.indices;
             }
             if (section.sections) {
