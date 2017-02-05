@@ -165,24 +165,41 @@ describe('survey integration', function () {
     it('list surveys (retired)', tests.listSurveysFn({ status: 'retired' }, 3));
     it('list surveys (draft)', tests.listSurveysFn({ status: 'draft' }, 3));
 
-    [
-        ['published', 'draft', surveyCount - 4],
-        ['retired', 'draft', surveyCount - 3],
-        ['retired', 'published', surveyCount - 2]
-    ].forEach(([status, updateStatus, index]) => {
-        it(`error: change status ${status} to ${updateStatus}`, function (done) {
+    it('error: change published survey to draft status', (function (index) {
+        return function (done) {
             const id = hxSurvey.id(index);
-            store.patch(`/surveys/${id}`, { status: updateStatus }, 400)
+            store.patch(`/surveys/${id}`, { status: 'draft' }, 409)
                 .expect(function (res) {
-                    expect(res.body.message).to.equal(RRError.message('surveyInvalidStatusUpdate', status, updateStatus));
+                    expect(res.body.message).to.equal(RRError.message('surveyPublishedToDraftUpdate'));
                 })
                 .end(done);
-        });
-    });
+        };
+    })(surveyCount - 4));
+
+    it('error: retire draft survey', (function (index) {
+        return function (done) {
+            const id = hxSurvey.id(index);
+            store.patch(`/surveys/${id}`, { status: 'retired' }, 403)
+                .expect(function (res) {
+                    expect(res.body.message).to.equal(RRError.message('surveyDraftToRetiredUpdate'));
+                })
+                .end(done);
+        };
+    })(surveyCount - 7));
+
+    it('error: patch retired survey', (function (index) {
+        return function (done) {
+            const id = hxSurvey.id(index);
+            store.patch(`/surveys/${id}`, { status: 'retired' }, 409)
+                .expect(function (res) {
+                    expect(res.body.message).to.equal(RRError.message('surveyRetiredStatusUpdate'));
+                })
+                .end(done);
+        };
+    })(surveyCount - 2));
 
     [
         ['draft', 'published', surveyCount - 9],
-        ['draft', 'retired', surveyCount - 8],
         ['published', 'retired', surveyCount - 6]
     ].forEach(([status, updateStatus, index]) => {
         it(`update survey ${index} status ${status} to ${updateStatus}`, function (done) {
@@ -202,8 +219,8 @@ describe('survey integration', function () {
     it('list surveys', tests.listSurveysFn(undefined, surveyCount - 6));
     it('list surveys (published)', tests.listSurveysFn({ status: 'published' }, surveyCount - 6));
     it('list surveys (all)', tests.listSurveysFn({ status: 'all' }, surveyCount));
-    it('list surveys (retired)', tests.listSurveysFn({ status: 'retired' }, 5));
-    it('list surveys (draft)', tests.listSurveysFn({ status: 'draft' }, 1));
+    it('list surveys (retired)', tests.listSurveysFn({ status: 'retired' }, 4));
+    it('list surveys (draft)', tests.listSurveysFn({ status: 'draft' }, 2));
 
     it('replace sections of first survey with sections', function (done) {
         const index = _.findIndex(hxSurvey.listClients(), client => client.sections);

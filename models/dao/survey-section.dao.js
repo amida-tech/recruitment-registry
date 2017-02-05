@@ -38,6 +38,9 @@ module.exports = class SectionDAO extends Translatable {
     }
 
     bulkCreateSectionsForSurveyTx(surveyId, questionIds, sections, transaction) { // TODO: Use sequelize bulkCreate with 4.0
+        if (!sections.length) {
+            return SurveySection.destroy({ where: { surveyId }, transaction });
+        }
         const flattenedSections = flattenHiearachy(sections);
         return SurveySection.destroy({ where: { surveyId }, transaction })
             .then(() => {
