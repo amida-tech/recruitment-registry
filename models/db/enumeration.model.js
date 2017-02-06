@@ -19,7 +19,7 @@ module.exports = function (sequelize, DataTypes) {
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',
-        indexes: [{ unique: true, fields: ['name', 'deleted_at'], where: { deleted_at: { $eq: null } } }],
+        indexes: [{ unique: true, fields: ['name'], where: { deleted_at: { $eq: null } } }],
         paranoid: true
     });
 };

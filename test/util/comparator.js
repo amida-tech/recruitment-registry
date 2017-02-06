@@ -126,7 +126,7 @@ const comparator = {
         clientSections.forEach((section, index) => {
             section.id = serverSections[index].id;
             if (section.indices) {
-                section.questions = section.indices.map(questionIndex => server.questions[questionIndex].id);
+                section.questionIds = section.indices.map(questionIndex => server.questions[questionIndex].id);
                 delete section.indices;
             }
             if (section.sections) {
@@ -140,6 +140,9 @@ const comparator = {
         delete expected.parentId;
         if (options.ignoreSurveyIdentifier) {
             delete expected.identifier;
+        }
+        if (!expected.status) {
+            expected.status = 'published';
         }
         if (client.sections || server.sections) {
             this.surveySections(expected.sections, server.sections, server);

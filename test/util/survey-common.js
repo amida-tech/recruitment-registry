@@ -75,17 +75,44 @@ const updateIds = function (surveys, idMap, questionIdMap) {
     });
 };
 
+const removeSectionIds = function removeSectionIds(sections) {
+    if (sections) {
+        sections.forEach(section => {
+            delete section.id;
+            if (section.sections) {
+                removeSectionIds(section.sections);
+            }
+        });
+    }
+};
+
+const formQuestionsSectionsSurveyPatch = function (survey, { questions, sections }) {
+    const surveyPatch = { forceQuestions: true };
+    surveyPatch.questions = questions.map(({ id, required }) => ({ id, required }));
+    survey.questions = questions;
+    if (sections) {
+        sections = _.cloneDeep(sections);
+        removeSectionIds(sections);
+        surveyPatch.sections = sections;
+        survey.sections = sections;
+    } else if (survey.sections) {
+        surveyPatch.sections = [];
+        delete survey.sections;
+    }
+    return surveyPatch;
+};
+
 const SpecTests = class SurveySpecTests {
     constructor(generator, hxSurvey) {
         this.generator = generator;
         this.hxSurvey = hxSurvey;
     }
 
-    createSurveyFn() {
+    createSurveyFn(options) {
         const generator = this.generator;
         const hxSurvey = this.hxSurvey;
         return function () {
-            const survey = generator.newSurvey();
+            const survey = generator.newSurvey(options);
             return models.survey.createSurvey(survey)
                 .then(id => hxSurvey.push(survey, { id }));
         };
@@ -112,16 +139,15 @@ const SpecTests = class SurveySpecTests {
         };
     }
 
-    listSurveysFn(scope) {
+    listSurveysFn(options, count = -1) {
         const hxSurvey = this.hxSurvey;
         return function () {
-            const options = scope ? {} : undefined;
-            if (scope) {
-                options.scope = scope;
-            }
             return models.survey.listSurveys(options)
                 .then(surveys => {
-                    const expected = hxSurvey.listServersByScope(scope);
+                    if (count >= 0) {
+                        expect(surveys).to.have.length(count);
+                    }
+                    const expected = hxSurvey.listServersByScope(options);
                     expect(surveys).to.deep.equal(expected);
                 });
         };
@@ -135,12 +161,12 @@ const IntegrationTests = class SurveyIntegrationTests {
         this.hxSurvey = hxSurvey;
     }
 
-    createSurveyFn() {
+    createSurveyFn(options) {
         const generator = this.generator;
         const rrSuperTest = this.rrSuperTest;
         const hxSurvey = this.hxSurvey;
         return function (done) {
-            const survey = generator.newSurvey();
+            const survey = generator.newSurvey(options);
             rrSuperTest.post('/surveys', survey, 201)
                 .expect(function (res) {
                     hxSurvey.push(survey, res.body);
@@ -180,14 +206,16 @@ const IntegrationTests = class SurveyIntegrationTests {
         };
     }
 
-    listSurveysFn(scope) {
+    listSurveysFn(options, count = -1) {
         const rrSuperTest = this.rrSuperTest;
         const hxSurvey = this.hxSurvey;
         return function (done) {
-            const query = scope ? { scope } : undefined;
-            rrSuperTest.get('/surveys', true, 200, query)
+            rrSuperTest.get('/surveys', true, 200, options)
                 .expect(function (res) {
-                    const expected = hxSurvey.listServersByScope(scope);
+                    if (count >= 0) {
+                        expect(res.body).to.have.length(count);
+                    }
+                    const expected = hxSurvey.listServersByScope(options);
                     expect(res.body).to.deep.equal(expected);
                 })
                 .end(done);
@@ -199,6 +227,8 @@ module.exports = {
     formAnswersToPost,
     formAnsweredSurvey,
     updateIds,
+    removeSectionIds,
+    formQuestionsSectionsSurveyPatch,
     SpecTests,
     IntegrationTests
 };

@@ -33,10 +33,10 @@ exports.handleError = function (res) {
         }
         const json = jsutil.errToJSON(err);
         if (err instanceof RRError) {
-            return res.status(400).json(json);
+            const statusCode = err.statusCode || 400;
+            return res.status(statusCode).json(json);
         }
         if (err instanceof Sequelize.Error) {
-
             return res.status(400).json(json);
         }
         res.status(500).json(json);

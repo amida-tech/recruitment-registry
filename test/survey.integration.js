@@ -32,12 +32,13 @@ describe('survey integration', function () {
     const store = new RRSuperTest();
     const user = generator.newUser();
     const hxUser = new History();
-    const surveyCount = 8;
+    let surveyCount = 8;
     const hxSurvey = new SurveyHistory();
     const hxEnumeration = new History();
 
     const tests = new surveyCommon.IntegrationTests(store, generator, hxSurvey);
     const enumerationTests = new enumerationCommon.SpecTests(generator, hxEnumeration);
+    let surveyTemp = null;
 
     before(shared.setUpFn(store));
 
@@ -48,31 +49,48 @@ describe('survey integration', function () {
 
     it('login as super', shared.loginFn(store, config.superUser));
 
-    const verifySurveyFn = function (index) {
+    const verifySurveyFn = function (index, { noSectionId } = {}) {
         return function (done) {
             const server = hxSurvey.server(index);
             store.get(`/surveys/${server.id}`, true, 200)
                 .expect(function (res) {
+                    if (noSectionId) {
+                        surveyCommon.removeSectionIds(res.body.sections);
+                    }
                     expect(res.body).to.deep.equal(server);
                 })
                 .end(done);
         };
     };
 
-    const updateSurveyFn = function (index, meta) {
+    const patchSurveyMetaFn = function (index) {
         return function (done) {
-            if (hxSurvey.client(index).meta === undefined) {
-                return done();
-            }
             const id = hxSurvey.id(index);
-            meta = meta || hxSurvey.client(index).meta;
-            hxSurvey.server(index).meta = meta;
+            const survey = hxSurvey.server(index);
+            const update = { meta: { anyProperty: 2 } };
+            Object.assign(survey, update);
+            store.patch(`/surveys/${id}`, update, 204)
+                .end(done);
+        };
+    };
+
+    const revertPatchedSurveyMetaFn = function (index) {
+        return function (done) {
+            const id = hxSurvey.id(index);
+            const survey = hxSurvey.server(index);
+            let { meta } = hxSurvey.client(index);
+            if (!meta) {
+                delete survey.meta;
+                meta = {};
+            } else {
+                Object.assign(survey, { meta });
+            }
             store.patch(`/surveys/${id}`, { meta }, 204)
                 .end(done);
         };
     };
 
-    const updateSurveyTextFn = function (index) {
+    const patchSurveyTextFn = function (index) {
         return function (done) {
             const survey = hxSurvey.server(index);
             const name = hxSurvey.client(index).name + 'xyz';
@@ -105,6 +123,25 @@ describe('survey integration', function () {
         };
     };
 
+    const patchSurveyQuestionsSectionsFn = function (index, sourceIndex) {
+        return function (done) {
+            const survey = hxSurvey.server(index);
+            const sourceSurvey = hxSurvey.server(sourceIndex);
+            surveyTemp = _.cloneDeep(survey);
+            const surveyPatch = surveyCommon.formQuestionsSectionsSurveyPatch(survey, sourceSurvey);
+            store.patch(`/surveys/${survey.id}`, surveyPatch, 204).end(done);
+        };
+    };
+
+    const revertPatchedSurveyQuestionSectionsFn = function (index) {
+        return function (done) {
+            const survey = hxSurvey.server(index);
+            const sourceSurvey = surveyTemp;
+            const surveyPatch = surveyCommon.formQuestionsSectionsSurveyPatch(survey, sourceSurvey);
+            store.patch(`/surveys/${survey.id}`, surveyPatch, 204).end(done);
+        };
+    };
+
     const invalidSurveyJSONFn = function (index) {
         return function (done) {
             const survey = invalidSurveysJSON[index];
@@ -116,9 +153,9 @@ describe('survey integration', function () {
         };
     };
 
-    for (let i = 0; i < invalidSurveysJSON.length; ++i) {
-        it(`error: invalid (json) survey input ${i}`, invalidSurveyJSONFn(i));
-    }
+    _.range(invalidSurveysJSON.length).forEach(index => {
+        it(`error: invalid (json) survey input ${index}`, invalidSurveyJSONFn(index));
+    });
 
     const invalidSurveySwaggerFn = function (index) {
         return function (done) {
@@ -131,25 +168,99 @@ describe('survey integration', function () {
         };
     };
 
-    for (let i = 0; i < invalidSurveysSwagger.length; ++i) {
-        it(`error: invalid (swagger) survey input ${i}`, invalidSurveySwaggerFn(i));
-    }
+    _.range(invalidSurveysSwagger.length).forEach(index => {
+        it(`error: invalid (swagger) survey input ${index}`, invalidSurveySwaggerFn(index));
+    });
 
-    for (let i = 0; i < surveyCount; ++i) {
-        it(`create survey ${i}`, tests.createSurveyFn());
-        it(`get survey ${i}`, tests.getSurveyFn(i));
-        const meta = {
-            anyProperty: true
-        };
-        it(`update survey ${i}`, updateSurveyFn(i, meta));
-        it(`verify survey ${i}`, verifySurveyFn(i));
-        it(`update survey ${i}`, updateSurveyFn(i));
-        it(`update survey text ${i}`, updateSurveyTextFn(i));
-        it(`verify survey ${i}`, verifySurveyFn(i));
-        it(`revert update survey ${i}`, revertUpdateSurveyTextFn(i));
-        it(`verify survey ${i}`, verifySurveyFn(i));
+    _.range(surveyCount).forEach(index => {
+        it(`create survey ${index}`, tests.createSurveyFn());
+        it(`get survey ${index}`, tests.getSurveyFn(index));
+        it(`update survey ${index}`, patchSurveyMetaFn(index));
+        it(`verify survey ${index}`, verifySurveyFn(index));
+        it(`update survey ${index}`, revertPatchedSurveyMetaFn(index));
+        it(`update survey text ${index}`, patchSurveyTextFn(index));
+        it(`verify survey ${index}`, verifySurveyFn(index));
+        it(`revert update survey ${index}`, revertUpdateSurveyTextFn(index));
+        it(`verify survey ${index}`, verifySurveyFn(index));
+        if (index > 0) {
+            it(`patch survey ${index} from survey ${index-1} (questions/sections)`, patchSurveyQuestionsSectionsFn(index, index - 1));
+            it(`verify survey ${index}`, verifySurveyFn(index, { noSectionId: true }));
+            it(`revert patched survey ${index} back (question/sections)`, revertPatchedSurveyQuestionSectionsFn(index));
+            it(`get survey ${index}`, tests.getSurveyFn(index));
+        }
         it(`list surveys and verify`, tests.listSurveysFn());
-    }
+    });
+
+    _.range(9).forEach(index => {
+        const status = ['draft', 'published', 'retired'][parseInt(index / 3)];
+        it(`create survey ${surveyCount+index}`, tests.createSurveyFn({ status }));
+        it(`get survey ${surveyCount+index}`, tests.getSurveyFn(surveyCount + index));
+    });
+
+    surveyCount += 9;
+
+    it('list surveys', tests.listSurveysFn(undefined, surveyCount - 6));
+    it('list surveys (published)', tests.listSurveysFn({ status: 'published' }, surveyCount - 6));
+    it('list surveys (all)', tests.listSurveysFn({ status: 'all' }, surveyCount));
+    it('list surveys (retired)', tests.listSurveysFn({ status: 'retired' }, 3));
+    it('list surveys (draft)', tests.listSurveysFn({ status: 'draft' }, 3));
+
+    it('error: change published survey to draft status', (function (index) {
+        return function (done) {
+            const id = hxSurvey.id(index);
+            store.patch(`/surveys/${id}`, { status: 'draft' }, 409)
+                .expect(function (res) {
+                    expect(res.body.message).to.equal(RRError.message('surveyPublishedToDraftUpdate'));
+                })
+                .end(done);
+        };
+    })(surveyCount - 4));
+
+    it('error: retire draft survey', (function (index) {
+        return function (done) {
+            const id = hxSurvey.id(index);
+            store.patch(`/surveys/${id}`, { status: 'retired' }, 403)
+                .expect(function (res) {
+                    expect(res.body.message).to.equal(RRError.message('surveyDraftToRetiredUpdate'));
+                })
+                .end(done);
+        };
+    })(surveyCount - 7));
+
+    it('error: patch retired survey', (function (index) {
+        return function (done) {
+            const id = hxSurvey.id(index);
+            store.patch(`/surveys/${id}`, { status: 'retired' }, 409)
+                .expect(function (res) {
+                    expect(res.body.message).to.equal(RRError.message('surveyRetiredStatusUpdate'));
+                })
+                .end(done);
+        };
+    })(surveyCount - 2));
+
+    [
+        ['draft', 'published', surveyCount - 9],
+        ['published', 'retired', surveyCount - 6]
+    ].forEach(([status, updateStatus, index]) => {
+        it(`update survey ${index} status ${status} to ${updateStatus}`, function (done) {
+            const id = hxSurvey.id(index);
+            store.patch(`/surveys/${id}`, { status: updateStatus }, 204)
+                .expect(function () {
+                    hxSurvey.server(index).status = updateStatus;
+                })
+                .end(done);
+        });
+    });
+
+    [surveyCount - 9, surveyCount - 8, surveyCount - 5].forEach(index => {
+        it(`verify survey ${index}`, verifySurveyFn(index));
+    });
+
+    it('list surveys', tests.listSurveysFn(undefined, surveyCount - 6));
+    it('list surveys (published)', tests.listSurveysFn({ status: 'published' }, surveyCount - 6));
+    it('list surveys (all)', tests.listSurveysFn({ status: 'all' }, surveyCount));
+    it('list surveys (retired)', tests.listSurveysFn({ status: 'retired' }, 4));
+    it('list surveys (draft)', tests.listSurveysFn({ status: 'draft' }, 2));
 
     it('replace sections of first survey with sections', function (done) {
         const index = _.findIndex(hxSurvey.listClients(), client => client.sections);
@@ -221,10 +332,10 @@ describe('survey integration', function () {
         };
     };
 
-    for (let i = 0; i < surveyCount; i += 2) {
-        it(`add translation (es) to survey ${i}`, translateTextFn(i, 'es'));
-        it(`get and verify translated (es) survey ${i}`, verifyTranslatedSurveyFn(i, 'es'));
-    }
+    _.range(0, surveyCount, 2).forEach(index => {
+        it(`add translation (es) to survey ${index}`, translateTextFn(index, 'es'));
+        it(`get and verify translated (es) survey ${index}`, verifyTranslatedSurveyFn(index, 'es'));
+    });
 
     it('list and verify translated surveys', listTranslatedSurveysFn('es'));
 
@@ -247,6 +358,8 @@ describe('survey integration', function () {
     it('verify survey 3 replacement', tests.getSurveyFn(surveyCount));
     it(`list surveys and verify`, tests.listSurveysFn());
 
+    ++surveyCount;
+
     it('delete survey 5', tests.deleteSurveyFn(5));
     it('remove deleted survey locally', function () {
         hxSurvey.remove(5);
@@ -267,10 +380,13 @@ describe('survey integration', function () {
     it('create survey', tests.createSurveyFn());
     it('verify survey', tests.getSurveyFn());
 
+    ++surveyCount;
+
     it('translate survey', function (done) {
         const name = 'puenno';
+        const description = 'descripto';
         const id = hxSurvey.lastId();
-        store.patch('/surveys/text/es', { id, name }, 204).end(done);
+        store.patch('/surveys/text/es', { id, name, description }, 204).end(done);
     });
 
     let answers;
@@ -299,6 +415,7 @@ describe('survey integration', function () {
                 const server = hxSurvey.lastServer();
                 const survey = _.cloneDeep(server);
                 survey.name = 'puenno';
+                survey.description = 'descripto';
                 comparator.answeredSurvey(survey, answers, res.body);
             })
             .end(done);
@@ -310,10 +427,12 @@ describe('survey integration', function () {
 
     it('login as super', shared.loginFn(store, config.superUser));
 
-    _.range(10, 17).forEach(index => {
+    _.range(surveyCount, surveyCount + 7).forEach(index => {
         it(`create survey ${index}`, tests.createSurveyFn());
         it(`get survey ${index}`, tests.getSurveyFn(index));
     });
+
+    surveyCount += 7;
 
     _.range(8).forEach(index => {
         it(`create enumeration ${index}`, enumerationTests.createEnumerationFn());
@@ -328,15 +447,17 @@ describe('survey integration', function () {
         comparator.updateEnumerationMap(enumerations);
     });
 
-    _.range(17, 20).forEach(index => {
+    _.range(surveyCount, surveyCount + 3).forEach(index => {
         it(`create survey ${index}`, tests.createSurveyFn());
         it(`get survey ${index}`, tests.getSurveyFn(index));
     });
 
+    surveyCount += 3;
+
     it('logout as super', shared.logoutFn(store));
 
     it('login as user', shared.loginFn(store, user));
-    _.range(10, 17).forEach(index => {
+    _.range(surveyCount - 10, surveyCount - 3).forEach(index => {
         it('answer survey', function (done) {
             const survey = hxSurvey.server(index);
             answers = generator.answerQuestions(survey.questions);

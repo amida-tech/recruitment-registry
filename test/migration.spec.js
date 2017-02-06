@@ -10,11 +10,33 @@ const chai = require('chai');
 const db = require('../models/db');
 const dbMigrate = require('../migration/models');
 
+const seed = require('../migration/seed');
+const seedMigrated = require('../migration/seed-migrated');
+
 const expect = chai.expect;
+
+const checkData = function (query) {
+    const options = { type: db.sequelize.QueryTypes.SELECT };
+    return db.sequelize.query(query, options)
+        .then(result => {
+            return dbMigrate.sequelize.query(query, options)
+                .then(resultMigrated => {
+                    expect(resultMigrated).to.deep.equal(result);
+                });
+        });
+};
+
+const checkBootstrapData = function (tableName) {
+    const query = `SELECT name FROM ${tableName} ORDER BY name`;
+    checkData(query);
+};
 
 describe('migration spec', function () {
     it('sync current schema', function () {
-        return db.sequelize.sync({ force: true });
+        const queryInterface = db.sequelize.getQueryInterface();
+        return queryInterface.dropAllTables()
+            .then(() => db.sequelize.sync({ force: true }))
+            .then(() => seedMigrated(queryInterface));
     });
 
     it('drop migration bootstrap database', function () {
@@ -26,7 +48,9 @@ describe('migration spec', function () {
     });
 
     it('sync migration bootstrap schema', function () {
-        return dbMigrate.sequelize.sync({ force: true });
+        const queryInterface = dbMigrate.sequelize.getQueryInterface();
+        return dbMigrate.sequelize.sync({ force: true })
+            .then(() => seed(queryInterface));
     });
 
     it('apply all migrations', function () {
@@ -99,12 +123,15 @@ describe('migration spec', function () {
     });
 
     it('compare answer type records', function () {
-        return db.sequelize.query('SELECT name FROM answer_type ORDER BY name', { type: db.sequelize.QueryTypes.SELECT })
-            .then(names => {
-                return dbMigrate.sequelize.query('SELECT name FROM answer_type ORDER BY name', { type: dbMigrate.sequelize.QueryTypes.SELECT })
-                    .then(namesMigrate => {
-                        expect(namesMigrate).to.deep.equal(names);
-                    });
-            });
+        return checkBootstrapData('answer_type');
+    });
+
+    it('compare survey status records', function () {
+        return checkBootstrapData('survey_status');
+    });
+
+    it('compare survey records', function () {
+        const query = 'SELECT status FROM survey';
+        return checkData(query);
     });
 });

@@ -2,6 +2,15 @@
 
 module.exports = function (sequelize, DataTypes) {
     return sequelize.define('survey', {
+        status: {
+            type: DataTypes.TEXT,
+            allowNull: false,
+            defaultValue: 'published',
+            references: {
+                model: 'survey_status',
+                key: 'name'
+            }
+        },
         version: {
             type: DataTypes.INTEGER
         },

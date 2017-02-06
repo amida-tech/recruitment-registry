@@ -58,8 +58,8 @@ class Generator {
         return this.questionGenerator.newQuestion();
     }
 
-    newSurvey() {
-        return this.surveyGenerator.newSurvey();
+    newSurvey(options) {
+        return this.surveyGenerator.newSurvey(options);
     }
 
     newSurveyQuestionIds(questionIds) {

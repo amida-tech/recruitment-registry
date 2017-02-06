@@ -20,6 +20,7 @@ const sequelize = new Sequelize(config.db.name, config.db.user, config.db.pass, 
     logging: message => logger.info(message)
 });
 
+const SurveyStatus = sequelize.import('./survey-status.model');
 const User = sequelize.import('./user.model');
 const QuestionType = sequelize.import('./question-type.model');
 const QuestionChoice = sequelize.import('./question-choice.model');
@@ -118,6 +119,7 @@ UserAssessment.belongsTo(Assessment, {
 module.exports = {
     Sequelize,
     sequelize,
+    SurveyStatus,
     User,
     SurveySection,
     SurveySectionText,

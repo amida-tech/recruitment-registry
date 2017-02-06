@@ -25,16 +25,16 @@ exports.createSurvey = function (req, res) {
         .catch(shared.handleError(res));
 };
 
-exports.updateSurveyText = function (req, res) {
+exports.patchSurveyText = function (req, res) {
     const language = _.get(req, 'swagger.params.language.value');
-    models.survey.updateSurveyText(req.body, language)
+    models.survey.patchSurveyText(req.body, language)
         .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };
 
-exports.updateSurvey = function (req, res) {
+exports.patchSurvey = function (req, res) {
     const id = _.get(req, 'swagger.params.id.value');
-    models.survey.updateSurvey(id, req.body)
+    models.survey.patchSurvey(id, req.body)
         .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };
@@ -49,7 +49,8 @@ exports.deleteSurvey = function (req, res) {
 exports.listSurveys = function (req, res) {
     const scope = _.get(req, 'swagger.params.scope.value');
     const language = _.get(req, 'swagger.params.language.value');
-    const options = { scope, language };
+    const status = _.get(req, 'swagger.params.status.value');
+    const options = { scope, language, status };
     models.survey.listSurveys(options)
         .then(surveys => res.status(200).json(surveys))
         .catch(shared.handleError(res));

@@ -18,7 +18,7 @@ const generator = new Generator();
 
 const shared = new SharedIntegration(generator);
 
-describe('assessment unit', function () {
+describe('assessment integration', function () {
     const surveyCount = 12;
     const assessmentCount = 3;
     const hxSurvey = new SurveyHistory();

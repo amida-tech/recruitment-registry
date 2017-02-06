@@ -6,6 +6,7 @@ const db = require('../db');
 
 const RRError = require('../../lib/rr-error');
 const SPromise = require('../../lib/promise');
+const queryrize = require('../../lib/queryrize');
 const Translatable = require('./translatable');
 const exportCSVConverter = require('../../export/csv-converter.js');
 const importCSVConverter = require('../../import/csv-converter.js');
@@ -16,6 +17,9 @@ const SurveyQuestion = db.SurveyQuestion;
 const ProfileSurvey = db.ProfileSurvey;
 const AnswerRule = db.AnswerRule;
 const AnswerRuleValue = db.AnswerRuleValue;
+const Answer = db.Answer;
+
+const surveyPatchInfoQuery = queryrize.readQuerySync('survey-patch-info.sql');
 
 const translateRuleChoices = function (ruleParent, choices) {
     const choiceText = _.get(ruleParent, 'rule.answer.choiceText');
@@ -179,7 +183,7 @@ module.exports = class SurveyDAO extends Translatable {
         return questions;
     }
 
-    updateQuestionsTx(inputQxs, surveyId, transaction) {
+    createSurveyQuestionsTx(inputQxs, surveyId, transaction) {
         const questions = inputQxs.slice();
         return this.createNewQuestionsTx(questions, transaction)
             .then(questions => this.createRulesForQuestions(questions, 'skip', transaction))
@@ -203,12 +207,10 @@ module.exports = class SurveyDAO extends Translatable {
             });
     }
 
-    createSurveyTx(survey, transaction) {
-        const fields = _.omit(survey, ['name', 'description', 'sections', 'questions', 'identifier']);
-        return Survey.create(fields, { transaction })
-            .then(({ id }) => this.createTextTx({ id, name: survey.name, description: survey.description }, transaction))
+    updateSurveyTx(id, survey, transaction) {
+        return this.createTextTx({ id, name: survey.name, description: survey.description }, transaction)
             .then(({ id }) => {
-                return this.updateQuestionsTx(survey.questions, id, transaction)
+                return this.createSurveyQuestionsTx(survey.questions, id, transaction)
                     .then(questions => {
                         const questionIds = questions.map(question => question.id);
                         return { questionIds, surveyId: id };
@@ -230,6 +232,11 @@ module.exports = class SurveyDAO extends Translatable {
                 }
                 return surveyId;
             });
+    }
+
+    createSurveyTx(survey, transaction) {
+        const fields = _.omit(survey, ['name', 'description', 'sections', 'questions', 'identifier']);
+        return Survey.create(fields, { transaction }).then(({ id }) => this.updateSurveyTx(id, survey, transaction));
     }
 
     createSurvey(survey) {
@@ -257,23 +264,134 @@ module.exports = class SurveyDAO extends Translatable {
         });
     }
 
-    updateSurveyTextTx({ id, name, description, sections }, language, tx) {
-        return this.createTextTx({ id, name, description, language }, tx)
+    patchSurveyTextTx({ id, name, description, sections }, language, transaction) {
+        return this.createTextTx({ id, name, description, language }, transaction)
             .then(() => {
                 if (sections) {
-                    return this.surveySection.updateMultipleSectionNamesTx(sections, language, tx);
+                    return this.surveySection.updateMultipleSectionNamesTx(sections, language, transaction);
                 }
             });
     }
 
-    updateSurveyText({ id, name, description, sections }, language) {
-        return sequelize.transaction(tx => {
-            return this.updateSurveyTextTx({ id, name, description, sections }, language, tx);
+    patchSurveyText({ id, name, description, sections }, language) {
+        return sequelize.transaction(transaction => {
+            return this.patchSurveyTextTx({ id, name, description, sections }, language, transaction);
         });
     }
 
-    updateSurvey(id, surveyUpdate) {
-        return Survey.update(surveyUpdate, { where: { id } });
+    patchSurveyInformationTx(surveyId, { name, description, sections, questions }, transaction) {
+        const replacements = {
+            text_needed: Boolean(name || (description !== undefined)),
+            questions_needed: Boolean(questions || sections),
+            sections_needed: Boolean(questions && !sections),
+            survey_id: surveyId
+        };
+        return sequelize.query(surveyPatchInfoQuery, {
+                transaction,
+                replacements,
+                type: sequelize.QueryTypes.SELECT
+            })
+            .then(surveys => {
+                if (!surveys.length) {
+                    return RRError.reject('surveyNotFound');
+                }
+                return surveys[0];
+            });
+    }
+
+    patchSurveyTx(surveyId, surveyPatch, transaction) {
+        return this.patchSurveyInformationTx(surveyId, surveyPatch, transaction)
+            .then(survey => {
+                if (!surveyPatch.forceStatus && survey.status === 'retired') {
+                    return RRError.reject('surveyRetiredStatusUpdate');
+                }
+                return SPromise.resolve()
+                    .then(() => {
+                        const { status, meta, forceStatus } = surveyPatch;
+                        if (status || meta) {
+                            let fields = {};
+                            if (status && (status !== survey.status)) {
+                                if (survey.status === 'draft' && status === 'retired') {
+                                    return RRError.reject('surveyDraftToRetiredUpdate');
+                                }
+                                if (!forceStatus && (status === 'draft') && (survey.status === 'published')) {
+                                    return RRError.reject('surveyPublishedToDraftUpdate');
+                                }
+                                fields.status = status;
+                            }
+                            if (meta) {
+                                if (_.isEmpty(meta)) {
+                                    fields.meta = null;
+                                } else {
+                                    fields.meta = meta;
+                                }
+                            }
+                            if (!_.isEmpty(fields)) {
+                                return Survey.update(fields, { where: { id: surveyId }, transaction });
+                            }
+                        }
+                    })
+                    .then(() => {
+                        let { name, description } = surveyPatch;
+                        if (name || (description !== undefined)) {
+                            name = name || survey.name;
+                            if (description === '') {
+                                description = null;
+                            } else {
+                                description = description || survey.description;
+                            }
+                            return this.createTextTx({ id: surveyId, name, description }, transaction);
+                        }
+                    })
+                    .then(() => {
+                        const { status, questions, sections, forceQuestions } = surveyPatch;
+                        if (questions) {
+                            const questionIdSet = new Set();
+                            questions.forEach(question => {
+                                const questionId = question.id;
+                                if (questionId) {
+                                    questionIdSet.add(questionId.toString());
+                                }
+                            });
+                            const removedQuestionIds = survey.questionIds.reduce((r, questionId) => {
+                                if (!questionIdSet.has(questionId)) {
+                                    r.push(questionId);
+                                }
+                                return r;
+                            }, []);
+                            if (removedQuestionIds.length || (survey.questionIds.length !== questions.length)) {
+                                if (survey.sectionCount && !sections) {
+                                    return RRError.reject('surveyChangeQuestionWhenSection');
+                                }
+                                if (!forceQuestions && (status !== 'draft')) {
+                                    return RRError.reject('surveyChangeQuestionWhenPublished');
+                                }
+                            }
+                            return SurveyQuestion.destroy({ where: { surveyId }, transaction })
+                                .then(() => {
+                                    if (removedQuestionIds.length) {
+                                        return Answer.destroy({ where: { surveyId, questionId: { $in: removedQuestionIds } }, transaction });
+                                    }
+                                })
+                                .then(() => this.createSurveyQuestionsTx(questions, surveyId, transaction))
+                                .then(questions => questions.map(question => question.id));
+                        } else {
+                            return survey.questionIds;
+                        }
+                    })
+                    .then(questionIds => {
+                        const sections = surveyPatch.sections;
+                        if (sections) {
+                            return this.surveySection.bulkCreateSectionsForSurveyTx(surveyId, questionIds, sections, transaction);
+                        }
+                    });
+            });
+    }
+
+    patchSurvey(id, surveyPatch) {
+        return sequelize.transaction(transaction => {
+            return this.patchSurveyTx(id, surveyPatch, transaction);
+        });
     }
 
     replaceSurveyTx(id, replacement, transaction) {
@@ -336,20 +454,26 @@ module.exports = class SurveyDAO extends Translatable {
         });
     }
 
-    listSurveys({ scope, language, history, where, order, groupId, version } = {}) {
-        const attributes = ['id'];
+    listSurveys({ scope, status, language, history, where, order, groupId, version } = {}) {
+        if (!status) {
+            status = 'published';
+        }
+        const attributes = (status === 'all') ? ['id', 'status'] : ['id'];
         if (scope === 'version-only' || scope === 'version') {
             attributes.push('groupId');
             attributes.push('version');
         }
         const options = { raw: true, attributes, order: order || 'id', paranoid: !history };
-        if (groupId || version) {
+        if (groupId || version || (status !== 'all')) {
             options.where = {};
             if (groupId) {
                 options.where.groupId = groupId;
             }
             if (version) {
                 options.where.version = version;
+            }
+            if (status !== 'all') {
+                options.where.status = status;
             }
         }
         if (language) {
@@ -395,7 +519,7 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     getSurvey(id, options = {}) {
-        let _options = { where: { id }, raw: true, attributes: ['id', 'meta'] };
+        let _options = { where: { id }, raw: true, attributes: ['id', 'meta', 'status'] };
         if (options.override) {
             _options = _.assign({}, _options, options.override);
         }
