@@ -13,9 +13,9 @@ const sequelize = new Sequelize(config.db.name, config.db.user, config.db.pass, 
     },
     port: config.db.port,
     pool: {
-        max: 20,
-        min: 0,
-        idle: 10000
+        max: config.db.poolMax,
+        min: config.db.poolMin,
+        idle: config.db.poolIdle
     },
     logging: message => logger.info(message)
 });

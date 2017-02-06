@@ -16,6 +16,9 @@ const all = {
         host: 'localhost',
         port: '5432',
         dialect: 'postgres',
+        poolMax: 5,
+        poolMin: 0,
+        poolIdle: 10000
     },
     superUser: {
         username: 'super',
@@ -51,6 +54,9 @@ const main = {
         host: process.env.RECREG_DB_HOST,
         port: process.env.RECREG_DB_PORT,
         dialect: process.env.RECREG_DB_DIALECT,
+        poolMax: process.env.RECREG_DB_POOL_MAX,
+        poolMin: process.env.RECREG_DB_POOL_MIN,
+        poolIdle: process.env.RECREG_DB_POOL_IDLE
     },
     superUser: {
         username: process.env.RECREG_SUPER_USER_USERNAME,
