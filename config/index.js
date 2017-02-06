@@ -71,7 +71,7 @@ const main = {
     tmpDirectory: process.env.RECREG_TMP_DIRECTORY,
 
     constantContact: {
-        baseApiUrl:  process.env.RECREG_CONSTANT_CONTACT__URL,
+        baseApiUrl: process.env.RECREG_CONSTANT_CONTACT__URL,
         token: process.env.RECREG_CONSTANT_CONSTANT_TOKEN,
         apiKey: process.env.RECREG_CONSTANT_CONTACT_KEY,
         secret: process.env.RECREG_CONSTANT_CONTACT_SECRET,
