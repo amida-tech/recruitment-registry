@@ -63,6 +63,9 @@ A list of full environment variable settings is below.  They can be either manua
 - RECREG_CRYPT_RESET_PASSWORD_LENGTH: Length for temporary random password during reset (10).
 - RECREG_CRYPT_RESET_EXPIRES: Reset password expires value in seconds (3600).
 - RECREG_CLIENT_BASE_URL: Base client url for password reset (no default).
+- RECREG_CONSTANT_CONSTANT_TOKEN: Access token for Constant Contact API.
+- RECREG_CONSTANT_CONTACT_KEY: API key for Constant Contact API.
+- RECREG_CONSTANT_CONTACT_LIST_ID: Unique identifier for Constant Contact list
 
 ## Commands
 
