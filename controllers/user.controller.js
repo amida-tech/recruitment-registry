@@ -5,10 +5,16 @@ const _ = require('lodash');
 const models = require('../models');
 const shared = require('./shared.js');
 
+const sendMail = require('../lib/email');
+
 exports.createNewUser = function (req, res) {
     const newUser = Object.assign({ role: 'participant' }, req.body);
+
     return models.user.createUser(newUser)
-        .then(({ id }) => res.status(201).json({ id }))
+        .then(({ id }) => {
+            sendMail(newUser, 'new_contact', {});
+            res.status(201).json({ id });
+        })
         .catch(shared.handleError(res));
 };
 

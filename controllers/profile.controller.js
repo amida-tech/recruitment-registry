@@ -4,12 +4,16 @@ const models = require('../models');
 const shared = require('./shared.js');
 const tokener = require('../lib/tokener');
 
+const sendMail = require('../lib/email');
+
 const profile = models.profile;
 
 exports.createProfile = function (req, res) {
     const { user, answers, signatures, language } = req.body;
     profile.createProfile({ user, answers, signatures }, language)
         .then(user => {
+            sendMail(user, 'new_contact', {});
+
             const token = tokener.createJWT(user);
             res.cookie('rr-jwt-token', token);
             res.status(201).json({ id: user.id });

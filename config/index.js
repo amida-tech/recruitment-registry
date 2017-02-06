@@ -68,7 +68,15 @@ const main = {
         resetExpiresUnit: process.env.RECREG_CRYPT_RESET_EXPIRES_UNIT
     },
     clientBaseUrl: process.env.RECREG_CLIENT_BASE_URL,
-    tmpDirectory: process.env.RECREG_TMP_DIRECTORY
+    tmpDirectory: process.env.RECREG_TMP_DIRECTORY,
+
+    constantContact: {
+        baseApiUrl: process.env.RECREG_CONSTANT_CONTACT__URL,
+        token: process.env.RECREG_CONSTANT_CONSTANT_TOKEN,
+        apiKey: process.env.RECREG_CONSTANT_CONTACT_KEY,
+        secret: process.env.RECREG_CONSTANT_CONTACT_SECRET,
+        listId: process.env.RECREG_CONSTANT_CONTACT_LIST_ID
+    }
 };
 
 const configBase = _.merge(all, main);
