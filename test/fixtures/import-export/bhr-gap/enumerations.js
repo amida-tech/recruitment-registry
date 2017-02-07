@@ -11,13 +11,13 @@ const countEnumerals = function (count, plus) {
 };
 
 module.exports = [{
-    name: 'yes-no-1-2',
+    reference: 'yes-no-1-2',
     enumerals: [{ text: 'Yes', value: 1 }, { text: 'No', value: 2 }]
 }, {
-    name: 'count-0-8-plus',
+    reference: 'count-0-8-plus',
     enumerals: countEnumerals(8, true)
 }, {
-    name: 'condition',
+    reference: 'condition',
     enumerals: [
         { text: 'Excellent', value: 1 },
         { text: 'Very Good', value: 2 },
@@ -26,7 +26,7 @@ module.exports = [{
         { text: 'Poor', value: 5 }
     ]
 }, {
-    name: 'primary-occupation',
+    reference: 'primary-occupation',
     enumerals: [
         { text: 'Agriculture', value: 5 },
         { text: 'Arts', value: 7 },

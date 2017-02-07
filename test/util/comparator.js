@@ -246,7 +246,7 @@ const comparator = {
         enumerations.forEach(enumeration => {
             const enumerals = enumeration.enumerals.map(({ text, value }) => ({ text, value }));
             enumerationMap.set(enumeration.id, enumerals);
-            enumerationMap.set(enumeration.name, enumerals);
+            enumerationMap.set(enumeration.reference, enumerals);
         });
     }
 };

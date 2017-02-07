@@ -51,7 +51,7 @@ const SpecTests = class EnumerationSpecTests {
         return function () {
             return models.enumeration.listEnumerations()
                 .then(enumerations => {
-                    const expected = hxEnumeration.listServers(['id', 'name']);
+                    const expected = hxEnumeration.listServers(['id', 'reference']);
                     expect(enumerations).to.deep.equal(expected);
                 });
         };
@@ -112,7 +112,7 @@ const IntegrationTests = class EnumerationIntegrationTests {
         return function (done) {
             rrSuperTest.get('/enumerations', true, 200)
                 .expect(function (res) {
-                    const expected = hxEnumeration.listServers(['id', 'name']);
+                    const expected = hxEnumeration.listServers(['id', 'reference']);
                     expect(res.body).to.deep.equal(expected);
                 })
                 .end(done);

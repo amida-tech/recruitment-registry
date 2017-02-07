@@ -67,7 +67,7 @@ module.exports = class QuestionDAO extends Translatable {
 
     updateEnumeration(enumeration, transaction) {
         if (enumeration) {
-            return this.enumeration.getEnumerationIdByName(enumeration, transaction);
+            return this.enumeration.getEnumerationIdByReference(enumeration, transaction);
         } else {
             return SPromise.resolve(null);
         }

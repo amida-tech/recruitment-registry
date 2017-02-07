@@ -127,7 +127,7 @@ class Generator {
 
     newEnumeration() {
         const enumerationindex = ++this.enumerationindex;
-        const name = `name_${enumerationindex}`;
+        const reference = `reference_${enumerationindex}`;
         const numEnumerals = (enumerationindex % 4) + 2;
         const startValue = enumerationindex % 3;
         const enumerals = _.range(numEnumerals).map(index => {
@@ -136,7 +136,7 @@ class Generator {
                 value: startValue + index
             };
         });
-        return { name, enumerals };
+        return { reference, enumerals };
     }
 
     nextLanguage() {

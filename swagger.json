@@ -4912,9 +4912,9 @@
         },
         "newEnumeration": {
             "type": "object",
-            "required": ["name", "enumerals"],
+            "required": ["reference", "enumerals"],
             "properties": {
-                "name": {
+                "reference": {
                     "type": "string",
                     "minLength": 1
                 },
@@ -4940,13 +4940,13 @@
         },
         "enumeration": {
             "type": "object",
-            "required": ["id", "name", "enumerals"],
+            "required": ["id", "reference", "enumerals"],
             "properties": {
                 "id": {
                     "type": "integer",
                         "minimum": 1
                 },
-                "name": {
+                "reference": {
                     "type": "string",
                     "minLength": 1
                 },
@@ -4978,13 +4978,13 @@
             "type": "array",
             "items": {
                 "type": "object",
-                "required": ["id", "name"],
+                "required": ["id", "reference"],
                 "properties": {
                     "id": {
                         "type": "integer",
                         "minimum": 1
                     },
-                    "name": {
+                    "reference": {
                         "type": "string",
                         "minLength": 1
                     }

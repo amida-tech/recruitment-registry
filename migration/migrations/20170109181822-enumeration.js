@@ -7,7 +7,7 @@ const enumeration = function (queryInterface, Sequelize) {
             primaryKey: true,
             autoIncrement: true
         },
-        name: {
+        reference: {
             type: Sequelize.TEXT,
             allowNull: false
         },
@@ -24,7 +24,7 @@ const enumeration = function (queryInterface, Sequelize) {
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',
-        indexes: [{ unique: true, fields: ['name'], where: { deleted_at: { $eq: null } } }],
+        indexes: [{ unique: true, fields: ['reference'], where: { deleted_at: { $eq: null } } }],
         paranoid: true
     });
 };
@@ -139,9 +139,9 @@ module.exports = {
             .then(() => enumeralText(queryInterface, Sequelize))
             .then(() => questionEnum(queryInterface, Sequelize))
             .then(() => questionChoiceEnum(queryInterface, Sequelize))
-            .then(() => queryInterface.addIndex('enumeration', ['name'], {
+            .then(() => queryInterface.addIndex('enumeration', ['reference'], {
                 where: { deleted_at: { $eq: null } },
-                indexName: 'enumeration_name',
+                indexName: 'enumeration_reference',
                 indicesType: 'UNIQUE'
             }))
             .then(() => queryInterface.addIndex('enumeral', ['enumeration_id'], {

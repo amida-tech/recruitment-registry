@@ -44,21 +44,21 @@ module.exports = class EnumerationQuestionGenerator extends QuestionGenerator {
         }
         if (layoutIndex === 4) {
             const result = this.newBody('enumeration');
-            result.enumeration = enumerationInfo.name;
+            result.enumeration = enumerationInfo.reference;
             return result;
         }
         if (layoutIndex === 5) {
             const result = this.enumerationChoices();
-            result.enumeration = enumerationInfo.name;
+            result.enumeration = enumerationInfo.reference;
             return result;
         }
         if (layoutIndex === 6) {
             const result = this.enumerationChoices();
-            result.enumeration = enumerationInfo.name;
+            result.enumeration = enumerationInfo.reference;
             const enumerationInfo2 = this.enumerations[(index + 1) % this.enumerations.length];
             result.choices.forEach((choice, index2) => {
                 if (index2 % 2) {
-                    choice.enumeration = enumerationInfo2.name;
+                    choice.enumeration = enumerationInfo2.reference;
                 }
             });
             return result;
@@ -67,7 +67,7 @@ module.exports = class EnumerationQuestionGenerator extends QuestionGenerator {
             const result = this.enumerationChoices();
             const enumerationInfo2 = this.enumerations[(index + 1) % this.enumerations.length];
             result.choices.forEach((choice, index2) => {
-                choice.enumeration = (index2 % 2 ? enumerationInfo.name : enumerationInfo2.name);
+                choice.enumeration = (index2 % 2 ? enumerationInfo.reference : enumerationInfo2.reference);
             });
             return result;
         }

@@ -11,25 +11,25 @@ const countEnumerals = function (count, plus) {
 };
 
 module.exports = [{
-    name: 'yes-no-1-2',
+    reference: 'yes-no-1-2',
     enumerals: [{ text: 'Yes', value: 1 }, { text: 'No', value: 2 }]
 }, {
-    name: 'no-yes-1-2',
+    reference: 'no-yes-1-2',
     enumerals: [{ text: 'No', value: 1 }, { text: 'Yes', value: 2 }]
 }, {
-    name: 'yes-no-1-3',
+    reference: 'yes-no-1-3',
     enumerals: [{ text: 'Yes', value: 1 }, { text: 'No', value: 3 }]
 }, {
-    name: 'yes-no-1-0',
+    reference: 'yes-no-1-0',
     enumerals: [{ text: 'Yes', value: 1 }, { text: 'No', value: 0 }]
 }, {
-    name: 'yes-no-0-1',
+    reference: 'yes-no-0-1',
     enumerals: [{ text: 'Yes', value: 0 }, { text: 'No', value: 1 }]
 }, {
-    name: 'yes-no-decline',
+    reference: 'yes-no-decline',
     enumerals: [{ text: 'Yes', value: 1 }, { text: 'No', value: 2 }, { text: 'Decline to answer', value: 3 }]
 }, {
-    name: 'extended-yes-no',
+    reference: 'extended-yes-no',
     enumerals: [
         { text: 'Yes', value: 1 },
         { text: 'No', value: 2 },
@@ -37,7 +37,7 @@ module.exports = [{
         { text: 'Decline to answer', value: 4 }
     ]
 }, {
-    name: 'weight-ranges-lbs',
+    reference: 'weight-ranges-lbs',
     enumerals: [
         { text: '110-', value: 1 },
         { text: '110-119', value: 2 },
@@ -63,13 +63,13 @@ module.exports = [{
         { text: '310+', value: 22 }
     ]
 }, {
-    name: 'height-ft-inches',
+    reference: 'height-ft-inches',
     enumerals: _.range(4, 8).reduce((r, ft) => {
         _.range(0, 12).forEach(inches => r.push({ text: `${ft}'${inches}"`, value: r.length + 1 }));
         return r;
     }, [])
 }, {
-    name: 'marital-status',
+    reference: 'marital-status',
     enumerals: [
         { text: 'Divorced', value: 1 },
         { text: 'Domestic Partner', value: 2 },
@@ -79,7 +79,7 @@ module.exports = [{
         { text: 'Widowed', value: 6 }
     ]
 }, {
-    name: 'primary-residence-type',
+    reference: 'primary-residence-type',
     enumerals: [
         { text: 'House', value: 1 },
         { text: 'Condo/Co-op (owned)', value: 2 },
@@ -91,7 +91,7 @@ module.exports = [{
         { text: 'Other', value: 8 }
     ]
 }, {
-    name: 'primary-occupation',
+    reference: 'primary-occupation',
     enumerals: [
         { text: 'Agriculture, Forestry, Fishing, or Hunting', value: 1 },
         { text: 'Arts, Entertainment, or Recreation', value: 2 },
@@ -126,10 +126,10 @@ module.exports = [{
         { text: '*Other', value: 31 }
     ]
 }, {
-    name: 'retirement-year',
+    reference: 'retirement-year',
     enumerals: _.range(1950, 2017).map((year, index) => ({ text: `${year}`, value: index + 1 }))
 }, {
-    name: 'armed-forces-branch',
+    reference: 'armed-forces-branch',
     enumerals: [
         { text: 'Air Force', value: 1 },
         { text: 'Army', value: 2 },
@@ -139,25 +139,25 @@ module.exports = [{
         { text: 'Navy', value: 6 }
     ]
 }, {
-    name: 'count-0-5-plus',
+    reference: 'count-0-5-plus',
     enumerals: countEnumerals(5, true)
 }, {
-    name: 'count-0-8-plus',
+    reference: 'count-0-8-plus',
     enumerals: countEnumerals(8, true)
 }, {
-    name: 'count-0-10-plus',
+    reference: 'count-0-10-plus',
     enumerals: countEnumerals(10, true)
 }, {
-    name: 'count-0-12-plus',
+    reference: 'count-0-12-plus',
     enumerals: countEnumerals(10, true)
 }, {
-    name: 'count-0-20-plus',
+    reference: 'count-0-20-plus',
     enumerals: countEnumerals(10, true)
 }, {
-    name: 'count-0-7',
+    reference: 'count-0-7',
     enumerals: countEnumerals(8)
 }, {
-    name: 'change-for-worse',
+    reference: 'change-for-worse',
     enumerals: [
         { text: 'Better or no change', value: 1 },
         { text: 'Questionable/ occasionally worse', value: 2 },
@@ -166,7 +166,7 @@ module.exports = [{
         { text: 'I don\'t know', value: 5 }
     ]
 }, {
-    name: 'change-for-worse-2',
+    reference: 'change-for-worse-2',
     enumerals: [
         { text: 'Better or no change', value: 8 },
         { text: 'Questionable/ occasionally worse', value: 2 },
@@ -175,7 +175,7 @@ module.exports = [{
         { text: 'I don\'t know', value: 5 }
     ]
 }, {
-    name: 'frequency-dwm',
+    reference: 'frequency-dwm',
     enumerals: [
         { text: 'Daily', value: 1 },
         { text: 'Weekly', value: 2 },
@@ -183,7 +183,7 @@ module.exports = [{
         { text: 'Almost never', value: 4 }
     ]
 }, {
-    name: 'frequency-monthly',
+    reference: 'frequency-monthly',
     enumerals: [
         { text: 'Every month', value: 1 },
         { text: 'Every 3 months', value: 2 },
@@ -192,7 +192,7 @@ module.exports = [{
         { text: 'Once a year', value: 5 }
     ]
 }, {
-    name: 'frequency-daily',
+    reference: 'frequency-daily',
     enumerals: [
         { text: 'Not at all', value: 0 },
         { text: 'Several days', value: 1 },
@@ -200,7 +200,7 @@ module.exports = [{
         { text: 'Nearly every day', value: 3 }
     ]
 }, {
-    name: 'frequency-time-6',
+    reference: 'frequency-time-6',
     enumerals: [
         { text: 'All of the time', value: 1 },
         { text: 'Most of the time', value: 2 },
@@ -210,7 +210,7 @@ module.exports = [{
         { text: 'None of the time', value: 6 }
     ]
 }, {
-    name: 'frequency-time-5',
+    reference: 'frequency-time-5',
     enumerals: [
         { text: 'All of the time', value: 1 },
         { text: 'Most of the time', value: 2 },
@@ -219,7 +219,7 @@ module.exports = [{
         { text: 'None of the time', value: 5 }
     ]
 }, {
-    name: 'frequency-weekly',
+    reference: 'frequency-weekly',
     enumerals: [
         { text: 'Not during the past month', value: 0 },
         { text: 'Less than once a week', value: 1 },
@@ -227,7 +227,7 @@ module.exports = [{
         { text: 'Three or more times a week', value: 3 }
     ]
 }, {
-    name: 'confidence-computer',
+    reference: 'confidence-computer',
     enumerals: [
         { text: 'Not confident at all', value: 1 },
         { text: 'I usually need help', value: 2 },
@@ -235,7 +235,7 @@ module.exports = [{
         { text: 'Confident', value: 4 }
     ]
 }, {
-    name: 'condition',
+    reference: 'condition',
     enumerals: [
         { text: 'Excellent', value: 1 },
         { text: 'Very Good', value: 2 },
@@ -244,7 +244,7 @@ module.exports = [{
         { text: 'Poor', value: 5 }
     ]
 }, {
-    name: 'condition-4',
+    reference: 'condition-4',
     enumerals: [
         { text: 'Very good', value: 0 },
         { text: 'Fairly good', value: 1 },
@@ -252,7 +252,7 @@ module.exports = [{
         { text: 'Very bad', value: 3 }
     ]
 }, {
-    name: 'comparative-condition',
+    reference: 'comparative-condition',
     enumerals: [
         { text: 'Much Better', value: 1 },
         { text: 'Better', value: 2 },
@@ -261,7 +261,7 @@ module.exports = [{
         { text: 'Much Worse', value: 5 }
     ]
 }, {
-    name: 'comparative-condition-year',
+    reference: 'comparative-condition-year',
     enumerals: [
         { text: 'Much better now than one year ago', value: 1 },
         { text: 'Somewhat better than one year ago', value: 2 },
@@ -270,7 +270,7 @@ module.exports = [{
         { text: 'Much worse now than one year ago', value: 5 }
     ]
 }, {
-    name: 'comparative-trouble',
+    reference: 'comparative-trouble',
     enumerals: [
         { text: 'Much more trouble', value: 1 },
         { text: 'More trouble', value: 2 },
@@ -279,7 +279,7 @@ module.exports = [{
         { text: 'Much less trouble', value: 5 }
     ]
 }, {
-    name: 'fewer-more',
+    reference: 'fewer-more',
     enumerals: [
         { text: 'Much fewer', value: 1 },
         { text: 'Fewer', value: 2 },
@@ -288,7 +288,7 @@ module.exports = [{
         { text: 'Much more', value: 5 }
     ]
 }, {
-    name: 'drinks-per-day',
+    reference: 'drinks-per-day',
     enumerals: [
         { text: 'Not at all', value: 1 },
         { text: 'Less than 1 drink/day', value: 2 },
@@ -296,33 +296,33 @@ module.exports = [{
         { text: '3 or more drinks/day', value: 4 }
     ]
 }, {
-    name: 'increased-decreased',
+    reference: 'increased-decreased',
     enumerals: [
         { text: 'Increased', value: 1 },
         { text: 'Remained about the same', value: 2 },
         { text: 'Decreased', value: 3 }
     ]
 }, {
-    name: 'duration-ym',
+    reference: 'duration-ym',
     enumerals: [
         { text: 'Years', value: 1 },
         { text: 'Months', value: 2 }
     ]
 }, {
-    name: 'duration-ym-1-3',
+    reference: 'duration-ym-1-3',
     enumerals: [
         { text: 'Years', value: 1 },
         { text: 'Months', value: 3 }
     ]
 }, {
-    name: 'duration-mh',
+    reference: 'duration-mh',
     enumerals: [
         { text: 'Less than 30 minutes', value: 1 },
         { text: '30 minutes to 24 hours', value: 2 },
         { text: 'More than 24 hours', value: 3 }
     ]
 }, {
-    name: 'difficulty-level',
+    reference: 'difficulty-level',
     enumerals: [
         { text: 'Not Difficult At All', value: 0 },
         { text: 'Somewhat Difficult', value: 1 },
@@ -330,7 +330,7 @@ module.exports = [{
         { text: 'Extremely Difficult', value: 3 }
     ]
 }, {
-    name: 'impact-cause',
+    reference: 'impact-cause',
     enumerals: [
         { text: 'Military duty', value: 7 },
         { text: 'Contact sports', value: 8 },
@@ -338,7 +338,7 @@ module.exports = [{
         { text: 'Other', value: 10 }
     ]
 }, {
-    name: 'injury-cause',
+    reference: 'injury-cause',
     enumerals: [
         { text: 'Car Accident', value: 1 },
         { text: 'Other vehicle accident', value: 2 },
@@ -353,7 +353,7 @@ module.exports = [{
         { text: 'Hit by something', value: 11 }
     ]
 }, {
-    name: 'interference',
+    reference: 'interference',
     enumerals: [
         { text: 'Not at all', value: 1 },
         { text: 'Slightly', value: 2 },
@@ -362,7 +362,7 @@ module.exports = [{
         { text: 'Extremely', value: 5 }
     ]
 }, {
-    name: 'satisfied',
+    reference: 'satisfied',
     enumerals: [
         { text: 'Not at all', value: 1 },
         { text: 'Slightly', value: 2 },
@@ -371,7 +371,7 @@ module.exports = [{
         { text: 'Very', value: 5 }
     ]
 }, {
-    name: 'severity',
+    reference: 'severity',
     enumerals: [
         { text: 'Node', value: 1 },
         { text: 'Very mild', value: 2 },
@@ -380,14 +380,14 @@ module.exports = [{
         { text: 'Very Severe', value: 5 }
     ]
 }, {
-    name: 'how-limited',
+    reference: 'how-limited',
     enumerals: [
         { text: 'Yes, limited a lot', value: 1 },
         { text: 'Yes, limited a little', value: 2 },
         { text: 'No, not limited at all', value: 3 }
     ]
 }, {
-    name: 'how-true',
+    reference: 'how-true',
     enumerals: [
         { text: 'Definitely True', value: 1 },
         { text: 'Mostly True', value: 2 },
@@ -396,7 +396,7 @@ module.exports = [{
         { text: 'Definitely False', value: 5 }
     ]
 }, {
-    name: 'sleep-time',
+    reference: 'sleep-time',
     enumerals: [
         { text: 'Before 6:00 PM', value: 1 },
         { text: '6:00 PM', value: 2 },
@@ -417,7 +417,7 @@ module.exports = [{
         { text: 'After 1:00 AM', value: 17 }
     ]
 }, {
-    name: 'duration-5-minutes',
+    reference: 'duration-5-minutes',
     enumerals: [
         { text: '< 5 minutes', value: 1 },
         { text: '5 minutes', value: 2 },
@@ -430,7 +430,7 @@ module.exports = [{
         { text: '> 60 minutes', value: 9 }
     ]
 }, {
-    name: 'wakeup-time',
+    reference: 'wakeup-time',
     enumerals: [
         { text: 'Before 5:00 AM', value: 1 },
         { text: '5:00 AM', value: 2 },
@@ -449,7 +449,7 @@ module.exports = [{
         { text: 'After 11:00 AM', value: 15 }
     ]
 }, {
-    name: 'amount-3-12-.5',
+    reference: 'amount-3-12-.5',
     enumerals: [
         { text: '< 4', value: 1 },
         { text: '4', value: 2 },
@@ -472,7 +472,7 @@ module.exports = [{
         { text: '> 12', value: 19 }
     ]
 }, {
-    name: 'much-to-none',
+    reference: 'much-to-none',
     enumerals: [
         { text: 'Not At All', value: 1 },
         { text: 'Somewhat', value: 2 },
@@ -480,7 +480,7 @@ module.exports = [{
         { text: 'Very Much', value: 4 }
     ]
 }, {
-    name: 'duration-hour',
+    reference: 'duration-hour',
     enumerals: [
         { text: 'None', value: 1 },
         { text: 'Less than 1 hour', value: 2 },
@@ -492,7 +492,7 @@ module.exports = [{
         { text: 'more than 6 hours', value: 8 }
     ]
 }, {
-    name: 'is-problem',
+    reference: 'is-problem',
     enumerals: [
         { text: 'No problem at all', value: 1 },
         { text: 'Only a very slight problem', value: 2 },
@@ -500,7 +500,7 @@ module.exports = [{
         { text: 'A very big problem', value: 4 }
     ]
 }, {
-    name: 'is-problem-2',
+    reference: 'is-problem-2',
     enumerals: [
         { text: 'not experienced at all', value: 1 },
         { text: 'no more of a problem', value: 2 },
@@ -509,7 +509,7 @@ module.exports = [{
         { text: 'a severe problem', value: 5 }
     ]
 }, {
-    name: 'bed-partner',
+    reference: 'bed-partner',
     enumerals: [
         { text: 'No bed partner or roommate', value: 1 },
         { text: 'Partner/roommate in other room', value: 2 },

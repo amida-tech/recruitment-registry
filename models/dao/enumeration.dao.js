@@ -13,8 +13,8 @@ module.exports = class EnumDAO {
         Object.assign(this, dependencies);
     }
 
-    createEnumerationTx({ name, enumerals }, transaction) {
-        return Enumeration.create({ name }, { transaction })
+    createEnumerationTx({ reference, enumerals }, transaction) {
+        return Enumeration.create({ reference }, { transaction })
             .then(({ id }) => {
                 return this.enumeral.createEnumerals(id, enumerals, transaction)
                     .then(() => ({ id }));
@@ -39,7 +39,7 @@ module.exports = class EnumDAO {
     listEnumerations() {
         return Enumeration.findAll({
             raw: true,
-            attributes: ['id', 'name'],
+            attributes: ['id', 'reference'],
             order: 'id'
         });
     }
@@ -52,7 +52,7 @@ module.exports = class EnumDAO {
     }
 
     getEnumeration(id, language) {
-        return Enumeration.findById(id, { raw: true, attributes: ['id', 'name'] })
+        return Enumeration.findById(id, { raw: true, attributes: ['id', 'reference'] })
             .then(result => {
                 return this.enumeral.listEnumerals(id, language)
                     .then(enumerals => {
@@ -62,13 +62,13 @@ module.exports = class EnumDAO {
             });
     }
 
-    getEnumerationIdByName(name, transaction) {
-        return Enumeration.findOne({ where: { name }, raw: true, attributes: ['id'], transaction })
+    getEnumerationIdByReference(reference, transaction) {
+        return Enumeration.findOne({ where: { reference }, raw: true, attributes: ['id'], transaction })
             .then(record => {
                 if (record) {
                     return record.id;
                 }
-                return RRError.reject('enumerationNotFound', name);
+                return RRError.reject('enumerationNotFound', reference);
 
             });
     }
