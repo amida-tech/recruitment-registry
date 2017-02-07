@@ -191,7 +191,7 @@ module.exports = class QuestionDAO extends Translatable {
                 if (question.enumerationId) {
                     return this.enumeral.listEnumerals(question.enumerationId, language)
                         .then(enumerals => {
-                            question.enumerals = enumerals.map(({ text, value }) => ({ text, value }));
+                            question.enumerals = enumerals.map(({ text, code }) => ({ text, code }));
                             delete question.enumerationId;
                             return question;
                         });
@@ -310,7 +310,7 @@ module.exports = class QuestionDAO extends Translatable {
                             if (question.enumerationId) {
                                 const promise = this.enumeral.listEnumerals(question.enumerationId, language)
                                     .then(enumerals => {
-                                        question.enumerals = enumerals.map(({ text, value }) => ({ text, value }));
+                                        question.enumerals = enumerals.map(({ text, code }) => ({ text, code }));
                                         delete question.enumerationId;
                                     });
                                 r.push(promise);

@@ -3,140 +3,140 @@
 const _ = require('lodash');
 
 const countEnumerals = function (count, plus) {
-    const result = _.range(0, count).map(index => ({ text: `${index}`, value: index + 1 }));
+    const result = _.range(0, count).map(index => ({ text: `${index}`, code: index + 1 }));
     if (plus) {
-        result.push({ text: `${count}+`, value: count + 1 });
+        result.push({ text: `${count}+`, code: count + 1 });
     }
     return result;
 };
 
 module.exports = [{
     reference: 'yes-no-1-2',
-    enumerals: [{ text: 'Yes', value: 1 }, { text: 'No', value: 2 }]
+    enumerals: [{ text: 'Yes', code: '1' }, { text: 'No', code: '2' }]
 }, {
     reference: 'no-yes-1-2',
-    enumerals: [{ text: 'No', value: 1 }, { text: 'Yes', value: 2 }]
+    enumerals: [{ text: 'No', code: '1' }, { text: 'Yes', code: '2' }]
 }, {
     reference: 'yes-no-1-3',
-    enumerals: [{ text: 'Yes', value: 1 }, { text: 'No', value: 3 }]
+    enumerals: [{ text: 'Yes', code: '1' }, { text: 'No', code: '3' }]
 }, {
     reference: 'yes-no-1-0',
-    enumerals: [{ text: 'Yes', value: 1 }, { text: 'No', value: 0 }]
+    enumerals: [{ text: 'Yes', code: '1' }, { text: 'No', code: '0' }]
 }, {
     reference: 'yes-no-0-1',
-    enumerals: [{ text: 'Yes', value: 0 }, { text: 'No', value: 1 }]
+    enumerals: [{ text: 'Yes', code: '0' }, { text: 'No', code: '1' }]
 }, {
     reference: 'yes-no-decline',
-    enumerals: [{ text: 'Yes', value: 1 }, { text: 'No', value: 2 }, { text: 'Decline to answer', value: 3 }]
+    enumerals: [{ text: 'Yes', code: '1' }, { text: 'No', code: '2' }, { text: 'Decline to answer', code: '3' }]
 }, {
     reference: 'extended-yes-no',
     enumerals: [
-        { text: 'Yes', value: 1 },
-        { text: 'No', value: 2 },
-        { text: 'I don\'t know', value: 3 },
-        { text: 'Decline to answer', value: 4 }
+        { text: 'Yes', code: '1' },
+        { text: 'No', code: '2' },
+        { text: 'I don\'t know', code: '3' },
+        { text: 'Decline to answer', code: '4' }
     ]
 }, {
     reference: 'weight-ranges-lbs',
     enumerals: [
-        { text: '110-', value: 1 },
-        { text: '110-119', value: 2 },
-        { text: '120-129', value: 3 },
-        { text: '130-139', value: 4 },
-        { text: '140-149', value: 5 },
-        { text: '150-159', value: 6 },
-        { text: '160-169', value: 7 },
-        { text: '170-179', value: 8 },
-        { text: '180-189', value: 9 },
-        { text: '190-199', value: 10 },
-        { text: '200-209', value: 11 },
-        { text: '210-219', value: 12 },
-        { text: '220-229', value: 13 },
-        { text: '230-239', value: 14 },
-        { text: '240-249', value: 15 },
-        { text: '250-259', value: 16 },
-        { text: '260-269', value: 17 },
-        { text: '270-279', value: 18 },
-        { text: '280-289', value: 19 },
-        { text: '290-299', value: 20 },
-        { text: '300-309', value: 21 },
-        { text: '310+', value: 22 }
+        { text: '110-', code: '1' },
+        { text: '110-119', code: '2' },
+        { text: '120-129', code: '3' },
+        { text: '130-139', code: '4' },
+        { text: '140-149', code: '5' },
+        { text: '150-159', code: '6' },
+        { text: '160-169', code: '7' },
+        { text: '170-179', code: '8' },
+        { text: '180-189', code: '9' },
+        { text: '190-199', code: '10' },
+        { text: '200-209', code: '11' },
+        { text: '210-219', code: '12' },
+        { text: '220-229', code: '13' },
+        { text: '230-239', code: '14' },
+        { text: '240-249', code: '15' },
+        { text: '250-259', code: '16' },
+        { text: '260-269', code: '17' },
+        { text: '270-279', code: '18' },
+        { text: '280-289', code: '19' },
+        { text: '290-299', code: '20' },
+        { text: '300-309', code: '21' },
+        { text: '310+', code: '22' }
     ]
 }, {
     reference: 'height-ft-inches',
     enumerals: _.range(4, 8).reduce((r, ft) => {
-        _.range(0, 12).forEach(inches => r.push({ text: `${ft}'${inches}"`, value: r.length + 1 }));
+        _.range(0, 12).forEach(inches => r.push({ text: `${ft}'${inches}"`, code: 'r'.length + 1 }));
         return r;
     }, [])
 }, {
     reference: 'marital-status',
     enumerals: [
-        { text: 'Divorced', value: 1 },
-        { text: 'Domestic Partner', value: 2 },
-        { text: 'Married', value: 3 },
-        { text: 'Separated', value: 4 },
-        { text: 'Single', value: 5 },
-        { text: 'Widowed', value: 6 }
+        { text: 'Divorced', code: '1' },
+        { text: 'Domestic Partner', code: '2' },
+        { text: 'Married', code: '3' },
+        { text: 'Separated', code: '4' },
+        { text: 'Single', code: '5' },
+        { text: 'Widowed', code: '6' }
     ]
 }, {
     reference: 'primary-residence-type',
     enumerals: [
-        { text: 'House', value: 1 },
-        { text: 'Condo/Co-op (owned)', value: 2 },
-        { text: 'Apartment (rented)', value: 3 },
-        { text: 'Mobile Home', value: 4 },
-        { text: 'Retirement Community', value: 5 },
-        { text: 'Assisted Living', value: 6 },
-        { text: 'Skilled Nursing Facility', value: 7 },
-        { text: 'Other', value: 8 }
+        { text: 'House', code: '1' },
+        { text: 'Condo/Co-op (owned)', code: '2' },
+        { text: 'Apartment (rented)', code: '3' },
+        { text: 'Mobile Home', code: '4' },
+        { text: 'Retirement Community', code: '5' },
+        { text: 'Assisted Living', code: '6' },
+        { text: 'Skilled Nursing Facility', code: '7' },
+        { text: 'Other', code: '8' }
     ]
 }, {
     reference: 'primary-occupation',
     enumerals: [
-        { text: 'Agriculture, Forestry, Fishing, or Hunting', value: 1 },
-        { text: 'Arts, Entertainment, or Recreation', value: 2 },
-        { text: 'Broadcasting', value: 3 },
-        { text: 'Education - College, University, or Adult', value: 4 },
-        { text: 'Education - Primary/Secondary (K-12)', value: 5 },
-        { text: 'Education - Other', value: 6 },
-        { text: 'Construction', value: 7 },
-        { text: 'Finance and Insurance', value: 8 },
-        { text: 'Government and Public Administration', value: 9 },
-        { text: 'Health Care and Social Assistance', value: 10 },
-        { text: 'Homemaker', value: 11 },
-        { text: 'Hotel and Food Services', value: 12 },
-        { text: 'Information - Services and Data', value: 13 },
-        { text: 'Information - Other', value: 14 },
-        { text: 'Processing', value: 15 },
-        { text: 'Legal Services', value: 16 },
-        { text: 'Manufacturing - Computer and Electronics', value: 7 },
-        { text: 'Manufacturing - Other', value: 18 },
-        { text: 'Military', value: 19 },
-        { text: 'Mining', value: 20 },
-        { text: 'Publishing', value: 21 },
-        { text: 'Real Estate, Rental, or Leasing', value: 22 },
-        { text: 'Religious', value: 23 },
-        { text: 'Retail', value: 24 },
-        { text: 'Scientific or Technical Services', value: 25 },
-        { text: 'Software', value: 26 },
-        { text: 'Telecommunications', value: 27 },
-        { text: 'Transportation and Warehousing', value: 28 },
-        { text: 'Utilities', value: 29 },
-        { text: 'Wholesale', value: 30 },
-        { text: '*Other', value: 31 }
+        { text: 'Agriculture, Forestry, Fishing, or Hunting', code: '1' },
+        { text: 'Arts, Entertainment, or Recreation', code: '2' },
+        { text: 'Broadcasting', code: '3' },
+        { text: 'Education - College, University, or Adult', code: '4' },
+        { text: 'Education - Primary/Secondary (K-12)', code: '5' },
+        { text: 'Education - Other', code: '6' },
+        { text: 'Construction', code: '7' },
+        { text: 'Finance and Insurance', code: '8' },
+        { text: 'Government and Public Administration', code: '9' },
+        { text: 'Health Care and Social Assistance', code: '10' },
+        { text: 'Homemaker', code: '11' },
+        { text: 'Hotel and Food Services', code: '12' },
+        { text: 'Information - Services and Data', code: '13' },
+        { text: 'Information - Other', code: '14' },
+        { text: 'Processing', code: '15' },
+        { text: 'Legal Services', code: '16' },
+        { text: 'Manufacturing - Computer and Electronics', code: '7' },
+        { text: 'Manufacturing - Other', code: '18' },
+        { text: 'Military', code: '19' },
+        { text: 'Mining', code: '20' },
+        { text: 'Publishing', code: '21' },
+        { text: 'Real Estate, Rental, or Leasing', code: '22' },
+        { text: 'Religious', code: '23' },
+        { text: 'Retail', code: '24' },
+        { text: 'Scientific or Technical Services', code: '25' },
+        { text: 'Software', code: '26' },
+        { text: 'Telecommunications', code: '27' },
+        { text: 'Transportation and Warehousing', code: '28' },
+        { text: 'Utilities', code: '29' },
+        { text: 'Wholesale', code: '30' },
+        { text: '*Other', code: '31' }
     ]
 }, {
     reference: 'retirement-year',
-    enumerals: _.range(1950, 2017).map((year, index) => ({ text: `${year}`, value: index + 1 }))
+    enumerals: _.range(1950, 2017).map((year, index) => ({ text: `${year}`, code: index + 1 }))
 }, {
     reference: 'armed-forces-branch',
     enumerals: [
-        { text: 'Air Force', value: 1 },
-        { text: 'Army', value: 2 },
-        { text: 'Coast Guard', value: 3 },
-        { text: 'Marines', value: 4 },
-        { text: 'National Guard', value: 5 },
-        { text: 'Navy', value: 6 }
+        { text: 'Air Force', code: '1' },
+        { text: 'Army', code: '2' },
+        { text: 'Coast Guard', code: '3' },
+        { text: 'Marines', code: '4' },
+        { text: 'National Guard', code: '5' },
+        { text: 'Navy', code: '6' }
     ]
 }, {
     reference: 'count-0-5-plus',
@@ -159,361 +159,361 @@ module.exports = [{
 }, {
     reference: 'change-for-worse',
     enumerals: [
-        { text: 'Better or no change', value: 1 },
-        { text: 'Questionable/ occasionally worse', value: 2 },
-        { text: 'Consistently a little worse', value: 3 },
-        { text: 'Consistently much worse', value: 4 },
-        { text: 'I don\'t know', value: 5 }
+        { text: 'Better or no change', code: '1' },
+        { text: 'Questionable/ occasionally worse', code: '2' },
+        { text: 'Consistently a little worse', code: '3' },
+        { text: 'Consistently much worse', code: '4' },
+        { text: 'I don\'t know', code: '5' }
     ]
 }, {
     reference: 'change-for-worse-2',
     enumerals: [
-        { text: 'Better or no change', value: 8 },
-        { text: 'Questionable/ occasionally worse', value: 2 },
-        { text: 'Consistently a little worse', value: 3 },
-        { text: 'Consistently much worse', value: 4 },
-        { text: 'I don\'t know', value: 5 }
+        { text: 'Better or no change', code: '8' },
+        { text: 'Questionable/ occasionally worse', code: '2' },
+        { text: 'Consistently a little worse', code: '3' },
+        { text: 'Consistently much worse', code: '4' },
+        { text: 'I don\'t know', code: '5' }
     ]
 }, {
     reference: 'frequency-dwm',
     enumerals: [
-        { text: 'Daily', value: 1 },
-        { text: 'Weekly', value: 2 },
-        { text: 'Monthly', value: 3 },
-        { text: 'Almost never', value: 4 }
+        { text: 'Daily', code: '1' },
+        { text: 'Weekly', code: '2' },
+        { text: 'Monthly', code: '3' },
+        { text: 'Almost never', code: '4' }
     ]
 }, {
     reference: 'frequency-monthly',
     enumerals: [
-        { text: 'Every month', value: 1 },
-        { text: 'Every 3 months', value: 2 },
-        { text: 'Every 4 months', value: 3 },
-        { text: 'Every 6 months', value: 4 },
-        { text: 'Once a year', value: 5 }
+        { text: 'Every month', code: '1' },
+        { text: 'Every 3 months', code: '2' },
+        { text: 'Every 4 months', code: '3' },
+        { text: 'Every 6 months', code: '4' },
+        { text: 'Once a year', code: '5' }
     ]
 }, {
     reference: 'frequency-daily',
     enumerals: [
-        { text: 'Not at all', value: 0 },
-        { text: 'Several days', value: 1 },
-        { text: 'More than half the days', value: 2 },
-        { text: 'Nearly every day', value: 3 }
+        { text: 'Not at all', code: '0' },
+        { text: 'Several days', code: '1' },
+        { text: 'More than half the days', code: '2' },
+        { text: 'Nearly every day', code: '3' }
     ]
 }, {
     reference: 'frequency-time-6',
     enumerals: [
-        { text: 'All of the time', value: 1 },
-        { text: 'Most of the time', value: 2 },
-        { text: 'No, not limited at al', value: 3 },
-        { text: 'Some of the time', value: 4 },
-        { text: 'A little of the time', value: 5 },
-        { text: 'None of the time', value: 6 }
+        { text: 'All of the time', code: '1' },
+        { text: 'Most of the time', code: '2' },
+        { text: 'No, not limited at al', code: '3' },
+        { text: 'Some of the time', code: '4' },
+        { text: 'A little of the time', code: '5' },
+        { text: 'None of the time', code: '6' }
     ]
 }, {
     reference: 'frequency-time-5',
     enumerals: [
-        { text: 'All of the time', value: 1 },
-        { text: 'Most of the time', value: 2 },
-        { text: 'A good bit of the time', value: 3 },
-        { text: 'A little of the time', value: 4 },
-        { text: 'None of the time', value: 5 }
+        { text: 'All of the time', code: '1' },
+        { text: 'Most of the time', code: '2' },
+        { text: 'A good bit of the time', code: '3' },
+        { text: 'A little of the time', code: '4' },
+        { text: 'None of the time', code: '5' }
     ]
 }, {
     reference: 'frequency-weekly',
     enumerals: [
-        { text: 'Not during the past month', value: 0 },
-        { text: 'Less than once a week', value: 1 },
-        { text: 'Once or twice a week', value: 2 },
-        { text: 'Three or more times a week', value: 3 }
+        { text: 'Not during the past month', code: '0' },
+        { text: 'Less than once a week', code: '1' },
+        { text: 'Once or twice a week', code: '2' },
+        { text: 'Three or more times a week', code: '3' }
     ]
 }, {
     reference: 'confidence-computer',
     enumerals: [
-        { text: 'Not confident at all', value: 1 },
-        { text: 'I usually need help', value: 2 },
-        { text: 'It depends on the task', value: 3 },
-        { text: 'Confident', value: 4 }
+        { text: 'Not confident at all', code: '1' },
+        { text: 'I usually need help', code: '2' },
+        { text: 'It depends on the task', code: '3' },
+        { text: 'Confident', code: '4' }
     ]
 }, {
     reference: 'condition',
     enumerals: [
-        { text: 'Excellent', value: 1 },
-        { text: 'Very Good', value: 2 },
-        { text: 'Good', value: 3 },
-        { text: 'Fair', value: 4 },
-        { text: 'Poor', value: 5 }
+        { text: 'Excellent', code: '1' },
+        { text: 'Very Good', code: '2' },
+        { text: 'Good', code: '3' },
+        { text: 'Fair', code: '4' },
+        { text: 'Poor', code: '5' }
     ]
 }, {
     reference: 'condition-4',
     enumerals: [
-        { text: 'Very good', value: 0 },
-        { text: 'Fairly good', value: 1 },
-        { text: 'Fairly bad', value: 2 },
-        { text: 'Very bad', value: 3 }
+        { text: 'Very good', code: '0' },
+        { text: 'Fairly good', code: '1' },
+        { text: 'Fairly bad', code: '2' },
+        { text: 'Very bad', code: '3' }
     ]
 }, {
     reference: 'comparative-condition',
     enumerals: [
-        { text: 'Much Better', value: 1 },
-        { text: 'Better', value: 2 },
-        { text: 'About the Same', value: 3 },
-        { text: 'Worse', value: 4 },
-        { text: 'Much Worse', value: 5 }
+        { text: 'Much Better', code: '1' },
+        { text: 'Better', code: '2' },
+        { text: 'About the Same', code: '3' },
+        { text: 'Worse', code: '4' },
+        { text: 'Much Worse', code: '5' }
     ]
 }, {
     reference: 'comparative-condition-year',
     enumerals: [
-        { text: 'Much better now than one year ago', value: 1 },
-        { text: 'Somewhat better than one year ago', value: 2 },
-        { text: 'About the same', value: 3 },
-        { text: 'Somewhat worse now than one year ago', value: 4 },
-        { text: 'Much worse now than one year ago', value: 5 }
+        { text: 'Much better now than one year ago', code: '1' },
+        { text: 'Somewhat better than one year ago', code: '2' },
+        { text: 'About the same', code: '3' },
+        { text: 'Somewhat worse now than one year ago', code: '4' },
+        { text: 'Much worse now than one year ago', code: '5' }
     ]
 }, {
     reference: 'comparative-trouble',
     enumerals: [
-        { text: 'Much more trouble', value: 1 },
-        { text: 'More trouble', value: 2 },
-        { text: 'About the same', value: 3 },
-        { text: 'Less trouble', value: 4 },
-        { text: 'Much less trouble', value: 5 }
+        { text: 'Much more trouble', code: '1' },
+        { text: 'More trouble', code: '2' },
+        { text: 'About the same', code: '3' },
+        { text: 'Less trouble', code: '4' },
+        { text: 'Much less trouble', code: '5' }
     ]
 }, {
     reference: 'fewer-more',
     enumerals: [
-        { text: 'Much fewer', value: 1 },
-        { text: 'Fewer', value: 2 },
-        { text: 'About the same', value: 3 },
-        { text: 'More', value: 4 },
-        { text: 'Much more', value: 5 }
+        { text: 'Much fewer', code: '1' },
+        { text: 'Fewer', code: '2' },
+        { text: 'About the same', code: '3' },
+        { text: 'More', code: '4' },
+        { text: 'Much more', code: '5' }
     ]
 }, {
     reference: 'drinks-per-day',
     enumerals: [
-        { text: 'Not at all', value: 1 },
-        { text: 'Less than 1 drink/day', value: 2 },
-        { text: '1-2 drinks/day', value: 3 },
-        { text: '3 or more drinks/day', value: 4 }
+        { text: 'Not at all', code: '1' },
+        { text: 'Less than 1 drink/day', code: '2' },
+        { text: '1-2 drinks/day', code: '3' },
+        { text: '3 or more drinks/day', code: '4' }
     ]
 }, {
     reference: 'increased-decreased',
     enumerals: [
-        { text: 'Increased', value: 1 },
-        { text: 'Remained about the same', value: 2 },
-        { text: 'Decreased', value: 3 }
+        { text: 'Increased', code: '1' },
+        { text: 'Remained about the same', code: '2' },
+        { text: 'Decreased', code: '3' }
     ]
 }, {
     reference: 'duration-ym',
     enumerals: [
-        { text: 'Years', value: 1 },
-        { text: 'Months', value: 2 }
+        { text: 'Years', code: '1' },
+        { text: 'Months', code: '2' }
     ]
 }, {
     reference: 'duration-ym-1-3',
     enumerals: [
-        { text: 'Years', value: 1 },
-        { text: 'Months', value: 3 }
+        { text: 'Years', code: '1' },
+        { text: 'Months', code: '3' }
     ]
 }, {
     reference: 'duration-mh',
     enumerals: [
-        { text: 'Less than 30 minutes', value: 1 },
-        { text: '30 minutes to 24 hours', value: 2 },
-        { text: 'More than 24 hours', value: 3 }
+        { text: 'Less than 30 minutes', code: '1' },
+        { text: '30 minutes to 24 hours', code: '2' },
+        { text: 'More than 24 hours', code: '3' }
     ]
 }, {
     reference: 'difficulty-level',
     enumerals: [
-        { text: 'Not Difficult At All', value: 0 },
-        { text: 'Somewhat Difficult', value: 1 },
-        { text: 'Very Difficult', value: 2 },
-        { text: 'Extremely Difficult', value: 3 }
+        { text: 'Not Difficult At All', code: '0' },
+        { text: 'Somewhat Difficult', code: '1' },
+        { text: 'Very Difficult', code: '2' },
+        { text: 'Extremely Difficult', code: '3' }
     ]
 }, {
     reference: 'impact-cause',
     enumerals: [
-        { text: 'Military duty', value: 7 },
-        { text: 'Contact sports', value: 8 },
-        { text: 'Abuse', value: 9 },
-        { text: 'Other', value: 10 }
+        { text: 'Military duty', code: '7' },
+        { text: 'Contact sports', code: '8' },
+        { text: 'Abuse', code: '9' },
+        { text: 'Other', code: '10' }
     ]
 }, {
     reference: 'injury-cause',
     enumerals: [
-        { text: 'Car Accident', value: 1 },
-        { text: 'Other vehicle accident', value: 2 },
-        { text: 'Fall', value: 3 },
-        { text: 'Sports accident', value: 4 },
-        { text: 'Playground accident', value: 5 },
-        { text: 'Gunshot', value: 6 },
-        { text: 'Fight', value: 7 },
-        { text: 'Shaken violently', value: 8 },
-        { text: 'Explosion', value: 9 },
-        { text: 'Other', value: 10 },
-        { text: 'Hit by something', value: 11 }
+        { text: 'Car Accident', code: '1' },
+        { text: 'Other vehicle accident', code: '2' },
+        { text: 'Fall', code: '3' },
+        { text: 'Sports accident', code: '4' },
+        { text: 'Playground accident', code: '5' },
+        { text: 'Gunshot', code: '6' },
+        { text: 'Fight', code: '7' },
+        { text: 'Shaken violently', code: '8' },
+        { text: 'Explosion', code: '9' },
+        { text: 'Other', code: '10' },
+        { text: 'Hit by something', code: '11' }
     ]
 }, {
     reference: 'interference',
     enumerals: [
-        { text: 'Not at all', value: 1 },
-        { text: 'Slightly', value: 2 },
-        { text: 'Moderately', value: 3 },
-        { text: 'Quite a bit', value: 4 },
-        { text: 'Extremely', value: 5 }
+        { text: 'Not at all', code: '1' },
+        { text: 'Slightly', code: '2' },
+        { text: 'Moderately', code: '3' },
+        { text: 'Quite a bit', code: '4' },
+        { text: 'Extremely', code: '5' }
     ]
 }, {
     reference: 'satisfied',
     enumerals: [
-        { text: 'Not at all', value: 1 },
-        { text: 'Slightly', value: 2 },
-        { text: 'Moderately', value: 3 },
-        { text: 'Quite', value: 4 },
-        { text: 'Very', value: 5 }
+        { text: 'Not at all', code: '1' },
+        { text: 'Slightly', code: '2' },
+        { text: 'Moderately', code: '3' },
+        { text: 'Quite', code: '4' },
+        { text: 'Very', code: '5' }
     ]
 }, {
     reference: 'severity',
     enumerals: [
-        { text: 'Node', value: 1 },
-        { text: 'Very mild', value: 2 },
-        { text: 'Moderate', value: 3 },
-        { text: 'Severe', value: 4 },
-        { text: 'Very Severe', value: 5 }
+        { text: 'Node', code: '1' },
+        { text: 'Very mild', code: '2' },
+        { text: 'Moderate', code: '3' },
+        { text: 'Severe', code: '4' },
+        { text: 'Very Severe', code: '5' }
     ]
 }, {
     reference: 'how-limited',
     enumerals: [
-        { text: 'Yes, limited a lot', value: 1 },
-        { text: 'Yes, limited a little', value: 2 },
-        { text: 'No, not limited at all', value: 3 }
+        { text: 'Yes, limited a lot', code: '1' },
+        { text: 'Yes, limited a little', code: '2' },
+        { text: 'No, not limited at all', code: '3' }
     ]
 }, {
     reference: 'how-true',
     enumerals: [
-        { text: 'Definitely True', value: 1 },
-        { text: 'Mostly True', value: 2 },
-        { text: 'Don\'t Know', value: 3 },
-        { text: 'Mostly False', value: 4 },
-        { text: 'Definitely False', value: 5 }
+        { text: 'Definitely True', code: '1' },
+        { text: 'Mostly True', code: '2' },
+        { text: 'Don\'t Know', code: '3' },
+        { text: 'Mostly False', code: '4' },
+        { text: 'Definitely False', code: '5' }
     ]
 }, {
     reference: 'sleep-time',
     enumerals: [
-        { text: 'Before 6:00 PM', value: 1 },
-        { text: '6:00 PM', value: 2 },
-        { text: '6:30 PM', value: 3 },
-        { text: '7:00 PM', value: 4 },
-        { text: '7:30 PM', value: 5 },
-        { text: '8:00 PM', value: 6 },
-        { text: '8:30 PM', value: 7 },
-        { text: '9:00 PM', value: 8 },
-        { text: '9:30 PM', value: 9 },
-        { text: '10:00 PM', value: 10 },
-        { text: '10:30 PM', value: 11 },
-        { text: '11:00 PM', value: 12 },
-        { text: '11:30 PM', value: 13 },
-        { text: '12:00 AM', value: 14 },
-        { text: '12:30 AM', value: 15 },
-        { text: '1:00 AM', value: 16 },
-        { text: 'After 1:00 AM', value: 17 }
+        { text: 'Before 6:00 PM', code: '1' },
+        { text: '6:00 PM', code: '2' },
+        { text: '6:30 PM', code: '3' },
+        { text: '7:00 PM', code: '4' },
+        { text: '7:30 PM', code: '5' },
+        { text: '8:00 PM', code: '6' },
+        { text: '8:30 PM', code: '7' },
+        { text: '9:00 PM', code: '8' },
+        { text: '9:30 PM', code: '9' },
+        { text: '10:00 PM', code: '10' },
+        { text: '10:30 PM', code: '11' },
+        { text: '11:00 PM', code: '12' },
+        { text: '11:30 PM', code: '13' },
+        { text: '12:00 AM', code: '14' },
+        { text: '12:30 AM', code: '15' },
+        { text: '1:00 AM', code: '16' },
+        { text: 'After 1:00 AM', code: '17' }
     ]
 }, {
     reference: 'duration-5-minutes',
     enumerals: [
-        { text: '< 5 minutes', value: 1 },
-        { text: '5 minutes', value: 2 },
-        { text: '10 minutes', value: 3 },
-        { text: '15 minutes', value: 4 },
-        { text: '20 minutes', value: 5 },
-        { text: '30 minutes', value: 6 },
-        { text: '45 minutes', value: 7 },
-        { text: '60 minutes', value: 8 },
-        { text: '> 60 minutes', value: 9 }
+        { text: '< 5 minutes', code: '1' },
+        { text: '5 minutes', code: '2' },
+        { text: '10 minutes', code: '3' },
+        { text: '15 minutes', code: '4' },
+        { text: '20 minutes', code: '5' },
+        { text: '30 minutes', code: '6' },
+        { text: '45 minutes', code: '7' },
+        { text: '60 minutes', code: '8' },
+        { text: '> 60 minutes', code: '9' }
     ]
 }, {
     reference: 'wakeup-time',
     enumerals: [
-        { text: 'Before 5:00 AM', value: 1 },
-        { text: '5:00 AM', value: 2 },
-        { text: '5:30 AM', value: 3 },
-        { text: '6:00 AM', value: 4 },
-        { text: '6:30 AM', value: 5 },
-        { text: '7:00 AM', value: 6 },
-        { text: '7:30 AM', value: 7 },
-        { text: '8:00 AM', value: 8 },
-        { text: '8:30 AM', value: 9 },
-        { text: '9:00 AM', value: 10 },
-        { text: '9:30 AM', value: 11 },
-        { text: '10:00 AM', value: 12 },
-        { text: '10:30 AM', value: 13 },
-        { text: '11:00 AM', value: 14 },
-        { text: 'After 11:00 AM', value: 15 }
+        { text: 'Before 5:00 AM', code: '1' },
+        { text: '5:00 AM', code: '2' },
+        { text: '5:30 AM', code: '3' },
+        { text: '6:00 AM', code: '4' },
+        { text: '6:30 AM', code: '5' },
+        { text: '7:00 AM', code: '6' },
+        { text: '7:30 AM', code: '7' },
+        { text: '8:00 AM', code: '8' },
+        { text: '8:30 AM', code: '9' },
+        { text: '9:00 AM', code: '10' },
+        { text: '9:30 AM', code: '11' },
+        { text: '10:00 AM', code: '12' },
+        { text: '10:30 AM', code: '13' },
+        { text: '11:00 AM', code: '14' },
+        { text: 'After 11:00 AM', code: '15' }
     ]
 }, {
     reference: 'amount-3-12-.5',
     enumerals: [
-        { text: '< 4', value: 1 },
-        { text: '4', value: 2 },
-        { text: '4.5', value: 3 },
-        { text: '5', value: 4 },
-        { text: '5.5', value: 5 },
-        { text: '6', value: 6 },
-        { text: '6.5', value: 7 },
-        { text: '7', value: 8 },
-        { text: '7.5', value: 9 },
-        { text: '8', value: 10 },
-        { text: '8.5', value: 11 },
-        { text: '9', value: 12 },
-        { text: '9.5', value: 13 },
-        { text: '10', value: 14 },
-        { text: '10.5', value: 15 },
-        { text: '11', value: 16 },
-        { text: '11.5', value: 17 },
-        { text: '12', value: 18 },
-        { text: '> 12', value: 19 }
+        { text: '< 4', code: '1' },
+        { text: '4', code: '2' },
+        { text: '4.5', code: '3' },
+        { text: '5', code: '4' },
+        { text: '5.5', code: '5' },
+        { text: '6', code: '6' },
+        { text: '6.5', code: '7' },
+        { text: '7', code: '8' },
+        { text: '7.5', code: '9' },
+        { text: '8', code: '10' },
+        { text: '8.5', code: '11' },
+        { text: '9', code: '12' },
+        { text: '9.5', code: '13' },
+        { text: '10', code: '14' },
+        { text: '10.5', code: '15' },
+        { text: '11', code: '16' },
+        { text: '11.5', code: '17' },
+        { text: '12', code: '18' },
+        { text: '> 12', code: '19' }
     ]
 }, {
     reference: 'much-to-none',
     enumerals: [
-        { text: 'Not At All', value: 1 },
-        { text: 'Somewhat', value: 2 },
-        { text: 'Rather Much', value: 3 },
-        { text: 'Very Much', value: 4 }
+        { text: 'Not At All', code: '1' },
+        { text: 'Somewhat', code: '2' },
+        { text: 'Rather Much', code: '3' },
+        { text: 'Very Much', code: '4' }
     ]
 }, {
     reference: 'duration-hour',
     enumerals: [
-        { text: 'None', value: 1 },
-        { text: 'Less than 1 hour', value: 2 },
-        { text: '1-2 hours', value: 3 },
-        { text: '2-3 hours', value: 4 },
-        { text: '3-4 hours', value: 5 },
-        { text: '4-5 hours', value: 6 },
-        { text: '5-6 hours', value: 7 },
-        { text: 'more than 6 hours', value: 8 }
+        { text: 'None', code: '1' },
+        { text: 'Less than 1 hour', code: '2' },
+        { text: '1-2 hours', code: '3' },
+        { text: '2-3 hours', code: '4' },
+        { text: '3-4 hours', code: '5' },
+        { text: '4-5 hours', code: '6' },
+        { text: '5-6 hours', code: '7' },
+        { text: 'more than 6 hours', code: '8' }
     ]
 }, {
     reference: 'is-problem',
     enumerals: [
-        { text: 'No problem at all', value: 1 },
-        { text: 'Only a very slight problem', value: 2 },
-        { text: 'Somewhat of a problem', value: 3 },
-        { text: 'A very big problem', value: 4 }
+        { text: 'No problem at all', code: '1' },
+        { text: 'Only a very slight problem', code: '2' },
+        { text: 'Somewhat of a problem', code: '3' },
+        { text: 'A very big problem', code: '4' }
     ]
 }, {
     reference: 'is-problem-2',
     enumerals: [
-        { text: 'not experienced at all', value: 1 },
-        { text: 'no more of a problem', value: 2 },
-        { text: 'a mild problem', value: 3 },
-        { text: 'a moderate problem', value: 4 },
-        { text: 'a severe problem', value: 5 }
+        { text: 'not experienced at all', code: '1' },
+        { text: 'no more of a problem', code: '2' },
+        { text: 'a mild problem', code: '3' },
+        { text: 'a moderate problem', code: '4' },
+        { text: 'a severe problem', code: '5' }
     ]
 }, {
     reference: 'bed-partner',
     enumerals: [
-        { text: 'No bed partner or roommate', value: 1 },
-        { text: 'Partner/roommate in other room', value: 2 },
-        { text: 'Partner in same room, but not same bed', value: 3 },
-        { text: 'Partner in same bed', value: 4 }
+        { text: 'No bed partner or roommate', code: '1' },
+        { text: 'Partner/roommate in other room', code: '2' },
+        { text: 'Partner in same room, but not same bed', code: '3' },
+        { text: 'Partner in same bed', code: '4' }
     ]
 }];

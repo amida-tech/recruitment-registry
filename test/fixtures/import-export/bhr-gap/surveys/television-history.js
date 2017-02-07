@@ -25,7 +25,7 @@ module.exports = {
             count: 2,
             rule: {
                 logic: 'not-equals',
-                answer: { integerValue: 1 }
+                answer: { code: '1' }
             }
         }
     }, {
@@ -65,7 +65,7 @@ module.exports = {
             count: 1,
             rule: {
                 logic: 'equals',
-                answer: { integerValue: 1 }
+                answer: { code: '1' }
             }
         }
     }, {

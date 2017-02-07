@@ -20,7 +20,7 @@ const formAnswersToPost = function (survey, answersSpec) {
                 entry.answer.choices = spec.choices.map(function (cindex) {
                     const { id } = questions[index].choices[cindex.index];
                     const result = { id };
-                    const numValues = ['textValue', 'monthValue', 'yearValue', 'dayValue', 'integerValue', 'boolValue'].reduce((r, p) => {
+                    const numValues = ['textValue', 'code', 'monthValue', 'yearValue', 'dayValue', 'integerValue', 'boolValue'].reduce((r, p) => {
                         if (cindex.hasOwnProperty(p)) {
                             ++r;
                             result[p] = cindex[p];

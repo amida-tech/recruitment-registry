@@ -11,8 +11,8 @@ module.exports = function (sequelize, DataTypes) {
                 key: 'id'
             }
         },
-        value: {
-            type: DataTypes.INTEGER,
+        code: {
+            type: DataTypes.TEXT,
             allowNull: false
         },
         line: {
@@ -31,7 +31,7 @@ module.exports = function (sequelize, DataTypes) {
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',
-        indexes: [{ fields: ['enumeration_id'] }],
+        indexes: [{ fields: ['enumeration_id'], where: { deleted_at: { $eq: null } } }],
         paranoid: true
     });
 };

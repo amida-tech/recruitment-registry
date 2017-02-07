@@ -90,7 +90,7 @@ module.exports = class Answerer {
     enumeration(question, choice) {
         const enumerals = (choice && choice.enumerals) || question.enumerals;
         const enumeral = enumerals[this.answerIndex % enumerals.length];
-        return { integerValue: enumeral.value };
+        return { code: enumeral.code };
     }
 
     selectChoice(choices) {

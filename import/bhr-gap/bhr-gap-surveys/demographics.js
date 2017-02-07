@@ -40,7 +40,7 @@ module.exports = {
             count: 1,
             rule: {
                 logic: 'not-equals',
-                answer: { integerValue: 31 }
+                answer: { code: '31' }
             }
         }
     }, {
@@ -77,7 +77,7 @@ module.exports = {
             count: 1,
             rule: {
                 logic: 'not-equals',
-                answer: { integerValue: 1 }
+                answer: { code: '1' }
             }
         }
     }, {
@@ -96,7 +96,7 @@ module.exports = {
             count: 1,
             rule: {
                 logic: 'not-equals',
-                answer: { integerValue: 1 }
+                answer: { code: '1' }
             }
         }
     }, {

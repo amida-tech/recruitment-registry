@@ -14,8 +14,8 @@ module.exports = class EnumeralDAO extends Translatable {
     }
 
     createEnumerals(enumerationId, enumerals, transaction) {
-        const promises = enumerals.map(({ value, text }, line) => {
-            return Enumeral.create({ enumerationId, value, line }, { transaction })
+        const promises = enumerals.map(({ code, text }, line) => {
+            return Enumeral.create({ enumerationId, code, line }, { transaction })
                 .then(({ id }) => {
                     return this.createTextTx({ id, text }, transaction)
                         .then(({ id }) => ({ id }));
@@ -30,7 +30,7 @@ module.exports = class EnumeralDAO extends Translatable {
     }
 
     listEnumerals(enumerationId, language) {
-        return Enumeral.findAll({ where: { enumerationId }, raw: true, attributes: ['id', 'value'], order: 'line' })
+        return Enumeral.findAll({ where: { enumerationId }, raw: true, attributes: ['id', 'code'], order: 'line' })
             .then(enumerals => this.updateAllTexts(enumerals, language));
     }
 

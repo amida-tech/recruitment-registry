@@ -3168,14 +3168,15 @@
                     "type": "array",
                     "items": {
                         "type": "object",
-                        "required": ["text", "value"],
+                        "required": ["text", "code"],
                         "properties": {
                             "text": {
                                 "type": "string",
                                 "minLength": 1
                             },
-                            "value": {
-                                "type": "integer"
+                            "code": {
+                                "type": "string",
+                                "minLength": 1
                             }
                         },
                         "additionalProperties": false
@@ -3462,14 +3463,15 @@
                     "type": "array",
                     "items": {
                         "type": "object",
-                        "required": ["text", "value"],
+                        "required": ["text", "code"],
                         "properties": {
                             "text": {
                                 "type": "string",
                                 "minLength": 1
                             },
-                            "value": {
-                                "type": "integer"
+                            "code": {
+                                "type": "string",
+                                "minLength": 1
                             }
                         },
                         "additionalProperties": false
@@ -3509,6 +3511,9 @@
                 },
                 "integerValue": {
                     "type": "integer"
+                },
+                "code": {
+                    "type": "string"
                 },
                 "floatValue": {
                     "type": "number"
@@ -3564,6 +3569,9 @@
                 },
                 "integerValue": {
                     "type": "integer"
+                },
+                "code": {
+                    "type": "string"
                 },
                 "floatValue": {
                     "type": "number"
@@ -3626,6 +3634,9 @@
                 "integerValue": {
                     "type": "integer"
                 },
+                "code": {
+                    "type": "string"
+                },
                 "textValue": {
                     "type": "string"
                 },
@@ -3675,6 +3686,9 @@
                 },
                 "integerValue": {
                     "type": "integer"
+                },
+                "code": {
+                    "type": "string"
                 },
                 "feetInchesValue": {
                     "type": "object",
@@ -3755,14 +3769,15 @@
                     "type": "array",
                     "items": {
                         "type": "object",
-                        "required": ["text", "value"],
+                        "required": ["text", "code"],
                         "properties": {
                             "text": {
                                 "type": "string",
                                 "minLength": 1
                             },
-                            "value": {
-                                "type": "integer"
+                            "code": {
+                                "type": "string",
+                                "minLength": 1
                             }
                         },
                         "additionalProperties": false
@@ -4922,14 +4937,15 @@
                     "type": "array",
                     "items": {
                         "type": "object",
-                        "required": ["text", "value"],
+                        "required": ["text", "code"],
                         "properties": {
                             "text": {
                                 "type": "string",
                                 "minLength": 1
                             },
-                            "value": {
-                                "type": "integer"
+                            "code": {
+                                "type": "string",
+                                "minLength": 1
                             }
                         },
                         "additionalProperties": false
@@ -4954,7 +4970,7 @@
                     "type": "array",
                     "items": {
                         "type": "object",
-                        "required": ["id", "text", "value"],
+                        "required": ["id", "text", "code"],
                         "properties": {
                             "id": {
                                 "type": "integer",
@@ -4964,8 +4980,9 @@
                                 "type": "string",
                                 "minLength": 1
                             },
-                            "value": {
-                                "type": "integer"
+                            "code": {
+                                "type": "string",
+                                "minLength": 1
                             }
                         },
                         "additionalProperties": false

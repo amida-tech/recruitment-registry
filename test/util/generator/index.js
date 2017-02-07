@@ -133,7 +133,7 @@ class Generator {
         const enumerals = _.range(numEnumerals).map(index => {
             return {
                 text: `text_${enumerationindex}_${index}`,
-                value: startValue + index
+                code: `${startValue + index}`
             };
         });
         return { reference, enumerals };

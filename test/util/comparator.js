@@ -166,7 +166,7 @@ const comparator = {
                 qx.language = answerMap.get(qx.id).language || language || 'en';
                 if (qx.type === 'choices' && qx.answer.choices) {
                     qx.answer.choices.forEach((choice) => {
-                        const numValues = ['textValue', 'monthValue', 'yearValue', 'dayValue', 'integerValue', 'boolValue'].reduce((r, p) => {
+                        const numValues = ['textValue', 'code', 'monthValue', 'yearValue', 'dayValue', 'integerValue', 'boolValue'].reduce((r, p) => {
                             if (choice.hasOwnProperty(p)) {
                                 ++r;
                             }
@@ -187,7 +187,7 @@ const comparator = {
             answer.language = answer.language || language || 'en';
             if (answer.answer && answer.answer.choices) {
                 answer.answer.choices.forEach((choice) => {
-                    const numValues = ['textValue', 'monthValue', 'yearValue', 'dayValue', 'integerValue', 'boolValue', 'dateValue', 'numberValue', 'feetInchesValue', 'bloodPressureValue'].reduce((r, p) => {
+                    const numValues = ['textValue', 'code', 'monthValue', 'yearValue', 'dayValue', 'integerValue', 'boolValue', 'dateValue', 'numberValue', 'feetInchesValue', 'bloodPressureValue'].reduce((r, p) => {
                         if (choice.hasOwnProperty(p)) {
                             ++r;
                         }
@@ -244,7 +244,7 @@ const comparator = {
     updateEnumerationMap(enumerations) {
         enumerationMap = new Map();
         enumerations.forEach(enumeration => {
-            const enumerals = enumeration.enumerals.map(({ text, value }) => ({ text, value }));
+            const enumerals = enumeration.enumerals.map(({ text, code }) => ({ text, code }));
             enumerationMap.set(enumeration.id, enumerals);
             enumerationMap.set(enumeration.reference, enumerals);
         });

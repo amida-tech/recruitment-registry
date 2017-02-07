@@ -22,7 +22,7 @@ module.exports = {
             count: 1,
             rule: {
                 logic: 'not-equals',
-                answer: { integerValue: 20 }
+                answer: { code: '20' }
             }
         }
     }, {

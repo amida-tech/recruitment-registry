@@ -37,6 +37,9 @@ const answerValueToDBFormat = {
     textValue(value) {
         return [{ value }];
     },
+    code(value) {
+        return [{ value }];
+    },
     numberValue(value) {
         return [{ value }];
     },

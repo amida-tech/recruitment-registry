@@ -62,7 +62,7 @@ module.exports = class QuestionChoiceDAO extends Translatable {
         if (ids.length) {
             const promises = ids.map(({ enumerationId, index }) => {
                 return this.enumeral.listEnumerals(enumerationId, language)
-                    .then(enumerals => enumerals.map(({ text, value }) => ({ text, value })))
+                    .then(enumerals => enumerals.map(({ text, code }) => ({ text, code })))
                     .then(enumerals => {
                         choices[index].enumerals = enumerals;
                         delete choices[index].enumerationId;

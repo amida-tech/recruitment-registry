@@ -45,8 +45,8 @@ const enumeral = function (queryInterface, Sequelize) {
                 key: 'id'
             }
         },
-        value: {
-            type: Sequelize.INTEGER,
+        code: {
+            type: Sequelize.TEXT,
             allowNull: false
         },
         line: {
@@ -145,6 +145,7 @@ module.exports = {
                 indicesType: 'UNIQUE'
             }))
             .then(() => queryInterface.addIndex('enumeral', ['enumeration_id'], {
+                where: { deleted_at: { $eq: null } },
                 indexName: 'enumeral_enumeration_id'
             }))
             .then(() => queryInterface.addIndex('enumeral_text', ['enumeral_id', 'language_code'], {
