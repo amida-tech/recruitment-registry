@@ -8,9 +8,7 @@ const _ = require('lodash');
 
 const all = {
     env: 'development',
-    cors: {
-        origin: 'http://localhost:4000'
-    },
+    cors: process.env.RECREG_CORS_ORIGIN.split(" ") || ['http://localhost:4000'],
     db: {
         name: 'recreg',
         host: 'localhost',
@@ -40,9 +38,7 @@ const all = {
 
 const main = {
     env: process.env.NODE_ENV,
-    cors: {
-        origin: process.env.RECREG_CORS_ORIGIN
-    },
+    cors: process.env.RECREG_CORS_ORIGIN.split(" "),
     jwt: {
         secret: process.env.RECREG_CLIENT_SECRET
     },

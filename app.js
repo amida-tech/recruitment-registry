@@ -14,9 +14,14 @@ const app = express();
 
 const jsonParser = bodyParser.json();
 
+let corsWhitelist = config.cors;
 const corsOptions = {
     credentials: true,
-    origin: config.cors.origin,
+    origin: function(origin, callback) {
+      let originStatus = corsWhitelist.indexOf(origin) > -1;
+      let firstArg = originStatus ? null : 'CORS Error';
+      callback(firstArg, originStatus);
+    },
     allowedheaders: [
         'Accept',
         'Content-Type',
@@ -35,6 +40,7 @@ app.use(expressWinston.logger({
     expressFormat: true,
     colorize: true
 }));
+
 
 app.use(cors(corsOptions));
 app.use(cookieParser());
