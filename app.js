@@ -18,8 +18,8 @@ let origin = config.cors.origin;
 
 if (origin.isArray) {
   const corsWhitelist = origin.split(' ');
-  origin = function (origin, callback) {
-      const originStatus = corsWhitelist.indexOf(origin) > -1;
+  origin = function (reqOrigin, callback) {
+      const originStatus = corsWhitelist.indexOf(reqOrigin) > -1;
       const errorMsg = originStatus ? null : 'CORS Error';
       callback(errorMsg, originStatus);
   };
