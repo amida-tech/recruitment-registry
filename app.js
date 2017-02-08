@@ -14,11 +14,10 @@ const app = express();
 
 const jsonParser = bodyParser.json();
 
-const corsWhitelist = config.cors.origin.split(' ');
-
 let origin = config.cors.origin;
 
 if (origin.isArray) {
+  const corsWhitelist = origin.split(' ');
   origin = function (origin, callback) {
       const originStatus = corsWhitelist.indexOf(origin) > -1;
       const errorMsg = originStatus ? null : 'CORS Error';
