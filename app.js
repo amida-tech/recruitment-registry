@@ -18,7 +18,7 @@ const corsWhitelist = config.cors.origin.split(' ');
 
 let origin = config.cors.origin;
 
-if (config.cors.origin.isArray) {
+if (origin.isArray) {
   origin = function (origin, callback) {
       const originStatus = corsWhitelist.indexOf(origin) > -1;
       const errorMsg = originStatus ? null : 'CORS Error';
