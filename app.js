@@ -33,11 +33,11 @@ const corsOptions = {
     credentials: true,
     origin: determineOrigin(origin),
     allowedheaders: [
-      'Accept',
-      'Content-Type',
-      'Authorization',
-      'X-Requested-With',
-      'X-HTTP-Allow-Override'
+        'Accept',
+        'Content-Type',
+        'Authorization',
+        'X-Requested-With',
+        'X-HTTP-Allow-Override'
     ]
 };
 
