@@ -6,6 +6,9 @@ module.exports = {
     jwt: {
         secret: 'this is a secret'
     },
+    cors: {
+      origin: '*'
+    },
     db: {
         name: 'recregtest',
     },

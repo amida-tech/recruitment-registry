@@ -13,14 +13,22 @@ const logger = require('./logger');
 const app = express();
 
 const jsonParser = bodyParser.json();
+
 const corsWhitelist = config.cors.origin.split(' ');
+
+let origin = config.cors.origin;
+
+if (config.cors.origin.isArray) {
+  origin = function (origin, callback) {
+      const originStatus = corsWhitelist.indexOf(origin) > -1;
+      const firstArg = originStatus ? null : 'CORS Error';
+      callback(firstArg, originStatus);
+  };
+}
+
 const corsOptions = {
     credentials: true,
-    origin: function (origin, callback) {
-        let originStatus = corsWhitelist.indexOf(origin) > -1;
-        let firstArg = originStatus ? null : 'CORS Error';
-        callback(firstArg, originStatus);
-    },
+    origin: origin,
     allowedheaders: [
         'Accept',
         'Content-Type',
