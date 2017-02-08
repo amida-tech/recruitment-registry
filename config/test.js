@@ -7,7 +7,7 @@ module.exports = {
         secret: 'this is a secret'
     },
     cors: {
-      origin: '*'
+        origin: '*'
     },
     db: {
         name: 'recregtest',

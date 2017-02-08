@@ -16,18 +16,22 @@ const jsonParser = bodyParser.json();
 
 let origin = config.cors.origin;
 
-if (origin.isArray) {
-  const corsWhitelist = origin.split(' ');
-  origin = function (reqOrigin, callback) {
-      const originStatus = corsWhitelist.indexOf(reqOrigin) > -1;
-      const errorMsg = originStatus ? null : 'CORS Error';
-      callback(errorMsg, originStatus);
-  };
+function determineOrigin(origin) {
+    if (origin === '*') {
+        return '*';
+    } else {
+        const corsWhitelist = origin.split(' ');
+        return function (requestOrigin, callback) {
+            const originStatus = corsWhitelist.indexOf(requestOrigin) > -1;
+            const errorMsg = originStatus ? null : 'CORS Error';
+            callback(errorMsg, originStatus);
+        };
+    }
 }
 
 const corsOptions = {
     credentials: true,
-    origin: origin,
+    origin: determineOrigin(origin),
     allowedheaders: [
         'Accept',
         'Content-Type',
