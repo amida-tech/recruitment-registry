@@ -13,14 +13,13 @@ const logger = require('./logger');
 const app = express();
 
 const jsonParser = bodyParser.json();
-
-let corsWhitelist = config.cors;
+const corsWhitelist = config.cors.origin.split(' ');
 const corsOptions = {
     credentials: true,
-    origin: function(origin, callback) {
-      let originStatus = corsWhitelist.indexOf(origin) > -1;
-      let firstArg = originStatus ? null : 'CORS Error';
-      callback(firstArg, originStatus);
+    origin: function (origin, callback) {
+        let originStatus = corsWhitelist.indexOf(origin) > -1;
+        let firstArg = originStatus ? null : 'CORS Error';
+        callback(firstArg, originStatus);
     },
     allowedheaders: [
         'Accept',
@@ -40,7 +39,6 @@ app.use(expressWinston.logger({
     expressFormat: true,
     colorize: true
 }));
-
 
 app.use(cors(corsOptions));
 app.use(cookieParser());
