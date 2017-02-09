@@ -14,9 +14,24 @@ const app = express();
 
 const jsonParser = bodyParser.json();
 
+let origin = config.cors.origin;
+
+function determineOrigin(origin) {
+    if (origin === '*') {
+        return '*';
+    } else {
+        const corsWhitelist = origin.split(' ');
+        return function (requestOrigin, callback) {
+            const originStatus = corsWhitelist.indexOf(requestOrigin) > -1;
+            const errorMsg = originStatus ? null : 'CORS Error';
+            callback(errorMsg, originStatus);
+        };
+    }
+}
+
 const corsOptions = {
     credentials: true,
-    origin: config.cors.origin,
+    origin: determineOrigin(origin),
     allowedheaders: [
         'Accept',
         'Content-Type',
