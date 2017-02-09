@@ -52,7 +52,7 @@ describe('user survey unit', function () {
     }
 
     for (let i = 0; i < surveyCount; ++i) {
-        it(`create survey ${i}`, surveyTests.createSurveyFn());
+        it(`create survey ${i}`, surveyTests.createSurveyFn({ noSection: true }));
         it(`get survey ${i}`, surveyTests.getSurveyFn(i));
     }
 

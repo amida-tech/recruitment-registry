@@ -78,6 +78,28 @@ class Generator {
         return questions.map(qx => this.answerQuestion(qx));
     }
 
+    getSectionQuestions(sections) {
+        const questions = [];
+        sections.forEach(section => {
+            if (section.questions) {
+                questions.push(...section.questions);
+                return;
+            }
+            const sectionQuestions = this.getSectionQuestions(section.sections);
+            questions.push(...sectionQuestions);
+        });
+        return questions;
+    }
+
+    answerSurvey(survey) {
+        let { sections, questions } = survey;
+        if (questions) {
+            return this.answerQuestions(questions);
+        }
+        questions = this.getSectionQuestions(sections);
+        return this.answerQuestions(questions);
+    }
+
     newConsentType() {
         const index = ++this.consentTypeIndex;
         return {

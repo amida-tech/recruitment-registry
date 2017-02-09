@@ -211,35 +211,6 @@ describe('survey unit', function () {
     it('list surveys (retired)', tests.listSurveysFn({ status: 'retired' }, 4));
     it('list surveys (draft)', tests.listSurveysFn({ status: 'draft' }, 2));
 
-    it('replace sections of first survey with sections', function () {
-        const index = _.findIndex(hxSurvey.listClients(), client => client.sections);
-        const survey = hxSurvey.server(index);
-        const count = survey.questions.length;
-        const newSectionCount = (count - count % 2) / 2;
-        const newSections = [{
-            name: 'new_section_0',
-            indices: _.range(newSectionCount)
-        }, {
-            name: 'new_section_1',
-            indices: _.rangeRight(newSectionCount, newSectionCount * 2)
-        }];
-        const clientSurvey = hxSurvey.client(index);
-        clientSurvey.sections = newSections;
-        hxSurvey.updateClient(index, clientSurvey);
-        return models.survey.replaceSurveySections(survey.id, newSections);
-    });
-
-    it('get/verify sections of first survey with sections', function () {
-        const index = _.findIndex(hxSurvey.listClients(), client => client.sections);
-        const id = hxSurvey.id(index);
-        return models.survey.getSurvey(id)
-            .then(survey => {
-                const clientSurvey = hxSurvey.client(index);
-                comparator.survey(clientSurvey, survey);
-                hxSurvey.updateServer(index, survey);
-            });
-    });
-
     it('error: show a non-existent survey', function () {
         return models.survey.getSurvey(999)
             .then(shared.throwingHandler, shared.expectedErrorHandler('surveyNotFound'));
@@ -249,6 +220,7 @@ describe('survey unit', function () {
         const survey = hxSurvey.server(1);
         const replacementSurvey = generator.newSurvey();
         delete replacementSurvey.questions;
+        delete replacementSurvey.sections;
         return models.survey.replaceSurvey(survey.id, replacementSurvey)
             .then(shared.throwingHandler, shared.expectedErrorHandler('surveyNoQuestions'));
     });
@@ -410,12 +382,21 @@ describe('survey unit', function () {
     it('list surveys', tests.listSurveysFn());
 
     it('extract existing questions', function () {
-        const surveys = hxSurvey.listServers(['status', 'questions']);
-        hxSurvey.questions = _.flatten(_.map(surveys, 'questions'));
+        const surveys = hxSurvey.listServers(['status', 'questions', 'sections']);
+
+        hxSurvey.questions = surveys.reduce((r, { questions, sections }) => {
+            if (sections) {
+                const questions = models.survey.flattenSectionsHieararchy(sections).questions;
+                r.push(...questions);
+            } else {
+                r.push(...questions);
+            }
+            return r;
+        }, []);
     });
 
     it('create survey by existing questions only', function () {
-        const survey = generator.newSurvey();
+        const survey = generator.newSurvey({ noSection: true });
         const questions = hxSurvey.questions.slice(0, 10);
         survey.questions = questions.map(({ id, required }) => ({ id, required }));
         return models.survey.createSurvey(survey)
@@ -430,7 +411,7 @@ describe('survey unit', function () {
     ++surveyCount;
 
     it('create survey by existing/new questions', function () {
-        const survey = generator.newSurvey();
+        const survey = generator.newSurvey({ noSection: true });
         const fn = index => ({ id: hxSurvey.questions[index].id, required: hxSurvey.questions[index].required });
         const additionalIds = [10, 11].map(fn);
         survey.questions.splice(1, 0, ...additionalIds);
@@ -494,7 +475,7 @@ describe('survey unit', function () {
     const answerVerifySurveyFn = function (surveyIndex) {
         return function () {
             const survey = hxSurvey.server(surveyIndex);
-            const answers = generator.answerQuestions(survey.questions);
+            const answers = generator.answerSurvey(survey);
             const input = {
                 userId: hxUser.id(0),
                 surveyId: survey.id,
@@ -510,7 +491,10 @@ describe('survey unit', function () {
 
     it('error: answer without required questions', function () {
         const survey = hxSurvey.server(4);
-        const qxs = survey.questions;
+        let qxs = survey.questions;
+        if (!qxs) {
+            qxs = models.survey.flattenSectionsHieararchy(survey.sections).questions;
+        }
         const answers = generator.answerQuestions(qxs);
         const input = {
             userId: hxUser.id(0),
@@ -540,7 +524,10 @@ describe('survey unit', function () {
         const userId = hxUser.id(0);
         return models.survey.getAnsweredSurvey(userId, survey.id)
             .then(answeredSurvey => {
-                const qxs = survey.questions;
+                let qxs = survey.questions;
+                if (!qxs) {
+                    qxs = models.survey.flattenSectionsHieararchy(survey.sections).questions;
+                }
                 const answers = generator.answerQuestions(qxs);
                 const input = {
                     userId: hxUser.id(0),
@@ -553,7 +540,11 @@ describe('survey unit', function () {
                 return models.answer.createAnswers(input)
                     .then(() => {
                         const removedQxId = qxs[requiredIndices[0]].id;
-                        const removedAnswer = answeredSurvey.questions.find(qx => (qx.id === removedQxId)).answer;
+                        let answeredSurveyQuestions = answeredSurvey.questions;
+                        if (!answeredSurveyQuestions) {
+                            answeredSurveyQuestions = models.survey.flattenSectionsHieararchy(answeredSurvey.sections).questions;
+                        }
+                        const removedAnswer = answeredSurveyQuestions.find(qx => (qx.id === removedQxId)).answer;
                         answers.push({ questionId: removedQxId, answer: removedAnswer });
                         return models.survey.getAnsweredSurvey(input.userId, input.surveyId)
                             .then(answeredSurvey => {

@@ -57,7 +57,7 @@ describe('survey consent integration', function () {
     it('verify profile survey (survey 0)', shared.verifyProfileSurveyFn(store, hxSurvey, 0));
 
     for (let i = 1; i < 7; ++i) {
-        it(`create survey ${i}`, surveyTests.createSurveyFn());
+        it(`create survey ${i}`, surveyTests.createSurveyFn(({ noSection: true })));
         it(`get survey ${i}`, surveyTests.getSurveyFn(i));
     }
 

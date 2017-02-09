@@ -43,6 +43,41 @@ module.exports = class SectionDAO extends Translatable {
             });
     }
 
+    bulkCreateFlattenedSectionsForSurveyTx(surveyId, surveyQuestionIds, flattenedSections, transaction) { // TODO: Use sequelize bulkCreate with 4.0
+        if (!flattenedSections.length) {
+            return SurveySection.destroy({ where: { surveyId }, transaction });
+        }
+        return SurveySection.destroy({ where: { surveyId }, transaction })
+            .then(() => {
+                return flattenedSections.reduce((r, { parentIndex, line, name, type }) => {
+                    const record = { name, surveyId, line, type, parentIndex };
+                    if (r === null) {
+                        return this.createSurveySectionTx(record, [], transaction);
+                    } else {
+                        return r.then(ids => this.createSurveySectionTx(record, ids, transaction));
+                    }
+                }, null);
+            })
+            .then((sectionIds => {
+                const promises = flattenedSections.reduce((r, { indices }, line) => {
+                    if (!indices) {
+                        return r;
+                    }
+                    const questionIds = indices.map(index => surveyQuestionIds[index]);
+                    if (questionIds) {
+                        const surveySectionId = sectionIds[line];
+                        questionIds.forEach(questionId => {
+                            const record = { surveySectionId, questionId, line };
+                            const promise = SurveySectionQuestion.create(record, { transaction });
+                            r.push(promise);
+                        });
+                    }
+                    return r;
+                }, []);
+                return SPromise.all(promises).then(() => sectionIds);
+            }));
+    }
+
     bulkCreateSectionsForSurveyTx(surveyId, surveyQuestionIds, sections, transaction) { // TODO: Use sequelize bulkCreate with 4.0
         const flattenedSections = flattenHiearachy(sections, surveyQuestionIds);
         if (!sections.length) {
@@ -77,7 +112,8 @@ module.exports = class SectionDAO extends Translatable {
             }));
     }
 
-    getSectionsForSurveyTx(surveyId, language) {
+    getSectionsForSurveyTx(surveyId, questions, language) {
+        const questionMap = new Map(questions.map(question => [question.id, question]));
         return SurveySection.findAll({
                 where: { surveyId },
                 raw: true,
@@ -102,14 +138,15 @@ module.exports = class SectionDAO extends Translatable {
                         const map = sections.reduce((r, section) => {
                             r[section.id] = section;
                             if (section.type === 'question') {
-                                section.questionIds = [];
+                                section.questions = [];
                             }
                             delete section.type;
                             return r;
                         }, {});
                         records.forEach(record => {
                             const section = map[record.surveySectionId];
-                            section.questionIds.push(record.questionId);
+                            const question = questionMap.get(record.questionId);
+                            section.questions.push(question);
                         });
                         return sections.reduce((r, section) => {
                             if (section.parentId) {
@@ -132,5 +169,9 @@ module.exports = class SectionDAO extends Translatable {
     updateMultipleSectionNamesTx(sections, language, transaction) {
         const inputs = sections.map(({ id, name }) => ({ id, name, language }));
         return this.createMultipleTextsTx(inputs, transaction);
+    }
+
+    deleteSurveySectionsTx(surveyId, transaction) {
+        return SurveySection.destroy({ where: { surveyId }, transaction });
     }
 };

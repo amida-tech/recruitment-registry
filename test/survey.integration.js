@@ -262,36 +262,6 @@ describe('survey integration', function () {
     it('list surveys (retired)', tests.listSurveysFn({ status: 'retired' }, 4));
     it('list surveys (draft)', tests.listSurveysFn({ status: 'draft' }, 2));
 
-    it('replace sections of first survey with sections', function (done) {
-        const index = _.findIndex(hxSurvey.listClients(), client => client.sections);
-        const survey = hxSurvey.server(index);
-        const count = survey.questions.length;
-        const newSectionCount = (count - count % 2) / 2;
-        const newSections = [{
-            name: 'new_section_0',
-            indices: _.range(newSectionCount)
-        }, {
-            name: 'new_section_1',
-            indices: _.rangeRight(newSectionCount, newSectionCount * 2)
-        }];
-        const clientSurvey = hxSurvey.client(index);
-        clientSurvey.sections = newSections;
-        hxSurvey.updateClient(index, clientSurvey);
-        store.patch(`/surveys/${survey.id}/sections`, newSections, 204).end(done);
-    });
-
-    it('get/verify sections of first survey with sections', function (done) {
-        const index = _.findIndex(hxSurvey.listClients(), client => client.sections);
-        const id = hxSurvey.id(index);
-        store.get(`/surveys/${id}`, true, 200)
-            .expect(function (res) {
-                hxSurvey.updateServer(index, res.body);
-                const clientSurvey = hxSurvey.client(index);
-                comparator.survey(clientSurvey, res.body);
-            })
-            .end(done);
-    });
-
     it('get survey 3 in spanish when no name translation', verifySurveyFn(3));
 
     it('list surveys in spanish when no translation', tests.listSurveysFn());
@@ -394,7 +364,7 @@ describe('survey integration', function () {
     it('login as user', shared.loginFn(store, user));
 
     it('answer survey', function (done) {
-        answers = generator.answerQuestions(hxSurvey.lastServer().questions);
+        answers = generator.answerSurvey(hxSurvey.lastServer());
         const surveyId = hxSurvey.lastId();
         store.post('/answers', { surveyId, answers }, 204).end(done);
     });

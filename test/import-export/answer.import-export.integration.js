@@ -39,7 +39,7 @@ describe('answer import-export integration', function () {
     }
 
     _.range(4).forEach(index => {
-        it(`create survey ${index}`, surveyTests.createSurveyFn());
+        it(`create survey ${index}`, surveyTests.createSurveyFn({ noSection: true }));
         it(`get survey ${index}`, surveyTests.getSurveyFn(index));
     });
 

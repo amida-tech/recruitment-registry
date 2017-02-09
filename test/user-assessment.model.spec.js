@@ -43,7 +43,7 @@ describe('user assessment unit', function () {
     });
 
     _.range(surveyCount).forEach(index => {
-        it(`create survey ${index}`, surveyTests.createSurveyFn());
+        it(`create survey ${index}`, surveyTests.createSurveyFn({ noSection: true }));
         it(`get survey ${index}`, surveyTests.getSurveyFn(index));
     });
 

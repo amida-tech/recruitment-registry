@@ -15,6 +15,7 @@ const Shared = require('./util/shared-integration');
 const RRError = require('../lib/rr-error');
 const comparator = require('./util/comparator');
 const translator = require('./util/translator');
+const surveyCommon = require('./util/survey-common');
 
 const expect = chai.expect;
 const generator = new Generator();
@@ -28,6 +29,7 @@ describe('user survey integration', function () {
     const hxUser = new History();
     const mapAnswers = new Map();
     const mapStatus = new Map();
+    const surveyTests = new surveyCommon.SpecTests(generator, hxSurvey);
 
     const store = new RRSuperTest();
 
@@ -58,23 +60,10 @@ describe('user survey integration', function () {
         it(`logout as user ${i}`, shared.logoutFn(store));
     }
 
-    const verifySurveyFn = function (index) {
-        return function (done) {
-            const surveyId = hxSurvey.id(index);
-            store.get(`/surveys/${surveyId}`, true, 200)
-                .expect(function (res) {
-                    const survey = res.body;
-                    hxSurvey.updateServer(index, survey);
-                    comparator.survey(hxSurvey.client(index), survey);
-                })
-                .end(done);
-        };
-    };
-
     it('login as super', shared.loginFn(store, config.superUser));
     for (let i = 0; i < surveyCount; ++i) {
-        it(`create survey ${i}`, shared.createSurveyFn(store, hxSurvey));
-        it(`get/verify survey ${i}`, verifySurveyFn(i));
+        it(`create survey ${i}`, surveyTests.createSurveyFn({ noSection: true }));
+        it(`get survey ${i}`, surveyTests.getSurveyFn(i));
     }
     it('logout as super', shared.logoutFn(store));
 

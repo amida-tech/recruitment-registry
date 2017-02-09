@@ -7,6 +7,20 @@ const expect = chai.expect;
 
 let enumerationMap;
 
+const getQuestionsMap = function getQuestionsMap({ questions, sections }, list) {
+    if (!list) {
+        list = [];
+    }
+    if (questions) {
+        questions.forEach(question => list.push(question));
+        return list;
+    }
+    sections.forEach(section => {
+        getQuestionsMap(section, list);
+    });
+    return list;
+};
+
 const comparator = {
     question(client, server, options = {}) {
         const id = server.id;
@@ -121,16 +135,18 @@ const comparator = {
         expect(client.length).to.equal(server.length);
         return client.map((question, index) => this.question(question, server[index], options));
     },
-    surveySections(clientSections, serverSections, server) {
+    surveySections(clientSections, serverSections, options) {
         expect(serverSections.length).to.equal(clientSections.length);
         clientSections.forEach((section, index) => {
-            section.id = serverSections[index].id;
-            if (section.indices) {
-                section.questionIds = section.indices.map(questionIndex => server.questions[questionIndex].id);
-                delete section.indices;
+            const serverSection = serverSections[index];
+            section.id = serverSection.id;
+            expect(section.name).to.equal(serverSection.name);
+            expect((section.sections && serverSection.sections) || (section.questions && serverSection.questions));
+            if (section.questions) {
+                section.questions = this.questions(section.questions, serverSection.questions, options);
             }
             if (section.sections) {
-                this.surveySections(section.sections, serverSections[index].sections, server);
+                this.surveySections(section.sections, serverSection.sections, options);
             }
         });
     },
@@ -144,18 +160,21 @@ const comparator = {
         if (!expected.status) {
             expected.status = 'published';
         }
-        if (client.sections || server.sections) {
-            this.surveySections(expected.sections, server.sections, server);
-            expect(server.sections).to.deep.equal(expected.sections);
+        expect((client.sections && server.sections) || (client.questions && server.questions));
+        expect(!((client.sections && client.questions) || (server.sections && server.questions)));
+        if (client.sections) {
+            this.surveySections(expected.sections, server.sections, options);
+        } else {
+            expected.questions = this.questions(expected.questions, server.questions, options);
         }
-        expected.questions = this.questions(expected.questions, server.questions, options);
         expect(server).to.deep.equal(expected);
     },
     answeredSurvey(survey, answers, serverAnsweredSurvey, language) {
         const expected = _.cloneDeep(survey);
         const answerMap = new Map();
         answers.forEach(({ questionId, answer, answers, language }) => answerMap.set(questionId, { answer, answers, language }));
-        expected.questions.forEach(qx => {
+        const surveyQuestions = getQuestionsMap(expected);
+        surveyQuestions.forEach(qx => {
             const clientAnswers = answerMap.get(qx.id);
             if (clientAnswers) {
                 if (qx.multiple) {

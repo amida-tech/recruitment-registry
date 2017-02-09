@@ -88,18 +88,21 @@ const removeSectionIds = function removeSectionIds(sections) {
 
 const formQuestionsSectionsSurveyPatch = function (survey, { questions, sections }) {
     const surveyPatch = { forceQuestions: true };
-    surveyPatch.questions = questions.map(({ id, required }) => ({ id, required }));
-    survey.questions = questions;
     if (sections) {
         sections = _.cloneDeep(sections);
         removeSectionIds(sections);
         surveyPatch.sections = sections;
         survey.sections = sections;
-    } else if (survey.sections) {
-        surveyPatch.sections = [];
-        delete survey.sections;
+        delete survey.questions;
+        return surveyPatch;
     }
-    return surveyPatch;
+    if (questions) {
+        surveyPatch.questions = questions.map(({ id, required }) => ({ id, required }));
+        survey.questions = questions;
+        delete survey.sections;
+        return surveyPatch;
+    }
+    throw new Error('Surveys should have either sections or questions.');
 };
 
 const SpecTests = class SurveySpecTests {

@@ -40,7 +40,7 @@ describe('survey (conditional questions) unit', function () {
 
     _.range(errenousSurveyGenerator.numOfCases()).forEach(index => {
         it(`error: create errenous survey ${index}`, function () {
-            const survey = errenousSurveyGenerator.newSurvey();
+            const survey = errenousSurveyGenerator.newSurvey({ noSection: true });
             const { code, params, apiOverride } = errenousSurveyGenerator.expectedError(index);
             if (apiOverride) {
                 return new SPromise(function (resolve, reject) {
@@ -62,7 +62,7 @@ describe('survey (conditional questions) unit', function () {
     });
 
     _.range(surveyCount).forEach(index => {
-        it(`create survey ${index}`, tests.createSurveyFn());
+        it(`create survey ${index}`, tests.createSurveyFn({ noSection: true }));
         it(`get survey ${index}`, tests.getSurveyFn(index));
     });
 
