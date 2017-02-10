@@ -11,7 +11,7 @@ module.exports = {
         required: true,
         type: 'choice-ref',
         answerIdentifier: { type: 'sports-column', value: 'QID1' },
-        enumeration: 'count-0-8-plus'
+        choiceSetReference: 'count-0-8-plus'
     }, {
         text: 'What types of sports do you frequently watch?',
         instruction: 'Check all that apply',
@@ -41,7 +41,7 @@ module.exports = {
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'sports-column', value: 'QID3' },
-        enumeration: 'count-0-8-plus'
+        choiceSetReference: 'count-0-8-plus'
     }, {
         text: 'What types of beverages do you usually drink while watching sports?',
         required: false,

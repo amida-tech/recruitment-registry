@@ -11,13 +11,13 @@ module.exports = {
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'employment-history', value: 'QID1' },
-        enumeration: 'condition'
+        choiceSetReference: 'condition'
     }, {
         text: 'What is the field of your current job?',
         required: true,
         type: 'choice-ref',
         answerIdentifier: { type: 'employment-history', value: 'QID2' },
-        enumeration: 'primary-occupation',
+        choiceSetReference: 'primary-occupation',
         skip: {
             count: 1,
             rule: {

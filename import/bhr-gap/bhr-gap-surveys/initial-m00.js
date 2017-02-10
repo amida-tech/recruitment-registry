@@ -11,79 +11,79 @@ module.exports = {
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-initial-m00-column', value: 'QID38' },
-        enumeration: 'frequency-dwm'
+        choiceSetReference: 'frequency-dwm'
     }, {
         text: 'How confident are you with computers?',
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-initial-m00-column', value: 'QID39' },
-        enumeration: 'confidence-computer'
+        choiceSetReference: 'confidence-computer'
     }, {
         text: 'Have you, your sibling(s), or parent(s) ever been diagnosed with Alzheimer\'s Disease?',
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-initial-m00-column', value: 'QID4' },
-        enumeration: 'yes-no-1-2'
+        choiceSetReference: 'yes-no-1-2'
     }, {
         text: 'Are you concerned that you have a memory problem?',
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-initial-m00-column', value: 'QID2' },
-        enumeration: 'yes-no-1-2'
+        choiceSetReference: 'yes-no-1-2'
     }, {
         text: 'Do you have trouble remembering if you have already told someone something?',
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-initial-m00-column', value: 'QID3' },
-        enumeration: 'yes-no-1-2'
+        choiceSetReference: 'yes-no-1-2'
     }, {
         text: 'Compared to 10 years ago, would you say there has been a change in your memory?',
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-initial-m00-column', value: 'QID5' },
-        enumeration: 'yes-no-1-2'
+        choiceSetReference: 'yes-no-1-2'
     }, {
         text: 'In general, would you say your health is:',
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-initial-m00-column', value: 'QID20' },
-        enumeration: 'condition'
+        choiceSetReference: 'condition'
     }, {
         text: 'Compared to one year ago, how would you rate your health in general now?',
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-initial-m00-column', value: 'QID7' },
-        enumeration: 'comparative-condition'
+        choiceSetReference: 'comparative-condition'
     }, {
         text: 'Are you in good spirits most of the time?',
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-initial-m00-column', value: 'QID8' },
-        enumeration: 'yes-no-1-2'
+        choiceSetReference: 'yes-no-1-2'
     }, {
         text: 'Have you dropped many of your activities and interests?',
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-initial-m00-column', value: 'QID21' },
-        enumeration: 'yes-no-1-2'
+        choiceSetReference: 'yes-no-1-2'
     }, {
         text: 'During the past month, did you experience any sleep problems?',
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-initial-m00-column', value: 'QID10' },
-        enumeration: 'yes-no-1-2'
+        choiceSetReference: 'yes-no-1-2'
     }, {
         text: 'During the past month, did you take any sleep medications?',
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-initial-m00-column', value: 'QID11' },
-        enumeration: 'yes-no-1-2'
+        choiceSetReference: 'yes-no-1-2'
     }, {
         text: 'Please indicate whether you currently have or had experienced alcohol abuse in the past.',
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-initial-m00-column', value: 'QID22' },
-        enumeration: 'yes-no-1-3',
+        choiceSetReference: 'yes-no-1-3',
         skip: {
             count: 1,
             rule: {
@@ -102,25 +102,25 @@ module.exports = {
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-initial-m00-column', value: 'QID12' },
-        enumeration: 'drinks-per-day'
+        choiceSetReference: 'drinks-per-day'
     }, {
         text: 'Do you have hypertension (high blood pressure)?',
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-initial-m00-column', value: 'QID13' },
-        enumeration: 'yes-no-1-2'
+        choiceSetReference: 'yes-no-1-2'
     }, {
         text: 'Do you have diabetes?',
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-initial-m00-column', value: 'QID14' },
-        enumeration: 'yes-no-1-2'
+        choiceSetReference: 'yes-no-1-2'
     }, {
         text: 'Please indicate whether you currently have or had experienced drug abuse in the past.',
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-initial-m00-column', value: 'QID24' },
-        enumeration: 'yes-no-1-3'
+        choiceSetReference: 'yes-no-1-3'
     }, {
         text: 'How long has it been in years since you stopped the drug abuse? If you still abuse drugs please write 0.',
         required: false,

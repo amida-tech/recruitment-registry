@@ -2881,7 +2881,7 @@
                     "type": "integer",
                     "minimum": 1
                 },
-                "enumeration": {
+                "choiceSetReference": {
                     "type": "string",
                     "minLength": 1
                 },
@@ -3397,7 +3397,7 @@
         },
         "choiceType": {
             "type": "string",
-            "enum": ["bool", "bool-sole", "text", "year", "month", "day", "integer", "float", "date", "pounds", "zip", "feet-inches", "blood-pressure", "enumeration"]
+            "enum": ["bool", "bool-sole", "text", "year", "month", "day", "integer", "float", "date", "pounds", "zip", "feet-inches", "blood-pressure"]
         },
         "surveyStatus": {
             "type": "string",
@@ -3818,7 +3818,7 @@
                     "type": "integer",
                     "minimum": 1
                 },
-                "enumeration": {
+                "choiceSetReference": {
                     "type": "string",
                     "minLength": 1
                 },

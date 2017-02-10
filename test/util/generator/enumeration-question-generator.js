@@ -20,7 +20,7 @@ module.exports = class EnumerationQuestionGenerator extends QuestionGenerator {
         }
         if (layoutIndex === 1) {
             const result = this.newBody('choice-ref');
-            result.enumeration = enumerationInfo.reference;
+            result.choiceSetReference = enumerationInfo.reference;
             return result;
         }
         return null;

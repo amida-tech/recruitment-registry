@@ -36,9 +36,9 @@ const comparator = {
             expected.choices = enumerationMap.get(expected.enumerationId);
             delete expected.enumerationId;
         }
-        if (expected.enumeration) {
-            expected.choices = enumerationMap.get(expected.enumeration);
-            delete expected.enumeration;
+        if (expected.choiceSetReference) {
+            expected.choices = enumerationMap.get(expected.choiceSetReference);
+            delete expected.choiceSetReference;
         }
         if (!expected.id) {
             expected.id = id;

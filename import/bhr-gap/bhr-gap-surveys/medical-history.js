@@ -6,7 +6,7 @@ const extendedYesNoQuestion = function (identifier, text) {
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-medical-history-column', value: identifier },
-        enumeration: 'extended-yes-no'
+        choiceSetReference: 'extended-yes-no'
     };
 };
 
@@ -16,7 +16,7 @@ const yesNoQuestion = function (identifier, text) {
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-medical-history-column', value: identifier },
-        enumeration: 'yes-no-1-2'
+        choiceSetReference: 'yes-no-1-2'
     };
 };
 
@@ -31,151 +31,151 @@ module.exports = {
         questions: [{
             answerIdentifier: { type: 'bhr-gap-medical-history-column', value: 'QID1_1' },
             type: 'choice-ref',
-            enumeration: 'yes-no-1-2',
+            choiceSetReference: 'yes-no-1-2',
             required: false,
             text: 'Parkinson\'s disease'
         }, {
             answerIdentifier: { type: 'bhr-gap-medical-history-column', value: 'QID1_2' },
             type: 'choice-ref',
-            enumeration: 'yes-no-1-2',
+            choiceSetReference: 'yes-no-1-2',
             required: false,
             text: 'Movement disorder'
         }, {
             answerIdentifier: { type: 'bhr-gap-medical-history-column', value: 'QID1_3' },
             type: 'choice-ref',
-            enumeration: 'yes-no-1-2',
+            choiceSetReference: 'yes-no-1-2',
             required: false,
             text: 'Stroke'
         }, {
             answerIdentifier: { type: 'bhr-gap-medical-history-column', value: 'QID1_4' },
             type: 'choice-ref',
-            enumeration: 'yes-no-1-2',
+            choiceSetReference: 'yes-no-1-2',
             required: false,
             text: 'Motor neuron disease'
         }, {
             answerIdentifier: { type: 'bhr-gap-medical-history-column', value: 'QID1_5' },
             type: 'choice-ref',
-            enumeration: 'yes-no-1-2',
+            choiceSetReference: 'yes-no-1-2',
             required: false,
             text: 'Dementia'
         }, {
             answerIdentifier: { type: 'bhr-gap-medical-history-column', value: 'QID1_6' },
             type: 'choice-ref',
-            enumeration: 'yes-no-1-2',
+            choiceSetReference: 'yes-no-1-2',
             required: false,
             text: 'Heart disease'
         }, {
             answerIdentifier: { type: 'bhr-gap-medical-history-column', value: 'QID1_7' },
             type: 'choice-ref',
-            enumeration: 'yes-no-1-2',
+            choiceSetReference: 'yes-no-1-2',
             required: false,
             text: 'High blood pressure'
         }, {
             answerIdentifier: { type: 'bhr-gap-medical-history-column', value: 'QID1_8' },
             type: 'choice-ref',
-            enumeration: 'yes-no-1-2',
+            choiceSetReference: 'yes-no-1-2',
             required: false,
             text: 'High cholesterol'
         }, {
             answerIdentifier: { type: 'bhr-gap-medical-history-column', value: 'QID1_9' },
             type: 'choice-ref',
-            enumeration: 'yes-no-1-2',
+            choiceSetReference: 'yes-no-1-2',
             required: false,
             text: 'Diabetes'
         }, {
             answerIdentifier: { type: 'bhr-gap-medical-history-column', value: 'QID1_10', },
             type: 'choice-ref',
-            enumeration: 'yes-no-1-2',
+            choiceSetReference: 'yes-no-1-2',
             required: false,
             text: 'Cancer'
         }, {
             answerIdentifier: { type: 'bhr-gap-medical-history-column', value: 'QID1_12', },
             type: 'choice-ref',
-            enumeration: 'yes-no-1-2',
+            choiceSetReference: 'yes-no-1-2',
             required: false,
             text: 'Alzheimer\'s Disease'
         }, {
             answerIdentifier: { type: 'bhr-gap-medical-history-column', value: 'QID1_13', },
             type: 'choice-ref',
-            enumeration: 'yes-no-1-2',
+            choiceSetReference: 'yes-no-1-2',
             required: false,
             text: 'Mild Cognitive Impairment'
         }, {
             answerIdentifier: { type: 'bhr-gap-medical-history-column', value: 'QID1_14', },
             type: 'choice-ref',
-            enumeration: 'yes-no-1-2',
+            choiceSetReference: 'yes-no-1-2',
             required: false,
             text: 'Traumatic Brain Injury'
         }, {
             answerIdentifier: { type: 'bhr-gap-medical-history-column', value: 'QID1_15', },
             type: 'choice-ref',
-            enumeration: 'yes-no-1-2',
+            choiceSetReference: 'yes-no-1-2',
             required: false,
             text: 'Lung Disease'
         }, {
             answerIdentifier: { type: 'bhr-gap-medical-history-column', value: 'QID1_16', },
             type: 'choice-ref',
-            enumeration: 'yes-no-1-2',
+            choiceSetReference: 'yes-no-1-2',
             required: false,
             text: 'Asthma'
         }, {
             answerIdentifier: { type: 'bhr-gap-medical-history-column', value: 'QID1_17', },
             type: 'choice-ref',
-            enumeration: 'yes-no-1-2',
+            choiceSetReference: 'yes-no-1-2',
             required: false,
             text: 'Arthritis'
         }, {
             answerIdentifier: { type: 'bhr-gap-medical-history-column', value: 'QID1_18', },
             type: 'choice-ref',
-            enumeration: 'yes-no-1-2',
+            choiceSetReference: 'yes-no-1-2',
             required: false,
             text: 'Concussion'
         }, {
             answerIdentifier: { type: 'bhr-gap-medical-history-column', value: 'QID1_19', },
             type: 'choice-ref',
-            enumeration: 'yes-no-1-2',
+            choiceSetReference: 'yes-no-1-2',
             required: false,
             text: 'Epilepsy or Seizures'
         }, {
             answerIdentifier: { type: 'bhr-gap-medical-history-column', value: 'QID1_20', },
             type: 'choice-ref',
-            enumeration: 'yes-no-1-2',
+            choiceSetReference: 'yes-no-1-2',
             required: false,
             text: 'Hearing Loss'
         }, {
             answerIdentifier: { type: 'bhr-gap-medical-history-column', value: 'QID1_21', },
             type: 'choice-ref',
-            enumeration: 'yes-no-1-2',
+            choiceSetReference: 'yes-no-1-2',
             required: false,
             text: 'Multiple Sclerosis (MS)'
         }, {
             answerIdentifier: { type: 'bhr-gap-medical-history-column', value: 'QID1_22', },
             type: 'choice-ref',
-            enumeration: 'yes-no-1-2',
+            choiceSetReference: 'yes-no-1-2',
             required: false,
             text: 'Frontotemporal Dementia (FTD)'
         }, {
             answerIdentifier: { type: 'bhr-gap-medical-history-column', value: 'QID1_23', },
             type: 'choice-ref',
-            enumeration: 'yes-no-1-2',
+            choiceSetReference: 'yes-no-1-2',
             required: false,
             text: 'Lewy Body Disease (LBD)'
         }, {
             answerIdentifier: { type: 'bhr-gap-medical-history-column', value: 'QID1_24', },
             type: 'choice-ref',
-            enumeration: 'yes-no-1-2',
+            choiceSetReference: 'yes-no-1-2',
             required: false,
             text: 'Essential Tremor'
         }, {
             answerIdentifier: { type: 'bhr-gap-medical-history-column', value: 'QID1_25', },
             type: 'choice-ref',
-            enumeration: 'yes-no-1-2',
+            choiceSetReference: 'yes-no-1-2',
             required: false,
             text: 'Huntington\'s disease'
         }, {
             answerIdentifier: { type: 'bhr-gap-medical-history-column', value: 'QID1_26', },
             type: 'choice-ref',
-            enumeration: 'yes-no-1-2',
+            choiceSetReference: 'yes-no-1-2',
             required: false,
             text: 'Amyotrophic lateral sclerosis (ALS)'
         }]
@@ -186,13 +186,13 @@ module.exports = {
                 type: 'choice-ref',
                 required: false,
                 answerIdentifier: { type: 'bhr-gap-medical-history-column', value: 'QID33' },
-                enumeration: 'yes-no-decline'
+                choiceSetReference: 'yes-no-decline'
             }, {
                 text: 'Please indicate whether you currently have or had experienced alcohol abuse in the past.',
                 required: false,
                 type: 'choice-ref',
                 answerIdentifier: { type: 'bhr-gap-medical-history-column', value: 'QID9' },
-                enumeration: 'yes-no-1-2',
+                choiceSetReference: 'yes-no-1-2',
                 skip: {
                     count: 3,
                     rule: {
@@ -221,7 +221,7 @@ module.exports = {
                 required: false,
                 type: 'choice-ref',
                 answerIdentifier: { type: 'bhr-gap-medical-history-column', value: 'QID17' },
-                enumeration: 'yes-no-1-2',
+                choiceSetReference: 'yes-no-1-2',
                 skip: {
                     count: 2,
                     rule: {
@@ -244,7 +244,7 @@ module.exports = {
                 required: false,
                 type: 'choice-ref',
                 answerIdentifier: { type: 'bhr-gap-medical-history-column', value: 'QID20' },
-                enumeration: 'yes-no-1-2',
+                choiceSetReference: 'yes-no-1-2',
                 skip: {
                     count: 2,
                     rule: {
@@ -272,7 +272,7 @@ module.exports = {
                 required: false,
                 type: 'choice-ref',
                 answerIdentifier: { type: 'bhr-gap-medical-history-column', value: 'QID2' },
-                enumeration: 'yes-no-1-2',
+                choiceSetReference: 'yes-no-1-2',
                 skip: {
                     count: 2,
                     rule: {
@@ -290,13 +290,13 @@ module.exports = {
                 required: false,
                 type: 'choice-ref',
                 answerIdentifier: { type: 'bhr-gap-medical-history-column', value: 'QID4' },
-                enumeration: 'yes-no-1-2',
+                choiceSetReference: 'yes-no-1-2',
             }, {
                 text: 'Do you have allergies?',
                 required: false,
                 type: 'choice-ref',
                 answerIdentifier: { type: 'bhr-gap-medical-history-column', value: 'QID6' },
-                enumeration: 'yes-no-1-2',
+                choiceSetReference: 'yes-no-1-2',
                 skip: {
                     count: 1,
                     rule: {

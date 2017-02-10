@@ -22,7 +22,7 @@ module.exports = {
             required: true,
             type: 'choice-ref',
             answerIdentifier: { type: 'television-column', value: 'QID2' },
-            enumeration: 'yes-no-1-2',
+            choiceSetReference: 'yes-no-1-2',
             skip: {
                 count: 2,
                 rule: {
@@ -61,7 +61,7 @@ module.exports = {
             text: 'Are you currently happy with your televisions?',
             required: false,
             type: 'choice-ref',
-            enumeration: 'yes-no-1-2',
+            choiceSetReference: 'yes-no-1-2',
             answerIdentifier: { type: 'television-column', value: 'QID5' },
             skip: {
                 count: 1,
@@ -87,25 +87,25 @@ module.exports = {
             text: 'Basketball',
             type: 'choice-ref',
             required: false,
-            enumeration: 'count-0-3-plus',
+            choiceSetReference: 'count-0-3-plus',
             answerIdentifier: { type: 'television-column', value: 'QID7_1' }
         }, {
             text: 'Footbal',
             type: 'choice-ref',
             required: false,
-            enumeration: 'count-0-3-plus',
+            choiceSetReference: 'count-0-3-plus',
             answerIdentifier: { type: 'television-column', value: 'QID7_2' }
         }, {
             text: 'Baseball',
             type: 'choice-ref',
             required: false,
-            enumeration: 'count-0-3-plus',
+            choiceSetReference: 'count-0-3-plus',
             answerIdentifier: { type: 'television-column', value: 'QID7_3' }
         }, {
             text: 'Ice Hockey',
             type: 'choice-ref',
             required: false,
-            enumeration: 'count-0-3-plus',
+            choiceSetReference: 'count-0-3-plus',
             answerIdentifier: { type: 'television-column', value: 'QID7_4' }
         }]
     }]

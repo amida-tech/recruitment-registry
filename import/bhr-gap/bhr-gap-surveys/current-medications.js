@@ -22,7 +22,7 @@ module.exports = {
         required: true,
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-current-meds-column', value: 'QID6' },
-        enumeration: 'yes-no-1-2',
+        choiceSetReference: 'yes-no-1-2',
         skip: {
             count: 2,
             rule: {
@@ -61,7 +61,7 @@ module.exports = {
         text: 'Are you currently taking any vitamins or supplements?',
         required: false,
         type: 'choice-ref',
-        enumeration: 'yes-no-1-2',
+        choiceSetReference: 'yes-no-1-2',
         answerIdentifier: { type: 'bhr-gap-current-meds-column', value: 'QID10' },
         skip: {
             count: 1,

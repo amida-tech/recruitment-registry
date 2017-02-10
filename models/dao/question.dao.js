@@ -65,16 +65,16 @@ module.exports = class QuestionDAO extends Translatable {
         return SPromise.all(pxs);
     }
 
-    updateEnumeration(enumeration, transaction) {
-        if (enumeration) {
-            return this.enumeration.getEnumerationIdByReference(enumeration, transaction);
+    updateEnumeration(choiceSetReference, transaction) {
+        if (choiceSetReference) {
+            return this.enumeration.getEnumerationIdByReference(choiceSetReference, transaction);
         } else {
             return SPromise.resolve(null);
         }
     }
 
     createQuestionTx(question, transaction) {
-        return this.updateEnumeration(question.enumeration, transaction)
+        return this.updateEnumeration(question.choiceSetReference, transaction)
             .then(enumerationId => {
                 const baseFields = _.omit(question, ['oneOfChoices', 'choices', 'actions']);
                 if (enumerationId) {

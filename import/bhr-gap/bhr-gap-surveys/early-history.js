@@ -6,7 +6,7 @@ const yesNoQuestion = function (identifier, text) {
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-early-history-column', value: identifier },
-        enumeration: 'yes-no-1-2'
+        choiceSetReference: 'yes-no-1-2'
     };
 };
 

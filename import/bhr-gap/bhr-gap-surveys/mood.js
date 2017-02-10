@@ -6,7 +6,7 @@ const yes0No1Question = function (identifier, text) {
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-mood-column', value: identifier },
-        enumeration: 'yes-no-0-1'
+        choiceSetReference: 'yes-no-0-1'
     };
 };
 
@@ -16,7 +16,7 @@ const yes1No0Question = function (identifier, text) {
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-mood-column', value: identifier },
-        enumeration: 'yes-no-1-0'
+        choiceSetReference: 'yes-no-1-0'
     };
 };
 
@@ -26,7 +26,7 @@ const difficultQuestion = function (identifier, text) {
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-mood-column', value: identifier },
-        enumeration: 'difficulty-level'
+        choiceSetReference: 'difficulty-level'
     };
 };
 
@@ -61,55 +61,55 @@ module.exports = {
             answerIdentifier: { type: 'bhr-gap-mood-column', value: 'Q21_1' },
             type: 'choice-ref',
             required: false,
-            enumeration: 'frequency-daily',
+            choiceSetReference: 'frequency-daily',
             text: 'a. Little interest or pleasure in doing things'
         }, {
             answerIdentifier: { type: 'bhr-gap-mood-column', value: 'Q21_2' },
             type: 'choice-ref',
             required: false,
-            enumeration: 'frequency-daily',
+            choiceSetReference: 'frequency-daily',
             text: 'b. Feeling down, depressed, or hopeless'
         }, {
             answerIdentifier: { type: 'bhr-gap-mood-column', value: 'Q21_3' },
             type: 'choice-ref',
             required: false,
-            enumeration: 'frequency-daily',
+            choiceSetReference: 'frequency-daily',
             text: 'c. Trouble falling asleep, staying asleep, or sleeping too much'
         }, {
             answerIdentifier: { type: 'bhr-gap-mood-column', value: 'Q21_4' },
             type: 'choice-ref',
             required: false,
-            enumeration: 'frequency-daily',
+            choiceSetReference: 'frequency-daily',
             text: 'd. Feeling tired or having little energy'
         }, {
             answerIdentifier: { type: 'bhr-gap-mood-column', value: 'Q21_5' },
             type: 'choice-ref',
             required: false,
-            enumeration: 'frequency-daily',
+            choiceSetReference: 'frequency-daily',
             text: 'e. Poor appetite or overeating'
         }, {
             answerIdentifier: { type: 'bhr-gap-mood-column', value: 'Q21_6' },
             type: 'choice-ref',
             required: false,
-            enumeration: 'frequency-daily',
+            choiceSetReference: 'frequency-daily',
             text: 'f. Feeling bad about yourself, feeling that you are a failure, or feeling that you have let yourself or your family down'
         }, {
             answerIdentifier: { type: 'bhr-gap-mood-column', value: 'Q21_7' },
             type: 'choice-ref',
             required: false,
-            enumeration: 'frequency-daily',
+            choiceSetReference: 'frequency-daily',
             text: 'g. Trouble concentrating on things such as reading the newspaper or watching television'
         }, {
             answerIdentifier: { type: 'bhr-gap-mood-column', value: 'Q21_8' },
             type: 'choice-ref',
             required: false,
-            enumeration: 'frequency-daily',
+            choiceSetReference: 'frequency-daily',
             text: 'h. Moving or speaking so slowly that other people could have noticed. Or being so fidgety or restless that you have been moving around a lot more than usual'
         }, {
             answerIdentifier: { type: 'bhr-gap-mood-column', value: 'Q21_9' },
             type: 'choice-ref',
             required: false,
-            enumeration: 'frequency-daily',
+            choiceSetReference: 'frequency-daily',
             text: 'i. Thinking that you would be better off dead or that you want to hurt yourself in some way'
         }]
     }, {

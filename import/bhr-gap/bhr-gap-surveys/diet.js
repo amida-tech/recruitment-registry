@@ -11,31 +11,31 @@ module.exports = {
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-diet-column', value: 'QID161' },
-        enumeration: 'count-0-5-plus'
+        choiceSetReference: 'count-0-5-plus'
     }, {
         text: 'How many snacks do you eat each day?',
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-diet-column', value: 'QID167' },
-        enumeration: 'count-0-10-plus'
+        choiceSetReference: 'count-0-10-plus'
     }, {
         text: 'How many times a week do you eat breakfast away from home?',
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-diet-column', value: 'QID168' },
-        enumeration: 'count-0-7'
+        choiceSetReference: 'count-0-7'
     }, {
         text: 'How many times a week do you eat lunch away from home?',
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-diet-column', value: 'QID170' },
-        enumeration: 'count-0-7'
+        choiceSetReference: 'count-0-7'
     }, {
         text: 'How many times a week do you eat dinner away from home?',
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-diet-column', value: 'QID171' },
-        enumeration: 'count-0-7'
+        choiceSetReference: 'count-0-7'
     }, {
         text: 'What types of eating places do you frequently visit?',
         instruction: 'Check all that apply',
@@ -64,55 +64,55 @@ module.exports = {
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-diet-column', value: 'QID172' },
-        enumeration: 'count-0-5-plus'
+        choiceSetReference: 'count-0-5-plus'
     }, {
         text: 'On average, how many glasses of juice do you drink each day?',
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-diet-column', value: 'QID173' },
-        enumeration: 'count-0-5-plus'
+        choiceSetReference: 'count-0-5-plus'
     }, {
         text: 'On average, how many servings of vegetables do you eat each day?',
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-diet-column', value: 'QID131' },
-        enumeration: 'count-0-8-plus'
+        choiceSetReference: 'count-0-8-plus'
     }, {
         text: 'On average, how many times a week do you eat a high-fiber breakfast cereal?',
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-diet-column', value: 'QID132' },
-        enumeration: 'count-0-10-plus'
+        choiceSetReference: 'count-0-10-plus'
     }, {
         text: 'How many times a week do you eat red meat (beef, lamb, veal) or pork?',
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-diet-column', value: 'QID133' },
-        enumeration: 'count-0-20-plus'
+        choiceSetReference: 'count-0-20-plus'
     }, {
         text: 'How many times a week do you eat chicken or turkey?',
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-diet-column', value: 'QID165' },
-        enumeration: 'count-0-20-plus'
+        choiceSetReference: 'count-0-20-plus'
     }, {
         text: 'How many times a week do you eat fish or shellfish?',
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-diet-column', value: 'QID166' },
-        enumeration: 'count-0-20-plus'
+        choiceSetReference: 'count-0-20-plus'
     }, {
         text: 'How many hours of television do you watch every day?',
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-diet-column', value: 'QID136' },
-        enumeration: 'count-0-12-plus'
+        choiceSetReference: 'count-0-12-plus'
     }, {
         text: 'Do you usually snack while watching television?',
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-diet-column', value: 'QID137' },
-        enumeration: 'yes-no-1-2'
+        choiceSetReference: 'yes-no-1-2'
     }, {
         text: 'How many times a week do you eat desserts and sweets?',
         required: false,
