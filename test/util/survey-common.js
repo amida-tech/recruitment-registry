@@ -20,7 +20,7 @@ const formAnswersToPost = function (survey, answersSpec) {
                 entry.answer.choices = spec.choices.map(function (cindex) {
                     const { id } = questions[index].choices[cindex.index];
                     const result = { id };
-                    const numValues = ['textValue', 'monthValue', 'yearValue', 'dayValue', 'integerValue', 'boolValue'].reduce((r, p) => {
+                    const numValues = ['textValue', 'code', 'monthValue', 'yearValue', 'dayValue', 'integerValue', 'boolValue'].reduce((r, p) => {
                         if (cindex.hasOwnProperty(p)) {
                             ++r;
                             result[p] = cindex[p];
@@ -88,18 +88,21 @@ const removeSectionIds = function removeSectionIds(sections) {
 
 const formQuestionsSectionsSurveyPatch = function (survey, { questions, sections }) {
     const surveyPatch = { forceQuestions: true };
-    surveyPatch.questions = questions.map(({ id, required }) => ({ id, required }));
-    survey.questions = questions;
     if (sections) {
         sections = _.cloneDeep(sections);
         removeSectionIds(sections);
         surveyPatch.sections = sections;
         survey.sections = sections;
-    } else if (survey.sections) {
-        surveyPatch.sections = [];
-        delete survey.sections;
+        delete survey.questions;
+        return surveyPatch;
     }
-    return surveyPatch;
+    if (questions) {
+        surveyPatch.questions = questions.map(({ id, required }) => ({ id, required }));
+        survey.questions = questions;
+        delete survey.sections;
+        return surveyPatch;
+    }
+    throw new Error('Surveys should have either sections or questions.');
 };
 
 const SpecTests = class SurveySpecTests {

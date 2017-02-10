@@ -11,13 +11,13 @@ const SharedIntegration = require('./util/shared-integration');
 const RRSuperTest = require('./util/rr-super-test');
 const Generator = require('./util/generator');
 const MultiQuestionGenerator = require('./util/generator/multi-question-generator');
-const EnumerationQuestionGenerator = require('./util/generator/enumeration-question-generator');
+const ChoiceSetQuestionGenerator = require('./util/generator/choice-set-question-generator');
 const comparator = require('./util/comparator');
 const History = require('./util/history');
 const RRError = require('../lib/rr-error');
 const translator = require('./util/translator');
 const questionCommon = require('./util/question-common');
-const enumerationCommon = require('./util/enumeration-common');
+const choiceSetCommon = require('./util/choice-set-common');
 
 const invalidQuestionsJSON = require('./fixtures/json-schema-invalid/new-question');
 const invalidQuestionsSwagger = require('./fixtures/swagger-invalid/new-question');
@@ -87,10 +87,10 @@ describe('question integration', function () {
     }
 
     const hxQuestion = new History();
-    const hxEnumeration = new History();
+    const hxChoiceSet = new History();
     const hxSurvey = new History();
     const tests = new questionCommon.IntegrationTests(store, generator, hxQuestion);
-    const enumerationTests = new enumerationCommon.SpecTests(generator, hxEnumeration);
+    const choceSetTests = new choiceSetCommon.SpecTests(generator, hxChoiceSet);
 
     for (let i = 0; i < 10; ++i) {
         it(`create question ${i}`, tests.createQuestionFn());
@@ -379,15 +379,15 @@ describe('question integration', function () {
     });
 
     _.range(8).forEach(index => {
-        it(`create enumeration ${index}`, enumerationTests.createEnumerationFn());
-        it(`get enumeration ${index}`, enumerationTests.getEnumerationFn(index));
+        it(`create choice set ${index}`, choceSetTests.createChoiceSetFn());
+        it(`get choice set ${index}`, choceSetTests.getChoiceSetFn(index));
     });
 
-    it('replace generator to enumeration question generator', function () {
-        const enumerations = _.range(8).map(index => hxEnumeration.server(index));
-        const enumerationGenerator = new EnumerationQuestionGenerator(generator.questionGenerator, enumerations);
-        generator.questionGenerator = enumerationGenerator;
-        comparator.updateEnumerationMap(enumerations);
+    it('replace generator to choice set question generator', function () {
+        const choiceSets = _.range(8).map(index => hxChoiceSet.server(index));
+        const choiceSetGenerator = new ChoiceSetQuestionGenerator(generator.questionGenerator, choiceSets);
+        generator.questionGenerator = choiceSetGenerator;
+        comparator.updateChoiceSetMap(choiceSets);
     });
 
     _.range(40, 50).forEach(index => {

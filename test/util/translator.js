@@ -67,10 +67,10 @@ const translator = {
         delete result.questions;
         return result;
     },
-    translateEnumeration(enumeration, language) {
-        const result = _.cloneDeep(enumeration);
-        result.enumerals.forEach(enumeral => {
-            enumeral.text = this._translate(enumeral.text, language);
+    translateChoiceSet(choiceSet, language) {
+        const result = _.cloneDeep(choiceSet);
+        result.choices.forEach(choice => {
+            choice.text = this._translate(choice.text, language);
         });
         return result;
     },
@@ -97,8 +97,8 @@ const translator = {
         }
         this.isTranslated(texts, language);
     },
-    isEnumerationTranslated(enumeration, language) {
-        const texts = enumeration.enumerals.map(({ text }) => text);
+    isChoiceSetTranslated(choiceSet, language) {
+        const texts = choiceSet.choices.map(({ text }) => text);
         this.isTranslated(texts, language);
     },
     isSurveyListTranslated(surveys, language) {

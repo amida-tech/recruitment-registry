@@ -9,117 +9,117 @@ module.exports = {
     questions: [{
         text: 'How often do you use a computer?',
         required: false,
-        type: 'enumeration',
+        type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-initial-m06-column', value: 'QID44' },
-        enumeration: 'frequency-dwm'
+        choiceSetReference: 'frequency-dwm'
     }, {
         text: 'How confident are you with computers?',
         required: false,
-        type: 'enumeration',
+        type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-initial-m06-column', value: 'QID45' },
-        enumeration: 'confidence-computer'
+        choiceSetReference: 'confidence-computer'
     }, {
         text: 'Are you concerned that you have a memory problem?',
         required: false,
-        type: 'enumeration',
+        type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-initial-m06-column', value: 'QID1' },
-        enumeration: 'yes-no-1-2'
+        choiceSetReference: 'yes-no-1-2'
     }, {
         text: 'Compared to six months ago, how would you rate your memory in general?',
         required: false,
-        type: 'enumeration',
+        type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-initial-m06-column', value: 'QID2' },
-        enumeration: 'comparative-condition'
+        choiceSetReference: 'comparative-condition'
     }, {
         text: 'Do you have trouble remembering if you have already told someone something?',
         required: false,
-        type: 'enumeration',
+        type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-initial-m06-column', value: 'QID3' },
-        enumeration: 'yes-no-1-2'
+        choiceSetReference: 'yes-no-1-2'
     }, {
         text: 'Compared to six months ago, do you have more or less trouble remembering if you have already told someone something?',
         required: false,
-        type: 'enumeration',
+        type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-initial-m06-column', value: 'QID4' },
-        enumeration: 'comparative-trouble'
+        choiceSetReference: 'comparative-trouble'
     }, {
         text: 'In general, would you say your health is:',
         required: false,
-        type: 'enumeration',
+        type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-initial-m06-column', value: 'QID24' },
-        enumeration: 'condition'
+        choiceSetReference: 'condition'
     }, {
         text: 'Compared to six months ago, how would you rate your health in general?',
         required: false,
-        type: 'enumeration',
+        type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-initial-m06-column', value: 'QID6' },
-        enumeration: 'comparative-condition'
+        choiceSetReference: 'comparative-condition'
     }, {
         text: 'Are you in good spirits most of the time?',
         required: false,
-        type: 'enumeration',
+        type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-initial-m06-column', value: 'QID7' },
-        enumeration: 'yes-no-1-2'
+        choiceSetReference: 'yes-no-1-2'
     }, {
         text: 'Compared to six months ago, how would you rate your mood in general?',
         required: false,
-        type: 'enumeration',
+        type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-initial-m06-column', value: 'QID8' },
-        enumeration: 'comparative-condition'
+        choiceSetReference: 'comparative-condition'
     }, {
         text: 'Have you dropped many of your activities and interests?',
         required: false,
-        type: 'enumeration',
+        type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-initial-m06-column', value: 'QID25' },
-        enumeration: 'yes-no-1-2'
+        choiceSetReference: 'yes-no-1-2'
     }, {
         text: 'Compared to six months ago, are you pursuing fewer or more activities and interests?',
         required: false,
-        type: 'enumeration',
+        type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-initial-m06-column', value: 'QID10' },
-        enumeration: 'fewer-more'
+        choiceSetReference: 'fewer-more'
     }, {
         text: 'During the past month, did you experience any sleep problems?',
         required: false,
-        type: 'enumeration',
+        type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-initial-m06-column', value: 'QID11' },
-        enumeration: 'yes-no-1-2'
+        choiceSetReference: 'yes-no-1-2'
     }, {
         text: 'During the past month, did you take any sleep medications?',
         required: false,
-        type: 'enumeration',
+        type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-initial-m06-column', value: 'QID12' },
-        enumeration: 'yes-no-1-2'
+        choiceSetReference: 'yes-no-1-2'
     }, {
         text: 'Compared to six months ago, how would you rate your sleep in general?',
         required: false,
-        type: 'enumeration',
+        type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-initial-m06-column', value: 'QID13' },
-        enumeration: 'comparative-condition'
+        choiceSetReference: 'comparative-condition'
     }, {
         text: 'How often do you drink alcoholic drinks?',
         instruction: '(1 drink would equal either 4 oz of wine, 12 ounces beer or 1 oz of liquor)',
         required: false,
-        type: 'enumeration',
+        type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-initial-m06-column', value: 'QID14' },
-        enumeration: 'drinks-per-day'
+        choiceSetReference: 'drinks-per-day'
     }, {
         text: 'Compared to six months ago, has your consumption of alcohol changed?',
         required: false,
-        type: 'enumeration',
+        type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-initial-m06-column', value: 'QID15' },
-        enumeration: 'increased-decreased'
+        choiceSetReference: 'increased-decreased'
     }, {
         text: 'Please indicate whether you currently have or had experienced alcohol abuse in the past.',
         required: false,
-        type: 'enumeration',
+        type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-initial-m06-column', value: 'QID27' },
-        enumeration: 'yes-no-1-3',
+        choiceSetReference: 'yes-no-1-3',
         skip: {
             count: 1,
             rule: {
                 logic: 'not-equals',
-                answer: { integerValue: 1 }
+                answer: { code: '1' }
             }
         }
     }, {
@@ -130,14 +130,14 @@ module.exports = {
     }, {
         text: 'Please indicate whether you currently have or had experienced drug abuse in the past.',
         required: false,
-        type: 'enumeration',
+        type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-initial-m06-column', value: 'QID29' },
-        enumeration: 'yes-no-1-3',
+        choiceSetReference: 'yes-no-1-3',
         skip: {
             count: 1,
             rule: {
                 logic: 'not-equals',
-                answer: { integerValue: 1 }
+                answer: { code: '1' }
             }
         }
     }, {
@@ -148,15 +148,15 @@ module.exports = {
     }, {
         text: 'Do you have hypertension (high blood pressure)?',
         required: false,
-        type: 'enumeration',
+        type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-initial-m06-column', value: 'QID16' },
-        enumeration: 'yes-no-1-2'
+        choiceSetReference: 'yes-no-1-2'
     }, {
         text: 'Do you have diabetes?',
         required: false,
-        type: 'enumeration',
+        type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-initial-m06-column', value: 'QID17' },
-        enumeration: 'yes-no-1-2'
+        choiceSetReference: 'yes-no-1-2'
     }, {
         text: 'Are you currently taking any of the following types of medications?',
         instruction: '(Select all that apply)',
@@ -222,8 +222,8 @@ module.exports = {
     }, {
         text: 'How often would you be willing to come back to the Brain Health Registry for return visits?',
         required: false,
-        type: 'enumeration',
+        type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-initial-m06-column', value: 'QID20' },
-        enumeration: 'frequency-monthly'
+        choiceSetReference: 'frequency-monthly'
     }]
 };

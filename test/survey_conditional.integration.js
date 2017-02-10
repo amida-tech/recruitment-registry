@@ -43,7 +43,7 @@ describe('survey (conditional questions) integration', function () {
 
     _.range(errenousSurveyGenerator.numOfCases()).forEach(index => {
         it(`error: create errenous survey ${index}`, function (done) {
-            const survey = errenousSurveyGenerator.newSurvey();
+            const survey = errenousSurveyGenerator.newSurvey({ noSection: true });
             const { code, params, apiOverride } = errenousSurveyGenerator.expectedError(index);
             rrSuperTest.post('/surveys', survey, 400)
                 .expect(function (res) {
@@ -55,7 +55,7 @@ describe('survey (conditional questions) integration', function () {
     });
 
     _.range(surveyCount).forEach(index => {
-        it(`create survey ${index}`, tests.createSurveyFn());
+        it(`create survey ${index}`, tests.createSurveyFn({ noSection: true }));
         it(`get survey ${index}`, tests.getSurveyFn(index));
     });
 

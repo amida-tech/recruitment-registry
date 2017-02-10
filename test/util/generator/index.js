@@ -21,7 +21,7 @@ class Generator {
         this.consentIndex = -1;
         this.languageIndex = -1;
         this.assessmentIndex = -1;
-        this.enumerationindex = 0;
+        this.choiceSetIndex = 0;
     }
 
     updateSurveyGenerator(SurveyGenerator) {
@@ -78,6 +78,28 @@ class Generator {
         return questions.map(qx => this.answerQuestion(qx));
     }
 
+    getSectionQuestions(sections) {
+        const questions = [];
+        sections.forEach(section => {
+            if (section.questions) {
+                questions.push(...section.questions);
+                return;
+            }
+            const sectionQuestions = this.getSectionQuestions(section.sections);
+            questions.push(...sectionQuestions);
+        });
+        return questions;
+    }
+
+    answerSurvey(survey) {
+        let { sections, questions } = survey;
+        if (questions) {
+            return this.answerQuestions(questions);
+        }
+        questions = this.getSectionQuestions(sections);
+        return this.answerQuestions(questions);
+    }
+
     newConsentType() {
         const index = ++this.consentTypeIndex;
         return {
@@ -125,18 +147,18 @@ class Generator {
         return { name, sequenceType, surveys };
     }
 
-    newEnumeration() {
-        const enumerationindex = ++this.enumerationindex;
-        const name = `name_${enumerationindex}`;
-        const numEnumerals = (enumerationindex % 4) + 2;
-        const startValue = enumerationindex % 3;
-        const enumerals = _.range(numEnumerals).map(index => {
+    newChoiceSet() {
+        const choiceSetIndex = ++this.choiceSetIndex;
+        const reference = `reference_${choiceSetIndex}`;
+        const numChoices = (choiceSetIndex % 4) + 2;
+        const startValue = choiceSetIndex % 3;
+        const choices = _.range(numChoices).map(index => {
             return {
-                text: `text_${enumerationindex}_${index}`,
-                value: startValue + index
+                text: `text_${choiceSetIndex}_${index}`,
+                code: `${startValue + index}`
             };
         });
-        return { name, enumerals };
+        return { reference, choices };
     }
 
     nextLanguage() {

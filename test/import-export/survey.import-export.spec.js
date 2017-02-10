@@ -24,7 +24,7 @@ describe('survey import-export unit', function () {
     const tests = new surveyCommon.SpecTests(generator, hxSurvey);
 
     _.range(8).forEach(index => {
-        it(`create survey ${index}`, tests.createSurveyFn());
+        it(`create survey ${index}`, tests.createSurveyFn({ noSection: true }));
         it(`get survey ${index}`, tests.getSurveyFn(index));
     });
 
@@ -35,7 +35,7 @@ describe('survey import-export unit', function () {
     it('list all surveys (export)', tests.listSurveysFn({ scope: 'export' }));
 
     _.range(8, 14).forEach(index => {
-        it(`create survey ${index}`, tests.createSurveyFn());
+        it(`create survey ${index}`, tests.createSurveyFn({ noSection: true }));
         it(`get survey ${index}`, tests.getSurveyFn(index));
     });
 

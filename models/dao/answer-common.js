@@ -14,7 +14,7 @@ const generateAnswerSingleFn = {
     pounds: value => ({ numberValue: parseInt(value) }),
     integer: value => ({ integerValue: parseInt(value) }),
     float: value => ({ integerValue: parseFloat(value) }),
-    enumeration: value => ({ integerValue: parseInt(value) }),
+    'choice-ref': value => ({ code: value }),
     'blood-pressure': value => {
         const pieces = value.split('-');
         return {

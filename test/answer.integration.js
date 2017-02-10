@@ -9,14 +9,14 @@ const config = require('../config');
 const SharedIntegration = require('./util/shared-integration');
 const RRSuperTest = require('./util/rr-super-test');
 const Generator = require('./util/generator');
-const EnumerationQuestionGenerator = require('./util/generator/enumeration-question-generator');
+const ChoiceSetQuestionGenerator = require('./util/generator/choice-set-question-generator');
 const Answerer = require('./util/generator/answerer');
 const comparator = require('./util/comparator');
 const History = require('./util/history');
 const SurveyHistory = require('./util/survey-history');
 const answerCommon = require('./util/answer-common');
 const questionCommon = require('./util/question-common');
-const enumerationCommon = require('./util/enumeration-common');
+const choiceSetCommon = require('./util/choice-set-common');
 
 describe('answer integration', function () {
     const generator = new Generator();
@@ -29,12 +29,12 @@ describe('answer integration', function () {
     const hxUser = new History();
     const hxSurvey = new SurveyHistory();
     const hxQuestion = new History();
-    const hxEnumeration = new History();
+    const hxChoiceSet = new History();
 
     const tests = new answerCommon.IntegrationTests(store, generator, hxUser, hxSurvey, hxQuestion);
 
     const questionTests = new questionCommon.IntegrationTests(store, generator, hxQuestion);
-    const enumerationTests = new enumerationCommon.SpecTests(generator, hxEnumeration);
+    const choceSetTests = new choiceSetCommon.SpecTests(generator, hxChoiceSet);
 
     before(shared.setUpFn(store));
 
@@ -167,15 +167,15 @@ describe('answer integration', function () {
 
     it('login as super', shared.loginFn(store, config.superUser));
     _.range(8).forEach(index => {
-        it(`create enumeration ${index}`, enumerationTests.createEnumerationFn());
-        it(`get enumeration ${index}`, enumerationTests.getEnumerationFn(index));
+        it(`create choice set ${index}`, choceSetTests.createChoiceSetFn());
+        it(`get choice set ${index}`, choceSetTests.getChoiceSetFn(index));
     });
 
-    it('replace generator to enumeration question generator', function () {
-        const enumerations = _.range(8).map(index => hxEnumeration.server(index));
-        const enumerationGenerator = new EnumerationQuestionGenerator(generator.questionGenerator, enumerations);
-        generator.questionGenerator = enumerationGenerator;
-        comparator.updateEnumerationMap(enumerations);
+    it('replace generator to choice set question generator', function () {
+        const choiceSets = _.range(8).map(index => hxChoiceSet.server(index));
+        const choiceSetGenerator = new ChoiceSetQuestionGenerator(generator.questionGenerator, choiceSets);
+        generator.questionGenerator = choiceSetGenerator;
+        comparator.updateChoiceSetMap(choiceSets);
     });
 
     _.range(52, 62).forEach(index => {
@@ -183,8 +183,8 @@ describe('answer integration', function () {
         it(`get question ${index}`, questionTests.getQuestionFn(index));
     });
 
-    it('create survey 13 (5 enumerations)', shared.createSurveyFn(store, hxSurvey, hxQuestion, [52, 53, 54, 55, 56]));
-    it('create survey 14 (5 enumerations)', shared.createSurveyFn(store, hxSurvey, hxQuestion, [57, 58, 59, 60, 61]));
+    it('create survey 13 (5 choice sets)', shared.createSurveyFn(store, hxSurvey, hxQuestion, [52, 53, 54, 55, 56]));
+    it('create survey 14 (5 choice sets)', shared.createSurveyFn(store, hxSurvey, hxQuestion, [57, 58, 59, 60, 61]));
 
     it('logout as super', shared.logoutFn(store));
 

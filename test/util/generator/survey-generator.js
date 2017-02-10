@@ -63,22 +63,29 @@ module.exports = class SurveyGenerator {
         if (options.status) {
             result.status = options.status;
         }
-        const sectionType = this.surveyIndex % 3;
+        const sectionType = options.noSection ? 0 : this.surveyIndex % 4;
         const count = this.count();
-        result.questions = _.range(count).map(index => this.newSurveyQuestion(index));
-        if (sectionType) {
-            const sections = Array(3);
-            sections[0] = { name: 'section_0', indices: _.range(0, 6, 2) };
-            sections[1] = { name: 'section_1', indices: _.range(1, 6, 2) };
-            sections[2] = { name: 'section_2', indices: _.rangeRight(count - 3, count) };
-            if (sectionType === 1) {
-                result.sections = [
-                    { name: 'parent_0', sections: sections.slice(0, 2) },
-                    sections[2]
-                ];
-            } else {
-                result.sections = sections;
-            }
+        const surveyQuestions = _.range(count).map(index => this.newSurveyQuestion(index));
+        if (!sectionType) {
+            result.questions = surveyQuestions;
+            return result;
+        }
+        const sections = Array(3);
+        sections[0] = { name: 'section_0', questions: _.range(0, 6, 2).map(index => surveyQuestions[index]) };
+        sections[1] = { name: 'section_1', questions: _.range(1, 6, 2).map(index => surveyQuestions[index]) };
+        sections[2] = { name: 'section_2', questions: _.rangeRight(count - 3, count).map(index => surveyQuestions[index]) };
+        if (sectionType === 1) {
+            sections[2].name = 'parent_1';
+            result.sections = [
+                { name: 'parent_0', sections: sections.slice(0, 2) },
+                sections[2]
+            ];
+        } else if (sectionType === 2) {
+            delete sections[0].name;
+            delete sections[2].name;
+            result.sections = sections;
+        } else {
+            result.sections = sections;
         }
         return result;
     }

@@ -20,14 +20,14 @@ module.exports = {
     }, {
         text: 'Are you currently taking any additional medications?',
         required: true,
-        type: 'enumeration',
+        type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-current-meds-column', value: 'QID6' },
-        enumeration: 'yes-no-1-2',
+        choiceSetReference: 'yes-no-1-2',
         skip: {
             count: 2,
             rule: {
                 logic: 'not-equals',
-                answer: { integerValue: 1 }
+                answer: { code: '1' }
             }
         }
     }, {
@@ -60,14 +60,14 @@ module.exports = {
     }, {
         text: 'Are you currently taking any vitamins or supplements?',
         required: false,
-        type: 'enumeration',
-        enumeration: 'yes-no-1-2',
+        type: 'choice-ref',
+        choiceSetReference: 'yes-no-1-2',
         answerIdentifier: { type: 'bhr-gap-current-meds-column', value: 'QID10' },
         skip: {
             count: 1,
             rule: {
                 logic: 'not-equals',
-                answer: { integerValue: 1 }
+                answer: { code: '1' }
             }
         }
     }, {

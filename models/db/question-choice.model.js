@@ -5,7 +5,6 @@ module.exports = function (sequelize, DataTypes) {
         questionId: {
             type: DataTypes.INTEGER,
             field: 'question_id',
-            allowNull: false,
             references: {
                 model: 'question',
                 key: 'id'
@@ -17,15 +16,10 @@ module.exports = function (sequelize, DataTypes) {
             references: {
                 model: 'answer_type',
                 key: 'name'
-            },
-        },
-        enumerationId: {
-            type: DataTypes.INTEGER,
-            field: 'enumeration_id',
-            references: {
-                model: 'enumeration',
-                key: 'id'
             }
+        },
+        code: {
+            type: DataTypes.TEXT
         },
         meta: {
             type: DataTypes.JSON
@@ -41,9 +35,30 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.DATE,
             field: 'updated_at',
         },
+        choiceSetId: {
+            type: DataTypes.INTEGER,
+            field: 'choice_set_id',
+            references: {
+                model: 'choice_set',
+                key: 'id'
+            }
+        },
+        deletedAt: {
+            type: DataTypes.DATE,
+            field: 'deleted_at'
+        }
     }, {
         freezeTableName: true,
         createdAt: 'createdAt',
-        updatedAt: 'updatedAt'
+        updatedAt: 'updatedAt',
+        deletedAt: 'deletedAt',
+        indexes: [{
+            fields: ['question_id'],
+            where: { deleted_at: { $eq: null } }
+        }, {
+            fields: ['choice_set_id'],
+            where: { deleted_at: { $eq: null } }
+        }],
+        paranoid: true
     });
 };

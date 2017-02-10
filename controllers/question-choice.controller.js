@@ -5,16 +5,16 @@ const _ = require('lodash');
 const models = require('../models');
 const shared = require('./shared.js');
 
-exports.deleteEnumeral = function (req, res) {
+exports.deleteQuestionChoice = function (req, res) {
     const id = _.get(req, 'swagger.params.id.value');
-    models.enumeral.deleteEnumeral(id)
+    models.questionChoice.deleteQuestionChoice(id)
         .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };
 
-exports.updateEnumeralTexts = function (req, res) {
+exports.updateMultipleChoiceTexts = function (req, res) {
     const language = _.get(req, 'swagger.params.language.value');
-    models.enumeral.updateEnumeralTexts(req.body, language)
+    models.questionChoice.updateMultipleChoiceTexts(req.body, language)
         .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };

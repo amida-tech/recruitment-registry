@@ -25,6 +25,7 @@ module.exports = class QuestionGenerator {
             this.choiceIndex = 0;
             this.typeChoiceIndex = -1;
             this.typeChoicesIndex = -1;
+            this.choicesCode = false;
         }
     }
 
@@ -63,10 +64,14 @@ module.exports = class QuestionGenerator {
         const typeChoiceIndex = ++this.typeChoiceIndex;
         const question = this.body('choice');
         const choices = this.newChoices();
-        if (typeChoiceIndex % 2) {
+        if ((typeChoiceIndex % 3) === 0) {
             question.oneOfChoices = choices;
         } else {
-            question.choices = choices.map(choice => ({ text: choice }));
+            if ((typeChoiceIndex % 3) === 1) {
+                question.choices = choices.map(choice => ({ text: choice, code: `code_${choice}` }));
+            } else {
+                question.choices = choices.map(choice => ({ text: choice }));
+            }
         }
         return question;
     }
@@ -80,7 +85,14 @@ module.exports = class QuestionGenerator {
 
     choices() {
         const question = this.body('choices');
-        const choices = this.newChoices().map(choice => ({ text: choice }));
+        let choices;
+        if (this.choicesCode) {
+            this.choicesCode = false;
+            choices = this.newChoices().map(choice => ({ text: choice, code: `code_${choice}` }));
+        } else {
+            this.choicesCode = true;
+            choices = this.newChoices().map(choice => ({ text: choice }));
+        }
         choices.forEach(choice => {
             const choiceType = ++this.typeChoicesIndex % 4;
             switch (choiceType) {
@@ -127,12 +139,6 @@ module.exports = class QuestionGenerator {
             text: 'inches',
             type: 'integer'
         }];
-        return question;
-    }
-
-    enumerationChoices() {
-        const question = this.body('choices');
-        question.choices = this.newChoices().map(choice => ({ text: choice, type: 'enumeration' }));
         return question;
     }
 

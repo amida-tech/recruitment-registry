@@ -19,7 +19,7 @@ const SharedSpec = require('../util/shared-spec.js');
 
 const comparator = require('../util/comparator');
 
-const enumerations = require('../fixtures/import-export/bhr-gap/enumerations');
+const choiceSets = require('../fixtures/import-export/bhr-gap/choice-sets');
 const surveys = require('../fixtures/import-export/bhr-gap/surveys');
 
 const expect = chai.expect;
@@ -37,12 +37,12 @@ describe('bhr gap import-export unit', function () {
 
     before(shared.setUpFn());
 
-    it('load all enumerations', function () {
-        return models.enumeration.createEnumerations(enumerations)
-            .then(() => models.enumeration.listEnumerations())
-            .then(enumerations => {
-                const promises = enumerations.map(({ id }) => models.enumeration.getEnumeration(id));
-                return SPromise.all(promises).then(result => comparator.updateEnumerationMap(result));
+    it('load all choice sets', function () {
+        return models.choiceSet.createChoiceSets(choiceSets)
+            .then(() => models.choiceSet.listChoiceSets())
+            .then(choiceSets => {
+                const promises = choiceSets.map(({ id }) => models.choiceSet.getChoiceSet(id));
+                return SPromise.all(promises).then(result => comparator.updateChoiceSetMap(result));
             });
     });
 

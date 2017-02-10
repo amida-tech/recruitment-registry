@@ -69,6 +69,30 @@ module.exports = class SurveyDAO extends Translatable {
         Object.assign(this, dependencies);
     }
 
+    flattenSectionsHieararchy(sections, result, parentIndex = null) {
+        if (!result) {
+            result = {
+                sections: [],
+                questions: []
+            };
+        }
+        sections.forEach((section, line) => {
+            let { name, questions } = section;
+            const type = questions ? 'question' : 'section';
+            const sectionInfo = { name, parentIndex, type, line };
+            if (questions) {
+                const currentQuestionCount = result.questions.length;
+                sectionInfo.indices = _.range(currentQuestionCount, currentQuestionCount + questions.length);
+                result.questions.push(...questions);
+            }
+            result.sections.push(sectionInfo);
+            if (section.sections) {
+                this.flattenSectionsHieararchy(section.sections, result, result.sections.length - 1);
+            }
+        });
+        return result;
+    }
+
     createRuleAnswerValue(ruleParent, transaction) {
         if (!ruleParent) {
             return null;
@@ -94,38 +118,40 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     validateCreateQuestionsPreTransaction(survey) {
-        let rejection = null;
-        const questions = survey.questions;
-        const numOfQuestions = questions && questions.length;
-        if (!numOfQuestions) {
-            return RRError.reject('surveyNoQuestions');
-        }
-        questions.every((question, index) => {
-            const skip = question.skip;
-            if (skip) {
-                const logic = skip.rule.logic;
-                const count = skip.count;
-                const answer = _.get(skip, 'rule.answer');
-                if ((count + index) >= numOfQuestions) {
-                    rejection = RRError.reject('skipValidationNotEnoughQuestions', count, index, numOfQuestions - index - 1);
-                    return false;
-                }
-                if (logic === 'equals' || logic === 'not-equals') {
-                    if (!answer) {
-                        rejection = RRError.reject('skipValidationNoAnswerSpecified', index, logic);
-                        return false;
-                    }
-                }
-                if (logic === 'exists' || logic === 'not-exists' || logic === 'not-selected' || logic === 'each-not-selected') {
-                    if (answer) {
-                        rejection = RRError.reject('skipValidationAnswerSpecified', index, logic);
-                        return false;
-                    }
-                }
+        if (!survey.sections) {
+            let rejection = null;
+            const questions = survey.questions;
+            const numOfQuestions = questions && questions.length;
+            if (!numOfQuestions) {
+                return RRError.reject('surveyNoQuestions');
             }
-            return true;
-        });
-        return rejection;
+            questions.every((question, index) => {
+                const skip = question.skip;
+                if (skip) {
+                    const logic = skip.rule.logic;
+                    const count = skip.count;
+                    const answer = _.get(skip, 'rule.answer');
+                    if ((count + index) >= numOfQuestions) {
+                        rejection = RRError.reject('skipValidationNotEnoughQuestions', count, index, numOfQuestions - index - 1);
+                        return false;
+                    }
+                    if (logic === 'equals' || logic === 'not-equals') {
+                        if (!answer) {
+                            rejection = RRError.reject('skipValidationNoAnswerSpecified', index, logic);
+                            return false;
+                        }
+                    }
+                    if (logic === 'exists' || logic === 'not-exists' || logic === 'not-selected' || logic === 'each-not-selected') {
+                        if (answer) {
+                            rejection = RRError.reject('skipValidationAnswerSpecified', index, logic);
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            });
+            return rejection;
+        }
     }
 
     createNewQuestionsTx(questions, tx) {
@@ -208,17 +234,23 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     updateSurveyTx(id, survey, transaction) {
+        let { sections, questions } = survey;
+        if (sections) {
+            const flattenedSurvey = this.flattenSectionsHieararchy(sections);
+            sections = flattenedSurvey.sections;
+            questions = flattenedSurvey.questions;
+        }
         return this.createTextTx({ id, name: survey.name, description: survey.description }, transaction)
             .then(({ id }) => {
-                return this.createSurveyQuestionsTx(survey.questions, id, transaction)
+                return this.createSurveyQuestionsTx(questions, id, transaction)
                     .then(questions => {
                         const questionIds = questions.map(question => question.id);
                         return { questionIds, surveyId: id };
                     });
             })
             .then(({ questionIds, surveyId }) => {
-                if (survey.sections) {
-                    return this.surveySection.bulkCreateSectionsForSurveyTx(surveyId, questionIds, survey.sections, transaction)
+                if (sections) {
+                    return this.surveySection.bulkCreateFlattenedSectionsForSurveyTx(surveyId, questionIds, sections, transaction)
                         .then(() => surveyId);
                 } else {
                     return surveyId;
@@ -246,21 +278,6 @@ module.exports = class SurveyDAO extends Translatable {
         }
         return sequelize.transaction(transaction => {
             return this.createSurveyTx(survey, transaction);
-        });
-    }
-
-    replaceSurveySections(surveyId, sections) {
-        return sequelize.transaction(transaction => {
-            return SurveyQuestion.findAll({
-                    where: { surveyId },
-                    raw: true,
-                    attributes: ['questionId'],
-                    order: 'line'
-                })
-                .then(surveyQuestions => {
-                    const questionIds = surveyQuestions.map(surveyQuestion => surveyQuestion.questionId);
-                    return this.surveySection.bulkCreateSectionsForSurveyTx(surveyId, questionIds, sections, transaction);
-                });
         });
     }
 
@@ -344,46 +361,55 @@ module.exports = class SurveyDAO extends Translatable {
                         }
                     })
                     .then(() => {
-                        const { status, questions, sections, forceQuestions } = surveyPatch;
-                        if (questions) {
-                            const questionIdSet = new Set();
-                            questions.forEach(question => {
-                                const questionId = question.id;
-                                if (questionId) {
-                                    questionIdSet.add(questionId.toString());
+                        let { status, questions, sections, forceQuestions } = surveyPatch;
+                        if (!(questions || sections)) {
+                            return;
+                        }
+                        if (questions && sections) {
+                            return RRError.reject('surveyBothQuestionsSectionsSpecified');
+                        }
+                        if (sections) {
+                            const flattenedSurvey = this.flattenSectionsHieararchy(sections);
+                            sections = flattenedSurvey.sections;
+                            questions = flattenedSurvey.questions;
+                        }
+                        if (!questions) {
+                            return RRError.reject('surveyNoQuestionsInSections');
+                        }
+                        const questionIdSet = new Set();
+                        questions.forEach(question => {
+                            const questionId = question.id;
+                            if (questionId) {
+                                questionIdSet.add(questionId);
+                            }
+                        });
+                        const removedQuestionIds = survey.questionIds.reduce((r, questionId) => {
+                            if (!questionIdSet.has(questionId)) {
+                                r.push(questionId);
+                            }
+                            return r;
+                        }, []);
+                        if (removedQuestionIds.length || (survey.questionIds.length !== questions.length)) {
+                            if (!forceQuestions && (status !== 'draft')) {
+                                return RRError.reject('surveyChangeQuestionWhenPublished');
+                            }
+                        }
+                        return SurveyQuestion.destroy({ where: { surveyId }, transaction })
+                            .then(() => {
+                                if (removedQuestionIds.length) {
+                                    return Answer.destroy({ where: { surveyId, questionId: { $in: removedQuestionIds } }, transaction });
+                                }
+                            })
+                            .then(() => this.createSurveyQuestionsTx(questions, surveyId, transaction))
+                            .then(questions => questions.map(question => question.id))
+                            .then(questionIds => ({ sections, questionIds }))
+                            .then(({ sections, questionIds }) => {
+                                if (sections) {
+                                    return this.surveySection.bulkCreateFlattenedSectionsForSurveyTx(surveyId, questionIds, sections, transaction);
+                                } else if (survey.sectionCount) {
+                                    return this.surveySection.deleteSurveySectionsTx(surveyId, transaction);
                                 }
                             });
-                            const removedQuestionIds = survey.questionIds.reduce((r, questionId) => {
-                                if (!questionIdSet.has(questionId)) {
-                                    r.push(questionId);
-                                }
-                                return r;
-                            }, []);
-                            if (removedQuestionIds.length || (survey.questionIds.length !== questions.length)) {
-                                if (survey.sectionCount && !sections) {
-                                    return RRError.reject('surveyChangeQuestionWhenSection');
-                                }
-                                if (!forceQuestions && (status !== 'draft')) {
-                                    return RRError.reject('surveyChangeQuestionWhenPublished');
-                                }
-                            }
-                            return SurveyQuestion.destroy({ where: { surveyId }, transaction })
-                                .then(() => {
-                                    if (removedQuestionIds.length) {
-                                        return Answer.destroy({ where: { surveyId, questionId: { $in: removedQuestionIds } }, transaction });
-                                    }
-                                })
-                                .then(() => this.createSurveyQuestionsTx(questions, surveyId, transaction))
-                                .then(questions => questions.map(question => question.id));
-                        } else {
-                            return survey.questionIds;
-                        }
-                    })
-                    .then(questionIds => {
-                        const sections = surveyPatch.sections;
-                        if (sections) {
-                            return this.surveySection.bulkCreateSectionsForSurveyTx(surveyId, questionIds, sections, transaction);
-                        }
                     });
             });
     }
@@ -549,20 +575,35 @@ module.exports = class SurveyDAO extends Translatable {
                                     }
                                     return result;
                                 });
-                                survey.questions = qxs;
-                                return survey;
+                                return { survey, questions: qxs };
                             });
                     })
-                    .then(() => {
-                        return this.surveySection.getSectionsForSurveyTx(survey.id, options.language)
-                            .then((sections) => {
+                    .then(({ survey, questions }) => {
+                        return this.surveySection.getSectionsForSurveyTx(survey.id, questions, options.language)
+                            .then(sections => {
                                 if (sections && sections.length) {
                                     survey.sections = sections;
+                                } else {
+                                    survey.questions = questions;
                                 }
                                 return survey;
                             });
                     });
             });
+    }
+
+    getQuestionsMap({ questions, sections }, map) {
+        if (!map) {
+            map = new Map();
+        }
+        if (questions) {
+            questions.forEach(question => map.set(question.id, question));
+            return map;
+        }
+        sections.forEach(section => {
+            this.getQuestionsMap(section, map);
+        });
+        return map;
     }
 
     getAnsweredSurvey(userId, id, options) {
@@ -573,10 +614,10 @@ module.exports = class SurveyDAO extends Translatable {
                         surveyId: survey.id
                     })
                     .then(answers => {
-                        const qmap = _.keyBy(survey.questions, 'id');
+                        const questionMap = this.getQuestionsMap(survey);
                         answers.forEach(answer => {
                             const qid = answer.questionId;
-                            const question = qmap[qid];
+                            const question = questionMap.get(qid);
                             question.language = answer.language;
                             if (answer.answer) {
                                 question.answer = answer.answer;

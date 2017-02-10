@@ -9,38 +9,38 @@ module.exports = {
     questions: [{
         text: 'What is your weight (lbs)?',
         required: false,
-        type: 'enumeration',
+        type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-demographics-column', value: 'QID177' },
-        enumeration: 'weight-ranges-lbs'
+        choiceSetReference: 'weight-ranges-lbs'
     }, {
         text: 'What is your height (ft\'in")?',
         required: false,
-        type: 'enumeration',
+        type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-demographics-column', value: 'QID178' },
-        enumeration: 'height-ft-inches'
+        choiceSetReference: 'height-ft-inches'
     }, {
         text: 'What is your current marital status?',
         required: false,
-        type: 'enumeration',
+        type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-demographics-column', value: 'QID180' },
-        enumeration: 'marital-status'
+        choiceSetReference: 'marital-status'
     }, {
         text: 'Please indicate your primary residence type',
         required: false,
-        type: 'enumeration',
+        type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-demographics-column', value: 'QID189' },
-        enumeration: 'primary-residence-type'
+        choiceSetReference: 'primary-residence-type'
     }, {
         text: 'What is/was the field of your primary occupation during most of adult life',
         required: false,
-        type: 'enumeration',
+        type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-demographics-column', value: 'QID182' },
-        enumeration: 'primary-occupation',
+        choiceSetReference: 'primary-occupation',
         skip: {
             count: 1,
             rule: {
                 logic: 'not-equals',
-                answer: { integerValue: 31 }
+                answer: { code: '31' }
             }
         }
     }, {
@@ -70,40 +70,40 @@ module.exports = {
     }, {
         text: 'Are you retired?',
         required: false,
-        type: 'enumeration',
+        type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-demographics-column', value: 'QID185' },
-        enumeration: 'yes-no-1-2',
+        choiceSetReference: 'yes-no-1-2',
         skip: {
             count: 1,
             rule: {
                 logic: 'not-equals',
-                answer: { integerValue: 1 }
+                answer: { code: '1' }
             }
         }
     }, {
         text: 'Year of retirement',
         required: true,
-        type: 'enumeration',
+        type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-demographics-column', value: 'QID186' },
-        enumeration: 'retirement-year'
+        choiceSetReference: 'retirement-year'
     }, {
         text: 'Are you a veteran of the Armed Forces?',
         required: true,
-        type: 'enumeration',
+        type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-demographics-column', value: 'QID192' },
-        enumeration: 'yes-no-1-2',
+        choiceSetReference: 'yes-no-1-2',
         skip: {
             count: 1,
             rule: {
                 logic: 'not-equals',
-                answer: { integerValue: 1 }
+                answer: { code: '1' }
             }
         }
     }, {
         text: 'Please indicate which branch of the Armed Forces',
         required: false,
-        type: 'enumeration',
+        type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-demographics-column', value: 'QID193' },
-        enumeration: 'armed-forces-branch'
+        choiceSetReference: 'armed-forces-branch'
     }]
 };

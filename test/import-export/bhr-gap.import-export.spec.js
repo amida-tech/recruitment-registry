@@ -19,7 +19,7 @@ const SharedSpec = require('../util/shared-spec.js');
 
 const comparator = require('../util/comparator');
 
-const enumerations = require('../../import/bhr-gap/enumerations.js');
+const choiceSets = require('../../import/bhr-gap/choice-sets.js');
 const surveys = require('../../import/bhr-gap/bhr-gap-surveys');
 
 const shared = new SharedSpec();
@@ -35,12 +35,12 @@ xdescribe('bhr gap import-export', function () {
 
     before(shared.setUpFn());
 
-    it('load all enumerations', function () {
-        return models.enumeration.createEnumerations(enumerations)
-            .then(() => models.enumeration.listEnumerations())
-            .then(enumerations => {
-                const promises = enumerations.map(({ id }) => models.enumeration.getEnumeration(id));
-                return SPromise.all(promises).then(result => comparator.updateEnumerationMap(result));
+    it('load all choice sets', function () {
+        return models.choiceSet.createChoiceSets(choiceSets)
+            .then(() => models.choiceSet.listChoiceSets())
+            .then(choiceSets => {
+                const promises = choiceSets.map(({ id }) => models.choiceSet.getChoiceSet(id));
+                return SPromise.all(promises).then(result => comparator.updateChoiceSetMap(result));
             });
     });
 
@@ -151,7 +151,7 @@ xdescribe('bhr gap import-export', function () {
     //BHRGAPTable('CurrentMedications', 'current-medications', 'bhr-gap-current-meds-column');
     //BHRGAPTable('Demographics', 'demographics', 'bhr-gap-demographics-column');
     //BHRGAPTable('Diet', 'diet', 'bhr-gap-diet-column');
-    BHRGAPTable('EarlyHistory', 'early-history', 'bhr-gap-early-history-column');
+    //BHRGAPTable('EarlyHistory', 'early-history', 'bhr-gap-early-history-column');
     //BHRGAPTable('EverydayCognition', 'everyday-cognition', 'bhr-gap-everyday-cognition-column');
     //BHRGAPTable('FamilyTree', 'family-tree', 'bhr-gap-family-tree-column');
     //BHRGAPTable('Initial_m00', 'initial-m00', 'bhr-gap-initial-m00-column');
@@ -159,7 +159,7 @@ xdescribe('bhr gap import-export', function () {
     //BHRGAPTable('Initial_m12', 'initial-m12', 'bhr-gap-initial-m12-column');
     //BHRGAPTable('Initial_m18', 'initial-m18', 'bhr-gap-initial-m18-column');
     //BHRGAPTable('Initial_m24', 'initial-m24', 'bhr-gap-initial-m24-column');
-    //BHRGAPTable('MedicalHistory', 'medical-history', 'bhr-gap-medical-history-column');
+    BHRGAPTable('MedicalHistory', 'medical-history', 'bhr-gap-medical-history-column');
     //BHRGAPTable('Mood', 'mood', 'bhr-gap-mood-column');
     //BHRGAPTable('OSUTBI_Impacts', 'osutbi-impacts', 'bhr-gap-osutbi-impacts-column');
     //BHRGAPTable('OSUTBI_Injuries', 'osutbi-injuries', 'bhr-gap-osutbi-injuries-column');

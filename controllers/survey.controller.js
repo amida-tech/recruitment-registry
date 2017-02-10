@@ -66,13 +66,6 @@ exports.getAnsweredSurvey = function (req, res) {
         .catch(shared.handleError(res));
 };
 
-exports.replaceSurveySections = function (req, res) {
-    const id = _.get(req, 'swagger.params.id.value');
-    models.survey.replaceSurveySections(id, req.body)
-        .then(() => res.status(204).end())
-        .catch(shared.handleError(res));
-};
-
 exports.exportSurveys = function (req, res) {
     models.survey.export()
         .then(csvContent => {

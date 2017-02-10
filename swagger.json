@@ -377,38 +377,6 @@
                 }
             }
         },
-        "/surveys/{id}/sections": {
-            "parameters": [{
-                "name": "id",
-                "in": "path",
-                "required": true,
-                "type": "integer"
-            }],
-            "x-swagger-router-controller": "survey.controller",
-            "patch": {
-                "summary": "Replaces survey sections",
-                "operationId": "replaceSurveySections",
-                "security": [{
-                    "admin": []
-                }],
-                "parameters": [{
-                    "name": "sections",
-                    "in": "body",
-                    "required": true,
-                    "schema": {
-                        "$ref": "#/definitions/newSections"
-                    }
-                }],
-                "responses": {
-                    "204": {
-                        "description": "Successul response"
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
         "/answered-surveys/{id}": {
             "x-swagger-router-controller": "survey.controller",
             "get": {
@@ -2476,22 +2444,21 @@
                 }
             }
         },
-
-        "/enumerations": {
-            "x-swagger-router-controller": "enumeration.controller",
+        "/choice-sets": {
+            "x-swagger-router-controller": "choice-set.controller",
             "post": {
-                "summary": "Creates new enumeration",
-                "operationId": "createEnumeration",
+                "summary": "Creates new choice set",
+                "operationId": "createChoiceSet",
                 "security": [{
                     "admin": []
                 }],
                 "parameters": [{
-                    "name": "newEnumeration",
+                    "name": "newChoiceSet",
                     "in": "body",
-                    "description": "Enumeration object",
+                    "description": "Choice set object",
                     "required": true,
                     "schema": {
-                        "$ref": "#/definitions/newEnumeration"
+                        "$ref": "#/definitions/newChoiceSet"
                     }
                 }],
                 "responses": {
@@ -2504,8 +2471,8 @@
                 }
             },
             "get": {
-                "summary": "Lists enumerations",
-                "operationId": "listEnumerations",
+                "summary": "Lists choice sets",
+                "operationId": "listChoiceSets",
                 "security": [{
                     "admin": []
                 }],
@@ -2521,7 +2488,7 @@
                     "200": {
                         "description": "Successful response",
                         "schema": {
-                            "$ref": "#/definitions/enumerations"
+                            "$ref": "#/definitions/choiceSets"
                         }
                     },
                     "default": {
@@ -2530,8 +2497,8 @@
                 }
             }
         },
-        "/enumerations/{id}": {
-            "x-swagger-router-controller": "enumeration.controller",
+        "/choice-sets/{id}": {
+            "x-swagger-router-controller": "choice-set.controller",
             "parameters": [{
                 "name": "id",
                 "in": "path",
@@ -2539,8 +2506,8 @@
                 "type": "integer"
             }],
             "get": {
-                "summary": "Gets enumeration",
-                "operationId": "getEnumeration",
+                "summary": "Gets choice set",
+                "operationId": "getChoiceSet",
                 "security": [{
                     "admin": []
                 }],
@@ -2556,7 +2523,7 @@
                     "200": {
                         "description": "Successful response",
                         "schema": {
-                            "$ref": "#/definitions/enumeration"
+                            "$ref": "#/definitions/choiceSet"
                         }
                     },
                     "default": {
@@ -2565,8 +2532,8 @@
                 }
             },
             "delete": {
-                "summary": "Deletes enumeration",
-                "operationId": "deleteEnumeration",
+                "summary": "Deletes choice set",
+                "operationId": "deleteChoiceSet",
                 "security": [{
                     "admin": []
                 }],
@@ -2580,11 +2547,11 @@
                 }
             }
         },
-        "/enumerals/multi-text/{language}": {
-            "x-swagger-router-controller": "enumeral.controller",
+        "/question-choices/multi-text/{language}": {
+            "x-swagger-router-controller": "question-choice.controller",
             "patch": {
-                "summary": "Updates or translates enumeration enumerals",
-                "operationId": "updateEnumeralTexts",
+                "summary": "Updates or translates question choice textx",
+                "operationId": "updateMultipleChoiceTexts",
                 "security": [{
                     "admin": []
                 }],
@@ -2596,11 +2563,11 @@
                     "type": "string",
                     "minLength": 2
                 }, {
-                    "name": "enumeralTextsUpdate",
+                    "name": "questionChoiceTextsUpdate",
                     "in": "body",
                     "required": true,
                     "schema": {
-                        "$ref": "#/definitions/enumeralTextsUpdate"
+                        "$ref": "#/definitions/questionChoiceTextsUpdate"
                     }
                 }],
                 "responses": {
@@ -2613,8 +2580,8 @@
                 }
             }
         },
-        "/enumerals/{id}": {
-            "x-swagger-router-controller": "enumeral.controller",
+        "/question-choices/{id}": {
+            "x-swagger-router-controller": "question-choice.controller",
             "parameters": [{
                 "name": "id",
                 "in": "path",
@@ -2622,8 +2589,8 @@
                 "type": "integer"
             }],
             "delete": {
-                "summary": "Deletes enumeral",
-                "operationId": "deleteEnumeral",
+                "summary": "Deletes question choice",
+                "operationId": "deleteQuestionChoice",
                 "security": [{
                     "admin": []
                 }],
@@ -2750,7 +2717,7 @@
             "type": "string",
             "enum": [
                 "text", "bool", "integer", "choice", "choices", "float",
-                "date", "year", "month", "day", "enumeration",
+                "date", "year", "month", "day", "choice-ref",
                 "pounds", "zip", "feet-inches", "blood-pressure"
             ]
         },
@@ -2877,11 +2844,11 @@
                     "type": "integer",
                     "minimum": 1
                 },
-                "enumerationId": {
+                "choiceSetId": {
                     "type": "integer",
                     "minimum": 1
                 },
-                "enumeration": {
+                "choiceSetReference": {
                     "type": "string",
                     "minLength": 1
                 },
@@ -2918,25 +2885,13 @@
         },
         "newSection": {
             "type": "object",
-            "required": ["name"],
             "properties": {
                 "name": {
                     "type": "string",
                     "minLength": 1
                 },
-                "indices": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer",
-                        "minimum": 0
-                    }
-                },
-                "questionIds": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer",
-                        "minimum": 1
-                    }
+                "questions": {
+                    "$ref": "#/definitions/newSurveyQuestions"
                 },
                 "sections": {
                     "type": "array",
@@ -2948,16 +2903,9 @@
             "maxProperties": 2,
             "additionalProperties": false
         },
-        "newSections": {
-            "type": "array",
-            "items": {
-                "$ref": "#/definitions/newSection"
-            },
-            "minItems": 1
-        },
         "section": {
             "type": "object",
-            "required": ["id", "name"],
+            "required": ["id"],
             "properties": {
                 "id": {
                     "type": "integer",
@@ -2967,12 +2915,8 @@
                     "type": "string",
                     "minLength": 1
                 },
-                "questionIds": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer",
-                        "minimum": 1
-                    }
+                "questions": {
+                    "$ref": "#/definitions/surveyQuestions"
                 },
                 "sections": {
                     "type": "array",
@@ -3006,8 +2950,7 @@
         "newSurvey": {
             "type": "object",
             "required": [
-                "name",
-                "questions"
+                "name"
             ],
             "properties": {
                 "name": {
@@ -3164,23 +3107,6 @@
                 "enableWhen": {
                     "$ref": "#/definitions/enableWhenCondition"
                 },
-                "enumerals": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "required": ["text", "value"],
-                        "properties": {
-                            "text": {
-                                "type": "string",
-                                "minLength": 1
-                            },
-                            "value": {
-                                "type": "integer"
-                            }
-                        },
-                        "additionalProperties": false
-                    }
-                },
                 "choices": {
                     "type": "array",
                     "items": {
@@ -3236,8 +3162,7 @@
             "type": "object",
             "required": [
                 "id",
-                "name",
-                "questions"
+                "name"
             ],
             "properties": {
                 "id": {
@@ -3431,7 +3356,7 @@
         },
         "choiceType": {
             "type": "string",
-            "enum": ["bool", "bool-sole", "text", "year", "month", "day", "integer", "float", "date", "pounds", "zip", "feet-inches", "blood-pressure", "enumeration"]
+            "enum": ["bool", "bool-sole", "text", "year", "month", "day", "integer", "float", "date", "pounds", "zip", "feet-inches", "blood-pressure"]
         },
         "surveyStatus": {
             "type": "string",
@@ -3450,30 +3375,16 @@
                 },
                 "text": {
                     "type": "string",
-                     "minLength": 1
+                    "minLength": 1
+                },
+                "code": {
+                    "type": "string"
                 },
                 "type": {
                     "$ref": "#/definitions/choiceType"
                 },
                 "meta": {
                     "type": "object"
-                },
-                "enumerals": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "required": ["text", "value"],
-                        "properties": {
-                            "text": {
-                                "type": "string",
-                                "minLength": 1
-                            },
-                            "value": {
-                                "type": "integer"
-                            }
-                        },
-                        "additionalProperties": false
-                    }
                 }
             },
             "additionalProperties": false
@@ -3509,6 +3420,9 @@
                 },
                 "integerValue": {
                     "type": "integer"
+                },
+                "code": {
+                    "type": "string"
                 },
                 "floatValue": {
                     "type": "number"
@@ -3564,6 +3478,9 @@
                 },
                 "integerValue": {
                     "type": "integer"
+                },
+                "code": {
+                    "type": "string"
                 },
                 "floatValue": {
                     "type": "number"
@@ -3626,6 +3543,9 @@
                 "integerValue": {
                     "type": "integer"
                 },
+                "code": {
+                    "type": "string"
+                },
                 "textValue": {
                     "type": "string"
                 },
@@ -3675,6 +3595,9 @@
                 },
                 "integerValue": {
                     "type": "integer"
+                },
+                "code": {
+                    "type": "string"
                 },
                 "feetInchesValue": {
                     "type": "object",
@@ -3751,23 +3674,6 @@
                 "meta": {
                     "$ref": "#/definitions/questionMeta"
                 },
-                "enumerals": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "required": ["text", "value"],
-                        "properties": {
-                            "text": {
-                                "type": "string",
-                                "minLength": 1
-                            },
-                            "value": {
-                                "type": "integer"
-                            }
-                        },
-                        "additionalProperties": false
-                    }
-                },
                 "choices": {
                     "type": "array",
                     "items": {
@@ -3837,13 +3743,8 @@
                 "meta": {
                     "type": "object"
                 },
-                "enumerationId": {
-                    "type": "integer",
-                    "minimum": 1
-                },
-                "enumeration": {
-                    "type": "string",
-                     "minLength": 1
+                "code": {
+                    "type": "string"
                 }
             },
             "additionalProperties": false
@@ -3872,11 +3773,11 @@
                     "type": "integer",
                     "minimum": 1
                 },
-                "enumerationId": {
+                "choiceSetId": {
                     "type": "integer",
                     "minimum": 1
                 },
-                "enumeration": {
+                "choiceSetReference": {
                     "type": "string",
                     "minLength": 1
                 },
@@ -4910,26 +4811,27 @@
             },
             "additionalProperties": false
         },
-        "newEnumeration": {
+        "newChoiceSet": {
             "type": "object",
-            "required": ["name", "enumerals"],
+            "required": ["reference", "choices"],
             "properties": {
-                "name": {
+                "reference": {
                     "type": "string",
                     "minLength": 1
                 },
-                "enumerals": {
+                "choices": {
                     "type": "array",
                     "items": {
                         "type": "object",
-                        "required": ["text", "value"],
+                        "required": ["text", "code"],
                         "properties": {
                             "text": {
                                 "type": "string",
                                 "minLength": 1
                             },
-                            "value": {
-                                "type": "integer"
+                            "code": {
+                                "type": "string",
+                                "minLength": 1
                             }
                         },
                         "additionalProperties": false
@@ -4938,23 +4840,23 @@
             },
             "additionalProperties": false
         },
-        "enumeration": {
+        "choiceSet": {
             "type": "object",
-            "required": ["id", "name", "enumerals"],
+            "required": ["id", "reference", "choices"],
             "properties": {
                 "id": {
                     "type": "integer",
                         "minimum": 1
                 },
-                "name": {
+                "reference": {
                     "type": "string",
                     "minLength": 1
                 },
-                "enumerals": {
+                "choices": {
                     "type": "array",
                     "items": {
                         "type": "object",
-                        "required": ["id", "text", "value"],
+                        "required": ["id", "text", "code"],
                         "properties": {
                             "id": {
                                 "type": "integer",
@@ -4964,8 +4866,9 @@
                                 "type": "string",
                                 "minLength": 1
                             },
-                            "value": {
-                                "type": "integer"
+                            "code": {
+                                "type": "string",
+                                "minLength": 1
                             }
                         },
                         "additionalProperties": false
@@ -4974,24 +4877,24 @@
             },
             "additionalProperties": false
         },
-        "enumerations": {
+        "choiceSets": {
             "type": "array",
             "items": {
                 "type": "object",
-                "required": ["id", "name"],
+                "required": ["id", "reference"],
                 "properties": {
                     "id": {
                         "type": "integer",
                         "minimum": 1
                     },
-                    "name": {
+                    "reference": {
                         "type": "string",
                         "minLength": 1
                     }
                 }
             }
         },
-        "enumeralTextsUpdate": {
+        "questionChoiceTextsUpdate": {
             "type": "array",
             "items": {
                 "type": "object",

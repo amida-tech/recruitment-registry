@@ -26,9 +26,6 @@ const valueConverterByChoiceType = {
     },
     float: function (value) {
         return parseFloat(value);
-    },
-    enumeration: function (value) {
-        return parseInt(value);
     }
 };
 
@@ -40,7 +37,7 @@ const valueConverterByType = {
         }
         return converter(value);
     },
-    enumeration: function (value) {
+    'choice-ref': function (value) {
         return parseInt(value);
     },
     text: function (value) {

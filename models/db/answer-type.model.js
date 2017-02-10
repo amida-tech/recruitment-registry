@@ -21,7 +21,7 @@ module.exports = function (sequelize, DataTypes) {
             afterSync(options) {
                 if (options.force) {
                     const names = [
-                        'choice', 'text', 'zip', 'enumeration',
+                        'choice', 'text', 'zip',
                         'bool', 'bool-sole',
                         'date', 'year', 'month', 'day',
                         'integer', 'float',

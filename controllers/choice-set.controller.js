@@ -5,29 +5,29 @@ const _ = require('lodash');
 const models = require('../models');
 const shared = require('./shared.js');
 
-exports.createEnumeration = function (req, res) {
-    models.enumeration.createEnumeration(req.body)
+exports.createChoiceSet = function (req, res) {
+    models.choiceSet.createChoiceSet(req.body)
         .then(({ id }) => res.status(201).json({ id }))
         .catch(shared.handleError(res));
 };
 
-exports.deleteEnumeration = function (req, res) {
+exports.deleteChoiceSet = function (req, res) {
     const id = _.get(req, 'swagger.params.id.value');
-    models.enumeration.deleteEnumeration(id)
+    models.choiceSet.deleteChoiceSet(id)
         .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };
 
-exports.getEnumeration = function (req, res) {
+exports.getChoiceSet = function (req, res) {
     const id = _.get(req, 'swagger.params.id.value');
     const language = _.get(req, 'swagger.params.language.value');
-    models.enumeration.getEnumeration(id, language)
-        .then(enumeration => res.status(200).json(enumeration))
+    models.choiceSet.getChoiceSet(id, language)
+        .then(choiceSet => res.status(200).json(choiceSet))
         .catch(shared.handleError(res));
 };
 
-exports.listEnumerations = function (req, res) {
-    models.enumeration.listEnumerations()
-        .then(enumerations => res.status(200).json(enumerations))
+exports.listChoiceSets = function (req, res) {
+    models.choiceSet.listChoiceSets()
+        .then(choiceSets => res.status(200).json(choiceSets))
         .catch(shared.handleError(res));
 };

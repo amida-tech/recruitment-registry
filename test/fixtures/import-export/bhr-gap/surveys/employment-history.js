@@ -9,20 +9,20 @@ module.exports = {
     questions: [{
         text: 'How do you rate the condition of the building that you work?',
         required: false,
-        type: 'enumeration',
+        type: 'choice-ref',
         answerIdentifier: { type: 'employment-history', value: 'QID1' },
-        enumeration: 'condition'
+        choiceSetReference: 'condition'
     }, {
         text: 'What is the field of your current job?',
         required: true,
-        type: 'enumeration',
+        type: 'choice-ref',
         answerIdentifier: { type: 'employment-history', value: 'QID2' },
-        enumeration: 'primary-occupation',
+        choiceSetReference: 'primary-occupation',
         skip: {
             count: 1,
             rule: {
                 logic: 'not-equals',
-                answer: { integerValue: 20 }
+                answer: { code: '20' }
             }
         }
     }, {

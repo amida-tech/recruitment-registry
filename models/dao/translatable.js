@@ -37,6 +37,15 @@ module.exports = class Translatable {
             });
     }
 
+    deleteTextTx(parentId, transaction) {
+        const Table = sequelize.models[this.tableName];
+        const parentIdField = this.parentIdField;
+        const where = {
+            [parentIdField]: parentId
+        };
+        return Table.destroy({ where, transaction });
+    }
+
     createMultipleTextsTx(inputs, transaction) {
         const pxs = inputs.map(input => this.createTextTx(input, transaction));
         return SPromise.all(pxs);
@@ -70,16 +79,18 @@ module.exports = class Translatable {
     }
 
     _updateTextFields(parent, fieldValues) {
-        this.textFields.forEach(field => {
-            const value = fieldValues[field];
-            if (value !== null) {
-                parent[field] = fieldValues[field];
-            } else {
-                if (!this.optionals[field]) {
-                    parent[field] = '';
+        if (fieldValues) {
+            this.textFields.forEach(field => {
+                const value = fieldValues[field];
+                if (value !== null) {
+                    parent[field] = fieldValues[field];
+                } else {
+                    if (!this.optionals[field]) {
+                        parent[field] = '';
+                    }
                 }
-            }
-        });
+            });
+        }
         return parent;
     }
 
