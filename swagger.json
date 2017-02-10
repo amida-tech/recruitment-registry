@@ -2481,7 +2481,7 @@
             "x-swagger-router-controller": "enumeration.controller",
             "post": {
                 "summary": "Creates new enumeration",
-                "operationId": "createEnumeration",
+                "operationId": "createChoiceSet",
                 "security": [{
                     "admin": []
                 }],
@@ -2505,7 +2505,7 @@
             },
             "get": {
                 "summary": "Lists enumerations",
-                "operationId": "listEnumerations",
+                "operationId": "listChoiceSets",
                 "security": [{
                     "admin": []
                 }],
@@ -2540,7 +2540,7 @@
             }],
             "get": {
                 "summary": "Gets enumeration",
-                "operationId": "getEnumeration",
+                "operationId": "getChoiceSet",
                 "security": [{
                     "admin": []
                 }],
@@ -2566,7 +2566,7 @@
             },
             "delete": {
                 "summary": "Deletes enumeration",
-                "operationId": "deleteEnumeration",
+                "operationId": "deleteChoiceSet",
                 "security": [{
                     "admin": []
                 }],

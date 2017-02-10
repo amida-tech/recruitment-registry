@@ -38,10 +38,10 @@ describe('bhr gap import-export unit', function () {
     before(shared.setUpFn());
 
     it('load all enumerations', function () {
-        return models.enumeration.createEnumerations(enumerations)
-            .then(() => models.enumeration.listEnumerations())
+        return models.choiceSet.createChoiceSets(enumerations)
+            .then(() => models.choiceSet.listChoiceSets())
             .then(enumerations => {
-                const promises = enumerations.map(({ id }) => models.enumeration.getEnumeration(id));
+                const promises = enumerations.map(({ id }) => models.choiceSet.getChoiceSet(id));
                 return SPromise.all(promises).then(result => comparator.updateEnumerationMap(result));
             });
     });

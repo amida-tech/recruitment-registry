@@ -13,21 +13,21 @@ const SpecTests = class EnumerationSpecTests {
         this.hxEnumeration = hxEnumeration;
     }
 
-    createEnumerationFn() {
+    createChoiceSetFn() {
         const generator = this.generator;
         const hxEnumeration = this.hxEnumeration;
         return function () {
             const enumeration = generator.newEnumeration();
-            return models.enumeration.createEnumeration(enumeration)
+            return models.choiceSet.createChoiceSet(enumeration)
                 .then(({ id }) => hxEnumeration.push(enumeration, { id }));
         };
     }
 
-    getEnumerationFn(index) {
+    getChoiceSetFn(index) {
         const hxEnumeration = this.hxEnumeration;
         return function () {
             const id = hxEnumeration.id(index);
-            return models.enumeration.getEnumeration(id)
+            return models.choiceSet.getChoiceSet(id)
                 .then(enumeration => {
                     hxEnumeration.updateServer(index, enumeration);
                     comparator.enumeration(hxEnumeration.client(index), enumeration);
@@ -35,21 +35,21 @@ const SpecTests = class EnumerationSpecTests {
         };
     }
 
-    deleteEnumerationFn(index) {
+    deleteChoiceSetFn(index) {
         const hxEnumeration = this.hxEnumeration;
         return function () {
             const id = hxEnumeration.id(index);
-            return models.enumeration.deleteEnumeration(id)
+            return models.choiceSet.deleteChoiceSet(id)
                 .then(() => {
                     hxEnumeration.remove(index);
                 });
         };
     }
 
-    listEnumerationsFn() {
+    listChoiceSetsFn() {
         const hxEnumeration = this.hxEnumeration;
         return function () {
-            return models.enumeration.listEnumerations()
+            return models.choiceSet.listChoiceSets()
                 .then(enumerations => {
                     const expected = hxEnumeration.listServers(['id', 'reference']);
                     expect(enumerations).to.deep.equal(expected);
@@ -65,7 +65,7 @@ const IntegrationTests = class EnumerationIntegrationTests {
         this.hxEnumeration = hxEnumeration;
     }
 
-    createEnumerationFn() {
+    createChoiceSetFn() {
         const generator = this.generator;
         const rrSuperTest = this.rrSuperTest;
         const hxEnumeration = this.hxEnumeration;
@@ -79,7 +79,7 @@ const IntegrationTests = class EnumerationIntegrationTests {
         };
     }
 
-    getEnumerationFn(index) {
+    getChoiceSetFn(index) {
         const rrSuperTest = this.rrSuperTest;
         const hxEnumeration = this.hxEnumeration;
         return function (done) {
@@ -93,7 +93,7 @@ const IntegrationTests = class EnumerationIntegrationTests {
         };
     }
 
-    deleteEnumerationFn(index) {
+    deleteChoiceSetFn(index) {
         const rrSuperTest = this.rrSuperTest;
         const hxEnumeration = this.hxEnumeration;
         return function (done) {
@@ -106,7 +106,7 @@ const IntegrationTests = class EnumerationIntegrationTests {
         };
     }
 
-    listEnumerationsFn() {
+    listChoiceSetsFn() {
         const rrSuperTest = this.rrSuperTest;
         const hxEnumeration = this.hxEnumeration;
         return function (done) {

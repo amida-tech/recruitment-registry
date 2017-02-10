@@ -439,8 +439,8 @@ describe('survey unit', function () {
     surveyCount += 7;
 
     _.range(8).forEach(index => {
-        it(`create enumeration ${index}`, enumerationTests.createEnumerationFn());
-        it(`get enumeration ${index}`, enumerationTests.getEnumerationFn(index));
+        it(`create enumeration ${index}`, enumerationTests.createChoiceSetFn());
+        it(`get enumeration ${index}`, enumerationTests.getChoiceSetFn(index));
     });
 
     it('replace generator to enumeration question generator', function () {

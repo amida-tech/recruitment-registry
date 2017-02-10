@@ -24,18 +24,18 @@ describe('enumeration unit', function () {
     const tests = new enumerationCommon.SpecTests(generator, hxEnumeration);
 
     it('list all enums when none', function () {
-        return models.enumeration.listEnumerations()
+        return models.choiceSet.listChoiceSets()
             .then(enumerations => {
                 expect(enumerations).to.have.length(0);
             });
     });
 
     _.range(8).forEach(index => {
-        it(`create enumeration ${index}`, tests.createEnumerationFn());
-        it(`get enumeration ${index}`, tests.getEnumerationFn(index));
+        it(`create enumeration ${index}`, tests.createChoiceSetFn());
+        it(`get enumeration ${index}`, tests.getChoiceSetFn(index));
     });
 
-    it('list all enumerations', tests.listEnumerationsFn());
+    it('list all enumerations', tests.listChoiceSetsFn());
 
     const translateEnumerationFn = function (index, language) {
         return function () {
@@ -51,7 +51,7 @@ describe('enumeration unit', function () {
     const getTranslatedEnumerationFn = function (index, language, notTranslated) {
         return function () {
             const id = hxEnumeration.id(index);
-            return models.enumeration.getEnumeration(id, language)
+            return models.choiceSet.getChoiceSet(id, language)
                 .then(result => {
                     const expected = hxEnumeration.translatedServer(index, language);
                     if (!notTranslated) {
@@ -70,10 +70,10 @@ describe('enumeration unit', function () {
     });
 
     _.forEach([1, 4, 6], index => {
-        it(`delete enumeration ${index}`, tests.deleteEnumerationFn(index));
+        it(`delete enumeration ${index}`, tests.deleteChoiceSetFn(index));
     });
 
-    it('list all enumerations', tests.listEnumerationsFn());
+    it('list all enumerations', tests.listChoiceSetsFn());
 
     const deleteFirstChoiceFn = function (index) {
         return function () {
@@ -87,6 +87,6 @@ describe('enumeration unit', function () {
 
     _.forEach([0, 2, 3], index => {
         it(`delete first choice of enumeration ${index}`, deleteFirstChoiceFn(index));
-        it(`get enumeration ${index}`, tests.getEnumerationFn(index));
+        it(`get enumeration ${index}`, tests.getChoiceSetFn(index));
     });
 });

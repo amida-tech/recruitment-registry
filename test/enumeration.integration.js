@@ -28,11 +28,11 @@ describe('enumeration integration', function () {
     it('login as super', shared.loginFn(rrSuperTest, config.superUser));
 
     _.range(8).forEach(index => {
-        it(`create enumeration ${index}`, tests.createEnumerationFn());
-        it(`get enumeration ${index}`, tests.getEnumerationFn(index));
+        it(`create enumeration ${index}`, tests.createChoiceSetFn());
+        it(`get enumeration ${index}`, tests.getChoiceSetFn(index));
     });
 
-    it('list all enumerations', tests.listEnumerationsFn());
+    it('list all enumerations', tests.listChoiceSetsFn());
 
     const translateEnumerationFn = function (index, language) {
         return function (done) {
@@ -69,10 +69,10 @@ describe('enumeration integration', function () {
     });
 
     _.forEach([1, 4, 6], index => {
-        it(`delete enumeration ${index}`, tests.deleteEnumerationFn(index));
+        it(`delete enumeration ${index}`, tests.deleteChoiceSetFn(index));
     });
 
-    it('list all enumerations', tests.listEnumerationsFn());
+    it('list all enumerations', tests.listChoiceSetsFn());
 
     const deleteFirstChoiceFn = function (index) {
         return function (done) {
@@ -86,6 +86,6 @@ describe('enumeration integration', function () {
 
     _.forEach([0, 2, 3], index => {
         it(`delete first choice of enumeration ${index}`, deleteFirstChoiceFn(index));
-        it(`get enumeration ${index}`, tests.getEnumerationFn(index));
+        it(`get enumeration ${index}`, tests.getChoiceSetFn(index));
     });
 });
