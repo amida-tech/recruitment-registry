@@ -2580,10 +2580,10 @@
                 }
             }
         },
-        "/enumerals/multi-text/{language}": {
-            "x-swagger-router-controller": "enumeral.controller",
+        "/question-choices/multi-text/{language}": {
+            "x-swagger-router-controller": "question-choice.controller",
             "patch": {
-                "summary": "Updates or translates enumeration enumerals",
+                "summary": "Updates or translates question choice textx",
                 "operationId": "updateMultipleChoiceTexts",
                 "security": [{
                     "admin": []
@@ -2596,11 +2596,11 @@
                     "type": "string",
                     "minLength": 2
                 }, {
-                    "name": "enumeralTextsUpdate",
+                    "name": "questionChoiceTextsUpdate",
                     "in": "body",
                     "required": true,
                     "schema": {
-                        "$ref": "#/definitions/enumeralTextsUpdate"
+                        "$ref": "#/definitions/questionChoiceTextsUpdate"
                     }
                 }],
                 "responses": {
@@ -2613,8 +2613,8 @@
                 }
             }
         },
-        "/enumerals/{id}": {
-            "x-swagger-router-controller": "enumeral.controller",
+        "/question-choices/{id}": {
+            "x-swagger-router-controller": "question-choice.controller",
             "parameters": [{
                 "name": "id",
                 "in": "path",
@@ -2622,7 +2622,7 @@
                 "type": "integer"
             }],
             "delete": {
-                "summary": "Deletes enumeral",
+                "summary": "Deletes question choice",
                 "operationId": "deleteQuestionChoice",
                 "security": [{
                     "admin": []
@@ -4971,7 +4971,7 @@
                 }
             }
         },
-        "enumeralTextsUpdate": {
+        "questionChoiceTextsUpdate": {
             "type": "array",
             "items": {
                 "type": "object",

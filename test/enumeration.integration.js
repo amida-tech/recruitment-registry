@@ -38,7 +38,7 @@ describe('enumeration integration', function () {
         return function (done) {
             const server = hxEnumeration.server(index);
             const translation = translator.translateEnumeration(server, language);
-            rrSuperTest.patch(`/enumerals/multi-text/${language}`, translation.enumerals, 204)
+            rrSuperTest.patch(`/question-choices/multi-text/${language}`, translation.enumerals, 204)
                 .expect(function () {
                     hxEnumeration.translate(index, language, translation);
                 })
@@ -80,7 +80,7 @@ describe('enumeration integration', function () {
             const enumeralId = server.enumerals[0].id;
             const client = hxEnumeration.client(index);
             client.enumerals.shift(0);
-            rrSuperTest.delete(`/enumerals/${enumeralId}`, 204).end(done);
+            rrSuperTest.delete(`/question-choices/${enumeralId}`, 204).end(done);
         };
     };
 
