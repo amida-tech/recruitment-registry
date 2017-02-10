@@ -7,7 +7,6 @@ module.exports = {
         value: 'rivermead'
     },
     sections: [{
-        name: 'dummy',
         questions: [{
             text: 'Whether or not questions were asked based on TBI History',
             required: false,

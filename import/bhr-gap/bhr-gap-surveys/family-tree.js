@@ -124,7 +124,6 @@ module.exports = {
             choiceSetReference: 'no-yes-1-2',
         }]
     }, {
-        name: 'dummy',
         questions: [{
             answerIdentifier: { type: 'bhr-gap-family-tree-column', value: 'QID197' },
             text: 'Are you known to carry a genetic mutation (PS1/PS2 or APP) that causes early onset Alzheimer\'s disease?',

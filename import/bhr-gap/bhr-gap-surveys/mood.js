@@ -37,7 +37,6 @@ module.exports = {
         value: 'mood'
     },
     sections: [{
-        name: 'dummy',
         questions: [
             yes0No1Question('QID56', 'Are you basically satisfied with your life?'),
             yes1No0Question('QID57', 'Have you dropped many of your activities and interests?'),
@@ -113,7 +112,6 @@ module.exports = {
             text: 'i. Thinking that you would be better off dead or that you want to hurt yourself in some way'
         }]
     }, {
-        name: 'dummy',
         questions: [
             difficultQuestion('QID198', 'If you selected any of the above problems, how difficult have these problems made it for you to do your work, take care of things at home, or get along with other people?')
         ]

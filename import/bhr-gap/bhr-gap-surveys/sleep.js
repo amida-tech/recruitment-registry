@@ -7,7 +7,6 @@ module.exports = {
         value: 'sleep'
     },
     sections: [{
-        name: 'dummy',
         questions: [{
             text: 'During the past month, when have you usually gone to bed at night?',
             required: false,
@@ -102,7 +101,6 @@ module.exports = {
             answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID95_10_TEXT' }
         }]
     }, {
-        name: 'dummy',
         questions: [{
             text: 'During the past month, how would you rate your sleep quality overall?',
             type: 'choice-ref',
@@ -168,7 +166,6 @@ module.exports = {
             text: 'Other restlessness while you sleep',
         }]
     }, {
-        name: 'dummy',
         questions: [{
             text: 'If other reason, please describe',
             type: 'text',

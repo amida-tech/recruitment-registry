@@ -7,7 +7,6 @@ module.exports = {
         value: 'television-history'
     },
     sections: [{
-        name: 'Dummy',
         questions: [{
             text: 'Do you own any television of the following brands?',
             required: false,

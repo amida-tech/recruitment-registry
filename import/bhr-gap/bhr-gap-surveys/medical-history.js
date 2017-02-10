@@ -180,7 +180,6 @@ module.exports = {
             text: 'Amyotrophic lateral sclerosis (ALS)'
         }]
     }, {
-        name: 'dummy',
         questions: [{
                 text: 'Have you been diagnosed with human immunodeficiency virus (HIV)?',
                 type: 'choice-ref',

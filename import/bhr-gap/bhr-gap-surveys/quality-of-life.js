@@ -7,7 +7,6 @@ module.exports = {
         value: 'quality-of-life'
     },
     sections: [{
-        name: 'dummy',
         questions: [{
             text: 'In general, would you say your health is:',
             required: false,
@@ -133,7 +132,6 @@ module.exports = {
             choiceSetReference: 'yes-no-1-2'
         }]
     }, {
-        name: 'dummy',
         questions: [{
             text: 'During the past 4 weeks, to what extent has your physical health or emotional problems interfered with your normal social activities with family, friends, neighbors, or groups?',
             required: false,
@@ -142,7 +140,6 @@ module.exports = {
             choiceSetReference: 'interference'
         }]
     }, {
-        name: 'dummy',
         questions: [{
             text: 'How much bodily pain have you had during the past 4 weeks?',
             required: false,
@@ -151,7 +148,6 @@ module.exports = {
             choiceSetReference: 'severity'
         }]
     }, {
-        name: 'dummy',
         questions: [{
             text: 'During the past 4 weeks, how much did pain interfere with your normal work (including both work outside the home and housework)?',
             required: false,
@@ -217,7 +213,6 @@ module.exports = {
             choiceSetReference: 'frequency-time-6'
         }]
     }, {
-        name: 'dummy',
         questions: [{
             text: 'During the past 4 weeks, how much of the time has your physical health or emotional problems interfered with your social activities (like visiting with friends, relatives, etc.)?',
             required: false,
