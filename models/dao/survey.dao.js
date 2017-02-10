@@ -281,21 +281,6 @@ module.exports = class SurveyDAO extends Translatable {
         });
     }
 
-    replaceSurveySections(surveyId, sections) {
-        return sequelize.transaction(transaction => {
-            return SurveyQuestion.findAll({
-                    where: { surveyId },
-                    raw: true,
-                    attributes: ['questionId'],
-                    order: 'line'
-                })
-                .then(surveyQuestions => {
-                    const questionIds = surveyQuestions.map(surveyQuestion => surveyQuestion.questionId);
-                    return this.surveySection.bulkCreateSectionsForSurveyTx(surveyId, questionIds, sections, transaction);
-                });
-        });
-    }
-
     patchSurveyTextTx({ id, name, description, sections }, language, transaction) {
         return this.createTextTx({ id, name, description, language }, transaction)
             .then(() => {

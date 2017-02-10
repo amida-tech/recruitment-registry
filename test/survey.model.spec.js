@@ -556,8 +556,7 @@ describe('survey unit', function () {
 
     it('error: answer with invalid question id', function () {
         const survey = hxSurvey.server(6);
-        const qxs = survey.questions;
-        const answers = generator.answerQuestions(qxs);
+        const answers = generator.answerSurvey(survey);
         const input = {
             userId: hxUser.id(0),
             surveyId: survey.id,

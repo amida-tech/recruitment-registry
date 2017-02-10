@@ -63,7 +63,7 @@ module.exports = class SurveyGenerator {
         if (options.status) {
             result.status = options.status;
         }
-        const sectionType = options.noSection ? 0 : this.surveyIndex % 3;
+        const sectionType = options.noSection ? 0 : this.surveyIndex % 4;
         const count = this.count();
         const surveyQuestions = _.range(count).map(index => this.newSurveyQuestion(index));
         if (!sectionType) {
@@ -80,6 +80,10 @@ module.exports = class SurveyGenerator {
                 { name: 'parent_0', sections: sections.slice(0, 2) },
                 sections[2]
             ];
+        } else if (sectionType === 2) {
+            delete sections[0].name;
+            delete sections[2].name;
+            result.sections = sections;
         } else {
             result.sections = sections;
         }

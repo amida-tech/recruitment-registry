@@ -9,28 +9,9 @@ const Translatable = require('./translatable');
 const SurveySection = db.SurveySection;
 const SurveySectionQuestion = db.SurveySectionQuestion;
 
-const flattenHiearachy = function flattenHiearachy(sections, surveyQuestionIds, result, parentIndex = null) {
-    if (!result) {
-        result = [];
-    }
-    sections.forEach((section, line) => {
-        let { name, indices, questionIds } = section;
-        const type = (indices || questionIds) ? 'question' : 'section';
-        if (indices) {
-            questionIds = indices.map(index => surveyQuestionIds[index]);
-        }
-        const record = { parentIndex, line, section: { type, name, questionIds } };
-        result.push(record);
-        if (section.sections) {
-            flattenHiearachy(section.sections, surveyQuestionIds, result, result.length - 1);
-        }
-    });
-    return result;
-};
-
 module.exports = class SectionDAO extends Translatable {
     constructor() {
-        super('survey_section_text', 'surveySectionId', ['name']);
+        super('survey_section_text', 'surveySectionId', ['name'], { name: true });
     }
 
     createSurveySectionTx({ name, surveyId, line, type, parentIndex }, ids, transaction) {
@@ -38,8 +19,13 @@ module.exports = class SectionDAO extends Translatable {
         return SurveySection.create({ surveyId, line, type, parentId }, { transaction })
             .then(({ id }) => {
                 ids.push(id);
-                return this.createTextTx({ id, name }, transaction)
-                    .then(() => ids);
+                if (name) {
+                    return this.createTextTx({ id, name }, transaction).then(() => ids);
+                } else {
+                    return this.deleteTextTx(id, transaction).then(() => {
+                        return ids;
+                    });
+                }
             });
     }
 
@@ -64,40 +50,6 @@ module.exports = class SectionDAO extends Translatable {
                         return r;
                     }
                     const questionIds = indices.map(index => surveyQuestionIds[index]);
-                    if (questionIds) {
-                        const surveySectionId = sectionIds[line];
-                        questionIds.forEach(questionId => {
-                            const record = { surveySectionId, questionId, line };
-                            const promise = SurveySectionQuestion.create(record, { transaction });
-                            r.push(promise);
-                        });
-                    }
-                    return r;
-                }, []);
-                return SPromise.all(promises).then(() => sectionIds);
-            }));
-    }
-
-    bulkCreateSectionsForSurveyTx(surveyId, surveyQuestionIds, sections, transaction) { // TODO: Use sequelize bulkCreate with 4.0
-        const flattenedSections = flattenHiearachy(sections, surveyQuestionIds);
-        if (!sections.length) {
-            return SurveySection.destroy({ where: { surveyId }, transaction });
-        }
-        return SurveySection.destroy({ where: { surveyId }, transaction })
-            .then(() => {
-                return flattenedSections.reduce((r, { parentIndex, line, section }) => {
-                    const { name, type } = section;
-                    const record = { name, surveyId, line, type, parentIndex };
-                    if (r === null) {
-                        return this.createSurveySectionTx(record, [], transaction);
-                    } else {
-                        return r.then(ids => this.createSurveySectionTx(record, ids, transaction));
-                    }
-                }, null);
-            })
-            .then((sectionIds => {
-                const promises = flattenedSections.reduce((r, { section }, line) => {
-                    const questionIds = section.questionIds;
                     if (questionIds) {
                         const surveySectionId = sectionIds[line];
                         questionIds.forEach(questionId => {

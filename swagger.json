@@ -377,38 +377,6 @@
                 }
             }
         },
-        "/surveys/{id}/sections": {
-            "parameters": [{
-                "name": "id",
-                "in": "path",
-                "required": true,
-                "type": "integer"
-            }],
-            "x-swagger-router-controller": "survey.controller",
-            "patch": {
-                "summary": "Replaces survey sections",
-                "operationId": "replaceSurveySections",
-                "security": [{
-                    "admin": []
-                }],
-                "parameters": [{
-                    "name": "sections",
-                    "in": "body",
-                    "required": true,
-                    "schema": {
-                        "$ref": "#/definitions/newSections"
-                    }
-                }],
-                "responses": {
-                    "204": {
-                        "description": "Successul response"
-                    },
-                    "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
         "/answered-surveys/{id}": {
             "x-swagger-router-controller": "survey.controller",
             "get": {
@@ -2917,7 +2885,6 @@
         },
         "newSection": {
             "type": "object",
-            "required": ["name"],
             "properties": {
                 "name": {
                     "type": "string",
@@ -2936,16 +2903,9 @@
             "maxProperties": 2,
             "additionalProperties": false
         },
-        "newSections": {
-            "type": "array",
-            "items": {
-                "$ref": "#/definitions/newSection"
-            },
-            "minItems": 1
-        },
         "section": {
             "type": "object",
-            "required": ["id", "name"],
+            "required": ["id"],
             "properties": {
                 "id": {
                     "type": "integer",
