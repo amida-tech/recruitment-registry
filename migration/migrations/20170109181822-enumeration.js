@@ -124,13 +124,6 @@ const questionEnum = function (queryInterface, Sequelize) {
     });
 };
 
-const questionChoiceEnum = function (queryInterface, Sequelize) {
-    return queryInterface.addColumn('question_choice', 'enumeration_id', {
-        field: 'enumeration_id',
-        type: Sequelize.INTEGER
-    });
-};
-
 module.exports = {
     up: function (queryInterface, Sequelize) {
         const sequelize = queryInterface.sequelize;
@@ -138,7 +131,6 @@ module.exports = {
             .then(() => enumeral(queryInterface, Sequelize))
             .then(() => enumeralText(queryInterface, Sequelize))
             .then(() => questionEnum(queryInterface, Sequelize))
-            .then(() => questionChoiceEnum(queryInterface, Sequelize))
             .then(() => queryInterface.addIndex('enumeration', ['reference'], {
                 where: { deleted_at: { $eq: null } },
                 indexName: 'enumeration_reference',
@@ -153,18 +145,15 @@ module.exports = {
                 indexName: 'enumeral_text_enumeral_id_language_code',
                 indicesType: 'UNIQUE'
             }))
-            .then(() => sequelize.query('INSERT INTO question_type (name) VALUES (\'enumeration\')'))
-            .then(() => sequelize.query('INSERT INTO answer_type (name) VALUES (\'enumeration\')'));
+            .then(() => sequelize.query('INSERT INTO question_type (name) VALUES (\'enumeration\')'));
     },
 
     down: function (queryInterface) {
         const sequelize = queryInterface.sequelize;
         return queryInterface.removeColumn('question', 'enumeration_id')
-            .then(() => queryInterface.removeColumn('question_choice', 'enumeration_id'))
             .then(() => queryInterface.dropTable('enumeration'))
             .then(() => queryInterface.dropTable('enumeral_text'))
             .then(() => queryInterface.dropTable('enumeral'))
-            .then(() => sequelize.query('DELETE FROM answer_type WHERE name = \'enumeration\''))
             .then(() => sequelize.query('DELETE FROM question_type WHERE name = \'enumeration\''));
 
     }

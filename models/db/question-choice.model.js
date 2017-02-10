@@ -19,14 +19,6 @@ module.exports = function (sequelize, DataTypes) {
                 key: 'name'
             },
         },
-        enumerationId: {
-            type: DataTypes.INTEGER,
-            field: 'enumeration_id',
-            references: {
-                model: 'enumeration',
-                key: 'id'
-            }
-        },
         meta: {
             type: DataTypes.JSON
         },

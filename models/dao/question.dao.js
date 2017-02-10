@@ -32,17 +32,11 @@ module.exports = class QuestionDAO extends Translatable {
     }
 
     createChoicesTx(questionId, choices, transaction) {
-        const pxs = choices.map(({ text, type, meta, enumerationId, enumeration, answerIdentifier }, line) => {
+        const pxs = choices.map(({ text, type, meta, answerIdentifier }, line) => {
             type = type || 'bool';
             const choice = { questionId, text, type, line };
             if (meta) {
                 choice.meta = meta;
-            }
-            if (enumerationId) {
-                choice.enumerationId = enumerationId;
-            }
-            if (enumeration) {
-                choice.enumeration = enumeration;
             }
             return this.questionChoice.createQuestionChoiceTx(choice, transaction)
                 .then(({ id }) => {
