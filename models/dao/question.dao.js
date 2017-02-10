@@ -75,10 +75,10 @@ module.exports = class QuestionDAO extends Translatable {
 
     createQuestionTx(question, transaction) {
         return this.updateEnumeration(question.choiceSetReference, transaction)
-            .then(enumerationId => {
+            .then(choiceSetId => {
                 const baseFields = _.omit(question, ['oneOfChoices', 'choices', 'actions']);
-                if (enumerationId) {
-                    baseFields.enumerationId = enumerationId;
+                if (choiceSetId) {
+                    baseFields.choiceSetId = choiceSetId;
                 }
                 return Question.create(baseFields, { transaction, raw: true })
                     .then(result => {
@@ -168,7 +168,7 @@ module.exports = class QuestionDAO extends Translatable {
 
     getQuestion(id, options = {}) {
         const language = options.language;
-        return Question.findById(id, { raw: true, attributes: ['id', 'type', 'meta', 'multiple', 'maxCount', 'enumerationId'] })
+        return Question.findById(id, { raw: true, attributes: ['id', 'type', 'meta', 'multiple', 'maxCount', 'choiceSetId'] })
             .then(question => {
                 if (!question) {
                     return RRError.reject('qxNotFound');
@@ -182,17 +182,17 @@ module.exports = class QuestionDAO extends Translatable {
                 if (question.multiple === null) {
                     delete question.multiple;
                 }
-                if (question.enumerationId === null) {
-                    delete question.enumerationId;
+                if (question.choiceSetId === null) {
+                    delete question.choiceSetId;
                 }
                 return question;
             })
             .then(question => {
-                if (question.enumerationId) {
-                    return this.questionChoice.listQuestionChoices(question.enumerationId, language)
+                if (question.choiceSetId) {
+                    return this.questionChoice.listQuestionChoices(question.choiceSetId, language)
                         .then(choices => {
                             question.choices = choices.map(({ id, text, code }) => ({ id, text, code }));
-                            delete question.enumerationId;
+                            delete question.choiceSetId;
                             return question;
                         });
                 }
@@ -272,7 +272,7 @@ module.exports = class QuestionDAO extends Translatable {
         scope = scope || 'summary';
         const attributes = ['id', 'type'];
         if (scope === 'complete' || scope === 'export') {
-            attributes.push('meta', 'multiple', 'maxCount', 'enumerationId');
+            attributes.push('meta', 'multiple', 'maxCount', 'choiceSetId');
         }
         const options = { raw: true, attributes, order: 'id' };
         if (ids) {
@@ -300,18 +300,18 @@ module.exports = class QuestionDAO extends Translatable {
                     if (question.multiple === null) {
                         delete question.multiple;
                     }
-                    if (question.enumerationId === null) {
-                        delete question.enumerationId;
+                    if (question.choiceSetId === null) {
+                        delete question.choiceSetId;
                     }
                 });
                 return this.updateAllTexts(questions, language)
                     .then(() => {
                         const promises = questions.reduce((r, question) => {
-                            if (question.enumerationId) {
-                                const promise = this.questionChoice.listQuestionChoices(question.enumerationId, language)
+                            if (question.choiceSetId) {
+                                const promise = this.questionChoice.listQuestionChoices(question.choiceSetId, language)
                                     .then(choices => {
                                         question.choices = choices.map(({ id, text, code }) => ({ id, text, code }));
-                                        delete question.enumerationId;
+                                        delete question.choiceSetId;
                                     });
                                 r.push(promise);
                             }

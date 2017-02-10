@@ -32,9 +32,9 @@ const comparator = {
             expected.choices = expected.oneOfChoices.map(choice => ({ text: choice }));
             delete expected.oneOfChoices;
         }
-        if (expected.enumerationId) {
-            expected.choices = enumerationMap.get(expected.enumerationId);
-            delete expected.enumerationId;
+        if (expected.choiceSetId) {
+            expected.choices = enumerationMap.get(expected.choiceSetId);
+            delete expected.choiceSetId;
         }
         if (expected.choiceSetReference) {
             expected.choices = enumerationMap.get(expected.choiceSetReference);

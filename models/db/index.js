@@ -60,7 +60,7 @@ const UserAssessmentAnswer = sequelize.import('./user-assessment-answer.model');
 const QuestionIdentifier = sequelize.import('./question-identifier.model');
 const AnswerIdentifier = sequelize.import('./answer-identifier.model');
 const SurveyIdentifier = sequelize.import('./survey-identifier.model');
-const Enumeration = sequelize.import('./enumeration.model');
+const ChoiceSet = sequelize.import('./choice-set.model');
 const StagingBhrGap = sequelize.import('./staging-bhr-gap.model');
 
 const questionBelongsToArgument = {
@@ -157,6 +157,6 @@ module.exports = {
     QuestionIdentifier,
     AnswerIdentifier,
     SurveyIdentifier,
-    Enumeration,
+    ChoiceSet,
     StagingBhrGap
 };

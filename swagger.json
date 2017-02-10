@@ -2877,7 +2877,7 @@
                     "type": "integer",
                     "minimum": 1
                 },
-                "enumerationId": {
+                "choiceSetId": {
                     "type": "integer",
                     "minimum": 1
                 },
@@ -3814,7 +3814,7 @@
                     "type": "integer",
                     "minimum": 1
                 },
-                "enumerationId": {
+                "choiceSetId": {
                     "type": "integer",
                     "minimum": 1
                 },

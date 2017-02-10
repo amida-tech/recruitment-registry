@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('enumeration', {
+    return sequelize.define('choice_set', {
         reference: {
             type: DataTypes.TEXT,
             allowNull: false

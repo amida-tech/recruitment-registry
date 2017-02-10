@@ -68,10 +68,10 @@ module.exports = class QuestionChoiceDAO extends Translatable {
         return this.createMultipleTextsTx(inputs, transaction);
     }
 
-    createQuestionChoices(enumerationId, choices, transaction) {
+    createQuestionChoices(choiceSetId, choices, transaction) {
         const type = 'choice';
         const promises = choices.map(({ code, text }, line) => {
-            return this.createQuestionChoiceTx({ enumerationId, text, code, line, type }, transaction);
+            return this.createQuestionChoiceTx({ choiceSetId, text, code, line, type }, transaction);
         });
         return SPromise.all(promises);
     }
@@ -82,13 +82,13 @@ module.exports = class QuestionChoiceDAO extends Translatable {
         });
     }
 
-    listQuestionChoices(enumerationId, language) {
-        return QuestionChoice.findAll({ where: { enumerationId }, raw: true, attributes: ['id', 'code'], order: 'line' })
+    listQuestionChoices(choiceSetId, language) {
+        return QuestionChoice.findAll({ where: { choiceSetId }, raw: true, attributes: ['id', 'code'], order: 'line' })
             .then(choices => this.updateAllTexts(choices, language));
     }
 
-    deleteAllQuestionChoices(enumerationId, transaction) {
-        return QuestionChoice.destroy({ where: { enumerationId }, transaction });
+    deleteAllQuestionChoices(choiceSetId, transaction) {
+        return QuestionChoice.destroy({ where: { choiceSetId }, transaction });
     }
 
     deleteQuestionChoice(id) {

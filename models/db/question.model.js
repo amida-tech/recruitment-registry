@@ -10,11 +10,11 @@ module.exports = function (sequelize, DataTypes) {
                 key: 'name'
             }
         },
-        enumerationId: {
+        choiceSetId: {
             type: DataTypes.INTEGER,
-            field: 'enumeration_id',
+            field: 'choice_set_id',
             references: {
-                model: 'enumeration',
+                model: 'choice_set',
                 key: 'id'
             }
         },

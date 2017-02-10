@@ -15,7 +15,7 @@ module.exports = class EnumerationQuestionGenerator extends QuestionGenerator {
         const layoutIndex = index % 2;
         if (layoutIndex === 0) {
             const result = this.newBody('choice-ref');
-            result.enumerationId = enumerationInfo.id;
+            result.choiceSetId = enumerationInfo.id;
             return result;
         }
         if (layoutIndex === 1) {

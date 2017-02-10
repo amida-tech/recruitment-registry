@@ -5,7 +5,7 @@ const db = require('../db');
 const RRError = require('../../lib/rr-error');
 
 const sequelize = db.sequelize;
-const Enumeration = db.Enumeration;
+const ChoiceSet = db.ChoiceSet;
 const SPromise = require('../../lib/promise');
 
 module.exports = class EnumDAO {
@@ -14,7 +14,7 @@ module.exports = class EnumDAO {
     }
 
     createEnumerationTx({ reference, choices }, transaction) {
-        return Enumeration.create({ reference }, { transaction })
+        return ChoiceSet.create({ reference }, { transaction })
             .then(({ id }) => {
                 return this.questionChoice.createQuestionChoices(id, choices, transaction)
                     .then(() => ({ id }));
@@ -37,7 +37,7 @@ module.exports = class EnumDAO {
     }
 
     listEnumerations() {
-        return Enumeration.findAll({
+        return ChoiceSet.findAll({
             raw: true,
             attributes: ['id', 'reference'],
             order: 'id'
@@ -47,12 +47,12 @@ module.exports = class EnumDAO {
     deleteEnumeration(id) {
         return sequelize.transaction(transaction => {
             return this.questionChoice.deleteAllQuestionChoices(id, transaction)
-                .then(() => Enumeration.destroy({ where: { id }, transaction }));
+                .then(() => ChoiceSet.destroy({ where: { id }, transaction }));
         });
     }
 
     getEnumeration(id, language) {
-        return Enumeration.findById(id, { raw: true, attributes: ['id', 'reference'] })
+        return ChoiceSet.findById(id, { raw: true, attributes: ['id', 'reference'] })
             .then(result => {
                 return this.questionChoice.listQuestionChoices(id, language)
                     .then(choices => {
@@ -63,7 +63,7 @@ module.exports = class EnumDAO {
     }
 
     getEnumerationIdByReference(reference, transaction) {
-        return Enumeration.findOne({ where: { reference }, raw: true, attributes: ['id'], transaction })
+        return ChoiceSet.findOne({ where: { reference }, raw: true, attributes: ['id'], transaction })
             .then(record => {
                 if (record) {
                     return record.id;

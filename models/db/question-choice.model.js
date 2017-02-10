@@ -35,11 +35,11 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.DATE,
             field: 'updated_at',
         },
-        enumerationId: {
+        choiceSetId: {
             type: DataTypes.INTEGER,
-            field: 'enumeration_id',
+            field: 'choice_set_id',
             references: {
-                model: 'enumeration',
+                model: 'choice_set',
                 key: 'id'
             }
         },
@@ -56,7 +56,7 @@ module.exports = function (sequelize, DataTypes) {
             fields: ['question_id'],
             where: { deleted_at: { $eq: null } }
         }, {
-            fields: ['enumeration_id'],
+            fields: ['choice_set_id'],
             where: { deleted_at: { $eq: null } }
         }],
         paranoid: true
