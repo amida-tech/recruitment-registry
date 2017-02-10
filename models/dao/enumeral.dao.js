@@ -6,16 +6,17 @@ const SPromise = require('../../lib/promise');
 
 const Translatable = require('./translatable');
 
-const Enumeral = db.Enumeral;
+const QuestionChoice = db.QuestionChoice;
 
 module.exports = class EnumeralDAO extends Translatable {
     constructor() {
-        super('enumeral_text', 'enumeralId');
+        super('question_choice_text', 'questionChoiceId');
     }
 
     createEnumerals(enumerationId, enumerals, transaction) {
+        const type = 'choice';
         const promises = enumerals.map(({ code, text }, line) => {
-            return Enumeral.create({ enumerationId, code, line }, { transaction })
+            return QuestionChoice.create({ enumerationId, code, line, type }, { transaction })
                 .then(({ id }) => {
                     return this.createTextTx({ id, text }, transaction)
                         .then(({ id }) => ({ id }));
@@ -30,15 +31,15 @@ module.exports = class EnumeralDAO extends Translatable {
     }
 
     listEnumerals(enumerationId, language) {
-        return Enumeral.findAll({ where: { enumerationId }, raw: true, attributes: ['id', 'code'], order: 'line' })
+        return QuestionChoice.findAll({ where: { enumerationId }, raw: true, attributes: ['id', 'code'], order: 'line' })
             .then(enumerals => this.updateAllTexts(enumerals, language));
     }
 
     deleteAllEnumerals(enumerationId, transaction) {
-        return Enumeral.destroy({ where: { enumerationId }, transaction });
+        return QuestionChoice.destroy({ where: { enumerationId }, transaction });
     }
 
     deleteEnumeral(id) {
-        return Enumeral.destroy({ where: { id } });
+        return QuestionChoice.destroy({ where: { id } });
     }
 };

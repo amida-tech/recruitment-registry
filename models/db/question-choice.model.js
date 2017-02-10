@@ -5,7 +5,6 @@ module.exports = function (sequelize, DataTypes) {
         questionId: {
             type: DataTypes.INTEGER,
             field: 'question_id',
-            allowNull: false,
             references: {
                 model: 'question',
                 key: 'id'
@@ -17,7 +16,7 @@ module.exports = function (sequelize, DataTypes) {
             references: {
                 model: 'answer_type',
                 key: 'name'
-            },
+            }
         },
         code: {
             type: DataTypes.TEXT
@@ -36,9 +35,30 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.DATE,
             field: 'updated_at',
         },
+        enumerationId: {
+            type: DataTypes.INTEGER,
+            field: 'enumeration_id',
+            references: {
+                model: 'enumeration',
+                key: 'id'
+            }
+        },
+        deletedAt: {
+            type: DataTypes.DATE,
+            field: 'deleted_at'
+        }
     }, {
         freezeTableName: true,
         createdAt: 'createdAt',
-        updatedAt: 'updatedAt'
+        updatedAt: 'updatedAt',
+        deletedAt: 'deletedAt',
+        indexes: [{
+            fields: ['question_id'],
+            where: { deleted_at: { $eq: null } }
+        }, {
+            fields: ['enumeration_id'],
+            where: { deleted_at: { $eq: null } }
+        }],
+        paranoid: true
     });
 };

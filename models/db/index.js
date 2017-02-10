@@ -61,8 +61,6 @@ const QuestionIdentifier = sequelize.import('./question-identifier.model');
 const AnswerIdentifier = sequelize.import('./answer-identifier.model');
 const SurveyIdentifier = sequelize.import('./survey-identifier.model');
 const Enumeration = sequelize.import('./enumeration.model');
-const Enumeral = sequelize.import('./enumeral.model');
-const EnumeralText = sequelize.import('./enumeral-text.model');
 const StagingBhrGap = sequelize.import('./staging-bhr-gap.model');
 
 const questionBelongsToArgument = {
@@ -160,7 +158,5 @@ module.exports = {
     AnswerIdentifier,
     SurveyIdentifier,
     Enumeration,
-    Enumeral,
-    EnumeralText,
     StagingBhrGap
 };
