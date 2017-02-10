@@ -17,6 +17,9 @@ module.exports = [{
     reference: 'count-0-8-plus',
     enumerals: countEnumerals(8, true)
 }, {
+    reference: 'count-0-3-plus',
+    enumerals: countEnumerals(3, true)
+}, {
     reference: 'condition',
     enumerals: [
         { text: 'Excellent', code: '1' },
