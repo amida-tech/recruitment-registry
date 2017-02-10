@@ -28,10 +28,10 @@ describe('question unit', function () {
     before(shared.setUpFn());
 
     const hxQuestion = new History();
-    const hxEnumeration = new History();
+    const hxChoiceSet = new History();
     const hxSurvey = new History();
     const tests = new questionCommon.SpecTests(generator, hxQuestion);
-    const enumerationTests = new enumerationCommon.SpecTests(generator, hxEnumeration);
+    const enumerationTests = new enumerationCommon.SpecTests(generator, hxChoiceSet);
 
     it('list all questions when none', function () {
         return models.question.listQuestions()
@@ -367,7 +367,7 @@ describe('question unit', function () {
     });
 
     it('replace generator to enumeration question generator', function () {
-        const enumerations = _.range(8).map(index => hxEnumeration.server(index));
+        const enumerations = _.range(8).map(index => hxChoiceSet.server(index));
         const enumerationGenerator = new EnumerationQuestionGenerator(generator.questionGenerator, enumerations);
         generator.questionGenerator = enumerationGenerator;
         comparator.updateEnumerationMap(enumerations);

@@ -34,10 +34,10 @@ describe('survey integration', function () {
     const hxUser = new History();
     let surveyCount = 8;
     const hxSurvey = new SurveyHistory();
-    const hxEnumeration = new History();
+    const hxChoiceSet = new History();
 
     const tests = new surveyCommon.IntegrationTests(store, generator, hxSurvey);
-    const enumerationTests = new enumerationCommon.SpecTests(generator, hxEnumeration);
+    const enumerationTests = new enumerationCommon.SpecTests(generator, hxChoiceSet);
     let surveyTemp = null;
 
     before(shared.setUpFn(store));
@@ -410,7 +410,7 @@ describe('survey integration', function () {
     });
 
     it('replace generator to enumeration question generator', function () {
-        const enumerations = _.range(8).map(index => hxEnumeration.server(index));
+        const enumerations = _.range(8).map(index => hxChoiceSet.server(index));
         const enumerationGenerator = new EnumerationQuestionGenerator(generator.questionGenerator, enumerations);
         generator.questionGenerator = enumerationGenerator;
         generator.surveyGenerator.questionGenerator = enumerationGenerator;

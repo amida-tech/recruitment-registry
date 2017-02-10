@@ -20,8 +20,8 @@ const shared = new SharedIntegration(generator);
 
 describe('enumeration integration', function () {
     const rrSuperTest = new RRSuperTest();
-    const hxEnumeration = new History();
-    const tests = new enumerationCommon.IntegrationTests(rrSuperTest, generator, hxEnumeration);
+    const hxChoiceSet = new History();
+    const tests = new enumerationCommon.IntegrationTests(rrSuperTest, generator, hxChoiceSet);
 
     before(shared.setUpFn(rrSuperTest));
 
@@ -36,11 +36,11 @@ describe('enumeration integration', function () {
 
     const translateEnumerationFn = function (index, language) {
         return function (done) {
-            const server = hxEnumeration.server(index);
+            const server = hxChoiceSet.server(index);
             const translation = translator.translateEnumeration(server, language);
             rrSuperTest.patch(`/question-choices/multi-text/${language}`, translation.choices, 204)
                 .expect(function () {
-                    hxEnumeration.translate(index, language, translation);
+                    hxChoiceSet.translate(index, language, translation);
                 })
                 .end(done);
         };
@@ -48,10 +48,10 @@ describe('enumeration integration', function () {
 
     const getTranslatedEnumerationFn = function (index, language, notTranslated) {
         return function (done) {
-            const id = hxEnumeration.id(index);
-            rrSuperTest.get(`/enumerations/${id}`, true, 200, { language })
+            const id = hxChoiceSet.id(index);
+            rrSuperTest.get(`/choice-sets/${id}`, true, 200, { language })
                 .expect(function (res) {
-                    const expected = hxEnumeration.translatedServer(index, language);
+                    const expected = hxChoiceSet.translatedServer(index, language);
                     if (!notTranslated) {
                         translator.isEnumerationTranslated(expected, language);
                     }
@@ -76,9 +76,9 @@ describe('enumeration integration', function () {
 
     const deleteFirstChoiceFn = function (index) {
         return function (done) {
-            const server = hxEnumeration.server(index);
+            const server = hxChoiceSet.server(index);
             const choiceId = server.choices[0].id;
-            const client = hxEnumeration.client(index);
+            const client = hxChoiceSet.client(index);
             client.choices.shift(0);
             rrSuperTest.delete(`/question-choices/${choiceId}`, 204).end(done);
         };

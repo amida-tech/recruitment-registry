@@ -87,10 +87,10 @@ describe('question integration', function () {
     }
 
     const hxQuestion = new History();
-    const hxEnumeration = new History();
+    const hxChoiceSet = new History();
     const hxSurvey = new History();
     const tests = new questionCommon.IntegrationTests(store, generator, hxQuestion);
-    const enumerationTests = new enumerationCommon.SpecTests(generator, hxEnumeration);
+    const enumerationTests = new enumerationCommon.SpecTests(generator, hxChoiceSet);
 
     for (let i = 0; i < 10; ++i) {
         it(`create question ${i}`, tests.createQuestionFn());
@@ -384,7 +384,7 @@ describe('question integration', function () {
     });
 
     it('replace generator to enumeration question generator', function () {
-        const enumerations = _.range(8).map(index => hxEnumeration.server(index));
+        const enumerations = _.range(8).map(index => hxChoiceSet.server(index));
         const enumerationGenerator = new EnumerationQuestionGenerator(generator.questionGenerator, enumerations);
         generator.questionGenerator = enumerationGenerator;
         comparator.updateEnumerationMap(enumerations);

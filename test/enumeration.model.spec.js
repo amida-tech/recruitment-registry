@@ -20,8 +20,8 @@ const shared = new SharedSpec(generator);
 describe('enumeration unit', function () {
     before(shared.setUpFn());
 
-    const hxEnumeration = new History();
-    const tests = new enumerationCommon.SpecTests(generator, hxEnumeration);
+    const hxChoiceSet = new History();
+    const tests = new enumerationCommon.SpecTests(generator, hxChoiceSet);
 
     it('list all enums when none', function () {
         return models.choiceSet.listChoiceSets()
@@ -39,21 +39,21 @@ describe('enumeration unit', function () {
 
     const translateEnumerationFn = function (index, language) {
         return function () {
-            const server = hxEnumeration.server(index);
+            const server = hxChoiceSet.server(index);
             const translation = translator.translateEnumeration(server, language);
             return models.questionChoice.updateMultipleChoiceTexts(translation.choices, language)
                 .then(() => {
-                    hxEnumeration.translate(index, language, translation);
+                    hxChoiceSet.translate(index, language, translation);
                 });
         };
     };
 
     const getTranslatedEnumerationFn = function (index, language, notTranslated) {
         return function () {
-            const id = hxEnumeration.id(index);
+            const id = hxChoiceSet.id(index);
             return models.choiceSet.getChoiceSet(id, language)
                 .then(result => {
-                    const expected = hxEnumeration.translatedServer(index, language);
+                    const expected = hxChoiceSet.translatedServer(index, language);
                     if (!notTranslated) {
                         translator.isEnumerationTranslated(expected, language);
                     }
@@ -77,9 +77,9 @@ describe('enumeration unit', function () {
 
     const deleteFirstChoiceFn = function (index) {
         return function () {
-            const server = hxEnumeration.server(index);
+            const server = hxChoiceSet.server(index);
             const choiceId = server.choices[0].id;
-            const client = hxEnumeration.client(index);
+            const client = hxChoiceSet.client(index);
             client.choices.shift(0);
             return models.questionChoice.deleteQuestionChoice(choiceId);
         };

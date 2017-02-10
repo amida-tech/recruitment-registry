@@ -2476,22 +2476,21 @@
                 }
             }
         },
-
-        "/enumerations": {
-            "x-swagger-router-controller": "enumeration.controller",
+        "/choice-sets": {
+            "x-swagger-router-controller": "choice-set.controller",
             "post": {
-                "summary": "Creates new enumeration",
+                "summary": "Creates new choice set",
                 "operationId": "createChoiceSet",
                 "security": [{
                     "admin": []
                 }],
                 "parameters": [{
-                    "name": "newEnumeration",
+                    "name": "newChoiceSet",
                     "in": "body",
-                    "description": "Enumeration object",
+                    "description": "Choice set object",
                     "required": true,
                     "schema": {
-                        "$ref": "#/definitions/newEnumeration"
+                        "$ref": "#/definitions/newChoiceSet"
                     }
                 }],
                 "responses": {
@@ -2504,7 +2503,7 @@
                 }
             },
             "get": {
-                "summary": "Lists enumerations",
+                "summary": "Lists choice sets",
                 "operationId": "listChoiceSets",
                 "security": [{
                     "admin": []
@@ -2521,7 +2520,7 @@
                     "200": {
                         "description": "Successful response",
                         "schema": {
-                            "$ref": "#/definitions/enumerations"
+                            "$ref": "#/definitions/choiceSets"
                         }
                     },
                     "default": {
@@ -2530,8 +2529,8 @@
                 }
             }
         },
-        "/enumerations/{id}": {
-            "x-swagger-router-controller": "enumeration.controller",
+        "/choice-sets/{id}": {
+            "x-swagger-router-controller": "choice-set.controller",
             "parameters": [{
                 "name": "id",
                 "in": "path",
@@ -2539,7 +2538,7 @@
                 "type": "integer"
             }],
             "get": {
-                "summary": "Gets enumeration",
+                "summary": "Gets choice set",
                 "operationId": "getChoiceSet",
                 "security": [{
                     "admin": []
@@ -2556,7 +2555,7 @@
                     "200": {
                         "description": "Successful response",
                         "schema": {
-                            "$ref": "#/definitions/enumeration"
+                            "$ref": "#/definitions/choiceSet"
                         }
                     },
                     "default": {
@@ -2565,7 +2564,7 @@
                 }
             },
             "delete": {
-                "summary": "Deletes enumeration",
+                "summary": "Deletes choice set",
                 "operationId": "deleteChoiceSet",
                 "security": [{
                     "admin": []
@@ -4852,7 +4851,7 @@
             },
             "additionalProperties": false
         },
-        "newEnumeration": {
+        "newChoiceSet": {
             "type": "object",
             "required": ["reference", "choices"],
             "properties": {
@@ -4881,7 +4880,7 @@
             },
             "additionalProperties": false
         },
-        "enumeration": {
+        "choiceSet": {
             "type": "object",
             "required": ["id", "reference", "choices"],
             "properties": {
@@ -4918,7 +4917,7 @@
             },
             "additionalProperties": false
         },
-        "enumerations": {
+        "choiceSets": {
             "type": "array",
             "items": {
                 "type": "object",

@@ -27,13 +27,13 @@ describe('answer unit', function () {
     const hxUser = new History();
     const hxSurvey = new SurveyHistory();
     const hxQuestion = new History();
-    const hxEnumeration = new History();
+    const hxChoiceSet = new History();
 
     const tests = new answerCommon.SpecTests(generator, hxUser, hxSurvey, hxQuestion);
     const hxAnswers = tests.hxAnswer;
 
     const questionTests = new questionCommon.SpecTests(generator, hxQuestion);
-    const enumerationTests = new enumerationCommon.SpecTests(generator, hxEnumeration);
+    const enumerationTests = new enumerationCommon.SpecTests(generator, hxChoiceSet);
 
     before(shared.setUpFn());
 
@@ -210,7 +210,7 @@ describe('answer unit', function () {
     });
 
     it('replace generator to enumeration question generator', function () {
-        const enumerations = _.range(8).map(index => hxEnumeration.server(index));
+        const enumerations = _.range(8).map(index => hxChoiceSet.server(index));
         const enumerationGenerator = new EnumerationQuestionGenerator(generator.questionGenerator, enumerations);
         generator.questionGenerator = enumerationGenerator;
         comparator.updateEnumerationMap(enumerations);

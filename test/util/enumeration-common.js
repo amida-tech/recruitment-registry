@@ -7,51 +7,51 @@ const comparator = require('./comparator');
 
 const expect = chai.expect;
 
-const SpecTests = class EnumerationSpecTests {
-    constructor(generator, hxEnumeration) {
+const SpecTests = class ChoiceSetSpecTests {
+    constructor(generator, hxChoiceSet) {
         this.generator = generator;
-        this.hxEnumeration = hxEnumeration;
+        this.hxChoiceSet = hxChoiceSet;
     }
 
     createChoiceSetFn() {
         const generator = this.generator;
-        const hxEnumeration = this.hxEnumeration;
+        const hxChoiceSet = this.hxChoiceSet;
         return function () {
             const enumeration = generator.newEnumeration();
             return models.choiceSet.createChoiceSet(enumeration)
-                .then(({ id }) => hxEnumeration.push(enumeration, { id }));
+                .then(({ id }) => hxChoiceSet.push(enumeration, { id }));
         };
     }
 
     getChoiceSetFn(index) {
-        const hxEnumeration = this.hxEnumeration;
+        const hxChoiceSet = this.hxChoiceSet;
         return function () {
-            const id = hxEnumeration.id(index);
+            const id = hxChoiceSet.id(index);
             return models.choiceSet.getChoiceSet(id)
                 .then(enumeration => {
-                    hxEnumeration.updateServer(index, enumeration);
-                    comparator.enumeration(hxEnumeration.client(index), enumeration);
+                    hxChoiceSet.updateServer(index, enumeration);
+                    comparator.enumeration(hxChoiceSet.client(index), enumeration);
                 });
         };
     }
 
     deleteChoiceSetFn(index) {
-        const hxEnumeration = this.hxEnumeration;
+        const hxChoiceSet = this.hxChoiceSet;
         return function () {
-            const id = hxEnumeration.id(index);
+            const id = hxChoiceSet.id(index);
             return models.choiceSet.deleteChoiceSet(id)
                 .then(() => {
-                    hxEnumeration.remove(index);
+                    hxChoiceSet.remove(index);
                 });
         };
     }
 
     listChoiceSetsFn() {
-        const hxEnumeration = this.hxEnumeration;
+        const hxChoiceSet = this.hxChoiceSet;
         return function () {
             return models.choiceSet.listChoiceSets()
                 .then(enumerations => {
-                    const expected = hxEnumeration.listServers(['id', 'reference']);
+                    const expected = hxChoiceSet.listServers(['id', 'reference']);
                     expect(enumerations).to.deep.equal(expected);
                 });
         };
@@ -59,21 +59,21 @@ const SpecTests = class EnumerationSpecTests {
 };
 
 const IntegrationTests = class EnumerationIntegrationTests {
-    constructor(rrSuperTest, generator, hxEnumeration) {
+    constructor(rrSuperTest, generator, hxChoiceSet) {
         this.rrSuperTest = rrSuperTest;
         this.generator = generator;
-        this.hxEnumeration = hxEnumeration;
+        this.hxChoiceSet = hxChoiceSet;
     }
 
     createChoiceSetFn() {
         const generator = this.generator;
         const rrSuperTest = this.rrSuperTest;
-        const hxEnumeration = this.hxEnumeration;
+        const hxChoiceSet = this.hxChoiceSet;
         return function (done) {
             const enumeration = generator.newEnumeration();
-            rrSuperTest.post('/enumerations', enumeration, 201)
+            rrSuperTest.post('/choice-sets', enumeration, 201)
                 .expect(function (res) {
-                    hxEnumeration.push(enumeration, res.body);
+                    hxChoiceSet.push(enumeration, res.body);
                 })
                 .end(done);
         };
@@ -81,13 +81,13 @@ const IntegrationTests = class EnumerationIntegrationTests {
 
     getChoiceSetFn(index) {
         const rrSuperTest = this.rrSuperTest;
-        const hxEnumeration = this.hxEnumeration;
+        const hxChoiceSet = this.hxChoiceSet;
         return function (done) {
-            const id = hxEnumeration.id(index);
-            rrSuperTest.get(`/enumerations/${id}`, true, 200)
+            const id = hxChoiceSet.id(index);
+            rrSuperTest.get(`/choice-sets/${id}`, true, 200)
                 .expect(function (res) {
-                    hxEnumeration.updateServer(index, res.body);
-                    comparator.enumeration(hxEnumeration.client(index), res.body);
+                    hxChoiceSet.updateServer(index, res.body);
+                    comparator.enumeration(hxChoiceSet.client(index), res.body);
                 })
                 .end(done);
         };
@@ -95,12 +95,12 @@ const IntegrationTests = class EnumerationIntegrationTests {
 
     deleteChoiceSetFn(index) {
         const rrSuperTest = this.rrSuperTest;
-        const hxEnumeration = this.hxEnumeration;
+        const hxChoiceSet = this.hxChoiceSet;
         return function (done) {
-            const id = hxEnumeration.id(index);
-            rrSuperTest.delete(`/enumerations/${id}`, 204)
+            const id = hxChoiceSet.id(index);
+            rrSuperTest.delete(`/choice-sets/${id}`, 204)
                 .expect(function () {
-                    hxEnumeration.remove(index);
+                    hxChoiceSet.remove(index);
                 })
                 .end(done);
         };
@@ -108,11 +108,11 @@ const IntegrationTests = class EnumerationIntegrationTests {
 
     listChoiceSetsFn() {
         const rrSuperTest = this.rrSuperTest;
-        const hxEnumeration = this.hxEnumeration;
+        const hxChoiceSet = this.hxChoiceSet;
         return function (done) {
-            rrSuperTest.get('/enumerations', true, 200)
+            rrSuperTest.get('/choice-sets', true, 200)
                 .expect(function (res) {
-                    const expected = hxEnumeration.listServers(['id', 'reference']);
+                    const expected = hxChoiceSet.listServers(['id', 'reference']);
                     expect(res.body).to.deep.equal(expected);
                 })
                 .end(done);
