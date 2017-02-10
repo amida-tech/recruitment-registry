@@ -7,8 +7,8 @@ const models = require('../models');
 const queryrize = require('../lib/queryrize');
 const CSVConverterExport = require('../export/csv-converter');
 
-const rawExportTableScript = queryrize.readQuerySync('bhr-gap-export.sql');
-const rawExportSubjectsScript = queryrize.readQuerySync('bhr-gap-subject-export.sql');
+const exportTableScript = queryrize.readQuerySync('bhr-gap-export.sql');
+const exportSubjectsScript = queryrize.readQuerySync('bhr-gap-subject-export.sql');
 
 const sequelize = models.sequelize;
 
@@ -27,11 +27,8 @@ const exportSubjectsData = function ({ surveyIdentifier, questionIdentifierType,
     return models.surveyIdentifier.getIdsBySurveyIdentifier(surveyIdentifier.type)
         .then(surveyIdentificaterMap => {
             const surveyId = surveyIdentificaterMap.get(surveyIdentifier.value);
-            const parameters = {
-                survey_id: surveyId
-            };
-            const query = queryrize.replaceParameters(rawExportSubjectsScript, parameters);
-            return sequelize.query(query, { type: sequelize.QueryTypes.SELECT })
+            const replacements = { survey_id: surveyId };
+            return sequelize.query(exportSubjectsScript, { type: sequelize.QueryTypes.SELECT, replacements })
                 .then(subjects => {
                     return models.questionIdentifier.getInformationByQuestionId(questionIdentifierType)
                         .then(identifierMap => {
@@ -86,11 +83,8 @@ const exportTableData = function ({ type, value: surveyType }, answerType) {
             const surveyId = surveyIdentificaterMap.get(surveyType);
             return models.answerIdentifier.getIdentifiersByAnswerIds(answerType)
                 .then(({ map: identifierMap, identifiers: valueColumns }) => {
-                    const parameters = {
-                        survey_id: surveyId
-                    };
-                    const query = queryrize.replaceParameters(rawExportTableScript, parameters);
-                    return sequelize.query(query, { type: sequelize.QueryTypes.SELECT })
+                    const replacements = { survey_id: surveyId };
+                    return sequelize.query(exportTableScript, { type: sequelize.QueryTypes.SELECT, replacements })
                         .then(collectedRecords => {
                             return collectedRecords.reduce((r, record) => {
                                 const key = record.user_assessment_id;
