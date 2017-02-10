@@ -19,6 +19,9 @@ module.exports = function (sequelize, DataTypes) {
                 key: 'name'
             },
         },
+        code: {
+            type: DataTypes.TEXT
+        },
         meta: {
             type: DataTypes.JSON
         },

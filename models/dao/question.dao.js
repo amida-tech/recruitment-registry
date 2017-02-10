@@ -32,11 +32,14 @@ module.exports = class QuestionDAO extends Translatable {
     }
 
     createChoicesTx(questionId, choices, transaction) {
-        const pxs = choices.map(({ text, type, meta, answerIdentifier }, line) => {
+        const pxs = choices.map(({ text, code, type, meta, answerIdentifier }, line) => {
             type = type || 'bool';
             const choice = { questionId, text, type, line };
             if (meta) {
                 choice.meta = meta;
+            }
+            if (code) {
+                choice.code = code;
             }
             return this.questionChoice.createQuestionChoiceTx(choice, transaction)
                 .then(({ id }) => {
@@ -52,6 +55,9 @@ module.exports = class QuestionDAO extends Translatable {
                     const result = { id, text: choice.text };
                     if (meta) {
                         result.meta = meta;
+                    }
+                    if (code) {
+                        choice.code = code;
                     }
                     return result;
                 });
@@ -403,10 +409,13 @@ module.exports = class QuestionDAO extends Translatable {
                         r.push(questionLine);
                         return r;
                     }
-                    choices.forEach(({ id, type, text, meta }, index) => {
+                    choices.forEach(({ id, type, text, code, meta }, index) => {
                         const line = { choiceId: id, choiceText: text };
                         if (type) {
                             line.choiceType = type;
+                        }
+                        if (code) {
+                            line.choiceCode = code;
                         }
                         if (meta && options.meta) {
                             Object.assign(questionLine, this.exportMetaQuestionProperties(meta, options.meta, true, false));
@@ -475,6 +484,9 @@ module.exports = class QuestionDAO extends Translatable {
                         const choice = { id: record.choiceId, text: record.choiceText };
                         if (record.choiceType) {
                             choice.type = record.choiceType;
+                        }
+                        if (record.choiceCode) {
+                            choice.code = record.choiceCode;
                         }
                         if (options.meta) {
                             const meta = this.importMetaQuestionProperties(record, options.meta, 'choice');

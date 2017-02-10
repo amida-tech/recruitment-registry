@@ -12,10 +12,13 @@ module.exports = class QuestionChoiceDAO extends Translatable {
         Object.assign(this, dependencies);
     }
 
-    deleteNullMeta(choices) {
+    deleteNullData(choices) {
         choices.forEach(choice => {
             if (!choice.meta) {
                 delete choice.meta;
+            }
+            if (!choice.code) {
+                delete choice.code;
             }
         });
         return choices;
@@ -25,6 +28,9 @@ module.exports = class QuestionChoiceDAO extends Translatable {
         return QuestionChoice.create(choice, { transaction: tx })
             .then(({ id }) => {
                 const input = { id, text: choice.text };
+                if (choice.code) {
+                    input.code = choice.code;
+                }
                 return this.createTextTx(input, tx)
                     .then(() => ({ id }));
             });
@@ -34,24 +40,24 @@ module.exports = class QuestionChoiceDAO extends Translatable {
         return QuestionChoice.findAll({
                 raw: true,
                 where: { questionId },
-                attributes: ['id', 'type', 'meta'],
+                attributes: ['id', 'type', 'meta', 'code'],
                 order: 'line'
             })
-            .then(choices => this.deleteNullMeta(choices))
+            .then(choices => this.deleteNullData(choices))
             .then(choices => this.updateAllTexts(choices, language));
     }
 
     getAllQuestionChoices(questionIds, language) {
         const options = {
             raw: true,
-            attributes: ['id', 'type', 'questionId', 'meta'],
+            attributes: ['id', 'type', 'questionId', 'meta', 'code'],
             order: 'line'
         };
         if (questionIds) {
             options.where = { questionId: { $in: questionIds } };
         }
         return QuestionChoice.findAll(options)
-            .then(choices => this.deleteNullMeta(choices))
+            .then(choices => this.deleteNullData(choices))
             .then(choices => this.updateAllTexts(choices, language));
     }
 

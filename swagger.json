@@ -3434,31 +3434,16 @@
                 },
                 "text": {
                     "type": "string",
-                     "minLength": 1
+                    "minLength": 1
+                },
+                "code": {
+                    "type": "string"
                 },
                 "type": {
                     "$ref": "#/definitions/choiceType"
                 },
                 "meta": {
                     "type": "object"
-                },
-                "enumerals": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "required": ["text", "code"],
-                        "properties": {
-                            "text": {
-                                "type": "string",
-                                "minLength": 1
-                            },
-                            "code": {
-                                "type": "string",
-                                "minLength": 1
-                            }
-                        },
-                        "additionalProperties": false
-                    }
                 }
             },
             "additionalProperties": false
@@ -3835,13 +3820,8 @@
                 "meta": {
                     "type": "object"
                 },
-                "enumerationId": {
-                    "type": "integer",
-                    "minimum": 1
-                },
-                "enumeration": {
-                    "type": "string",
-                     "minLength": 1
+                "code": {
+                    "type": "string"
                 }
             },
             "additionalProperties": false

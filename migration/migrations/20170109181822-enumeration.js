@@ -124,6 +124,13 @@ const questionEnum = function (queryInterface, Sequelize) {
     });
 };
 
+const questionChoiceCodeColumn = function (queryInterface, Sequelize) {
+    return queryInterface.addColumn('question_choice', 'code', {
+        field: 'code',
+        type: Sequelize.TEXT
+    });
+};
+
 module.exports = {
     up: function (queryInterface, Sequelize) {
         const sequelize = queryInterface.sequelize;
@@ -131,6 +138,7 @@ module.exports = {
             .then(() => enumeral(queryInterface, Sequelize))
             .then(() => enumeralText(queryInterface, Sequelize))
             .then(() => questionEnum(queryInterface, Sequelize))
+            .then(() => questionChoiceCodeColumn(queryInterface, Sequelize))
             .then(() => queryInterface.addIndex('enumeration', ['reference'], {
                 where: { deleted_at: { $eq: null } },
                 indexName: 'enumeration_reference',
@@ -151,6 +159,7 @@ module.exports = {
     down: function (queryInterface) {
         const sequelize = queryInterface.sequelize;
         return queryInterface.removeColumn('question', 'enumeration_id')
+            .then(() => queryInterface.removeColumn('question_choice', 'code'))
             .then(() => queryInterface.dropTable('enumeration'))
             .then(() => queryInterface.dropTable('enumeral_text'))
             .then(() => queryInterface.dropTable('enumeral'))
