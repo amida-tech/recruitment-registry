@@ -87,7 +87,7 @@ module.exports = class Answerer {
         return { boolValue: answerIndex % 2 === 0 };
     }
 
-    enumeration(question) {
+    choiceRef(question) {
         const choices = question.choices;
         const choice = choices[this.answerIndex % choices.length];
         return { code: choice.code };

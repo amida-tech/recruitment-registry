@@ -122,12 +122,10 @@ describe('migration spec', function () {
         return db.sequelize.Promise.all(pxs);
     });
 
-    it('compare answer type records', function () {
-        return checkBootstrapData('answer_type');
-    });
-
-    it('compare survey status records', function () {
-        return checkBootstrapData('survey_status');
+    ['answer_type', 'survey_status', 'question_type'].forEach(tableName => {
+        it(`compare ${tableName} records`, function () {
+            return checkBootstrapData(tableName);
+        });
     });
 
     it('compare survey records', function () {

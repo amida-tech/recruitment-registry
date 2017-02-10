@@ -2750,7 +2750,7 @@
             "type": "string",
             "enum": [
                 "text", "bool", "integer", "choice", "choices", "float",
-                "date", "year", "month", "day", "enumeration",
+                "date", "year", "month", "day", "choice-ref",
                 "pounds", "zip", "feet-inches", "blood-pressure"
             ]
         },

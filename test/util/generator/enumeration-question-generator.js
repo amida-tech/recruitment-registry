@@ -14,12 +14,12 @@ module.exports = class EnumerationQuestionGenerator extends QuestionGenerator {
         const enumerationInfo = this.enumerations[index % this.enumerations.length];
         const layoutIndex = index % 2;
         if (layoutIndex === 0) {
-            const result = this.newBody('enumeration');
+            const result = this.newBody('choice-ref');
             result.enumerationId = enumerationInfo.id;
             return result;
         }
         if (layoutIndex === 1) {
-            const result = this.newBody('enumeration');
+            const result = this.newBody('choice-ref');
             result.enumeration = enumerationInfo.reference;
             return result;
         }

@@ -20,7 +20,7 @@ module.exports = {
         }, {
             text: 'Do you own any other television brands?',
             required: true,
-            type: 'enumeration',
+            type: 'choice-ref',
             answerIdentifier: { type: 'television-column', value: 'QID2' },
             enumeration: 'yes-no-1-2',
             skip: {
@@ -60,7 +60,7 @@ module.exports = {
         }, {
             text: 'Are you currently happy with your televisions?',
             required: false,
-            type: 'enumeration',
+            type: 'choice-ref',
             enumeration: 'yes-no-1-2',
             answerIdentifier: { type: 'television-column', value: 'QID5' },
             skip: {
@@ -85,25 +85,25 @@ module.exports = {
         name: 'How many hours do you spend watching the following sports:',
         questions: [{
             text: 'Basketball',
-            type: 'enumeration',
+            type: 'choice-ref',
             required: false,
             enumeration: 'count-0-3-plus',
             answerIdentifier: { type: 'television-column', value: 'QID7_1' }
         }, {
             text: 'Footbal',
-            type: 'enumeration',
+            type: 'choice-ref',
             required: false,
             enumeration: 'count-0-3-plus',
             answerIdentifier: { type: 'television-column', value: 'QID7_2' }
         }, {
             text: 'Baseball',
-            type: 'enumeration',
+            type: 'choice-ref',
             required: false,
             enumeration: 'count-0-3-plus',
             answerIdentifier: { type: 'television-column', value: 'QID7_3' }
         }, {
             text: 'Ice Hockey',
-            type: 'enumeration',
+            type: 'choice-ref',
             required: false,
             enumeration: 'count-0-3-plus',
             answerIdentifier: { type: 'television-column', value: 'QID7_4' }

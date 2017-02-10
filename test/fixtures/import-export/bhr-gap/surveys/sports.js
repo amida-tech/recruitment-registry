@@ -9,7 +9,7 @@ module.exports = {
     questions: [{
         text: 'How many hours a week do you participate in a team sports?',
         required: true,
-        type: 'enumeration',
+        type: 'choice-ref',
         answerIdentifier: { type: 'sports-column', value: 'QID1' },
         enumeration: 'count-0-8-plus'
     }, {
@@ -39,7 +39,7 @@ module.exports = {
     }, {
         text: 'On average how many hours do you watch sports or sport related programming on TV a week?',
         required: false,
-        type: 'enumeration',
+        type: 'choice-ref',
         answerIdentifier: { type: 'sports-column', value: 'QID3' },
         enumeration: 'count-0-8-plus'
     }, {

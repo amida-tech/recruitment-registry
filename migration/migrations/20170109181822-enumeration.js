@@ -83,7 +83,7 @@ module.exports = {
                 where: { deleted_at: { $eq: null } },
                 indexName: 'question_choice_enumeration_id'
             }))
-            .then(() => sequelize.query('INSERT INTO question_type (name) VALUES (\'enumeration\')'));
+            .then(() => sequelize.query('INSERT INTO question_type (name) VALUES (\'choice-ref\')'));
     },
 
     down: function (queryInterface) {
@@ -93,7 +93,7 @@ module.exports = {
             .then(() => queryInterface.removeColumn('question_choice', 'enumeration_id'))
             .then(() => queryInterface.removeColumn('question_choice', 'code'))
             .then(() => queryInterface.dropTable('enumeration'))
-            .then(() => sequelize.query('DELETE FROM question_type WHERE name = \'enumeration\''));
+            .then(() => sequelize.query('DELETE FROM question_type WHERE name = \'choice-ref\''));
 
     }
 };
