@@ -3148,24 +3148,6 @@
                 "enableWhen": {
                     "$ref": "#/definitions/enableWhenCondition"
                 },
-                "enumerals": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "required": ["text", "code"],
-                        "properties": {
-                            "text": {
-                                "type": "string",
-                                "minLength": 1
-                            },
-                            "code": {
-                                "type": "string",
-                                "minLength": 1
-                            }
-                        },
-                        "additionalProperties": false
-                    }
-                },
                 "choices": {
                     "type": "array",
                     "items": {
@@ -3732,24 +3714,6 @@
                 },
                 "meta": {
                     "$ref": "#/definitions/questionMeta"
-                },
-                "enumerals": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "required": ["text", "code"],
-                        "properties": {
-                            "text": {
-                                "type": "string",
-                                "minLength": 1
-                            },
-                            "code": {
-                                "type": "string",
-                                "minLength": 1
-                            }
-                        },
-                        "additionalProperties": false
-                    }
                 },
                 "choices": {
                     "type": "array",
@@ -4890,13 +4854,13 @@
         },
         "newEnumeration": {
             "type": "object",
-            "required": ["reference", "enumerals"],
+            "required": ["reference", "choices"],
             "properties": {
                 "reference": {
                     "type": "string",
                     "minLength": 1
                 },
-                "enumerals": {
+                "choices": {
                     "type": "array",
                     "items": {
                         "type": "object",
@@ -4919,7 +4883,7 @@
         },
         "enumeration": {
             "type": "object",
-            "required": ["id", "reference", "enumerals"],
+            "required": ["id", "reference", "choices"],
             "properties": {
                 "id": {
                     "type": "integer",
@@ -4929,7 +4893,7 @@
                     "type": "string",
                     "minLength": 1
                 },
-                "enumerals": {
+                "choices": {
                     "type": "array",
                     "items": {
                         "type": "object",

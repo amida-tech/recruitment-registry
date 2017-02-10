@@ -41,7 +41,7 @@ describe('enumeration unit', function () {
         return function () {
             const server = hxEnumeration.server(index);
             const translation = translator.translateEnumeration(server, language);
-            return models.questionChoice.updateMultipleChoiceTexts(translation.enumerals, language)
+            return models.questionChoice.updateMultipleChoiceTexts(translation.choices, language)
                 .then(() => {
                     hxEnumeration.translate(index, language, translation);
                 });
@@ -75,18 +75,18 @@ describe('enumeration unit', function () {
 
     it('list all enumerations', tests.listEnumerationsFn());
 
-    const deleteFirstEnumeralFn = function (index) {
+    const deleteFirstChoiceFn = function (index) {
         return function () {
             const server = hxEnumeration.server(index);
-            const enumeralId = server.enumerals[0].id;
+            const choiceId = server.choices[0].id;
             const client = hxEnumeration.client(index);
-            client.enumerals.shift(0);
-            return models.questionChoice.deleteQuestionChoice(enumeralId);
+            client.choices.shift(0);
+            return models.questionChoice.deleteQuestionChoice(choiceId);
         };
     };
 
     _.forEach([0, 2, 3], index => {
-        it(`delete first enumeral of enumeration ${index}`, deleteFirstEnumeralFn(index));
+        it(`delete first choice of enumeration ${index}`, deleteFirstChoiceFn(index));
         it(`get enumeration ${index}`, tests.getEnumerationFn(index));
     });
 });

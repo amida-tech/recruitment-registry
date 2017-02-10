@@ -69,8 +69,8 @@ const translator = {
     },
     translateEnumeration(enumeration, language) {
         const result = _.cloneDeep(enumeration);
-        result.enumerals.forEach(enumeral => {
-            enumeral.text = this._translate(enumeral.text, language);
+        result.choices.forEach(choice => {
+            choice.text = this._translate(choice.text, language);
         });
         return result;
     },
@@ -98,7 +98,7 @@ const translator = {
         this.isTranslated(texts, language);
     },
     isEnumerationTranslated(enumeration, language) {
-        const texts = enumeration.enumerals.map(({ text }) => text);
+        const texts = enumeration.choices.map(({ text }) => text);
         this.isTranslated(texts, language);
     },
     isSurveyListTranslated(surveys, language) {

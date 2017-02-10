@@ -13,10 +13,10 @@ module.exports = class EnumDAO {
         Object.assign(this, dependencies);
     }
 
-    createEnumerationTx({ reference, enumerals }, transaction) {
+    createEnumerationTx({ reference, choices }, transaction) {
         return Enumeration.create({ reference }, { transaction })
             .then(({ id }) => {
-                return this.questionChoice.createQuestionChoices(id, enumerals, transaction)
+                return this.questionChoice.createQuestionChoices(id, choices, transaction)
                     .then(() => ({ id }));
             });
     }
@@ -55,8 +55,8 @@ module.exports = class EnumDAO {
         return Enumeration.findById(id, { raw: true, attributes: ['id', 'reference'] })
             .then(result => {
                 return this.questionChoice.listQuestionChoices(id, language)
-                    .then(enumerals => {
-                        result.enumerals = enumerals;
+                    .then(choices => {
+                        result.choices = choices;
                         return result;
                     });
             });

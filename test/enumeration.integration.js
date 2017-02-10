@@ -38,7 +38,7 @@ describe('enumeration integration', function () {
         return function (done) {
             const server = hxEnumeration.server(index);
             const translation = translator.translateEnumeration(server, language);
-            rrSuperTest.patch(`/question-choices/multi-text/${language}`, translation.enumerals, 204)
+            rrSuperTest.patch(`/question-choices/multi-text/${language}`, translation.choices, 204)
                 .expect(function () {
                     hxEnumeration.translate(index, language, translation);
                 })
@@ -74,18 +74,18 @@ describe('enumeration integration', function () {
 
     it('list all enumerations', tests.listEnumerationsFn());
 
-    const deleteFirstEnumeralFn = function (index) {
+    const deleteFirstChoiceFn = function (index) {
         return function (done) {
             const server = hxEnumeration.server(index);
-            const enumeralId = server.enumerals[0].id;
+            const choiceId = server.choices[0].id;
             const client = hxEnumeration.client(index);
-            client.enumerals.shift(0);
-            rrSuperTest.delete(`/question-choices/${enumeralId}`, 204).end(done);
+            client.choices.shift(0);
+            rrSuperTest.delete(`/question-choices/${choiceId}`, 204).end(done);
         };
     };
 
     _.forEach([0, 2, 3], index => {
-        it(`delete first enumeral of enumeration ${index}`, deleteFirstEnumeralFn(index));
+        it(`delete first choice of enumeration ${index}`, deleteFirstChoiceFn(index));
         it(`get enumeration ${index}`, tests.getEnumerationFn(index));
     });
 });

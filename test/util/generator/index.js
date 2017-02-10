@@ -150,15 +150,15 @@ class Generator {
     newEnumeration() {
         const enumerationindex = ++this.enumerationindex;
         const reference = `reference_${enumerationindex}`;
-        const numEnumerals = (enumerationindex % 4) + 2;
+        const numChoices = (enumerationindex % 4) + 2;
         const startValue = enumerationindex % 3;
-        const enumerals = _.range(numEnumerals).map(index => {
+        const choices = _.range(numChoices).map(index => {
             return {
                 text: `text_${enumerationindex}_${index}`,
                 code: `${startValue + index}`
             };
         });
-        return { reference, enumerals };
+        return { reference, choices };
     }
 
     nextLanguage() {

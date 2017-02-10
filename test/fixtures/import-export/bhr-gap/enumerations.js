@@ -2,7 +2,7 @@
 
 const _ = require('lodash');
 
-const countEnumerals = function (count, plus) {
+const countChoices = function (count, plus) {
     const result = _.range(0, count).map(index => ({ text: `${index}`, code: `${index + 1}` }));
     if (plus) {
         result.push({ text: `${count}+`, code: `${count + 1}` });
@@ -12,16 +12,16 @@ const countEnumerals = function (count, plus) {
 
 module.exports = [{
     reference: 'yes-no-1-2',
-    enumerals: [{ text: 'Yes', code: '1' }, { text: 'No', code: '2' }]
+    choices: [{ text: 'Yes', code: '1' }, { text: 'No', code: '2' }]
 }, {
     reference: 'count-0-8-plus',
-    enumerals: countEnumerals(8, true)
+    choices: countChoices(8, true)
 }, {
     reference: 'count-0-3-plus',
-    enumerals: countEnumerals(3, true)
+    choices: countChoices(3, true)
 }, {
     reference: 'condition',
-    enumerals: [
+    choices: [
         { text: 'Excellent', code: '1' },
         { text: 'Very Good', code: '2' },
         { text: 'Good', code: '3' },
@@ -30,7 +30,7 @@ module.exports = [{
     ]
 }, {
     reference: 'primary-occupation',
-    enumerals: [
+    choices: [
         { text: 'Agriculture', code: '5' },
         { text: 'Arts', code: '7' },
         { text: 'Broadcasting', code: '8' },

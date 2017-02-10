@@ -2,7 +2,7 @@
 
 const _ = require('lodash');
 
-const countEnumerals = function (count, plus) {
+const countChoices = function (count, plus) {
     const result = _.range(0, count).map(index => ({ text: `${index}`, code: index + 1 }));
     if (plus) {
         result.push({ text: `${count}+`, code: count + 1 });
@@ -12,25 +12,25 @@ const countEnumerals = function (count, plus) {
 
 module.exports = [{
     reference: 'yes-no-1-2',
-    enumerals: [{ text: 'Yes', code: '1' }, { text: 'No', code: '2' }]
+    choices: [{ text: 'Yes', code: '1' }, { text: 'No', code: '2' }]
 }, {
     reference: 'no-yes-1-2',
-    enumerals: [{ text: 'No', code: '1' }, { text: 'Yes', code: '2' }]
+    choices: [{ text: 'No', code: '1' }, { text: 'Yes', code: '2' }]
 }, {
     reference: 'yes-no-1-3',
-    enumerals: [{ text: 'Yes', code: '1' }, { text: 'No', code: '3' }]
+    choices: [{ text: 'Yes', code: '1' }, { text: 'No', code: '3' }]
 }, {
     reference: 'yes-no-1-0',
-    enumerals: [{ text: 'Yes', code: '1' }, { text: 'No', code: '0' }]
+    choices: [{ text: 'Yes', code: '1' }, { text: 'No', code: '0' }]
 }, {
     reference: 'yes-no-0-1',
-    enumerals: [{ text: 'Yes', code: '0' }, { text: 'No', code: '1' }]
+    choices: [{ text: 'Yes', code: '0' }, { text: 'No', code: '1' }]
 }, {
     reference: 'yes-no-decline',
-    enumerals: [{ text: 'Yes', code: '1' }, { text: 'No', code: '2' }, { text: 'Decline to answer', code: '3' }]
+    choices: [{ text: 'Yes', code: '1' }, { text: 'No', code: '2' }, { text: 'Decline to answer', code: '3' }]
 }, {
     reference: 'extended-yes-no',
-    enumerals: [
+    choices: [
         { text: 'Yes', code: '1' },
         { text: 'No', code: '2' },
         { text: 'I don\'t know', code: '3' },
@@ -38,7 +38,7 @@ module.exports = [{
     ]
 }, {
     reference: 'weight-ranges-lbs',
-    enumerals: [
+    choices: [
         { text: '110-', code: '1' },
         { text: '110-119', code: '2' },
         { text: '120-129', code: '3' },
@@ -64,13 +64,13 @@ module.exports = [{
     ]
 }, {
     reference: 'height-ft-inches',
-    enumerals: _.range(4, 8).reduce((r, ft) => {
+    choices: _.range(4, 8).reduce((r, ft) => {
         _.range(0, 12).forEach(inches => r.push({ text: `${ft}'${inches}"`, code: 'r'.length + 1 }));
         return r;
     }, [])
 }, {
     reference: 'marital-status',
-    enumerals: [
+    choices: [
         { text: 'Divorced', code: '1' },
         { text: 'Domestic Partner', code: '2' },
         { text: 'Married', code: '3' },
@@ -80,7 +80,7 @@ module.exports = [{
     ]
 }, {
     reference: 'primary-residence-type',
-    enumerals: [
+    choices: [
         { text: 'House', code: '1' },
         { text: 'Condo/Co-op (owned)', code: '2' },
         { text: 'Apartment (rented)', code: '3' },
@@ -92,7 +92,7 @@ module.exports = [{
     ]
 }, {
     reference: 'primary-occupation',
-    enumerals: [
+    choices: [
         { text: 'Agriculture, Forestry, Fishing, or Hunting', code: '1' },
         { text: 'Arts, Entertainment, or Recreation', code: '2' },
         { text: 'Broadcasting', code: '3' },
@@ -127,10 +127,10 @@ module.exports = [{
     ]
 }, {
     reference: 'retirement-year',
-    enumerals: _.range(1950, 2017).map((year, index) => ({ text: `${year}`, code: index + 1 }))
+    choices: _.range(1950, 2017).map((year, index) => ({ text: `${year}`, code: index + 1 }))
 }, {
     reference: 'armed-forces-branch',
-    enumerals: [
+    choices: [
         { text: 'Air Force', code: '1' },
         { text: 'Army', code: '2' },
         { text: 'Coast Guard', code: '3' },
@@ -140,25 +140,25 @@ module.exports = [{
     ]
 }, {
     reference: 'count-0-5-plus',
-    enumerals: countEnumerals(5, true)
+    choices: countChoices(5, true)
 }, {
     reference: 'count-0-8-plus',
-    enumerals: countEnumerals(8, true)
+    choices: countChoices(8, true)
 }, {
     reference: 'count-0-10-plus',
-    enumerals: countEnumerals(10, true)
+    choices: countChoices(10, true)
 }, {
     reference: 'count-0-12-plus',
-    enumerals: countEnumerals(10, true)
+    choices: countChoices(10, true)
 }, {
     reference: 'count-0-20-plus',
-    enumerals: countEnumerals(10, true)
+    choices: countChoices(10, true)
 }, {
     reference: 'count-0-7',
-    enumerals: countEnumerals(8)
+    choices: countChoices(8)
 }, {
     reference: 'change-for-worse',
-    enumerals: [
+    choices: [
         { text: 'Better or no change', code: '1' },
         { text: 'Questionable/ occasionally worse', code: '2' },
         { text: 'Consistently a little worse', code: '3' },
@@ -167,7 +167,7 @@ module.exports = [{
     ]
 }, {
     reference: 'change-for-worse-2',
-    enumerals: [
+    choices: [
         { text: 'Better or no change', code: '8' },
         { text: 'Questionable/ occasionally worse', code: '2' },
         { text: 'Consistently a little worse', code: '3' },
@@ -176,7 +176,7 @@ module.exports = [{
     ]
 }, {
     reference: 'frequency-dwm',
-    enumerals: [
+    choices: [
         { text: 'Daily', code: '1' },
         { text: 'Weekly', code: '2' },
         { text: 'Monthly', code: '3' },
@@ -184,7 +184,7 @@ module.exports = [{
     ]
 }, {
     reference: 'frequency-monthly',
-    enumerals: [
+    choices: [
         { text: 'Every month', code: '1' },
         { text: 'Every 3 months', code: '2' },
         { text: 'Every 4 months', code: '3' },
@@ -193,7 +193,7 @@ module.exports = [{
     ]
 }, {
     reference: 'frequency-daily',
-    enumerals: [
+    choices: [
         { text: 'Not at all', code: '0' },
         { text: 'Several days', code: '1' },
         { text: 'More than half the days', code: '2' },
@@ -201,7 +201,7 @@ module.exports = [{
     ]
 }, {
     reference: 'frequency-time-6',
-    enumerals: [
+    choices: [
         { text: 'All of the time', code: '1' },
         { text: 'Most of the time', code: '2' },
         { text: 'No, not limited at al', code: '3' },
@@ -211,7 +211,7 @@ module.exports = [{
     ]
 }, {
     reference: 'frequency-time-5',
-    enumerals: [
+    choices: [
         { text: 'All of the time', code: '1' },
         { text: 'Most of the time', code: '2' },
         { text: 'A good bit of the time', code: '3' },
@@ -220,7 +220,7 @@ module.exports = [{
     ]
 }, {
     reference: 'frequency-weekly',
-    enumerals: [
+    choices: [
         { text: 'Not during the past month', code: '0' },
         { text: 'Less than once a week', code: '1' },
         { text: 'Once or twice a week', code: '2' },
@@ -228,7 +228,7 @@ module.exports = [{
     ]
 }, {
     reference: 'confidence-computer',
-    enumerals: [
+    choices: [
         { text: 'Not confident at all', code: '1' },
         { text: 'I usually need help', code: '2' },
         { text: 'It depends on the task', code: '3' },
@@ -236,7 +236,7 @@ module.exports = [{
     ]
 }, {
     reference: 'condition',
-    enumerals: [
+    choices: [
         { text: 'Excellent', code: '1' },
         { text: 'Very Good', code: '2' },
         { text: 'Good', code: '3' },
@@ -245,7 +245,7 @@ module.exports = [{
     ]
 }, {
     reference: 'condition-4',
-    enumerals: [
+    choices: [
         { text: 'Very good', code: '0' },
         { text: 'Fairly good', code: '1' },
         { text: 'Fairly bad', code: '2' },
@@ -253,7 +253,7 @@ module.exports = [{
     ]
 }, {
     reference: 'comparative-condition',
-    enumerals: [
+    choices: [
         { text: 'Much Better', code: '1' },
         { text: 'Better', code: '2' },
         { text: 'About the Same', code: '3' },
@@ -262,7 +262,7 @@ module.exports = [{
     ]
 }, {
     reference: 'comparative-condition-year',
-    enumerals: [
+    choices: [
         { text: 'Much better now than one year ago', code: '1' },
         { text: 'Somewhat better than one year ago', code: '2' },
         { text: 'About the same', code: '3' },
@@ -271,7 +271,7 @@ module.exports = [{
     ]
 }, {
     reference: 'comparative-trouble',
-    enumerals: [
+    choices: [
         { text: 'Much more trouble', code: '1' },
         { text: 'More trouble', code: '2' },
         { text: 'About the same', code: '3' },
@@ -280,7 +280,7 @@ module.exports = [{
     ]
 }, {
     reference: 'fewer-more',
-    enumerals: [
+    choices: [
         { text: 'Much fewer', code: '1' },
         { text: 'Fewer', code: '2' },
         { text: 'About the same', code: '3' },
@@ -289,7 +289,7 @@ module.exports = [{
     ]
 }, {
     reference: 'drinks-per-day',
-    enumerals: [
+    choices: [
         { text: 'Not at all', code: '1' },
         { text: 'Less than 1 drink/day', code: '2' },
         { text: '1-2 drinks/day', code: '3' },
@@ -297,33 +297,33 @@ module.exports = [{
     ]
 }, {
     reference: 'increased-decreased',
-    enumerals: [
+    choices: [
         { text: 'Increased', code: '1' },
         { text: 'Remained about the same', code: '2' },
         { text: 'Decreased', code: '3' }
     ]
 }, {
     reference: 'duration-ym',
-    enumerals: [
+    choices: [
         { text: 'Years', code: '1' },
         { text: 'Months', code: '2' }
     ]
 }, {
     reference: 'duration-ym-1-3',
-    enumerals: [
+    choices: [
         { text: 'Years', code: '1' },
         { text: 'Months', code: '3' }
     ]
 }, {
     reference: 'duration-mh',
-    enumerals: [
+    choices: [
         { text: 'Less than 30 minutes', code: '1' },
         { text: '30 minutes to 24 hours', code: '2' },
         { text: 'More than 24 hours', code: '3' }
     ]
 }, {
     reference: 'difficulty-level',
-    enumerals: [
+    choices: [
         { text: 'Not Difficult At All', code: '0' },
         { text: 'Somewhat Difficult', code: '1' },
         { text: 'Very Difficult', code: '2' },
@@ -331,7 +331,7 @@ module.exports = [{
     ]
 }, {
     reference: 'impact-cause',
-    enumerals: [
+    choices: [
         { text: 'Military duty', code: '7' },
         { text: 'Contact sports', code: '8' },
         { text: 'Abuse', code: '9' },
@@ -339,7 +339,7 @@ module.exports = [{
     ]
 }, {
     reference: 'injury-cause',
-    enumerals: [
+    choices: [
         { text: 'Car Accident', code: '1' },
         { text: 'Other vehicle accident', code: '2' },
         { text: 'Fall', code: '3' },
@@ -354,7 +354,7 @@ module.exports = [{
     ]
 }, {
     reference: 'interference',
-    enumerals: [
+    choices: [
         { text: 'Not at all', code: '1' },
         { text: 'Slightly', code: '2' },
         { text: 'Moderately', code: '3' },
@@ -363,7 +363,7 @@ module.exports = [{
     ]
 }, {
     reference: 'satisfied',
-    enumerals: [
+    choices: [
         { text: 'Not at all', code: '1' },
         { text: 'Slightly', code: '2' },
         { text: 'Moderately', code: '3' },
@@ -372,7 +372,7 @@ module.exports = [{
     ]
 }, {
     reference: 'severity',
-    enumerals: [
+    choices: [
         { text: 'Node', code: '1' },
         { text: 'Very mild', code: '2' },
         { text: 'Moderate', code: '3' },
@@ -381,14 +381,14 @@ module.exports = [{
     ]
 }, {
     reference: 'how-limited',
-    enumerals: [
+    choices: [
         { text: 'Yes, limited a lot', code: '1' },
         { text: 'Yes, limited a little', code: '2' },
         { text: 'No, not limited at all', code: '3' }
     ]
 }, {
     reference: 'how-true',
-    enumerals: [
+    choices: [
         { text: 'Definitely True', code: '1' },
         { text: 'Mostly True', code: '2' },
         { text: 'Don\'t Know', code: '3' },
@@ -397,7 +397,7 @@ module.exports = [{
     ]
 }, {
     reference: 'sleep-time',
-    enumerals: [
+    choices: [
         { text: 'Before 6:00 PM', code: '1' },
         { text: '6:00 PM', code: '2' },
         { text: '6:30 PM', code: '3' },
@@ -418,7 +418,7 @@ module.exports = [{
     ]
 }, {
     reference: 'duration-5-minutes',
-    enumerals: [
+    choices: [
         { text: '< 5 minutes', code: '1' },
         { text: '5 minutes', code: '2' },
         { text: '10 minutes', code: '3' },
@@ -431,7 +431,7 @@ module.exports = [{
     ]
 }, {
     reference: 'wakeup-time',
-    enumerals: [
+    choices: [
         { text: 'Before 5:00 AM', code: '1' },
         { text: '5:00 AM', code: '2' },
         { text: '5:30 AM', code: '3' },
@@ -450,7 +450,7 @@ module.exports = [{
     ]
 }, {
     reference: 'amount-3-12-.5',
-    enumerals: [
+    choices: [
         { text: '< 4', code: '1' },
         { text: '4', code: '2' },
         { text: '4.5', code: '3' },
@@ -473,7 +473,7 @@ module.exports = [{
     ]
 }, {
     reference: 'much-to-none',
-    enumerals: [
+    choices: [
         { text: 'Not At All', code: '1' },
         { text: 'Somewhat', code: '2' },
         { text: 'Rather Much', code: '3' },
@@ -481,7 +481,7 @@ module.exports = [{
     ]
 }, {
     reference: 'duration-hour',
-    enumerals: [
+    choices: [
         { text: 'None', code: '1' },
         { text: 'Less than 1 hour', code: '2' },
         { text: '1-2 hours', code: '3' },
@@ -493,7 +493,7 @@ module.exports = [{
     ]
 }, {
     reference: 'is-problem',
-    enumerals: [
+    choices: [
         { text: 'No problem at all', code: '1' },
         { text: 'Only a very slight problem', code: '2' },
         { text: 'Somewhat of a problem', code: '3' },
@@ -501,7 +501,7 @@ module.exports = [{
     ]
 }, {
     reference: 'is-problem-2',
-    enumerals: [
+    choices: [
         { text: 'not experienced at all', code: '1' },
         { text: 'no more of a problem', code: '2' },
         { text: 'a mild problem', code: '3' },
@@ -510,7 +510,7 @@ module.exports = [{
     ]
 }, {
     reference: 'bed-partner',
-    enumerals: [
+    choices: [
         { text: 'No bed partner or roommate', code: '1' },
         { text: 'Partner/roommate in other room', code: '2' },
         { text: 'Partner in same room, but not same bed', code: '3' },

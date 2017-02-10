@@ -33,11 +33,11 @@ const comparator = {
             delete expected.oneOfChoices;
         }
         if (expected.enumerationId) {
-            expected.enumerals = enumerationMap.get(expected.enumerationId);
+            expected.choices = enumerationMap.get(expected.enumerationId);
             delete expected.enumerationId;
         }
         if (expected.enumeration) {
-            expected.enumerals = enumerationMap.get(expected.enumeration);
+            expected.choices = enumerationMap.get(expected.enumeration);
             delete expected.enumeration;
         }
         if (!expected.id) {
@@ -229,8 +229,8 @@ const comparator = {
     enumeration(client, server) {
         const expected = _.cloneDeep(client);
         expected.id = server.id;
-        _.range(server.enumerals.length).forEach(index => {
-            expected.enumerals[index].id = server.enumerals[index].id;
+        _.range(server.choices.length).forEach(index => {
+            expected.choices[index].id = server.choices[index].id;
         });
         expect(server).to.deep.equal(expected);
     },
@@ -255,9 +255,9 @@ const comparator = {
     updateEnumerationMap(enumerations) {
         enumerationMap = new Map();
         enumerations.forEach(enumeration => {
-            const enumerals = enumeration.enumerals.map(({ text, code }) => ({ text, code }));
-            enumerationMap.set(enumeration.id, enumerals);
-            enumerationMap.set(enumeration.reference, enumerals);
+            const choices = enumeration.choices.map(({ id, text, code }) => ({ id, text, code }));
+            enumerationMap.set(enumeration.id, choices);
+            enumerationMap.set(enumeration.reference, choices);
         });
     }
 };
