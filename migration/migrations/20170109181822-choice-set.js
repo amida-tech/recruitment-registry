@@ -43,7 +43,7 @@ const questionChoiceCodeColumn = function (queryInterface, Sequelize) {
     });
 };
 
-const questionChoiceEnumerationIdColumn = function (queryInterface, Sequelize) {
+const questionChoiceChoiceSetIdColumn = function (queryInterface, Sequelize) {
     return queryInterface.addColumn('question_choice', 'choice_set_id', {
         type: Sequelize.INTEGER,
         field: 'choice_set_id',
@@ -67,7 +67,7 @@ module.exports = {
         return choiceSet(queryInterface, Sequelize)
             .then(() => questionEnum(queryInterface, Sequelize))
             .then(() => questionChoiceCodeColumn(queryInterface, Sequelize))
-            .then(() => questionChoiceEnumerationIdColumn(queryInterface, Sequelize))
+            .then(() => questionChoiceChoiceSetIdColumn(queryInterface, Sequelize))
             .then(() => questionChoiceDeletedAtColumn(queryInterface, Sequelize))
             .then(() => queryInterface.sequelize.query('ALTER TABLE question_choice ALTER COLUMN question_id DROP NOT NULL'))
             .then(() => queryInterface.addIndex('choice_set', ['reference'], {

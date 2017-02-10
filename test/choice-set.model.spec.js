@@ -11,36 +11,36 @@ const SharedSpec = require('./util/shared-spec.js');
 const Generator = require('./util/generator');
 const History = require('./util/history');
 const translator = require('./util/translator');
-const enumerationCommon = require('./util/enumeration-common');
+const choiceSetCommon = require('./util/choice-set-common');
 
 const expect = chai.expect;
 const generator = new Generator();
 const shared = new SharedSpec(generator);
 
-describe('enumeration unit', function () {
+describe('choice set unit', function () {
     before(shared.setUpFn());
 
     const hxChoiceSet = new History();
-    const tests = new enumerationCommon.SpecTests(generator, hxChoiceSet);
+    const tests = new choiceSetCommon.SpecTests(generator, hxChoiceSet);
 
-    it('list all enums when none', function () {
+    it('list all choice sets when none', function () {
         return models.choiceSet.listChoiceSets()
-            .then(enumerations => {
-                expect(enumerations).to.have.length(0);
+            .then(choiceSets => {
+                expect(choiceSets).to.have.length(0);
             });
     });
 
     _.range(8).forEach(index => {
-        it(`create enumeration ${index}`, tests.createChoiceSetFn());
-        it(`get enumeration ${index}`, tests.getChoiceSetFn(index));
+        it(`create choice set ${index}`, tests.createChoiceSetFn());
+        it(`get choice set ${index}`, tests.getChoiceSetFn(index));
     });
 
-    it('list all enumerations', tests.listChoiceSetsFn());
+    it('list all choice sets', tests.listChoiceSetsFn());
 
-    const translateEnumerationFn = function (index, language) {
+    const translateChoiceSetFn = function (index, language) {
         return function () {
             const server = hxChoiceSet.server(index);
-            const translation = translator.translateEnumeration(server, language);
+            const translation = translator.translateChoiceSet(server, language);
             return models.questionChoice.updateMultipleChoiceTexts(translation.choices, language)
                 .then(() => {
                     hxChoiceSet.translate(index, language, translation);
@@ -48,32 +48,32 @@ describe('enumeration unit', function () {
         };
     };
 
-    const getTranslatedEnumerationFn = function (index, language, notTranslated) {
+    const getTranslatedChoiceSetFn = function (index, language, notTranslated) {
         return function () {
             const id = hxChoiceSet.id(index);
             return models.choiceSet.getChoiceSet(id, language)
                 .then(result => {
                     const expected = hxChoiceSet.translatedServer(index, language);
                     if (!notTranslated) {
-                        translator.isEnumerationTranslated(expected, language);
+                        translator.isChoiceSetTranslated(expected, language);
                     }
                     expect(result).to.deep.equal(expected);
                 });
         };
     };
 
-    it('get enumeration 3 in spanish when no translation', getTranslatedEnumerationFn(3, 'es', true));
+    it('get choice set 3 in spanish when no translation', getTranslatedChoiceSetFn(3, 'es', true));
 
     _.range(8).forEach(index => {
-        it(`add translated (es) enumeration ${index}`, translateEnumerationFn(index, 'es'));
-        it(`get and verify tanslated enumeration ${index}`, getTranslatedEnumerationFn(index, 'es'));
+        it(`add translated (es) choice set ${index}`, translateChoiceSetFn(index, 'es'));
+        it(`get and verify tanslated choice set ${index}`, getTranslatedChoiceSetFn(index, 'es'));
     });
 
     _.forEach([1, 4, 6], index => {
-        it(`delete enumeration ${index}`, tests.deleteChoiceSetFn(index));
+        it(`delete choice set ${index}`, tests.deleteChoiceSetFn(index));
     });
 
-    it('list all enumerations', tests.listChoiceSetsFn());
+    it('list all choice sets', tests.listChoiceSetsFn());
 
     const deleteFirstChoiceFn = function (index) {
         return function () {
@@ -86,7 +86,7 @@ describe('enumeration unit', function () {
     };
 
     _.forEach([0, 2, 3], index => {
-        it(`delete first choice of enumeration ${index}`, deleteFirstChoiceFn(index));
-        it(`get enumeration ${index}`, tests.getChoiceSetFn(index));
+        it(`delete first choice of choice set ${index}`, deleteFirstChoiceFn(index));
+        it(`get choice set ${index}`, tests.getChoiceSetFn(index));
     });
 });

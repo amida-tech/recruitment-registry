@@ -21,7 +21,7 @@ class Generator {
         this.consentIndex = -1;
         this.languageIndex = -1;
         this.assessmentIndex = -1;
-        this.enumerationindex = 0;
+        this.choiceSetIndex = 0;
     }
 
     updateSurveyGenerator(SurveyGenerator) {
@@ -147,14 +147,14 @@ class Generator {
         return { name, sequenceType, surveys };
     }
 
-    newEnumeration() {
-        const enumerationindex = ++this.enumerationindex;
-        const reference = `reference_${enumerationindex}`;
-        const numChoices = (enumerationindex % 4) + 2;
-        const startValue = enumerationindex % 3;
+    newChoiceSet() {
+        const choiceSetIndex = ++this.choiceSetIndex;
+        const reference = `reference_${choiceSetIndex}`;
+        const numChoices = (choiceSetIndex % 4) + 2;
+        const startValue = choiceSetIndex % 3;
         const choices = _.range(numChoices).map(index => {
             return {
-                text: `text_${enumerationindex}_${index}`,
+                text: `text_${choiceSetIndex}_${index}`,
                 code: `${startValue + index}`
             };
         });

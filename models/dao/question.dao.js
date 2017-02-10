@@ -65,7 +65,7 @@ module.exports = class QuestionDAO extends Translatable {
         return SPromise.all(pxs);
     }
 
-    updateEnumeration(choiceSetReference, transaction) {
+    updateChoiceSetReference(choiceSetReference, transaction) {
         if (choiceSetReference) {
             return this.choiceSet.getChoiceSetIdByReference(choiceSetReference, transaction);
         } else {
@@ -74,7 +74,7 @@ module.exports = class QuestionDAO extends Translatable {
     }
 
     createQuestionTx(question, transaction) {
-        return this.updateEnumeration(question.choiceSetReference, transaction)
+        return this.updateChoiceSetReference(question.choiceSetReference, transaction)
             .then(choiceSetId => {
                 const baseFields = _.omit(question, ['oneOfChoices', 'choices', 'actions']);
                 if (choiceSetId) {

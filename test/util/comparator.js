@@ -5,7 +5,7 @@ const _ = require('lodash');
 
 const expect = chai.expect;
 
-let enumerationMap;
+let choiceSetMap;
 
 const getQuestionsMap = function getQuestionsMap({ questions, sections }, list) {
     if (!list) {
@@ -33,11 +33,11 @@ const comparator = {
             delete expected.oneOfChoices;
         }
         if (expected.choiceSetId) {
-            expected.choices = enumerationMap.get(expected.choiceSetId);
+            expected.choices = choiceSetMap.get(expected.choiceSetId);
             delete expected.choiceSetId;
         }
         if (expected.choiceSetReference) {
-            expected.choices = enumerationMap.get(expected.choiceSetReference);
+            expected.choices = choiceSetMap.get(expected.choiceSetReference);
             delete expected.choiceSetReference;
         }
         if (!expected.id) {
@@ -226,7 +226,7 @@ const comparator = {
         }
         expect(server).to.deep.equal(expected);
     },
-    enumeration(client, server) {
+    choiceSet(client, server) {
         const expected = _.cloneDeep(client);
         expected.id = server.id;
         _.range(server.choices.length).forEach(index => {
@@ -252,12 +252,12 @@ const comparator = {
         delete firstServer.sections;
         expect(secondServer).to.deep.equal(firstServer);
     },
-    updateEnumerationMap(enumerations) {
-        enumerationMap = new Map();
-        enumerations.forEach(enumeration => {
-            const choices = enumeration.choices.map(({ id, text, code }) => ({ id, text, code }));
-            enumerationMap.set(enumeration.id, choices);
-            enumerationMap.set(enumeration.reference, choices);
+    updateChoiceSetMap(choiceSets) {
+        choiceSetMap = new Map();
+        choiceSets.forEach(choiceSet => {
+            const choices = choiceSet.choices.map(({ id, text, code }) => ({ id, text, code }));
+            choiceSetMap.set(choiceSet.id, choices);
+            choiceSetMap.set(choiceSet.reference, choices);
         });
     }
 };

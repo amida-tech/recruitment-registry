@@ -17,9 +17,9 @@ const SpecTests = class ChoiceSetSpecTests {
         const generator = this.generator;
         const hxChoiceSet = this.hxChoiceSet;
         return function () {
-            const enumeration = generator.newEnumeration();
-            return models.choiceSet.createChoiceSet(enumeration)
-                .then(({ id }) => hxChoiceSet.push(enumeration, { id }));
+            const choiceSet = generator.newChoiceSet();
+            return models.choiceSet.createChoiceSet(choiceSet)
+                .then(({ id }) => hxChoiceSet.push(choiceSet, { id }));
         };
     }
 
@@ -28,9 +28,9 @@ const SpecTests = class ChoiceSetSpecTests {
         return function () {
             const id = hxChoiceSet.id(index);
             return models.choiceSet.getChoiceSet(id)
-                .then(enumeration => {
-                    hxChoiceSet.updateServer(index, enumeration);
-                    comparator.enumeration(hxChoiceSet.client(index), enumeration);
+                .then(choiceSet => {
+                    hxChoiceSet.updateServer(index, choiceSet);
+                    comparator.choiceSet(hxChoiceSet.client(index), choiceSet);
                 });
         };
     }
@@ -50,15 +50,15 @@ const SpecTests = class ChoiceSetSpecTests {
         const hxChoiceSet = this.hxChoiceSet;
         return function () {
             return models.choiceSet.listChoiceSets()
-                .then(enumerations => {
+                .then(choiceSets => {
                     const expected = hxChoiceSet.listServers(['id', 'reference']);
-                    expect(enumerations).to.deep.equal(expected);
+                    expect(choiceSets).to.deep.equal(expected);
                 });
         };
     }
 };
 
-const IntegrationTests = class EnumerationIntegrationTests {
+const IntegrationTests = class ChoiceSetIntegrationTests {
     constructor(rrSuperTest, generator, hxChoiceSet) {
         this.rrSuperTest = rrSuperTest;
         this.generator = generator;
@@ -70,10 +70,10 @@ const IntegrationTests = class EnumerationIntegrationTests {
         const rrSuperTest = this.rrSuperTest;
         const hxChoiceSet = this.hxChoiceSet;
         return function (done) {
-            const enumeration = generator.newEnumeration();
-            rrSuperTest.post('/choice-sets', enumeration, 201)
+            const choiceSet = generator.newChoiceSet();
+            rrSuperTest.post('/choice-sets', choiceSet, 201)
                 .expect(function (res) {
-                    hxChoiceSet.push(enumeration, res.body);
+                    hxChoiceSet.push(choiceSet, res.body);
                 })
                 .end(done);
         };
@@ -87,7 +87,7 @@ const IntegrationTests = class EnumerationIntegrationTests {
             rrSuperTest.get(`/choice-sets/${id}`, true, 200)
                 .expect(function (res) {
                     hxChoiceSet.updateServer(index, res.body);
-                    comparator.enumeration(hxChoiceSet.client(index), res.body);
+                    comparator.choiceSet(hxChoiceSet.client(index), res.body);
                 })
                 .end(done);
         };
