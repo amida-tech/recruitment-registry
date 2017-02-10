@@ -16,7 +16,7 @@ module.exports = class EnumDAO {
     createEnumerationTx({ reference, enumerals }, transaction) {
         return Enumeration.create({ reference }, { transaction })
             .then(({ id }) => {
-                return this.enumeral.createEnumerals(id, enumerals, transaction)
+                return this.questionChoice.createQuestionChoices(id, enumerals, transaction)
                     .then(() => ({ id }));
             });
     }
@@ -46,7 +46,7 @@ module.exports = class EnumDAO {
 
     deleteEnumeration(id) {
         return sequelize.transaction(transaction => {
-            return this.enumeral.deleteAllEnumerals(id, transaction)
+            return this.questionChoice.deleteAllQuestionChoices(id, transaction)
                 .then(() => Enumeration.destroy({ where: { id }, transaction }));
         });
     }
@@ -54,7 +54,7 @@ module.exports = class EnumDAO {
     getEnumeration(id, language) {
         return Enumeration.findById(id, { raw: true, attributes: ['id', 'reference'] })
             .then(result => {
-                return this.enumeral.listEnumerals(id, language)
+                return this.questionChoice.listQuestionChoices(id, language)
                     .then(enumerals => {
                         result.enumerals = enumerals;
                         return result;

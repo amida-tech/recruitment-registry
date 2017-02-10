@@ -41,7 +41,7 @@ describe('enumeration unit', function () {
         return function () {
             const server = hxEnumeration.server(index);
             const translation = translator.translateEnumeration(server, language);
-            return models.enumeral.updateEnumeralTexts(translation.enumerals, language)
+            return models.questionChoice.updateMultipleChoiceTexts(translation.enumerals, language)
                 .then(() => {
                     hxEnumeration.translate(index, language, translation);
                 });
@@ -81,7 +81,7 @@ describe('enumeration unit', function () {
             const enumeralId = server.enumerals[0].id;
             const client = hxEnumeration.client(index);
             client.enumerals.shift(0);
-            return models.enumeral.deleteEnumeral(enumeralId);
+            return models.questionChoice.deleteQuestionChoice(enumeralId);
         };
     };
 

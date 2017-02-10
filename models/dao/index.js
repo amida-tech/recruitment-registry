@@ -27,14 +27,11 @@ const QuestionIdentifierDAO = require('./question-identifier.dao');
 const AnswerIdentifierDAO = require('./answer-identifier.dao');
 const AnswerRuleDAO = require('./answer-rule.dao');
 const SurveyIdentifierDAO = require('./survey-identifier.dao');
-const EnumeralDAO = require('./enumeral.dao');
 const EnumerationDAO = require('./enumeration.dao');
 
 const questionIdentifier = new QuestionIdentifierDAO();
 const answerIdentifier = new AnswerIdentifierDAO();
 const surveyIdentifier = new SurveyIdentifierDAO();
-const enumeral = new EnumeralDAO();
-const enumeration = new EnumerationDAO({ enumeral });
 const consentType = new ConsentTypeDAO();
 const consentDocument = new ConsentDocumentDAO({ consentType });
 const consentSignature = new ConsentSignatureDAO();
@@ -44,13 +41,14 @@ const auth = new AuthDAO();
 const surveyConsent = new SurveyConsentDAO({ consentType });
 const surveyConsentDocument = new SurveyConsentDocumentDAO({ surveyConsent, userConsentDocument });
 const surveySection = new SurveySectionDAO();
-const questionChoice = new QuestionChoiceDAO({ enumeral, enumeration });
+const questionChoice = new QuestionChoiceDAO();
+const enumeration = new EnumerationDAO({ questionChoice });
 const questionAction = new QuestionActionDAO();
-const question = new QuestionDAO({ questionChoice, questionAction, enumeral, enumeration, questionIdentifier, answerIdentifier });
+const question = new QuestionDAO({ questionChoice, questionAction, enumeration, questionIdentifier, answerIdentifier });
 const answerRule = new AnswerRuleDAO();
 const surveyQuestion = new SurveyQuestionDAO();
 const answer = new AnswerDAO({ surveyConsentDocument, surveyQuestion, answerRule });
-const survey = new SurveyDAO({ answer, surveySection, question, enumeral, surveyIdentifier, surveyQuestion });
+const survey = new SurveyDAO({ answer, surveySection, question, questionChoice, surveyIdentifier, surveyQuestion });
 const userSurvey = new UserSurveyDAO({ survey, answer });
 const consent = new ConsentDAO({ consentDocument });
 const profileSurvey = new ProfileSurveyDAO({ survey, consentDocument, answer });
@@ -86,7 +84,6 @@ module.exports = {
     questionIdentifier,
     answerIdentifier,
     surveyIdentifier,
-    enumeral,
     enumeration,
     surveyQuestion,
     answerRule

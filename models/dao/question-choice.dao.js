@@ -1,15 +1,17 @@
 'use strict';
 
 const db = require('../db');
+const sequelize = db.sequelize;
+
+const SPromise = require('../../lib/promise');
 
 const Translatable = require('./translatable');
 
 const QuestionChoice = db.QuestionChoice;
 
 module.exports = class QuestionChoiceDAO extends Translatable {
-    constructor(dependencies) {
+    constructor() {
         super('question_choice_text', 'questionChoiceId');
-        Object.assign(this, dependencies);
     }
 
     deleteNullData(choices) {
@@ -24,14 +26,14 @@ module.exports = class QuestionChoiceDAO extends Translatable {
         return choices;
     }
 
-    createQuestionChoiceTx(choice, tx) {
-        return QuestionChoice.create(choice, { transaction: tx })
+    createQuestionChoiceTx(choice, transaction) {
+        return QuestionChoice.create(choice, { transaction })
             .then(({ id }) => {
                 const input = { id, text: choice.text };
                 if (choice.code) {
                     input.code = choice.code;
                 }
-                return this.createTextTx(input, tx)
+                return this.createTextTx(input, transaction)
                     .then(() => ({ id }));
             });
     }
@@ -61,8 +63,35 @@ module.exports = class QuestionChoiceDAO extends Translatable {
             .then(choices => this.updateAllTexts(choices, language));
     }
 
-    updateMultipleChoiceTextsTx(choices, language, tx) {
+    updateMultipleChoiceTextsTx(choices, language, transaction) {
         const inputs = choices.map(({ id, text }) => ({ id, text, language }));
-        return this.createMultipleTextsTx(inputs, tx);
+        return this.createMultipleTextsTx(inputs, transaction);
+    }
+
+    createQuestionChoices(enumerationId, choices, transaction) {
+        const type = 'choice';
+        const promises = choices.map(({ code, text }, line) => {
+            return this.createQuestionChoiceTx({ enumerationId, text, code, line, type }, transaction);
+        });
+        return SPromise.all(promises);
+    }
+
+    updateMultipleChoiceTexts(choices, language) {
+        return sequelize.transaction(transaction => {
+            return this.updateMultipleChoiceTextsTx(choices, language, transaction);
+        });
+    }
+
+    listQuestionChoices(enumerationId, language) {
+        return QuestionChoice.findAll({ where: { enumerationId }, raw: true, attributes: ['id', 'code'], order: 'line' })
+            .then(choices => this.updateAllTexts(choices, language));
+    }
+
+    deleteAllQuestionChoices(enumerationId, transaction) {
+        return QuestionChoice.destroy({ where: { enumerationId }, transaction });
+    }
+
+    deleteQuestionChoice(id) {
+        return QuestionChoice.destroy({ where: { id } });
     }
 };

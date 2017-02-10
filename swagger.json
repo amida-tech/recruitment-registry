@@ -2584,7 +2584,7 @@
             "x-swagger-router-controller": "enumeral.controller",
             "patch": {
                 "summary": "Updates or translates enumeration enumerals",
-                "operationId": "updateEnumeralTexts",
+                "operationId": "updateMultipleChoiceTexts",
                 "security": [{
                     "admin": []
                 }],
@@ -2623,7 +2623,7 @@
             }],
             "delete": {
                 "summary": "Deletes enumeral",
-                "operationId": "deleteEnumeral",
+                "operationId": "deleteQuestionChoice",
                 "security": [{
                     "admin": []
                 }],
