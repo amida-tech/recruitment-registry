@@ -46,10 +46,6 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
         this.answerer = answerer || new Answerer();
     }
 
-    sectionType() {
-        return 0;
-    }
-
     count() {
         const surveyIndex = this.currentIndex();
         return counts[surveyIndex];

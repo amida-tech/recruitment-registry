@@ -6,6 +6,35 @@ const QuestionGenerator = require('./question-generator');
 
 const questionTypes = QuestionGenerator.questionTypes();
 
+const sectionGenerators = {
+    oneLevel(surveyQuestions) {
+        const count = surveyQuestions.length;
+        if (count < 8) {
+            throw new Error('Not enough questions for sections.');
+        }
+        const sections = Array(3);
+        sections[0] = { name: 'section_0', questions: _.range(0, 6, 2).map(index => surveyQuestions[index]) };
+        sections[1] = { name: 'section_1', questions: _.range(1, 6, 2).map(index => surveyQuestions[index]) };
+        sections[2] = { name: 'section_2', questions: _.rangeRight(count - 3, count).map(index => surveyQuestions[index]) };
+        return sections;
+    },
+    oneLevelMissingName(surveyQuestions) {
+        const sections = sectionGenerators.oneLevel(surveyQuestions);
+        delete sections[0].name;
+        delete sections[sections.length - 1].name;
+        return sections;
+    },
+    twoLevel(surveyQuestions) {
+        const sections = sectionGenerators.oneLevel(surveyQuestions);
+        const lastIndex = sections.length - 1;
+        sections[lastIndex].name = 'parent_1';
+        return [
+            { name: 'parent_0', sections: sections.slice(0, lastIndex) },
+            sections[2]
+        ];
+    }
+};
+
 module.exports = class SurveyGenerator {
     constructor(questionGenerator, predecessor) {
         this.questionGenerator = questionGenerator || new QuestionGenerator();
@@ -14,6 +43,7 @@ module.exports = class SurveyGenerator {
         } else {
             this.surveyIndex = -1;
         }
+        this.sectionGenerators = ['twoLevel', 'oneLevelMissingName', 'oneLevel'].map(key => sectionGenerators[key]);
     }
 
     newSurveyGenerator(SurveyGeneratorClass) {
@@ -25,12 +55,11 @@ module.exports = class SurveyGenerator {
     }
 
     sectionType() {
-        return this.surveyIndex % 3;
+        return this.surveyIndex % 4;
     }
 
     count() {
-        const sectionType = this.sectionType();
-        return sectionType ? 9 + sectionType - 1 : questionTypes.length + 1;
+        return null;
     }
 
     newSurveyQuestion(index, question) {
@@ -63,30 +92,17 @@ module.exports = class SurveyGenerator {
         if (options.status) {
             result.status = options.status;
         }
-        const sectionType = options.noSection ? 0 : this.surveyIndex % 4;
-        const count = this.count();
+        const sectionType = options.noSection ? 0 : this.sectionType();
+        let count = this.count();
+        if (!count) {
+            count = sectionType ? 10 : questionTypes.length + 1;
+        }
         const surveyQuestions = _.range(count).map(index => this.newSurveyQuestion(index));
         if (!sectionType) {
             result.questions = surveyQuestions;
             return result;
         }
-        const sections = Array(3);
-        sections[0] = { name: 'section_0', questions: _.range(0, 6, 2).map(index => surveyQuestions[index]) };
-        sections[1] = { name: 'section_1', questions: _.range(1, 6, 2).map(index => surveyQuestions[index]) };
-        sections[2] = { name: 'section_2', questions: _.rangeRight(count - 3, count).map(index => surveyQuestions[index]) };
-        if (sectionType === 1) {
-            sections[2].name = 'parent_1';
-            result.sections = [
-                { name: 'parent_0', sections: sections.slice(0, 2) },
-                sections[2]
-            ];
-        } else if (sectionType === 2) {
-            delete sections[0].name;
-            delete sections[2].name;
-            result.sections = sections;
-        } else {
-            result.sections = sections;
-        }
+        result.sections = this.sectionGenerators[sectionType - 1](surveyQuestions);
         return result;
     }
 
