@@ -97,6 +97,8 @@ AnswerIdentifier.belongsTo(QuestionChoice, questionChoiceBelongsToArgument);
 
 AnswerRuleValue.belongsTo(QuestionChoice, questionChoiceBelongsToArgument);
 
+AnswerRule.belongsTo(Question, questionBelongsToArgument);
+
 SurveyQuestion.belongsTo(Question, questionBelongsToArgument);
 SurveyQuestion.belongsTo(AnswerRule, { as: 'skip', foreignKey: 'answer_rule_id' });
 SurveyQuestion.belongsTo(AnswerRule, { as: 'enableWhen', foreignKey: 'enable_when_rule_id' });

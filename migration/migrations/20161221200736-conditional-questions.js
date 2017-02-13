@@ -69,6 +69,15 @@ const answerRule = function (queryInterface, Sequelize) {
             primaryKey: true,
             autoIncrement: true
         },
+        surveyId: {
+            type: Sequelize.INTEGER,
+            allowNull: false,
+            field: 'survey_id',
+            references: {
+                model: 'survey',
+                key: 'id'
+            }
+        },
         logic: {
             type: Sequelize.TEXT,
             allowNull: false,
@@ -77,14 +86,41 @@ const answerRule = function (queryInterface, Sequelize) {
                 key: 'name'
             }
         },
+        questionId: {
+            type: Sequelize.INTEGER,
+            field: 'question_id',
+            references: {
+                model: 'question',
+                key: 'id'
+            }
+        },
+        answerQuestionId: {
+            type: Sequelize.INTEGER,
+            field: 'answer_question_id',
+            references: {
+                model: 'question',
+                key: 'id'
+            }
+        },
+        skipCount: {
+            type: Sequelize.INTEGER,
+            field: 'skip_count'
+        },
         createdAt: {
             type: Sequelize.DATE,
             field: 'created_at',
+        },
+        deletedAt: {
+            type: Sequelize.DATE,
+            field: 'deleted_at'
         }
     }, {
         freezeTableName: true,
         createdAt: 'createdAt',
-        updatedAt: false
+        updatedAt: false,
+        deletedAt: 'deletedAt',
+        paranoid: true,
+        indexes: [{ fields: ['survey_id'], where: { deleted_at: { $eq: null } } }]
     });
 };
 
@@ -133,7 +169,10 @@ module.exports = {
         const sequelize = queryInterface.sequelize;
         return answerRuleLogic(queryInterface, Sequelize)
             .then(() => answerRule(queryInterface, Sequelize))
-            .then(() => answerRuleValue(queryInterface, Sequelize))
+            .then(() => queryInterface.addIndex('answer_rule', ['survey_id'], {
+                where: { deleted_at: { $eq: null } },
+                indexName: 'answer_rule_survey_id'
+            })).then(() => answerRuleValue(queryInterface, Sequelize))
             .then(() => skipRuleId(queryInterface, Sequelize))
             .then(() => skipCount(queryInterface, Sequelize))
             .then(() => enableWhenRuleId(queryInterface, Sequelize))

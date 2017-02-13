@@ -228,13 +228,24 @@ module.exports = class SurveyDAO extends Translatable {
         }
     }
 
-    createRulesForQuestions(questions, property, transaction) {
+    createRulesForQuestions(surveyId, questions, property, transaction) {
         const questionsWithRule = questions.filter(question => question[property] && question[property].rule);
         if (questionsWithRule.length) {
             const promises = questionsWithRule.map(question => {
                 const rule = question[property].rule;
-                return AnswerRule.create({ logic: rule.logic }, { transaction })
-                    .then(({ id }) => question[property].ruleId = id);
+                const answerRule = { surveyId, questionId: question.id, logic: rule.logic };
+                const count = question[property].count;
+                if (count !== undefined) {
+                    answerRule.skipCount = count;
+                } else {
+                    answerRule.answerQuestionId = question[property].questionId;
+                }
+                return AnswerRule.create(answerRule, { transaction })
+                    .then(({ id }) => {
+                        question[property].ruleId = id;
+                        return this.createRuleAnswerValue(question[property], transaction);
+                    });
+
             });
             return SPromise.all(promises).then(() => questions);
         }
@@ -244,8 +255,8 @@ module.exports = class SurveyDAO extends Translatable {
     createSurveyQuestionsTx(inputQxs, surveyId, transaction) {
         const questions = inputQxs.slice();
         return this.createNewQuestionsTx(questions, transaction)
-            .then(questions => this.createRulesForQuestions(questions, 'skip', transaction))
-            .then(questions => this.createRulesForQuestions(questions, 'enableWhen', transaction))
+            .then(questions => this.createRulesForQuestions(surveyId, questions, 'skip', transaction))
+            .then(questions => this.createRulesForQuestions(surveyId, questions, 'enableWhen', transaction))
             .then(questions => {
                 return SPromise.all(questions.map((qx, line) => {
                         const record = { questionId: qx.id, surveyId, line, required: Boolean(qx.required) };
@@ -257,9 +268,7 @@ module.exports = class SurveyDAO extends Translatable {
                             record.enableWhenQuestionId = qx.enableWhen.questionId;
                             record.enableWhenRuleId = qx.enableWhen.ruleId;
                         }
-                        return SurveyQuestion.create(record, { transaction })
-                            .then(() => this.createRuleAnswerValue(qx.skip, transaction))
-                            .then(() => this.createRuleAnswerValue(qx.enableWhen, transaction));
+                        return SurveyQuestion.create(record, { transaction });
                     }))
                     .then(() => questions);
             });
@@ -589,15 +598,22 @@ module.exports = class SurveyDAO extends Translatable {
                                 const qxMap = _.keyBy(questions, 'id');
                                 const qxs = surveyQuestions.map(surveyQuestion => {
                                     const result = Object.assign(qxMap[surveyQuestion.questionId], { required: surveyQuestion.required });
-                                    if (surveyQuestion.skip) {
-                                        result.skip = surveyQuestion.skip;
-                                    }
-                                    if (surveyQuestion.enableWhen) {
-                                        result.enableWhen = surveyQuestion.enableWhen;
-                                    }
+                                    //if (surveyQuestion.skip) {
+                                    //    result.skip = surveyQuestion.skip;
+                                    //}
+                                    //if (surveyQuestion.enableWhen) {
+                                    //    result.enableWhen = surveyQuestion.enableWhen;
+                                    //}
                                     return result;
                                 });
-                                return { survey, questions: qxs };
+                                return this.answerRule.getSurveyAnswerRules(survey.id)
+                                    .then(answerRuleInfos => {
+                                        answerRuleInfos.forEach(({ questionId, ruleType, rule }) => {
+                                            const question = qxMap[questionId];
+                                            question[ruleType] = rule;
+                                        });
+                                        return { survey, questions: qxs };
+                                    });
                             });
                     })
                     .then(({ survey, questions }) => {
