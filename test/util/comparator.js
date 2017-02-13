@@ -3,23 +3,11 @@
 const chai = require('chai');
 const _ = require('lodash');
 
+const models = require('../../models');
+
 const expect = chai.expect;
 
 let choiceSetMap;
-
-const getQuestionsMap = function getQuestionsMap({ questions, sections }, list) {
-    if (!list) {
-        list = [];
-    }
-    if (questions) {
-        questions.forEach(question => list.push(question));
-        return list;
-    }
-    sections.forEach(section => {
-        getQuestionsMap(section, list);
-    });
-    return list;
-};
 
 const comparator = {
     question(client, server, options = {}) {
@@ -120,6 +108,10 @@ const comparator = {
                 delete expected.enableWhen.rule.selectionTexts;
             }
         }
+        if (expected.section && server.section) {
+            expected.section.id = server.section.id;
+            this.surveySectionsOrQuestions(expected.section, server.section, options);
+        }
         expect(server).to.deep.equal(expected);
         return expected;
     },
@@ -142,6 +134,15 @@ const comparator = {
             }
         });
     },
+    surveySectionsOrQuestions(client, server, options) {
+        expect(!((client.sections && server.sections) || (client.questions && server.questions))).to.equal(false);
+        expect(!((client.sections && client.questions) || (server.sections && server.questions))).to.equal(true);
+        if (client.sections) {
+            this.surveySections(client.sections, server.sections, options);
+        } else {
+            client.questions = this.questions(client.questions, server.questions, options);
+        }
+    },
     survey(client, server, options = {}) {
         const expected = _.cloneDeep(client);
         expected.id = server.id;
@@ -152,20 +153,14 @@ const comparator = {
         if (!expected.status) {
             expected.status = 'published';
         }
-        expect((client.sections && server.sections) || (client.questions && server.questions));
-        expect(!((client.sections && client.questions) || (server.sections && server.questions)));
-        if (client.sections) {
-            this.surveySections(expected.sections, server.sections, options);
-        } else {
-            expected.questions = this.questions(expected.questions, server.questions, options);
-        }
+        this.surveySectionsOrQuestions(expected, server, options);
         expect(server).to.deep.equal(expected);
     },
     answeredSurvey(survey, answers, serverAnsweredSurvey, language) {
         const expected = _.cloneDeep(survey);
         const answerMap = new Map();
         answers.forEach(({ questionId, answer, answers, language }) => answerMap.set(questionId, { answer, answers, language }));
-        const surveyQuestions = getQuestionsMap(expected);
+        const surveyQuestions = models.survey.getQuestions(expected);
         surveyQuestions.forEach(qx => {
             const clientAnswers = answerMap.get(qx.id);
             if (clientAnswers) {

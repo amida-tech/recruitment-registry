@@ -98,6 +98,13 @@ module.exports = class SurveyGenerator {
             count = sectionType ? 10 : questionTypes.length + 1;
         }
         const surveyQuestions = _.range(count).map(index => this.newSurveyQuestion(index));
+        const sectionGroup = this.surveyIndex % 8 >= 4;
+        if (!options.noSection && !options.noQuestionGroup && sectionGroup) {
+            const questionGroupIndex = (this.surveyIndex % 3) + 2;
+            const sectionCount = 3 - (this.surveyIndex % 3);
+            const sectionSurveyQuestions = _.range(sectionCount).map(index => this.newSurveyQuestion(index));
+            surveyQuestions[questionGroupIndex].section = { questions: [...sectionSurveyQuestions] };
+        }
         if (!sectionType) {
             result.questions = surveyQuestions;
             return result;

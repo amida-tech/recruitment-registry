@@ -69,27 +69,59 @@ module.exports = class SurveyDAO extends Translatable {
         Object.assign(this, dependencies);
     }
 
-    flattenSectionsHieararchy(sections, result, parentIndex = null) {
-        if (!result) {
-            result = {
-                sections: [],
-                questions: []
-            };
-        }
+    flattenSectionsHieararchy(sections, result, parentIndex) {
         sections.forEach((section, line) => {
             let { name, questions } = section;
             const type = questions ? 'question' : 'section';
             const sectionInfo = { name, parentIndex, type, line };
-            if (questions) {
-                const currentQuestionCount = result.questions.length;
-                sectionInfo.indices = _.range(currentQuestionCount, currentQuestionCount + questions.length);
-                result.questions.push(...questions);
-            }
             result.sections.push(sectionInfo);
+            if (questions) {
+                const indices = this.flattenQuestionsHierarchy(questions, result);
+                sectionInfo.indices = indices;
+            }
             if (section.sections) {
                 this.flattenSectionsHieararchy(section.sections, result, result.sections.length - 1);
             }
         });
+        return result;
+    }
+
+    flattenQuestionsHierarchy(questions, result) {
+        const indices = [];
+        questions.forEach(question => {
+            const questionIndex = result.questions.length;
+            indices.push(questionIndex);
+            result.questions.push(question);
+            const section = question.section;
+            if (section) {
+                let { name, sections, questions } = section;
+                const type = questions ? 'question' : 'section';
+                const sectionInfo = { name, questionIndex, type, line: 0 };
+                result.sections.push(sectionInfo);
+                if (questions) {
+                    const indices = this.flattenQuestionsHierarchy(questions, result);
+                    sectionInfo.indices = indices;
+                }
+                if (sections) {
+                    this.flattenSectionsHieararchy(sections, result, result.sections.length - 1);
+                }
+            }
+        });
+        return indices;
+    }
+
+    flattenHierarchy({ sections, questions }) {
+        if (questions && sections) {
+            throw new RRError('surveyBothQuestionsSectionsSpecified');
+        }
+        const result = { sections: [], questions: [] };
+        if (sections) {
+            return this.flattenSectionsHieararchy(sections, result, null);
+        }
+        this.flattenQuestionsHierarchy(questions, result);
+        if (result.sections.length === 0) {
+            delete result.sections;
+        }
         return result;
     }
 
@@ -234,12 +266,7 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     updateSurveyTx(id, survey, transaction) {
-        let { sections, questions } = survey;
-        if (sections) {
-            const flattenedSurvey = this.flattenSectionsHieararchy(sections);
-            sections = flattenedSurvey.sections;
-            questions = flattenedSurvey.questions;
-        }
+        let { sections, questions } = this.flattenHierarchy(survey);
         return this.createTextTx({ id, name: survey.name, description: survey.description }, transaction)
             .then(({ id }) => {
                 return this.createSurveyQuestionsTx(questions, id, transaction)
@@ -361,18 +388,10 @@ module.exports = class SurveyDAO extends Translatable {
                         }
                     })
                     .then(() => {
-                        let { status, questions, sections, forceQuestions } = surveyPatch;
-                        if (!(questions || sections)) {
+                        if (!(surveyPatch.questions || surveyPatch.sections)) {
                             return;
                         }
-                        if (questions && sections) {
-                            return RRError.reject('surveyBothQuestionsSectionsSpecified');
-                        }
-                        if (sections) {
-                            const flattenedSurvey = this.flattenSectionsHieararchy(sections);
-                            sections = flattenedSurvey.sections;
-                            questions = flattenedSurvey.questions;
-                        }
+                        const { sections, questions } = this.flattenHierarchy(surveyPatch);
                         if (!questions) {
                             return RRError.reject('surveyNoQuestionsInSections');
                         }
@@ -390,7 +409,7 @@ module.exports = class SurveyDAO extends Translatable {
                             return r;
                         }, []);
                         if (removedQuestionIds.length || (survey.questionIds.length !== questions.length)) {
-                            if (!forceQuestions && (status !== 'draft')) {
+                            if (!surveyPatch.forceQuestions && (surveyPatch.status !== 'draft')) {
                                 return RRError.reject('surveyChangeQuestionWhenPublished');
                             }
                         }
@@ -557,6 +576,9 @@ module.exports = class SurveyDAO extends Translatable {
                 if (survey.meta === null) {
                     delete survey.meta;
                 }
+                if (options.override) {
+                    return survey;
+                }
                 return this.updateText(survey, options.language)
                     .then(() => this.surveyQuestion.listSurveyQuestions(survey.id))
                     .then(surveyQuestions => {
@@ -580,11 +602,16 @@ module.exports = class SurveyDAO extends Translatable {
                     })
                     .then(({ survey, questions }) => {
                         return this.surveySection.getSectionsForSurveyTx(survey.id, questions, options.language)
-                            .then(sections => {
+                            .then(result => {
+                                if (!result) {
+                                    survey.questions = questions;
+                                    return survey;
+                                }
+                                const { sections, innerQuestionSet } = result;
                                 if (sections && sections.length) {
                                     survey.sections = sections;
                                 } else {
-                                    survey.questions = questions;
+                                    survey.questions = questions.filter(({ id }) => !innerQuestionSet.has(id));
                                 }
                                 return survey;
                             });
@@ -592,18 +619,53 @@ module.exports = class SurveyDAO extends Translatable {
             });
     }
 
-    getQuestionsMap({ questions, sections }, map) {
-        if (!map) {
-            map = new Map();
-        }
+    updateQuestionQuestionsMap(questions, map) {
+        questions.forEach(question => {
+            map.set(question.id, question);
+            if (question.section) {
+                this.updateQuestionsMap(question.section, map);
+            }
+        });
+    }
+
+    updateQuestionsMap({ questions, sections }, map) {
         if (questions) {
-            questions.forEach(question => map.set(question.id, question));
-            return map;
+            return this.updateQuestionQuestionsMap(questions, map);
         }
         sections.forEach(section => {
-            this.getQuestionsMap(section, map);
+            this.updateQuestionsMap(section, map);
         });
+
+    }
+
+    getQuestionsMap(survey) {
+        const map = new Map();
+        this.updateQuestionsMap(survey, map);
         return map;
+    }
+
+    updateQuestionQuestionsList(questions, list) {
+        questions.forEach(question => {
+            list.push(question);
+            if (question.section) {
+                this.updateQuestionsList(question.section, list);
+            }
+        });
+    }
+
+    updateQuestionsList({ questions, sections }, list) {
+        if (questions) {
+            return this.updateQuestionQuestionsList(questions, list);
+        }
+        sections.forEach(section => {
+            this.updateQuestionsList(section, list);
+        });
+    }
+
+    getQuestions(survey) {
+        const list = [];
+        this.updateQuestionsList(survey, list);
+        return list;
     }
 
     getAnsweredSurvey(userId, id, options) {

@@ -14,9 +14,13 @@ module.exports = class SectionDAO extends Translatable {
         super('survey_section_text', 'surveySectionId', ['name'], { name: true });
     }
 
-    createSurveySectionTx({ name, surveyId, line, type, parentIndex }, ids, transaction) {
+    createSurveySectionTx({ name, surveyId, parentQuestionId, line, type, parentIndex }, ids, transaction) {
         const parentId = parentIndex === null ? null : ids[parentIndex];
-        return SurveySection.create({ surveyId, line, type, parentId }, { transaction })
+        const record = { surveyId, line, type, parentId };
+        if (parentQuestionId) {
+            record.parentQuestionId = parentQuestionId;
+        }
+        return SurveySection.create(record, { transaction })
             .then(({ id }) => {
                 ids.push(id);
                 if (name) {
@@ -35,8 +39,11 @@ module.exports = class SectionDAO extends Translatable {
         }
         return SurveySection.destroy({ where: { surveyId }, transaction })
             .then(() => {
-                return flattenedSections.reduce((r, { parentIndex, line, name, type }) => {
+                return flattenedSections.reduce((r, { parentIndex, questionIndex, line, name, type }) => {
                     const record = { name, surveyId, line, type, parentIndex };
+                    if (questionIndex !== undefined) {
+                        record.parentQuestionId = surveyQuestionIds[questionIndex];
+                    }
                     if (r === null) {
                         return this.createSurveySectionTx(record, [], transaction);
                     } else {
@@ -70,50 +77,69 @@ module.exports = class SectionDAO extends Translatable {
                 where: { surveyId },
                 raw: true,
                 order: 'line',
-                attributes: ['id', 'type', 'parentId']
+                attributes: ['id', 'type', 'parentId', 'parentQuestionId']
             })
-            .then(sections => this.updateAllTexts(sections, language))
             .then(sections => {
-                const ids = sections.reduce((r, { id, type }) => {
-                    if (type === 'question') {
-                        r.push(id);
-                    }
-                    return r;
-                }, []);
-                return SurveySectionQuestion.findAll({
-                        where: { surveySectionId: { $in: ids } },
-                        raw: true,
-                        order: 'line',
-                        attributes: ['surveySectionId', 'questionId']
-                    })
-                    .then(records => {
-                        const map = sections.reduce((r, section) => {
-                            r[section.id] = section;
-                            if (section.type === 'question') {
-                                section.questions = [];
+                if (!sections.length) {
+                    return null;
+                }
+                return this.updateAllTexts(sections, language)
+                    .then(sections => {
+                        const ids = sections.reduce((r, section) => {
+                            const { id, type, parentQuestionId } = section;
+                            if (type === 'question') {
+                                r.push(id);
                             }
-                            delete section.type;
-                            return r;
-                        }, {});
-                        records.forEach(record => {
-                            const section = map[record.surveySectionId];
-                            const question = questionMap.get(record.questionId);
-                            section.questions.push(question);
-                        });
-                        return sections.reduce((r, section) => {
-                            if (section.parentId) {
-                                const parent = map[section.parentId];
-                                if (!parent.sections) {
-                                    parent.sections = [];
-                                }
-                                parent.sections.push(section);
+                            if (parentQuestionId) {
+                                const question = questionMap.get(parentQuestionId);
+                                question.section = section;
                                 delete section.parentId;
                             } else {
-                                r.push(section);
-                                delete section.parentId;
+                                delete section.parentQuestionId;
                             }
                             return r;
                         }, []);
+                        return SurveySectionQuestion.findAll({
+                                where: { surveySectionId: { $in: ids } },
+                                raw: true,
+                                order: 'line',
+                                attributes: ['surveySectionId', 'questionId']
+                            })
+                            .then(records => {
+                                const map = sections.reduce((r, section) => {
+                                    r[section.id] = section;
+                                    if (section.type === 'question') {
+                                        section.questions = [];
+                                    }
+                                    delete section.type;
+                                    return r;
+                                }, {});
+                                const innerQuestionSet = new Set();
+                                records.forEach(record => {
+                                    const section = map[record.surveySectionId];
+                                    const question = questionMap.get(record.questionId);
+                                    section.questions.push(question);
+                                    innerQuestionSet.add(question.id);
+                                });
+                                const result = { innerQuestionSet };
+                                result.sections = sections.reduce((r, section) => {
+                                    if (section.parentId) {
+                                        const parent = map[section.parentId];
+                                        if (!parent.sections) {
+                                            parent.sections = [];
+                                        }
+                                        parent.sections.push(section);
+                                        delete section.parentId;
+                                    } else if (section.parentQuestionId) {
+                                        delete section.parentQuestionId;
+                                    } else {
+                                        r.push(section);
+                                        delete section.parentId;
+                                    }
+                                    return r;
+                                }, []);
+                                return result;
+                            });
                     });
             });
     }

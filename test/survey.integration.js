@@ -55,7 +55,7 @@ describe('survey integration', function () {
             store.get(`/surveys/${server.id}`, true, 200)
                 .expect(function (res) {
                     if (noSectionId) {
-                        surveyCommon.removeSectionIds(res.body.sections);
+                        surveyCommon.removeSurveySectionIds(res.body);
                     }
                     expect(res.body).to.deep.equal(server);
                 })
