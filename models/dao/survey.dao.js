@@ -260,14 +260,6 @@ module.exports = class SurveyDAO extends Translatable {
             .then(questions => {
                 return SPromise.all(questions.map((qx, line) => {
                         const record = { questionId: qx.id, surveyId, line, required: Boolean(qx.required) };
-                        if (qx.skip) {
-                            record.skipCount = qx.skip.count;
-                            record.skipRuleId = qx.skip.ruleId;
-                        }
-                        if (qx.enableWhen) {
-                            record.enableWhenQuestionId = qx.enableWhen.questionId;
-                            record.enableWhenRuleId = qx.enableWhen.ruleId;
-                        }
                         return SurveyQuestion.create(record, { transaction });
                     }))
                     .then(() => questions);
@@ -598,12 +590,6 @@ module.exports = class SurveyDAO extends Translatable {
                                 const qxMap = _.keyBy(questions, 'id');
                                 const qxs = surveyQuestions.map(surveyQuestion => {
                                     const result = Object.assign(qxMap[surveyQuestion.questionId], { required: surveyQuestion.required });
-                                    //if (surveyQuestion.skip) {
-                                    //    result.skip = surveyQuestion.skip;
-                                    //}
-                                    //if (surveyQuestion.enableWhen) {
-                                    //    result.enableWhen = surveyQuestion.enableWhen;
-                                    //}
                                     return result;
                                 });
                                 return this.answerRule.getSurveyAnswerRules(survey.id)
