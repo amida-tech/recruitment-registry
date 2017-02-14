@@ -2901,6 +2901,9 @@
                     "items": {
                         "$ref": "#/definitions/newSection"
                     }
+                },
+                "enableWhen": {
+                    "$ref": "#/definitions/newEnableWhenCondition"
                 }
             },
             "maxProperties": 2,
@@ -2926,6 +2929,9 @@
                     "items": {
                         "$ref": "#/definitions/section"
                     }
+                },
+                "enableWhen": {
+                    "$ref": "#/definitions/enableWhenCondition"
                 }
             },
             "maxProperties": 3,

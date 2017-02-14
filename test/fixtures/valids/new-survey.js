@@ -68,4 +68,47 @@ module.exports = [{
         'id': 8,
         'required': true
     }]
+}, {
+    name: 'name_13',
+    meta: {
+        'displayAsWizard': true,
+        'saveProgress': false
+    },
+    questions: [{
+        id: 105,
+        required: false
+    }, {
+        id: 106,
+        required: true
+    }, {
+        id: 107,
+        required: false
+    }, {
+        id: 108,
+        required: false,
+        section: {
+            questions: [{
+                id: 109,
+                required: true
+            }, {
+                id: 110,
+                required: false
+            }, {
+                id: 111,
+                required: true
+            }],
+            enableWhen: {
+                rule: {
+                    logic: 'not-equals',
+                    answer: {
+                        choice: 184
+                    }
+                },
+                questionId: 108
+            }
+        }
+    }, {
+        id: 112,
+        required: true
+    }]
 }];

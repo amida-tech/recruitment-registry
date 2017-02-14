@@ -40,6 +40,7 @@ module.exports = function (sequelize, DataTypes) {
         answerQuestionId: {
             type: DataTypes.INTEGER,
             field: 'answer_question_id',
+            allowNull: true,
             references: {
                 model: 'question',
                 key: 'id'

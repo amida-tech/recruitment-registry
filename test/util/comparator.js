@@ -10,6 +10,38 @@ const expect = chai.expect;
 let choiceSetMap;
 
 const comparator = {
+    enableWhen(client, server, options) {
+        if (client.enableWhen && client.enableWhen.rule && server.enableWhen && server.enableWhen.rule) {
+            if (client.enableWhen && (client.enableWhen.questionIndex !== undefined) && server.enableWhen && server.enableWhen.questionId) {
+                client.enableWhen.questionId = server.enableWhen.questionId;
+                delete client.enableWhen.questionIndex;
+            }
+            client.enableWhen.rule.id = server.enableWhen.rule.id;
+            const answer = client.enableWhen.rule.answer;
+            const question = options.serverQuestionMap[server.enableWhen.questionId];
+            if (answer && answer.choiceText) {
+                const enableWhenChoice = question.choices.find(choice => (choice.text === answer.choiceText));
+                answer.choice = enableWhenChoice.id;
+                delete answer.choiceText;
+            }
+            if (answer && answer.choices) {
+                answer.choices.forEach(answerChoice => {
+                    const enableWhenChoice = question.choices.find(choice => (choice.text === answerChoice.text));
+                    answerChoice.id = enableWhenChoice.id;
+                    delete answerChoice.text;
+                    if (Object.keys(answerChoice).length === 1) {
+                        answerChoice.boolValue = true;
+                    }
+                });
+                answer.choices = _.sortBy(answer.choices, 'id');
+            }
+            const selectionTexts = client.enableWhen.rule.selectionTexts;
+            if (selectionTexts) {
+                client.enableWhen.rule.selectionIds = selectionTexts.map(text => question.choices.find(choice => (choice.text === text)).id);
+                delete client.enableWhen.rule.selectionTexts;
+            }
+        }
+    },
     question(client, server, options = {}) {
         const id = server.id;
         const expected = _.cloneDeep(client);
@@ -110,6 +142,7 @@ const comparator = {
         }
         if (expected.section && server.section) {
             expected.section.id = server.section.id;
+            this.enableWhen(expected.section, server.section, options);
             this.surveySectionsOrQuestions(expected.section, server.section, options);
         }
         expect(server).to.deep.equal(expected);
@@ -153,6 +186,9 @@ const comparator = {
         if (!expected.status) {
             expected.status = 'published';
         }
+        const serverSurveyQuestions = models.survey.getQuestions(server);
+        const serverQuestionMap = _.keyBy(serverSurveyQuestions, 'id');
+        options.serverQuestionMap = serverQuestionMap;
         this.surveySectionsOrQuestions(expected, server, options);
         expect(server).to.deep.equal(expected);
     },
@@ -242,6 +278,20 @@ const comparator = {
             if (ruleId) {
                 const newRuleId = firstServer.questions[index].enableWhen.rule.id;
                 question.enableWhen.rule.id = newRuleId;
+            }
+        });
+        secondServer.questions.forEach((question, index) => {
+            const id = _.get(question, 'section.id');
+            if (id) {
+                const newId = firstServer.questions[index].section.id;
+                question.section.id = newId;
+            }
+        });
+        secondServer.questions.forEach((question, index) => {
+            const ruleId = _.get(question, 'section.enableWhen.rule.id');
+            if (ruleId) {
+                const newRuleId = firstServer.questions[index].section.enableWhen.rule.id;
+                question.section.enableWhen.rule.id = newRuleId;
             }
         });
         delete firstServer.sections;

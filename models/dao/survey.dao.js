@@ -71,9 +71,12 @@ module.exports = class SurveyDAO extends Translatable {
 
     flattenSectionsHieararchy(sections, result, parentIndex) {
         sections.forEach((section, line) => {
-            let { name, questions } = section;
+            let { name, questions, enableWhen } = section;
             const type = questions ? 'question' : 'section';
             const sectionInfo = { name, parentIndex, type, line };
+            if (enableWhen) {
+                sectionInfo.enableWhen = enableWhen;
+            }
             result.sections.push(sectionInfo);
             if (questions) {
                 const indices = this.flattenQuestionsHierarchy(questions, result);
@@ -94,13 +97,14 @@ module.exports = class SurveyDAO extends Translatable {
             result.questions.push(question);
             const section = question.section;
             if (section) {
-                let { name, sections, questions } = section;
+                let { name, sections, questions, enableWhen } = section;
                 const type = questions ? 'question' : 'section';
                 const sectionInfo = { name, questionIndex, type, line: 0 };
                 result.sections.push(sectionInfo);
                 if (questions) {
                     const indices = this.flattenQuestionsHierarchy(questions, result);
                     sectionInfo.indices = indices;
+                    sectionInfo.enableWhen = enableWhen;
                 }
                 if (sections) {
                     this.flattenSectionsHieararchy(sections, result, result.sections.length - 1);
@@ -200,7 +204,7 @@ module.exports = class SurveyDAO extends Translatable {
                         .then(({ id, choices }) => {
                             const inputQuestion = questions[q.index];
                             questions[q.index] = { id, required: inputQuestion.required };
-                            questionChoices[q.index] = choices;
+                            questionChoices[id] = choices;
                             let skip = inputQuestion.skip;
                             if (skip) {
                                 skip = _.cloneDeep(skip);
@@ -245,8 +249,29 @@ module.exports = class SurveyDAO extends Translatable {
         return questions;
     }
 
-    createSurveyQuestionsTx(inputQxs, surveyId, transaction) {
-        const questions = inputQxs.slice();
+    createRulesForSections(surveyId, sections, sectionIds, transaction) {
+        const sectionsWithRule = _.range(sections.length).filter(index => sections[index].enableWhen && sections[index].enableWhen.rule);
+        if (sectionsWithRule.length) {
+            const promises = sectionsWithRule.map(index => {
+                const section = sections[index];
+                const surveySectionId = sectionIds[index];
+                const rule = section.enableWhen.rule;
+                const answerRule = { surveyId, surveySectionId, logic: rule.logic };
+                answerRule.answerQuestionId = section.enableWhen.questionId;
+                return AnswerRule.create(answerRule, { transaction })
+                    .then(({ id }) => {
+                        section.enableWhen.ruleId = id;
+                        return this.createRuleAnswerValue(section.enableWhen, transaction);
+                    });
+
+            });
+            return SPromise.all(promises).then(() => sections);
+        }
+        return sections;
+    }
+
+    createSurveyQuestionsTx(questions, sections, surveyId, transaction) {
+        questions = questions.slice();
         return this.createNewQuestionsTx(questions, transaction)
             .then(({ questions, questionChoices }) => {
                 questions.forEach(question => {
@@ -260,10 +285,27 @@ module.exports = class SurveyDAO extends Translatable {
                         if (questionChoices) {
                             const choices = questionChoices[enableWhen.questionId];
                             enableWhen = translateRuleChoices(enableWhen, choices) || enableWhen;
-                            questions.enableWhen = enableWhen;
                         }
+                        question.enableWhen = enableWhen;
                     }
                 });
+                if (sections) {
+                    sections.forEach(section => {
+                        if (section.enableWhen) {
+                            let enableWhen = _.cloneDeep(section.enableWhen);
+                            let questionIndex = enableWhen.questionIndex;
+                            if (questionIndex !== undefined) {
+                                enableWhen.questionId = questions[questionIndex].id;
+                                delete enableWhen.questionIndex;
+                            }
+                            if (questionChoices) {
+                                const choices = questionChoices[enableWhen.questionId];
+                                enableWhen = translateRuleChoices(enableWhen, choices) || enableWhen;
+                            }
+                            section.enableWhen = enableWhen;
+                        }
+                    });
+                }
                 return questions;
             })
             .then(questions => this.createRulesForQuestions(surveyId, questions, 'skip', transaction))
@@ -281,7 +323,7 @@ module.exports = class SurveyDAO extends Translatable {
         let { sections, questions } = this.flattenHierarchy(survey);
         return this.createTextTx({ id, name: survey.name, description: survey.description }, transaction)
             .then(({ id }) => {
-                return this.createSurveyQuestionsTx(questions, id, transaction)
+                return this.createSurveyQuestionsTx(questions, sections, id, transaction)
                     .then(questions => {
                         const questionIds = questions.map(question => question.id);
                         return { questionIds, surveyId: id };
@@ -290,6 +332,7 @@ module.exports = class SurveyDAO extends Translatable {
             .then(({ questionIds, surveyId }) => {
                 if (sections) {
                     return this.surveySection.bulkCreateFlattenedSectionsForSurveyTx(surveyId, questionIds, sections, transaction)
+                        .then(sectionIds => this.createRulesForSections(surveyId, sections, sectionIds, transaction))
                         .then(() => surveyId);
                 } else {
                     return surveyId;
@@ -431,7 +474,7 @@ module.exports = class SurveyDAO extends Translatable {
                                     return Answer.destroy({ where: { surveyId, questionId: { $in: removedQuestionIds } }, transaction });
                                 }
                             })
-                            .then(() => this.createSurveyQuestionsTx(questions, surveyId, transaction))
+                            .then(() => this.createSurveyQuestionsTx(questions, sections, surveyId, transaction))
                             .then(questions => questions.map(question => question.id))
                             .then(questionIds => ({ sections, questionIds }))
                             .then(({ sections, questionIds }) => {
@@ -591,42 +634,44 @@ module.exports = class SurveyDAO extends Translatable {
                 if (options.override) {
                     return survey;
                 }
-                return this.updateText(survey, options.language)
-                    .then(() => this.surveyQuestion.listSurveyQuestions(survey.id))
-                    .then(surveyQuestions => {
-                        const ids = _.map(surveyQuestions, 'questionId');
-                        const language = options.language;
-                        return this.question.listQuestions({ scope: 'complete', ids, language })
-                            .then(questions => {
-                                const qxMap = _.keyBy(questions, 'id');
-                                const qxs = surveyQuestions.map(surveyQuestion => {
-                                    const result = Object.assign(qxMap[surveyQuestion.questionId], { required: surveyQuestion.required });
-                                    return result;
-                                });
-                                return this.answerRule.getSurveyAnswerRules(survey.id)
-                                    .then(answerRuleInfos => {
+                return this.answerRule.getSurveyAnswerRules(survey.id)
+                    .then(answerRuleInfos => {
+                        return this.updateText(survey, options.language)
+                            .then(() => this.surveyQuestion.listSurveyQuestions(survey.id))
+                            .then(surveyQuestions => {
+                                const ids = _.map(surveyQuestions, 'questionId');
+                                const language = options.language;
+                                return this.question.listQuestions({ scope: 'complete', ids, language })
+                                    .then(questions => {
+                                        const qxMap = _.keyBy(questions, 'id');
+                                        const qxs = surveyQuestions.map(surveyQuestion => {
+                                            const result = Object.assign(qxMap[surveyQuestion.questionId], { required: surveyQuestion.required });
+                                            return result;
+                                        });
                                         answerRuleInfos.forEach(({ questionId, ruleType, rule }) => {
-                                            const question = qxMap[questionId];
-                                            question[ruleType] = rule;
+                                            if (questionId) {
+                                                const question = qxMap[questionId];
+                                                question[ruleType] = rule;
+                                            }
                                         });
                                         return { survey, questions: qxs };
                                     });
-                            });
-                    })
-                    .then(({ survey, questions }) => {
-                        return this.surveySection.getSectionsForSurveyTx(survey.id, questions, options.language)
-                            .then(result => {
-                                if (!result) {
-                                    survey.questions = questions;
-                                    return survey;
-                                }
-                                const { sections, innerQuestionSet } = result;
-                                if (sections && sections.length) {
-                                    survey.sections = sections;
-                                } else {
-                                    survey.questions = questions.filter(({ id }) => !innerQuestionSet.has(id));
-                                }
-                                return survey;
+                            })
+                            .then(({ survey, questions }) => {
+                                return this.surveySection.getSectionsForSurveyTx(survey.id, questions, answerRuleInfos, options.language)
+                                    .then(result => {
+                                        if (!result) {
+                                            survey.questions = questions;
+                                            return survey;
+                                        }
+                                        const { sections, innerQuestionSet } = result;
+                                        if (sections && sections.length) {
+                                            survey.sections = sections;
+                                        } else {
+                                            survey.questions = questions.filter(({ id }) => !innerQuestionSet.has(id));
+                                        }
+                                        return survey;
+                                    });
                             });
                     });
             });

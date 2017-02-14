@@ -98,6 +98,18 @@ AnswerIdentifier.belongsTo(QuestionChoice, questionChoiceBelongsToArgument);
 AnswerRuleValue.belongsTo(QuestionChoice, questionChoiceBelongsToArgument);
 
 AnswerRule.belongsTo(Question, questionBelongsToArgument);
+AnswerRule.belongsTo(Question, {
+    as: 'answerQuestion',
+    foreignKey: {
+        allowNull: false,
+        fieldName: 'answerQuestionId',
+        field: 'answer_question_id',
+        references: {
+            model: 'question',
+            key: 'id'
+        }
+    }
+});
 
 SurveyQuestion.belongsTo(Question, questionBelongsToArgument);
 

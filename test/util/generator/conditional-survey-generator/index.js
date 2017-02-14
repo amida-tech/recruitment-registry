@@ -9,7 +9,7 @@ const conditionalQuestions = require('./conditional-questions');
 const requiredOverrides = require('./required-overrides');
 const errorAnswerSetup = require('./error-answer-setup');
 
-const counts = [8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8]; // /**/, '8e', '8e', '8e', '8e', '8e'];
+const counts = [8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8 /**/ , '8e', '8e', '8e', '8e', '8e'];
 
 const specialQuestionGenerator = {
     multipleSupport(surveyGenerator, questionInfo) {
@@ -191,7 +191,7 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
     }
 
     static newSurveyFromPrevious(clientSurvey, serverSurvey) {
-        const questions = serverSurvey.questions.map(({ id, required, skip, enableWhen }) => {
+        const questions = serverSurvey.questions.map(({ id, required, skip, enableWhen, section }) => {
             const question = { id, required };
             if (skip) {
                 question.skip = _.cloneDeep(skip);
@@ -200,6 +200,15 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
             if (enableWhen) {
                 question.enableWhen = _.cloneDeep(enableWhen);
                 delete question.enableWhen.rule.id;
+            }
+            if (section) {
+                question.section = _.cloneDeep(section);
+                delete question.section.id;
+                const enableWhen = question.section.enableWhen;
+                if (enableWhen) {
+                    delete enableWhen.rule.id;
+                }
+                question.section.questions = question.section.questions.map(({ id, required }) => ({ id, required }));
             }
             return question;
         });

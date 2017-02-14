@@ -71,7 +71,7 @@ module.exports = class SectionDAO extends Translatable {
             }));
     }
 
-    getSectionsForSurveyTx(surveyId, questions, language) {
+    getSectionsForSurveyTx(surveyId, questions, answerRuleInfos, language) {
         const questionMap = new Map(questions.map(question => [question.id, question]));
         return SurveySection.findAll({
                 where: { surveyId },
@@ -114,6 +114,12 @@ module.exports = class SectionDAO extends Translatable {
                                     delete section.type;
                                     return r;
                                 }, {});
+                                answerRuleInfos.forEach(({ surveySectionId, ruleType, rule }) => {
+                                    if (surveySectionId) {
+                                        const section = map[surveySectionId];
+                                        section[ruleType] = rule;
+                                    }
+                                });
                                 const innerQuestionSet = new Set();
                                 records.forEach(record => {
                                     const section = map[record.surveySectionId];
