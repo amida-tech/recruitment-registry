@@ -194,11 +194,13 @@ module.exports = class SurveyDAO extends Translatable {
             return r;
         }, []);
         if (newQuestions.length) {
+            const questionChoices = {};
             return SPromise.all(newQuestions.map(q => {
                     return this.question.createQuestionTx(q.qx, tx)
                         .then(({ id, choices }) => {
                             const inputQuestion = questions[q.index];
                             questions[q.index] = { id, required: inputQuestion.required };
+                            questionChoices[q.index] = choices;
                             let skip = inputQuestion.skip;
                             if (skip) {
                                 skip = _.cloneDeep(skip);
@@ -208,23 +210,14 @@ module.exports = class SurveyDAO extends Translatable {
                             let enableWhen = inputQuestion.enableWhen;
                             if (enableWhen) {
                                 enableWhen = _.cloneDeep(enableWhen);
-                                enableWhen = translateRuleChoices(enableWhen, choices) || enableWhen;
+                                //enableWhen = translateRuleChoices(enableWhen, choices) || enableWhen;
                                 questions[q.index].enableWhen = enableWhen;
                             }
                         });
                 }))
-                .then(() => {
-                    questions.forEach(question => {
-                        let questionIndex = _.get(question, 'enableWhen.questionIndex', null);
-                        if (questionIndex !== null) {
-                            question.enableWhen.questionId = questions[questionIndex].id;
-                            delete question.enableWhen.questionIndex;
-                        }
-                    });
-                    return questions;
-                });
+                .then(() => ({ questions, questionChoices }));
         } else {
-            return SPromise.resolve(questions);
+            return SPromise.resolve({ questions });
         }
     }
 
@@ -255,6 +248,24 @@ module.exports = class SurveyDAO extends Translatable {
     createSurveyQuestionsTx(inputQxs, surveyId, transaction) {
         const questions = inputQxs.slice();
         return this.createNewQuestionsTx(questions, transaction)
+            .then(({ questions, questionChoices }) => {
+                questions.forEach(question => {
+                    if (question.enableWhen) {
+                        let enableWhen = question.enableWhen;
+                        let questionIndex = enableWhen.questionIndex;
+                        if (questionIndex !== undefined) {
+                            enableWhen.questionId = questions[questionIndex].id;
+                            delete enableWhen.questionIndex;
+                        }
+                        if (questionChoices) {
+                            const choices = questionChoices[enableWhen.questionId];
+                            enableWhen = translateRuleChoices(enableWhen, choices) || enableWhen;
+                            questions.enableWhen = enableWhen;
+                        }
+                    }
+                });
+                return questions;
+            })
             .then(questions => this.createRulesForQuestions(surveyId, questions, 'skip', transaction))
             .then(questions => this.createRulesForQuestions(surveyId, questions, 'enableWhen', transaction))
             .then(questions => {

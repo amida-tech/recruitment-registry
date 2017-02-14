@@ -9,11 +9,14 @@ const conditionalQuestions = require('./conditional-questions');
 const requiredOverrides = require('./required-overrides');
 const errorAnswerSetup = require('./error-answer-setup');
 
-const counts = [8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8];
+const counts = [8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8]; // /**/, '8e', '8e', '8e', '8e', '8e'];
 
 const specialQuestionGenerator = {
     multipleSupport(surveyGenerator, questionInfo) {
         return surveyGenerator.questionGenerator.newMultiQuestion('text', questionInfo.selectionCount);
+    },
+    type(surveyGenerator, questionInfo) {
+        return surveyGenerator.questionGenerator.newQuestion(questionInfo.type);
     },
     skip(surveyGenerator, questionInfo) {
         const { type, logic, count } = questionInfo;
@@ -34,8 +37,23 @@ const specialQuestionGenerator = {
         const question = surveyGenerator.questionGenerator.newQuestion(type);
         const questionIndex = index - relativeIndex;
         const enableWhen = { questionIndex, rule: { logic } };
-        surveyGenerator.addAnswer(enableWhen.rule, questionInfo, question);
+        //surveyGenerator.addAnswer(enableWhen.rule, questionInfo, question);
         question.enableWhen = enableWhen;
+        return question;
+    },
+    toEnableWhen(surveyGenerator, questionInfo, index) {
+        const { type, logic, count } = questionInfo;
+        const question = surveyGenerator.questionGenerator.newQuestion(type);
+        const skip = { rule: {} };
+        if (count !== undefined) {
+            skip.count = count;
+        }
+        skip.questionIndex = index;
+        if (logic !== undefined) {
+            skip.rule.logic = logic;
+        }
+        surveyGenerator.addAnswer(skip.rule, questionInfo, question);
+        question.skip = skip;
         return question;
     }
 };
@@ -48,7 +66,11 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
 
     count() {
         const surveyIndex = this.currentIndex();
-        return counts[surveyIndex];
+        const count = counts[surveyIndex];
+        if ((typeof count) === 'string') {
+            return parseInt(count, 10);
+        }
+        return count;
     }
 
     numOfCases() {
@@ -139,6 +161,33 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
             return r;
         }, []);
         return answers;
+    }
+
+    newSurvey() {
+        const survey = super.newSurvey({ noSection: true });
+        const surveyIndex = this.currentIndex();
+        const surveyCount = counts[surveyIndex];
+        if ((typeof surveyCount) !== 'string') {
+            return survey;
+        }
+        const key = Object.keys(conditionalQuestions).find(key => parseInt(key, 10) === surveyIndex);
+        const questionIndex = parseInt(key.split('-')[1], 10);
+        const question = survey.questions[questionIndex];
+        if (question.skip) {
+            const skip = question.skip;
+            delete question.skip;
+            const deletedQuestions = survey.questions.splice(questionIndex + 1, skip.count);
+            delete skip.count;
+            question.section = {
+                questions: deletedQuestions,
+                enableWhen: skip
+            };
+        }
+        if (question.enableWhen) {
+            const sourceIndex = question.enableWhen.questionIndex;
+            this.addAnswer(question.enableWhen.rule, question.enableWhen.rule, survey.questions[sourceIndex]);
+        }
+        return survey;
     }
 
     static newSurveyFromPrevious(clientSurvey, serverSurvey) {

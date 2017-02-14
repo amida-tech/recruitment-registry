@@ -28,6 +28,15 @@ module.exports = function (sequelize, DataTypes) {
                 key: 'id'
             }
         },
+        surveySectionId: {
+            type: DataTypes.INTEGER,
+            field: 'survey_section_id',
+            allowNull: true,
+            references: {
+                model: 'survey_section',
+                key: 'id'
+            }
+        },
         answerQuestionId: {
             type: DataTypes.INTEGER,
             field: 'answer_question_id',

@@ -197,4 +197,87 @@ module.exports = [{
     selectionChoice: [0, -3, -1],
     multipleIndices: [0, 1, 2],
     error: 'answerToBeSkippedAnswered'
+}, { // Skip equivalent
+    surveyIndex: 13,
+    caseIndex: 0,
+    questionIndex: 3,
+    noAnswers: [3, 6],
+    error: 'answerToBeSkippedAnswered'
+}, {
+    surveyIndex: 13,
+    caseIndex: 1,
+    questionIndex: 3,
+    skipCondition: false,
+    noAnswers: [4],
+    error: 'answerRequiredMissing'
+}, {
+    surveyIndex: 13,
+    caseIndex: 2,
+    questionIndex: 3,
+    skipCondition: true,
+    noAnswers: [4],
+    error: 'answerToBeSkippedAnswered'
+}, {
+    surveyIndex: 14,
+    caseIndex: 0,
+    questionIndex: 5,
+    noAnswers: [5],
+    error: 'answerToBeSkippedAnswered'
+}, {
+    surveyIndex: 14,
+    caseIndex: 1,
+    questionIndex: 5,
+    noAnswers: [6],
+    skipCondition: true,
+    error: 'answerRequiredMissing'
+}, {
+    surveyIndex: 14,
+    caseIndex: 2,
+    questionIndex: 5,
+    skipCondition: false,
+    error: 'answerToBeSkippedAnswered'
+}, {
+    surveyIndex: 15,
+    caseIndex: 0,
+    questionIndex: 3,
+    noAnswers: [3, 4],
+    error: 'answerToBeSkippedAnswered'
+}, {
+    surveyIndex: 15,
+    caseIndex: 1,
+    questionIndex: 3,
+    noAnswers: [5],
+    skipCondition: true,
+    error: 'answerRequiredMissing'
+}, {
+    surveyIndex: 15,
+    caseIndex: 2,
+    questionIndex: 3,
+    skipCondition: false,
+    noAnswers: [4],
+    error: 'answerToBeSkippedAnswered'
+}, {
+    surveyIndex: 16,
+    caseIndex: 0,
+    questionIndex: 0,
+    noAnswers: [0],
+    error: 'answerRequiredMissing'
+}, {
+    surveyIndex: 16,
+    caseIndex: 1,
+    questionIndex: 0,
+    noAnswers: [],
+    error: 'answerToBeSkippedAnswered'
+}, {
+    surveyIndex: 17,
+    caseIndex: 0,
+    questionIndex: 2,
+    noAnswers: [2],
+    error: 'answerToBeSkippedAnswered'
+}, {
+    surveyIndex: 17,
+    caseIndex: 1,
+    questionIndex: 2,
+    noAnswers: [4],
+    error: 'answerRequiredMissing'
 }];

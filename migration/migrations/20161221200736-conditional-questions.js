@@ -89,8 +89,18 @@ const answerRule = function (queryInterface, Sequelize) {
         questionId: {
             type: Sequelize.INTEGER,
             field: 'question_id',
+            allowNull: true,
             references: {
                 model: 'question',
+                key: 'id'
+            }
+        },
+        surveySectionId: {
+            type: Sequelize.INTEGER,
+            field: 'survey_section_id',
+            allowNull: true,
+            references: {
+                model: 'survey_section',
                 key: 'id'
             }
         },
