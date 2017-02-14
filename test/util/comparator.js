@@ -119,7 +119,8 @@ const comparator = {
             expected.enableWhen.rule.id = server.enableWhen.rule.id;
             const answer = expected.enableWhen.rule.answer;
             if (answer && answer.choiceText) {
-                const enableWhenChoice = server.choices.find(choice => (choice.text === answer.choiceText));
+                const sourceQuestion = options.serverQuestionMap[server.enableWhen.questionId];
+                const enableWhenChoice = sourceQuestion.choices.find(choice => (choice.text === answer.choiceText));
                 answer.choice = enableWhenChoice.id;
                 delete answer.choiceText;
             }

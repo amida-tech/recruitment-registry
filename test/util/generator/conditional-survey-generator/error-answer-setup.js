@@ -256,7 +256,7 @@ module.exports = [{
     caseIndex: 0,
     questionIndex: 5,
     noAnswers: [5],
-    rulePath: '4.section.enableWhen.rule.answer',
+    rulePath: '5.section.enableWhen.rule.answer',
     error: 'answerToBeSkippedAnswered'
 }, {
     surveyIndex: 14,
@@ -264,14 +264,14 @@ module.exports = [{
     questionIndex: 5,
     noAnswers: [6],
     skipCondition: true,
-    rulePath: '4.section.enableWhen.rule.answer',
+    rulePath: '5.section.enableWhen.rule.answer',
     error: 'answerRequiredMissing'
 }, {
     surveyIndex: 14,
     caseIndex: 2,
     questionIndex: 5,
     skipCondition: false,
-    rulePath: '4.section.enableWhen.rule.answer',
+    rulePath: '5.section.enableWhen.rule.answer',
     error: 'answerToBeSkippedAnswered'
 }, {
     surveyIndex: 15,

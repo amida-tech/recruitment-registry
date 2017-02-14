@@ -114,4 +114,30 @@ describe('survey (conditional questions) unit', function () {
         });
     });
 
+    ConditionalSurveyGenerator.conditionalPassSetup().forEach(passSetup => {
+        let answers;
+
+        it(`create survey ${passSetup.surveyIndex} answers ${passSetup.caseIndex}`, function () {
+            const { surveyIndex } = passSetup;
+            const survey = hxSurvey.server(surveyIndex);
+            answers = surveyGenerator.answersWithConditions(survey, passSetup);
+            const input = {
+                userId: hxUser.id(0),
+                surveyId: survey.id,
+                answers
+            };
+
+            return models.answer.createAnswers(input);
+        });
+
+        it(`verify survey ${passSetup.surveyIndex} answers ${passSetup.caseIndex}`, function () {
+            const { surveyIndex } = passSetup;
+            const survey = hxSurvey.server(surveyIndex);
+            const userId = hxUser.id(0);
+            return models.survey.getAnsweredSurvey(userId, survey.id)
+                .then(answeredSurvey => {
+                    comparator.answeredSurvey(survey, answers, answeredSurvey);
+                });
+        });
+    });
 });

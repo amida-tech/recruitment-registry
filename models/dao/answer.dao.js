@@ -285,6 +285,7 @@ module.exports = class AnswerDAO {
                                     throw new RRError('answerToBeSkippedAnswered');
                                 }
                                 surveyQuestion.required = false;
+                                answers.push({ questionId });
                                 return;
                             }
                             const ignoreIndices = surveyQuestion.ignoreIndices;
@@ -377,6 +378,7 @@ module.exports = class AnswerDAO {
     }
 
     createAnswersTx({ userId, surveyId, answers, language = 'en', status = 'completed' }, transaction) {
+        answers = _.cloneDeep(answers);
         return this.validateCreate(userId, surveyId, answers, status, transaction)
             .then(() => updateStatus(userId, surveyId, status, transaction))
             .then(() => {

@@ -9,6 +9,7 @@ const Answerer = require('../answerer');
 const conditionalQuestions = require('./conditional-questions');
 const requiredOverrides = require('./required-overrides');
 const errorAnswerSetup = require('./error-answer-setup');
+const passAnswerSetup = require('./pass-answer-setup');
 
 const counts = [8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, '8e', '8e' /**/ , '8e', '8e', '8e', '8e', '8e'];
 
@@ -124,6 +125,10 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
         return errorAnswerSetup;
     }
 
+    static conditionalPassSetup() {
+        return passAnswerSetup;
+    }
+
     answersWithConditions(survey, { questionIndex, rulePath, skipCondition, noAnswers, selectionChoice, multipleIndices }) {
         const questions = models.survey.getQuestions(survey);
         const doNotAnswer = new Set(noAnswers);
@@ -174,9 +179,11 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
         if ((typeof surveyCount) !== 'string') {
             return survey;
         }
-        const key = Object.keys(conditionalQuestions).find(key => parseInt(key, 10) === surveyIndex);
+        const key = Object.keys(conditionalQuestions).find(key => parseInt(key, 10) === surveyIndex && conditionalQuestions[key].purpose !== 'type');
+
         const questionIndex = parseInt(key.split('-')[1], 10);
         const question = survey.questions[questionIndex];
+
         if (question.skip) {
             const skip = question.skip;
             delete question.skip;
