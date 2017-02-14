@@ -10,7 +10,7 @@ const conditionalQuestions = require('./conditional-questions');
 const requiredOverrides = require('./required-overrides');
 const errorAnswerSetup = require('./error-answer-setup');
 
-const counts = [8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8 /**/ , '8e', '8e', '8e', '8e', '8e'];
+const counts = [8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, '8e', '8e' /**/ , '8e', '8e', '8e', '8e', '8e'];
 
 const specialQuestionGenerator = {
     multipleSupport(surveyGenerator, questionInfo) {

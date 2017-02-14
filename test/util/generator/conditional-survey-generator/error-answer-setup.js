@@ -197,6 +197,38 @@ module.exports = [{
     selectionChoice: [0, -3, -1],
     multipleIndices: [0, 1, 2],
     error: 'answerToBeSkippedAnswered'
+}, { //enable when
+    surveyIndex: 11,
+    caseIndex: 0,
+    questionIndex: 4,
+    skipCondition: false,
+    rulePath: '5.enableWhen.rule.answer',
+    noAnswers: [5],
+    error: 'answerRequiredMissing'
+}, { //enable when
+    surveyIndex: 11,
+    caseIndex: 1,
+    questionIndex: 4,
+    skipCondition: true,
+    rulePath: '5.enableWhen.rule.answer',
+    noAnswers: [],
+    error: 'answerToBeSkippedAnswered'
+}, { //enable when
+    surveyIndex: 12,
+    caseIndex: 0,
+    questionIndex: 2,
+    skipCondition: true,
+    rulePath: '3.enableWhen.rule.answer',
+    noAnswers: [3],
+    error: 'answerRequiredMissing'
+}, { //enable when
+    surveyIndex: 12,
+    caseIndex: 1,
+    questionIndex: 2,
+    skipCondition: false,
+    rulePath: '3.enableWhen.rule.answer',
+    noAnswers: [],
+    error: 'answerToBeSkippedAnswered'
 }, { // Skip equivalent
     surveyIndex: 13,
     caseIndex: 0,

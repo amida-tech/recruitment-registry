@@ -108,6 +108,7 @@ describe('survey (conditional questions) unit', function () {
                 surveyId: survey.id,
                 answers
             };
+
             return models.answer.createAnswers(input)
                 .then(shared.throwingHandler, shared.expectedErrorHandler(error));
         });

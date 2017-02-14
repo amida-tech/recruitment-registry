@@ -27,6 +27,12 @@ module.exports = {
     '9-4': true,
     '10-0': true,
     //
+    '11-4': true,
+    '11-5': true,
+    //
+    '12-2': true,
+    '12-3': true,
+    //
     '13-3': false,
     '13-4': true,
     '13-5': false,
