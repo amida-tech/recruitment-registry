@@ -1,6 +1,7 @@
 'use strict';
 
 const _ = require('lodash');
+const models = require('../../../../models');
 
 const SurveyGenerator = require('../survey-generator');
 const Answerer = require('../answerer');
@@ -123,21 +124,24 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
         return errorAnswerSetup;
     }
 
-    answersWithConditions(survey, { questionIndex, skipCondition, noAnswers, selectionChoice, multipleIndices }) {
+    answersWithConditions(survey, { questionIndex, rulePath, skipCondition, noAnswers, selectionChoice, multipleIndices }) {
+        const questions = models.survey.getQuestions(survey);
         const doNotAnswer = new Set(noAnswers);
-        const answers = survey.questions.reduce((r, question, index) => {
+        rulePath = rulePath || `${questionIndex}.skip.rule.answer`;
+        const ruleAnswer = _.get(questions, rulePath);
+        const answers = questions.reduce((r, question, index) => {
             if (doNotAnswer.has(index)) {
                 return r;
             }
             if (questionIndex === index) {
                 if (skipCondition === true) {
-                    const answer = { questionId: question.id, answer: question.skip.rule.answer };
+                    const answer = { questionId: question.id, answer: ruleAnswer };
                     r.push(answer);
                     return r;
                 }
                 if (skipCondition === false) {
                     let answer = this.answerer.answerQuestion(question);
-                    if (_.isEqual(answer.answer, question.skip.rule.answer)) {
+                    if (_.isEqual(answer.answer, ruleAnswer)) {
                         answer = this.answerer.answerQuestion(question);
                     }
                     r.push(answer);

@@ -206,6 +206,37 @@ const evaluateAnswerRule = function ({ count, rule: { logic, answer, selectionId
     return { multiple: false, indices: [] };
 };
 
+const evaluateAnswerRule2 = function ({ rule: { logic, answer } }, questionAnswer) {
+    if (logic === 'exists') {
+        if (questionAnswer && (questionAnswer.answer || questionAnswer.answers)) {
+            return true;
+        }
+    }
+    if (logic === 'not-exists') {
+        if (!(questionAnswer && (questionAnswer.answer || questionAnswer.answers))) {
+            return true;
+        }
+    }
+    if (logic === 'equals') {
+        if (!questionAnswer) {
+            return false;
+        }
+
+        if (_.isEqual(answer, questionAnswer.answer)) {
+            return true;
+        }
+    }
+    if (logic === 'not-equals') {
+        if (!questionAnswer) {
+            return false;
+        }
+        if (!_.isEqual(answer, questionAnswer.answer)) {
+            return true;
+        }
+    }
+    return false;
+};
+
 module.exports = class AnswerDAO {
     constructor(dependencies) {
         Object.assign(this, dependencies);
@@ -234,13 +265,21 @@ module.exports = class AnswerDAO {
         return this.surveyQuestion.listSurveyQuestions(surveyId)
             .then(surveyQuestions => {
                 const answersByQuestionId = _.keyBy(answers, 'questionId');
-                return this.answerRule.getSurveyAnswerRules(surveyId)
-                    .then(answerRuleInfos => {
-                        const skipAnswerRuleInfos = answerRuleInfos.filter(answerRuleInfo => answerRuleInfo.ruleType === 'skip');
-                        const skipRulesByQuestionId = _.keyBy(skipAnswerRuleInfos, 'questionId');
+                return this.answerRule.getQuestionExpandedSurveyAnswerRules(surveyId)
+                    .then(({ skipRulesByQuestionId, enableWhenRulesByQuestionId }) => {
                         surveyQuestions.forEach((surveyQuestion, questionIndex) => {
                             const questionId = surveyQuestion.questionId;
                             const answer = answersByQuestionId[questionId];
+                            const enableWhen = enableWhenRulesByQuestionId && enableWhenRulesByQuestionId[questionId];
+                            if (enableWhen) {
+                                const rule = enableWhen.rule;
+                                const sourceQuestionId = rule.questionId;
+                                const sourceAnswer = answersByQuestionId[sourceQuestionId];
+                                const enabled = evaluateAnswerRule2(enableWhen.rule, sourceAnswer);
+                                if (!enabled) {
+                                    surveyQuestion.ignore = true;
+                                }
+                            }
                             if (surveyQuestion.ignore) {
                                 if (answer) {
                                     throw new RRError('answerToBeSkippedAnswered');
@@ -275,7 +314,7 @@ module.exports = class AnswerDAO {
                                     });
                                 }
                             }
-                            const skip = skipRulesByQuestionId[questionId];
+                            const skip = skipRulesByQuestionId && skipRulesByQuestionId[questionId];
                             if (skip) {
                                 const { multiple, indices, maxCount } = evaluateAnswerRule(skip.rule, answer);
                                 if (multiple) {
