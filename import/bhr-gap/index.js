@@ -14,6 +14,7 @@ const Converter = require('../csv-converter');
 const CSVConverterExport = require('../../export/csv-converter');
 
 const sequelize = models.sequelize;
+const importSurveyScript = queryrize.readFileSync('bhr-gap-import.sql');
 
 const valueConverterByChoiceType = {
     bool: function (value) {
@@ -335,19 +336,16 @@ const importTransformedSurveyFile = function (surveyIdentifier, filepath) {
     return models.surveyIdentifier.getIdsBySurveyIdentifier(surveyIdentifier.type)
         .then(surveyIdentificaterMap => {
             const surveyId = surveyIdentificaterMap.get(surveyIdentifier.value);
-            const scriptPath = path.join(__dirname, '../../sql-scripts/bhr-gap-import.sql');
-            const rawScript = queryrize.readFileSync(scriptPath);
-            const parameters = {
+            const replacements = {
                 survey_id: surveyId,
-                filepath: `'${filepath}'`,
-                identifier: `'${surveyIdentifier.value}'`
+                filepath: filepath,
+                identifier: `${surveyIdentifier.value}`
             };
-            const script = rawScript.map(query => queryrize.replaceParameters(query, parameters));
-            let promise = script.reduce((r, query) => {
+            let promise = importSurveyScript.reduce((r, query) => {
                 if (r === null) {
-                    r = sequelize.query(query);
+                    r = sequelize.query(query, { replacements });
                 } else {
-                    r = r.then(() => sequelize.query(query));
+                    r = r.then(() => sequelize.query(query, { replacements }));
                 }
                 return r;
             }, null);

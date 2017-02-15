@@ -83,7 +83,8 @@ module.exports = {
                 where: { deleted_at: { $eq: null } },
                 indexName: 'question_choice_choice_set_id'
             }))
-            .then(() => sequelize.query('INSERT INTO question_type (name) VALUES (\'choice-ref\')'));
+            .then(() => sequelize.query('INSERT INTO question_type (name) VALUES (\'choice-ref\')'))
+            .then(() => queryInterface.sequelize.query('ALTER TABLE question ADD CONSTRAINT question_choice_set_id_fkey FOREIGN KEY (choice_set_id) REFERENCES choice_set'));
     },
 
     down: function (queryInterface) {

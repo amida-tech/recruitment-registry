@@ -270,7 +270,7 @@ describe('consent integration', function () {
     })();
 
     it(`login as user 0`, shared.loginIndexFn(store, history.hxUser, 0));
-    it('user 0 signs consent 0 (1, 2, 3)', signDocumentsFn(0, 0, [1, 2, 3], 'sp'));
+    it('user 0 signs consent 0 (1, 2, 3)', signDocumentsFn(0, 0, [1, 2, 3], 'es'));
     it('logout as user 0', shared.logoutFn(store));
 
     it(`login as user 1`, shared.loginIndexFn(store, history.hxUser, 1));
@@ -287,14 +287,14 @@ describe('consent integration', function () {
 
     it(`login as user 0`, shared.loginIndexFn(store, history.hxUser, 0));
     it(`get/verify user 0 consent 0 documents`, getUserConsentDocumentsFn(0, 0, [
-        [1, 'sp'],
-        [2, 'sp'],
-        [3, 'sp']
+        [1, 'es'],
+        [2, 'es'],
+        [3, 'es']
     ]));
     it(`get/verify user 0 consent 0 documents by name`, getUserConsentDocumentsByNameFn(0, 0, [
-        [1, 'sp'],
-        [2, 'sp'],
-        [3, 'sp']
+        [1, 'es'],
+        [2, 'es'],
+        [3, 'es']
     ]));
     it('logout as user 0', shared.logoutFn(store));
 
@@ -319,8 +319,8 @@ describe('consent integration', function () {
 
     it(`login as user 0`, shared.loginIndexFn(store, history.hxUser, 0));
     it(`get/verify user 0 consent 0 documents`, getUserConsentDocumentsFn(0, 0, [
-        [1, 'sp'],
-        [3, 'sp']
+        [1, 'es'],
+        [3, 'es']
     ]));
     it('logout as user 0', shared.logoutFn(store));
 
@@ -344,7 +344,7 @@ describe('consent integration', function () {
     it('logout as user 0', shared.logoutFn(store));
 
     it(`login as user 1`, shared.loginIndexFn(store, history.hxUser, 1));
-    it('user 1 signs consent 1 (8, 10)', signDocumentsFn(1, 1, [8, 10], 'sp'));
+    it('user 1 signs consent 1 (8, 10)', signDocumentsFn(1, 1, [8, 10], 'es'));
     it('logout as user 1', shared.logoutFn(store));
 
     it(`login as user 2`, shared.loginIndexFn(store, history.hxUser, 2));
@@ -356,12 +356,12 @@ describe('consent integration', function () {
     it('logout as user 3', shared.logoutFn(store));
 
     it(`login as user 0`, shared.loginIndexFn(store, history.hxUser, 0));
-    it(`get/verify user 0 consent 0 documents`, getUserConsentDocumentsFn(0, 0, [0, [1, 'sp'], 2, [3, 'sp']]));
+    it(`get/verify user 0 consent 0 documents`, getUserConsentDocumentsFn(0, 0, [0, [1, 'es'], 2, [3, 'es']]));
     it('logout as user 0', shared.logoutFn(store));
 
     it(`login as user 1`, shared.loginIndexFn(store, history.hxUser, 1));
-    it(`get/verify user 1 consent 1 documents`, getUserConsentDocumentsFn(1, 1, [5, [8, 'sp'],
-        [10, 'sp'], 11
+    it(`get/verify user 1 consent 1 documents`, getUserConsentDocumentsFn(1, 1, [5, [8, 'es'],
+        [10, 'es'], 11
     ]));
     it('logout as user 1', shared.logoutFn(store));
 

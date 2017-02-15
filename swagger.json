@@ -2840,6 +2840,9 @@
                 "multiple": {
                     "type": "boolean"
                 },
+                "section": {
+                    "$ref": "#/definitions/newSection"
+                },
                 "maxCount": {
                     "type": "integer",
                     "minimum": 1
@@ -2898,6 +2901,9 @@
                     "items": {
                         "$ref": "#/definitions/newSection"
                     }
+                },
+                "enableWhen": {
+                    "$ref": "#/definitions/newEnableWhenCondition"
                 }
             },
             "maxProperties": 2,
@@ -2923,6 +2929,9 @@
                     "items": {
                         "$ref": "#/definitions/section"
                     }
+                },
+                "enableWhen": {
+                    "$ref": "#/definitions/enableWhenCondition"
                 }
             },
             "maxProperties": 3,
@@ -3087,6 +3096,9 @@
                 },
                 "type": {
                     "$ref": "#/definitions/questionType"
+                },
+                "section": {
+                    "$ref": "#/definitions/section"
                 },
                 "multiple": {
                     "type": "boolean"

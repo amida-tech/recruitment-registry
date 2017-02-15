@@ -23,6 +23,14 @@ module.exports = function (sequelize, DataTypes) {
                 key: 'id'
             }
         },
+        parentQuestionId: {
+            type: DataTypes.INTEGER,
+            field: 'parent_question_id',
+            references: {
+                model: 'question',
+                key: 'id'
+            }
+        },
         line: {
             type: DataTypes.INTEGER,
             allowNull: false

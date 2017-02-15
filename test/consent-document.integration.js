@@ -190,7 +190,7 @@ describe('consent document integration', function () {
 
     it(`login as user 1`, shared.loginIndexFn(store, history.hxUser, 1));
     it('user 1 signs consent document of type 0', signConsentTypeFn(1, 0, 'en'));
-    it('user 1 signs consent document of type 1', signConsentTypeFn(1, 1, 'sp'));
+    it('user 1 signs consent document of type 1', signConsentTypeFn(1, 1, 'es'));
     it('logout as user 1', shared.logoutFn(store));
 
     it(`login as user 2`, shared.loginIndexFn(store, history.hxUser, 2));
@@ -258,7 +258,7 @@ describe('consent document integration', function () {
     verifyConsentDocuments(2, [1]);
     verifyConsentDocuments(3, [0, 1, 2]);
 
-    signConsentType(1, 2, 'sp');
+    signConsentType(1, 2, 'es');
     verifyConsentDocuments(1, [1]);
 
     it('login as super', shared.loginFn(store, config.superUser));
@@ -289,7 +289,7 @@ describe('consent document integration', function () {
 
     signConsentType(0, 1, 'en');
     verifyConsentDocuments(0, [0, 2]);
-    signConsentType(0, 2, 'sp');
+    signConsentType(0, 2, 'es');
     verifyConsentDocuments(0, [0]);
     signConsentType(0, 0);
     verifyConsentDocuments(0, []);

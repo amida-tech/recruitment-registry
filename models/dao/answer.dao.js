@@ -156,6 +156,87 @@ const updateStatus = function (userId, surveyId, status, transaction) {
         });
 };
 
+const evaluateAnswerRule = function ({ count, rule: { logic, answer, selectionIds } }, questionAnswer) {
+    if (logic === 'exists') {
+        if (questionAnswer && (questionAnswer.answer || questionAnswer.answers)) {
+            return { multiple: false, indices: _.range(1, count + 1) };
+        }
+    }
+    if (logic === 'not-exists') {
+        if (!(questionAnswer && (questionAnswer.answer || questionAnswer.answers))) {
+            return { multiple: false, indices: _.range(1, count + 1) };
+        }
+    }
+    if (logic === 'equals') {
+        if (!questionAnswer) {
+            return { multiple: false, indices: _.range(1, count + 1) };
+        }
+
+        if (_.isEqual(answer, questionAnswer.answer)) {
+            return { multiple: false, indices: _.range(1, count + 1) };
+        }
+    }
+    if (logic === 'not-equals') {
+        if (!questionAnswer) {
+            return { multiple: false, indices: _.range(1, count + 1) };
+        }
+        if (!_.isEqual(answer, questionAnswer.answer)) {
+            return { multiple: false, indices: _.range(1, count + 1) };
+        }
+    }
+    if (logic === 'not-selected') {
+        const multiple = selectionIds.length > 1 && count === 1;
+        if (!(questionAnswer && questionAnswer.answer)) {
+            if (multiple) {
+                return { multiple, indices: _.range(0, selectionIds.length) };
+            } else {
+                return { multiple, indices: _.range(1, count + 1) };
+            }
+        }
+        const offset = multiple ? 0 : 1;
+        const ids = new Set(questionAnswer.answer.choices.map(choice => choice.id));
+        const indices = selectionIds.reduce((r, id, index) => {
+            if (!ids.has(id)) {
+                r.push(index + offset);
+            }
+            return r;
+        }, []);
+        return { multiple, maxCount: selectionIds.length, indices };
+    }
+    return { multiple: false, indices: [] };
+};
+
+const evaluateAnswerRule2 = function ({ rule: { logic, answer } }, questionAnswer) {
+    if (logic === 'exists') {
+        if (questionAnswer && (questionAnswer.answer || questionAnswer.answers)) {
+            return true;
+        }
+    }
+    if (logic === 'not-exists') {
+        if (!(questionAnswer && (questionAnswer.answer || questionAnswer.answers))) {
+            return true;
+        }
+    }
+    if (logic === 'equals') {
+        if (!questionAnswer) {
+            return false;
+        }
+
+        if (_.isEqual(answer, questionAnswer.answer)) {
+            return true;
+        }
+    }
+    if (logic === 'not-equals') {
+        if (!questionAnswer) {
+            return false;
+        }
+        if (!_.isEqual(answer, questionAnswer.answer)) {
+            return true;
+        }
+    }
+    return false;
+};
+
 module.exports = class AnswerDAO {
     constructor(dependencies) {
         Object.assign(this, dependencies);
@@ -184,61 +265,75 @@ module.exports = class AnswerDAO {
         return this.surveyQuestion.listSurveyQuestions(surveyId)
             .then(surveyQuestions => {
                 const answersByQuestionId = _.keyBy(answers, 'questionId');
-                surveyQuestions.forEach((surveyQuestion, questionIndex) => {
-                    const questionId = surveyQuestion.questionId;
-                    const skip = surveyQuestion.skip;
-                    const answer = answersByQuestionId[questionId];
-                    if (surveyQuestion.ignore) {
-                        if (answer) {
-                            throw new RRError('answerToBeSkippedAnswered');
-                        }
-                        surveyQuestion.required = false;
-                        return;
-                    }
-                    const ignoreIndices = surveyQuestion.ignoreIndices;
-                    if (ignoreIndices) {
-                        if (!(answer && answer.answers)) {
-                            if (surveyQuestion.maxSelectionCount === ignoreIndices.length) {
+                return this.answerRule.getQuestionExpandedSurveyAnswerRules(surveyId)
+                    .then(({ skipRulesByQuestionId, enableWhenRulesByQuestionId }) => {
+                        surveyQuestions.forEach((surveyQuestion, questionIndex) => {
+                            const questionId = surveyQuestion.questionId;
+                            const answer = answersByQuestionId[questionId];
+                            const enableWhen = enableWhenRulesByQuestionId && enableWhenRulesByQuestionId[questionId];
+                            if (enableWhen) {
+                                const rule = enableWhen.rule;
+                                const sourceQuestionId = rule.questionId;
+                                const sourceAnswer = answersByQuestionId[sourceQuestionId];
+                                const enabled = evaluateAnswerRule2(enableWhen.rule, sourceAnswer);
+                                if (!enabled) {
+                                    surveyQuestion.ignore = true;
+                                }
+                            }
+                            if (surveyQuestion.ignore) {
+                                if (answer) {
+                                    throw new RRError('answerToBeSkippedAnswered');
+                                }
                                 surveyQuestion.required = false;
+                                answers.push({ questionId });
                                 return;
                             }
-                            if (surveyQuestion.required) {
-                                throw new RRError('answerRequiredMissing');
+                            const ignoreIndices = surveyQuestion.ignoreIndices;
+                            if (ignoreIndices) {
+                                if (!(answer && answer.answers)) {
+                                    if (surveyQuestion.maxSelectionCount === ignoreIndices.length) {
+                                        surveyQuestion.required = false;
+                                        return;
+                                    }
+                                    if (surveyQuestion.required) {
+                                        throw new RRError('answerRequiredMissing');
+                                    }
+                                    return;
+                                }
+                                const toBeIgnored = new Set(ignoreIndices);
+                                answer.answers.forEach(({ multipleIndex }) => {
+                                    if (toBeIgnored.has(multipleIndex)) {
+                                        throw new RRError('answerToBeSkippedAnswered');
+                                    }
+                                });
+                                if (surveyQuestion.required) {
+                                    const existing = new Set(answer.answers.map(({ multipleIndex }) => multipleIndex));
+                                    _.range(surveyQuestion.maxSelectionCount).forEach(index => {
+                                        if (!toBeIgnored.has(index) && !existing.has(index)) {
+                                            throw new RRError('answerRequiredMissing');
+                                        }
+                                    });
+                                }
                             }
-                            return;
-                        }
-                        const toBeIgnored = new Set(ignoreIndices);
-                        answer.answers.forEach(({ multipleIndex }) => {
-                            if (toBeIgnored.has(multipleIndex)) {
-                                throw new RRError('answerToBeSkippedAnswered');
+                            const skip = skipRulesByQuestionId && skipRulesByQuestionId[questionId];
+                            if (skip) {
+                                const { multiple, indices, maxCount } = evaluateAnswerRule(skip.rule, answer);
+                                if (multiple) {
+                                    surveyQuestions[questionIndex + 1].ignoreIndices = indices;
+                                    surveyQuestions[questionIndex + 1].maxSelectionCount = maxCount;
+                                } else {
+                                    indices.forEach(skipIndex => {
+                                        const targetSurveyQuestion = surveyQuestions[questionIndex + skipIndex];
+                                        targetSurveyQuestion.ignore = true;
+                                    });
+                                }
+                            }
+                            if (answer && (answer.answer || answer.answers)) {
+                                surveyQuestion.required = false;
                             }
                         });
-                        if (surveyQuestion.required) {
-                            const existing = new Set(answer.answers.map(({ multipleIndex }) => multipleIndex));
-                            _.range(surveyQuestion.maxSelectionCount).forEach(index => {
-                                if (!toBeIgnored.has(index) && !existing.has(index)) {
-                                    throw new RRError('answerRequiredMissing');
-                                }
-                            });
-                        }
-                    }
-                    if (skip) {
-                        const { multiple, indices, maxCount } = this.answerRule.evaluateAnswerRule(skip, answer);
-                        if (multiple) {
-                            surveyQuestions[questionIndex + 1].ignoreIndices = indices;
-                            surveyQuestions[questionIndex + 1].maxSelectionCount = maxCount;
-                        } else {
-                            indices.forEach(skipIndex => {
-                                const targetSurveyQuestion = surveyQuestions[questionIndex + skipIndex];
-                                targetSurveyQuestion.ignore = true;
-                            });
-                        }
-                    }
-                    if (answer && (answer.answer || answer.answers)) {
-                        surveyQuestion.required = false;
-                    }
-                });
-                return surveyQuestions;
+                        return surveyQuestions;
+                    });
             })
             .then(surveyQuestions => _.keyBy(surveyQuestions, 'questionId'))
             .then(qxMap => {
@@ -283,6 +378,7 @@ module.exports = class AnswerDAO {
     }
 
     createAnswersTx({ userId, surveyId, answers, language = 'en', status = 'completed' }, transaction) {
+        answers = _.cloneDeep(answers);
         return this.validateCreate(userId, surveyId, answers, status, transaction)
             .then(() => updateStatus(userId, surveyId, status, transaction))
             .then(() => {

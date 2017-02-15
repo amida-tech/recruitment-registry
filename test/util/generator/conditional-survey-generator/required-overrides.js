@@ -25,5 +25,26 @@ module.exports = {
     '8-4': true,
     '8-5': true,
     '9-4': true,
-    '10-0': true
+    '10-0': true,
+    //
+    '11-4': true,
+    '11-5': true,
+    //
+    '12-2': true,
+    '12-3': true,
+    //
+    '13-3': false,
+    '13-4': true,
+    '13-5': false,
+    '13-6': true,
+    '14-5': true,
+    '14-6': true,
+    '15-3': true,
+    '15-4': false,
+    '15-5': true,
+    '16-0': true,
+    '16-1': true,
+    '17-2': false,
+    '17-3': false,
+    '17-4': true,
 };

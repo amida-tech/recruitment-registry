@@ -2,6 +2,15 @@
 
 module.exports = function (sequelize, DataTypes) {
     return sequelize.define('answer_rule', {
+        surveyId: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            field: 'survey_id',
+            references: {
+                model: 'survey',
+                key: 'id'
+            }
+        },
         logic: {
             type: DataTypes.TEXT,
             allowNull: false,
@@ -10,13 +19,51 @@ module.exports = function (sequelize, DataTypes) {
                 key: 'name'
             }
         },
+        questionId: {
+            type: DataTypes.INTEGER,
+            field: 'question_id',
+            allowNull: true,
+            references: {
+                model: 'question',
+                key: 'id'
+            }
+        },
+        surveySectionId: {
+            type: DataTypes.INTEGER,
+            field: 'survey_section_id',
+            allowNull: true,
+            references: {
+                model: 'survey_section',
+                key: 'id'
+            }
+        },
+        answerQuestionId: {
+            type: DataTypes.INTEGER,
+            field: 'answer_question_id',
+            allowNull: true,
+            references: {
+                model: 'question',
+                key: 'id'
+            }
+        },
+        skipCount: {
+            type: DataTypes.INTEGER,
+            field: 'skip_count'
+        },
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',
         },
+        deletedAt: {
+            type: DataTypes.DATE,
+            field: 'deleted_at'
+        }
     }, {
         freezeTableName: true,
         createdAt: 'createdAt',
-        updatedAt: false
+        updatedAt: false,
+        deletedAt: 'deletedAt',
+        paranoid: true,
+        indexes: [{ fields: ['survey_id'], where: { deleted_at: { $eq: null } } }]
     });
 };

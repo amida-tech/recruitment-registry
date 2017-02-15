@@ -9,11 +9,13 @@ const chai = require('chai');
 
 const db = require('../models/db');
 const dbMigrate = require('../migration/models');
+//const queryrize = require('../lib/queryrize');
 
 const seed = require('../migration/seed');
 const seedMigrated = require('../migration/seed-migrated');
 
 const expect = chai.expect;
+//const foreignKeysQuery = queryrize.readQuerySync('foreign-keys.sql');
 
 const checkData = function (query) {
     const options = { type: db.sequelize.QueryTypes.SELECT };
@@ -81,6 +83,16 @@ describe('migration spec', function () {
                 expect(dbMigrateTables).to.deep.equal(tables);
             });
     });
+
+    //it('get/compare foreign keys', function () {
+    //    return db.sequelize.query(foreignKeysQuery, { type: db.sequelize.QueryTypes.SELECT })
+    //        .then(foreignKeys => {
+    //            return dbMigrate.sequelize.query(foreignKeysQuery, { type: db.sequelize.QueryTypes.SELECT })
+    //                .then(migrateForeignKeys => {
+    //                    expect(migrateForeignKeys).to.deep.equal(foreignKeys);
+    //                });
+    //        });
+    //});
 
     const normalizeDescription = function (description) {
         Object.keys(description).forEach(key => {

@@ -26,7 +26,7 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.TEXT,
             allowNull: false,
             field: 'language_code',
-            reference: {
+            references: {
                 model: 'language',
                 key: 'code'
             }
