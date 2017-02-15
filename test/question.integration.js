@@ -395,4 +395,5 @@ describe('question integration', function () {
         it(`get question ${index}`, tests.getQuestionFn(index));
     });
 
+    shared.verifyUserAudit(store);
 });

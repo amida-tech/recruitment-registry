@@ -200,4 +200,5 @@ describe('smtp integration', function () {
 
     it('logout as super', shared.logoutFn(store));
 
+    shared.verifyUserAudit(store);
 });

@@ -109,4 +109,6 @@ describe('consent section integration', function () {
     it('list consent types in english (original)', listTranslatedConsentTypesFn('en'));
 
     it('logout as super', shared.logoutFn(store));
+
+    shared.verifyUserAudit(store);
 });
