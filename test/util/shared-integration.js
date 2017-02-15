@@ -1,8 +1,10 @@
+/* global it*/
 'use strict';
 
 const chai = require('chai');
 
 const appgen = require('../../app-generator');
+const db = require('../../models/db');
 const Generator = require('./generator');
 const translator = require('./translator');
 const comparator = require('./comparator');
@@ -234,6 +236,24 @@ class SharedIntegration {
         };
     }
 
+    verifyUserAudit(store) {
+        it('verify user audit', function () {
+            const userAudit = store.getUserAudit().filter(({ endpoint, operation }) => !(operation === 'post' && endpoint === '/users')); // TODO: remove filter when /users/post client is fixed
+            return db.User.findAll({ raw: true, attributes: ['username', 'id'] })
+                .then(users => new Map(users.map(user => [user.username, user.id])))
+                .then(userMap => userAudit.map(({ username, operation, endpoint }) => ({ userId: userMap.get(username), operation, endpoint })))
+                .then(expected => {
+                    return db.UserAudit.findAll({
+                            raw: true,
+                            attributes: ['userId', 'endpoint', 'operation'],
+                            order: 'created_at'
+                        })
+                        .then(actual => {
+                            expect(actual).to.deep.equal(expected);
+                        });
+                });
+        });
+    }
 }
 
 module.exports = SharedIntegration;

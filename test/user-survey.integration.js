@@ -454,4 +454,6 @@ describe('user survey integration', function () {
     it('verify user 2 survey 1 answers in spanish', verifyTranslatedUserSurveyAnswersFn(2, 1, 'in-progress', 'es'));
 
     it('logout as user 0', shared.logoutFn(store));
+
+    shared.verifyUserAudit(store);
 });

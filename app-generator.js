@@ -1,10 +1,13 @@
 'use strict';
 
+const _ = require('lodash');
 const config = require('./config');
 
 const swaggerTools = require('swagger-tools');
 
 const models = require('./models');
+const db = require('./models/db');
+
 const swaggerJson = require('./swagger.json');
 const security = require('./security');
 const logger = require('./logger');
@@ -20,6 +23,23 @@ const errHandler = function (err, req, res, next) {
     res.json(err);
 };
 
+const userAudit = function (req, res, next) {
+    const userId = _.get(req, 'user.id');
+    if (userId) {
+        let [, endpoint, operation] = _.get(req, 'swagger.operationPath', ['', '', '']);
+        if (req.swagger.params) {
+            _.forOwn(req.swagger.params, (description, name) => {
+                const value = description && description.value;
+                if (value && _.get(description, 'schema.in') === 'path') {
+                    endpoint = endpoint.replace(`{${name}}`, value);
+                }
+            });
+        }
+        db.UserAudit.create({ userId, endpoint, operation });
+    }
+    next();
+};
+
 exports.initialize = function (app, options, callback) {
     const swaggerObject = options.swaggerJson || swaggerJson;
     swaggerTools.initializeMiddleware(swaggerObject, function (middleware) {
@@ -30,6 +50,8 @@ exports.initialize = function (app, options, callback) {
         }));
 
         app.use(middleware.swaggerSecurity(security));
+
+        app.use(userAudit);
 
         app.use(middleware.swaggerRouter({
             useStubs: false,

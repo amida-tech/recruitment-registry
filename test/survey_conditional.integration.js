@@ -116,4 +116,6 @@ describe('survey (conditional questions) integration', function () {
     });
 
     it('logout as user 0', shared.logoutFn(rrSuperTest));
+
+    shared.verifyUserAudit(rrSuperTest);
 });

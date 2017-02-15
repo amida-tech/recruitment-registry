@@ -412,4 +412,6 @@ describe('consent integration', function () {
                 });
             });
     });
+
+    shared.verifyUserAudit(store);
 });

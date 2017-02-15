@@ -44,7 +44,7 @@ describe('user integration', function () {
     });
 
     it('create a new user', function (done) {
-        store.authPost('/users', user, 201).end(done);
+        store.post('/users', user, 201).end(done);
     });
 
     it('logout as super', shared.logoutFn(store));
@@ -130,4 +130,6 @@ describe('user integration', function () {
             })
             .end(done);
     });
+
+    shared.verifyUserAudit(store);
 });

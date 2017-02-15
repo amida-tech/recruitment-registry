@@ -197,4 +197,6 @@ describe('answer integration', function () {
     it(`user 2 answers survey 14`, tests.answerSurveyFn(2, 14, [57, 58, 59, 60, 61]));
     it(`user 2 gets answers to survey 14`, tests.getAnswersFn(2, 14));
     it(`logout as  user 2`, shared.logoutFn(store));
+
+    shared.verifyUserAudit(store);
 });
