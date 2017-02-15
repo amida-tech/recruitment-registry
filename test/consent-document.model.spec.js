@@ -164,7 +164,7 @@ describe('consent document/type/signature unit', function () {
     it('user 0 signs consent document of type 0', signConsentTypeFn(0, 0));
     it('user 0 signs consent document of type 1', signConsentTypeFn(0, 1));
     it('user 1 signs consent document of type 0', signConsentTypeFn(1, 0, 'en'));
-    it('user 1 signs consent document of type 1', signConsentTypeFn(1, 1, 'sp'));
+    it('user 1 signs consent document of type 1', signConsentTypeFn(1, 1, 'es'));
     it('user 2 signs consent document of type 0', signConsentTypeFn(2, 0));
     it('user 3 signs consent document of type 1', signConsentTypeFn(3, 1));
 
@@ -216,7 +216,7 @@ describe('consent document/type/signature unit', function () {
     verifyConsentDocuments(2, [1]);
     verifyConsentDocuments(3, [0, 1, 2]);
 
-    it('user 1 signs consent document of type 2', signConsentTypeFn(1, 2, 'sp'));
+    it('user 1 signs consent document of type 2', signConsentTypeFn(1, 2, 'es'));
     verifyConsentDocuments(1, [1]);
 
     it('create consent document of type 0', shared.createConsentDocumentFn(history, 0));
@@ -247,7 +247,7 @@ describe('consent document/type/signature unit', function () {
     verifyConsentDocuments(0, [0, 2]);
     it('user 0 signs consent document of type 2', signConsentTypeFn(0, 2, 'en'));
     verifyConsentDocuments(0, [0]);
-    it('user 0 signs consent document of type 0', signConsentTypeFn(0, 0, 'sp'));
+    it('user 0 signs consent document of type 0', signConsentTypeFn(0, 0, 'es'));
     verifyConsentDocuments(0, []);
 
     it(`create consent from types 0, 1, 2`, function () {

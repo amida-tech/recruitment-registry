@@ -151,7 +151,7 @@ class Generator {
         const i4 = index % 4;
         switch (i4) {
         case 2:
-            return 'sp';
+            return 'es';
         case 3:
             return 'en';
         default:
