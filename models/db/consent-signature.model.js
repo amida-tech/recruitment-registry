@@ -8,7 +8,10 @@ module.exports = function (sequelize, DataTypes) {
             field: 'consent_document_id',
             unique: 'signature',
             references: {
-                model: 'consent_document',
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'consent_document'
+                },
                 key: 'id'
             }
         },
@@ -18,7 +21,10 @@ module.exports = function (sequelize, DataTypes) {
             field: 'user_id',
             unique: 'signature',
             references: {
-                model: 'registry_user',
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'registry_user'
+                },
                 key: 'id'
             }
         },
@@ -27,7 +33,10 @@ module.exports = function (sequelize, DataTypes) {
             allowNull: false,
             field: 'language_code',
             references: {
-                model: 'language',
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'language'
+                },
                 key: 'code'
             }
         },
@@ -45,6 +54,7 @@ module.exports = function (sequelize, DataTypes) {
     }, {
         updatedAt: false,
         freezeTableName: true,
+        schema: sequelize.options.schema,
         createdAt: 'createdAt'
     });
 };

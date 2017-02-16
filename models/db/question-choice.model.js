@@ -6,7 +6,10 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.INTEGER,
             field: 'question_id',
             references: {
-                model: 'question',
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'question'
+                },
                 key: 'id'
             }
         },
@@ -14,7 +17,10 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.TEXT,
             allowNull: false,
             references: {
-                model: 'answer_type',
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'answer_type'
+                },
                 key: 'name'
             }
         },
@@ -39,7 +45,10 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.INTEGER,
             field: 'choice_set_id',
             references: {
-                model: 'choice_set',
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'choice_set'
+                },
                 key: 'id'
             }
         },
@@ -49,6 +58,7 @@ module.exports = function (sequelize, DataTypes) {
         }
     }, {
         freezeTableName: true,
+        schema: sequelize.options.schema,
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
         deletedAt: 'deletedAt',
