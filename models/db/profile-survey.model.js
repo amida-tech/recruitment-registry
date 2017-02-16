@@ -6,7 +6,10 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.INTEGER,
             field: 'survey_id',
             references: {
-                model: 'survey',
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'survey'
+                },
                 key: 'id'
             }
         },
@@ -20,6 +23,7 @@ module.exports = function (sequelize, DataTypes) {
         }
     }, {
         freezeTableName: true,
+        schema: sequelize.options.schema,
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',

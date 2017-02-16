@@ -18,7 +18,8 @@ const all = {
         dialect: 'postgres',
         poolMax: 5,
         poolMin: 0,
-        poolIdle: 10000
+        poolIdle: 10000,
+        schema: 'public'
     },
     superUser: {
         username: 'super',
@@ -56,7 +57,8 @@ const main = {
         dialect: process.env.RECREG_DB_DIALECT,
         poolMax: process.env.RECREG_DB_POOL_MAX,
         poolMin: process.env.RECREG_DB_POOL_MIN,
-        poolIdle: process.env.RECREG_DB_POOL_IDLE
+        poolIdle: process.env.RECREG_DB_POOL_IDLE,
+        schema: process.env.RECREG_DB_SCHEMA
     },
     superUser: {
         username: process.env.RECREG_SUPER_USER_USERNAME,
@@ -75,7 +77,6 @@ const main = {
     },
     clientBaseUrl: process.env.RECREG_CLIENT_BASE_URL,
     tmpDirectory: process.env.RECREG_TMP_DIRECTORY,
-
     constantContact: {
         baseApiUrl: process.env.RECREG_CONSTANT_CONTACT__URL,
         token: process.env.RECREG_CONSTANT_CONSTANT_TOKEN,

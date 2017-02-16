@@ -7,7 +7,10 @@ module.exports = function (sequelize, DataTypes) {
             allowNull: false,
             field: 'answer_id',
             references: {
-                model: 'answer',
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'answer'
+                },
                 key: 'id'
             }
         },
@@ -16,7 +19,10 @@ module.exports = function (sequelize, DataTypes) {
             allowNull: false,
             field: 'user_assessment_id',
             references: {
-                model: 'user_assessment',
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'user_assessment'
+                },
                 key: 'id'
             }
         },
@@ -26,6 +32,7 @@ module.exports = function (sequelize, DataTypes) {
         }
     }, {
         freezeTableName: true,
+        schema: sequelize.options.schema,
         createdAt: 'createdAt',
         updatedAt: false
     });

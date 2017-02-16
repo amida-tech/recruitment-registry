@@ -36,7 +36,10 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.TEXT,
             field: 'language_code',
             references: {
-                model: 'language',
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'language'
+                },
                 key: 'code'
             }
         },
@@ -50,6 +53,7 @@ module.exports = function (sequelize, DataTypes) {
         }
     }, {
         freezeTableName: true,
+        schema: sequelize.options.schema,
         timestamps: false,
         indexes: [{ fields: ['username', 'assessment_name', 'line_index'] }]
     });

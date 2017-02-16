@@ -5,7 +5,10 @@ module.exports = function (sequelize, DataTypes) {
             field: 'survey_section_id',
             allowNull: false,
             references: {
-                model: 'survey_section',
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'survey_section'
+                },
                 key: 'id'
             }
         },
@@ -14,7 +17,10 @@ module.exports = function (sequelize, DataTypes) {
             field: 'question_id',
             allowNull: false,
             references: {
-                model: 'question',
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'question'
+                },
                 key: 'id'
             }
         },
@@ -28,6 +34,7 @@ module.exports = function (sequelize, DataTypes) {
         }
     }, {
         freezeTableName: true,
+        schema: sequelize.options.schema,
         createdAt: 'createdAt',
         updatedAt: false,
         indexes: [{ fields: ['survey_section_id'] }]
