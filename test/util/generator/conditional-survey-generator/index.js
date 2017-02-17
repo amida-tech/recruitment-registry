@@ -11,7 +11,7 @@ const requiredOverrides = require('./required-overrides');
 const errorAnswerSetup = require('./error-answer-setup');
 const passAnswerSetup = require('./pass-answer-setup');
 
-const counts = [8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, '8e', '8e' /**/ , '8e', '8e', '8e', '8e', '8e'];
+const counts = [8, 8, 8, 8, 8, 8, 8, 8, 8, '8e', '8e', '8e', '8e' /**/ , '8e', '8e', '8e', '8e', '8e'];
 
 const specialQuestionGenerator = {
     multipleSupport(surveyGenerator, questionInfo) {

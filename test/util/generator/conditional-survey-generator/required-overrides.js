@@ -25,7 +25,9 @@ module.exports = {
     '8-4': true,
     '8-5': true,
     '9-4': true,
-    '10-0': true,
+    //
+    '10-4': true,
+    '10-5': true,
     //
     '11-4': true,
     '11-5': true,

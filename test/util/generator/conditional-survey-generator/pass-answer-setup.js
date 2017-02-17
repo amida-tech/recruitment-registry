@@ -1,6 +1,13 @@
 'use strict';
 
 module.exports = [{ //enable when
+    surveyIndex: 10,
+    caseIndex: 0,
+    questionIndex: 4,
+    skipCondition: false,
+    rulePath: '5.enableWhen.rule.answer',
+    noAnswers: []
+}, { //enable when
     surveyIndex: 11,
     caseIndex: 0,
     questionIndex: 4,
