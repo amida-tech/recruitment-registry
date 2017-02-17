@@ -11,7 +11,7 @@ const requiredOverrides = require('./required-overrides');
 const errorAnswerSetup = require('./error-answer-setup');
 const passAnswerSetup = require('./pass-answer-setup');
 
-const counts = [8, 8, 8, 8, 8, 8, 8, 8, 8, '8e', '8e', '8e', '8e' /**/ , '8e', '8e', '8e', '8e', '8e'];
+const counts = [8, 8, 8, 8, 8, 8, 8, 8];
 
 const specialQuestionGenerator = {
     multipleSupport(surveyGenerator, questionInfo) {
@@ -68,11 +68,7 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
 
     count() {
         const surveyIndex = this.currentIndex();
-        const count = counts[surveyIndex];
-        if ((typeof count) === 'string') {
-            return parseInt(count, 10);
-        }
-        return count;
+        return counts[surveyIndex];
     }
 
     numOfCases() {
@@ -175,10 +171,7 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
     newSurvey() {
         const survey = super.newSurvey({ noSection: true });
         const surveyIndex = this.currentIndex();
-        const surveyCount = counts[surveyIndex];
-        if ((typeof surveyCount) !== 'string') {
-            return survey;
-        }
+
         const key = Object.keys(conditionalQuestions).find(key => parseInt(key, 10) === surveyIndex && conditionalQuestions[key].purpose !== 'type');
 
         const questionIndex = parseInt(key.split('-')[1], 10);

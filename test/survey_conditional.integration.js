@@ -11,7 +11,6 @@ const Answerer = require('./util/generator/answerer');
 const RRSuperTest = require('./util/rr-super-test');
 const QuestionGenerator = require('./util/generator/question-generator');
 const ConditionalSurveyGenerator = require('./util/generator/conditional-survey-generator');
-const ErroneousConditionalSurveyGenerator = require('./util/generator/erroneous-conditional-survey-generator');
 const Generator = require('./util/generator');
 const comparator = require('./util/comparator');
 const SurveyHistory = require('./util/survey-history');
@@ -25,7 +24,6 @@ const expect = chai.expect;
 describe('survey (conditional questions) integration', function () {
     const answerer = new Answerer();
     const questionGenerator = new QuestionGenerator();
-    const errenousSurveyGenerator = new ErroneousConditionalSurveyGenerator();
     const surveyGenerator = new ConditionalSurveyGenerator({ questionGenerator, answerer });
     const generator = new Generator({ surveyGenerator, questionGenerator, answerer });
     const shared = new SharedIntegration(generator);
@@ -40,19 +38,6 @@ describe('survey (conditional questions) integration', function () {
     before(shared.setUpFn(rrSuperTest));
 
     it('login as super', shared.loginFn(rrSuperTest, config.superUser));
-
-    _.range(errenousSurveyGenerator.numOfCases()).forEach(index => {
-        it(`error: create errenous survey ${index}`, function (done) {
-            const survey = errenousSurveyGenerator.newSurvey({ noSection: true });
-            //const { code, params, apiOverride } = errenousSurveyGenerator.expectedError(index);
-            rrSuperTest.post('/surveys', survey, 400)
-                //.expect(function (res) {
-                //    const message = apiOverride || RRError.message(code, ...params);
-                //    expect(res.body.message).to.equal(message);
-                //})
-                .end(done);
-        });
-    });
 
     _.range(surveyCount).forEach(index => {
         it(`create survey ${index}`, tests.createSurveyFn({ noSection: true }));

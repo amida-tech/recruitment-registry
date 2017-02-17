@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = [{ //enable when
-    surveyIndex: 10,
+    surveyIndex: 0,
     caseIndex: 0,
     questionIndex: 4,
     skipCondition: false,
@@ -9,7 +9,7 @@ module.exports = [{ //enable when
     noAnswers: [5],
     error: 'answerRequiredMissing'
 }, { //enable when
-    surveyIndex: 11,
+    surveyIndex: 1,
     caseIndex: 0,
     questionIndex: 4,
     skipCondition: false,
@@ -17,7 +17,7 @@ module.exports = [{ //enable when
     noAnswers: [5],
     error: 'answerRequiredMissing'
 }, { //enable when
-    surveyIndex: 11,
+    surveyIndex: 1,
     caseIndex: 1,
     questionIndex: 4,
     skipCondition: true,
@@ -25,7 +25,7 @@ module.exports = [{ //enable when
     noAnswers: [],
     error: 'answerToBeSkippedAnswered'
 }, { //enable when
-    surveyIndex: 12,
+    surveyIndex: 2,
     caseIndex: 0,
     questionIndex: 2,
     skipCondition: true,
@@ -33,7 +33,7 @@ module.exports = [{ //enable when
     noAnswers: [3],
     error: 'answerRequiredMissing'
 }, { //enable when
-    surveyIndex: 12,
+    surveyIndex: 2,
     caseIndex: 1,
     questionIndex: 2,
     skipCondition: false,
@@ -41,13 +41,13 @@ module.exports = [{ //enable when
     noAnswers: [],
     error: 'answerToBeSkippedAnswered'
 }, { // Skip equivalent
-    surveyIndex: 13,
+    surveyIndex: 3,
     caseIndex: 0,
     questionIndex: 3,
     noAnswers: [3, 6],
     error: 'answerToBeSkippedAnswered'
 }, {
-    surveyIndex: 13,
+    surveyIndex: 3,
     caseIndex: 1,
     questionIndex: 3,
     skipCondition: false,
@@ -55,7 +55,7 @@ module.exports = [{ //enable when
     noAnswers: [4],
     error: 'answerRequiredMissing'
 }, {
-    surveyIndex: 13,
+    surveyIndex: 3,
     caseIndex: 2,
     questionIndex: 3,
     skipCondition: true,
@@ -63,14 +63,14 @@ module.exports = [{ //enable when
     rulePath: '3.section.enableWhen.rule.answer',
     error: 'answerToBeSkippedAnswered'
 }, {
-    surveyIndex: 14,
+    surveyIndex: 4,
     caseIndex: 0,
     questionIndex: 5,
     noAnswers: [5],
     rulePath: '5.section.enableWhen.rule.answer',
     error: 'answerToBeSkippedAnswered'
 }, {
-    surveyIndex: 14,
+    surveyIndex: 4,
     caseIndex: 1,
     questionIndex: 5,
     noAnswers: [6],
@@ -78,21 +78,21 @@ module.exports = [{ //enable when
     rulePath: '5.section.enableWhen.rule.answer',
     error: 'answerRequiredMissing'
 }, {
-    surveyIndex: 14,
+    surveyIndex: 4,
     caseIndex: 2,
     questionIndex: 5,
     skipCondition: false,
     rulePath: '5.section.enableWhen.rule.answer',
     error: 'answerToBeSkippedAnswered'
 }, {
-    surveyIndex: 15,
+    surveyIndex: 5,
     caseIndex: 0,
     questionIndex: 3,
     noAnswers: [3, 4],
     rulePath: '3.section.enableWhen.rule.answer',
     error: 'answerToBeSkippedAnswered'
 }, {
-    surveyIndex: 15,
+    surveyIndex: 5,
     caseIndex: 1,
     questionIndex: 3,
     noAnswers: [5],
@@ -100,7 +100,7 @@ module.exports = [{ //enable when
     rulePath: '3.section.enableWhen.rule.answer',
     error: 'answerRequiredMissing'
 }, {
-    surveyIndex: 15,
+    surveyIndex: 5,
     caseIndex: 2,
     questionIndex: 3,
     skipCondition: false,
@@ -108,25 +108,25 @@ module.exports = [{ //enable when
     rulePath: '3.section.enableWhen.rule.answer',
     error: 'answerToBeSkippedAnswered'
 }, {
-    surveyIndex: 16,
+    surveyIndex: 6,
     caseIndex: 0,
     questionIndex: 0,
     noAnswers: [0],
     error: 'answerRequiredMissing'
 }, {
-    surveyIndex: 16,
+    surveyIndex: 6,
     caseIndex: 1,
     questionIndex: 0,
     noAnswers: [],
     error: 'answerToBeSkippedAnswered'
 }, {
-    surveyIndex: 17,
+    surveyIndex: 7,
     caseIndex: 0,
     questionIndex: 2,
     noAnswers: [2],
     error: 'answerToBeSkippedAnswered'
 }, {
-    surveyIndex: 17,
+    surveyIndex: 7,
     caseIndex: 1,
     questionIndex: 2,
     noAnswers: [4],
