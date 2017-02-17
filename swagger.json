@@ -2821,9 +2821,6 @@
                 "id": {
                     "type": "integer"
                 },
-                "skip": {
-                    "$ref": "#/definitions/newSkipCondition"
-                },
                 "enableWhen": {
                     "$ref": "#/definitions/newEnableWhenCondition"
                 },
@@ -2996,43 +2993,6 @@
             },
             "additionalProperties": false
         },
-        "skipCondition": {
-            "type": "object",
-            "required": ["count", "rule"],
-            "properties": {
-                "count": {
-                    "type": "integer",
-                    "minimum": 1
-                },
-                "rule": {
-                    "type": "object",
-                    "required": ["id", "logic"],
-                    "properties": {
-                        "id": {
-                            "type": "integer",
-                            "minimum": 1
-                        },
-                        "logic": {
-                            "type": "string"
-                        },
-                        "answer": {
-                            "$ref": "#/definitions/answer"
-                        },
-                        "selectionIds": {
-                            "type": "array",
-                            "items": {
-                                "type": "integer",
-                                "minimum": 1
-                            },
-                            "minItems": 1
-                        }
-                    },
-                    "maxProperties": 3,
-                    "additionalProperties": false
-                }
-            },
-            "additionalProperties": false
-        },
         "enableWhenCondition": {
             "type": "object",
             "required": ["rule"],
@@ -3112,9 +3072,6 @@
                 },
                 "required": {
                     "type": "boolean"
-                },
-                "skip": {
-                    "$ref": "#/definitions/skipCondition"
                 },
                 "enableWhen": {
                     "$ref": "#/definitions/enableWhenCondition"
