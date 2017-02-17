@@ -8,12 +8,6 @@ const SPromise = require('../lib/promise');
 const sequelize = db.sequelize;
 
 const createSurveys = function (surveys) {
-    for (let index = 0; index < surveys.length; ++index) {
-        const rejection = dao.survey.validateCreateQuestionsPreTransaction(surveys[index]);
-        if (rejection) {
-            return rejection;
-        }
-    }
     return sequelize.transaction(transaction => {
         const promises = surveys.map(survey => {
             return dao.survey.createSurveyTx(survey, transaction);

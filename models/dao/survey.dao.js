@@ -118,6 +118,9 @@ module.exports = class SurveyDAO extends Translatable {
         if (questions && sections) {
             throw new RRError('surveyBothQuestionsSectionsSpecified');
         }
+        if (!questions && !sections) {
+            throw new RRError('surveyNeitherQuestionsSectionsSpecified');
+        }
         const result = { sections: [], questions: [] };
         if (sections) {
             return this.flattenSectionsHieararchy(sections, result, null);
@@ -151,43 +154,6 @@ module.exports = class SurveyDAO extends Translatable {
             return SPromise.all(pxs);
         }
         return null;
-    }
-
-    validateCreateQuestionsPreTransaction(survey) {
-        if (!survey.sections) {
-            let rejection = null;
-            const questions = survey.questions;
-            const numOfQuestions = questions && questions.length;
-            if (!numOfQuestions) {
-                return RRError.reject('surveyNoQuestions');
-            }
-            questions.every((question, index) => {
-                const skip = question.skip;
-                if (skip) {
-                    const logic = skip.rule.logic;
-                    const count = skip.count;
-                    const answer = _.get(skip, 'rule.answer');
-                    if ((count + index) >= numOfQuestions) {
-                        rejection = RRError.reject('skipValidationNotEnoughQuestions', count, index, numOfQuestions - index - 1);
-                        return false;
-                    }
-                    if (logic === 'equals' || logic === 'not-equals') {
-                        if (!answer) {
-                            rejection = RRError.reject('skipValidationNoAnswerSpecified', index, logic);
-                            return false;
-                        }
-                    }
-                    if (logic === 'exists' || logic === 'not-exists' || logic === 'not-selected' || logic === 'each-not-selected') {
-                        if (answer) {
-                            rejection = RRError.reject('skipValidationAnswerSpecified', index, logic);
-                            return false;
-                        }
-                    }
-                }
-                return true;
-            });
-            return rejection;
-        }
     }
 
     createNewQuestionsTx(questions, tx) {
@@ -321,6 +287,9 @@ module.exports = class SurveyDAO extends Translatable {
 
     updateSurveyTx(id, survey, transaction) {
         let { sections, questions } = this.flattenHierarchy(survey);
+        if (!questions.length) {
+            return RRError.reject('surveyNoQuestions');
+        }
         return this.createTextTx({ id, name: survey.name, description: survey.description }, transaction)
             .then(({ id }) => {
                 return this.createSurveyQuestionsTx(questions, sections, id, transaction)
@@ -354,10 +323,6 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     createSurvey(survey) {
-        const rejection = this.validateCreateQuestionsPreTransaction(survey);
-        if (rejection) {
-            return rejection;
-        }
         return sequelize.transaction(transaction => {
             return this.createSurveyTx(survey, transaction);
         });
@@ -527,10 +492,6 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     replaceSurvey(id, replacement) {
-        const rejection = this.validateCreateQuestionsPreTransaction(replacement);
-        if (rejection) {
-            return rejection;
-        }
         return sequelize.transaction(tx => {
             return this.replaceSurveyTx(id, replacement, tx);
         });
