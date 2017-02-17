@@ -171,16 +171,9 @@ module.exports = class SurveyDAO extends Translatable {
                             const inputQuestion = questions[q.index];
                             questions[q.index] = { id, required: inputQuestion.required };
                             questionChoices[id] = choices;
-                            let skip = inputQuestion.skip;
-                            if (skip) {
-                                skip = _.cloneDeep(skip);
-                                skip = translateRuleChoices(skip, choices) || skip;
-                                questions[q.index].skip = skip;
-                            }
                             let enableWhen = inputQuestion.enableWhen;
                             if (enableWhen) {
                                 enableWhen = _.cloneDeep(enableWhen);
-                                //enableWhen = translateRuleChoices(enableWhen, choices) || enableWhen;
                                 questions[q.index].enableWhen = enableWhen;
                             }
                         });
@@ -191,22 +184,17 @@ module.exports = class SurveyDAO extends Translatable {
         }
     }
 
-    createRulesForQuestions(surveyId, questions, property, transaction) {
-        const questionsWithRule = questions.filter(question => question[property] && question[property].rule);
+    createRulesForQuestions(surveyId, questions, transaction) {
+        const questionsWithRule = questions.filter(question => question.enableWhen && question.enableWhen.rule);
         if (questionsWithRule.length) {
             const promises = questionsWithRule.map(question => {
-                const rule = question[property].rule;
+                const rule = question.enableWhen.rule;
                 const answerRule = { surveyId, questionId: question.id, logic: rule.logic };
-                const count = question[property].count;
-                if (count !== undefined) {
-                    answerRule.skipCount = count;
-                } else {
-                    answerRule.answerQuestionId = question[property].questionId;
-                }
+                answerRule.answerQuestionId = question.enableWhen.questionId;
                 return AnswerRule.create(answerRule, { transaction })
                     .then(({ id }) => {
-                        question[property].ruleId = id;
-                        return this.createRuleAnswerValue(question[property], transaction);
+                        question.enableWhen.ruleId = id;
+                        return this.createRuleAnswerValue(question.enableWhen, transaction);
                     });
 
             });
@@ -274,8 +262,7 @@ module.exports = class SurveyDAO extends Translatable {
                 }
                 return questions;
             })
-            .then(questions => this.createRulesForQuestions(surveyId, questions, 'skip', transaction))
-            .then(questions => this.createRulesForQuestions(surveyId, questions, 'enableWhen', transaction))
+            .then(questions => this.createRulesForQuestions(surveyId, questions, transaction))
             .then(questions => {
                 return SPromise.all(questions.map((qx, line) => {
                         const record = { questionId: qx.id, surveyId, line, required: Boolean(qx.required) };
@@ -788,7 +775,6 @@ module.exports = class SurveyDAO extends Translatable {
                     if (record.skipCount) {
                         const rule = { logic: 'not-equals' };
                         skip = record.skipCount;
-                        //const count = record.skipCount;
                         rule.answer = {
                             choice: choicesIdMap[record.skipValue]
                         };
@@ -801,7 +787,6 @@ module.exports = class SurveyDAO extends Translatable {
                         };
                         survey.questions.push(question);
                         return r;
-                        //question.skip = { count, rule };
                     }
                     if (skip) {
                         const questions = survey.questions;

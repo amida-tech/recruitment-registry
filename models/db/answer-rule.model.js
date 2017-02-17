@@ -61,10 +61,6 @@ module.exports = function (sequelize, DataTypes) {
                 key: 'id'
             }
         },
-        skipCount: {
-            type: DataTypes.INTEGER,
-            field: 'skip_count'
-        },
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',

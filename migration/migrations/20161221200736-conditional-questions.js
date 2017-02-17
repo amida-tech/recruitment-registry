@@ -112,10 +112,6 @@ const answerRule = function (queryInterface, Sequelize) {
                 key: 'id'
             }
         },
-        skipCount: {
-            type: Sequelize.INTEGER,
-            field: 'skip_count'
-        },
         createdAt: {
             type: Sequelize.DATE,
             field: 'created_at',
