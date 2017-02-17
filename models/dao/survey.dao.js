@@ -800,6 +800,7 @@ module.exports = class SurveyDAO extends Translatable {
                 if (!numRecords) {
                     return [];
                 }
+                let skip = 0;
                 const map = records.reduce((r, record) => {
                     const id = record.id;
                     let { survey } = r.get(id) || {};
@@ -824,14 +825,30 @@ module.exports = class SurveyDAO extends Translatable {
                         required: record.required
                     };
                     if (record.skipCount) {
-                        const rule = { logic: 'equals' };
-                        const count = record.skipCount;
+                        const rule = { logic: 'not-equals' };
+                        skip = record.skipCount;
+                        //const count = record.skipCount;
                         rule.answer = {
                             choice: choicesIdMap[record.skipValue]
                         };
-                        question.skip = { count, rule };
+                        question.section = {
+                            enableWhen: {
+                                questionId: questionIdMap[record.questionId],
+                                rule
+                            },
+                            questions: []
+                        };
+                        survey.questions.push(question);
+                        return r;
+                        //question.skip = { count, rule };
                     }
-                    survey.questions.push(question);
+                    if (skip) {
+                        const questions = survey.questions;
+                        questions[questions.length - 1].section.questions.push(question);
+                        skip = skip - 1;
+                    } else {
+                        survey.questions.push(question);
+                    }
                     return r;
                 }, new Map());
                 return [...map.values()];
