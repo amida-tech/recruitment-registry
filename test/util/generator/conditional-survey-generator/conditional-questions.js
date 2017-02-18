@@ -1,13 +1,64 @@
 'use strict';
 
-module.exports = {
-    '0-5': { type: 'text', purpose: 'enableWhen', logic: 'not-equals', relativeIndex: 1 },
-    '1-5': { type: 'text', purpose: 'enableWhen', logic: 'not-equals', relativeIndex: 1 },
-    '2-2': { type: 'choice', purpose: 'type' },
-    '2-3': { type: 'choice', purpose: 'enableWhen', logic: 'equals', relativeIndex: 1 },
-    '3-3': { type: 'choice', logic: 'not-equals', count: 3, purpose: 'toEnableWhen' },
-    '4-5': { type: 'choice', logic: 'equals', count: 1, purpose: 'toEnableWhen' },
-    '5-3': { type: 'bool', logic: 'equals', count: 2, purpose: 'toEnableWhen' },
-    '6-0': { type: 'text', logic: 'not-exists', count: 1, purpose: 'toEnableWhen' },
-    '7-2': { type: 'text', logic: 'exists', count: 2, purpose: 'toEnableWhen' }
-};
+module.exports = [{
+    surveyIndex: 0,
+    questionIndex: 5,
+    type: 'text',
+    purpose: 'enableWhen',
+    logic: 'not-equals',
+    relativeIndex: 1
+}, {
+    surveyIndex: 1,
+    questionIndex: 5,
+    type: 'text',
+    purpose: 'enableWhen',
+    logic: 'not-equals',
+    relativeIndex: 1
+}, {
+    surveyIndex: 2,
+    questionIndex: 2,
+    type: 'choice',
+    purpose: 'type'
+}, {
+    surveyIndex: 2,
+    questionIndex: 3,
+    type: 'choice',
+    purpose: 'enableWhen',
+    logic: 'equals',
+    relativeIndex: 1
+}, {
+    surveyIndex: 3,
+    questionIndex: 3,
+    type: 'choice',
+    logic: 'not-equals',
+    count: 3,
+    purpose: 'toEnableWhen'
+}, {
+    surveyIndex: 4,
+    questionIndex: 5,
+    type: 'choice',
+    logic: 'equals',
+    count: 1,
+    purpose: 'toEnableWhen'
+}, {
+    surveyIndex: 5,
+    questionIndex: 3,
+    type: 'bool',
+    logic: 'equals',
+    count: 2,
+    purpose: 'toEnableWhen'
+}, {
+    surveyIndex: 6,
+    questionIndex: 0,
+    type: 'text',
+    logic: 'not-exists',
+    count: 1,
+    purpose: 'toEnableWhen'
+}, {
+    surveyIndex: 7,
+    questionIndex: 2,
+    type: 'text',
+    logic: 'exists',
+    count: 2,
+    purpose: 'toEnableWhen'
+}];

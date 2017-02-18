@@ -1,41 +1,41 @@
 'use strict';
 
-module.exports = [{ //enable when
+module.exports = [{
     surveyIndex: 0,
     caseIndex: 0,
     questionIndex: 4,
-    skipCondition: false,
+    ruleAnswerState: false,
     rulePath: '5.enableWhen.rule.answer',
     noAnswers: []
-}, { //enable when
+}, {
     surveyIndex: 1,
     caseIndex: 0,
     questionIndex: 4,
-    skipCondition: false,
+    ruleAnswerState: false,
     rulePath: '5.enableWhen.rule.answer',
     noAnswers: []
-}, { //enable when
+}, {
     surveyIndex: 1,
     caseIndex: 1,
     questionIndex: 4,
-    skipCondition: true,
+    ruleAnswerState: true,
     rulePath: '5.enableWhen.rule.answer',
     noAnswers: [5]
-}, { //enable when
+}, {
     surveyIndex: 2,
     caseIndex: 0,
     questionIndex: 2,
-    skipCondition: false,
+    ruleAnswerState: false,
     rulePath: '3.enableWhen.rule.answer',
     noAnswers: [3]
-}, { //enable when
+}, {
     surveyIndex: 2,
     caseIndex: 1,
     questionIndex: 2,
-    skipCondition: true,
+    ruleAnswerState: true,
     rulePath: '3.enableWhen.rule.answer',
     noAnswers: []
-}, { // Skip equivalent
+}, {
     surveyIndex: 3,
     caseIndex: 0,
     questionIndex: 3,
@@ -44,14 +44,14 @@ module.exports = [{ //enable when
     surveyIndex: 3,
     caseIndex: 1,
     questionIndex: 3,
-    skipCondition: false,
+    ruleAnswerState: false,
     rulePath: '3.section.enableWhen.rule.answer',
     noAnswers: [5]
 }, {
     surveyIndex: 3,
     caseIndex: 2,
     questionIndex: 3,
-    skipCondition: true,
+    ruleAnswerState: true,
     noAnswers: [4, 5, 6],
     rulePath: '3.section.enableWhen.rule.answer'
 }, {
@@ -59,27 +59,27 @@ module.exports = [{ //enable when
     caseIndex: 0,
     questionIndex: 5,
     noAnswers: [],
-    skipCondition: true,
+    ruleAnswerState: true,
     rulePath: '5.section.enableWhen.rule.answer'
 }, {
     surveyIndex: 4,
     caseIndex: 1,
     questionIndex: 5,
     noAnswers: [6],
-    skipCondition: false,
+    ruleAnswerState: false,
     rulePath: '5.section.enableWhen.rule.answer'
 }, {
     surveyIndex: 5,
     caseIndex: 0,
     questionIndex: 3,
     noAnswers: [4],
-    skipCondition: true,
+    ruleAnswerState: true,
     rulePath: '3.section.enableWhen.rule.answer'
 }, {
     surveyIndex: 5,
     caseIndex: 1,
     questionIndex: 3,
-    skipCondition: false,
+    ruleAnswerState: false,
     noAnswers: [4, 5],
     rulePath: '3.section.enableWhen.rule.answer'
 }, {

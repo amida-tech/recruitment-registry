@@ -13,26 +13,30 @@ const passAnswerSetup = require('./pass-answer-setup');
 
 const counts = [8, 8, 8, 8, 8, 8, 8, 8];
 
+const conditionalQuestionMap = conditionalQuestions.reduce((r, questionInfo) => {
+    const surveyIndex = questionInfo.surveyIndex;
+    if (surveyIndex === undefined) {
+        throw new Error('No survey index specified');
+    }
+    let survey = r[surveyIndex];
+    if (!survey) {
+        survey = {};
+        r[surveyIndex] = survey;
+    }
+    const questionIndex = questionInfo.questionIndex;
+    if (questionIndex === undefined) {
+        throw new Error('No survey question index specified.');
+    }
+    survey[questionIndex] = questionInfo;
+    return r;
+}, {});
+
 const specialQuestionGenerator = {
     multipleSupport(surveyGenerator, questionInfo) {
         return surveyGenerator.questionGenerator.newMultiQuestion('text', questionInfo.selectionCount);
     },
     type(surveyGenerator, questionInfo) {
         return surveyGenerator.questionGenerator.newQuestion(questionInfo.type);
-    },
-    skip(surveyGenerator, questionInfo) {
-        const { type, logic, count } = questionInfo;
-        const question = surveyGenerator.questionGenerator.newQuestion(type);
-        const skip = { rule: {} };
-        if (count !== undefined) {
-            skip.count = count;
-        }
-        if (logic !== undefined) {
-            skip.rule.logic = logic;
-        }
-        surveyGenerator.addAnswer(skip.rule, questionInfo, question);
-        question.skip = skip;
-        return question;
     },
     enableWhen(surveyGenerator, questionInfo, index) {
         const { type, relativeIndex, logic } = questionInfo;
@@ -90,18 +94,13 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
         }
     }
 
-    getConditionalQuestion(key) {
-        return conditionalQuestions[key];
-    }
-
     getRequiredOverride(key) {
         return requiredOverrides[key];
     }
 
     newSurveyQuestion(index) {
         const surveyIndex = this.currentIndex();
-        const key = `${surveyIndex}-${index}`;
-        const questionInfo = this.getConditionalQuestion(key);
+        const questionInfo = conditionalQuestionMap[surveyIndex][index];
         let question;
         if (questionInfo) {
             const purpose = questionInfo.purpose || 'skip';
@@ -110,7 +109,7 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
         } else {
             question = super.newSurveyQuestion(index);
         }
-        const requiredOverride = this.getRequiredOverride(key);
+        const requiredOverride = this.getRequiredOverride(`${surveyIndex}-${index}`);
         if (requiredOverride !== undefined) {
             question.required = requiredOverride;
         }
@@ -125,7 +124,7 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
         return passAnswerSetup;
     }
 
-    answersWithConditions(survey, { questionIndex, rulePath, skipCondition, noAnswers, selectionChoice, multipleIndices }) {
+    answersWithConditions(survey, { questionIndex, rulePath, ruleAnswerState, noAnswers, selectionChoice, multipleIndices }) {
         const questions = models.survey.getQuestions(survey);
         const doNotAnswer = new Set(noAnswers);
         rulePath = rulePath || `${questionIndex}.skip.rule.answer`;
@@ -135,12 +134,12 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
                 return r;
             }
             if (questionIndex === index) {
-                if (skipCondition === true) {
+                if (ruleAnswerState === true) {
                     const answer = { questionId: question.id, answer: ruleAnswer };
                     r.push(answer);
                     return r;
                 }
-                if (skipCondition === false) {
+                if (ruleAnswerState === false) {
                     let answer = this.answerer.answerQuestion(question);
                     if (_.isEqual(answer.answer, ruleAnswer)) {
                         answer = this.answerer.answerQuestion(question);
@@ -171,36 +170,35 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
     newSurvey() {
         const survey = super.newSurvey({ noSection: true });
         const surveyIndex = this.currentIndex();
+        _.forOwn(conditionalQuestionMap[surveyIndex], (questionInfo, questionIndex) => {
+            if (questionInfo.purpose === 'type') {
+                return;
+            }
 
-        const key = Object.keys(conditionalQuestions).find(key => parseInt(key, 10) === surveyIndex && conditionalQuestions[key].purpose !== 'type');
+            questionIndex = parseInt(questionIndex, 10);
+            const question = survey.questions[questionIndex];
 
-        const questionIndex = parseInt(key.split('-')[1], 10);
-        const question = survey.questions[questionIndex];
-
-        if (question.skip) {
-            const skip = question.skip;
-            delete question.skip;
-            const deletedQuestions = survey.questions.splice(questionIndex + 1, skip.count);
-            delete skip.count;
-            question.section = {
-                questions: deletedQuestions,
-                enableWhen: skip
-            };
-        }
-        if (question.enableWhen) {
-            const sourceIndex = question.enableWhen.questionIndex;
-            this.addAnswer(question.enableWhen.rule, question.enableWhen.rule, survey.questions[sourceIndex]);
-        }
+            if (question.skip) {
+                const skip = question.skip;
+                delete question.skip;
+                const deletedQuestions = survey.questions.splice(questionIndex + 1, skip.count);
+                delete skip.count;
+                question.section = {
+                    questions: deletedQuestions,
+                    enableWhen: skip
+                };
+            }
+            if (question.enableWhen) {
+                const sourceIndex = question.enableWhen.questionIndex;
+                this.addAnswer(question.enableWhen.rule, question.enableWhen.rule, survey.questions[sourceIndex]);
+            }
+        });
         return survey;
     }
 
     static newSurveyFromPrevious(clientSurvey, serverSurvey) {
-        const questions = serverSurvey.questions.map(({ id, required, skip, enableWhen, section }) => {
+        const questions = serverSurvey.questions.map(({ id, required, enableWhen, section }) => {
             const question = { id, required };
-            if (skip) {
-                question.skip = _.cloneDeep(skip);
-                delete question.skip.rule.id;
-            }
             if (enableWhen) {
                 question.enableWhen = _.cloneDeep(enableWhen);
                 delete question.enableWhen.rule.id;

@@ -151,6 +151,9 @@ class SharedSpec {
 
     expectedErrorHandler(code, ...params) {
         return function (err) {
+            if (!(err instanceof RRError)) {
+                console.log(err);
+            }
             expect(err).to.be.instanceof(RRError);
             expect(err.code).to.equal(code);
             const expected = new RRError(code, ...params);

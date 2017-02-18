@@ -4,7 +4,7 @@ module.exports = [{ //enable when
     surveyIndex: 0,
     caseIndex: 0,
     questionIndex: 4,
-    skipCondition: false,
+    ruleAnswerState: false,
     rulePath: '5.enableWhen.rule.answer',
     noAnswers: [5],
     error: 'answerRequiredMissing'
@@ -12,7 +12,7 @@ module.exports = [{ //enable when
     surveyIndex: 1,
     caseIndex: 0,
     questionIndex: 4,
-    skipCondition: false,
+    ruleAnswerState: false,
     rulePath: '5.enableWhen.rule.answer',
     noAnswers: [5],
     error: 'answerRequiredMissing'
@@ -20,7 +20,7 @@ module.exports = [{ //enable when
     surveyIndex: 1,
     caseIndex: 1,
     questionIndex: 4,
-    skipCondition: true,
+    ruleAnswerState: true,
     rulePath: '5.enableWhen.rule.answer',
     noAnswers: [],
     error: 'answerToBeSkippedAnswered'
@@ -28,7 +28,7 @@ module.exports = [{ //enable when
     surveyIndex: 2,
     caseIndex: 0,
     questionIndex: 2,
-    skipCondition: true,
+    ruleAnswerState: true,
     rulePath: '3.enableWhen.rule.answer',
     noAnswers: [3],
     error: 'answerRequiredMissing'
@@ -36,7 +36,7 @@ module.exports = [{ //enable when
     surveyIndex: 2,
     caseIndex: 1,
     questionIndex: 2,
-    skipCondition: false,
+    ruleAnswerState: false,
     rulePath: '3.enableWhen.rule.answer',
     noAnswers: [],
     error: 'answerToBeSkippedAnswered'
@@ -50,7 +50,7 @@ module.exports = [{ //enable when
     surveyIndex: 3,
     caseIndex: 1,
     questionIndex: 3,
-    skipCondition: false,
+    ruleAnswerState: false,
     rulePath: '3.section.enableWhen.rule.answer',
     noAnswers: [4],
     error: 'answerRequiredMissing'
@@ -58,7 +58,7 @@ module.exports = [{ //enable when
     surveyIndex: 3,
     caseIndex: 2,
     questionIndex: 3,
-    skipCondition: true,
+    ruleAnswerState: true,
     noAnswers: [4],
     rulePath: '3.section.enableWhen.rule.answer',
     error: 'answerToBeSkippedAnswered'
@@ -74,14 +74,14 @@ module.exports = [{ //enable when
     caseIndex: 1,
     questionIndex: 5,
     noAnswers: [6],
-    skipCondition: true,
+    ruleAnswerState: true,
     rulePath: '5.section.enableWhen.rule.answer',
     error: 'answerRequiredMissing'
 }, {
     surveyIndex: 4,
     caseIndex: 2,
     questionIndex: 5,
-    skipCondition: false,
+    ruleAnswerState: false,
     rulePath: '5.section.enableWhen.rule.answer',
     error: 'answerToBeSkippedAnswered'
 }, {
@@ -96,14 +96,14 @@ module.exports = [{ //enable when
     caseIndex: 1,
     questionIndex: 3,
     noAnswers: [5],
-    skipCondition: true,
+    ruleAnswerState: true,
     rulePath: '3.section.enableWhen.rule.answer',
     error: 'answerRequiredMissing'
 }, {
     surveyIndex: 5,
     caseIndex: 2,
     questionIndex: 3,
-    skipCondition: false,
+    ruleAnswerState: false,
     noAnswers: [4],
     rulePath: '3.section.enableWhen.rule.answer',
     error: 'answerToBeSkippedAnswered'
