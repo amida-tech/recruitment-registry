@@ -43,24 +43,34 @@ const specialQuestionGenerator = {
         const question = surveyGenerator.questionGenerator.newQuestion(type);
         const questionIndex = index - relativeIndex;
         const enableWhen = { questionIndex, rule: { logic } };
-        //surveyGenerator.addAnswer(enableWhen.rule, questionInfo, question);
         question.enableWhen = enableWhen;
         return question;
     },
-    toEnableWhen(surveyGenerator, questionInfo, index) {
-        const { type, logic, count } = questionInfo;
-        const question = surveyGenerator.questionGenerator.newQuestion(type);
-        const skip = { rule: {} };
-        if (count !== undefined) {
-            skip.count = count;
-        }
-        skip.questionIndex = index;
+    questionSection(surveyGenerator, questionInfo) {
+        return surveyGenerator.questionGenerator.newQuestion(questionInfo.type);
+    }
+};
+
+const surveyManipulator = {
+    enableWhen(survey, questionInfo, generator) {
+        const questionIndex = questionInfo.questionIndex;
+        const question = survey.questions[questionIndex];
+        const sourceIndex = question.enableWhen.questionIndex;
+        generator.addAnswer(question.enableWhen.rule, question.enableWhen.rule, survey.questions[sourceIndex]);
+    },
+    questionSection(survey, questionInfo, generator) {
+        const { questionIndex, logic, count } = questionInfo;
+        const question = survey.questions[questionIndex];
+        const deletedQuestions = survey.questions.splice(questionIndex + 1, count);
+        const rule = {};
         if (logic !== undefined) {
-            skip.rule.logic = logic;
+            rule.logic = logic;
         }
-        surveyGenerator.addAnswer(skip.rule, questionInfo, question);
-        question.skip = skip;
-        return question;
+        generator.addAnswer(rule, questionInfo, question);
+        question.section = {
+            questions: deletedQuestions,
+            enableWhen: { questionIndex, rule }
+        };
     }
 };
 
@@ -170,27 +180,11 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
     newSurvey() {
         const survey = super.newSurvey({ noSection: true });
         const surveyIndex = this.currentIndex();
-        _.forOwn(conditionalQuestionMap[surveyIndex], (questionInfo, questionIndex) => {
-            if (questionInfo.purpose === 'type') {
-                return;
-            }
-
-            questionIndex = parseInt(questionIndex, 10);
-            const question = survey.questions[questionIndex];
-
-            if (question.skip) {
-                const skip = question.skip;
-                delete question.skip;
-                const deletedQuestions = survey.questions.splice(questionIndex + 1, skip.count);
-                delete skip.count;
-                question.section = {
-                    questions: deletedQuestions,
-                    enableWhen: skip
-                };
-            }
-            if (question.enableWhen) {
-                const sourceIndex = question.enableWhen.questionIndex;
-                this.addAnswer(question.enableWhen.rule, question.enableWhen.rule, survey.questions[sourceIndex]);
+        _.forOwn(conditionalQuestionMap[surveyIndex], questionInfo => {
+            const purpose = questionInfo.purpose;
+            const manipulator = surveyManipulator[purpose];
+            if (manipulator) {
+                manipulator(survey, questionInfo, this);
             }
         });
         return survey;

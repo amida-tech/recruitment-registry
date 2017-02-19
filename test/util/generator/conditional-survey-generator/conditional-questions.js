@@ -32,33 +32,33 @@ module.exports = [{
     type: 'choice',
     logic: 'not-equals',
     count: 3,
-    purpose: 'toEnableWhen'
+    purpose: 'questionSection'
 }, {
     surveyIndex: 4,
     questionIndex: 5,
     type: 'choice',
     logic: 'equals',
     count: 1,
-    purpose: 'toEnableWhen'
+    purpose: 'questionSection'
 }, {
     surveyIndex: 5,
     questionIndex: 3,
     type: 'bool',
     logic: 'equals',
     count: 2,
-    purpose: 'toEnableWhen'
+    purpose: 'questionSection'
 }, {
     surveyIndex: 6,
     questionIndex: 0,
     type: 'text',
     logic: 'not-exists',
     count: 1,
-    purpose: 'toEnableWhen'
+    purpose: 'questionSection'
 }, {
     surveyIndex: 7,
     questionIndex: 2,
     type: 'text',
     logic: 'exists',
     count: 2,
-    purpose: 'toEnableWhen'
+    purpose: 'questionSection'
 }];
