@@ -105,6 +105,17 @@ const formQuestionsSectionsSurveyPatch = function (survey, { questions, sections
     throw new Error('Surveys should have either sections or questions.');
 };
 
+const answersToSearchQuery = function (answers) {
+    const questions = answers.map(answer => {
+        return {
+            id: answer.questionId,
+            answer: answer.answer,
+            answers: answer.answers
+        }
+    });
+    return { questions };
+};
+
 const SpecTests = class SurveySpecTests {
     constructor(generator, hxSurvey) {
         this.generator = generator;
@@ -232,6 +243,7 @@ module.exports = {
     updateIds,
     removeSectionIds,
     formQuestionsSectionsSurveyPatch,
+    answersToSearchQuery,
     SpecTests,
     IntegrationTests
 };

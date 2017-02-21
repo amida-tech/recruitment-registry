@@ -18,8 +18,11 @@ const ProfileSurvey = db.ProfileSurvey;
 const AnswerRule = db.AnswerRule;
 const AnswerRuleValue = db.AnswerRuleValue;
 const Answer = db.Answer;
+const User = db.User;
 
 const surveyPatchInfoQuery = queryrize.readQuerySync('survey-patch-info.sql');
+const searchCountUsersQuery = queryrize.readQuerySync('search-count-users.sql');
+const searchCountUsersSubquery = queryrize.readQuerySync('search-count-users-subquery.sql');
 
 const translateRuleChoices = function (ruleParent, choices) {
     const choiceText = _.get(ruleParent, 'rule.answer.choiceText');
@@ -742,5 +745,35 @@ module.exports = class SurveyDAO extends Translatable {
                         });
                 });
             });
+    }
+
+    /**
+    * Search users by their survey answers. Returns a count of users only.
+    * @param {object} query questionId:value mapping to search users by
+    * @returns {integer}
+    */
+    searchCountUsers(id, criteria) {
+        // if criteria is empty, return count of all users
+        if (!criteria || !criteria.questions || !criteria.questions.length) { return User.count(); }
+
+        const sqReplacements = [];
+        for (let question of criteria.questions) {
+            this.answer.toDbAnswer(question.answer || question.answers).forEach(answer => {
+                sqReplacements.push({
+                    question_id: question.id,
+                    value: ('value' in answer) ? answer.value.toString() : null,
+                    question_choice_id: ('questionChoiceId' in answer) ? answer.questionChoiceId : null,
+                    multiple_index: ('multipleIndex' in answer) ? answer.multipleIndex : null,
+                    survey_id: id
+                });
+            });
+        }
+        const { query, replacements } = queryrize.addSubqueries(searchCountUsersQuery, searchCountUsersSubquery, ' AND ', sqReplacements);
+
+        return sequelize.query(query, {
+                replacements,
+                type: sequelize.QueryTypes.SELECT
+            })
+            .then(result => parseInt(result[0].count));
     }
 };

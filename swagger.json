@@ -344,6 +344,44 @@
                 }
             }
         },
+        "/surveys/{id}/search": {
+            "x-swagger-router-controller": "survey.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
+            "post": {
+                "summary": "Searches survey and returns count of matching users",
+                "operationId": "searchSurvey",
+                "security": [{
+                    "admin": []
+                },{
+
+                    "participant": []
+                }],
+                "parameters": [{
+                    "name": "query",
+                    "in": "body",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/surveyQuery"
+                    }
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response.",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                   "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
         "/surveys/text/{language}": {
             "x-swagger-router-controller": "survey.controller",
             "patch": {
@@ -3327,6 +3365,37 @@
                 "$ref": "#/definitions/surveyInfo"
             },
             "additionalProperties": false
+        },
+        "surveyQuery": {
+            "type": "object",
+            "required": ["questions"],
+            "properties": {
+                "questions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/surveyQuestionQuery"
+                    },
+                    "minItems": 1
+                }
+            }
+        },
+        "surveyQuestionQuery": {
+            "type": "object",
+            "required": ["id"],
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "answer": {
+                    "$ref": "#/definitions/answer"
+                },
+                "answers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/answer"
+                    }
+                }
+            }
         },
         "userSurveyInfo": {
             "type": "object",
