@@ -357,9 +357,6 @@
                 "operationId": "searchSurvey",
                 "security": [{
                     "admin": []
-                },{
-
-                    "participant": []
                 }],
                 "parameters": [{
                     "name": "query",
