@@ -763,7 +763,6 @@ module.exports = class SurveyDAO extends Translatable {
                     question_id: question.id,
                     value: ('value' in answer) ? answer.value.toString() : null,
                     question_choice_id: ('questionChoiceId' in answer) ? answer.questionChoiceId : null,
-                    multiple_index: ('multipleIndex' in answer) ? answer.multipleIndex : null,
                     survey_id: id
                 });
             });
