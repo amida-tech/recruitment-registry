@@ -114,10 +114,13 @@ module.exports = class SectionDAO extends Translatable {
                                     delete section.type;
                                     return r;
                                 }, {});
-                                answerRuleInfos.forEach(({ surveySectionId, ruleType, rule }) => {
+                                answerRuleInfos.forEach(({ surveySectionId, rule }) => {
                                     if (surveySectionId) {
                                         const section = map[surveySectionId];
-                                        section[ruleType] = rule;
+                                        if (!section.enableWhen) {
+                                            section.enableWhen = [];
+                                        }
+                                        section.enableWhen.push(rule);
                                     }
                                 });
                                 const innerQuestionSet = new Set();

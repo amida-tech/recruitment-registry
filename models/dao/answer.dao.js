@@ -156,57 +156,7 @@ const updateStatus = function (userId, surveyId, status, transaction) {
         });
 };
 
-const evaluateAnswerRule = function ({ count, rule: { logic, answer, selectionIds } }, questionAnswer) {
-    if (logic === 'exists') {
-        if (questionAnswer && (questionAnswer.answer || questionAnswer.answers)) {
-            return { multiple: false, indices: _.range(1, count + 1) };
-        }
-    }
-    if (logic === 'not-exists') {
-        if (!(questionAnswer && (questionAnswer.answer || questionAnswer.answers))) {
-            return { multiple: false, indices: _.range(1, count + 1) };
-        }
-    }
-    if (logic === 'equals') {
-        if (!questionAnswer) {
-            return { multiple: false, indices: _.range(1, count + 1) };
-        }
-
-        if (_.isEqual(answer, questionAnswer.answer)) {
-            return { multiple: false, indices: _.range(1, count + 1) };
-        }
-    }
-    if (logic === 'not-equals') {
-        if (!questionAnswer) {
-            return { multiple: false, indices: _.range(1, count + 1) };
-        }
-        if (!_.isEqual(answer, questionAnswer.answer)) {
-            return { multiple: false, indices: _.range(1, count + 1) };
-        }
-    }
-    if (logic === 'not-selected') {
-        const multiple = selectionIds.length > 1 && count === 1;
-        if (!(questionAnswer && questionAnswer.answer)) {
-            if (multiple) {
-                return { multiple, indices: _.range(0, selectionIds.length) };
-            } else {
-                return { multiple, indices: _.range(1, count + 1) };
-            }
-        }
-        const offset = multiple ? 0 : 1;
-        const ids = new Set(questionAnswer.answer.choices.map(choice => choice.id));
-        const indices = selectionIds.reduce((r, id, index) => {
-            if (!ids.has(id)) {
-                r.push(index + offset);
-            }
-            return r;
-        }, []);
-        return { multiple, maxCount: selectionIds.length, indices };
-    }
-    return { multiple: false, indices: [] };
-};
-
-const evaluateAnswerRule2 = function ({ rule: { logic, answer } }, questionAnswer) {
+const evaluateAnswerRule = function ({ rule: { logic, answer } }, questionAnswer) {
     if (logic === 'exists') {
         if (questionAnswer && (questionAnswer.answer || questionAnswer.answers)) {
             return true;
@@ -266,8 +216,8 @@ module.exports = class AnswerDAO {
             .then(surveyQuestions => {
                 const answersByQuestionId = _.keyBy(answers, 'questionId');
                 return this.answerRule.getQuestionExpandedSurveyAnswerRules(surveyId)
-                    .then(({ skipRulesByQuestionId, enableWhenRulesByQuestionId }) => {
-                        surveyQuestions.forEach((surveyQuestion, questionIndex) => {
+                    .then((enableWhenRulesByQuestionId) => {
+                        surveyQuestions.forEach((surveyQuestion) => {
                             const questionId = surveyQuestion.questionId;
                             const answer = answersByQuestionId[questionId];
                             const enableWhen = enableWhenRulesByQuestionId && enableWhenRulesByQuestionId[questionId];
@@ -275,7 +225,7 @@ module.exports = class AnswerDAO {
                                 const rule = enableWhen.rule;
                                 const sourceQuestionId = rule.questionId;
                                 const sourceAnswer = answersByQuestionId[sourceQuestionId];
-                                const enabled = evaluateAnswerRule2(enableWhen.rule, sourceAnswer);
+                                const enabled = evaluateAnswerRule(enableWhen.rule, sourceAnswer);
                                 if (!enabled) {
                                     surveyQuestion.ignore = true;
                                 }
@@ -312,19 +262,6 @@ module.exports = class AnswerDAO {
                                         if (!toBeIgnored.has(index) && !existing.has(index)) {
                                             throw new RRError('answerRequiredMissing');
                                         }
-                                    });
-                                }
-                            }
-                            const skip = skipRulesByQuestionId && skipRulesByQuestionId[questionId];
-                            if (skip) {
-                                const { multiple, indices, maxCount } = evaluateAnswerRule(skip.rule, answer);
-                                if (multiple) {
-                                    surveyQuestions[questionIndex + 1].ignoreIndices = indices;
-                                    surveyQuestions[questionIndex + 1].maxSelectionCount = maxCount;
-                                } else {
-                                    indices.forEach(skipIndex => {
-                                        const targetSurveyQuestion = surveyQuestions[questionIndex + skipIndex];
-                                        targetSurveyQuestion.ignore = true;
                                     });
                                 }
                             }

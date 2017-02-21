@@ -1,93 +1,112 @@
 'use strict';
 
-module.exports = [{ //enable when
-    surveyIndex: 11,
+module.exports = [{
+    surveyIndex: 0,
     caseIndex: 0,
-    questionIndex: 4,
-    skipCondition: false,
-    rulePath: '5.enableWhen.rule.answer',
+    specialAnswers: [{
+        type: 'differentrule',
+        questionIndex: 4,
+        ruleQuestionIndex: 5
+    }],
     noAnswers: []
-}, { //enable when
-    surveyIndex: 11,
+}, {
+    surveyIndex: 1,
+    caseIndex: 0,
+    specialAnswers: [{
+        type: 'differentrule',
+        questionIndex: 4,
+        ruleQuestionIndex: 5
+    }],
+    noAnswers: []
+}, {
+    surveyIndex: 1,
     caseIndex: 1,
-    questionIndex: 4,
-    skipCondition: true,
-    rulePath: '5.enableWhen.rule.answer',
+    specialAnswers: [{
+        type: 'samerule',
+        questionIndex: 4,
+        ruleQuestionIndex: 5
+    }],
     noAnswers: [5]
-}, { //enable when
-    surveyIndex: 12,
+}, {
+    surveyIndex: 2,
     caseIndex: 0,
-    questionIndex: 2,
-    skipCondition: false,
-    rulePath: '3.enableWhen.rule.answer',
+    specialAnswers: [{
+        type: 'differentrule',
+        questionIndex: 2,
+        ruleQuestionIndex: 3
+    }],
     noAnswers: [3]
-}, { //enable when
-    surveyIndex: 12,
+}, {
+    surveyIndex: 2,
     caseIndex: 1,
-    questionIndex: 2,
-    skipCondition: true,
-    rulePath: '3.enableWhen.rule.answer',
+    specialAnswers: [{
+        type: 'samerule',
+        questionIndex: 2,
+        ruleQuestionIndex: 3
+    }],
     noAnswers: []
-}, { // Skip equivalent
-    surveyIndex: 13,
+}, {
+    surveyIndex: 3,
     caseIndex: 0,
-    questionIndex: 3,
     noAnswers: [3, 4, 5, 6]
 }, {
-    surveyIndex: 13,
+    surveyIndex: 3,
     caseIndex: 1,
-    questionIndex: 3,
-    skipCondition: false,
-    rulePath: '3.section.enableWhen.rule.answer',
+    specialAnswers: [{
+        type: 'differentrulesection',
+        questionIndex: 3
+    }],
     noAnswers: [5]
 }, {
-    surveyIndex: 13,
+    surveyIndex: 3,
     caseIndex: 2,
-    questionIndex: 3,
-    skipCondition: true,
-    noAnswers: [4, 5, 6],
-    rulePath: '3.section.enableWhen.rule.answer'
+    specialAnswers: [{
+        type: 'samerulesection',
+        questionIndex: 3
+    }],
+    noAnswers: [4, 5, 6]
 }, {
-    surveyIndex: 14,
+    surveyIndex: 4,
     caseIndex: 0,
-    questionIndex: 5,
-    noAnswers: [],
-    skipCondition: true,
-    rulePath: '5.section.enableWhen.rule.answer'
+    specialAnswers: [{
+        type: 'samerulesection',
+        questionIndex: 5
+    }],
+    noAnswers: []
 }, {
-    surveyIndex: 14,
+    surveyIndex: 4,
     caseIndex: 1,
-    questionIndex: 5,
-    noAnswers: [6],
-    skipCondition: false,
-    rulePath: '5.section.enableWhen.rule.answer'
+    specialAnswers: [{
+        type: 'differentrulesection',
+        questionIndex: 5
+    }],
+    noAnswers: [6]
 }, {
-    surveyIndex: 15,
+    surveyIndex: 5,
     caseIndex: 0,
-    questionIndex: 3,
-    noAnswers: [4],
-    skipCondition: true,
-    rulePath: '3.section.enableWhen.rule.answer'
+    specialAnswers: [{
+        type: 'samerulesection',
+        questionIndex: 3
+    }],
+    noAnswers: [4]
 }, {
-    surveyIndex: 15,
+    surveyIndex: 5,
     caseIndex: 1,
-    questionIndex: 3,
-    skipCondition: false,
-    noAnswers: [4, 5],
-    rulePath: '3.section.enableWhen.rule.answer'
+    specialAnswers: [{
+        type: 'differentrulesection',
+        questionIndex: 3
+    }],
+    noAnswers: [4, 5]
 }, {
-    surveyIndex: 16,
+    surveyIndex: 6,
     caseIndex: 0,
-    questionIndex: 0,
     noAnswers: [1]
 }, {
-    surveyIndex: 17,
+    surveyIndex: 7,
     caseIndex: 0,
-    questionIndex: 2,
     noAnswers: [2, 3, 4]
 }, {
-    surveyIndex: 17,
+    surveyIndex: 7,
     caseIndex: 1,
-    questionIndex: 2,
     noAnswers: [3]
 }];

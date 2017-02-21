@@ -2725,46 +2725,6 @@
             "type": "object",
             "properties": {}
         },
-        "newSkipCondition": {
-            "type": "object",
-            "required": ["count", "rule"],
-            "properties": {
-                "count": {
-                    "type": "integer",
-                    "minimum": 1
-                },
-                "rule": {
-                    "type": "object",
-                    "required": ["logic"],
-                    "properties": {
-                        "logic": {
-                            "type": "string"
-                        },
-                        "answer": {
-                            "$ref": "#/definitions/newSkipAnswer"
-                        },
-                        "selectionIds": {
-                            "type": "array",
-                            "items": {
-                                "type": "integer",
-                                "minimum": 1
-                            },
-                            "minItems": 1
-                        },
-                        "selectionTexts": {
-                            "type": "array",
-                            "items": {
-                                "type": "string",
-                                "minLength": 1
-                            }
-                        }
-                    },
-                    "maxProperties": 2,
-                    "additionalProperties": false
-                }
-            },
-            "additionalProperties": false
-        },
         "newEnableWhenCondition": {
             "type": "object",
             "required": ["rule"],
@@ -2785,7 +2745,7 @@
                             "type": "string"
                         },
                         "answer": {
-                            "$ref": "#/definitions/newSkipAnswer"
+                            "$ref": "#/definitions/newEnableWhenAnswer"
                         },
                         "selectionIds": {
                             "type": "array",
@@ -2810,6 +2770,14 @@
             "maxProperties": 2,
             "additionalProperties": false
         },
+        "newEnableWhen": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/newEnableWhenCondition"
+            },
+            "maxItems": 1,
+            "minItems": 1
+        },
         "newSurveyQuestion": {
             "type": "object",
             "description": "Describes either a brand new question (no 'id') or an existing question ('id' only with 'required').",
@@ -2821,11 +2789,8 @@
                 "id": {
                     "type": "integer"
                 },
-                "skip": {
-                    "$ref": "#/definitions/newSkipCondition"
-                },
                 "enableWhen": {
-                    "$ref": "#/definitions/newEnableWhenCondition"
+                    "$ref": "#/definitions/newEnableWhen"
                 },
                 "text": {
                     "type": "string",
@@ -2903,7 +2868,7 @@
                     }
                 },
                 "enableWhen": {
-                    "$ref": "#/definitions/newEnableWhenCondition"
+                    "$ref": "#/definitions/newEnableWhen"
                 }
             },
             "maxProperties": 2,
@@ -2931,7 +2896,7 @@
                     }
                 },
                 "enableWhen": {
-                    "$ref": "#/definitions/enableWhenCondition"
+                    "$ref": "#/definitions/enableWhen"
                 }
             },
             "maxProperties": 3,
@@ -2996,42 +2961,13 @@
             },
             "additionalProperties": false
         },
-        "skipCondition": {
-            "type": "object",
-            "required": ["count", "rule"],
-            "properties": {
-                "count": {
-                    "type": "integer",
-                    "minimum": 1
-                },
-                "rule": {
-                    "type": "object",
-                    "required": ["id", "logic"],
-                    "properties": {
-                        "id": {
-                            "type": "integer",
-                            "minimum": 1
-                        },
-                        "logic": {
-                            "type": "string"
-                        },
-                        "answer": {
-                            "$ref": "#/definitions/answer"
-                        },
-                        "selectionIds": {
-                            "type": "array",
-                            "items": {
-                                "type": "integer",
-                                "minimum": 1
-                            },
-                            "minItems": 1
-                        }
-                    },
-                    "maxProperties": 3,
-                    "additionalProperties": false
-                }
+        "enableWhen": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/enableWhenCondition"
             },
-            "additionalProperties": false
+            "maxItems": 1,
+            "minItems": 1
         },
         "enableWhenCondition": {
             "type": "object",
@@ -3113,11 +3049,8 @@
                 "required": {
                     "type": "boolean"
                 },
-                "skip": {
-                    "$ref": "#/definitions/skipCondition"
-                },
                 "enableWhen": {
-                    "$ref": "#/definitions/enableWhenCondition"
+                    "$ref": "#/definitions/enableWhen"
                 },
                 "choices": {
                     "type": "array",
@@ -3540,7 +3473,7 @@
             "maxProperties": 2,
             "additionalProperties": false
         },
-         "newSkipChoicesItem": {
+         "newEnableWhenChoicesItem": {
             "type": "object",
             "properties": {
                 "text": {
@@ -3576,7 +3509,7 @@
             },
             "maxProperties": 2
         },
-        "newSkipAnswer": {
+        "newEnableWhenAnswer": {
             "type": "object",
             "properties": {
                 "choiceText": {
@@ -3588,7 +3521,7 @@
                 "choices": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/newSkipChoicesItem"
+                        "$ref": "#/definitions/newEnableWhenChoicesItem"
                     },
                     "minItems": 1
                 },

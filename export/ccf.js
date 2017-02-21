@@ -20,7 +20,12 @@ const exportSurveys = function () {
         })
         .then(surveys => {
             const ids = surveys.reduce((r, survey) => {
-                survey.questions.forEach(question => r.push(question.id));
+                survey.questions.forEach(question => {
+                    r.push(question.id);
+                    if (question.section) {
+                        question.section.questions.forEach(({ id }) => r.push(id));
+                    }
+                });
                 return r;
             }, []);
             return models.questionIdentifier.getInformationByQuestionId(identifierType, ids)
@@ -33,7 +38,8 @@ const exportSurveys = function () {
             let index = 0;
             const exportedQuestions = surveys.reduce((r, survey) => {
                 r.push({ number: survey.name });
-                survey.questions.forEach(question => {
+                const questions = models.survey.getQuestions(survey);
+                questions.forEach(question => {
                     ++index;
                     let line = {
                         number: index.toString(),
@@ -44,10 +50,10 @@ const exportSurveys = function () {
                     if (instruction) {
                         line.instruction = instruction;
                     }
-                    const skip = question.skip;
-                    if (skip) {
-                        line[cSkipCount] = skip.count;
-                        line[cConditional] = answerIdentifierMap[question.id + ':' + skip.rule.answer.choice].identifier;
+                    const section = question.section;
+                    if (section) {
+                        line[cSkipCount] = section.questions.length;
+                        line[cConditional] = answerIdentifierMap[question.id + ':' + section.enableWhen[0].rule.answer.choice].identifier;
                     }
                     const meta = question.meta;
                     if (meta) {

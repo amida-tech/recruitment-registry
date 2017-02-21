@@ -11,35 +11,38 @@ let choiceSetMap;
 
 const comparator = {
     enableWhen(client, server, options) {
-        if (client.enableWhen && client.enableWhen.rule && server.enableWhen && server.enableWhen.rule) {
-            if (client.enableWhen && (client.enableWhen.questionIndex !== undefined) && server.enableWhen && server.enableWhen.questionId) {
-                client.enableWhen.questionId = server.enableWhen.questionId;
-                delete client.enableWhen.questionIndex;
-            }
-            client.enableWhen.rule.id = server.enableWhen.rule.id;
-            const answer = client.enableWhen.rule.answer;
-            const question = options.serverQuestionMap[server.enableWhen.questionId];
-            if (answer && answer.choiceText) {
-                const enableWhenChoice = question.choices.find(choice => (choice.text === answer.choiceText));
-                answer.choice = enableWhenChoice.id;
-                delete answer.choiceText;
-            }
-            if (answer && answer.choices) {
-                answer.choices.forEach(answerChoice => {
-                    const enableWhenChoice = question.choices.find(choice => (choice.text === answerChoice.text));
-                    answerChoice.id = enableWhenChoice.id;
-                    delete answerChoice.text;
-                    if (Object.keys(answerChoice).length === 1) {
-                        answerChoice.boolValue = true;
-                    }
-                });
-                answer.choices = _.sortBy(answer.choices, 'id');
-            }
-            const selectionTexts = client.enableWhen.rule.selectionTexts;
-            if (selectionTexts) {
-                client.enableWhen.rule.selectionIds = selectionTexts.map(text => question.choices.find(choice => (choice.text === text)).id);
-                delete client.enableWhen.rule.selectionTexts;
-            }
+        if (client.enableWhen && server.enableWhen) {
+            client.enableWhen.forEach((clientRule, index) => {
+                const serverRule = server.enableWhen[index];
+                if ((clientRule.questionIndex !== undefined) && serverRule.questionId) {
+                    clientRule.questionId = serverRule.questionId;
+                    delete clientRule.questionIndex;
+                }
+                clientRule.rule.id = serverRule.rule.id;
+                const answer = clientRule.rule.answer;
+                const question = options.serverQuestionMap[serverRule.questionId];
+                if (answer && answer.choiceText) {
+                    const enableWhenChoice = question.choices.find(choice => (choice.text === answer.choiceText));
+                    answer.choice = enableWhenChoice.id;
+                    delete answer.choiceText;
+                }
+                if (answer && answer.choices) {
+                    answer.choices.forEach(answerChoice => {
+                        const enableWhenChoice = question.choices.find(choice => (choice.text === answerChoice.text));
+                        answerChoice.id = enableWhenChoice.id;
+                        delete answerChoice.text;
+                        if (Object.keys(answerChoice).length === 1) {
+                            answerChoice.boolValue = true;
+                        }
+                    });
+                    answer.choices = _.sortBy(answer.choices, 'id');
+                }
+                const selectionTexts = clientRule.rule.selectionTexts;
+                if (selectionTexts) {
+                    clientRule.rule.selectionIds = selectionTexts.map(text => question.choices.find(choice => (choice.text === text)).id);
+                    delete clientRule.rule.selectionTexts;
+                }
+            });
         }
     },
     question(client, server, options = {}) {
@@ -86,61 +89,7 @@ const comparator = {
             });
             expect(server.actions).to.deep.equal(expected.actions);
         }
-        if (expected.skip && expected.skip.rule && server.skip && server.skip.rule) {
-            expected.skip.rule.id = server.skip.rule.id;
-            const answer = expected.skip.rule.answer;
-            if (answer && answer.choiceText) {
-                const skipChoice = server.choices.find(choice => (choice.text === answer.choiceText));
-                answer.choice = skipChoice.id;
-                delete answer.choiceText;
-            }
-            if (answer && answer.choices) {
-                answer.choices.forEach(answerChoice => {
-                    const skipChoice = server.choices.find(choice => (choice.text === answerChoice.text));
-                    answerChoice.id = skipChoice.id;
-                    delete answerChoice.text;
-                    if (Object.keys(answerChoice).length === 1) {
-                        answerChoice.boolValue = true;
-                    }
-                });
-                answer.choices = _.sortBy(answer.choices, 'id');
-            }
-            const selectionTexts = expected.skip.rule.selectionTexts;
-            if (selectionTexts) {
-                expected.skip.rule.selectionIds = selectionTexts.map(text => server.choices.find(choice => (choice.text === text)).id);
-                delete expected.skip.rule.selectionTexts;
-            }
-        }
-        if (expected.enableWhen && (expected.enableWhen.questionIndex !== undefined) && server.enableWhen && server.enableWhen.questionId) {
-            expected.enableWhen.questionId = server.enableWhen.questionId;
-            delete expected.enableWhen.questionIndex;
-        }
-        if (expected.enableWhen && expected.enableWhen.rule && server.enableWhen && server.enableWhen.rule) {
-            expected.enableWhen.rule.id = server.enableWhen.rule.id;
-            const answer = expected.enableWhen.rule.answer;
-            if (answer && answer.choiceText) {
-                const sourceQuestion = options.serverQuestionMap[server.enableWhen.questionId];
-                const enableWhenChoice = sourceQuestion.choices.find(choice => (choice.text === answer.choiceText));
-                answer.choice = enableWhenChoice.id;
-                delete answer.choiceText;
-            }
-            if (answer && answer.choices) {
-                answer.choices.forEach(answerChoice => {
-                    const enableWhenChoice = server.choices.find(choice => (choice.text === answerChoice.text));
-                    answerChoice.id = enableWhenChoice.id;
-                    delete answerChoice.text;
-                    if (Object.keys(answerChoice).length === 1) {
-                        answerChoice.boolValue = true;
-                    }
-                });
-                answer.choices = _.sortBy(answer.choices, 'id');
-            }
-            const selectionTexts = expected.enableWhen.rule.selectionTexts;
-            if (selectionTexts) {
-                expected.enableWhen.rule.selectionIds = selectionTexts.map(text => server.choices.find(choice => (choice.text === text)).id);
-                delete expected.enableWhen.rule.selectionTexts;
-            }
-        }
+        this.enableWhen(expected, server, options);
         if (expected.section && server.section) {
             expected.section.id = server.section.id;
             this.enableWhen(expected.section, server.section, options);
@@ -268,17 +217,10 @@ const comparator = {
     },
     conditionalSurveyTwiceCreated(firstServer, secondServer) {
         secondServer.questions.forEach((question, index) => {
-            const ruleId = _.get(question, 'skip.rule.id');
+            const ruleId = _.get(question, 'enableWhen.0.rule.id');
             if (ruleId) {
-                const newRuleId = firstServer.questions[index].skip.rule.id;
-                question.skip.rule.id = newRuleId;
-            }
-        });
-        secondServer.questions.forEach((question, index) => {
-            const ruleId = _.get(question, 'enableWhen.rule.id');
-            if (ruleId) {
-                const newRuleId = firstServer.questions[index].enableWhen.rule.id;
-                question.enableWhen.rule.id = newRuleId;
+                const newRuleId = firstServer.questions[index].enableWhen[0].rule.id;
+                question.enableWhen[0].rule.id = newRuleId;
             }
         });
         secondServer.questions.forEach((question, index) => {
@@ -289,10 +231,10 @@ const comparator = {
             }
         });
         secondServer.questions.forEach((question, index) => {
-            const ruleId = _.get(question, 'section.enableWhen.rule.id');
+            const ruleId = _.get(question, 'section.enableWhen.0.rule.id');
             if (ruleId) {
-                const newRuleId = firstServer.questions[index].section.enableWhen.rule.id;
-                question.section.enableWhen.rule.id = newRuleId;
+                const newRuleId = firstServer.questions[index].section.enableWhen[0].rule.id;
+                question.section.enableWhen[0].rule.id = newRuleId;
             }
         });
         delete firstServer.sections;

@@ -15,7 +15,7 @@ module.exports = class AnswerRuleDAO {
 
     getSurveyAnswerRules(surveyId) {
         const where = { surveyId };
-        const attributes = ['id', 'logic', 'questionId', 'answerQuestionId', 'skipCount', 'surveySectionId'];
+        const attributes = ['id', 'logic', 'questionId', 'answerQuestionId', 'surveySectionId'];
         const include = [
             { model: Question, as: 'question', attributes: ['type'] },
             { model: Question, as: 'answerQuestion', attributes: ['type'] },
@@ -28,18 +28,13 @@ module.exports = class AnswerRuleDAO {
                 const rules = {};
                 const ruleIds = [];
                 const result = answerRules.map(answerRule => {
-                    const { id, logic, questionId, answerQuestionId, skipCount, surveySectionId } = answerRule;
-                    const ruleType = skipCount === null ? 'enableWhen' : 'skip';
-                    const questionType = skipCount === null ? answerRule['answerQuestion.type'] : answerRule['question.type'];
+                    const { id, logic, questionId, answerQuestionId, surveySectionId } = answerRule;
+                    const questionType = answerRule['answerQuestion.type'];
                     const rule = { rule: { id, logic }, type: questionType };
                     ruleIds.push(id);
                     rules[id] = rule;
-                    const ruleInfo = { questionId, surveySectionId, ruleType, rule };
-                    if (ruleType === 'skip') {
-                        ruleInfo.rule.count = skipCount;
-                    } else {
-                        ruleInfo.rule.questionId = answerQuestionId;
-                    }
+                    const ruleInfo = { questionId, surveySectionId, rule };
+                    ruleInfo.rule.questionId = answerQuestionId;
                     return ruleInfo;
                 });
                 return AnswerRuleValue.findAll({
@@ -123,11 +118,9 @@ module.exports = class AnswerRuleDAO {
                 }
             })
             .then(answerRules => {
-                const skipAnswerRuleInfos = answerRules.filter(answerRule => answerRule.ruleType === 'skip');
-                const skipRulesByQuestionId = _.keyBy(skipAnswerRuleInfos, 'questionId');
-                const enableWhenAnswerRuleInfos = answerRules.filter(answerRule => answerRule.questionId && (answerRule.ruleType === 'enableWhen'));
+                const enableWhenAnswerRuleInfos = answerRules.filter(answerRule => answerRule.questionId);
                 const enableWhenRulesByQuestionId = _.keyBy(enableWhenAnswerRuleInfos, 'questionId');
-                return { skipRulesByQuestionId, enableWhenRulesByQuestionId };
+                return enableWhenRulesByQuestionId;
             });
     }
 };

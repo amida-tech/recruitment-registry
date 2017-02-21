@@ -11,7 +11,25 @@ const requiredOverrides = require('./required-overrides');
 const errorAnswerSetup = require('./error-answer-setup');
 const passAnswerSetup = require('./pass-answer-setup');
 
-const counts = [8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, '8e', '8e' /**/ , '8e', '8e', '8e', '8e', '8e'];
+const counts = [8, 8, 8, 8, 8, 8, 8, 8];
+
+const conditionalQuestionMap = conditionalQuestions.reduce((r, questionInfo) => {
+    const surveyIndex = questionInfo.surveyIndex;
+    if (surveyIndex === undefined) {
+        throw new Error('No survey index specified');
+    }
+    let survey = r[surveyIndex];
+    if (!survey) {
+        survey = {};
+        r[surveyIndex] = survey;
+    }
+    const questionIndex = questionInfo.questionIndex;
+    if (questionIndex === undefined) {
+        throw new Error('No survey question index specified.');
+    }
+    survey[questionIndex] = questionInfo;
+    return r;
+}, {});
 
 const specialQuestionGenerator = {
     multipleSupport(surveyGenerator, questionInfo) {
@@ -20,43 +38,39 @@ const specialQuestionGenerator = {
     type(surveyGenerator, questionInfo) {
         return surveyGenerator.questionGenerator.newQuestion(questionInfo.type);
     },
-    skip(surveyGenerator, questionInfo) {
-        const { type, logic, count } = questionInfo;
-        const question = surveyGenerator.questionGenerator.newQuestion(type);
-        const skip = { rule: {} };
-        if (count !== undefined) {
-            skip.count = count;
-        }
-        if (logic !== undefined) {
-            skip.rule.logic = logic;
-        }
-        surveyGenerator.addAnswer(skip.rule, questionInfo, question);
-        question.skip = skip;
-        return question;
-    },
     enableWhen(surveyGenerator, questionInfo, index) {
         const { type, relativeIndex, logic } = questionInfo;
         const question = surveyGenerator.questionGenerator.newQuestion(type);
         const questionIndex = index - relativeIndex;
-        const enableWhen = { questionIndex, rule: { logic } };
-        //surveyGenerator.addAnswer(enableWhen.rule, questionInfo, question);
+        const enableWhen = [{ questionIndex, rule: { logic } }];
         question.enableWhen = enableWhen;
         return question;
     },
-    toEnableWhen(surveyGenerator, questionInfo, index) {
-        const { type, logic, count } = questionInfo;
-        const question = surveyGenerator.questionGenerator.newQuestion(type);
-        const skip = { rule: {} };
-        if (count !== undefined) {
-            skip.count = count;
-        }
-        skip.questionIndex = index;
+    questionSection(surveyGenerator, questionInfo) {
+        return surveyGenerator.questionGenerator.newQuestion(questionInfo.type);
+    }
+};
+
+const surveyManipulator = {
+    enableWhen(survey, questionInfo, generator) {
+        const questionIndex = questionInfo.questionIndex;
+        const question = survey.questions[questionIndex];
+        const sourceIndex = question.enableWhen[0].questionIndex;
+        generator.addAnswer(question.enableWhen[0].rule, question.enableWhen[0].rule, survey.questions[sourceIndex]);
+    },
+    questionSection(survey, questionInfo, generator) {
+        const { questionIndex, logic, count } = questionInfo;
+        const question = survey.questions[questionIndex];
+        const deletedQuestions = survey.questions.splice(questionIndex + 1, count);
+        const rule = {};
         if (logic !== undefined) {
-            skip.rule.logic = logic;
+            rule.logic = logic;
         }
-        surveyGenerator.addAnswer(skip.rule, questionInfo, question);
-        question.skip = skip;
-        return question;
+        generator.addAnswer(rule, questionInfo, question);
+        question.section = {
+            questions: deletedQuestions,
+            enableWhen: [{ questionIndex, rule }]
+        };
     }
 };
 
@@ -68,11 +82,7 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
 
     count() {
         const surveyIndex = this.currentIndex();
-        const count = counts[surveyIndex];
-        if ((typeof count) === 'string') {
-            return parseInt(count, 10);
-        }
-        return count;
+        return counts[surveyIndex];
     }
 
     numOfCases() {
@@ -94,27 +104,22 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
         }
     }
 
-    getConditionalQuestion(key) {
-        return conditionalQuestions[key];
-    }
-
     getRequiredOverride(key) {
         return requiredOverrides[key];
     }
 
     newSurveyQuestion(index) {
         const surveyIndex = this.currentIndex();
-        const key = `${surveyIndex}-${index}`;
-        const questionInfo = this.getConditionalQuestion(key);
+        const questionInfo = conditionalQuestionMap[surveyIndex][index];
         let question;
         if (questionInfo) {
-            const purpose = questionInfo.purpose || 'skip';
+            const purpose = questionInfo.purpose;
             question = specialQuestionGenerator[purpose](this, questionInfo, index);
             question.required = false;
         } else {
             question = super.newSurveyQuestion(index);
         }
-        const requiredOverride = this.getRequiredOverride(key);
+        const requiredOverride = this.getRequiredOverride(`${surveyIndex}-${index}`);
         if (requiredOverride !== undefined) {
             question.required = requiredOverride;
         }
@@ -129,31 +134,67 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
         return passAnswerSetup;
     }
 
-    answersWithConditions(survey, { questionIndex, rulePath, skipCondition, noAnswers, selectionChoice, multipleIndices }) {
+    answersWithConditions(survey, { questionIndex, rulePath, ruleAnswerState, selectionChoice, multipleIndices, noAnswers = [], specialAnswers = [] }) {
         const questions = models.survey.getQuestions(survey);
         const doNotAnswer = new Set(noAnswers);
-        rulePath = rulePath || `${questionIndex}.skip.rule.answer`;
-        const ruleAnswer = _.get(questions, rulePath);
+        const doAnswer = new Map(specialAnswers.map(r => [r.questionIndex, r]));
         const answers = questions.reduce((r, question, index) => {
             if (doNotAnswer.has(index)) {
                 return r;
             }
-            if (questionIndex === index) {
-                if (skipCondition === true) {
-                    const answer = { questionId: question.id, answer: ruleAnswer };
+            const specialAnswer = doAnswer.get(index);
+            if (specialAnswer) {
+                const type = specialAnswer.type;
+                if (type === 'samerule') {
+                    const ruleQuestion = questions[specialAnswer.ruleQuestionIndex];
+                    const enableWhen = ruleQuestion.enableWhen;
+                    const enableWhenAnswer = enableWhen[0].rule.answer;
+                    if (!enableWhenAnswer) {
+                        throw new Error('There should be an answer specified');
+                    }
+                    const answer = { questionId: question.id, answer: enableWhenAnswer };
                     r.push(answer);
                     return r;
                 }
-                if (skipCondition === false) {
+                if (type === 'differentrule') {
+                    const ruleQuestion = questions[specialAnswer.ruleQuestionIndex];
+                    const enableWhen = ruleQuestion.enableWhen;
+                    const enableWhenAnswer = enableWhen[0].rule.answer;
+                    if (!enableWhenAnswer) {
+                        throw new Error('There should be an answer specified');
+                    }
                     let answer = this.answerer.answerQuestion(question);
-                    if (_.isEqual(answer.answer, ruleAnswer)) {
+                    if (_.isEqual(answer.answer, enableWhenAnswer)) {
                         answer = this.answerer.answerQuestion(question);
                     }
                     r.push(answer);
                     return r;
                 }
-                if (selectionChoice) {
-                    const answer = this.answerer.answerChoicesQuestion(question, selectionChoice);
+                if (type === 'samerulesection') {
+                    const enableWhen = question.section.enableWhen;
+                    const enableWhenAnswer = enableWhen[0].rule.answer;
+                    if (!enableWhenAnswer) {
+                        throw new Error('There should be an answer specified');
+                    }
+                    const answer = { questionId: question.id, answer: enableWhenAnswer };
+                    r.push(answer);
+                    return r;
+                }
+                if (type === 'differentrulesection') {
+                    const enableWhen = question.section.enableWhen;
+                    const enableWhenAnswer = enableWhen[0].rule.answer;
+                    if (!enableWhenAnswer) {
+                        throw new Error('There should be an answer specified');
+                    }
+                    let answer = this.answerer.answerQuestion(question);
+                    if (_.isEqual(answer.answer, enableWhenAnswer)) {
+                        answer = this.answerer.answerQuestion(question);
+                    }
+                    r.push(answer);
+                    return r;
+                }
+                if (type === 'selectchoice') {
+                    const answer = this.answerer.answerChoicesQuestion(question, specialAnswer.selectionChoice);
                     r.push(answer);
                     return r;
                 }
@@ -175,49 +216,29 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
     newSurvey() {
         const survey = super.newSurvey({ noSection: true });
         const surveyIndex = this.currentIndex();
-        const surveyCount = counts[surveyIndex];
-        if ((typeof surveyCount) !== 'string') {
-            return survey;
-        }
-        const key = Object.keys(conditionalQuestions).find(key => parseInt(key, 10) === surveyIndex && conditionalQuestions[key].purpose !== 'type');
-
-        const questionIndex = parseInt(key.split('-')[1], 10);
-        const question = survey.questions[questionIndex];
-
-        if (question.skip) {
-            const skip = question.skip;
-            delete question.skip;
-            const deletedQuestions = survey.questions.splice(questionIndex + 1, skip.count);
-            delete skip.count;
-            question.section = {
-                questions: deletedQuestions,
-                enableWhen: skip
-            };
-        }
-        if (question.enableWhen) {
-            const sourceIndex = question.enableWhen.questionIndex;
-            this.addAnswer(question.enableWhen.rule, question.enableWhen.rule, survey.questions[sourceIndex]);
-        }
+        _.forOwn(conditionalQuestionMap[surveyIndex], questionInfo => {
+            const purpose = questionInfo.purpose;
+            const manipulator = surveyManipulator[purpose];
+            if (manipulator) {
+                manipulator(survey, questionInfo, this);
+            }
+        });
         return survey;
     }
 
     static newSurveyFromPrevious(clientSurvey, serverSurvey) {
-        const questions = serverSurvey.questions.map(({ id, required, skip, enableWhen, section }) => {
+        const questions = serverSurvey.questions.map(({ id, required, enableWhen, section }) => {
             const question = { id, required };
-            if (skip) {
-                question.skip = _.cloneDeep(skip);
-                delete question.skip.rule.id;
-            }
             if (enableWhen) {
                 question.enableWhen = _.cloneDeep(enableWhen);
-                delete question.enableWhen.rule.id;
+                delete question.enableWhen[0].rule.id;
             }
             if (section) {
                 question.section = _.cloneDeep(section);
                 delete question.section.id;
                 const enableWhen = question.section.enableWhen;
                 if (enableWhen) {
-                    delete enableWhen.rule.id;
+                    delete enableWhen[0].rule.id;
                 }
                 question.section.questions = question.section.questions.map(({ id, required }) => ({ id, required }));
             }

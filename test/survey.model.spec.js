@@ -130,7 +130,7 @@ describe('survey unit', function () {
 
     it('error: create survey without questions', function () {
         return models.survey.createSurvey({ name: 'name' })
-            .then(shared.throwingHandler, shared.expectedErrorHandler('surveyNoQuestions'));
+            .then(shared.throwingHandler, shared.expectedErrorHandler('surveyNeitherQuestionsSectionsSpecified'));
     });
 
     _.range(surveyCount).forEach(index => {
@@ -222,7 +222,7 @@ describe('survey unit', function () {
         delete replacementSurvey.questions;
         delete replacementSurvey.sections;
         return models.survey.replaceSurvey(survey.id, replacementSurvey)
-            .then(shared.throwingHandler, shared.expectedErrorHandler('surveyNoQuestions'));
+            .then(shared.throwingHandler, shared.expectedErrorHandler('surveyNeitherQuestionsSectionsSpecified'));
     });
 
     it('error: replace a non-existent survey', function () {

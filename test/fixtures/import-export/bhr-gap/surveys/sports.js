@@ -24,13 +24,13 @@ module.exports = {
             { text: 'Baseball', answerIdentifier: { type: 'sports-column', value: 'QID2_4' } },
             { text: 'Other', answerIdentifier: { type: 'sports-column', value: 'QID2_5' } }
         ],
-        skip: {
-            count: 1,
-            rule: {
-                logic: 'not-selected',
-                selectionTexts: ['Other']
-            }
-        }
+        //skip: {
+        //    count: 1,
+        //    rule: {
+        //        logic: 'not-selected',
+        //        selectionTexts: ['Other']
+        //    }
+        //}
     }, {
         text: 'Please indicate \'Other\' sport.',
         required: false,
@@ -53,12 +53,12 @@ module.exports = {
             { text: 'Soda', answerIdentifier: { type: 'sports-column', value: 'QID4_3' } },
             { text: 'Diet soda', answerIdentifier: { type: 'sports-column', value: 'QID4_4' } }
         ],
-        skip: {
-            count: 1,
-            rule: {
-                logic: 'each-not-selected'
-            }
-        }
+        //skip: {
+        //    count: 1,
+        //    rule: {
+        //        logic: 'each-not-selected'
+        //    }
+        //}
     }, {
         text: 'How many servings of each do you drink a a typical watch?',
         required: false,
