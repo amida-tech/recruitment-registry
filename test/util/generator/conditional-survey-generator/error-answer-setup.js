@@ -1,134 +1,142 @@
 'use strict';
 
-module.exports = [{ //enable when
+module.exports = [{
     surveyIndex: 0,
     caseIndex: 0,
-    questionIndex: 4,
-    ruleAnswerState: false,
-    rulePath: '5.enableWhen.rule.answer',
+    specialAnswers: [{
+        type: 'differentrule',
+        questionIndex: 4,
+        ruleQuestionIndex: 5
+    }],
     noAnswers: [5],
     error: 'answerRequiredMissing'
-}, { //enable when
+}, {
     surveyIndex: 1,
     caseIndex: 0,
-    questionIndex: 4,
-    ruleAnswerState: false,
-    rulePath: '5.enableWhen.rule.answer',
+    specialAnswers: [{
+        type: 'differentrule',
+        questionIndex: 4,
+        ruleQuestionIndex: 5
+    }],
     noAnswers: [5],
     error: 'answerRequiredMissing'
-}, { //enable when
+}, {
     surveyIndex: 1,
     caseIndex: 1,
     questionIndex: 4,
-    ruleAnswerState: true,
-    rulePath: '5.enableWhen.rule.answer',
+    specialAnswers: [{
+        type: 'samerule',
+        questionIndex: 4,
+        ruleQuestionIndex: 5
+    }],
     noAnswers: [],
     error: 'answerToBeSkippedAnswered'
-}, { //enable when
+}, {
     surveyIndex: 2,
     caseIndex: 0,
-    questionIndex: 2,
-    ruleAnswerState: true,
-    rulePath: '3.enableWhen.rule.answer',
+    specialAnswers: [{
+        type: 'samerule',
+        questionIndex: 2,
+        ruleQuestionIndex: 3
+    }],
     noAnswers: [3],
     error: 'answerRequiredMissing'
-}, { //enable when
+}, {
     surveyIndex: 2,
     caseIndex: 1,
-    questionIndex: 2,
-    ruleAnswerState: false,
-    rulePath: '3.enableWhen.rule.answer',
+    specialAnswers: [{
+        type: 'differentrule',
+        questionIndex: 2,
+        ruleQuestionIndex: 3
+    }],
     noAnswers: [],
     error: 'answerToBeSkippedAnswered'
-}, { // Skip equivalent
+}, {
     surveyIndex: 3,
     caseIndex: 0,
-    questionIndex: 3,
     noAnswers: [3, 6],
     error: 'answerToBeSkippedAnswered'
 }, {
     surveyIndex: 3,
     caseIndex: 1,
-    questionIndex: 3,
-    ruleAnswerState: false,
-    rulePath: '3.section.enableWhen.rule.answer',
+    specialAnswers: [{
+        type: 'differentrulesection',
+        questionIndex: 3
+    }],
     noAnswers: [4],
     error: 'answerRequiredMissing'
 }, {
     surveyIndex: 3,
     caseIndex: 2,
-    questionIndex: 3,
-    ruleAnswerState: true,
+    specialAnswers: [{
+        type: 'samerulesection',
+        questionIndex: 3
+    }],
     noAnswers: [4],
-    rulePath: '3.section.enableWhen.rule.answer',
     error: 'answerToBeSkippedAnswered'
 }, {
     surveyIndex: 4,
     caseIndex: 0,
-    questionIndex: 5,
     noAnswers: [5],
-    rulePath: '5.section.enableWhen.rule.answer',
     error: 'answerToBeSkippedAnswered'
 }, {
     surveyIndex: 4,
     caseIndex: 1,
-    questionIndex: 5,
+    specialAnswers: [{
+        type: 'samerulesection',
+        questionIndex: 5
+    }],
     noAnswers: [6],
-    ruleAnswerState: true,
-    rulePath: '5.section.enableWhen.rule.answer',
     error: 'answerRequiredMissing'
 }, {
     surveyIndex: 4,
     caseIndex: 2,
-    questionIndex: 5,
-    ruleAnswerState: false,
-    rulePath: '5.section.enableWhen.rule.answer',
+    specialAnswers: [{
+        type: 'differentrulesection',
+        questionIndex: 5
+    }],
     error: 'answerToBeSkippedAnswered'
 }, {
     surveyIndex: 5,
     caseIndex: 0,
-    questionIndex: 3,
     noAnswers: [3, 4],
-    rulePath: '3.section.enableWhen.rule.answer',
     error: 'answerToBeSkippedAnswered'
 }, {
     surveyIndex: 5,
     caseIndex: 1,
-    questionIndex: 3,
+    specialAnswers: [{
+        type: 'samerulesection',
+        questionIndex: 3
+    }],
     noAnswers: [5],
-    ruleAnswerState: true,
-    rulePath: '3.section.enableWhen.rule.answer',
     error: 'answerRequiredMissing'
 }, {
     surveyIndex: 5,
     caseIndex: 2,
-    questionIndex: 3,
-    ruleAnswerState: false,
+    specialAnswers: [{
+        type: 'differentrulesection',
+        questionIndex: 3
+    }],
     noAnswers: [4],
-    rulePath: '3.section.enableWhen.rule.answer',
     error: 'answerToBeSkippedAnswered'
 }, {
     surveyIndex: 6,
     caseIndex: 0,
-    questionIndex: 0,
     noAnswers: [0],
     error: 'answerRequiredMissing'
 }, {
     surveyIndex: 6,
     caseIndex: 1,
-    questionIndex: 0,
     noAnswers: [],
     error: 'answerToBeSkippedAnswered'
 }, {
     surveyIndex: 7,
     caseIndex: 0,
-    questionIndex: 2,
     noAnswers: [2],
     error: 'answerToBeSkippedAnswered'
 }, {
     surveyIndex: 7,
     caseIndex: 1,
-    questionIndex: 2,
     noAnswers: [4],
     error: 'answerRequiredMissing'
 }];

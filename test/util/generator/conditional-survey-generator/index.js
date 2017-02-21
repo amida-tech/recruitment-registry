@@ -113,7 +113,7 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
         const questionInfo = conditionalQuestionMap[surveyIndex][index];
         let question;
         if (questionInfo) {
-            const purpose = questionInfo.purpose || 'skip';
+            const purpose = questionInfo.purpose;
             question = specialQuestionGenerator[purpose](this, questionInfo, index);
             question.required = false;
         } else {
@@ -134,31 +134,67 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
         return passAnswerSetup;
     }
 
-    answersWithConditions(survey, { questionIndex, rulePath, ruleAnswerState, noAnswers, selectionChoice, multipleIndices }) {
+    answersWithConditions(survey, { questionIndex, rulePath, ruleAnswerState, selectionChoice, multipleIndices, noAnswers = [], specialAnswers = [] }) {
         const questions = models.survey.getQuestions(survey);
         const doNotAnswer = new Set(noAnswers);
-        rulePath = rulePath || `${questionIndex}.skip.rule.answer`;
-        const ruleAnswer = _.get(questions, rulePath);
+        const doAnswer = new Map(specialAnswers.map(r => [r.questionIndex, r]));
         const answers = questions.reduce((r, question, index) => {
             if (doNotAnswer.has(index)) {
                 return r;
             }
-            if (questionIndex === index) {
-                if (ruleAnswerState === true) {
-                    const answer = { questionId: question.id, answer: ruleAnswer };
+            const specialAnswer = doAnswer.get(index);
+            if (specialAnswer) {
+                const type = specialAnswer.type;
+                if (type === 'samerule') {
+                    const ruleQuestion = questions[specialAnswer.ruleQuestionIndex];
+                    const enableWhen = ruleQuestion.enableWhen;
+                    const enableWhenAnswer = enableWhen.rule.answer;
+                    if (!enableWhenAnswer) {
+                        throw new Error('There should be an answer specified');
+                    }
+                    const answer = { questionId: question.id, answer: enableWhenAnswer };
                     r.push(answer);
                     return r;
                 }
-                if (ruleAnswerState === false) {
+                if (type === 'differentrule') {
+                    const ruleQuestion = questions[specialAnswer.ruleQuestionIndex];
+                    const enableWhen = ruleQuestion.enableWhen;
+                    const enableWhenAnswer = enableWhen.rule.answer;
+                    if (!enableWhenAnswer) {
+                        throw new Error('There should be an answer specified');
+                    }
                     let answer = this.answerer.answerQuestion(question);
-                    if (_.isEqual(answer.answer, ruleAnswer)) {
+                    if (_.isEqual(answer.answer, enableWhenAnswer)) {
                         answer = this.answerer.answerQuestion(question);
                     }
                     r.push(answer);
                     return r;
                 }
-                if (selectionChoice) {
-                    const answer = this.answerer.answerChoicesQuestion(question, selectionChoice);
+                if (type === 'samerulesection') {
+                    const enableWhen = question.section.enableWhen;
+                    const enableWhenAnswer = enableWhen.rule.answer;
+                    if (!enableWhenAnswer) {
+                        throw new Error('There should be an answer specified');
+                    }
+                    const answer = { questionId: question.id, answer: enableWhenAnswer };
+                    r.push(answer);
+                    return r;
+                }
+                if (type === 'differentrulesection') {
+                    const enableWhen = question.section.enableWhen;
+                    const enableWhenAnswer = enableWhen.rule.answer;
+                    if (!enableWhenAnswer) {
+                        throw new Error('There should be an answer specified');
+                    }
+                    let answer = this.answerer.answerQuestion(question);
+                    if (_.isEqual(answer.answer, enableWhenAnswer)) {
+                        answer = this.answerer.answerQuestion(question);
+                    }
+                    r.push(answer);
+                    return r;
+                }
+                if (type === 'selectchoice') {
+                    const answer = this.answerer.answerChoicesQuestion(question, specialAnswer.selectionChoice);
                     r.push(answer);
                     return r;
                 }
