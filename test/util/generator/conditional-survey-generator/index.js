@@ -42,7 +42,7 @@ const specialQuestionGenerator = {
         const { type, relativeIndex, logic } = questionInfo;
         const question = surveyGenerator.questionGenerator.newQuestion(type);
         const questionIndex = index - relativeIndex;
-        const enableWhen = { questionIndex, rule: { logic } };
+        const enableWhen = [{ questionIndex, rule: { logic } }];
         question.enableWhen = enableWhen;
         return question;
     },
@@ -55,8 +55,8 @@ const surveyManipulator = {
     enableWhen(survey, questionInfo, generator) {
         const questionIndex = questionInfo.questionIndex;
         const question = survey.questions[questionIndex];
-        const sourceIndex = question.enableWhen.questionIndex;
-        generator.addAnswer(question.enableWhen.rule, question.enableWhen.rule, survey.questions[sourceIndex]);
+        const sourceIndex = question.enableWhen[0].questionIndex;
+        generator.addAnswer(question.enableWhen[0].rule, question.enableWhen[0].rule, survey.questions[sourceIndex]);
     },
     questionSection(survey, questionInfo, generator) {
         const { questionIndex, logic, count } = questionInfo;
@@ -69,7 +69,7 @@ const surveyManipulator = {
         generator.addAnswer(rule, questionInfo, question);
         question.section = {
             questions: deletedQuestions,
-            enableWhen: { questionIndex, rule }
+            enableWhen: [{ questionIndex, rule }]
         };
     }
 };
@@ -148,7 +148,7 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
                 if (type === 'samerule') {
                     const ruleQuestion = questions[specialAnswer.ruleQuestionIndex];
                     const enableWhen = ruleQuestion.enableWhen;
-                    const enableWhenAnswer = enableWhen.rule.answer;
+                    const enableWhenAnswer = enableWhen[0].rule.answer;
                     if (!enableWhenAnswer) {
                         throw new Error('There should be an answer specified');
                     }
@@ -159,7 +159,7 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
                 if (type === 'differentrule') {
                     const ruleQuestion = questions[specialAnswer.ruleQuestionIndex];
                     const enableWhen = ruleQuestion.enableWhen;
-                    const enableWhenAnswer = enableWhen.rule.answer;
+                    const enableWhenAnswer = enableWhen[0].rule.answer;
                     if (!enableWhenAnswer) {
                         throw new Error('There should be an answer specified');
                     }
@@ -172,7 +172,7 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
                 }
                 if (type === 'samerulesection') {
                     const enableWhen = question.section.enableWhen;
-                    const enableWhenAnswer = enableWhen.rule.answer;
+                    const enableWhenAnswer = enableWhen[0].rule.answer;
                     if (!enableWhenAnswer) {
                         throw new Error('There should be an answer specified');
                     }
@@ -182,7 +182,7 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
                 }
                 if (type === 'differentrulesection') {
                     const enableWhen = question.section.enableWhen;
-                    const enableWhenAnswer = enableWhen.rule.answer;
+                    const enableWhenAnswer = enableWhen[0].rule.answer;
                     if (!enableWhenAnswer) {
                         throw new Error('There should be an answer specified');
                     }
@@ -231,14 +231,14 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
             const question = { id, required };
             if (enableWhen) {
                 question.enableWhen = _.cloneDeep(enableWhen);
-                delete question.enableWhen.rule.id;
+                delete question.enableWhen[0].rule.id;
             }
             if (section) {
                 question.section = _.cloneDeep(section);
                 delete question.section.id;
                 const enableWhen = question.section.enableWhen;
                 if (enableWhen) {
-                    delete enableWhen.rule.id;
+                    delete enableWhen[0].rule.id;
                 }
                 question.section.questions = question.section.questions.map(({ id, required }) => ({ id, required }));
             }

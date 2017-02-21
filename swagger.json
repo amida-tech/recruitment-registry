@@ -2770,6 +2770,14 @@
             "maxProperties": 2,
             "additionalProperties": false
         },
+        "newEnableWhen": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/newEnableWhenCondition"
+            },
+            "maxItems": 1,
+            "minItems": 1
+        },
         "newSurveyQuestion": {
             "type": "object",
             "description": "Describes either a brand new question (no 'id') or an existing question ('id' only with 'required').",
@@ -2782,7 +2790,7 @@
                     "type": "integer"
                 },
                 "enableWhen": {
-                    "$ref": "#/definitions/newEnableWhenCondition"
+                    "$ref": "#/definitions/newEnableWhen"
                 },
                 "text": {
                     "type": "string",
@@ -2860,7 +2868,7 @@
                     }
                 },
                 "enableWhen": {
-                    "$ref": "#/definitions/newEnableWhenCondition"
+                    "$ref": "#/definitions/newEnableWhen"
                 }
             },
             "maxProperties": 2,
@@ -2888,7 +2896,7 @@
                     }
                 },
                 "enableWhen": {
-                    "$ref": "#/definitions/enableWhenCondition"
+                    "$ref": "#/definitions/enableWhen"
                 }
             },
             "maxProperties": 3,
@@ -2952,6 +2960,14 @@
                 }
             },
             "additionalProperties": false
+        },
+        "enableWhen": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/enableWhenCondition"
+            },
+            "maxItems": 1,
+            "minItems": 1
         },
         "enableWhenCondition": {
             "type": "object",
@@ -3034,7 +3050,7 @@
                     "type": "boolean"
                 },
                 "enableWhen": {
-                    "$ref": "#/definitions/enableWhenCondition"
+                    "$ref": "#/definitions/enableWhen"
                 },
                 "choices": {
                     "type": "array",

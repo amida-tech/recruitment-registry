@@ -53,7 +53,7 @@ const exportSurveys = function () {
                     const section = question.section;
                     if (section) {
                         line[cSkipCount] = section.questions.length;
-                        line[cConditional] = answerIdentifierMap[question.id + ':' + section.enableWhen.rule.answer.choice].identifier;
+                        line[cConditional] = answerIdentifierMap[question.id + ':' + section.enableWhen[0].rule.answer.choice].identifier;
                     }
                     const meta = question.meta;
                     if (meta) {

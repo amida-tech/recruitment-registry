@@ -29,12 +29,11 @@ module.exports = class AnswerRuleDAO {
                 const ruleIds = [];
                 const result = answerRules.map(answerRule => {
                     const { id, logic, questionId, answerQuestionId, surveySectionId } = answerRule;
-                    const ruleType = 'enableWhen';
                     const questionType = answerRule['answerQuestion.type'];
                     const rule = { rule: { id, logic }, type: questionType };
                     ruleIds.push(id);
                     rules[id] = rule;
-                    const ruleInfo = { questionId, surveySectionId, ruleType, rule };
+                    const ruleInfo = { questionId, surveySectionId, rule };
                     ruleInfo.rule.questionId = answerQuestionId;
                     return ruleInfo;
                 });
@@ -119,7 +118,7 @@ module.exports = class AnswerRuleDAO {
                 }
             })
             .then(answerRules => {
-                const enableWhenAnswerRuleInfos = answerRules.filter(answerRule => answerRule.questionId && (answerRule.ruleType === 'enableWhen'));
+                const enableWhenAnswerRuleInfos = answerRules.filter(answerRule => answerRule.questionId);
                 const enableWhenRulesByQuestionId = _.keyBy(enableWhenAnswerRuleInfos, 'questionId');
                 return enableWhenRulesByQuestionId;
             });

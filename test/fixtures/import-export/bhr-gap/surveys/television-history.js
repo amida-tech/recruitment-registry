@@ -23,13 +23,13 @@ module.exports = {
             answerIdentifier: { type: 'television-column', value: 'QID2' },
             choiceSetReference: 'yes-no-1-2',
             section: {
-                enableWhen: {
+                enableWhen: [{
                     questionIndex: 1,
                     rule: {
                         logic: 'equals',
                         answer: { code: '1' }
                     }
-                },
+                }],
                 questions: [{
                     text: 'Please list the other television brands you currently own.',
                     instruction: 'Television',
@@ -51,12 +51,12 @@ module.exports = {
                         type: 'television-column',
                         values: ['QID4_1_TEXT', 'QID4_2_TEXT', 'QID4_3_TEXT']
                     },
-                    enableWhen: {
+                    enableWhen: [{
                         questionIndex: 2,
                         rule: {
                             logic: 'exists'
                         }
-                    }
+                    }]
                 }]
             }
         }, {
@@ -75,13 +75,13 @@ module.exports = {
                 type: 'television-column',
                 values: ['QID6_1_TEXT', 'QID6_2_TEXT', 'QID6_3_TEXT']
             },
-            enableWhen: {
+            enableWhen: [{
                 questionIndex: 4,
                 rule: {
                     logic: 'equals',
                     answer: { code: '1' }
                 }
-            }
+            }]
         }]
     }, {
         name: 'How many hours do you spend watching the following sports:',
