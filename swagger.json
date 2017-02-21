@@ -2725,46 +2725,6 @@
             "type": "object",
             "properties": {}
         },
-        "newSkipCondition": {
-            "type": "object",
-            "required": ["count", "rule"],
-            "properties": {
-                "count": {
-                    "type": "integer",
-                    "minimum": 1
-                },
-                "rule": {
-                    "type": "object",
-                    "required": ["logic"],
-                    "properties": {
-                        "logic": {
-                            "type": "string"
-                        },
-                        "answer": {
-                            "$ref": "#/definitions/newSkipAnswer"
-                        },
-                        "selectionIds": {
-                            "type": "array",
-                            "items": {
-                                "type": "integer",
-                                "minimum": 1
-                            },
-                            "minItems": 1
-                        },
-                        "selectionTexts": {
-                            "type": "array",
-                            "items": {
-                                "type": "string",
-                                "minLength": 1
-                            }
-                        }
-                    },
-                    "maxProperties": 2,
-                    "additionalProperties": false
-                }
-            },
-            "additionalProperties": false
-        },
         "newEnableWhenCondition": {
             "type": "object",
             "required": ["rule"],
@@ -2785,7 +2745,7 @@
                             "type": "string"
                         },
                         "answer": {
-                            "$ref": "#/definitions/newSkipAnswer"
+                            "$ref": "#/definitions/newEnableWhenAnswer"
                         },
                         "selectionIds": {
                             "type": "array",
@@ -3497,7 +3457,7 @@
             "maxProperties": 2,
             "additionalProperties": false
         },
-         "newSkipChoicesItem": {
+         "newEnableWhenChoicesItem": {
             "type": "object",
             "properties": {
                 "text": {
@@ -3533,7 +3493,7 @@
             },
             "maxProperties": 2
         },
-        "newSkipAnswer": {
+        "newEnableWhenAnswer": {
             "type": "object",
             "properties": {
                 "choiceText": {
@@ -3545,7 +3505,7 @@
                 "choices": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/newSkipChoicesItem"
+                        "$ref": "#/definitions/newEnableWhenChoicesItem"
                     },
                     "minItems": 1
                 },

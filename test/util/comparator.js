@@ -243,13 +243,6 @@ const comparator = {
     },
     conditionalSurveyTwiceCreated(firstServer, secondServer) {
         secondServer.questions.forEach((question, index) => {
-            const ruleId = _.get(question, 'skip.rule.id');
-            if (ruleId) {
-                const newRuleId = firstServer.questions[index].skip.rule.id;
-                question.skip.rule.id = newRuleId;
-            }
-        });
-        secondServer.questions.forEach((question, index) => {
             const ruleId = _.get(question, 'enableWhen.rule.id');
             if (ruleId) {
                 const newRuleId = firstServer.questions[index].enableWhen.rule.id;
