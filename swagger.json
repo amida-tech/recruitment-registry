@@ -357,6 +357,8 @@
                 "operationId": "searchSurvey",
                 "security": [{
                     "admin": []
+                }, {
+                    "clinician": []
                 }],
                 "parameters": [{
                     "name": "query",
@@ -2647,6 +2649,11 @@
             "name": "Authorization"
         },
         "participant": {
+            "type": "apiKey",
+            "in": "header",
+            "name": "Authorization"
+        },
+        "clinician": {
             "type": "apiKey",
             "in": "header",
             "name": "Authorization"
