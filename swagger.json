@@ -2725,9 +2725,9 @@
             "type": "object",
             "properties": {}
         },
-        "newEnableWhenCondition": {
+        "newRule": {
             "type": "object",
-            "required": ["rule"],
+            "required": ["logic"],
             "properties": {
                 "questionIndex": {
                     "type": "integer",
@@ -2737,43 +2737,35 @@
                     "type": "integer",
                     "minimum": 1
                 },
-                "rule": {
-                    "type": "object",
-                    "required": ["logic"],
-                    "properties": {
-                        "logic": {
-                            "type": "string"
-                        },
-                        "answer": {
-                            "$ref": "#/definitions/newEnableWhenAnswer"
-                        },
-                        "selectionIds": {
-                            "type": "array",
-                            "items": {
-                                "type": "integer",
-                                "minimum": 1
-                            },
-                            "minItems": 1
-                        },
-                        "selectionTexts": {
-                            "type": "array",
-                            "items": {
-                                "type": "string",
-                                "minLength": 1
-                            }
-                        }
+                "logic": {
+                    "type": "string"
+                },
+                "answer": {
+                    "$ref": "#/definitions/newRuleAnswer"
+                },
+                "selectionIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer",
+                        "minimum": 1
                     },
-                    "maxProperties": 2,
-                    "additionalProperties": false
+                    "minItems": 1
+                },
+                "selectionTexts": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    }
                 }
             },
-            "maxProperties": 2,
+            "minProperties": 2,
             "additionalProperties": false
         },
         "newEnableWhen": {
             "type": "array",
             "items": {
-                "$ref": "#/definitions/newEnableWhenCondition"
+                "$ref": "#/definitions/newRule"
             },
             "maxItems": 1,
             "minItems": 1
@@ -2964,14 +2956,14 @@
         "enableWhen": {
             "type": "array",
             "items": {
-                "$ref": "#/definitions/enableWhenCondition"
+                "$ref": "#/definitions/rule"
             },
             "maxItems": 1,
             "minItems": 1
         },
-        "enableWhenCondition": {
+        "rule": {
             "type": "object",
-            "required": ["rule"],
+            "required": ["id", "logic"],
             "properties": {
                 "questionId": {
                     "type": "integer",
@@ -2980,35 +2972,26 @@
                 "questionIndex": {
                     "type": "integer"
                 },
-                "rule": {
-                    "type": "object",
-                    "required": ["id", "logic"],
-                    "properties": {
-                        "id": {
-                            "type": "integer",
-                            "minimum": 1
-                        },
-                        "logic": {
-                            "type": "string"
-                        },
-                        "answer": {
-                            "$ref": "#/definitions/answer"
-                        },
-                        "selectionIds": {
-                            "type": "array",
-                            "items": {
-                                "type": "integer",
-                                "minimum": 1
-                            },
-                            "minItems": 1
-                        }
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "logic": {
+                    "type": "string"
+                },
+                "answer": {
+                    "$ref": "#/definitions/answer"
+                },
+                "selectionIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer",
+                        "minimum": 1
                     },
-                    "maxProperties": 3,
-                    "additionalProperties": false
+                    "minItems": 1
                 }
             },
-            "additionalProperties": false,
-            "maxProperties": 2
+            "additionalProperties": false
         },
         "surveyQuestion": {
             "type": "object",
@@ -3467,7 +3450,7 @@
             "maxProperties": 2,
             "additionalProperties": false
         },
-         "newEnableWhenChoicesItem": {
+         "newRuleChoicesItem": {
             "type": "object",
             "properties": {
                 "text": {
@@ -3500,7 +3483,7 @@
             },
             "maxProperties": 2
         },
-        "newEnableWhenAnswer": {
+        "newRuleAnswer": {
             "type": "object",
             "properties": {
                 "choiceText": {
@@ -3512,7 +3495,7 @@
                 "choices": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/newEnableWhenChoicesItem"
+                        "$ref": "#/definitions/newRuleChoicesItem"
                     },
                     "minItems": 1
                 },

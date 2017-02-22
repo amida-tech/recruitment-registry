@@ -153,7 +153,7 @@ const updateStatus = function (userId, surveyId, status, transaction) {
         });
 };
 
-const evaluateAnswerRule = function ({ rule: { logic, answer } }, questionAnswer) {
+const evaluateAnswerRule = function ({ logic, answer }, questionAnswer) {
     if (logic === 'exists') {
         if (questionAnswer && (questionAnswer.answer || questionAnswer.answers)) {
             return true;
