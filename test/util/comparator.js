@@ -37,6 +37,13 @@ const comparator = {
                     });
                     answer.choices = _.sortBy(answer.choices, 'id');
                 }
+                if (answer && (answer.code !== undefined)) {
+                    const questionId = serverRule.questionId;
+                    const question = options.serverQuestionMap[questionId];
+                    const choice = question.choices.find(choice => (choice.code === answer.code));
+                    answer.choice = choice.id;
+                    delete answer.code;
+                }
                 const selectionTexts = clientRule.rule.selectionTexts;
                 if (selectionTexts) {
                     clientRule.rule.selectionIds = selectionTexts.map(text => question.choices.find(choice => (choice.text === text)).id);

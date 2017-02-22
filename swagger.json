@@ -3366,9 +3366,6 @@
                 "integerValue": {
                     "type": "integer"
                 },
-                "code": {
-                    "type": "string"
-                },
                 "floatValue": {
                     "type": "number"
                 },
@@ -3423,9 +3420,6 @@
                 },
                 "integerValue": {
                     "type": "integer"
-                },
-                "code": {
-                    "type": "string"
                 },
                 "floatValue": {
                     "type": "number"
@@ -3488,9 +3482,6 @@
                 "integerValue": {
                     "type": "integer"
                 },
-                "code": {
-                    "type": "string"
-                },
                 "textValue": {
                     "type": "string"
                 },
@@ -3540,9 +3531,6 @@
                 },
                 "integerValue": {
                     "type": "integer"
-                },
-                "code": {
-                    "type": "string"
                 },
                 "feetInchesValue": {
                     "type": "object",

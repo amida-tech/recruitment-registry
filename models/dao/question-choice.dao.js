@@ -4,10 +4,14 @@ const db = require('../db');
 const sequelize = db.sequelize;
 
 const SPromise = require('../../lib/promise');
+const queryrize = require('../../lib/queryrize');
+const RRError = require('../../lib/rr-error');
 
 const Translatable = require('./translatable');
 
 const QuestionChoice = db.QuestionChoice;
+
+const idFromCodeQuery = queryrize.readQuerySync('question-choice-id-from-code.sql');
 
 module.exports = class QuestionChoiceDAO extends Translatable {
     constructor() {
@@ -93,5 +97,19 @@ module.exports = class QuestionChoiceDAO extends Translatable {
 
     deleteQuestionChoice(id) {
         return QuestionChoice.destroy({ where: { id } });
+    }
+
+    findQuestionChoiceIdForCode(questionId, code, transaction) {
+        return sequelize.query(idFromCodeQuery, {
+                type: sequelize.QueryTypes.SELECT,
+                replacements: { question_id: questionId, code },
+                transaction
+            })
+            .then(result => {
+                if (result && result.length) {
+                    return result[0].id;
+                }
+                return RRError.reject('questionChoiceCodeNotFound');
+            });
     }
 };

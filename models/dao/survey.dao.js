@@ -193,6 +193,18 @@ module.exports = class SurveyDAO extends Translatable {
                 answerRule.answerQuestionId = question.enableWhen[0].questionId;
                 return AnswerRule.create(answerRule, { transaction })
                     .then(({ id }) => {
+                        let code = rule.answer && rule.answer.code;
+                        if ((code !== null) && (code !== undefined)) {
+                            return this.questionChoice.findQuestionChoiceIdForCode(answerRule.answerQuestionId, code, transaction)
+                                .then((choiceId) => {
+                                    rule.answer.choice = choiceId;
+                                    delete rule.answer.code;
+                                    return { id };
+                                });
+                        }
+                        return ({ id });
+                    })
+                    .then(({ id }) => {
                         question.enableWhen[0].ruleId = id;
                         return this.createRuleAnswerValue(question.enableWhen[0], transaction);
                     });
@@ -213,6 +225,18 @@ module.exports = class SurveyDAO extends Translatable {
                 const answerRule = { surveyId, surveySectionId, logic: rule.logic };
                 answerRule.answerQuestionId = section.enableWhen[0].questionId;
                 return AnswerRule.create(answerRule, { transaction })
+                    .then(({ id }) => {
+                        let code = rule.answer && rule.answer.code;
+                        if ((code !== null) && (code !== undefined)) {
+                            return this.questionChoice.findQuestionChoiceIdForCode(answerRule.answerQuestionId, code, transaction)
+                                .then((choiceId) => {
+                                    rule.answer.choice = choiceId;
+                                    delete rule.answer.code;
+                                    return { id };
+                                });
+                        }
+                        return ({ id });
+                    })
                     .then(({ id }) => {
                         section.enableWhen[0].ruleId = id;
                         return this.createRuleAnswerValue(section.enableWhen[0], transaction);
