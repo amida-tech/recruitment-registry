@@ -30,7 +30,7 @@ module.exports = class AnswerRuleDAO {
                 const result = answerRules.map(answerRule => {
                     const { id, logic, questionId, answerQuestionId, surveySectionId } = answerRule;
                     const questionType = answerRule['answerQuestion.type'];
-                    const rule = { rule: { id, logic }, type: questionType };
+                    const rule = { id, logic, type: questionType };
                     ruleIds.push(id);
                     rules[id] = rule;
                     const ruleInfo = { questionId, surveySectionId, rule };
@@ -55,12 +55,8 @@ module.exports = class AnswerRuleDAO {
                             ruleIds.forEach(ruleId => {
                                 const entries = groupedResult[ruleId];
                                 if (entries) {
-                                    const { rule, type } = rules[ruleId];
-                                    if (rule.logic === 'not-selected') {
-                                        rule.selectionIds = entries.map(entry => entry.questionChoiceId);
-                                    } else {
-                                        rule.answer = answerCommon.generateAnswer(type, entries);
-                                    }
+                                    const rule = rules[ruleId];
+                                    rule.answer = answerCommon.generateAnswer(rule.type, entries);
                                 }
                             });
                         }

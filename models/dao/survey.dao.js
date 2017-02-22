@@ -22,10 +22,9 @@ const Answer = db.Answer;
 const surveyPatchInfoQuery = queryrize.readQuerySync('survey-patch-info.sql');
 
 const translateRuleChoices = function (ruleParent, choices) {
-    const choiceText = _.get(ruleParent, 'rule.answer.choiceText');
-    const rawChoices = _.get(ruleParent, 'rule.answer.choices');
-    const selectionTexts = _.get(ruleParent, 'rule.selectionTexts');
-    if (choiceText || rawChoices || selectionTexts) {
+    const choiceText = _.get(ruleParent, 'answer.choiceText');
+    const rawChoices = _.get(ruleParent, 'answer.choices');
+    if (choiceText || rawChoices) {
         if (!choices) {
             return RRError.reject('surveySkipChoiceForNonChoice');
         }
@@ -34,29 +33,18 @@ const translateRuleChoices = function (ruleParent, choices) {
             if (!serverChoice) {
                 return RRError.reject('surveySkipChoiceNotFound');
             }
-            ruleParent.rule.answer.choice = serverChoice.id;
-            delete ruleParent.rule.answer.choiceText;
+            ruleParent.answer.choice = serverChoice.id;
+            delete ruleParent.answer.choiceText;
         }
         if (rawChoices) {
-            ruleParent.rule.answer.choices.forEach(ruleParentChoice => {
+            ruleParent.answer.choices.forEach(ruleParentChoice => {
                 const serverChoice = choices.find(choice => choice.text === ruleParentChoice.text);
                 if (!serverChoice) {
                     throw new RRError('surveySkipChoiceNotFound');
                 }
                 ruleParentChoice.id = serverChoice.id;
             });
-            ruleParent.rule.answer.choices.forEach(ruleParentChoice => delete ruleParentChoice.text);
-        }
-        if (selectionTexts) {
-            const selectionIds = selectionTexts.map(text => {
-                const serverChoice = choices.find(choice => choice.text === text);
-                if (!serverChoice) {
-                    throw new RRError('surveySkipChoiceNotFound');
-                }
-                return serverChoice.id;
-            });
-            ruleParent.rule.selectionIds = selectionIds;
-            delete ruleParent.rule.selectionTexts;
+            ruleParent.answer.choices.forEach(ruleParentChoice => delete ruleParentChoice.text);
         }
         return ruleParent;
     }
@@ -136,7 +124,7 @@ module.exports = class SurveyDAO extends Translatable {
         if (!ruleParent) {
             return null;
         }
-        const rule = ruleParent.rule;
+        const rule = ruleParent;
         const ruleId = ruleParent.ruleId;
         if (rule.answer) {
             let dbAnswers = this.answer.toDbAnswer(rule.answer);
@@ -144,12 +132,6 @@ module.exports = class SurveyDAO extends Translatable {
                 questionChoiceId = questionChoiceId || null;
                 value = (value !== undefined ? value : null);
                 return AnswerRuleValue.create({ ruleId, questionChoiceId, value }, { transaction });
-            });
-            return SPromise.all(pxs);
-        }
-        if (rule.selectionIds) {
-            const pxs = rule.selectionIds.map(questionChoiceId => {
-                return AnswerRuleValue.create({ ruleId, questionChoiceId }, { transaction });
             });
             return SPromise.all(pxs);
         }
@@ -185,13 +167,25 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     createRulesForQuestions(surveyId, questions, transaction) {
-        const questionsWithRule = questions.filter(question => question.enableWhen && question.enableWhen[0].rule);
+        const questionsWithRule = questions.filter(question => question.enableWhen);
         if (questionsWithRule.length) {
             const promises = questionsWithRule.map(question => {
-                const rule = question.enableWhen[0].rule;
+                const rule = question.enableWhen[0];
                 const answerRule = { surveyId, questionId: question.id, logic: rule.logic };
                 answerRule.answerQuestionId = question.enableWhen[0].questionId;
                 return AnswerRule.create(answerRule, { transaction })
+                    .then(({ id }) => {
+                        let code = rule.answer && rule.answer.code;
+                        if ((code !== null) && (code !== undefined)) {
+                            return this.questionChoice.findQuestionChoiceIdForCode(answerRule.answerQuestionId, code, transaction)
+                                .then((choiceId) => {
+                                    rule.answer.choice = choiceId;
+                                    delete rule.answer.code;
+                                    return { id };
+                                });
+                        }
+                        return ({ id });
+                    })
                     .then(({ id }) => {
                         question.enableWhen[0].ruleId = id;
                         return this.createRuleAnswerValue(question.enableWhen[0], transaction);
@@ -204,15 +198,27 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     createRulesForSections(surveyId, sections, sectionIds, transaction) {
-        const sectionsWithRule = _.range(sections.length).filter(index => sections[index].enableWhen && sections[index].enableWhen[0].rule);
+        const sectionsWithRule = _.range(sections.length).filter(index => sections[index].enableWhen);
         if (sectionsWithRule.length) {
             const promises = sectionsWithRule.map(index => {
                 const section = sections[index];
                 const surveySectionId = sectionIds[index];
-                const rule = section.enableWhen[0].rule;
+                const rule = section.enableWhen[0];
                 const answerRule = { surveyId, surveySectionId, logic: rule.logic };
                 answerRule.answerQuestionId = section.enableWhen[0].questionId;
                 return AnswerRule.create(answerRule, { transaction })
+                    .then(({ id }) => {
+                        let code = rule.answer && rule.answer.code;
+                        if ((code !== null) && (code !== undefined)) {
+                            return this.questionChoice.findQuestionChoiceIdForCode(answerRule.answerQuestionId, code, transaction)
+                                .then((choiceId) => {
+                                    rule.answer.choice = choiceId;
+                                    delete rule.answer.code;
+                                    return { id };
+                                });
+                        }
+                        return ({ id });
+                    })
                     .then(({ id }) => {
                         section.enableWhen[0].ruleId = id;
                         return this.createRuleAnswerValue(section.enableWhen[0], transaction);
@@ -767,15 +773,12 @@ module.exports = class SurveyDAO extends Translatable {
                         required: record.required
                     };
                     if (record.skipCount) {
-                        const rule = { logic: 'not-equals' };
                         skip = record.skipCount;
-                        rule.answer = {
-                            choice: choicesIdMap[record.skipValue]
-                        };
                         question.section = {
                             enableWhen: [{
                                 questionId: questionIdMap[record.questionId],
-                                rule
+                                answer: { choice: choicesIdMap[record.skipValue] },
+                                logic: 'not-equals'
                             }],
                             questions: []
                         };

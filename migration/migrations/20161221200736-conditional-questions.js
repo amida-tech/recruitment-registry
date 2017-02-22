@@ -142,9 +142,7 @@ module.exports = {
             .then(() => sequelize.query('INSERT INTO answer_rule_logic (name) VALUES (\'equals\')'))
             .then(() => sequelize.query('INSERT INTO answer_rule_logic (name) VALUES (\'exists\')'))
             .then(() => sequelize.query('INSERT INTO answer_rule_logic (name) VALUES (\'not-equals\')'))
-            .then(() => sequelize.query('INSERT INTO answer_rule_logic (name) VALUES (\'not-exists\')'))
-            .then(() => sequelize.query('INSERT INTO answer_rule_logic (name) VALUES (\'not-selected\')'))
-            .then(() => sequelize.query('INSERT INTO answer_rule_logic (name) VALUES (\'each-not-selected\')'));
+            .then(() => sequelize.query('INSERT INTO answer_rule_logic (name) VALUES (\'not-exists\')'));
     },
     down: function (queryInterface) {
         return queryInterface.dropTable('answer_rule_value')

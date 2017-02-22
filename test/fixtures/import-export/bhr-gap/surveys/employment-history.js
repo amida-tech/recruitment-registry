@@ -25,10 +25,8 @@ module.exports = {
         answerIdentifier: { type: 'employment-history', value: 'QID3' },
         enableWhen: [{
             questionIndex: 1,
-            rule: {
-                logic: 'not-equals',
-                answer: { code: '20' }
-            }
+            logic: 'not-equals',
+            answer: { code: '20' }
         }]
     }, {
         text: 'Please indicate your role in your current job',

@@ -25,10 +25,8 @@ module.exports = {
             section: {
                 enableWhen: [{
                     questionIndex: 1,
-                    rule: {
-                        logic: 'equals',
-                        answer: { code: '1' }
-                    }
+                    logic: 'equals',
+                    answer: { code: '1' }
                 }],
                 questions: [{
                     text: 'Please list the other television brands you currently own.',
@@ -53,9 +51,7 @@ module.exports = {
                     },
                     enableWhen: [{
                         questionIndex: 2,
-                        rule: {
-                            logic: 'exists'
-                        }
+                        logic: 'exists'
                     }]
                 }]
             }
@@ -77,10 +73,8 @@ module.exports = {
             },
             enableWhen: [{
                 questionIndex: 4,
-                rule: {
-                    logic: 'equals',
-                    answer: { code: '1' }
-                }
+                logic: 'equals',
+                answer: { code: '1' }
             }]
         }]
     }, {

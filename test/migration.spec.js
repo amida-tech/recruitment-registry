@@ -136,7 +136,7 @@ describe('migration spec', function () {
             return db.sequelize.Promise.all(pxs);
         });
 
-        ['answer_type', 'survey_status', 'question_type'].forEach(tableName => {
+        ['answer_type', 'survey_status', 'question_type', 'answer_rule_logic'].forEach(tableName => {
             it(`compare ${tableName} records`, function () {
                 return checkBootstrapData(tableName);
             });

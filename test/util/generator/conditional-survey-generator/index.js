@@ -42,7 +42,7 @@ const specialQuestionGenerator = {
         const { type, relativeIndex, logic } = questionInfo;
         const question = surveyGenerator.questionGenerator.newQuestion(type);
         const questionIndex = index - relativeIndex;
-        const enableWhen = [{ questionIndex, rule: { logic } }];
+        const enableWhen = [{ questionIndex, logic }];
         question.enableWhen = enableWhen;
         return question;
     },
@@ -56,20 +56,17 @@ const surveyManipulator = {
         const questionIndex = questionInfo.questionIndex;
         const question = survey.questions[questionIndex];
         const sourceIndex = question.enableWhen[0].questionIndex;
-        generator.addAnswer(question.enableWhen[0].rule, question.enableWhen[0].rule, survey.questions[sourceIndex]);
+        generator.addAnswer(question.enableWhen[0], question.enableWhen[0], survey.questions[sourceIndex]);
     },
     questionSection(survey, questionInfo, generator) {
         const { questionIndex, logic, count } = questionInfo;
         const question = survey.questions[questionIndex];
         const deletedQuestions = survey.questions.splice(questionIndex + 1, count);
-        const rule = {};
-        if (logic !== undefined) {
-            rule.logic = logic;
-        }
+        const rule = { questionIndex, logic };
         generator.addAnswer(rule, questionInfo, question);
         question.section = {
             questions: deletedQuestions,
-            enableWhen: [{ questionIndex, rule }]
+            enableWhen: [rule]
         };
     }
 };
@@ -93,14 +90,6 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
         const logic = questionInfo.logic;
         if (logic === 'equals' || logic === 'not-equals') {
             rule.answer = this.answerer.answerRawQuestion(question);
-        }
-        if (logic === 'not-selected') {
-            const choices = question.choices;
-            const selectionCount = questionInfo.selectionCount;
-            rule.selectionTexts = _.range(choices.length - selectionCount, choices.length).map(index => choices[index].text);
-        }
-        if (logic === 'each-not-selected') {
-            question.choices = question.choices.slice(0, 4);
         }
     }
 
@@ -148,7 +137,7 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
                 if (type === 'samerule') {
                     const ruleQuestion = questions[specialAnswer.ruleQuestionIndex];
                     const enableWhen = ruleQuestion.enableWhen;
-                    const enableWhenAnswer = enableWhen[0].rule.answer;
+                    const enableWhenAnswer = enableWhen[0].answer;
                     if (!enableWhenAnswer) {
                         throw new Error('There should be an answer specified');
                     }
@@ -159,7 +148,7 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
                 if (type === 'differentrule') {
                     const ruleQuestion = questions[specialAnswer.ruleQuestionIndex];
                     const enableWhen = ruleQuestion.enableWhen;
-                    const enableWhenAnswer = enableWhen[0].rule.answer;
+                    const enableWhenAnswer = enableWhen[0].answer;
                     if (!enableWhenAnswer) {
                         throw new Error('There should be an answer specified');
                     }
@@ -172,7 +161,7 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
                 }
                 if (type === 'samerulesection') {
                     const enableWhen = question.section.enableWhen;
-                    const enableWhenAnswer = enableWhen[0].rule.answer;
+                    const enableWhenAnswer = enableWhen[0].answer;
                     if (!enableWhenAnswer) {
                         throw new Error('There should be an answer specified');
                     }
@@ -182,7 +171,7 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
                 }
                 if (type === 'differentrulesection') {
                     const enableWhen = question.section.enableWhen;
-                    const enableWhenAnswer = enableWhen[0].rule.answer;
+                    const enableWhenAnswer = enableWhen[0].answer;
                     if (!enableWhenAnswer) {
                         throw new Error('There should be an answer specified');
                     }
@@ -231,14 +220,14 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
             const question = { id, required };
             if (enableWhen) {
                 question.enableWhen = _.cloneDeep(enableWhen);
-                delete question.enableWhen[0].rule.id;
+                delete question.enableWhen[0].id;
             }
             if (section) {
                 question.section = _.cloneDeep(section);
                 delete question.section.id;
                 const enableWhen = question.section.enableWhen;
                 if (enableWhen) {
-                    delete enableWhen[0].rule.id;
+                    delete enableWhen[0].id;
                 }
                 question.section.questions = question.section.questions.map(({ id, required }) => ({ id, required }));
             }

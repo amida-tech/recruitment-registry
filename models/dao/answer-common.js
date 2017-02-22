@@ -14,7 +14,6 @@ const generateAnswerSingleFn = {
     pounds: value => ({ numberValue: parseInt(value) }),
     integer: value => ({ integerValue: parseInt(value) }),
     float: value => ({ integerValue: parseFloat(value) }),
-    'choice-ref': value => ({ code: value }),
     'blood-pressure': value => {
         const pieces = value.split('-');
         return {
@@ -37,6 +36,7 @@ const generateAnswerSingleFn = {
 
 const generateAnswerChoices = {
     choice: entries => ({ choice: entries[0].questionChoiceId }),
+    'choice-ref': entries => ({ choice: entries[0].questionChoiceId }),
     choices: entries => {
         let choices = entries.map(r => {
             const answer = { id: r.questionChoiceId };

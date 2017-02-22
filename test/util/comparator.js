@@ -18,8 +18,8 @@ const comparator = {
                     clientRule.questionId = serverRule.questionId;
                     delete clientRule.questionIndex;
                 }
-                clientRule.rule.id = serverRule.rule.id;
-                const answer = clientRule.rule.answer;
+                clientRule.id = serverRule.id;
+                const answer = clientRule.answer;
                 const question = options.serverQuestionMap[serverRule.questionId];
                 if (answer && answer.choiceText) {
                     const enableWhenChoice = question.choices.find(choice => (choice.text === answer.choiceText));
@@ -37,10 +37,12 @@ const comparator = {
                     });
                     answer.choices = _.sortBy(answer.choices, 'id');
                 }
-                const selectionTexts = clientRule.rule.selectionTexts;
-                if (selectionTexts) {
-                    clientRule.rule.selectionIds = selectionTexts.map(text => question.choices.find(choice => (choice.text === text)).id);
-                    delete clientRule.rule.selectionTexts;
+                if (answer && (answer.code !== undefined)) {
+                    const questionId = serverRule.questionId;
+                    const question = options.serverQuestionMap[questionId];
+                    const choice = question.choices.find(choice => (choice.code === answer.code));
+                    answer.choice = choice.id;
+                    delete answer.code;
                 }
             });
         }
@@ -217,10 +219,10 @@ const comparator = {
     },
     conditionalSurveyTwiceCreated(firstServer, secondServer) {
         secondServer.questions.forEach((question, index) => {
-            const ruleId = _.get(question, 'enableWhen.0.rule.id');
+            const ruleId = _.get(question, 'enableWhen.0.id');
             if (ruleId) {
-                const newRuleId = firstServer.questions[index].enableWhen[0].rule.id;
-                question.enableWhen[0].rule.id = newRuleId;
+                const newRuleId = firstServer.questions[index].enableWhen[0].id;
+                question.enableWhen[0].id = newRuleId;
             }
         });
         secondServer.questions.forEach((question, index) => {
@@ -231,10 +233,10 @@ const comparator = {
             }
         });
         secondServer.questions.forEach((question, index) => {
-            const ruleId = _.get(question, 'section.enableWhen.0.rule.id');
+            const ruleId = _.get(question, 'section.enableWhen.0.id');
             if (ruleId) {
-                const newRuleId = firstServer.questions[index].section.enableWhen[0].rule.id;
-                question.section.enableWhen[0].rule.id = newRuleId;
+                const newRuleId = firstServer.questions[index].section.enableWhen[0].id;
+                question.section.enableWhen[0].id = newRuleId;
             }
         });
         delete firstServer.sections;
