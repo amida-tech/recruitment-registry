@@ -37,7 +37,8 @@ describe('answer unit', function () {
 
     before(shared.setUpFn());
 
-    for (let i = 0; i < 4; ++i) {
+    const userCount = 3;
+    for (let i = 0; i <= userCount; ++i) {
         it(`create user ${i}`, shared.createUserFn(hxUser));
     }
 
@@ -228,4 +229,82 @@ describe('answer unit', function () {
     it(`user 3 gets answers to survey 13`, tests.getAnswersFn(3, 13));
     it(`user 2 answers survey 14`, tests.answerSurveyFn(2, 14, [57, 58, 59, 60, 61]));
     it(`user 2 gets answers to survey 14`, tests.getAnswersFn(2, 14));
+
+    // multi survey and choice set survey
+    const searchCases = [
+        {
+            surveyIdx: 7,
+            qxIndices: [22, 34, 35, 36]
+        },
+        {
+            surveyIdx: 13,
+            qxIndices: [52, 53, 54, 55, 56]
+        }
+    ];
+    searchCases.forEach(({ surveyIdx, qxIndices }) => {
+        let searchAnswersOne, searchAnswersTwo;
+        const generateAnswers = function () {
+            return answerCommon.generateAnswers(generator, hxSurvey.server(surveyIdx), hxQuestion, qxIndices);
+        }
+        const saveAnswers = function (userIdx, answers) {
+            const userId = hxUser.id(userIdx);
+            const surveyId = hxSurvey.server(surveyIdx).id;
+            return models.answer.createAnswers({ userId, surveyId, answers });
+        }
+        it(`users answer survey ${surveyIdx} for search`, function () {
+            const survey = hxSurvey.server(surveyIdx);
+
+            // ensure intersection in answers
+            searchAnswersOne = generateAnswers();
+            searchAnswersTwo = generateAnswers();
+            for (let [index, answer] of searchAnswersTwo.entries()) {
+                if (answer.questionId === searchAnswersOne[0].questionId) {
+                    searchAnswersTwo[index] = searchAnswersOne[0];
+                }
+                break;
+            }
+
+            return Promise.all([
+                saveAnswers(1, searchAnswersOne),
+                saveAnswers(2, searchAnswersTwo)
+            ]);
+        });
+
+        const searchCountUsers = function (query) {
+            return models.answer.searchCountUsers(query);
+        }
+        const searchCountFromAnswers = function (answers) {
+            return searchCountUsers(answerCommon.answersToSearchQuery(answers));
+        }
+
+        it(`search survey ${surveyIdx} to find all users`, function () {
+            return searchCountUsers({ questions: [] }).then(count => expect(count).to.be.at.least(userCount));
+        });
+
+        it(`search survey ${surveyIdx} to find a single user`, function () {
+            return searchCountFromAnswers(searchAnswersOne).then(count => expect(count).to.equal(1));
+        });
+
+        // assumes there is a nonzero intersection in the two answer sets
+        it(`search survey ${surveyIdx} to find both user`, function () {
+            return searchCountFromAnswers(_.intersectionWith(searchAnswersOne, searchAnswersTwo, _.isEqual))
+                .then(count => expect(count).to.equal(2));
+        });
+
+        it(`search survey ${surveyIdx} to find no users`, function () {
+            // find questions answered differently by the two users
+            const answersTwo = new Map();
+            searchAnswersTwo.forEach(answer => answersTwo.set(answer.questionId, answer));
+
+            const answersOne = searchAnswersOne.slice();
+            for (let [index, answer] of searchAnswersOne.entries()) {
+                if (!_.isEqual(answersTwo.get(answer.questionId), answer)) {
+                    answersOne[index] = answersTwo.get(answer.questionId);
+                    break;
+                }
+            }
+
+            return searchCountFromAnswers(answersOne).then(count => expect(count).to.equal(0));
+        });
+    });
 });

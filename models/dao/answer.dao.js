@@ -5,6 +5,7 @@ const _ = require('lodash');
 const db = require('../db');
 const RRError = require('../../lib/rr-error');
 const SPromise = require('../../lib/promise');
+const queryrize = require('../../lib/queryrize');
 
 const answerCommon = require('./answer-common');
 
@@ -13,9 +14,13 @@ const Answer = db.Answer;
 const Question = db.Question;
 const QuestionChoice = db.QuestionChoice;
 const UserSurvey = db.UserSurvey;
+const User = db.User;
 
 const exportCSVConverter = require('../../export/csv-converter.js');
 const importCSVConverter = require('../../import/csv-converter.js');
+
+const searchCountUsersQuery = queryrize.readQuerySync('search-count-users.sql');
+const searchCountUsersSubquery = queryrize.readQuerySync('search-count-users-subquery.sql');
 
 const answerValueToDBFormat = {
     boolValue(value) {
@@ -462,5 +467,33 @@ module.exports = class AnswerDAO {
             raw: true,
             paranoid: false
         });
+    }
+
+    /**
+    * Search users by their survey answers. Returns a count of users only.
+    * @param {object} query questionId:value mapping to search users by
+    * @returns {integer}
+    */
+    searchCountUsers(criteria) {
+        // if criteria is empty, return count of all users
+        if (!criteria || !criteria.questions || !criteria.questions.length) { return User.count(); }
+
+        const sqReplacements = [];
+        criteria.questions.forEach(question => {
+            prepareAnswerForDB(question.answer || question.answers).forEach(answer => {
+                sqReplacements.push({
+                    question_id: question.id,
+                    value: ('value' in answer) ? answer.value.toString() : null,
+                    question_choice_id: ('questionChoiceId' in answer) ? answer.questionChoiceId : null
+                });
+            });
+        });
+        const { query, replacements } = queryrize.addSubqueries(searchCountUsersQuery, searchCountUsersSubquery, ' AND ', sqReplacements);
+
+        return sequelize.query(query, {
+                replacements,
+                type: sequelize.QueryTypes.SELECT
+            })
+            .then(result => parseInt(result[0].count));
     }
 };

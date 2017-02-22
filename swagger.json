@@ -344,43 +344,6 @@
                 }
             }
         },
-        "/surveys/{id}/search": {
-            "x-swagger-router-controller": "survey.controller",
-            "parameters": [{
-                "name": "id",
-                "in": "path",
-                "required": true,
-                "type": "integer"
-            }],
-            "post": {
-                "summary": "Searches survey and returns count of matching users",
-                "operationId": "searchSurvey",
-                "security": [{
-                    "admin": []
-                }, {
-                    "clinician": []
-                }],
-                "parameters": [{
-                    "name": "query",
-                    "in": "body",
-                    "required": true,
-                    "schema": {
-                        "$ref": "#/definitions/surveyQuery"
-                    }
-                }],
-                "responses": {
-                    "200": {
-                        "description": "Successful response.",
-                        "schema": {
-                            "type": "object"
-                        }
-                    },
-                   "default": {
-                        "$ref": "#/responses/genericError"
-                    }
-                }
-            }
-        },
         "/surveys/text/{language}": {
             "x-swagger-router-controller": "survey.controller",
             "patch": {
@@ -577,6 +540,37 @@
                         }
                     },
                     "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/answers/queries": {
+            "x-swagger-router-controller": "answer.controller",
+            "post": {
+                "summary": "Searches all answers and returns count of matching users",
+                "operationId": "searchAnswers",
+                "security": [{
+                    "admin": []
+                }, {
+                    "clinician": []
+                }],
+                "parameters": [{
+                    "name": "query",
+                    "in": "body",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/answersQuery"
+                    }
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response.",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                   "default": {
                         "$ref": "#/responses/genericError"
                     }
                 }
@@ -3370,20 +3364,20 @@
             },
             "additionalProperties": false
         },
-        "surveyQuery": {
+        "answersQuery": {
             "type": "object",
             "required": ["questions"],
             "properties": {
                 "questions": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/surveyQuestionQuery"
+                        "$ref": "#/definitions/questionQuery"
                     },
                     "minItems": 1
                 }
             }
         },
-        "surveyQuestionQuery": {
+        "questionQuery": {
             "type": "object",
             "required": ["id"],
             "properties": {

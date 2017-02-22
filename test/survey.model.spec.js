@@ -25,7 +25,7 @@ const shared = new SharedSpec(generator);
 describe('survey unit', function () {
     before(shared.setUpFn());
 
-    const userCount = 3;
+    const userCount = 1;
     let surveyCount = 8;
 
     const hxSurvey = new SurveyHistory();
@@ -481,7 +481,7 @@ describe('survey unit', function () {
                 surveyId: survey.id,
                 answers
             };
-            return auxAnswerVerifySurvey(survey, input).then(() => answers);
+            return auxAnswerVerifySurvey(survey, input);
         };
     };
 
@@ -569,73 +569,5 @@ describe('survey unit', function () {
 
     it('survey count sanity check', function () {
         expect(hxSurvey.length()).to.equal(surveyCount);
-    });
-
-    // normal survey, multi survey, choie survey
-    [7, 22, 29].forEach(searchSurvey => {
-        let searchAnswersOne, searchAnswersTwo;
-        const searchSurveyId = () => hxSurvey.server(searchSurvey).id;
-        it(`answer survey ${searchSurvey} for searching`, function () {
-            const survey = hxSurvey.server(searchSurvey);
-
-            // ensure intersection in answers
-            const answersOne = generator.answerSurvey(survey);
-            let answersTwo = generator.answerSurvey(survey);
-            for (let [index, answer] of answersTwo.entries()) {
-                if (answer.questionId === answersOne[0].questionId) {
-                    answersTwo[index] = answersOne[0];
-                }
-                break;
-            }
-            searchAnswersOne = answersOne;
-            searchAnswersTwo = answersTwo;
-
-            return Promise.all([
-                auxAnswerVerifySurvey(survey, { userId: hxUser.id(0), surveyId: survey.id, answers: answersOne }),
-                auxAnswerVerifySurvey(survey, { userId: hxUser.id(1), surveyId: survey.id, answers: answersTwo })
-            ]);
-        });
-
-        const searchCountUsers = function (query) {
-            return models.survey.searchCountUsers(searchSurveyId(), query);
-        }
-        const searchCountFromAnswers = function (answers) {
-            return searchCountUsers(surveyCommon.answersToSearchQuery(answers));
-        }
-
-        it(`search survey ${searchSurvey} to find all users`, function () {
-            return searchCountUsers({ questions: [] }).then(count => expect(count).to.be.at.least(userCount));
-        });
-
-        it(`search survey ${searchSurvey} to find a single user`, function () {
-            return searchCountFromAnswers(searchAnswersOne) .then(count => expect(count).to.equal(1));
-        });
-
-        // assumes there is a nonzero intersection in the two answer sets
-        it(`search survey ${searchSurvey} to find both user`, function () {
-            return searchCountFromAnswers(_.intersectionWith(searchAnswersOne, searchAnswersTwo, _.isEqual))
-                .then(count => expect(count).to.equal(2));
-        });
-
-        it(`search survey ${searchSurvey} to find no users`, function () {
-            // find questions answered differently by the two users
-            const answersTwo = new Map();
-            searchAnswersTwo.forEach(answer => answersTwo.set(answer.questionId, answer));
-
-            const answersOne = searchAnswersOne.slice();
-            for (let [index, answer] of searchAnswersOne.entries()) {
-                if (!_.isEqual(answersTwo.get(answer.questionId), answer)) {
-                    answersOne[index] = answersTwo.get(answer.questionId);
-                    break;
-                }
-            }
-
-            return searchCountFromAnswers(answersOne).then(count => expect(count).to.equal(0));
-        });
-
-        it(`search survey ${searchSurvey} constrained to a single survey`, function () {
-            return models.survey.searchCountUsers(searchSurveyId() + 1, surveyCommon.answersToSearchQuery(searchAnswersOne))
-                .then(count => expect(count).to.equal(0));
-        });
     });
 });

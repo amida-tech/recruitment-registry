@@ -85,11 +85,3 @@ exports.importSurveys = function (req, res) {
         .then(result => res.status(201).json(result))
         .catch(shared.handleError(res));
 };
-
-exports.searchSurvey = function (req, res) {
-    const id = _.get(req, 'swagger.params.id.value');
-    const query = _.get(req, 'swagger.params.query.value');
-    models.survey.searchCountUsers(id, query)
-        .then(count => res.status(200).json({ count: count }))
-        .catch(shared.handleError(res));
-};

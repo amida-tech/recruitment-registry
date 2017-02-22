@@ -395,22 +395,7 @@ describe('survey integration', function () {
         generator.updateSurveyGenerator(MultiQuestionSurveyGenerator);
     });
 
-    it('error: search as non admin', function (done) {
-        const survey = hxSurvey.lastServer();
-        store.post(`/surveys/${survey.id}/search`, surveyCommon.answersToSearchQuery(answers), 403).end(done);
-    });
-
     it('login as super', shared.loginFn(store, config.superUser));
-
-    it('search to find user who answered survey', function (done) {
-        const survey = hxSurvey.lastServer();
-        store.post(`/surveys/${survey.id}/search`, surveyCommon.answersToSearchQuery(answers), 200)
-            .expect(function (res) {
-                expect(res.body).to.have.all.keys('count');
-                expect(res.body.count).to.equal(1);
-            })
-            .end(done);
-    });
 
     _.range(surveyCount, surveyCount + 7).forEach(index => {
         it(`create survey ${index}`, tests.createSurveyFn());
