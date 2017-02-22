@@ -91,14 +91,6 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
         if (logic === 'equals' || logic === 'not-equals') {
             rule.answer = this.answerer.answerRawQuestion(question);
         }
-        if (logic === 'not-selected') {
-            const choices = question.choices;
-            const selectionCount = questionInfo.selectionCount;
-            rule.selectionTexts = _.range(choices.length - selectionCount, choices.length).map(index => choices[index].text);
-        }
-        if (logic === 'each-not-selected') {
-            question.choices = question.choices.slice(0, 4);
-        }
     }
 
     getRequiredOverride(key) {

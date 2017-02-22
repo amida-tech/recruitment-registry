@@ -44,11 +44,6 @@ const comparator = {
                     answer.choice = choice.id;
                     delete answer.code;
                 }
-                const selectionTexts = clientRule.selectionTexts;
-                if (selectionTexts) {
-                    clientRule.selectionIds = selectionTexts.map(text => question.choices.find(choice => (choice.text === text)).id);
-                    delete clientRule.selectionTexts;
-                }
             });
         }
     },

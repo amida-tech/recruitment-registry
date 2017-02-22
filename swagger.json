@@ -2742,21 +2742,6 @@
                 },
                 "answer": {
                     "$ref": "#/definitions/newRuleAnswer"
-                },
-                "selectionIds": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer",
-                        "minimum": 1
-                    },
-                    "minItems": 1
-                },
-                "selectionTexts": {
-                    "type": "array",
-                    "items": {
-                        "type": "string",
-                        "minLength": 1
-                    }
                 }
             },
             "minProperties": 2,
@@ -2981,14 +2966,6 @@
                 },
                 "answer": {
                     "$ref": "#/definitions/answer"
-                },
-                "selectionIds": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer",
-                        "minimum": 1
-                    },
-                    "minItems": 1
                 }
             },
             "additionalProperties": false

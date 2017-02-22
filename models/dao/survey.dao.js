@@ -24,8 +24,7 @@ const surveyPatchInfoQuery = queryrize.readQuerySync('survey-patch-info.sql');
 const translateRuleChoices = function (ruleParent, choices) {
     const choiceText = _.get(ruleParent, 'answer.choiceText');
     const rawChoices = _.get(ruleParent, 'answer.choices');
-    const selectionTexts = _.get(ruleParent, 'selectionTexts');
-    if (choiceText || rawChoices || selectionTexts) {
+    if (choiceText || rawChoices) {
         if (!choices) {
             return RRError.reject('surveySkipChoiceForNonChoice');
         }
@@ -46,17 +45,6 @@ const translateRuleChoices = function (ruleParent, choices) {
                 ruleParentChoice.id = serverChoice.id;
             });
             ruleParent.answer.choices.forEach(ruleParentChoice => delete ruleParentChoice.text);
-        }
-        if (selectionTexts) {
-            const selectionIds = selectionTexts.map(text => {
-                const serverChoice = choices.find(choice => choice.text === text);
-                if (!serverChoice) {
-                    throw new RRError('surveySkipChoiceNotFound');
-                }
-                return serverChoice.id;
-            });
-            ruleParent.selectionIds = selectionIds;
-            delete ruleParent.rule.selectionTexts;
         }
         return ruleParent;
     }
@@ -144,12 +132,6 @@ module.exports = class SurveyDAO extends Translatable {
                 questionChoiceId = questionChoiceId || null;
                 value = (value !== undefined ? value : null);
                 return AnswerRuleValue.create({ ruleId, questionChoiceId, value }, { transaction });
-            });
-            return SPromise.all(pxs);
-        }
-        if (rule.selectionIds) {
-            const pxs = rule.selectionIds.map(questionChoiceId => {
-                return AnswerRuleValue.create({ ruleId, questionChoiceId }, { transaction });
             });
             return SPromise.all(pxs);
         }
