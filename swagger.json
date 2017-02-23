@@ -2788,7 +2788,7 @@
                         "$ref": "#/definitions/newSection"
                     },
                     "minItems": 1
-              },
+                },
                 "maxCount": {
                     "type": "integer",
                     "minimum": 1
