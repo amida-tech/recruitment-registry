@@ -49,7 +49,7 @@ module.exports = [{
     }, {
         id: 108,
         required: false,
-        section: {
+        sections: [{
             questions: [{
                 id: 109,
                 required: true
@@ -69,7 +69,7 @@ module.exports = [{
                 },
                 questionId: 108
             }
-        }
+        }]
     }, {
         id: 112,
         required: true

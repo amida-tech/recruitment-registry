@@ -64,10 +64,10 @@ const surveyManipulator = {
         const deletedQuestions = survey.questions.splice(questionIndex + 1, count);
         const rule = { questionIndex, logic };
         generator.addAnswer(rule, questionInfo, question);
-        question.section = {
+        question.sections = [{
             questions: deletedQuestions,
             enableWhen: [rule]
-        };
+        }];
     }
 };
 
@@ -160,7 +160,7 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
                     return r;
                 }
                 if (type === 'samerulesection') {
-                    const enableWhen = question.section.enableWhen;
+                    const enableWhen = question.sections[0].enableWhen;
                     const enableWhenAnswer = enableWhen[0].answer;
                     if (!enableWhenAnswer) {
                         throw new Error('There should be an answer specified');
@@ -170,7 +170,7 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
                     return r;
                 }
                 if (type === 'differentrulesection') {
-                    const enableWhen = question.section.enableWhen;
+                    const enableWhen = question.sections[0].enableWhen;
                     const enableWhenAnswer = enableWhen[0].answer;
                     if (!enableWhenAnswer) {
                         throw new Error('There should be an answer specified');
@@ -216,20 +216,22 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
     }
 
     static newSurveyFromPrevious(clientSurvey, serverSurvey) {
-        const questions = serverSurvey.questions.map(({ id, required, enableWhen, section }) => {
+        const questions = serverSurvey.questions.map(({ id, required, enableWhen, sections }) => {
             const question = { id, required };
             if (enableWhen) {
                 question.enableWhen = _.cloneDeep(enableWhen);
                 delete question.enableWhen[0].id;
             }
-            if (section) {
-                question.section = _.cloneDeep(section);
-                delete question.section.id;
-                const enableWhen = question.section.enableWhen;
-                if (enableWhen) {
-                    delete enableWhen[0].id;
-                }
-                question.section.questions = question.section.questions.map(({ id, required }) => ({ id, required }));
+            if (sections) {
+                question.sections = _.cloneDeep(sections);
+                question.sections.forEach(section => {
+                    delete section.id;
+                    const enableWhen = section.enableWhen;
+                    if (enableWhen) {
+                        delete enableWhen[0].id;
+                    }
+                    section.questions = section.questions.map(({ id, required }) => ({ id, required }));
+                });
             }
             return question;
         });

@@ -92,7 +92,10 @@ module.exports = class SectionDAO extends Translatable {
                             }
                             if (parentQuestionId) {
                                 const question = questionMap.get(parentQuestionId);
-                                question.section = section;
+                                if (!question.sections) {
+                                    question.sections = [];
+                                }
+                                question.sections.push(section);
                                 delete section.parentId;
                             } else {
                                 delete section.parentQuestionId;

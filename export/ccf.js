@@ -22,8 +22,14 @@ const exportSurveys = function () {
             const ids = surveys.reduce((r, survey) => {
                 survey.questions.forEach(question => {
                     r.push(question.id);
-                    if (question.section) {
-                        question.section.questions.forEach(({ id }) => r.push(id));
+                    if (question.sections) {
+                        const sections = question.sections;
+                        if (sections.length > 1) {
+                            throw new Error('Multiple question sections is not supported');
+                        }
+                        sections.forEach(section => {
+                            section.questions.forEach(({ id }) => r.push(id));
+                        });
                     }
                 });
                 return r;
@@ -50,7 +56,7 @@ const exportSurveys = function () {
                     if (instruction) {
                         line.instruction = instruction;
                     }
-                    const section = question.section;
+                    const section = question.sections && question.sections[0];
                     if (section) {
                         line[cSkipCount] = section.questions.length;
                         line[cConditional] = answerIdentifierMap[question.id + ':' + section.enableWhen[0].answer.choice].identifier;
