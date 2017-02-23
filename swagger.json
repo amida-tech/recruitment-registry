@@ -2782,9 +2782,13 @@
                 "multiple": {
                     "type": "boolean"
                 },
-                "section": {
-                    "$ref": "#/definitions/newSection"
-                },
+                "sections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/newSection"
+                    },
+                    "minItems": 1
+              },
                 "maxCount": {
                     "type": "integer",
                     "minimum": 1
@@ -2993,8 +2997,12 @@
                 "type": {
                     "$ref": "#/definitions/questionType"
                 },
-                "section": {
-                    "$ref": "#/definitions/section"
+                "sections": {
+                  "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/section"
+                    },
+                    "minItems": 1
                 },
                 "multiple": {
                     "type": "boolean"

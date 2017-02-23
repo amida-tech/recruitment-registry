@@ -92,10 +92,13 @@ const comparator = {
             expect(server.actions).to.deep.equal(expected.actions);
         }
         this.enableWhen(expected, server, options);
-        if (expected.section && server.section) {
-            expected.section.id = server.section.id;
-            this.enableWhen(expected.section, server.section, options);
-            this.surveySectionsOrQuestions(expected.section, server.section, options);
+        if (expected.sections && server.sections) {
+            expect(expected.sections.length).to.equal(server.sections.length);
+            expected.sections.forEach((section, index) => {
+                section.id = server.sections[index].id;
+                this.enableWhen(section, server.sections[index], options);
+                this.surveySectionsOrQuestions(section, server.sections[index], options);
+            });
         }
         expect(server).to.deep.equal(expected);
         return expected;
@@ -226,17 +229,17 @@ const comparator = {
             }
         });
         secondServer.questions.forEach((question, index) => {
-            const id = _.get(question, 'section.id');
+            const id = _.get(question, 'sections.0.id');
             if (id) {
-                const newId = firstServer.questions[index].section.id;
-                question.section.id = newId;
+                const newId = firstServer.questions[index].sections[0].id;
+                question.sections[0].id = newId;
             }
         });
         secondServer.questions.forEach((question, index) => {
-            const ruleId = _.get(question, 'section.enableWhen.0.id');
+            const ruleId = _.get(question, 'sections.0.enableWhen.0.id');
             if (ruleId) {
-                const newRuleId = firstServer.questions[index].section.enableWhen[0].id;
-                question.section.enableWhen[0].id = newRuleId;
+                const newRuleId = firstServer.questions[index].sections[0].enableWhen[0].id;
+                question.sections[0].enableWhen[0].id = newRuleId;
             }
         });
         delete firstServer.sections;

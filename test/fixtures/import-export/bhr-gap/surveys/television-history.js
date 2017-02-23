@@ -22,7 +22,7 @@ module.exports = {
             type: 'choice-ref',
             answerIdentifier: { type: 'television-column', value: 'QID2' },
             choiceSetReference: 'yes-no-1-2',
-            section: {
+            sections: [{
                 enableWhen: [{
                     questionIndex: 1,
                     logic: 'equals',
@@ -54,7 +54,7 @@ module.exports = {
                         logic: 'exists'
                     }]
                 }]
-            }
+            }]
         }, {
             text: 'Are you currently happy with your televisions?',
             required: false,

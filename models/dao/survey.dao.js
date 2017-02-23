@@ -83,20 +83,22 @@ module.exports = class SurveyDAO extends Translatable {
             const questionIndex = result.questions.length;
             indices.push(questionIndex);
             result.questions.push(question);
-            const section = question.section;
-            if (section) {
-                let { name, sections, questions, enableWhen } = section;
-                const type = questions ? 'question' : 'section';
-                const sectionInfo = { name, questionIndex, type, line: 0 };
-                result.sections.push(sectionInfo);
-                if (questions) {
-                    const indices = this.flattenQuestionsHierarchy(questions, result);
-                    sectionInfo.indices = indices;
-                    sectionInfo.enableWhen = enableWhen;
-                }
-                if (sections) {
-                    this.flattenSectionsHieararchy(sections, result, result.sections.length - 1);
-                }
+            const questionSections = question.sections;
+            if (questionSections) {
+                questionSections.forEach((section, line) => {
+                    let { name, sections, questions, enableWhen } = section;
+                    const type = questions ? 'question' : 'section';
+                    const sectionInfo = { name, questionIndex, type, line };
+                    result.sections.push(sectionInfo);
+                    if (questions) {
+                        const indices = this.flattenQuestionsHierarchy(questions, result);
+                        sectionInfo.indices = indices;
+                        sectionInfo.enableWhen = enableWhen;
+                    }
+                    if (sections) {
+                        this.flattenSectionsHieararchy(sections, result, result.sections.length - 1);
+                    }
+                });
             }
         });
         return indices;
@@ -628,8 +630,8 @@ module.exports = class SurveyDAO extends Translatable {
     updateQuestionQuestionsMap(questions, map) {
         questions.forEach(question => {
             map.set(question.id, question);
-            if (question.section) {
-                this.updateQuestionsMap(question.section, map);
+            if (question.sections) {
+                this.updateQuestionsMap({ sections: question.sections }, map);
             }
         });
     }
@@ -653,8 +655,8 @@ module.exports = class SurveyDAO extends Translatable {
     updateQuestionQuestionsList(questions, list) {
         questions.forEach(question => {
             list.push(question);
-            if (question.section) {
-                this.updateQuestionsList(question.section, list);
+            if (question.sections) {
+                this.updateQuestionsList({ sections: question.sections }, list);
             }
         });
     }
@@ -774,20 +776,20 @@ module.exports = class SurveyDAO extends Translatable {
                     };
                     if (record.skipCount) {
                         skip = record.skipCount;
-                        question.section = {
+                        question.sections = [{
                             enableWhen: [{
                                 questionId: questionIdMap[record.questionId],
                                 answer: { choice: choicesIdMap[record.skipValue] },
                                 logic: 'not-equals'
                             }],
                             questions: []
-                        };
+                        }];
                         survey.questions.push(question);
                         return r;
                     }
                     if (skip) {
                         const questions = survey.questions;
-                        questions[questions.length - 1].section.questions.push(question);
+                        questions[questions.length - 1].sections[0].questions.push(question);
                         skip = skip - 1;
                     } else {
                         survey.questions.push(question);

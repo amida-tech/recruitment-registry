@@ -90,10 +90,12 @@ const removeSectionIds = function removeSectionIds(sections) {
 
 removeQuestionSectionIds = function (questions) {
     if (questions) {
-        questions.forEach(({ section }) => {
-            if (section) {
-                delete section.id;
-                removeSurveySectionIds(section);
+        questions.forEach(({ sections }) => {
+            if (sections) {
+                sections.forEach(section => {
+                    delete section.id;
+                    removeSurveySectionIds(section);
+                });
             }
         });
     }
