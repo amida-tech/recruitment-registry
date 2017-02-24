@@ -45,8 +45,8 @@ module.exports = class RRSupertest {
         return this.userAudit;
     }
 
-    update(operation, endpoint, payload, status, header) {
-        if (status < 401 && this.username) {
+    update(operation, endpoint, payload, status, header, validationError) {
+        if (status < 401 && this.username && !validationError) {
             this.userAudit.push({ username: this.username, operation, endpoint });
         }
         let r = this.server[operation](this.baseUrl + endpoint);
@@ -56,8 +56,8 @@ module.exports = class RRSupertest {
         return r.send(payload).expect(status);
     }
 
-    post(endpoint, payload, status, header) {
-        return this.update('post', endpoint, payload, status, header);
+    post(endpoint, payload, status, header, validationError) {
+        return this.update('post', endpoint, payload, status, header, validationError);
     }
 
     postFile(endpoint, field, filepath, payload, status) {

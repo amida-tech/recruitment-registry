@@ -8,8 +8,10 @@ const shared = require('./shared.js');
 const sendMail = require('../lib/email');
 
 exports.createNewUser = function (req, res) {
-    const newUser = Object.assign({ role: 'participant' }, req.body);
-
+    const newUser = req.body;
+    if (!newUser.role) {
+        newUser.role = 'participant';
+    }
     return models.user.createUser(newUser)
         .then(({ id }) => {
             sendMail(newUser, 'new_contact', {});

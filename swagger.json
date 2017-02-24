@@ -55,13 +55,16 @@
             "post": {
                 "operationId": "createNewUser",
                 "summary": "Creates new user",
+                "security": [{
+                    "admin": []
+                }],
                 "parameters": [{
                     "name": "user",
                     "in": "body",
                     "description": "User specification",
                     "required": true,
                     "schema": {
-                        "$ref": "#/definitions/user"
+                        "$ref": "#/definitions/newUser"
                     }
                 }],
                 "responses": {
@@ -2681,10 +2684,12 @@
                     "type": "string",
                     "minLength": 1
                 }
-            }
+            },
+            "additionalProperties": false
         },
-        "user": {
+        "newUser": {
             "type": "object",
+            "required": ["password"],
             "properties": {
                 "username": {
                     "type": "string"
@@ -2699,7 +2704,31 @@
                     "type": "string",
                     "format": "email"
                 }
-            }
+            },
+            "additionalProperties": false,
+            "minProperties": 2
+        },
+        "user": {
+            "type": "object",
+            "required": ["id"],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "username": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string",
+                    "format": "email"
+                }
+            },
+            "additionalProperties": false,
+            "minProperties": 1
         },
         "userUpdate": {
             "type": "object",
@@ -2711,7 +2740,8 @@
                     "type": "string",
                     "format": "email"
                 }
-            }
+            },
+            "additionalProperties": false
         },
         "questionType": {
             "type": "string",
@@ -3746,7 +3776,7 @@
             ],
             "properties": {
                 "user": {
-                    "$ref": "#/definitions/user"
+                    "$ref": "#/definitions/newUser"
                 },
                 "answers": {
                     "type": "array",

@@ -69,7 +69,7 @@ describe('user integration', function () {
         const userEmailErr = _.cloneDeep(user);
         userEmailErr.email = 'notanemail';
         userEmailErr.username = user.username + '1';
-        store.post('/users', userEmailErr, 400).end(done);
+        store.post('/users', userEmailErr, 400, undefined, true).end(done);
     });
 
     it('error: create the same user', function (done) {
@@ -89,6 +89,8 @@ describe('user integration', function () {
             })
             .end(done);
     });
+
+    it('logout as super', shared.logoutFn(store));
 
     it('login as new user', shared.loginFn(store, user));
 

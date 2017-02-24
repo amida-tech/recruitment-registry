@@ -238,7 +238,7 @@ class SharedIntegration {
 
     verifyUserAudit(store) {
         it('verify user audit', function () {
-            const userAudit = store.getUserAudit().filter(({ endpoint, operation }) => !(operation === 'post' && endpoint === '/users')); // TODO: remove filter when /users/post client is fixed
+            const userAudit = store.getUserAudit();
             return db.User.findAll({ raw: true, attributes: ['username', 'id'] })
                 .then(users => new Map(users.map(user => [user.username, user.id])))
                 .then(userMap => userAudit.map(({ username, operation, endpoint }) => ({ userId: userMap.get(username), operation, endpoint })))
