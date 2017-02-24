@@ -232,8 +232,8 @@ describe('answer unit', function () {
 
     // multi survey and choice set survey
     const searchCases = [{
-            surveyIdx: 7,
-            qxIndices: [22, 34, 35, 36]
+            surveyIdx: 10,
+            qxIndices: [43, 44, 28, 45]
         },
         {
             surveyIdx: 13,
@@ -312,7 +312,7 @@ describe('answer unit', function () {
 
     it(`search multi question 23 with multiple answer options`, function () {
         const surveyIdx = 8;
-        const generateAnswers = generateAnswersFn(surveyIdx, [23]);
+        const generateAnswers = generateAnswersFn(surveyIdx, [24]);
         const answers = generateAnswers();
         const answersPossible = generateAnswers();
         const searchInput = [{
