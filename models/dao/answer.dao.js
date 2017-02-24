@@ -5,7 +5,6 @@ const _ = require('lodash');
 const db = require('../db');
 const RRError = require('../../lib/rr-error');
 const SPromise = require('../../lib/promise');
-const queryrize = require('../../lib/queryrize');
 
 const answerCommon = require('./answer-common');
 
@@ -18,9 +17,6 @@ const User = db.User;
 
 const exportCSVConverter = require('../../export/csv-converter.js');
 const importCSVConverter = require('../../import/csv-converter.js');
-
-const searchCountUsersQuery = queryrize.readQuerySync('search-count-users.sql');
-const searchCountUsersSubquery = queryrize.readQuerySync('search-count-users-subquery.sql');
 
 const answerValueToDBFormat = {
     boolValue(value) {
