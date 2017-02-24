@@ -508,10 +508,10 @@ module.exports = class AnswerDAO {
         if (questionIds.length !== new Set(questionIds).size) { return RRError.reject('searchQuestionRepeat'); }
 
         // find answers that match one of the search criteria
-        const $or = [];
+        const where = { $or: [] };
         criteria.questions.forEach(question => {
             prepareAnswerForDB(question.answer || question.answers).forEach(answer => {
-                $or.push({
+                where.$or.push({
                     question_id: question.id,
                     value: ('value' in answer) ? answer.value.toString() : null,
                     question_choice_id: ('questionChoiceId' in answer) ? answer.questionChoiceId : null
@@ -521,11 +521,6 @@ module.exports = class AnswerDAO {
 
         // find users with a matching answer for each question (i.e., users who match all criteria)
         const include = [{ model: User, as: 'user', attributes: [] }];
-        const where = {
-            $or,
-            deleted_at: null,
-            '$user.deleted_at$': null
-        };
         const having = sequelize.where(sequelize.literal('COUNT(DISTINCT(question_id))'), criteria.questions.length);
         const group = ['user_id'];
 
