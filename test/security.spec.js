@@ -42,14 +42,14 @@ describe('security unit', function () {
 
     let deletedJWT;
 
-    const other = {
-        username: 'other',
-        password: 'other',
-        email: 'other@test.com',
+    const clinician = {
+        username: 'clinician',
+        password: 'clinician',
+        email: 'clinician@test.com',
         role: 'clinician'
     };
 
-    let otherJWT;
+    let clinicianJWT;
 
     before(shared.setUpFn());
 
@@ -70,12 +70,12 @@ describe('security unit', function () {
                     originalUsername: participant.username
                 });
             })
-            .then(() => models.user.createUser(other))
+            .then(() => models.user.createUser(clinician))
             .then(user => {
-                other.id = user.id;
-                otherJWT = tokener.createJWT({
-                    id: other.id,
-                    originalUsername: other.username
+                clinician.id = user.id;
+                clinicianJWT = tokener.createJWT({
+                    id: clinician.id,
+                    originalUsername: clinician.username
                 });
             })
             .then(() => models.user.createUser(deleted))
@@ -104,6 +104,35 @@ describe('security unit', function () {
         });
     });
 
+    it('valid admin for clinician', function (done) {
+        const req = {};
+        const header = `Bearer ${adminJWT}`;
+        console.log('calling security.clinician');
+        security.clinician(req, undefined, header, function (err) {
+            if (err) {
+                return done(err);
+            }
+            const actual = _.pick(req.user, ['id', 'username', 'email', 'role']);
+            const expected = _.omit(admin, 'password');
+            expect(actual).to.deep.equal(expected);
+            done();
+        });
+    });
+
+    it('valid admin for participant', function (done) {
+        const req = {};
+        const header = `Bearer ${adminJWT}`;
+        security.participant(req, undefined, header, function (err) {
+            if (err) {
+                return done(err);
+            }
+            const actual = _.pick(req.user, ['id', 'username', 'email', 'role']);
+            const expected = _.omit(admin, 'password');
+            expect(actual).to.deep.equal(expected);
+            done();
+        });
+    });
+
     it('valid participant for participant', function (done) {
         const req = {};
         const header = `Bearer ${participantJWT}`;
@@ -113,6 +142,20 @@ describe('security unit', function () {
             }
             const actual = _.pick(req.user, ['id', 'username', 'email', 'role']);
             const expected = _.omit(participant, 'password');
+            expect(actual).to.deep.equal(expected);
+            done();
+        });
+    });
+
+    it('valid clinician for clinician', function (done) {
+        const req = {};
+        const header = `Bearer ${clinicianJWT}`;
+        security.clinician(req, undefined, header, function (err) {
+            if (err) {
+                return done(err);
+            }
+            const actual = _.pick(req.user, ['id', 'username', 'email', 'role']);
+            const expected = _.omit(clinician, 'password');
             expect(actual).to.deep.equal(expected);
             done();
         });
@@ -141,6 +184,20 @@ describe('security unit', function () {
             }
             const actual = _.pick(req.user, ['id', 'username', 'email', 'role']);
             const expected = _.omit(participant, 'password');
+            expect(actual).to.deep.equal(expected);
+            done();
+        });
+    });
+
+    it('valid clinician for self', function (done) {
+        const req = {};
+        const header = `Bearer ${clinicianJWT}`;
+        security.self(req, undefined, header, function (err) {
+            if (err) {
+                return done(err);
+            }
+            const actual = _.pick(req.user, ['id', 'username', 'email', 'role']);
+            const expected = _.omit(clinician, 'password');
             expect(actual).to.deep.equal(expected);
             done();
         });
@@ -224,9 +281,35 @@ describe('security unit', function () {
         });
     });
 
-    it('error: other for participant', function (done) {
+    it('error: participant for clinician', function (done) {
         const req = {};
-        const header = `Bearer ${otherJWT}`;
+        const header = `Bearer ${participantJWT}`;
+        security.clinician(req, undefined, header, function (err) {
+            if (err) {
+                expect(err).to.deep.equal(security.unauthorizedUser);
+                return done();
+            } else {
+                done(new Error('unexpected no error'));
+            }
+        });
+    });
+
+    it('error: clinician for admin', function (done) {
+        const req = {};
+        const header = `Bearer ${clinicianJWT}`;
+        security.admin(req, undefined, header, function (err) {
+            if (err) {
+                expect(err).to.deep.equal(security.unauthorizedUser);
+                return done();
+            } else {
+                done(new Error('unexpected no error'));
+            }
+        });
+    });
+
+    it('error: clinician for participant', function (done) {
+        const req = {};
+        const header = `Bearer ${clinicianJWT}`;
         security.participant(req, undefined, header, function (err) {
             if (err) {
                 expect(err).to.deep.equal(security.unauthorizedUser);
