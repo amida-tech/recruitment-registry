@@ -40,6 +40,17 @@ module.exports = class UserDAO {
         });
     }
 
+    listUsers(options = {}) {
+        const role = options.role ? options.role : { $in: ['clinician', 'participant'] };
+        const where = { role };
+        return User.findAll({
+            raw: true,
+            where,
+            attributes: ['id', 'username', 'email', 'role'],
+            order: 'username'
+        });
+    }
+
     deleteUser(id) {
         return User.destroy({ where: { id } });
     }

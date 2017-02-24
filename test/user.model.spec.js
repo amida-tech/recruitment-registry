@@ -19,7 +19,7 @@ const generator = new Generator();
 const shared = new SharedSpec(generator);
 
 describe('user unit', function () {
-    const userCount = 4;
+    const userCount = 8;
 
     const hxUser = new History();
 
@@ -63,9 +63,41 @@ describe('user unit', function () {
         };
     };
 
-    _.range(userCount).forEach(index => {
+    _.range(userCount / 2).forEach(index => {
         it(`create user ${index}`, shared.createUserFn(hxUser));
         it(`get user ${index}`, getUserFn(index));
+    });
+
+    _.range(userCount / 2, userCount).forEach(index => {
+        it(`create user ${index}`, shared.createUserFn(hxUser, { role: 'clinician' }));
+        it(`get user ${index}`, getUserFn(index));
+    });
+
+    it('list all non admin users', function () {
+        return models.user.listUsers()
+            .then(users => {
+                let expected = hxUser.listServers().slice();
+                expected = _.sortBy(expected, 'username');
+                expect(users).to.deep.equal(expected);
+            });
+    });
+
+    it('list all participant users', function () {
+        return models.user.listUsers({ role: 'participant' })
+            .then(users => {
+                let expected = hxUser.listServers(undefined, _.range(userCount / 2)).slice();
+                expected = _.sortBy(expected, 'username');
+                expect(users).to.deep.equal(expected);
+            });
+    });
+
+    it('list all clinician users', function () {
+        return models.user.listUsers({ role: 'clinician' })
+            .then(users => {
+                let expected = hxUser.listServers(undefined, _.range(userCount / 2, userCount)).slice();
+                expected = _.sortBy(expected, 'username');
+                expect(users).to.deep.equal(expected);
+            });
     });
 
     it('error: identical specified username and email', function () {
