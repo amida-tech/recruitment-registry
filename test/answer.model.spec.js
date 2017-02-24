@@ -231,8 +231,7 @@ describe('answer unit', function () {
     it(`user 2 gets answers to survey 14`, tests.getAnswersFn(2, 14));
 
     // multi survey and choice set survey
-    const searchCases = [
-        {
+    const searchCases = [{
             surveyIdx: 7,
             qxIndices: [22, 34, 35, 36]
         },
@@ -245,15 +244,13 @@ describe('answer unit', function () {
         let searchAnswersOne, searchAnswersTwo;
         const generateAnswers = function () {
             return answerCommon.generateAnswers(generator, hxSurvey.server(surveyIdx), hxQuestion, qxIndices);
-        }
+        };
         const saveAnswers = function (userIdx, answers) {
             const userId = hxUser.id(userIdx);
             const surveyId = hxSurvey.server(surveyIdx).id;
             return models.answer.createAnswers({ userId, surveyId, answers });
-        }
+        };
         it(`users answer survey ${surveyIdx} for search`, function () {
-            const survey = hxSurvey.server(surveyIdx);
-
             // ensure intersection in answers
             searchAnswersOne = generateAnswers();
             searchAnswersTwo = generateAnswers();
@@ -272,10 +269,10 @@ describe('answer unit', function () {
 
         const searchCountUsers = function (query) {
             return models.answer.searchCountUsers(query);
-        }
+        };
         const searchCountFromAnswers = function (answers) {
             return searchCountUsers(answerCommon.answersToSearchQuery(answers));
-        }
+        };
 
         it(`search survey ${surveyIdx} to find all users`, function () {
             return searchCountUsers({ questions: [] }).then(count => expect(count).to.be.at.least(userCount));

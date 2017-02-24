@@ -115,7 +115,7 @@ const answersToSearchQuery = function (answers) {
             id: answer.questionId,
             answer: answer.answer,
             answers: answer.answers
-        }
+        };
     });
     return { questions };
 };

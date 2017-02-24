@@ -466,10 +466,10 @@ module.exports = class AnswerDAO {
     }
 
     /**
-    * Search users by their survey answers. Returns a count of users only.
-    * @param {object} query questionId:value mapping to search users by
-    * @returns {integer}
-    */
+     * Search users by their survey answers. Returns a count of users only.
+     * @param {object} query questionId:value mapping to search users by
+     * @returns {integer}
+     */
     searchCountUsers(criteria) {
         // if criteria is empty, return count of all users
         if (!criteria || !criteria.questions || !criteria.questions.length) { return User.count(); }
@@ -489,15 +489,15 @@ module.exports = class AnswerDAO {
         // find users with a matching answer for each question (i.e., users who match all criteria)
         const include = [{ model: User, as: 'user', attributes: [] }];
         const where = {
-                $or,
-                deleted_at: null,
-                '$user.deleted_at$': null
+            $or,
+            deleted_at: null,
+            '$user.deleted_at$': null
         };
-        const having = sequelize.where(sequelize.literal('COUNT(DISTINCT(question_id))'), criteria.questions.length)
+        const having = sequelize.where(sequelize.literal('COUNT(DISTINCT(question_id))'), criteria.questions.length);
         const group = ['user_id'];
 
         // count resulting users
-        const attributes = [sequelize.literal("'1'")];
+        const attributes = [sequelize.literal('\'1\'')];
         return Answer.findAll({ raw: true, where, attributes, include, having, group })
             .then(results => results.length);
     }

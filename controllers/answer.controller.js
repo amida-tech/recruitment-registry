@@ -56,6 +56,6 @@ exports.listAnswersExport = function (req, res) {
 exports.searchAnswers = function (req, res) {
     const query = _.get(req, 'swagger.params.query.value');
     models.answer.searchCountUsers(query)
-        .then(count => res.status(200).json({ count: count }))
+        .then(count => res.status(200).json({ count }))
         .catch(shared.handleError(res));
 };
