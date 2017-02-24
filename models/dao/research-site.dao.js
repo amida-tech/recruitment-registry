@@ -9,7 +9,7 @@ const ResearchSiteVicinity = db.ResearchSiteVicinity;
 
 const attributes = ['id', 'name', 'url', 'city', 'state', 'zip'];
 
-module.exports = class LanguageDAO {
+module.exports = class ResearchSiteDAO {
     constructor() {}
 
     createResearchSite(researchSite) {
@@ -30,13 +30,14 @@ module.exports = class LanguageDAO {
                     raw: true,
                     where: { zip },
                     attributes: [],
-                    order: 'researchSiteId',
-                    include: [{ model: ResearchSiteVicinity, as: 'vicinity', attributes }],
+                    order: 'research_site_id',
+                    include: [{ model: ResearchSite, as: 'vicinity', attributes }],
                 })
                 .then(sites => {
                     return sites.map(site => {
                         return attributes.reduce((r, attribute) => {
                             r[attribute] = site[`vicinity.${attribute}`];
+                            return r;
                         }, {});
                     });
                 });

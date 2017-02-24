@@ -163,14 +163,14 @@ class Generator {
         }
     }
 
-    newResearchSite() {
+    newResearchSite(zip) {
         const index = ++this.researchSiteIndex;
         return {
             name: `name_${index}`,
             url: `server_${index}@example.com`,
             city: `city_${index}`,
             state: ['MA', 'MD', 'ID', 'VA', 'GA'][index % 5],
-            zip: (20000 + index).toString()
+            zip
         };
     }
 }
