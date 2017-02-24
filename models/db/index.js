@@ -90,6 +90,7 @@ const questionChoiceBelongsToArgument = {
 
 Answer.belongsTo(Question, questionBelongsToArgument);
 Answer.belongsTo(QuestionChoice, questionChoiceBelongsToArgument);
+Answer.belongsTo(User, { as: 'user', foreignKey: 'user_id' });
 
 QuestionIdentifier.belongsTo(Question, questionBelongsToArgument);
 AnswerIdentifier.belongsTo(Question, questionBelongsToArgument);

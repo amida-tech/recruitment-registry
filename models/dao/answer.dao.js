@@ -478,22 +478,31 @@ module.exports = class AnswerDAO {
         // if criteria is empty, return count of all users
         if (!criteria || !criteria.questions || !criteria.questions.length) { return User.count(); }
 
-        const sqReplacements = [];
+        // find answers that match one of the search criteria
+        const $or = [];
         criteria.questions.forEach(question => {
             prepareAnswerForDB(question.answer || question.answers).forEach(answer => {
-                sqReplacements.push({
+                $or.push({
                     question_id: question.id,
                     value: ('value' in answer) ? answer.value.toString() : null,
                     question_choice_id: ('questionChoiceId' in answer) ? answer.questionChoiceId : null
                 });
             });
         });
-        const { query, replacements } = queryrize.addSubqueries(searchCountUsersQuery, searchCountUsersSubquery, ' AND ', sqReplacements);
 
-        return sequelize.query(query, {
-                replacements,
-                type: sequelize.QueryTypes.SELECT
-            })
-            .then(result => parseInt(result[0].count));
+        // find users with a matching answer for each question (i.e., users who match all criteria)
+        const include = [{ model: User, as: 'user', attributes: [] }];
+        const where = {
+                $or,
+                deleted_at: null,
+                '$user.deleted_at$': null
+        };
+        const having = sequelize.where(sequelize.literal('COUNT(DISTINCT(question_id))'), criteria.questions.length)
+        const group = ['user_id'];
+
+        // count resulting users
+        const attributes = [sequelize.literal("'1'")];
+        return Answer.findAll({ raw: true, where, attributes, include, having, group })
+            .then(results => results.length);
     }
 };
