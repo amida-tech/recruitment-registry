@@ -54,6 +54,9 @@ class Generator {
         if (override) {
             user = _.assign(user, override);
         }
+        if (!user.role) {
+            user.role = 'participant';
+        }
         return user;
     }
 

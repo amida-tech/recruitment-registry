@@ -8,13 +8,30 @@ const shared = require('./shared.js');
 const sendMail = require('../lib/email');
 
 exports.createNewUser = function (req, res) {
-    const newUser = Object.assign({ role: 'participant' }, req.body);
-
+    const newUser = req.body;
+    if (!newUser.role) {
+        newUser.role = 'participant';
+    }
     return models.user.createUser(newUser)
         .then(({ id }) => {
             sendMail(newUser, 'new_contact', {});
             res.status(201).json({ id });
         })
+        .catch(shared.handleError(res));
+};
+
+exports.getUser = function (req, res) {
+    const id = _.get(req, 'swagger.params.id.value');
+    models.user.getUser(id)
+        .then(result => res.status(200).json(result))
+        .catch(shared.handleError(res));
+};
+
+exports.listUsers = function (req, res) {
+    const role = _.get(req, 'swagger.params.role.value');
+    const options = role ? { role } : {};
+    models.user.listUsers(options)
+        .then(users => res.status(200).json(users))
         .catch(shared.handleError(res));
 };
 
