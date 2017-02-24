@@ -20,6 +20,21 @@ exports.createNewUser = function (req, res) {
         .catch(shared.handleError(res));
 };
 
+exports.getUser = function (req, res) {
+    const id = _.get(req, 'swagger.params.id.value');
+    models.user.getUser(id)
+        .then(result => res.status(200).json(result))
+        .catch(shared.handleError(res));
+};
+
+exports.listUsers = function (req, res) {
+    const role = _.get(req, 'swagger.params.role.value');
+    const options = role ? { role } : {};
+    models.user.listUsers(options)
+        .then(users => res.status(200).json(users))
+        .catch(shared.handleError(res));
+};
+
 exports.showCurrentUser = function (req, res) {
     const currentUser = _.omitBy(req.user, _.isNil);
     res.status(200).json(currentUser);

@@ -85,11 +85,11 @@ class SharedIntegration {
         };
     }
 
-    createUserFn(store, history, user) {
+    createUserFn(store, history, user, override) {
         const generator = this.generator;
         return function (done) {
             if (!user) {
-                user = generator.newUser();
+                user = generator.newUser(override);
             }
             store.post('/users', user, 201)
                 .end(function (err, res) {

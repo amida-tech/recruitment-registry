@@ -52,6 +52,32 @@
         },
         "/users": {
             "x-swagger-router-controller": "user.controller",
+            "get": {
+                "operationId": "listUsers",
+                "summary": "List users",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "role",
+                    "in": "query",
+                    "description": "Role for users",
+                    "required": false,
+                    "type": "string",
+                    "enum": ["participant", "clinician"]
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/users"
+                        }
+                     },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
             "post": {
                 "operationId": "createNewUser",
                 "summary": "Creates new user",
@@ -70,6 +96,33 @@
                 "responses": {
                     "201": {
                         "$ref": "#/responses/idSuccess"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/users/{id}": {
+            "x-swagger-router-controller": "user.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
+            "get": {
+                "operationId": "getUser",
+                "summary": "Gets user",
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successul response",
+                        "schema": {
+                            "$ref": "#/definitions/user"
+                        }
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -2729,6 +2782,12 @@
             },
             "additionalProperties": false,
             "minProperties": 1
+        },
+        "users": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/user"
+            }
         },
         "userUpdate": {
             "type": "object",
