@@ -75,15 +75,35 @@ const updateIds = function (surveys, idMap, questionIdMap) {
     });
 };
 
+let removeQuestionSectionIds;
+let removeSurveySectionIds;
+
 const removeSectionIds = function removeSectionIds(sections) {
     if (sections) {
         sections.forEach(section => {
             delete section.id;
-            if (section.sections) {
-                removeSectionIds(section.sections);
+            removeSectionIds(section.sections);
+            removeQuestionSectionIds(section.questions);
+        });
+    }
+};
+
+removeQuestionSectionIds = function (questions) {
+    if (questions) {
+        questions.forEach(({ sections }) => {
+            if (sections) {
+                sections.forEach(section => {
+                    delete section.id;
+                    removeSurveySectionIds(section);
+                });
             }
         });
     }
+};
+
+removeSurveySectionIds = function ({ questions, sections }) {
+    removeSectionIds(sections);
+    removeQuestionSectionIds(questions);
 };
 
 const formQuestionsSectionsSurveyPatch = function (survey, { questions, sections }) {
@@ -97,7 +117,9 @@ const formQuestionsSectionsSurveyPatch = function (survey, { questions, sections
         return surveyPatch;
     }
     if (questions) {
-        surveyPatch.questions = questions.map(({ id, required }) => ({ id, required }));
+        questions = _.cloneDeep(questions);
+        removeQuestionSectionIds(questions);
+        surveyPatch.questions = questions;
         survey.questions = questions;
         delete survey.sections;
         return surveyPatch;
@@ -231,6 +253,7 @@ module.exports = {
     formAnsweredSurvey,
     updateIds,
     removeSectionIds,
+    removeSurveySectionIds,
     formQuestionsSectionsSurveyPatch,
     SpecTests,
     IntegrationTests

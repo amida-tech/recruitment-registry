@@ -17,7 +17,10 @@ module.exports = function (sequelize, DataTypes) {
             allowNull: false,
             field: 'question_id',
             references: {
-                model: 'question',
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'question'
+                },
                 key: 'id'
             }
         },
@@ -31,6 +34,7 @@ module.exports = function (sequelize, DataTypes) {
         }
     }, {
         freezeTableName: true,
+        schema: sequelize.options.schema,
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
         indexes: [{ fields: ['question_id'] }]

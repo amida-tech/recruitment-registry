@@ -1,8 +1,10 @@
+/* global it*/
 'use strict';
 
 const chai = require('chai');
 
 const appgen = require('../../app-generator');
+const db = require('../../models/db');
 const Generator = require('./generator');
 const translator = require('./translator');
 const comparator = require('./comparator');
@@ -83,11 +85,11 @@ class SharedIntegration {
         };
     }
 
-    createUserFn(store, history, user) {
+    createUserFn(store, history, user, override) {
         const generator = this.generator;
         return function (done) {
             if (!user) {
-                user = generator.newUser();
+                user = generator.newUser(override);
             }
             store.post('/users', user, 201)
                 .end(function (err, res) {
@@ -234,6 +236,24 @@ class SharedIntegration {
         };
     }
 
+    verifyUserAudit(store) {
+        it('verify user audit', function () {
+            const userAudit = store.getUserAudit();
+            return db.User.findAll({ raw: true, attributes: ['username', 'id'] })
+                .then(users => new Map(users.map(user => [user.username, user.id])))
+                .then(userMap => userAudit.map(({ username, operation, endpoint }) => ({ userId: userMap.get(username), operation, endpoint })))
+                .then(expected => {
+                    return db.UserAudit.findAll({
+                            raw: true,
+                            attributes: ['userId', 'endpoint', 'operation'],
+                            order: 'created_at'
+                        })
+                        .then(actual => {
+                            expect(actual).to.deep.equal(expected);
+                        });
+                });
+        });
+    }
 }
 
 module.exports = SharedIntegration;

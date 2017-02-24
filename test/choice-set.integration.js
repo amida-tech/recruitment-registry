@@ -88,4 +88,6 @@ describe('choice set integration', function () {
         it(`delete first choice of choice set ${index}`, deleteFirstChoiceFn(index));
         it(`get choice set ${index}`, tests.getChoiceSetFn(index));
     });
+
+    shared.verifyUserAudit(rrSuperTest);
 });

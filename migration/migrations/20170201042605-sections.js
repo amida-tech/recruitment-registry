@@ -107,6 +107,17 @@ const surveySectionParentId = function (queryInterface, Sequelize) {
     });
 };
 
+const surveySectionParentQuestionId = function (queryInterface, Sequelize) {
+    return queryInterface.addColumn('survey_section', 'parent_question_id', {
+        type: Sequelize.INTEGER,
+        field: 'parent_question_id',
+        references: {
+            model: 'question',
+            key: 'id'
+        }
+    });
+};
+
 const surveySectionLine = function (queryInterface, Sequelize) {
     return queryInterface.changeColumn('survey_section', 'line', {
         type: Sequelize.INTEGER,
@@ -123,6 +134,7 @@ module.exports = {
             .then(() => queryInterface.dropTable('section_text'))
             .then(() => queryInterface.dropTable('rr_section'))
             .then(() => surveySectionParentId(queryInterface, Sequelize))
+            .then(() => surveySectionParentQuestionId(queryInterface, Sequelize))
             .then(() => surveySectionLine(queryInterface, Sequelize))
             .then(() => surveySectionType(queryInterface, Sequelize))
             .then(() => queryInterface.addIndex('survey_section_question', ['survey_section_id'], {

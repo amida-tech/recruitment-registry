@@ -17,19 +17,17 @@ module.exports = {
         required: true,
         type: 'choice-ref',
         answerIdentifier: { type: 'employment-history', value: 'QID2' },
-        choiceSetReference: 'primary-occupation',
-        skip: {
-            count: 1,
-            rule: {
-                logic: 'not-equals',
-                answer: { code: '20' }
-            }
-        }
+        choiceSetReference: 'primary-occupation'
     }, {
         text: 'Please indicate other field occupation?',
         required: false,
         type: 'text',
-        answerIdentifier: { type: 'employment-history', value: 'QID3' }
+        answerIdentifier: { type: 'employment-history', value: 'QID3' },
+        enableWhen: [{
+            questionIndex: 1,
+            logic: 'not-equals',
+            answer: { code: '20' }
+        }]
     }, {
         text: 'Please indicate your role in your current job',
         required: false,

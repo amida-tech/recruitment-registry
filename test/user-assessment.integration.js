@@ -192,4 +192,6 @@ describe('user assessment integration', function () {
     it('list user 1 assessment 1 (2) answers', listUserAssessmentAnswersFn(1, 1, 2));
 
     it('logout as super', shared.logoutFn(rrSuperTest));
+
+    shared.verifyUserAudit(rrSuperTest);
 });

@@ -1,19 +1,64 @@
 'use strict';
 
-module.exports = {
-    '0-3': { type: 'choice', logic: 'equals', count: 3 },
-    '1-5': { type: 'choice', logic: 'not-equals', count: 1 },
-    '2-3': { type: 'bool', logic: 'not-equals', count: 2 },
-    '3-0': { type: 'text', logic: 'exists', count: 1 },
-    '4-2': { type: 'text', logic: 'not-exists', count: 2 },
-    '5-2': { type: 'choices', logic: 'equals', count: 1 },
-    '6-1': { type: 'choices', logic: 'not-selected', count: 2, selectionCount: 2 },
-    '7-3': { type: 'choices', logic: 'not-selected', count: 1, selectionCount: 1 },
-    '8-4': { type: 'choices', logic: 'not-selected', count: 1, selectionCount: 3 },
-    '8-5': { type: 'text', purpose: 'multipleSupport' },
-    '9-4': { type: 'choices', logic: 'each-not-selected', count: 1, selectionCount: 3 },
-    '10-0': { type: 'choices', logic: 'each-not-selected', count: 4, selectionCount: 3 },
-    '11-5': { type: 'text', purpose: 'enableWhen', logic: 'not-equals', relativeIndex: 1 },
-    '11-6': { type: 'text', purpose: 'enableWhen', logic: 'not-equals', relativeIndex: 2 },
-    '12-3': { type: 'choice', purpose: 'enableWhen', logic: 'not-equals', relativeIndex: 1 }
-};
+module.exports = [{
+    surveyIndex: 0,
+    questionIndex: 5,
+    type: 'text',
+    purpose: 'enableWhen',
+    logic: 'not-equals',
+    relativeIndex: 1
+}, {
+    surveyIndex: 1,
+    questionIndex: 5,
+    type: 'text',
+    purpose: 'enableWhen',
+    logic: 'not-equals',
+    relativeIndex: 1
+}, {
+    surveyIndex: 2,
+    questionIndex: 2,
+    type: 'choice',
+    purpose: 'type'
+}, {
+    surveyIndex: 2,
+    questionIndex: 3,
+    type: 'choice',
+    purpose: 'enableWhen',
+    logic: 'equals',
+    relativeIndex: 1
+}, {
+    surveyIndex: 3,
+    questionIndex: 3,
+    type: 'choice',
+    logic: 'not-equals',
+    count: 3,
+    purpose: 'questionSection'
+}, {
+    surveyIndex: 4,
+    questionIndex: 5,
+    type: 'choice',
+    logic: 'equals',
+    count: 1,
+    purpose: 'questionSection'
+}, {
+    surveyIndex: 5,
+    questionIndex: 3,
+    type: 'bool',
+    logic: 'equals',
+    count: 2,
+    purpose: 'questionSection'
+}, {
+    surveyIndex: 6,
+    questionIndex: 0,
+    type: 'text',
+    logic: 'not-exists',
+    count: 1,
+    purpose: 'questionSection'
+}, {
+    surveyIndex: 7,
+    questionIndex: 2,
+    type: 'text',
+    logic: 'exists',
+    count: 2,
+    purpose: 'questionSection'
+}];

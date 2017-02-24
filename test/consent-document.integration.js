@@ -60,8 +60,6 @@ describe('consent document integration', function () {
     });
     it('logout as user 0', shared.logoutFn(store));
 
-    it('login as super', shared.loginFn(store, config.superUser));
-
     const getConsentDocumentFn = function (typeIndex) {
         return function (done) {
             const id = history.id(typeIndex);
@@ -99,10 +97,14 @@ describe('consent document integration', function () {
     };
 
     for (let i = 0; i < 2; ++i) {
+        it('login as super', shared.loginFn(store, config.superUser));
         it(`create consent document of type ${i}`, shared.createConsentDocumentFn(store, history, i));
+        it('logout as super', shared.logoutFn(store));
         it(`get/verify consent document content of type ${i}`, getConsentDocumentFn(i));
         it(`get/verify consent document content of type ${i} (type name)`, getConsentDocumentByTypeNameFn(i));
+        it('login as super', shared.loginFn(store, config.superUser));
         it(`add translated (es) consent document ${i}`, shared.translateConsentDocumentFn(store, i, 'es', history));
+        it('logout as super', shared.logoutFn(store));
         it(`verify translated (es) consent document of type ${i}`, getTranslatedConsentDocumentFn(i, 'es'));
     }
 
@@ -145,11 +147,11 @@ describe('consent document integration', function () {
         it(`login as user ${i}`, shared.loginIndexFn(store, history.hxUser, i));
         it(`verify consent documents required for user ${i}`, getUserConsentDocumentsFn([0, 1]));
         it(`verify translated consent documents required for user ${i}`, getTranslatedUserConsentDocumentsFn([0, 1], 'es'));
+        it(`logout as user ${i}`, shared.logoutFn(store));
         it(`user ${i} get consent document of type 0`, getConsentDocumentFn(0));
         it(`user ${i} get consent document of type 1`, getConsentDocumentFn(1));
         it(`user ${i} get translated (es) consent document of type 0`, getTranslatedConsentDocumentFn(0, 'es'));
         it(`user ${i} get translated (es) consent document of type 1`, getTranslatedConsentDocumentFn(1, 'es'));
-        it(`logout as user ${i}`, shared.logoutFn(store));
     }
 
     const signConsentTypeFn = function (userIndex, typeIndex, language) {
@@ -190,7 +192,7 @@ describe('consent document integration', function () {
 
     it(`login as user 1`, shared.loginIndexFn(store, history.hxUser, 1));
     it('user 1 signs consent document of type 0', signConsentTypeFn(1, 0, 'en'));
-    it('user 1 signs consent document of type 1', signConsentTypeFn(1, 1, 'sp'));
+    it('user 1 signs consent document of type 1', signConsentTypeFn(1, 1, 'es'));
     it('logout as user 1', shared.logoutFn(store));
 
     it(`login as user 2`, shared.loginIndexFn(store, history.hxUser, 2));
@@ -211,13 +213,13 @@ describe('consent document integration', function () {
 
     it(`login as user 2`, shared.loginIndexFn(store, history.hxUser, 2));
     it(`verify consent documents required for user 2`, getUserConsentDocumentsFn([1]));
-    it(`user 2 get consent document of 1`, getConsentDocumentFn(1));
     it('logout as user 2', shared.logoutFn(store));
+    it(`user 2 get consent document of 1`, getConsentDocumentFn(1));
 
     it(`login as user 3`, shared.loginIndexFn(store, history.hxUser, 3));
     it(`verify consent documents required for user 3`, getUserConsentDocumentsFn([0]));
-    it(`user 3 get consent document of 0`, getConsentDocumentFn(0));
     it('logout as user 3', shared.logoutFn(store));
+    it(`user 3 get consent document of 0`, getConsentDocumentFn(0));
 
     it('login as super', shared.loginFn(store, config.superUser));
     it('add a new consent type', shared.createConsentTypeFn(store, history));
@@ -234,10 +236,10 @@ describe('consent document integration', function () {
         it(`login as user ${userIndex}`, shared.loginIndexFn(store, history.hxUser, userIndex));
         it(`verify consent documents list (required) for user ${userIndex}`, getUserConsentDocumentsFn(consentDocumentIndices));
         it(`verify consent documents list (all) for user ${userIndex}`, getUserConsentDocumentsAllFn(userIndex));
+        it(`logout as user ${userIndex}`, shared.logoutFn(store));
         for (let i = 0; i < consentDocumentIndices.length; ++i) {
             it(`user ${userIndex} get consent document of ${i}`, getConsentDocumentFn(consentDocumentIndices[i]));
         }
-        it(`logout as user ${userIndex}`, shared.logoutFn(store));
     });
 
     verifyConsentDocuments(0, [2]);
@@ -258,7 +260,7 @@ describe('consent document integration', function () {
     verifyConsentDocuments(2, [1]);
     verifyConsentDocuments(3, [0, 1, 2]);
 
-    signConsentType(1, 2, 'sp');
+    signConsentType(1, 2, 'es');
     verifyConsentDocuments(1, [1]);
 
     it('login as super', shared.loginFn(store, config.superUser));
@@ -289,7 +291,7 @@ describe('consent document integration', function () {
 
     signConsentType(0, 1, 'en');
     verifyConsentDocuments(0, [0, 2]);
-    signConsentType(0, 2, 'sp');
+    signConsentType(0, 2, 'es');
     verifyConsentDocuments(0, [0]);
     signConsentType(0, 0);
     verifyConsentDocuments(0, []);
@@ -352,4 +354,6 @@ describe('consent document integration', function () {
 
             });
     });
+
+    shared.verifyUserAudit(store);
 });

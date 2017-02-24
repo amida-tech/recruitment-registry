@@ -115,13 +115,13 @@ module.exports = {
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-initial-m12-column', value: 'QID26' },
         choiceSetReference: 'yes-no-1-3',
-        skip: {
-            count: 1,
-            rule: {
-                logic: 'not-equals',
-                answer: { code: '1' }
-            }
-        }
+        //skip: {
+        //    count: 1,
+        //    rule: {
+        //        logic: 'not-equals',
+        //        answer: { code: '1' }
+        //    }
+        //}
     }, {
         text: 'How long has it been in years since your stopped your alcohol abuse? If you still abuse alcohol please write 0.',
         required: false,
@@ -133,13 +133,13 @@ module.exports = {
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-initial-m12-column', value: 'QID28' },
         choiceSetReference: 'yes-no-1-3',
-        skip: {
-            count: 1,
-            rule: {
-                logic: 'not-equals',
-                answer: { code: '1' }
-            }
-        }
+        //skip: {
+        //    count: 1,
+        //    rule: {
+        //        logic: 'not-equals',
+        //        answer: { code: '1' }
+        //    }
+        //}
     }, {
         text: 'How long has it been in years since you stopped the drug abuse? If you still abuse drugs please write 0.',
         required: false,
@@ -162,12 +162,12 @@ module.exports = {
         instruction: '(Select all that apply)',
         required: false,
         type: 'choices',
-        skip: {
-            count: 2,
-            rule: {
-                logic: 'each-not-selected'
-            }
-        },
+        //skip: {
+        //    count: 2,
+        //    rule: {
+        //        logic: 'each-not-selected'
+        //    }
+        //},
         choices: [
             { text: 'Anti-depressant medication', answerIdentifier: { type: 'bhr-gap-initial-m12-column', value: 'QID18_1' } },
             { text: 'Anti-anxiety medication', answerIdentifier: { type: 'bhr-gap-initial-m12-column', value: 'QID18_2' } }
@@ -189,12 +189,12 @@ module.exports = {
         instruction: '(Select all that apply)',
         required: false,
         type: 'choices',
-        skip: {
-            count: 2,
-            rule: {
-                logic: 'each-not-selected'
-            }
-        },
+        //skip: {
+        //    count: 2,
+        //    rule: {
+        //        logic: 'each-not-selected'
+        //    }
+        //},
         choices: [
             { text: 'Donepezil (Aricept)', answerIdentifier: { type: 'bhr-gap-initial-m12-column', value: 'QID19_1' } },
             { text: 'Tacrine (Cognex)', answerIdentifier: { type: 'bhr-gap-initial-m12-column', value: 'QID19_2' } },

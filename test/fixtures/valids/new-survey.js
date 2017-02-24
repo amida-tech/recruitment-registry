@@ -32,40 +32,46 @@ module.exports = [{
         required: false
     }]
 }, {
-    name: 'name_0',
-    description: 'description_0',
+    name: 'name_13',
+    meta: {
+        'displayAsWizard': true,
+        'saveProgress': false
+    },
     questions: [{
-        'id': 1,
-        'required': false
+        id: 105,
+        required: false
     }, {
-        'id': 2,
-        'required': true
+        id: 106,
+        required: true
     }, {
-        'id': 3,
-        'required': false
+        id: 107,
+        required: false
     }, {
-        'id': 4,
-        'required': false,
-        'skip': {
-            'count': 3,
-            'rule': {
-                'logic': 'equals',
-                'answer': {
-                    'choice': 6
-                }
+        id: 108,
+        required: false,
+        sections: [{
+            questions: [{
+                id: 109,
+                required: true
+            }, {
+                id: 110,
+                required: false
+            }, {
+                id: 111,
+                required: true
+            }],
+            enableWhen: {
+                rule: {
+                    logic: 'not-equals',
+                    answer: {
+                        choice: 184
+                    }
+                },
+                questionId: 108
             }
-        }
+        }]
     }, {
-        'id': 5,
-        'required': false
-    }, {
-        'id': 6,
-        'required': true
-    }, {
-        'id': 7,
-        'required': false
-    }, {
-        'id': 8,
-        'required': true
+        id: 112,
+        required: true
     }]
 }];

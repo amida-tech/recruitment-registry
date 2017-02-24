@@ -259,4 +259,6 @@ describe('profile survey integration', function () {
     it('get/verify profile survey 5 (replaced 4)', verifyProfileSurveyFn(5));
 
     it('get/verify profile survey 5 (replaced 4) id', verifyProfileSurveyIdFn(5));
+
+    shared.verifyUserAudit(store);
 });

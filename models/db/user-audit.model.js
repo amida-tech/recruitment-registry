@@ -1,32 +1,35 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('profile_survey', {
-        surveyId: {
+    return sequelize.define('user_audit', {
+        userId: {
             type: DataTypes.INTEGER,
-            field: 'survey_id',
+            allowNull: false,
+            field: 'user_id',
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'survey'
+                    tableName: 'registry_user'
                 },
                 key: 'id'
             }
         },
+        endpoint: {
+            type: DataTypes.TEXT,
+            allowNull: false
+        },
+        operation: {
+            type: DataTypes.TEXT,
+            allowNull: false
+        },
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',
-        },
-        deletedAt: {
-            type: DataTypes.DATE,
-            field: 'deleted_at'
         }
     }, {
         freezeTableName: true,
         schema: sequelize.options.schema,
         createdAt: 'createdAt',
-        updatedAt: false,
-        deletedAt: 'deletedAt',
-        paranoid: true
+        updatedAt: false
     });
 };

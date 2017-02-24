@@ -69,6 +69,15 @@ const answerRule = function (queryInterface, Sequelize) {
             primaryKey: true,
             autoIncrement: true
         },
+        surveyId: {
+            type: Sequelize.INTEGER,
+            allowNull: false,
+            field: 'survey_id',
+            references: {
+                model: 'survey',
+                key: 'id'
+            }
+        },
         logic: {
             type: Sequelize.TEXT,
             allowNull: false,
@@ -77,54 +86,47 @@ const answerRule = function (queryInterface, Sequelize) {
                 key: 'name'
             }
         },
+        questionId: {
+            type: Sequelize.INTEGER,
+            field: 'question_id',
+            allowNull: true,
+            references: {
+                model: 'question',
+                key: 'id'
+            }
+        },
+        surveySectionId: {
+            type: Sequelize.INTEGER,
+            field: 'survey_section_id',
+            allowNull: true,
+            references: {
+                model: 'survey_section',
+                key: 'id'
+            }
+        },
+        answerQuestionId: {
+            type: Sequelize.INTEGER,
+            field: 'answer_question_id',
+            references: {
+                model: 'question',
+                key: 'id'
+            }
+        },
         createdAt: {
             type: Sequelize.DATE,
             field: 'created_at',
+        },
+        deletedAt: {
+            type: Sequelize.DATE,
+            field: 'deleted_at'
         }
     }, {
         freezeTableName: true,
         createdAt: 'createdAt',
-        updatedAt: false
-    });
-};
-
-const skipRuleId = function (queryInterface, Sequelize) {
-    return queryInterface.addColumn('survey_question', 'answer_rule_id', {
-        type: Sequelize.INTEGER,
-        field: 'answer_rule_id',
-        references: {
-            model: 'answer_rule',
-            key: 'id'
-        }
-    });
-};
-
-const skipCount = function (queryInterface, Sequelize) {
-    return queryInterface.addColumn('survey_question', 'skip_count', {
-        type: Sequelize.INTEGER,
-        field: 'skip_count',
-    });
-};
-
-const enableWhenRuleId = function (queryInterface, Sequelize) {
-    return queryInterface.addColumn('survey_question', 'enable_when_rule_id', {
-        type: Sequelize.INTEGER,
-        field: 'enable_when_rule_id',
-        references: {
-            model: 'answer_rule',
-            key: 'id'
-        }
-    });
-};
-
-const enableWhenQuestionId = function (queryInterface, Sequelize) {
-    return queryInterface.addColumn('survey_question', 'enable_when_question_id', {
-        type: Sequelize.INTEGER,
-        field: 'enable_when_question_id',
-        references: {
-            model: 'answer_rule',
-            key: 'id'
-        }
+        updatedAt: false,
+        deletedAt: 'deletedAt',
+        paranoid: true,
+        indexes: [{ fields: ['survey_id'], where: { deleted_at: { $eq: null } } }]
     });
 };
 
@@ -133,22 +135,17 @@ module.exports = {
         const sequelize = queryInterface.sequelize;
         return answerRuleLogic(queryInterface, Sequelize)
             .then(() => answerRule(queryInterface, Sequelize))
-            .then(() => answerRuleValue(queryInterface, Sequelize))
-            .then(() => skipRuleId(queryInterface, Sequelize))
-            .then(() => skipCount(queryInterface, Sequelize))
-            .then(() => enableWhenRuleId(queryInterface, Sequelize))
-            .then(() => enableWhenQuestionId(queryInterface, Sequelize))
+            .then(() => queryInterface.addIndex('answer_rule', ['survey_id'], {
+                where: { deleted_at: { $eq: null } },
+                indexName: 'answer_rule_survey_id'
+            })).then(() => answerRuleValue(queryInterface, Sequelize))
             .then(() => sequelize.query('INSERT INTO answer_rule_logic (name) VALUES (\'equals\')'))
             .then(() => sequelize.query('INSERT INTO answer_rule_logic (name) VALUES (\'exists\')'))
             .then(() => sequelize.query('INSERT INTO answer_rule_logic (name) VALUES (\'not-equals\')'))
-            .then(() => sequelize.query('INSERT INTO answer_rule_logic (name) VALUES (\'not-exists\')'))
-            .then(() => sequelize.query('INSERT INTO answer_rule_logic (name) VALUES (\'not-selected\')'))
-            .then(() => sequelize.query('INSERT INTO answer_rule_logic (name) VALUES (\'each-not-selected\')'));
+            .then(() => sequelize.query('INSERT INTO answer_rule_logic (name) VALUES (\'not-exists\')'));
     },
     down: function (queryInterface) {
-        return queryInterface.removeColumn('survey_question', 'skip_count')
-            .then(() => queryInterface.removeColumn('survey_question', 'skip_rule_id'))
-            .then(() => queryInterface.dropTable('answer_rule_value'))
+        return queryInterface.dropTable('answer_rule_value')
             .then(() => queryInterface.dropTable('answer_rule'))
             .then(() => queryInterface.dropTable('answer_rule_logic'));
     }

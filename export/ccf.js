@@ -20,7 +20,18 @@ const exportSurveys = function () {
         })
         .then(surveys => {
             const ids = surveys.reduce((r, survey) => {
-                survey.questions.forEach(question => r.push(question.id));
+                survey.questions.forEach(question => {
+                    r.push(question.id);
+                    if (question.sections) {
+                        const sections = question.sections;
+                        if (sections.length > 1) {
+                            throw new Error('Multiple question sections is not supported');
+                        }
+                        sections.forEach(section => {
+                            section.questions.forEach(({ id }) => r.push(id));
+                        });
+                    }
+                });
                 return r;
             }, []);
             return models.questionIdentifier.getInformationByQuestionId(identifierType, ids)
@@ -33,7 +44,8 @@ const exportSurveys = function () {
             let index = 0;
             const exportedQuestions = surveys.reduce((r, survey) => {
                 r.push({ number: survey.name });
-                survey.questions.forEach(question => {
+                const questions = models.survey.getQuestions(survey);
+                questions.forEach(question => {
                     ++index;
                     let line = {
                         number: index.toString(),
@@ -44,10 +56,10 @@ const exportSurveys = function () {
                     if (instruction) {
                         line.instruction = instruction;
                     }
-                    const skip = question.skip;
-                    if (skip) {
-                        line[cSkipCount] = skip.count;
-                        line[cConditional] = answerIdentifierMap[question.id + ':' + skip.rule.answer.choice].identifier;
+                    const section = question.sections && question.sections[0];
+                    if (section) {
+                        line[cSkipCount] = section.questions.length;
+                        line[cConditional] = answerIdentifierMap[question.id + ':' + section.enableWhen[0].answer.choice].identifier;
                     }
                     const meta = question.meta;
                     if (meta) {

@@ -49,7 +49,7 @@ describe('survey unit', function () {
             return models.survey.getSurvey(surveyId)
                 .then(survey => {
                     if (noSectionId) {
-                        surveyCommon.removeSectionIds(survey.sections);
+                        surveyCommon.removeSurveySectionIds(survey);
                     }
                     expect(survey).to.deep.equal(expected);
                 });
@@ -130,7 +130,7 @@ describe('survey unit', function () {
 
     it('error: create survey without questions', function () {
         return models.survey.createSurvey({ name: 'name' })
-            .then(shared.throwingHandler, shared.expectedErrorHandler('surveyNoQuestions'));
+            .then(shared.throwingHandler, shared.expectedErrorHandler('surveyNeitherQuestionsSectionsSpecified'));
     });
 
     _.range(surveyCount).forEach(index => {
@@ -222,7 +222,7 @@ describe('survey unit', function () {
         delete replacementSurvey.questions;
         delete replacementSurvey.sections;
         return models.survey.replaceSurvey(survey.id, replacementSurvey)
-            .then(shared.throwingHandler, shared.expectedErrorHandler('surveyNoQuestions'));
+            .then(shared.throwingHandler, shared.expectedErrorHandler('surveyNeitherQuestionsSectionsSpecified'));
     });
 
     it('error: replace a non-existent survey', function () {
@@ -384,13 +384,9 @@ describe('survey unit', function () {
     it('extract existing questions', function () {
         const surveys = hxSurvey.listServers(['status', 'questions', 'sections']);
 
-        hxSurvey.questions = surveys.reduce((r, { questions, sections }) => {
-            if (sections) {
-                const questions = models.survey.flattenSectionsHieararchy(sections).questions;
-                r.push(...questions);
-            } else {
-                r.push(...questions);
-            }
+        hxSurvey.questions = surveys.reduce((r, survey) => {
+            const questions = models.survey.flattenHierarchy(survey).questions;
+            r.push(...questions);
             return r;
         }, []);
     });
@@ -491,10 +487,7 @@ describe('survey unit', function () {
 
     it('error: answer without required questions', function () {
         const survey = hxSurvey.server(4);
-        let qxs = survey.questions;
-        if (!qxs) {
-            qxs = models.survey.flattenSectionsHieararchy(survey.sections).questions;
-        }
+        let qxs = models.survey.getQuestions(survey);
         const answers = generator.answerQuestions(qxs);
         const input = {
             userId: hxUser.id(0),
@@ -524,10 +517,7 @@ describe('survey unit', function () {
         const userId = hxUser.id(0);
         return models.survey.getAnsweredSurvey(userId, survey.id)
             .then(answeredSurvey => {
-                let qxs = survey.questions;
-                if (!qxs) {
-                    qxs = models.survey.flattenSectionsHieararchy(survey.sections).questions;
-                }
+                let qxs = models.survey.getQuestions(survey);
                 const answers = generator.answerQuestions(qxs);
                 const input = {
                     userId: hxUser.id(0),
@@ -540,10 +530,7 @@ describe('survey unit', function () {
                 return models.answer.createAnswers(input)
                     .then(() => {
                         const removedQxId = qxs[requiredIndices[0]].id;
-                        let answeredSurveyQuestions = answeredSurvey.questions;
-                        if (!answeredSurveyQuestions) {
-                            answeredSurveyQuestions = models.survey.flattenSectionsHieararchy(answeredSurvey.sections).questions;
-                        }
+                        let answeredSurveyQuestions = models.survey.getQuestions(answeredSurvey);
                         const removedAnswer = answeredSurveyQuestions.find(qx => (qx.id === removedQxId)).answer;
                         answers.push({ questionId: removedQxId, answer: removedAnswer });
                         return models.survey.getAnsweredSurvey(input.userId, input.surveyId)

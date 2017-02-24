@@ -15,6 +15,7 @@ module.exports = function (sequelize, DataTypes) {
         }
     }, {
         freezeTableName: true,
+        schema: sequelize.options.schema,
         createdAt: 'createdAt',
         updatedAt: false,
         hooks: {
@@ -24,9 +25,7 @@ module.exports = function (sequelize, DataTypes) {
                         'equals',
                         'exists',
                         'not-equals',
-                        'not-exists',
-                        'not-selected',
-                        'each-not-selected'
+                        'not-exists'
                     ];
                     const ps = names.map(name => this.create({ name }));
                     return SPromise.all(ps);

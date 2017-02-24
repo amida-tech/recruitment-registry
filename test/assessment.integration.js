@@ -46,4 +46,6 @@ describe('assessment integration', function () {
     it('list assessments', assessmentTests.listAssessmentFn());
 
     it('logout as super', shared.logoutFn(rrSuperTest));
+
+    shared.verifyUserAudit(rrSuperTest);
 });

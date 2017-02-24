@@ -52,21 +52,77 @@
         },
         "/users": {
             "x-swagger-router-controller": "user.controller",
+            "get": {
+                "operationId": "listUsers",
+                "summary": "List users",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "role",
+                    "in": "query",
+                    "description": "Role for users",
+                    "required": false,
+                    "type": "string",
+                    "enum": ["participant", "clinician"]
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/users"
+                        }
+                     },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
             "post": {
                 "operationId": "createNewUser",
                 "summary": "Creates new user",
+                "security": [{
+                    "admin": []
+                }],
                 "parameters": [{
                     "name": "user",
                     "in": "body",
                     "description": "User specification",
                     "required": true,
                     "schema": {
-                        "$ref": "#/definitions/user"
+                        "$ref": "#/definitions/newUser"
                     }
                 }],
                 "responses": {
                     "201": {
                         "$ref": "#/responses/idSuccess"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/users/{id}": {
+            "x-swagger-router-controller": "user.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
+            "get": {
+                "operationId": "getUser",
+                "summary": "Gets user",
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successul response",
+                        "schema": {
+                            "$ref": "#/definitions/user"
+                        }
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -2717,10 +2773,12 @@
                     "type": "string",
                     "minLength": 1
                 }
-            }
+            },
+            "additionalProperties": false
         },
-        "user": {
+        "newUser": {
             "type": "object",
+            "required": ["password"],
             "properties": {
                 "username": {
                     "type": "string"
@@ -2735,6 +2793,36 @@
                     "type": "string",
                     "format": "email"
                 }
+            },
+            "additionalProperties": false,
+            "minProperties": 2
+        },
+        "user": {
+            "type": "object",
+            "required": ["id"],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "username": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string",
+                    "format": "email"
+                }
+            },
+            "additionalProperties": false,
+            "minProperties": 1
+        },
+        "users": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/user"
             }
         },
         "userUpdate": {
@@ -2747,7 +2835,8 @@
                     "type": "string",
                     "format": "email"
                 }
-            }
+            },
+            "additionalProperties": false
         },
         "questionType": {
             "type": "string",
@@ -2761,49 +2850,9 @@
             "type": "object",
             "properties": {}
         },
-        "newSkipCondition": {
+        "newRule": {
             "type": "object",
-            "required": ["count", "rule"],
-            "properties": {
-                "count": {
-                    "type": "integer",
-                    "minimum": 1
-                },
-                "rule": {
-                    "type": "object",
-                    "required": ["logic"],
-                    "properties": {
-                        "logic": {
-                            "type": "string"
-                        },
-                        "answer": {
-                            "$ref": "#/definitions/newSkipAnswer"
-                        },
-                        "selectionIds": {
-                            "type": "array",
-                            "items": {
-                                "type": "integer",
-                                "minimum": 1
-                            },
-                            "minItems": 1
-                        },
-                        "selectionTexts": {
-                            "type": "array",
-                            "items": {
-                                "type": "string",
-                                "minLength": 1
-                            }
-                        }
-                    },
-                    "maxProperties": 2,
-                    "additionalProperties": false
-                }
-            },
-            "additionalProperties": false
-        },
-        "newEnableWhenCondition": {
-            "type": "object",
-            "required": ["rule"],
+            "required": ["logic"],
             "properties": {
                 "questionIndex": {
                     "type": "integer",
@@ -2813,38 +2862,23 @@
                     "type": "integer",
                     "minimum": 1
                 },
-                "rule": {
-                    "type": "object",
-                    "required": ["logic"],
-                    "properties": {
-                        "logic": {
-                            "type": "string"
-                        },
-                        "answer": {
-                            "$ref": "#/definitions/newSkipAnswer"
-                        },
-                        "selectionIds": {
-                            "type": "array",
-                            "items": {
-                                "type": "integer",
-                                "minimum": 1
-                            },
-                            "minItems": 1
-                        },
-                        "selectionTexts": {
-                            "type": "array",
-                            "items": {
-                                "type": "string",
-                                "minLength": 1
-                            }
-                        }
-                    },
-                    "maxProperties": 2,
-                    "additionalProperties": false
+                "logic": {
+                    "type": "string"
+                },
+                "answer": {
+                    "$ref": "#/definitions/newRuleAnswer"
                 }
             },
-            "maxProperties": 2,
+            "minProperties": 2,
             "additionalProperties": false
+        },
+        "newEnableWhen": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/newRule"
+            },
+            "maxItems": 1,
+            "minItems": 1
         },
         "newSurveyQuestion": {
             "type": "object",
@@ -2857,11 +2891,8 @@
                 "id": {
                     "type": "integer"
                 },
-                "skip": {
-                    "$ref": "#/definitions/newSkipCondition"
-                },
                 "enableWhen": {
-                    "$ref": "#/definitions/newEnableWhenCondition"
+                    "$ref": "#/definitions/newEnableWhen"
                 },
                 "text": {
                     "type": "string",
@@ -2875,6 +2906,13 @@
                 },
                 "multiple": {
                     "type": "boolean"
+                },
+                "sections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/newSection"
+                    },
+                    "minItems": 1
                 },
                 "maxCount": {
                     "type": "integer",
@@ -2934,6 +2972,9 @@
                     "items": {
                         "$ref": "#/definitions/newSection"
                     }
+                },
+                "enableWhen": {
+                    "$ref": "#/definitions/newEnableWhen"
                 }
             },
             "maxProperties": 2,
@@ -2959,6 +3000,9 @@
                     "items": {
                         "$ref": "#/definitions/section"
                     }
+                },
+                "enableWhen": {
+                    "$ref": "#/definitions/enableWhen"
                 }
             },
             "maxProperties": 3,
@@ -3023,46 +3067,17 @@
             },
             "additionalProperties": false
         },
-        "skipCondition": {
-            "type": "object",
-            "required": ["count", "rule"],
-            "properties": {
-                "count": {
-                    "type": "integer",
-                    "minimum": 1
-                },
-                "rule": {
-                    "type": "object",
-                    "required": ["id", "logic"],
-                    "properties": {
-                        "id": {
-                            "type": "integer",
-                            "minimum": 1
-                        },
-                        "logic": {
-                            "type": "string"
-                        },
-                        "answer": {
-                            "$ref": "#/definitions/answer"
-                        },
-                        "selectionIds": {
-                            "type": "array",
-                            "items": {
-                                "type": "integer",
-                                "minimum": 1
-                            },
-                            "minItems": 1
-                        }
-                    },
-                    "maxProperties": 3,
-                    "additionalProperties": false
-                }
+        "enableWhen": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/rule"
             },
-            "additionalProperties": false
+            "maxItems": 1,
+            "minItems": 1
         },
-        "enableWhenCondition": {
+        "rule": {
             "type": "object",
-            "required": ["rule"],
+            "required": ["id", "logic"],
             "properties": {
                 "questionId": {
                     "type": "integer",
@@ -3071,35 +3086,18 @@
                 "questionIndex": {
                     "type": "integer"
                 },
-                "rule": {
-                    "type": "object",
-                    "required": ["id", "logic"],
-                    "properties": {
-                        "id": {
-                            "type": "integer",
-                            "minimum": 1
-                        },
-                        "logic": {
-                            "type": "string"
-                        },
-                        "answer": {
-                            "$ref": "#/definitions/answer"
-                        },
-                        "selectionIds": {
-                            "type": "array",
-                            "items": {
-                                "type": "integer",
-                                "minimum": 1
-                            },
-                            "minItems": 1
-                        }
-                    },
-                    "maxProperties": 3,
-                    "additionalProperties": false
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "logic": {
+                    "type": "string"
+                },
+                "answer": {
+                    "$ref": "#/definitions/answer"
                 }
             },
-            "additionalProperties": false,
-            "maxProperties": 2
+            "additionalProperties": false
         },
         "surveyQuestion": {
             "type": "object",
@@ -3124,6 +3122,13 @@
                 "type": {
                     "$ref": "#/definitions/questionType"
                 },
+                "sections": {
+                  "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/section"
+                    },
+                    "minItems": 1
+                },
                 "multiple": {
                     "type": "boolean"
                 },
@@ -3137,11 +3142,8 @@
                 "required": {
                     "type": "boolean"
                 },
-                "skip": {
-                    "$ref": "#/definitions/skipCondition"
-                },
                 "enableWhen": {
-                    "$ref": "#/definitions/enableWhenCondition"
+                    "$ref": "#/definitions/enableWhen"
                 },
                 "choices": {
                     "type": "array",
@@ -3488,9 +3490,6 @@
                 "integerValue": {
                     "type": "integer"
                 },
-                "code": {
-                    "type": "string"
-                },
                 "floatValue": {
                     "type": "number"
                 },
@@ -3546,9 +3545,6 @@
                 "integerValue": {
                     "type": "integer"
                 },
-                "code": {
-                    "type": "string"
-                },
                 "floatValue": {
                     "type": "number"
                 },
@@ -3595,7 +3591,7 @@
             "maxProperties": 2,
             "additionalProperties": false
         },
-         "newSkipChoicesItem": {
+         "newRuleChoicesItem": {
             "type": "object",
             "properties": {
                 "text": {
@@ -3609,9 +3605,6 @@
                 },
                 "integerValue": {
                     "type": "integer"
-                },
-                "code": {
-                    "type": "string"
                 },
                 "textValue": {
                     "type": "string"
@@ -3631,7 +3624,7 @@
             },
             "maxProperties": 2
         },
-        "newSkipAnswer": {
+        "newRuleAnswer": {
             "type": "object",
             "properties": {
                 "choiceText": {
@@ -3643,7 +3636,7 @@
                 "choices": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/newSkipChoicesItem"
+                        "$ref": "#/definitions/newRuleChoicesItem"
                     },
                     "minItems": 1
                 },
@@ -3662,9 +3655,6 @@
                 },
                 "integerValue": {
                     "type": "integer"
-                },
-                "code": {
-                    "type": "string"
                 },
                 "feetInchesValue": {
                     "type": "object",
@@ -3912,7 +3902,7 @@
             ],
             "properties": {
                 "user": {
-                    "$ref": "#/definitions/user"
+                    "$ref": "#/definitions/newUser"
                 },
                 "answers": {
                     "type": "array",

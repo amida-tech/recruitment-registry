@@ -1,22 +1,14 @@
 'use strict';
 
 const bcrypt = require('bcrypt');
-const crypto = require('crypto');
-const moment = require('moment');
 
 const config = require('../../config');
 const SPromise = require('../../lib/promise');
 const RRError = require('../../lib/rr-error');
 
 module.exports = function (sequelize, DataTypes) {
-    const bccompare = SPromise.promisify(bcrypt.compare, {
-        context: bcrypt
-    });
     const bchash = SPromise.promisify(bcrypt.hash, {
         context: bcrypt
-    });
-    const randomBytes = SPromise.promisify(crypto.randomBytes, {
-        context: crypto
     });
 
     const User = sequelize.define('registry_user', {
@@ -95,50 +87,13 @@ module.exports = function (sequelize, DataTypes) {
             },
             beforeCreate(user) {
                 return user.updatePassword();
-            },
-            beforeUpdate(user) {
-                if (user.changed('password')) {
-                    return user.updatePassword();
-                }
             }
         },
         instanceMethods: {
-            authenticate(password) {
-                return bccompare(password, this.password)
-                    .then(result => {
-                        if (!result) {
-                            throw new RRError('authenticationError');
-                        }
-                    });
-            },
             updatePassword() {
                 return bchash(this.password, config.crypt.hashrounds)
                     .then(hash => {
                         this.password = hash;
-                    });
-            },
-            updateResetPWToken() {
-                return randomBytes(config.crypt.resetTokenLength)
-                    .then(buf => buf.toString('hex'))
-                    .then(token => {
-                        return randomBytes(config.crypt.resetPasswordLength)
-                            .then(passwordBuf => {
-                                return {
-                                    token,
-                                    password: passwordBuf.toString('hex')
-                                };
-                            });
-                    })
-                    .then(result => {
-                        this.resetPasswordToken = result.token;
-                        this.password = result.password;
-                        let m = moment.utc();
-                        m.add(config.crypt.resetExpires, config.crypt.resetExpiresUnit);
-                        this.resetPasswordExpires = m.toISOString();
-                        return this.save()
-                            .then(() => {
-                                return result.token;
-                            });
                     });
             }
         }

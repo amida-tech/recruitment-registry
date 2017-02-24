@@ -7,7 +7,10 @@ module.exports = function (sequelize, DataTypes) {
             allowNull: false,
             field: 'question_action_id',
             references: {
-                model: 'question_action',
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'question_action'
+                },
                 key: 'id'
             }
         },
@@ -16,7 +19,10 @@ module.exports = function (sequelize, DataTypes) {
             allowNull: false,
             field: 'language_code',
             references: {
-                model: 'language',
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'language'
+                },
                 key: 'code'
             }
         },
@@ -34,6 +40,7 @@ module.exports = function (sequelize, DataTypes) {
         }
     }, {
         freezeTableName: true,
+        schema: sequelize.options.schema,
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',

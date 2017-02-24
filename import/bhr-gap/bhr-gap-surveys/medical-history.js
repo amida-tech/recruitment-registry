@@ -192,13 +192,13 @@ module.exports = {
                 type: 'choice-ref',
                 answerIdentifier: { type: 'bhr-gap-medical-history-column', value: 'QID9' },
                 choiceSetReference: 'yes-no-1-2',
-                skip: {
-                    count: 3,
-                    rule: {
-                        logic: 'not-equals',
-                        answer: { code: '1' }
-                    }
-                }
+                //skip: {
+                //    count: 3,
+                //    rule: {
+                //        logic: 'not-equals',
+                //        answer: { code: '1' }
+                //    }
+                //}
             }, {
                 text: 'How long did you experience the drug abuse in years?',
                 required: false,
@@ -221,13 +221,13 @@ module.exports = {
                 type: 'choice-ref',
                 answerIdentifier: { type: 'bhr-gap-medical-history-column', value: 'QID17' },
                 choiceSetReference: 'yes-no-1-2',
-                skip: {
-                    count: 2,
-                    rule: {
-                        logic: 'not-equals',
-                        answer: { code: '1' }
-                    }
-                }
+                //skip: {
+                //    count: 2,
+                //    rule: {
+                //        logic: 'not-equals',
+                //        answer: { code: '1' }
+                //    }
+                //}
             }, {
                 text: 'Please indicate whether you currently have or had experienced drug abuse in the past',
                 required: false,
@@ -244,13 +244,13 @@ module.exports = {
                 type: 'choice-ref',
                 answerIdentifier: { type: 'bhr-gap-medical-history-column', value: 'QID20' },
                 choiceSetReference: 'yes-no-1-2',
-                skip: {
-                    count: 2,
-                    rule: {
-                        logic: 'not-equals',
-                        answer: { code: '1' }
-                    }
-                }
+                //skip: {
+                //    count: 2,
+                //    rule: {
+                //        logic: 'not-equals',
+                //        answer: { code: '1' }
+                //    }
+                //}
             }, {
                 text: 'How long did you smoke tobacco, in years?',
                 required: false,
@@ -272,13 +272,13 @@ module.exports = {
                 type: 'choice-ref',
                 answerIdentifier: { type: 'bhr-gap-medical-history-column', value: 'QID2' },
                 choiceSetReference: 'yes-no-1-2',
-                skip: {
-                    count: 2,
-                    rule: {
-                        logic: 'not-equals',
-                        answer: { code: '1' }
-                    }
-                }
+                //skip: {
+                //    count: 2,
+                //    rule: {
+                //        logic: 'not-equals',
+                //        answer: { code: '1' }
+                //    }
+                //}
             }, {
                 text: 'Please indicate how severe your pain is from 1-10 (10 is the most severe) Severity of Pain?',
                 required: false,
@@ -296,13 +296,13 @@ module.exports = {
                 type: 'choice-ref',
                 answerIdentifier: { type: 'bhr-gap-medical-history-column', value: 'QID6' },
                 choiceSetReference: 'yes-no-1-2',
-                skip: {
-                    count: 1,
-                    rule: {
-                        logic: 'not-equals',
-                        answer: { code: '1' }
-                    }
-                }
+                //skip: {
+                //    count: 1,
+                //    rule: {
+                //        logic: 'not-equals',
+                //        answer: { code: '1' }
+                //    }
+                //}
             }, {
                 text: 'If Yes, what kind of allergies did/do you have? (what food,  medicine or substance are you allergic to?) We have provided a number of fields so that you can list your allergies',
                 instruction: 'Food, medicine or substance',

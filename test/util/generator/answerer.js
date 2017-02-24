@@ -87,18 +87,17 @@ module.exports = class Answerer {
         return { boolValue: answerIndex % 2 === 0 };
     }
 
-    choiceRef(question) {
-        const choices = question.choices;
-        const choice = choices[this.answerIndex % choices.length];
-        return { code: choice.code };
-    }
-
     selectChoice(choices) {
         const answerIndex = this.answerIndex;
         return choices[answerIndex % choices.length];
     }
 
     choice(question) {
+        const choice = this.selectChoice(question.choices);
+        return { choice: choice.id };
+    }
+
+    choiceRef(question) {
         const choice = this.selectChoice(question.choices);
         return { choice: choice.id };
     }

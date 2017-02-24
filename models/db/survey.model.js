@@ -7,7 +7,10 @@ module.exports = function (sequelize, DataTypes) {
             allowNull: false,
             defaultValue: 'published',
             references: {
-                model: 'survey_status',
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'survey_status'
+                },
                 key: 'name'
             }
         },
@@ -35,6 +38,7 @@ module.exports = function (sequelize, DataTypes) {
         }
     }, {
         freezeTableName: true,
+        schema: sequelize.options.schema,
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
         deletedAt: 'deletedAt',

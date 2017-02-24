@@ -6,6 +6,8 @@ const Answerer = require('./answerer');
 const QuestionGenerator = require('./question-generator');
 const SurveyGenerator = require('./survey-generator');
 
+const models = require('../../../models');
+
 const testJsutil = require('../test-jsutil');
 
 class Generator {
@@ -51,6 +53,9 @@ class Generator {
         if (override) {
             user = _.assign(user, override);
         }
+        if (!user.role) {
+            user.role = 'participant';
+        }
         return user;
     }
 
@@ -78,25 +83,8 @@ class Generator {
         return questions.map(qx => this.answerQuestion(qx));
     }
 
-    getSectionQuestions(sections) {
-        const questions = [];
-        sections.forEach(section => {
-            if (section.questions) {
-                questions.push(...section.questions);
-                return;
-            }
-            const sectionQuestions = this.getSectionQuestions(section.sections);
-            questions.push(...sectionQuestions);
-        });
-        return questions;
-    }
-
     answerSurvey(survey) {
-        let { sections, questions } = survey;
-        if (questions) {
-            return this.answerQuestions(questions);
-        }
-        questions = this.getSectionQuestions(sections);
+        const questions = models.survey.getQuestions(survey);
         return this.answerQuestions(questions);
     }
 
@@ -166,7 +154,7 @@ class Generator {
         const i4 = index % 4;
         switch (i4) {
         case 2:
-            return 'sp';
+            return 'es';
         case 3:
             return 'en';
         default:

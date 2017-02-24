@@ -47,13 +47,13 @@ module.exports = {
             { text: 'Diner/cafeteria', answerIdentifier: { type: 'bhr-gap-diet-column', value: 'QID129_3' } },
             { text: 'Other', answerIdentifier: { type: 'bhr-gap-diet-column', value: 'QID129_4' } }
         ],
-        skip: {
-            count: 1,
-            rule: {
-                logic: 'not-selected',
-                selectionTexts: ['Other']
-            }
-        }
+        //skip: {
+        //    count: 1,
+        //    rule: {
+        //        logic: 'not-selected',
+        //        selectionTexts: ['Other']
+        //    }
+        //}
     }, {
         text: 'Please indicate \'Other\' eating place',
         required: false,
@@ -136,12 +136,12 @@ module.exports = {
             { text: '1% milk', answerIdentifier: { type: 'bhr-gap-diet-column', value: 'QID139_10' } },
             { text: 'Skim milk', answerIdentifier: { type: 'bhr-gap-diet-column', value: 'QID139_11' } }
         ],
-        skip: {
-            count: 1,
-            rule: {
-                logic: 'each-not-selected'
-            }
-        }
+        //skip: {
+        //    count: 1,
+        //    rule: {
+        //        logic: 'each-not-selected'
+        //    }
+        //}
     }, {
         text: 'How many servings of each do you drink a day?',
         required: false,

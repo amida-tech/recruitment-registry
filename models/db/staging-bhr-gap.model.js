@@ -34,7 +34,14 @@ module.exports = function (sequelize, DataTypes) {
         },
         language: {
             type: DataTypes.TEXT,
-            field: 'language_code'
+            field: 'language_code',
+            references: {
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'language'
+                },
+                key: 'code'
+            }
         },
         lastAnswer: {
             type: DataTypes.BOOLEAN,
@@ -46,6 +53,7 @@ module.exports = function (sequelize, DataTypes) {
         }
     }, {
         freezeTableName: true,
+        schema: sequelize.options.schema,
         timestamps: false,
         indexes: [{ fields: ['username', 'assessment_name', 'line_index'] }]
     });

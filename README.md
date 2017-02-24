@@ -65,6 +65,7 @@ A list of full environment variable settings is below.  They can be either manua
 - RECREG_DB_PASS: Database password (no default).
 - RECREG_DB_HOST: Database host ip (localhost).
 - RECREG_DB_PORT: Database host port (5432).
+- RECREG_DB_SCHEMA: Database schema.
 - RECREG_DB_DIALECT: Database dialect (postgres only, see [here](#postgredepend)).
 - RECREG_DB_POOL_MAX: Maximum number of connections in pool.
 - RECREG_DB_POOL_MIN: Minimum number of connections in pool.

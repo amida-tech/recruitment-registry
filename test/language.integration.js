@@ -85,4 +85,6 @@ describe('language integration', function () {
     });
 
     it('list existing languages', listLanguagesFn);
+
+    shared.verifyUserAudit(store);
 });

@@ -23,13 +23,13 @@ module.exports = {
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-current-meds-column', value: 'QID6' },
         choiceSetReference: 'yes-no-1-2',
-        skip: {
-            count: 2,
-            rule: {
-                logic: 'not-equals',
-                answer: { code: '1' }
-            }
-        }
+        //skip: {
+        //    count: 2,
+        //    rule: {
+        //        logic: 'not-equals',
+        //        answer: { code: '1' }
+        //    }
+        //}
     }, {
         text: 'Please list the Medications you are currently taking.',
         instruction: 'Medication',
@@ -41,12 +41,12 @@ module.exports = {
             type: 'bhr-gap-current-meds-column',
             values: ['QID1_1_TEXT', 'QID1_3_TEXT', 'QID3_1_TEXT', 'QID3_3_TEXT', 'QID3_5_TEXT', 'QID5_1_TEXT', 'QID5_3_TEXT', 'QID5_5_TEXT', 'QID5_7_TEXT']
         },
-        skip: {
-            count: 1,
-            rule: {
-                logic: 'not-exists'
-            }
-        }
+        //skip: {
+        //    count: 1,
+        //    rule: {
+        //        logic: 'not-exists'
+        //    }
+        //}
     }, {
         text: 'For what disease or condition do you take the medication?',
         required: false,
@@ -63,13 +63,13 @@ module.exports = {
         type: 'choice-ref',
         choiceSetReference: 'yes-no-1-2',
         answerIdentifier: { type: 'bhr-gap-current-meds-column', value: 'QID10' },
-        skip: {
-            count: 1,
-            rule: {
-                logic: 'not-equals',
-                answer: { code: '1' }
-            }
-        }
+        //skip: {
+        //    count: 1,
+        //    rule: {
+        //        logic: 'not-equals',
+        //        answer: { code: '1' }
+        //    }
+        //}
     }, {
         text: 'Please list any vitamins or supplements you are currently taking?',
         required: true,

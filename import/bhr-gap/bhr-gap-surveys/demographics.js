@@ -36,13 +36,13 @@ module.exports = {
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-demographics-column', value: 'QID182' },
         choiceSetReference: 'primary-occupation',
-        skip: {
-            count: 1,
-            rule: {
-                logic: 'not-equals',
-                answer: { code: '31' }
-            }
-        }
+        //skip: {
+        //    count: 1,
+        //    rule: {
+        //        logic: 'not-equals',
+        //        answer: { code: '31' }
+        //    }
+        //}
     }, {
         text: 'Please indicate *Other occupation',
         required: false,
@@ -73,13 +73,13 @@ module.exports = {
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-demographics-column', value: 'QID185' },
         choiceSetReference: 'yes-no-1-2',
-        skip: {
-            count: 1,
-            rule: {
-                logic: 'not-equals',
-                answer: { code: '1' }
-            }
-        }
+        //skip: {
+        //    count: 1,
+        //    rule: {
+        //        logic: 'not-equals',
+        //        answer: { code: '1' }
+        //    }
+        //}
     }, {
         text: 'Year of retirement',
         required: true,
@@ -92,13 +92,13 @@ module.exports = {
         type: 'choice-ref',
         answerIdentifier: { type: 'bhr-gap-demographics-column', value: 'QID192' },
         choiceSetReference: 'yes-no-1-2',
-        skip: {
-            count: 1,
-            rule: {
-                logic: 'not-equals',
-                answer: { code: '1' }
-            }
-        }
+        //skip: {
+        //    count: 1,
+        //    rule: {
+        //        logic: 'not-equals',
+        //        answer: { code: '1' }
+        //    }
+        //}
     }, {
         text: 'Please indicate which branch of the Armed Forces',
         required: false,

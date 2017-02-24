@@ -5,11 +5,12 @@ const Sequelize = require('sequelize');
 const config = require('../../config');
 const logger = require('../../logger');
 
-const sequelize = new Sequelize(config.db.name, config.db.user, config.db.pass, {
+const sequelizeOptions = {
     host: config.db.host,
     dialect: config.db.dialect,
     dialectOptions: {
-        ssl: (config.env === 'production')
+        ssl: (config.env === 'production'),
+        prependSearchPath: config.db.schema !== 'public'
     },
     port: config.db.port,
     pool: {
@@ -17,18 +18,26 @@ const sequelize = new Sequelize(config.db.name, config.db.user, config.db.pass, 
         min: config.db.poolMin,
         idle: config.db.poolIdle
     },
-    logging: message => logger.info(message)
-});
+    logging: message => logger.info(message),
+    schema: config.db.schema
+};
+
+if (config.db.schema !== 'public') {
+    sequelizeOptions.searchPath = config.db.schema;
+}
+
+const sequelize = new Sequelize(config.db.name, config.db.user, config.db.pass, sequelizeOptions);
 
 const SurveyStatus = sequelize.import('./survey-status.model');
 const User = sequelize.import('./user.model');
 const QuestionType = sequelize.import('./question-type.model');
+const Question = sequelize.import('./question.model');
+const ChoiceSet = sequelize.import('./choice-set.model');
 const QuestionChoice = sequelize.import('./question-choice.model');
 const QuestionChoiceText = sequelize.import('./question-choice-text.model');
 const QuestionAction = sequelize.import('./question-action.model');
 const QuestionActionText = sequelize.import('./question-action-text.model');
 const QuestionText = sequelize.import('./question-text.model');
-const Question = sequelize.import('./question.model');
 const AnswerRuleLogic = sequelize.import('./answer-rule-logic.model');
 const AnswerRule = sequelize.import('./answer-rule.model');
 const AnswerRuleValue = sequelize.import('./answer-rule-value.model');
@@ -60,8 +69,8 @@ const UserAssessmentAnswer = sequelize.import('./user-assessment-answer.model');
 const QuestionIdentifier = sequelize.import('./question-identifier.model');
 const AnswerIdentifier = sequelize.import('./answer-identifier.model');
 const SurveyIdentifier = sequelize.import('./survey-identifier.model');
-const ChoiceSet = sequelize.import('./choice-set.model');
 const StagingBhrGap = sequelize.import('./staging-bhr-gap.model');
+const UserAudit = sequelize.import('./user-audit.model');
 
 const questionBelongsToArgument = {
     as: 'question',
@@ -98,9 +107,21 @@ AnswerIdentifier.belongsTo(QuestionChoice, questionChoiceBelongsToArgument);
 
 AnswerRuleValue.belongsTo(QuestionChoice, questionChoiceBelongsToArgument);
 
+AnswerRule.belongsTo(Question, questionBelongsToArgument);
+AnswerRule.belongsTo(Question, {
+    as: 'answerQuestion',
+    foreignKey: {
+        allowNull: false,
+        fieldName: 'answerQuestionId',
+        field: 'answer_question_id',
+        references: {
+            model: 'question',
+            key: 'id'
+        }
+    }
+});
+
 SurveyQuestion.belongsTo(Question, questionBelongsToArgument);
-SurveyQuestion.belongsTo(AnswerRule, { as: 'skip', foreignKey: 'answer_rule_id' });
-SurveyQuestion.belongsTo(AnswerRule, { as: 'enableWhen', foreignKey: 'enable_when_rule_id' });
 
 UserAssessment.belongsTo(Assessment, {
     as: 'assessment',
@@ -159,5 +180,6 @@ module.exports = {
     AnswerIdentifier,
     SurveyIdentifier,
     ChoiceSet,
-    StagingBhrGap
+    StagingBhrGap,
+    UserAudit
 };

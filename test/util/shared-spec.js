@@ -23,10 +23,10 @@ class SharedSpec {
         };
     }
 
-    createUserFn(hxUser) {
+    createUserFn(hxUser, override) {
         const generator = this.generator;
         return function () {
-            const user = generator.newUser();
+            const user = generator.newUser(override);
             return models.user.createUser(user)
                 .then(({ id }) => {
                     hxUser.push(user, { id });
@@ -151,6 +151,9 @@ class SharedSpec {
 
     expectedErrorHandler(code, ...params) {
         return function (err) {
+            if (!(err instanceof RRError)) {
+                console.log(err);
+            }
             expect(err).to.be.instanceof(RRError);
             expect(err.code).to.equal(code);
             const expected = new RRError(code, ...params);

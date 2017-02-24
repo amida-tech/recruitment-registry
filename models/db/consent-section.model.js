@@ -7,7 +7,10 @@ module.exports = function (sequelize, DataTypes) {
             allowNull: false,
             field: 'consent_id',
             references: {
-                model: 'consent',
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'consent'
+                },
                 key: 'id'
             }
         },
@@ -16,7 +19,10 @@ module.exports = function (sequelize, DataTypes) {
             allowNull: false,
             field: 'type_id',
             references: {
-                model: 'consent_type',
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'consent_type'
+                },
                 key: 'id'
             }
         },
@@ -33,6 +39,7 @@ module.exports = function (sequelize, DataTypes) {
         },
     }, {
         freezeTableName: true,
+        schema: sequelize.options.schema,
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',
