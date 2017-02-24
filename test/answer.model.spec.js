@@ -240,16 +240,28 @@ describe('answer unit', function () {
             qxIndices: [52, 53, 54, 55, 56]
         }
     ];
-    searchCases.forEach(({ surveyIdx, qxIndices }) => {
-        let searchAnswersOne, searchAnswersTwo;
-        const generateAnswers = function () {
-            return answerCommon.generateAnswers(generator, hxSurvey.server(surveyIdx), hxQuestion, qxIndices);
-        };
-        const saveAnswers = function (userIdx, answers) {
+    const searchCountUsers = function searchCountUsers(query) {
+        return models.answer.searchCountUsers(query);
+    };
+    const searchCountFromAnswers = function searchCountFromAnswers(answers) {
+        return searchCountUsers(answerCommon.answersToSearchQuery(answers));
+    };
+    const generateAnswersFn = function generateAnswersFn(surveyIdx, qxIndices) {
+        return () => answerCommon.generateAnswers(generator, hxSurvey.server(surveyIdx), hxQuestion, qxIndices);
+    };
+    const saveAnswersFn = function saveAnswersFn(surveyIdx) {
+        return (userIdx, answers) => {
             const userId = hxUser.id(userIdx);
             const surveyId = hxSurvey.server(surveyIdx).id;
             return models.answer.createAnswers({ userId, surveyId, answers });
         };
+    };
+
+    searchCases.forEach(({ surveyIdx, qxIndices }) => {
+        let searchAnswersOne, searchAnswersTwo;
+        const generateAnswers = generateAnswersFn(surveyIdx, qxIndices);
+        const saveAnswers = saveAnswersFn(surveyIdx);
+
         it(`users answer survey ${surveyIdx} for search`, function () {
             // ensure intersection in answers
             searchAnswersOne = generateAnswers();
@@ -266,13 +278,6 @@ describe('answer unit', function () {
                 saveAnswers(2, searchAnswersTwo)
             ]);
         });
-
-        const searchCountUsers = function (query) {
-            return models.answer.searchCountUsers(query);
-        };
-        const searchCountFromAnswers = function (answers) {
-            return searchCountUsers(answerCommon.answersToSearchQuery(answers));
-        };
 
         it(`search survey ${surveyIdx} to find all users`, function () {
             return searchCountUsers({ questions: [] }).then(count => expect(count).to.be.at.least(userCount));
@@ -303,5 +308,28 @@ describe('answer unit', function () {
 
             return searchCountFromAnswers(answersOne).then(count => expect(count).to.equal(0));
         });
+    });
+
+    it(`search multi question 23 with multiple answer options`, function () {
+        const surveyIdx = 8;
+        const generateAnswers = generateAnswersFn(surveyIdx, [23]);
+        const answers = generateAnswers();
+        const answersPossible = generateAnswers();
+        const searchInput = [{
+            questionId: answers[0].questionId,
+            answers: answers[0].answers.concat(answersPossible[0].answers)
+        }];
+
+        return saveAnswersFn(surveyIdx)(1, answers).then(() => {
+            return searchCountFromAnswers(searchInput)
+                .then(count => expect(count).to.equal(1));
+        });
+    });
+
+    it(`error: question specified multiple times in search criteria`, function () {
+        const generateAnswers = generateAnswersFn(8, [23]);
+        const searchInput = [...generateAnswers(), ...generateAnswers()];
+        return searchCountFromAnswers(searchInput)
+            .then(shared.throwingHandler, shared.expectedErrorHandler('searchQuestionRepeat'));
     });
 });

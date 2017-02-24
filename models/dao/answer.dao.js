@@ -474,6 +474,9 @@ module.exports = class AnswerDAO {
         // if criteria is empty, return count of all users
         if (!criteria || !criteria.questions || !criteria.questions.length) { return User.count(); }
 
+        const questionIds = criteria.questions.map(question => question.id);
+        if (questionIds.length !== new Set(questionIds).size) { return RRError.reject('searchQuestionRepeat'); }
+
         // find answers that match one of the search criteria
         const $or = [];
         criteria.questions.forEach(question => {
