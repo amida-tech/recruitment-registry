@@ -24,6 +24,7 @@ class Generator {
         this.languageIndex = -1;
         this.assessmentIndex = -1;
         this.choiceSetIndex = 0;
+        this.researchSiteIndex = 0;
     }
 
     updateSurveyGenerator(SurveyGenerator) {
@@ -157,6 +158,17 @@ class Generator {
         default:
             return null;
         }
+    }
+
+    newResearchSite() {
+        const index = ++this.researchSiteIndex;
+        return {
+            name: `name_${index}`,
+            url: `server_${index}@example.com`,
+            city: `city_${index}`,
+            state: ['MA', 'MD', 'ID', 'VA', 'GA'][index % 5],
+            zip: (20000 + index).toString()
+        };
     }
 }
 

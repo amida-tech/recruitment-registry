@@ -137,6 +137,19 @@ UserAssessment.belongsTo(Assessment, {
     }
 });
 
+ResearchSiteVicinity.belongsTo(ResearchSite, {
+    as: 'vicinity',
+    foreignKey: {
+        allowNull: false,
+        fieldName: 'researchSiteId',
+        field: 'research_site_id',
+        references: {
+            model: 'research_site',
+            key: 'id'
+        }
+    }
+});
+
 module.exports = {
     Sequelize,
     sequelize,
