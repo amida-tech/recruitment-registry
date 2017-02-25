@@ -71,6 +71,8 @@ const AnswerIdentifier = sequelize.import('./answer-identifier.model');
 const SurveyIdentifier = sequelize.import('./survey-identifier.model');
 const StagingBhrGap = sequelize.import('./staging-bhr-gap.model');
 const UserAudit = sequelize.import('./user-audit.model');
+const ResearchSite = sequelize.import('./research-site.model');
+const ResearchSiteVicinity = sequelize.import('./research-site-vicinity.model');
 
 const questionBelongsToArgument = {
     as: 'question',
@@ -135,6 +137,19 @@ UserAssessment.belongsTo(Assessment, {
     }
 });
 
+ResearchSiteVicinity.belongsTo(ResearchSite, {
+    as: 'vicinity',
+    foreignKey: {
+        allowNull: false,
+        fieldName: 'researchSiteId',
+        field: 'research_site_id',
+        references: {
+            model: 'research_site',
+            key: 'id'
+        }
+    }
+});
+
 module.exports = {
     Sequelize,
     sequelize,
@@ -180,5 +195,7 @@ module.exports = {
     SurveyIdentifier,
     ChoiceSet,
     StagingBhrGap,
-    UserAudit
+    UserAudit,
+    ResearchSite,
+    ResearchSiteVicinity
 };
