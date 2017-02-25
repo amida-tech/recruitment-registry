@@ -2659,6 +2659,152 @@
                     }
                 }
             }
+        },
+        "/research-sites": {
+            "x-swagger-router-controller": "research-site.controller",
+            "get": {
+                "operationId": "listResearchSites",
+                "summary": "List research sites",
+                "parameters": [{
+                    "name": "near-zip",
+                    "in": "query",
+                    "description": "Restrict list to nearby zips",
+                    "required": false,
+                    "type": "string",
+                    "pattern": "^[0-9]{5}$"
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/researchSites"
+                        }
+                     },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "createResearchSite",
+                "summary": "Creates new research site",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "researchSite",
+                    "in": "body",
+                    "description": "Research site specification",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/newResearchSite"
+                    }
+                }],
+                "responses": {
+                    "201": {
+                        "$ref": "#/responses/idSuccess"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/research-sites/{id}": {
+            "x-swagger-router-controller": "research-site.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
+            "get": {
+                "operationId": "getResearchSite",
+                "summary": "Gets research site",
+                "responses": {
+                    "200": {
+                        "description": "Successul response",
+                        "schema": {
+                            "$ref": "#/definitions/researchSite"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "patch": {
+                "operationId": "patchResearchSite",
+                "summary": "Patches research site",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "researchSitePatch",
+                    "in": "body",
+                    "description": "Update to research site specification",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/researchSitePatch"
+                    }
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successul response"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "deleteResearchSite",
+                "summary": "Deletes research site",
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successul response"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/research-sites/{id}/vicinities": {
+            "x-swagger-router-controller": "research-site.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
+            "post": {
+                "operationId": "createResearchSiteVicinity",
+                "summary": "Creates vicinity for research site",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "researchSite",
+                    "in": "body",
+                    "description": "Research site specification",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/researchSiteVicinity"
+                    }
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successul response"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
         }
     },
     "securityDefinitions": {
@@ -4900,6 +5046,117 @@
                     }
                 }
             }
+        },
+        "zip": {
+            "type": "string",
+            "pattern": "^[0-9]{5}$"
+        },
+        "newResearchSite": {
+            "type": "object",
+            "required": ["name", "url", "city", "state", "zip"],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "url": {
+                    "type": "string",
+                    "format": "uri",
+                    "minLength": 1
+                },
+                "city": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "state": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 2
+                },
+                "zip": {
+                    "$ref": "#/definitions/zip"
+                }
+            },
+            "additionalProperties": false
+        },
+        "researchSite": {
+            "type": "object",
+            "required": ["id", "name", "url", "city", "state", "zip"],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "url": {
+                    "type": "string",
+                    "format": "uri",
+                    "minLength": 1
+                },
+                "city": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "state": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 2
+                },
+                "zip": {
+                    "$ref": "#/definitions/zip"
+                }
+            },
+            "additionalProperties": false
+        },
+        "researchSites": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/researchSite"
+            }
+        },
+        "researchSitePatch": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "url": {
+                    "type": "string",
+                    "format": "uri",
+                    "minLength": 1
+                },
+                "city": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "state": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 2
+                },
+                "zip": {
+                    "$ref": "#/definitions/zip"
+                }
+            },
+            "minProperties": 1,
+            "additionalProperties": false
+        },
+        "researchSiteVicinity": {
+            "type": "object",
+            "required": ["zipCodes"],
+            "properties": {
+                "zipCodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/zip"
+                    }
+                }
+            },
+            "additionalProperties": false
         }
     }
 }
