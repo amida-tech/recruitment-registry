@@ -47,7 +47,16 @@ module.exports = class ResearchSiteDAO {
     }
 
     patchResearchSite(id, researchSiteUpdate) {
-        return ResearchSite.update(researchSiteUpdate, { where: { id } });
+        return db.sequelize.transaction(transaction => {
+            return ResearchSite.update(researchSiteUpdate, { where: { id }, transaction })
+                .then(() => {
+                    const zip = researchSiteUpdate.zip;
+                    if (zip) {
+                        return zipUtil.findVicinity(zip)
+                            .then(vicinity => this.createResearchSiteVicinityTx(id, vicinity, transaction));
+                    }
+                });
+        });
     }
 
     deleteResearchSite(id) {
@@ -62,16 +71,18 @@ module.exports = class ResearchSiteDAO {
     }
 
     createResearchSiteVicinityTx(researchSiteId, vicinity, transaction) {
-        if (vicinity.length) {
-            const promises = vicinity.map(zip => ResearchSiteVicinity.create({ zip, researchSiteId }, { transaction }));
-            return SPromise.all(promises);
-        }
+        return ResearchSiteVicinity.destroy({ where: { researchSiteId }, transaction })
+            .then(() => {
+                if (vicinity.length) {
+                    const promises = vicinity.map(zip => ResearchSiteVicinity.create({ zip, researchSiteId }, { transaction }));
+                    return SPromise.all(promises);
+                }
+            });
     }
 
     createResearchSiteVicinity(researchSiteId, vicinity) {
         return db.sequelize.transaction(transaction => {
-            return ResearchSiteVicinity.destroy({ where: { researchSiteId, transaction } })
-                .then(() => this.createResearchSiteVicinity(researchSiteId, vicinity, transaction));
+            return this.createResearchSiteVicinityTx(researchSiteId, vicinity, transaction);
         });
     }
 };

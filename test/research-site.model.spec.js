@@ -102,7 +102,7 @@ describe('research site unit', function () {
         };
     };
 
-    _.range(researchZipCodes.length-1).forEach(index => {
+    _.range(10).forEach(index => {
         it(`create research site ${index}`, createResearchSiteFn(index));
         it(`get research site ${index}`, getResearchSiteFn(index));
         it(`update research site ${index}`, updateResearchSiteFn(index, ['name', 'state']));
@@ -136,11 +136,65 @@ describe('research site unit', function () {
 
     it('list research sites', listResearchSitesFn());
 
-    it ('release zip utilities', function () {
-        zipUtil.findVicinity.restore();
+    exampleZipCodes.forEach(zipCode => {
+        it(`find nearby research sites for ${zipCode}`, verifyNearbyFn(zipCode));
+    });
+
+    it('update zip code for research site 0', function () {
+        const id = hxResearchSite.id(0);
+        const patch = { zip: '88888' };
+        return models.researchSite.patchResearchSite(id, patch)
+            .then(() => Object.assign(hxResearchSite.server(0), patch));
+    });
+
+    it('verify update was successfull', function () {
+        return models.researchSite.listResearchSites({ nearZip: '80001' })
+            .then(sites => {
+                const expected = [hxResearchSite.server(0)];
+                expect(sites).to.deep.equal(expected);
+            });
     });
 
     exampleZipCodes.forEach(zipCode => {
-        it(`find nearby research sites for ${zipCode}`, verifyNearbyFn(zipCode));
+        it(`find nearby research sites for ${zipCode} after update`, verifyNearbyFn(zipCode));
+    });
+
+    const createResearchSiteVicinityFn = function (index, zipCodes) {
+        return function () {
+            const id = hxResearchSite.id(index);
+            return models.researchSite.createResearchSiteVicinity(id, zipCodes);
+        };
+    };
+
+    [
+        [0, ['50001', '50002', '50003']],
+        [1, ['50002', '50003', '50004']],
+        [3, ['50003', '50004', '50005']]
+    ].forEach(([index, zipCodes]) => {
+        it(`manually set nearby zip codes for reesearch site ${index}`, createResearchSiteVicinityFn(index, zipCodes));
+    });
+
+    const verifyNearbyIndicesFn = function (zipCode, indices) {
+        return function () {
+            return models.researchSite.listResearchSites({ nearZip: zipCode })
+                .then(result => {
+                    let expected = hxResearchSite.listServers(undefined, indices);
+                    expected = _.sortBy(expected, 'id');
+                    expect(result).to.deep.equal(expected);
+                });
+        };
+    };
+
+    [
+        ['50001', [0]],
+        ['50002', [0, 1]],
+        ['50003', [0, 1, 3]],
+        ['50004', [1, 3]]
+    ].forEach(([zipCode, indices]) => {
+        it(`verify manually set zip codes ${zipCode}`, verifyNearbyIndicesFn(zipCode, indices));
+    });
+
+    it('release zip utilities', function () {
+        zipUtil.findVicinity.restore();
     });
 });
