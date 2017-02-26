@@ -6,4 +6,16 @@ module.exports = [{
     dateValue: '08091999',
 }, {
     dateValue: '08-09-1999',
+}, {
+    yearValue: '19999'
+}, {
+    yearValue: 'may'
+}, {
+    dayValue: '3455'
+}, {
+    dayValue: 'wednesday'
+}, {
+    monthValue: '324'
+}, {
+    monthValue: '1'
 }];
