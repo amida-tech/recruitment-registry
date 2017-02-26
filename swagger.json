@@ -3577,15 +3577,15 @@
                 },
                 "yearValue": {
                     "type": "string",
-                    "pattern": "\\d{4}"
+                    "pattern": "^\\d{4}$"
                 },
                 "monthValue": {
                     "type": "string",
-                    "pattern": "\\d{2}"
+                    "pattern": "^\\d{2}$"
                 },
                 "dayValue": {
                     "type": "string",
-                    "pattern": "\\d{2}"
+                    "pattern": "^\\d{2}$"
                 }
             },
             "maxProperties": 2
@@ -3655,15 +3655,15 @@
                 },
                 "yearValue": {
                     "type": "string",
-                    "pattern": "\\d{4}"
+                    "pattern": "^\\d{4}$"
                 },
                 "monthValue": {
                     "type": "string",
-                    "pattern": "\\d{2}"
+                    "pattern": "^\\d{2}$"
                 },
                 "dayValue": {
                     "type": "string",
-                    "pattern": "\\d{2}"
+                    "pattern": "^\\d{2}$"
                 }
             },
             "minProperties": 1,
@@ -3690,15 +3690,15 @@
                 },
                 "yearValue": {
                     "type": "string",
-                    "pattern": "\\d{4}"
+                    "pattern": "^\\d{4}$"
                 },
                 "monthValue": {
                     "type": "string",
-                    "pattern": "\\d{2}"
+                    "pattern": "^\\d{2}$"
                 },
                 "dayValue": {
                     "type": "string",
-                    "pattern": "\\d{2}"
+                    "pattern": "^\\d{2}$"
                 }
             },
             "maxProperties": 2
@@ -3763,15 +3763,15 @@
                 },
                 "yearValue": {
                     "type": "string",
-                    "pattern": "\\d{4}"
+                    "pattern": "^\\d{4}$"
                 },
                 "monthValue": {
                     "type": "string",
-                    "pattern": "\\d{2}"
+                    "pattern": "^\\d{2}$"
                 },
                 "dayValue": {
                     "type": "string",
-                    "pattern": "\\d{2}"
+                    "pattern": "^\\d{2}$"
                 }
             },
             "minProperties": 1,
