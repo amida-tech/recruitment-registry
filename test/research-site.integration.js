@@ -44,9 +44,9 @@ describe('research site integration', function () {
             .end(done);
     });
 
-    const createResearchSiteFn = function (index) {
+    const createResearchSiteFn = function (index, actualZipCode) {
         return function (done) {
-            const zip = researchZipCodes[index];
+            const zip = actualZipCode || researchZipCodes[index];
             const researchSite = generator.newResearchSite(zip);
             rrSuperTest.post('/research-sites', researchSite, 201)
                 .expect(function (res) {
@@ -228,4 +228,51 @@ describe('research site integration', function () {
     it('release zip utilities', function () {
         zipUtil.findVicinity.restore();
     });
+
+    ////++ to be run by real api key and real zip code (Boston area)
+    //it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    //it('create research site with actual zip code 02118', createResearchSiteFn(undefined, '02118'));
+    //it('get research site with actual zip code 02118', getResearchSiteFn(10));
+    //it('create research site with actual zip code 02446', createResearchSiteFn(undefined, '02446'));
+    //it('get research site with actual zip code 02446', getResearchSiteFn(11));
+    //it('make sure to get for a nearby zip code', function (done) {
+    //    rrSuperTest.get('/research-sites', true, 200, { 'near-zip': '02151' })
+    //        .expect(function (res) {
+    //            const nearResearchSiteSet = new Set(['02118', '02446']);
+    //            let expected = hxResearchSite.listServers().filter(({ zip }) => nearResearchSiteSet.has(zip));
+    //            expected = _.sortBy(expected, 'id');
+    //            expect(res.body).to.deep.equal(expected);
+    //        })
+    //        .end(done);
+    //});
+    //// switch to washington area
+    //it('update zip code for research site 0', function (done) {
+    //    const id = hxResearchSite.id(10);
+    //    const patch = { zip: '20850' };
+    //    rrSuperTest.patch(`/research-sites/${id}`, patch, 204)
+    //        .expect(function () {
+    //            Object.assign(hxResearchSite.server(10), patch);
+    //        })
+    //        .end(done);
+    //});
+    //it('update zip code for research site 11', function (done) {
+    //    const id = hxResearchSite.id(11);
+    //    const patch = { zip: '20852' };
+    //    rrSuperTest.patch(`/research-sites/${id}`, patch, 204)
+    //        .expect(function () {
+    //            Object.assign(hxResearchSite.server(11), patch);
+    //        })
+    //        .end(done);
+    //});
+    //it('make sure to get for a nearby zip code', function (done) {
+    //    rrSuperTest.get('/research-sites', true, 200, { 'near-zip': '20816' })
+    //        .expect(function (res) {
+    //            const nearResearchSiteSet = new Set(['20852', '20850']);
+    //            let expected = hxResearchSite.listServers().filter(({ zip }) => nearResearchSiteSet.has(zip));
+    //            expected = _.sortBy(expected, 'id');
+    //            expect(res.body).to.deep.equal(expected);
+    //        })
+    //        .end(done);
+    //});
+    //it('logout as super', shared.logoutFn(rrSuperTest));
 });
