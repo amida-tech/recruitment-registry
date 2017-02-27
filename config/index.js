@@ -83,6 +83,12 @@ const main = {
         apiKey: process.env.RECREG_CONSTANT_CONTACT_KEY,
         secret: process.env.RECREG_CONSTANT_CONTACT_SECRET,
         listId: process.env.RECREG_CONSTANT_CONTACT_LIST_ID
+    },
+    zipCodeApi: {
+        baseUrl: process.env.RECREG_ZIP_BASE_URL,
+        apiKey: process.env.RECREG_ZIP_API_KEY,
+        distance: process.env.RECREG_ZIP_DISTANCE,
+        units: process.env.RECREG_ZIP_UNITS
     }
 };
 

@@ -2,6 +2,8 @@
 
 const chai = require('chai');
 const _ = require('lodash');
+const sinon = require('sinon');
+const request = require('request');
 
 const models = require('../../models');
 
@@ -187,6 +189,17 @@ class SharedSpec {
             expect(counts.username).to.be.above(0);
             expect(counts.email).to.be.above(0);
         };
+    }
+
+    stubRequestGet(error, data) {
+        return sinon.stub(request, 'get', (opts, callback) => {
+            if (typeof opts === 'function') { callback = opts; }
+            if (error) {
+                return callback(typeof error === 'function' ? error() : error, data);
+            } else {
+                return callback(null, typeof data === 'function' ? data() : data);
+            }
+        });
     }
 }
 

@@ -25,6 +25,8 @@ class Generator {
         this.assessmentIndex = -1;
         this.choiceSetIndex = 0;
         this.researchSiteIndex = 0;
+        this.zipCodeApiIndex = 0;
+        this.stateIndex = 0;
     }
 
     updateSurveyGenerator(SurveyGenerator) {
@@ -169,9 +171,23 @@ class Generator {
             name: `name_${index}`,
             url: `server_${index}@example.com`,
             city: `city_${index}`,
-            state: ['MA', 'MD', 'ID', 'VA', 'GA'][index % 5],
+            state: this.newState(index),
             zip
         };
+    }
+
+    newZipCodeApiObject(zip) {
+        const index = ++this.zipCodeApiIndex;
+        return {
+            zip_code: zip,
+            distance: index + 1,
+            city: `city_${index}`,
+            state: this.newState(index)
+        };
+    }
+
+    newState(index) {
+        return ['MA', 'MD', 'ID', 'VA', 'GA'][(index || ++this.stateIndex) % 5];
     }
 }
 

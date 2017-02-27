@@ -54,6 +54,10 @@ RECREG_DB_POOL_IDLE=10000
 RECREG_LOGGING_LEVEL=emerg
 RECREG_CLIENT_BASE_URL="http://localhost:4000/reset-tokens/"
 RECREG_CORS_ORIGIN=http://localhost:4000
+RECREG_ZIP_BASE_URL="http://www.zipcodeapi.com/rest/"
+RECREG_ZIP_API_KEY=xxx
+RECREG_ZIP_DISTANCE=50
+RECREG_ZIP_UNITS=mile
 ```
 
 A list of full environment variable settings is below.  They can be either manually set in the shell or can be included in the `.env` file.  Defaults indicated in paranthesis.
@@ -83,6 +87,10 @@ A list of full environment variable settings is below.  They can be either manua
 - RECREG_CONSTANT_CONSTANT_TOKEN: Access token for Constant Contact API.
 - RECREG_CONSTANT_CONTACT_KEY: API key for Constant Contact API.
 - RECREG_CONSTANT_CONTACT_LIST_ID: Unique identifier for Constant Contact list
+- RECREG_ZIP_BASE_URL: Base API URL for Zip Code API. Set to `http://www.zipcodeapi.com/rest/`.
+- RECREG_ZIP_API_KEY: API key for Zip Code API.
+- RECREG_ZIP_DISTANCE: Distance to query when finding zip code vicinities (`50`).
+- RECREG_ZIP_UNITS: Units RECREG_ZIP_DISTANCE is specified in -- either `mile` or `km` (`mile`).
 
 ## Commands
 
