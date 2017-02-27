@@ -2,6 +2,7 @@
 
 const _ = require('lodash');
 
+// see zip-util-common for valid US zipcodes
 const zipCodeInformation = {
     '20000': ['20000', '00001', '00002', '00003', '90010', '90020', '90030'],
     '20001': ['20001', '01001', '01002', '01003', '90010', '90030', '90050'],
