@@ -97,9 +97,21 @@ const questionChoiceBelongsToArgument = {
     }
 };
 
+const userBelongsToArgument = {
+    as: 'user',
+    foreignKey: {
+        fieldName: 'userId',
+        field: 'user_id',
+        references: {
+            model: 'user',
+            key: 'id'
+        }
+    }
+};
+
 Answer.belongsTo(Question, questionBelongsToArgument);
 Answer.belongsTo(QuestionChoice, questionChoiceBelongsToArgument);
-Answer.belongsTo(User, { as: 'user', foreignKey: 'user_id' });
+Answer.belongsTo(User, userBelongsToArgument);
 
 QuestionIdentifier.belongsTo(Question, questionBelongsToArgument);
 AnswerIdentifier.belongsTo(Question, questionBelongsToArgument);
