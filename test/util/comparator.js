@@ -252,6 +252,11 @@ const comparator = {
             choiceSetMap.set(choiceSet.id, choices);
             choiceSetMap.set(choiceSet.reference, choices);
         });
+    },
+    researchSite(client, server) {
+        const expected = _.cloneDeep(client);
+        expected.id = server.id;
+        expect(server).to.deep.equal(expected);
     }
 };
 

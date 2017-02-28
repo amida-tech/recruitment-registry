@@ -28,6 +28,7 @@ const AnswerIdentifierDAO = require('./answer-identifier.dao');
 const AnswerRuleDAO = require('./answer-rule.dao');
 const SurveyIdentifierDAO = require('./survey-identifier.dao');
 const ChoiceSetDAO = require('./choice-set.dao');
+const ResearchSite = require('./research-site.dao');
 
 const questionIdentifier = new QuestionIdentifierDAO();
 const answerIdentifier = new AnswerIdentifierDAO();
@@ -57,6 +58,7 @@ const language = new LanguageDAO();
 const smtp = new SmtpDAO();
 const assessment = new AssessmentDAO();
 const userAssessment = new UserAssessmentDAO({ answer });
+const researchSite = new ResearchSite();
 
 module.exports = {
     user,
@@ -86,5 +88,6 @@ module.exports = {
     surveyIdentifier,
     choiceSet,
     surveyQuestion,
-    answerRule
+    answerRule,
+    researchSite
 };
