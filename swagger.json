@@ -601,6 +601,37 @@
                 }
             }
         },
+        "/answers/queries": {
+            "x-swagger-router-controller": "answer.controller",
+            "post": {
+                "summary": "Searches all answers and returns count of matching users",
+                "operationId": "searchAnswers",
+                "security": [{
+                    "admin": []
+                }, {
+                    "clinician": []
+                }],
+                "parameters": [{
+                    "name": "query",
+                    "in": "body",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/answersQuery"
+                    }
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response.",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                   "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
         "/profile-survey": {
             "x-swagger-router-controller": "profile-survey.controller",
             "post": {
@@ -2818,6 +2849,11 @@
             "in": "header",
             "name": "Authorization"
         },
+        "clinician": {
+            "type": "apiKey",
+            "in": "header",
+            "name": "Authorization"
+        },
         "self": {
             "type": "apiKey",
             "in": "header",
@@ -3475,6 +3511,37 @@
                 "$ref": "#/definitions/surveyInfo"
             },
             "additionalProperties": false
+        },
+        "answersQuery": {
+            "type": "object",
+            "required": ["questions"],
+            "properties": {
+                "questions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/questionQuery"
+                    },
+                    "minItems": 1
+                }
+            }
+        },
+        "questionQuery": {
+            "type": "object",
+            "required": ["id"],
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "answer": {
+                    "$ref": "#/definitions/answer"
+                },
+                "answers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/answer"
+                    }
+                }
+            }
         },
         "userSurveyInfo": {
             "type": "object",

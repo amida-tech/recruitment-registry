@@ -2,6 +2,7 @@
 'use strict';
 process.env.NODE_ENV = 'test';
 
+const chai = require('chai');
 const _ = require('lodash');
 
 const config = require('../config');
@@ -18,6 +19,8 @@ const answerCommon = require('./util/answer-common');
 const questionCommon = require('./util/question-common');
 const choiceSetCommon = require('./util/choice-set-common');
 
+const expect = chai.expect;
+
 describe('answer integration', function () {
     const generator = new Generator();
     const shared = new SharedIntegration(generator);
@@ -27,6 +30,7 @@ describe('answer integration', function () {
     const testQuestions = answerCommon.testQuestions;
 
     const hxUser = new History();
+    const hxClinician = new History();
     const hxSurvey = new SurveyHistory();
     const hxQuestion = new History();
     const hxChoiceSet = new History();
@@ -43,6 +47,8 @@ describe('answer integration', function () {
     for (let i = 0; i < 4; ++i) {
         it(`create user ${i}`, shared.createUserFn(store, hxUser));
     }
+
+    it(`create clinician`, shared.createUserFn(store, hxClinician, null, { role: 'clinician' }));
 
     for (let i = 0; i < 20; ++i) {
         it(`create question ${i}`, questionTests.createQuestionFn());
@@ -158,14 +164,35 @@ describe('answer integration', function () {
     it('login as user 1', shared.loginIndexFn(store, hxUser, 1));
     it(`user 1 answers survey 11`, tests.answerSurveyFn(1, 11, [46, 29, 30, 47, 48]));
     it(`user 1 gets answers to survey 11`, tests.getAnswersFn(1, 11));
-    it(`logout as  user 1`, shared.logoutFn(store));
+    it(`logout as user 1`, shared.logoutFn(store));
 
     it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
-    it(`user 2 answers survey 12`, tests.answerSurveyFn(2, 12, [31, 49, 32, 50, 33, 51]));
+    let answers;
+    it(`user 2 answers survey 12`, function () {
+        return tests.answerSurveyFn(2, 12, [31, 49, 32, 50, 33, 51])()
+            .then(ans => answers = ans);
+    });
     it(`user 2 gets answers to survey 12`, tests.getAnswersFn(2, 12));
-    it(`logout as  user 2`, shared.logoutFn(store));
+    it('error: search as user 2', function (done) {
+        store.post('/answers/queries', answerCommon.answersToSearchQuery(answers), 403).end(done);
+    });
+    it(`logout as user 2`, shared.logoutFn(store));
+
+    const verifySearch = function verifySearch(done) {
+        store.post('/answers/queries', answerCommon.answersToSearchQuery(answers), 200)
+            .expect(function (res) {
+                expect(res.body).to.have.all.keys('count');
+                expect(res.body.count).to.equal(1);
+            })
+            .end(done);
+    };
+    it(`login as clinician 0`, shared.loginIndexFn(store, hxClinician, 0));
+    it('search as clinician', verifySearch);
+    it(`logout as clinician`, shared.logoutFn(store));
 
     it('login as super', shared.loginFn(store, config.superUser));
+    it('search as super', verifySearch);
+
     _.range(8).forEach(index => {
         it(`create choice set ${index}`, choceSetTests.createChoiceSetFn());
         it(`get choice set ${index}`, choceSetTests.getChoiceSetFn(index));

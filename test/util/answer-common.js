@@ -109,6 +109,17 @@ const expectedAnswerListForUser = function (userIndex, hxSurvey, hxAnswer) {
     return expected;
 };
 
+const answersToSearchQuery = function (answers) {
+    const questions = answers.map(answer => {
+        return {
+            id: answer.questionId,
+            answer: answer.answer,
+            answers: answer.answers
+        };
+    });
+    return { questions };
+};
+
 const AllChoicesAnswerer = class AllChoicesAnswerer extends Answerer {
     constructor() {
         super();
@@ -163,7 +174,8 @@ const SpecTests = class AnswerSpecTests {
                 input.language = language;
             }
             return models.answer.createAnswers(input)
-                .then(() => hxAnswer.push(userIndex, surveyIndex, answers, language));
+                .then(() => hxAnswer.push(userIndex, surveyIndex, answers, language))
+                .then(() => answers);
         };
     }
 
@@ -230,7 +242,7 @@ const IntegrationTests = class AnswerIntegrationTests {
         const hxSurvey = this.hxSurvey;
         const hxQuestion = this.hxQuestion;
         const hxAnswer = this.hxAnswer;
-        return function (done) {
+        return function () {
             const survey = hxSurvey.server(surveyIndex);
             const answers = generateAnswers(generator, survey, hxQuestion, qxIndices);
             const input = {
@@ -241,11 +253,11 @@ const IntegrationTests = class AnswerIntegrationTests {
             if (language) {
                 input.language = language;
             }
-            rrSuperTest.post('/answers', input, 204)
+            return rrSuperTest.post('/answers', input, 204)
                 .expect(function () {
                     hxAnswer.push(userIndex, surveyIndex, answers, language);
                 })
-                .end(done);
+                .then(() => answers);
         };
     }
 
@@ -297,6 +309,8 @@ const IntegrationTests = class AnswerIntegrationTests {
 
 module.exports = {
     testQuestions,
+    answersToSearchQuery,
+    generateAnswers,
     SpecTests,
     IntegrationTests,
     AllChoicesAnswerer,

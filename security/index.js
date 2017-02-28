@@ -87,6 +87,9 @@ module.exports = {
     admin(req, def, header, callback) {
         jwtAuth(req, header, roleCheck('admin'), callback);
     },
+    clinician(req, def, header, callback) {
+        jwtAuth(req, header, rolesCheck(['clinician', 'admin']), callback);
+    },
     self(req, def, header, callback) {
         jwtAuth(req, header, _.constant(null), callback);
     }

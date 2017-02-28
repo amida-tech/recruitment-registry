@@ -13,6 +13,7 @@ const Answer = db.Answer;
 const Question = db.Question;
 const QuestionChoice = db.QuestionChoice;
 const UserSurvey = db.UserSurvey;
+const User = db.User;
 
 const exportCSVConverter = require('../../export/csv-converter.js');
 const importCSVConverter = require('../../import/csv-converter.js');
@@ -492,5 +493,40 @@ module.exports = class AnswerDAO {
             raw: true,
             paranoid: false
         });
+    }
+
+    /**
+     * Search users by their survey answers. Returns a count of users only.
+     * @param {object} query questionId:value mapping to search users by
+     * @returns {integer}
+     */
+    searchCountUsers(criteria) {
+        // if criteria is empty, return count of all users
+        if (!criteria || !criteria.questions || !criteria.questions.length) { return User.count(); }
+
+        const questionIds = criteria.questions.map(question => question.id);
+        if (questionIds.length !== new Set(questionIds).size) { return RRError.reject('searchQuestionRepeat'); }
+
+        // find answers that match one of the search criteria
+        const where = { $or: [] };
+        criteria.questions.forEach(question => {
+            prepareAnswerForDB(question.answer || question.answers).forEach(answer => {
+                where.$or.push({
+                    question_id: question.id,
+                    value: ('value' in answer) ? answer.value.toString() : null,
+                    question_choice_id: ('questionChoiceId' in answer) ? answer.questionChoiceId : null
+                });
+            });
+        });
+
+        // find users with a matching answer for each question (i.e., users who match all criteria)
+        const include = [{ model: User, as: 'user', attributes: [] }];
+        const having = sequelize.where(sequelize.literal('COUNT(DISTINCT(question_id))'), criteria.questions.length);
+        const group = ['user_id'];
+
+        // count resulting users
+        const attributes = [sequelize.literal('\'1\'')];
+        return Answer.findAll({ raw: true, where, attributes, include, having, group })
+            .then(results => results.length);
     }
 };

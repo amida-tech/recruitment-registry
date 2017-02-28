@@ -52,3 +52,10 @@ exports.listAnswersExport = function (req, res) {
         .then(answers => res.status(200).json(answers))
         .catch(shared.handleError(res));
 };
+
+exports.searchAnswers = function (req, res) {
+    const query = _.get(req, 'swagger.params.query.value');
+    models.answer.searchCountUsers(query)
+        .then(count => res.status(200).json({ count }))
+        .catch(shared.handleError(res));
+};
