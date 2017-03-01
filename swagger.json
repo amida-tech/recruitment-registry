@@ -3111,7 +3111,11 @@
                     "minLength": 1
                 },
                 "questions": {
-                    "$ref": "#/definitions/newSurveyQuestions"
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/newSurveyQuestion"
+                    },
+                    "minItems": 1
                 },
                 "sections": {
                     "type": "array",

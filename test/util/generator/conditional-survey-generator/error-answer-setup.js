@@ -1,16 +1,6 @@
 'use strict';
 
 module.exports = [{
-    surveyIndex: 0,
-    caseIndex: 0,
-    specialAnswers: [{
-        type: 'differentrule',
-        questionIndex: 4,
-        ruleQuestionIndex: 5
-    }],
-    noAnswers: [5],
-    error: 'answerRequiredMissing'
-}, {
     surveyIndex: 1,
     caseIndex: 0,
     specialAnswers: [{

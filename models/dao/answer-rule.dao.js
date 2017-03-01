@@ -20,7 +20,7 @@ module.exports = class AnswerRuleDAO {
             { model: Question, as: 'question', attributes: ['type'] },
             { model: Question, as: 'answerQuestion', attributes: ['type'] },
         ];
-        return AnswerRule.findAll({ raw: true, where, attributes, include })
+        return AnswerRule.findAll({ raw: true, where, attributes, include, order: 'line' })
             .then(answerRules => {
                 if (answerRules.length < 1) {
                     return answerRules;

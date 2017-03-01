@@ -17,6 +17,7 @@ const SurveyHistory = require('./util/survey-history');
 const History = require('./util/History');
 const SharedIntegration = require('./util/shared-integration');
 const surveyCommon = require('./util/survey-common');
+const choiceSetCommon = require('./util/choice-set-common');
 const RRError = require('../lib/rr-error');
 
 const expect = chai.expect;
@@ -33,11 +34,22 @@ describe('survey (conditional questions) integration', function () {
     const rrSuperTest = new RRSuperTest();
     const hxUser = new History();
     const hxSurvey = new SurveyHistory();
+    const hxChoiceSet = new History();
     const tests = new surveyCommon.IntegrationTests(rrSuperTest, generator, hxSurvey);
+    const choceSetTests = new choiceSetCommon.SpecTests(generator, hxChoiceSet);
 
     before(shared.setUpFn(rrSuperTest));
 
     it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+
+    const choiceSets = ConditionalSurveyGenerator.getChoiceSets();
+    choiceSets.forEach((choiceSet, index) => {
+        it(`create choice set ${index}`, choceSetTests.createChoiceSetFn(choiceSet));
+        it(`get choice set ${index}`, choceSetTests.getChoiceSetFn(index));
+    });
+    it('set comparator choice map', function () {
+        comparator.updateChoiceSetMap(choiceSets);
+    });
 
     _.range(surveyCount).forEach(index => {
         it(`create survey ${index}`, tests.createSurveyFn({ noSection: true }));

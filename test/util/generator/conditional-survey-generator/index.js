@@ -10,13 +10,18 @@ const conditionalQuestions = require('./conditional-questions');
 const requiredOverrides = require('./required-overrides');
 const errorAnswerSetup = require('./error-answer-setup');
 const passAnswerSetup = require('./pass-answer-setup');
+const choiceSets = require('./choice-sets');
 
-const counts = [8, 8, 8, 8, 8, 8, 8, 8];
+const counts = [0, 8, 8, 8, 8, 8, 8, 8];
 
 const conditionalQuestionMap = conditionalQuestions.reduce((r, questionInfo) => {
     const surveyIndex = questionInfo.surveyIndex;
     if (surveyIndex === undefined) {
         throw new Error('No survey index specified');
+    }
+    if (questionInfo.purpose === 'completeSurvey') {
+        r[surveyIndex] = questionInfo;
+        return r;
     }
     let survey = r[surveyIndex];
     if (!survey) {
@@ -123,6 +128,10 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
         return passAnswerSetup;
     }
 
+    static getChoiceSets() {
+        return choiceSets;
+    }
+
     answersWithConditions(survey, { questionIndex, rulePath, ruleAnswerState, selectionChoice, multipleIndices, noAnswers = [], specialAnswers = [] }) {
         const questions = models.survey.getQuestions(survey);
         const doNotAnswer = new Set(noAnswers);
@@ -203,9 +212,14 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
     }
 
     newSurvey() {
-        const survey = super.newSurvey({ noSection: true });
         const surveyIndex = this.currentIndex();
-        _.forOwn(conditionalQuestionMap[surveyIndex], questionInfo => {
+        const surveyQuestionInfos = conditionalQuestionMap[surveyIndex + 1];
+        if (surveyQuestionInfos.surveyIndex !== undefined) {
+            this.incrementIndex();
+            return surveyQuestionInfos.survey;
+        }
+        const survey = super.newSurvey({ noSection: true });
+        _.forOwn(surveyQuestionInfos, questionInfo => {
             const purpose = questionInfo.purpose;
             const manipulator = surveyManipulator[purpose];
             if (manipulator) {
@@ -215,29 +229,47 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
         return survey;
     }
 
-    static newSurveyFromPrevious(clientSurvey, serverSurvey) {
-        const questions = serverSurvey.questions.map(({ id, required, enableWhen, sections }) => {
+    static newSurveyQuestionsFromPrevious(serverQuestions) {
+        const questions = serverQuestions.map(({ id, required, enableWhen, sections }) => {
             const question = { id, required };
             if (enableWhen) {
-                question.enableWhen = _.cloneDeep(enableWhen);
-                delete question.enableWhen[0].id;
+                const newEnableWhen = _.cloneDeep(enableWhen);
+                newEnableWhen.forEach(rule => delete rule.id);
+                question.enableWhen = newEnableWhen;
             }
             if (sections) {
-                question.sections = _.cloneDeep(sections);
-                question.sections.forEach(section => {
-                    delete section.id;
-                    const enableWhen = section.enableWhen;
-                    if (enableWhen) {
-                        delete enableWhen[0].id;
-                    }
-                    section.questions = section.questions.map(({ id, required }) => ({ id, required }));
-                });
+                question.sections = ConditionalSurveyGenerator.newSurveySectionsFromPrevious(sections);
             }
             return question;
         });
+        return questions;
+    }
+
+    static newSurveySectionsFromPrevious(serverSections) {
+        return serverSections.map(({ name, enableWhen, sections, questions }) => {
+            const newSection = { name };
+            if (enableWhen) {
+                const newEnableWhen = _.cloneDeep(enableWhen);
+                newEnableWhen.forEach(rule => delete rule.id);
+                newSection.enableWhen = newEnableWhen;
+            }
+            if (sections) {
+                newSection.sections = ConditionalSurveyGenerator.newSurveySectionsFromPrevious(sections);
+            }
+            if (questions) {
+                newSection.questions = ConditionalSurveyGenerator.newSurveyQuestionsFromPrevious(questions);
+            }
+            return newSection;
+        });
+    }
+
+    static newSurveyFromPrevious(clientSurvey, serverSurvey) {
         const newSurvey = _.cloneDeep(clientSurvey);
-        newSurvey.questions = questions;
-        delete newSurvey.sections;
+        if (clientSurvey.questions) {
+            newSurvey.questions = ConditionalSurveyGenerator.newSurveyQuestionsFromPrevious(serverSurvey.questions);
+        } else if (clientSurvey.sections) {
+            newSurvey.sections = ConditionalSurveyGenerator.newSurveySectionsFromPrevious(serverSurvey.sections);
+        }
         return newSurvey;
     }
 };

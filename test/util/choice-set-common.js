@@ -13,11 +13,11 @@ const SpecTests = class ChoiceSetSpecTests {
         this.hxChoiceSet = hxChoiceSet;
     }
 
-    createChoiceSetFn() {
+    createChoiceSetFn(overrideChoiceSet) {
         const generator = this.generator;
         const hxChoiceSet = this.hxChoiceSet;
         return function () {
-            const choiceSet = generator.newChoiceSet();
+            const choiceSet = overrideChoiceSet || generator.newChoiceSet();
             return models.choiceSet.createChoiceSet(choiceSet)
                 .then(({ id }) => hxChoiceSet.push(choiceSet, { id }));
         };
@@ -65,12 +65,12 @@ const IntegrationTests = class ChoiceSetIntegrationTests {
         this.hxChoiceSet = hxChoiceSet;
     }
 
-    createChoiceSetFn() {
+    createChoiceSetFn(overrideChoiceSet) {
         const generator = this.generator;
         const rrSuperTest = this.rrSuperTest;
         const hxChoiceSet = this.hxChoiceSet;
         return function (done) {
-            const choiceSet = generator.newChoiceSet();
+            const choiceSet = overrideChoiceSet || generator.newChoiceSet();
             rrSuperTest.post('/choice-sets', choiceSet, 201)
                 .expect(function (res) {
                     hxChoiceSet.push(choiceSet, res.body);

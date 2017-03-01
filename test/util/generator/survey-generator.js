@@ -54,6 +54,10 @@ module.exports = class SurveyGenerator {
         return this.surveyIndex;
     }
 
+    incrementIndex() {
+        ++this.surveyIndex;
+    }
+
     sectionType() {
         return this.surveyIndex % 4;
     }

@@ -61,6 +61,9 @@ module.exports = function (sequelize, DataTypes) {
                 key: 'id'
             }
         },
+        line: {
+            type: DataTypes.INTEGER
+        },
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',
