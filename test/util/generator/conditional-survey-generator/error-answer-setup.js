@@ -13,7 +13,6 @@ module.exports = [{
 }, {
     surveyIndex: 1,
     caseIndex: 1,
-    questionIndex: 4,
     specialAnswers: [{
         type: 'samerule',
         questionIndex: 4,

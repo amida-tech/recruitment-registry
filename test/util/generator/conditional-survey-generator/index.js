@@ -56,6 +56,55 @@ const specialQuestionGenerator = {
     }
 };
 
+const specialAnswerer = {
+    samerule(generator, questions, question, answerInfo) {
+        const ruleQuestion = questions[answerInfo.ruleQuestionIndex];
+        const enableWhen = ruleQuestion.enableWhen;
+        const enableWhenAnswer = enableWhen[0].answer;
+        if (!enableWhenAnswer) {
+            throw new Error('There should be an answer specified');
+        }
+        return { questionId: question.id, answer: enableWhenAnswer };
+    },
+    differentrule(generator, questions, question, answerInfo) {
+        const ruleQuestion = questions[answerInfo.ruleQuestionIndex];
+        const enableWhen = ruleQuestion.enableWhen;
+        const enableWhenAnswer = enableWhen[0].answer;
+        if (!enableWhenAnswer) {
+            throw new Error('There should be an answer specified');
+        }
+        let answer = generator.answerer.answerQuestion(question);
+        if (_.isEqual(answer.answer, enableWhenAnswer)) {
+            answer = generator.answerer.answerQuestion(question);
+        }
+        return answer;
+    },
+    samerulesection(generator, questions, question) {
+        const enableWhen = question.sections[0].enableWhen;
+        const enableWhenAnswer = enableWhen[0].answer;
+        if (!enableWhenAnswer) {
+            throw new Error('There should be an answer specified');
+        }
+        return { questionId: question.id, answer: enableWhenAnswer };
+    },
+    differentrulesection(generator, questions, question) {
+        const enableWhen = question.sections[0].enableWhen;
+        const enableWhenAnswer = enableWhen[0].answer;
+        if (!enableWhenAnswer) {
+            throw new Error('There should be an answer specified');
+        }
+        let answer = generator.answerer.answerQuestion(question);
+        if (_.isEqual(answer.answer, enableWhenAnswer)) {
+            answer = generator.answerer.answerQuestion(question);
+        }
+        return answer;
+    },
+    selectchoice(generator, questions, question, answerInfo) {
+        return generator.answerer.answerChoicesQuestion(question, answerInfo.selectionChoice);
+
+    }
+};
+
 const surveyManipulator = {
     enableWhen(survey, questionInfo, generator) {
         const questionIndex = questionInfo.questionIndex;
@@ -143,59 +192,9 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
             const specialAnswer = doAnswer.get(index);
             if (specialAnswer) {
                 const type = specialAnswer.type;
-                if (type === 'samerule') {
-                    const ruleQuestion = questions[specialAnswer.ruleQuestionIndex];
-                    const enableWhen = ruleQuestion.enableWhen;
-                    const enableWhenAnswer = enableWhen[0].answer;
-                    if (!enableWhenAnswer) {
-                        throw new Error('There should be an answer specified');
-                    }
-                    const answer = { questionId: question.id, answer: enableWhenAnswer };
-                    r.push(answer);
-                    return r;
-                }
-                if (type === 'differentrule') {
-                    const ruleQuestion = questions[specialAnswer.ruleQuestionIndex];
-                    const enableWhen = ruleQuestion.enableWhen;
-                    const enableWhenAnswer = enableWhen[0].answer;
-                    if (!enableWhenAnswer) {
-                        throw new Error('There should be an answer specified');
-                    }
-                    let answer = this.answerer.answerQuestion(question);
-                    if (_.isEqual(answer.answer, enableWhenAnswer)) {
-                        answer = this.answerer.answerQuestion(question);
-                    }
-                    r.push(answer);
-                    return r;
-                }
-                if (type === 'samerulesection') {
-                    const enableWhen = question.sections[0].enableWhen;
-                    const enableWhenAnswer = enableWhen[0].answer;
-                    if (!enableWhenAnswer) {
-                        throw new Error('There should be an answer specified');
-                    }
-                    const answer = { questionId: question.id, answer: enableWhenAnswer };
-                    r.push(answer);
-                    return r;
-                }
-                if (type === 'differentrulesection') {
-                    const enableWhen = question.sections[0].enableWhen;
-                    const enableWhenAnswer = enableWhen[0].answer;
-                    if (!enableWhenAnswer) {
-                        throw new Error('There should be an answer specified');
-                    }
-                    let answer = this.answerer.answerQuestion(question);
-                    if (_.isEqual(answer.answer, enableWhenAnswer)) {
-                        answer = this.answerer.answerQuestion(question);
-                    }
-                    r.push(answer);
-                    return r;
-                }
-                if (type === 'selectchoice') {
-                    const answer = this.answerer.answerChoicesQuestion(question, specialAnswer.selectionChoice);
-                    r.push(answer);
-                    return r;
-                }
+                const answer = specialAnswerer[type](this, questions, question, specialAnswer);
+                r.push(answer);
+                return r;
             }
             if ((questionIndex + 1 === index) && multipleIndices) {
                 if (multipleIndices.length) {
