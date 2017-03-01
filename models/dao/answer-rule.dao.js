@@ -8,7 +8,6 @@ const AnswerRule = db.AnswerRule;
 const AnswerRuleValue = db.AnswerRuleValue;
 const Question = db.Question;
 const QuestionChoice = db.QuestionChoice;
-const SurveySectionQuestion = db.SurveySectionQuestion;
 
 module.exports = class AnswerRuleDAO {
     constructor() {}
@@ -71,52 +70,32 @@ module.exports = class AnswerRuleDAO {
     getQuestionExpandedSurveyAnswerRules(surveyId) {
         return this.getSurveyAnswerRules(surveyId)
             .then(answerRules => {
-                const surveySectionIds = answerRules.reduce((r, { surveySectionId }) => {
-                    if (surveySectionId !== undefined) {
-                        r.push(surveySectionId);
+                if (!answerRules.length) {
+                    return { sectionAnswerRulesMap: null, questionAnswerRulesMap: null };
+                }
+                return answerRules.reduce((r, answerRule) => {
+                    const { sectionAnswerRulesMap, questionAnswerRulesMap } = r;
+                    const { surveySectionId, questionId, rule } = answerRule;
+                    if (surveySectionId) {
+                        let sectionRules = sectionAnswerRulesMap.get(surveySectionId);
+                        if (!sectionRules) {
+                            sectionRules = [];
+                            sectionAnswerRulesMap.set(surveySectionId, sectionRules);
+                        }
+                        sectionRules.push(rule);
+                        return r;
+                    }
+                    if (questionId) {
+                        let questionRules = questionAnswerRulesMap.get(questionId);
+                        if (!questionRules) {
+                            questionRules = [];
+                            questionAnswerRulesMap.set(questionId, questionRules);
+                        }
+                        questionRules.push(rule);
+                        return r;
                     }
                     return r;
-                }, []);
-                if (surveySectionIds.length) {
-                    return SurveySectionQuestion.findAll({
-                            where: { surveySectionId: { $in: surveySectionIds } },
-                            attributes: ['questionId', 'surveySectionId'],
-                            raw: true
-                        })
-                        .then(surveySectionQuestions => {
-                            const map = surveySectionQuestions.reduce((r, surveySectionQuestion) => {
-                                let questions = r.get(surveySectionQuestion.surveySectionId);
-                                if (!questions) {
-                                    questions = [];
-                                    r.set(surveySectionQuestion.surveySectionId, questions);
-                                }
-                                questions.push(surveySectionQuestion.questionId);
-                                return r;
-                            }, new Map());
-                            const additionalAnswerRules = answerRules.reduce((r, answerRule) => {
-                                if (answerRule.surveySectionId) {
-                                    const questions = map.get(answerRule.surveySectionId);
-                                    questions.forEach(questionId => {
-                                        const newAnswerRule = _.cloneDeep(answerRule);
-                                        newAnswerRule.questionId = questionId;
-                                        r.push(newAnswerRule);
-                                    });
-                                }
-                                return r;
-                            }, []);
-                            if (additionalAnswerRules.length) {
-                                answerRules.push(...additionalAnswerRules);
-                            }
-                            return answerRules;
-                        });
-                } else {
-                    return answerRules;
-                }
-            })
-            .then(answerRules => {
-                const enableWhenAnswerRuleInfos = answerRules.filter(answerRule => answerRule.questionId);
-                const enableWhenRulesByQuestionId = _.keyBy(enableWhenAnswerRuleInfos, 'questionId');
-                return enableWhenRulesByQuestionId;
+                }, { sectionAnswerRulesMap: new Map(), questionAnswerRulesMap: new Map() });
             });
     }
 };

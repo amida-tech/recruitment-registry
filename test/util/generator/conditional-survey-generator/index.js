@@ -100,8 +100,7 @@ const specialAnswerer = {
         return answer;
     },
     selectchoice(generator, questions, question, answerInfo) {
-        return generator.answerer.answerChoicesQuestion(question, answerInfo.selectionChoice);
-
+        return generator.answerer.answerChoiceQuestion(question, answerInfo.selectionChoice);
     }
 };
 

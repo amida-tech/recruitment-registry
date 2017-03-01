@@ -160,6 +160,12 @@ module.exports = class Answerer {
         return { questionId: question.id, answer: { choices } };
     }
 
+    answerChoiceQuestion(question, choiceIndex) {
+        const choice = question.choices[choiceIndex].id;
+        const answer = { choice };
+        return { questionId: question.id, answer };
+    }
+
     answerRawQuestion(question) {
         const type = _.camelCase(question.type);
         ++this.answerIndex;

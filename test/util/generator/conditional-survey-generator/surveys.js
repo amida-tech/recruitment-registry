@@ -3,12 +3,12 @@
 const travelSurvey = {
     name: 'Canada Travel Survey',
     sections: [{
-        questions: [{
+        questions: [{ // 0
             text: 'Did you travel to Canada before?',
             required: true,
             type: 'choice-ref',
             choiceSetReference: 'yes-no-1-2'
-        }, {
+        }, { // 1
             text: 'Would you like to travel to Canada in the future?',
             required: true,
             type: 'choice-ref',
@@ -30,13 +30,13 @@ const travelSurvey = {
                 code: '1'
             }
         }],
-        questions: [{
+        questions: [{ //2
             text: 'How do you rate your experience?',
             required: true,
             type: 'choice-ref',
             choiceSetReference: 'rating',
             sections: [{
-                questions: [{
+                questions: [{ // 3
                     text: 'Please describe the best experiences during your visit.',
                     type: 'text',
                     required: true,
@@ -55,7 +55,7 @@ const travelSurvey = {
                     }]
                 }]
             }, {
-                questions: [{
+                questions: [{ // 4
                     text: 'Please describe how could your experience be better?',
                     type: 'text',
                     required: true,
@@ -90,7 +90,7 @@ const travelSurvey = {
                 code: '1'
             }
         }],
-        questions: [{
+        questions: [{ // 5
             text: 'What experience are you looking for?',
             required: true,
             type: 'choice',
@@ -104,7 +104,7 @@ const travelSurvey = {
                 text: 'Water Sports'
             }],
             sections: [{
-                questions: [{
+                questions: [{ // 6
                     text: 'Select on of the following cities.',
                     type: 'choice',
                     required: true,
@@ -124,7 +124,7 @@ const travelSurvey = {
                     oneOfChoices: ['Vancouver', 'Toronto', 'Montreal']
                 }]
             }, {
-                questions: [{
+                questions: [{ // 7
                     text: 'Select on the following cities?',
                     type: 'choice',
                     required: true,
