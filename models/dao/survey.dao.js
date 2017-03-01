@@ -171,29 +171,31 @@ module.exports = class SurveyDAO extends Translatable {
     createRulesForQuestions(surveyId, questions, transaction) {
         const questionsWithRule = questions.filter(question => question.enableWhen);
         if (questionsWithRule.length) {
-            const promises = questionsWithRule.map(question => {
-                const rule = question.enableWhen[0];
-                const answerRule = { surveyId, questionId: question.id, logic: rule.logic };
-                answerRule.answerQuestionId = question.enableWhen[0].questionId;
-                return AnswerRule.create(answerRule, { transaction })
-                    .then(({ id }) => {
-                        let code = rule.answer && rule.answer.code;
-                        if ((code !== null) && (code !== undefined)) {
-                            return this.questionChoice.findQuestionChoiceIdForCode(answerRule.answerQuestionId, code, transaction)
-                                .then((choiceId) => {
-                                    rule.answer.choice = choiceId;
-                                    delete rule.answer.code;
-                                    return { id };
-                                });
-                        }
-                        return ({ id });
-                    })
-                    .then(({ id }) => {
-                        question.enableWhen[0].ruleId = id;
-                        return this.createRuleAnswerValue(question.enableWhen[0], transaction);
-                    });
-
-            });
+            const promises = questionsWithRule.reduce((r, question) => {
+                question.enableWhen.forEach((rule, line) => {
+                    const answerRule = { surveyId, questionId: question.id, logic: rule.logic, line };
+                    answerRule.answerQuestionId = rule.questionId;
+                    const promise = AnswerRule.create(answerRule, { transaction })
+                        .then(({ id }) => {
+                            let code = rule.answer && rule.answer.code;
+                            if ((code !== null) && (code !== undefined)) {
+                                return this.questionChoice.findQuestionChoiceIdForCode(answerRule.answerQuestionId, code, transaction)
+                                    .then((choiceId) => {
+                                        rule.answer.choice = choiceId;
+                                        delete rule.answer.code;
+                                        return { id };
+                                    });
+                            }
+                            return ({ id });
+                        })
+                        .then(({ id }) => {
+                            rule.ruleId = id;
+                            return this.createRuleAnswerValue(rule, transaction);
+                        });
+                    r.push(promise);
+                });
+                return r;
+            }, []);
             return SPromise.all(promises).then(() => questions);
         }
         return questions;
@@ -202,31 +204,33 @@ module.exports = class SurveyDAO extends Translatable {
     createRulesForSections(surveyId, sections, sectionIds, transaction) {
         const sectionsWithRule = _.range(sections.length).filter(index => sections[index].enableWhen);
         if (sectionsWithRule.length) {
-            const promises = sectionsWithRule.map(index => {
+            const promises = sectionsWithRule.reduce((r, index) => {
                 const section = sections[index];
                 const surveySectionId = sectionIds[index];
-                const rule = section.enableWhen[0];
-                const answerRule = { surveyId, surveySectionId, logic: rule.logic };
-                answerRule.answerQuestionId = section.enableWhen[0].questionId;
-                return AnswerRule.create(answerRule, { transaction })
-                    .then(({ id }) => {
-                        let code = rule.answer && rule.answer.code;
-                        if ((code !== null) && (code !== undefined)) {
-                            return this.questionChoice.findQuestionChoiceIdForCode(answerRule.answerQuestionId, code, transaction)
-                                .then((choiceId) => {
-                                    rule.answer.choice = choiceId;
-                                    delete rule.answer.code;
-                                    return { id };
-                                });
-                        }
-                        return ({ id });
-                    })
-                    .then(({ id }) => {
-                        section.enableWhen[0].ruleId = id;
-                        return this.createRuleAnswerValue(section.enableWhen[0], transaction);
-                    });
-
-            });
+                section.enableWhen.forEach((rule, line) => {
+                    const answerRule = { surveyId, surveySectionId, logic: rule.logic, line };
+                    answerRule.answerQuestionId = rule.questionId;
+                    const promise = AnswerRule.create(answerRule, { transaction })
+                        .then(({ id }) => {
+                            let code = rule.answer && rule.answer.code;
+                            if ((code !== null) && (code !== undefined)) {
+                                return this.questionChoice.findQuestionChoiceIdForCode(answerRule.answerQuestionId, code, transaction)
+                                    .then((choiceId) => {
+                                        rule.answer.choice = choiceId;
+                                        delete rule.answer.code;
+                                        return { id };
+                                    });
+                            }
+                            return ({ id });
+                        })
+                        .then(({ id }) => {
+                            rule.ruleId = id;
+                            return this.createRuleAnswerValue(rule, transaction);
+                        });
+                    r.push(promise);
+                });
+                return r;
+            }, []);
             return SPromise.all(promises).then(() => sections);
         }
         return sections;

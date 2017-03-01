@@ -12,6 +12,7 @@ let choiceSetMap;
 const comparator = {
     enableWhen(client, server, options) {
         if (client.enableWhen && server.enableWhen) {
+            expect(server.enableWhen.length).to.equal(client.enableWhen.length);
             client.enableWhen.forEach((clientRule, index) => {
                 const serverRule = server.enableWhen[index];
                 if ((clientRule.questionIndex !== undefined) && serverRule.questionId) {
@@ -45,6 +46,7 @@ const comparator = {
                     delete answer.code;
                 }
             });
+            expect(server.enableWhen).to.deep.equal(client.enableWhen);
         }
     },
     question(client, server, options = {}) {
@@ -76,7 +78,8 @@ const comparator = {
             delete expected.answerIdentifier;
             delete expected.answerIdentifiers;
         }
-        if (expected.type === 'choice' || expected.type === 'choices' || server.type === 'choice' || server.type === 'choices') {
+        expect(server.type).to.equal(expected.type);
+        if (expected.type === 'choice' || expected.type === 'choices' || expected.type === 'choice-ref') {
             expected.choices.forEach((choice, index) => {
                 choice.id = server.choices[index].id;
                 if (options.ignoreAnswerIdentifier) {
@@ -120,6 +123,8 @@ const comparator = {
             if (section.sections) {
                 this.surveySections(section.sections, serverSection.sections, options);
             }
+            this.enableWhen(section, serverSection, options);
+            expect(section).to.deep.equal(serverSection);
         });
     },
     surveySectionsOrQuestions(client, server, options) {
@@ -220,29 +225,51 @@ const comparator = {
         });
         expect(server).to.deep.equal(expected);
     },
+    conditionalSurveyTwiceCreatedSections(firstServerSections, secondServerSections) {
+        secondServerSections.forEach((section, index) => {
+            section.id = firstServerSections[index].id;
+        });
+        secondServerSections.forEach((section, index) => {
+            if (section.enableWhen) {
+                section.enableWhen.forEach((rule, index2) => {
+                    const newRuleId = firstServerSections[index].enableWhen[index2].id;
+                    rule.id = newRuleId;
+                });
+            }
+        });
+        secondServerSections.forEach((section, index) => {
+            if (section.sections) {
+                this.conditionalSurveyTwiceCreatedSections(section.sections, firstServerSections[index].sections);
+            }
+            if (section.questions) {
+                this.conditionalSurveyTwiceCreatedQuestions(section.questions, firstServerSections[index].questions);
+            }
+        });
+
+    },
+    conditionalSurveyTwiceCreatedQuestions(firstServerQuestions, secondServerQuestions) {
+        secondServerQuestions.forEach((question, index) => {
+            if (question.enableWhen) {
+                question.enableWhen.forEach((rule, index2) => {
+                    const newRuleId = firstServerQuestions[index].enableWhen[index2].id;
+                    rule.id = newRuleId;
+                });
+            }
+        });
+        secondServerQuestions.forEach((question, index) => {
+            if (question.sections) {
+                this.conditionalSurveyTwiceCreatedSections(question.sections, firstServerQuestions[index].sections);
+            }
+        });
+    },
     conditionalSurveyTwiceCreated(firstServer, secondServer) {
-        secondServer.questions.forEach((question, index) => {
-            const ruleId = _.get(question, 'enableWhen.0.id');
-            if (ruleId) {
-                const newRuleId = firstServer.questions[index].enableWhen[0].id;
-                question.enableWhen[0].id = newRuleId;
-            }
-        });
-        secondServer.questions.forEach((question, index) => {
-            const id = _.get(question, 'sections.0.id');
-            if (id) {
-                const newId = firstServer.questions[index].sections[0].id;
-                question.sections[0].id = newId;
-            }
-        });
-        secondServer.questions.forEach((question, index) => {
-            const ruleId = _.get(question, 'sections.0.enableWhen.0.id');
-            if (ruleId) {
-                const newRuleId = firstServer.questions[index].sections[0].enableWhen[0].id;
-                question.sections[0].enableWhen[0].id = newRuleId;
-            }
-        });
-        delete firstServer.sections;
+        secondServer = _.cloneDeep(secondServer);
+        if (firstServer.questions) {
+            this.conditionalSurveyTwiceCreatedQuestions(firstServer.questions, secondServer.questions);
+        }
+        if (firstServer.sections) {
+            this.conditionalSurveyTwiceCreatedSections(firstServer.sections, secondServer.sections);
+        }
         expect(secondServer).to.deep.equal(firstServer);
     },
     updateChoiceSetMap(choiceSets) {

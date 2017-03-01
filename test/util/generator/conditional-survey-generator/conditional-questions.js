@@ -1,12 +1,11 @@
 'use strict';
 
+const surveys = require('./surveys');
+
 module.exports = [{
     surveyIndex: 0,
-    questionIndex: 5,
-    type: 'text',
-    purpose: 'enableWhen',
-    logic: 'not-equals',
-    relativeIndex: 1
+    survey: surveys.travelSurvey,
+    purpose: 'completeSurvey'
 }, {
     surveyIndex: 1,
     questionIndex: 5,

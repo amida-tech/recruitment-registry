@@ -3,10 +3,6 @@
 process.env.NODE_ENV = 'test';
 
 const _ = require('lodash');
-//const st = require('swagger-tools');
-
-//const swaggerJson = require('../swagger.json');
-//const SPromise = require('../lib/promise');
 
 const models = require('../models');
 const Answerer = require('./util/generator/answerer');
@@ -17,9 +13,8 @@ const comparator = require('./util/comparator');
 const SurveyHistory = require('./util/survey-history');
 const History = require('./util/History');
 const SharedSpec = require('./util/shared-spec');
+const choiceSetCommon = require('./util/choice-set-common');
 const surveyCommon = require('./util/survey-common');
-
-//const spec = st.specs.v2;
 
 describe('survey (conditional questions) unit', function () {
     const answerer = new Answerer();
@@ -32,9 +27,20 @@ describe('survey (conditional questions) unit', function () {
 
     const hxUser = new History();
     const hxSurvey = new SurveyHistory();
+    const hxChoiceSet = new History();
     const tests = new surveyCommon.SpecTests(generator, hxSurvey);
+    const choiceSetTests = new choiceSetCommon.SpecTests(generator, hxChoiceSet);
 
     before(shared.setUpFn());
+
+    const choiceSets = ConditionalSurveyGenerator.getChoiceSets();
+    choiceSets.forEach((choiceSet, index) => {
+        it(`create choice set ${index}`, choiceSetTests.createChoiceSetFn(choiceSet));
+        it(`get choice set ${index}`, choiceSetTests.getChoiceSetFn(index));
+    });
+    it('set comparator choice map', function () {
+        comparator.updateChoiceSetMap(choiceSets);
+    });
 
     _.range(surveyCount).forEach(index => {
         it(`create survey ${index}`, tests.createSurveyFn({ noSection: true }));

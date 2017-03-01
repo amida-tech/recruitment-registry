@@ -19,7 +19,7 @@ const translator = require('./util/translator');
 const surveyCommon = require('./util/survey-common');
 const choiceSetCommon = require('./util/choice-set-common');
 
-const invalidSurveysJSON = require('./fixtures/json-schema-invalid/new-survey');
+//const invalidSurveysJSON = require('./fixtures/json-schema-invalid/new-survey');
 const invalidSurveysSwagger = require('./fixtures/swagger-invalid/new-survey');
 
 const RRError = require('../lib/rr-error');
@@ -142,20 +142,20 @@ describe('survey integration', function () {
         };
     };
 
-    const invalidSurveyJSONFn = function (index) {
-        return function (done) {
-            const survey = invalidSurveysJSON[index];
-            store.post('/surveys', survey, 400)
-                .expect(function (res) {
-                    expect(res.body.message).to.equal(RRError.message('jsonSchemaFailed', 'newSurvey'));
-                })
-                .end(done);
-        };
-    };
+    //const invalidSurveyJSONFn = function (index) {
+    //    return function (done) {
+    //        const survey = invalidSurveysJSON[index];
+    //        store.post('/surveys', survey, 400)
+    //            .expect(function (res) {
+    //                expect(res.body.message).to.equal(RRError.message('jsonSchemaFailed', 'newSurvey'));
+    //            })
+    //            .end(done);
+    //    };
+    //};
 
-    _.range(invalidSurveysJSON.length).forEach(index => {
-        it(`error: invalid (json) survey input ${index}`, invalidSurveyJSONFn(index));
-    });
+    //_.range(invalidSurveysJSON.length).forEach(index => {
+    //    it(`error: invalid (json) survey input ${index}`, invalidSurveyJSONFn(index));
+    //});
 
     const invalidSurveySwaggerFn = function (index) {
         return function (done) {

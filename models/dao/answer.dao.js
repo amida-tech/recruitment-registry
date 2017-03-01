@@ -185,6 +185,14 @@ const evaluateAnswerRule = function ({ logic, answer }, questionAnswer) {
     return false;
 };
 
+const evaluateEnableWhen = function (rules, answersByQuestionId) {
+    return rules.some(rule => {
+        const sourceQuestionId = rule.questionId;
+        const sourceAnswer = answersByQuestionId[sourceQuestionId];
+        return evaluateAnswerRule(rule, sourceAnswer);
+    });
+};
+
 module.exports = class AnswerDAO {
     constructor(dependencies) {
         Object.assign(this, dependencies);
@@ -209,21 +217,50 @@ module.exports = class AnswerDAO {
             });
     }
 
+    isEnabled({ questionId, parents }, questionAnswerRulesMap, sectionAnswerRulesMap, answersByQuestionId) {
+        const rules = questionAnswerRulesMap.get(questionId);
+        if (rules && rules.length) {
+            const enabled = evaluateEnableWhen(rules, answersByQuestionId);
+            if (!enabled) {
+                return false;
+            }
+        }
+        if (parents && parents.length) {
+            const enabled = parents.every(({ sectionId, questionId }) => {
+                if (sectionId) {
+                    const rules = sectionAnswerRulesMap.get(sectionId);
+                    if (rules && rules.length) {
+                        return evaluateEnableWhen(rules, answersByQuestionId);
+                    }
+                    return true;
+                }
+                if (questionId) {
+                    const rules = questionAnswerRulesMap.get(questionId);
+                    if (rules && rules.length) {
+                        return evaluateEnableWhen(rules, answersByQuestionId);
+                    }
+                    return true;
+                }
+                return true;
+            });
+            if (!enabled) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     validateAnswers(userId, surveyId, answers, status) {
-        return this.surveyQuestion.listSurveyQuestions(surveyId)
+        return this.surveyQuestion.listSurveyQuestions(surveyId, true)
             .then(surveyQuestions => {
                 const answersByQuestionId = _.keyBy(answers, 'questionId');
                 return this.answerRule.getQuestionExpandedSurveyAnswerRules(surveyId)
-                    .then((enableWhenRulesByQuestionId) => {
-                        surveyQuestions.forEach((surveyQuestion) => {
+                    .then(({ sectionAnswerRulesMap, questionAnswerRulesMap }) => {
+                        surveyQuestions.forEach(surveyQuestion => {
                             const questionId = surveyQuestion.questionId;
                             const answer = answersByQuestionId[questionId];
-                            const enableWhen = enableWhenRulesByQuestionId && enableWhenRulesByQuestionId[questionId];
-                            if (enableWhen) {
-                                const rule = enableWhen.rule;
-                                const sourceQuestionId = rule.questionId;
-                                const sourceAnswer = answersByQuestionId[sourceQuestionId];
-                                const enabled = evaluateAnswerRule(enableWhen.rule, sourceAnswer);
+                            if (sectionAnswerRulesMap || questionAnswerRulesMap) {
+                                const enabled = this.isEnabled(surveyQuestion, questionAnswerRulesMap, sectionAnswerRulesMap, answersByQuestionId);
                                 if (!enabled) {
                                     surveyQuestion.ignore = true;
                                 }
@@ -235,33 +272,6 @@ module.exports = class AnswerDAO {
                                 surveyQuestion.required = false;
                                 answers.push({ questionId });
                                 return;
-                            }
-                            const ignoreIndices = surveyQuestion.ignoreIndices;
-                            if (ignoreIndices) {
-                                if (!(answer && answer.answers)) {
-                                    if (surveyQuestion.maxSelectionCount === ignoreIndices.length) {
-                                        surveyQuestion.required = false;
-                                        return;
-                                    }
-                                    if (surveyQuestion.required) {
-                                        throw new RRError('answerRequiredMissing');
-                                    }
-                                    return;
-                                }
-                                const toBeIgnored = new Set(ignoreIndices);
-                                answer.answers.forEach(({ multipleIndex }) => {
-                                    if (toBeIgnored.has(multipleIndex)) {
-                                        throw new RRError('answerToBeSkippedAnswered');
-                                    }
-                                });
-                                if (surveyQuestion.required) {
-                                    const existing = new Set(answer.answers.map(({ multipleIndex }) => multipleIndex));
-                                    _.range(surveyQuestion.maxSelectionCount).forEach(index => {
-                                        if (!toBeIgnored.has(index) && !existing.has(index)) {
-                                            throw new RRError('answerRequiredMissing');
-                                        }
-                                    });
-                                }
                             }
                             if (answer && (answer.answer || answer.answers)) {
                                 surveyQuestion.required = false;

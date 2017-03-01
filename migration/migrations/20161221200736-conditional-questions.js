@@ -112,6 +112,9 @@ const answerRule = function (queryInterface, Sequelize) {
                 key: 'id'
             }
         },
+        line: {
+            type: Sequelize.INTEGER
+        },
         createdAt: {
             type: Sequelize.DATE,
             field: 'created_at',

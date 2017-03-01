@@ -3,13 +3,102 @@
 module.exports = [{
     surveyIndex: 0,
     caseIndex: 0,
+    noAnswers: [0, 1, 2, 3, 4, 5, 6],
+    error: 'answerToBeSkippedAnswered'
+}, {
+    surveyIndex: 0,
+    caseIndex: 1,
+    noAnswers: [1, 2, 3, 4, 5, 6, 7],
+    error: 'answerRequiredMissing',
     specialAnswers: [{
-        type: 'differentrule',
-        questionIndex: 4,
-        ruleQuestionIndex: 5
-    }],
-    noAnswers: [5],
-    error: 'answerRequiredMissing'
+        type: 'selectchoice',
+        questionIndex: 0,
+        selectionChoice: 0
+    }]
+}, {
+    surveyIndex: 0,
+    caseIndex: 2,
+    noAnswers: [1, 5, 6, 7],
+    error: 'answerToBeSkippedAnswered',
+    specialAnswers: [{
+        type: 'selectchoice',
+        questionIndex: 0,
+        selectionChoice: 0
+    }, {
+        type: 'selectchoice',
+        questionIndex: 2,
+        selectionChoice: 1
+    }]
+}, {
+    surveyIndex: 0,
+    caseIndex: 3,
+    noAnswers: [1, 3, 4, 5, 6, 7],
+    error: 'answerRequiredMissing',
+    specialAnswers: [{
+        type: 'selectchoice',
+        questionIndex: 0,
+        selectionChoice: 0
+    }, {
+        type: 'selectchoice',
+        questionIndex: 2,
+        selectionChoice: 1
+    }]
+}, {
+    surveyIndex: 0,
+    caseIndex: 4,
+    noAnswers: [1, 3, 4, 5, 6, 7],
+    error: 'answerRequiredMissing',
+    specialAnswers: [{
+        type: 'selectchoice',
+        questionIndex: 0,
+        selectionChoice: 0
+    }, {
+        type: 'selectchoice',
+        questionIndex: 2,
+        selectionChoice: 0
+    }]
+}, {
+    surveyIndex: 0,
+    caseIndex: 5,
+    noAnswers: [1, 2, 3, 4, 5, 6, 7],
+    error: 'answerRequiredMissing',
+    specialAnswers: [{
+        type: 'selectchoice',
+        questionIndex: 0,
+        selectionChoice: 1
+    }]
+}, {
+    surveyIndex: 0,
+    caseIndex: 6,
+    noAnswers: [3, 4, 5, 6, 7],
+    error: 'answerToBeSkippedAnswered',
+    specialAnswers: [{
+        type: 'selectchoice',
+        questionIndex: 0,
+        selectionChoice: 1
+    }, {
+        type: 'selectchoice',
+        questionIndex: 1,
+        selectionChoice: 1
+    }]
+}, {
+    surveyIndex: 0,
+    caseIndex: 7,
+    noAnswers: [2, 3, 4, 6],
+    error: 'answerToBeSkippedAnswered',
+    specialAnswers: [{
+        type: 'selectchoice',
+        questionIndex: 0,
+        selectionChoice: 1
+    }, {
+        type: 'selectchoice',
+        questionIndex: 1,
+        selectionChoice: 1
+    }, {
+        type: 'selectchoice',
+        questionIndex: 5,
+        selectionChoice: 1
+    }]
 }, {
     surveyIndex: 1,
     caseIndex: 0,
@@ -23,7 +112,6 @@ module.exports = [{
 }, {
     surveyIndex: 1,
     caseIndex: 1,
-    questionIndex: 4,
     specialAnswers: [{
         type: 'samerule',
         questionIndex: 4,

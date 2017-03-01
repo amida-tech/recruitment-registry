@@ -3,12 +3,46 @@
 module.exports = [{
     surveyIndex: 0,
     caseIndex: 0,
+    noAnswers: [1, 4, 5, 6, 7],
     specialAnswers: [{
-        type: 'differentrule',
-        questionIndex: 4,
-        ruleQuestionIndex: 5
-    }],
-    noAnswers: []
+        type: 'selectchoice',
+        questionIndex: 0,
+        selectionChoice: 0
+    }, {
+        type: 'selectchoice',
+        questionIndex: 2,
+        selectionChoice: 1
+    }]
+}, {
+    surveyIndex: 0,
+    caseIndex: 1,
+    noAnswers: [1, 4, 5, 6, 7],
+    specialAnswers: [{
+        type: 'selectchoice',
+        questionIndex: 0,
+        selectionChoice: 0
+    }, {
+        type: 'selectchoice',
+        questionIndex: 2,
+        selectionChoice: 0
+    }]
+}, {
+    surveyIndex: 0,
+    caseIndex: 2,
+    noAnswers: [2, 3, 4, 7],
+    specialAnswers: [{
+        type: 'selectchoice',
+        questionIndex: 0,
+        selectionChoice: 1
+    }, {
+        type: 'selectchoice',
+        questionIndex: 1,
+        selectionChoice: 1
+    }, {
+        type: 'selectchoice',
+        questionIndex: 5,
+        selectionChoice: 1
+    }]
 }, {
     surveyIndex: 1,
     caseIndex: 0,
