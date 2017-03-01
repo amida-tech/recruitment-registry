@@ -36,6 +36,9 @@ describe('json schema validations', function () {
 
             valids.forEach(valid => {
                 const r = js(objectType, valid, res);
+                if (!r) {
+                    console.log(valid);
+                }
                 expect(r).to.equal(true, JSON.stringify(lastErr, undefined, 4));
             });
 

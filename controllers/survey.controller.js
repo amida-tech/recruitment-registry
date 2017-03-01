@@ -5,7 +5,7 @@ const intoStream = require('into-stream');
 
 const models = require('../models');
 const shared = require('./shared.js');
-//const jsonSchema = require('../lib/json-schema');
+const jsonSchema = require('../lib/json-schema');
 
 exports.getSurvey = function (req, res) {
     const id = _.get(req, 'swagger.params.id.value');
@@ -17,9 +17,9 @@ exports.getSurvey = function (req, res) {
 };
 
 exports.createSurvey = function (req, res) {
-    //if (!jsonSchema('newSurvey', req.body, res)) {
-    //    return;
-    //}
+    if (!jsonSchema('newSurvey', req.body, res)) {
+        return;
+    }
     models.survey.createOrReplaceSurvey(req.body)
         .then(id => res.status(201).json({ id }))
         .catch(shared.handleError(res));

@@ -3023,7 +3023,6 @@
             "items": {
                 "$ref": "#/definitions/newRule"
             },
-            "maxItems": 1,
             "minItems": 1
         },
         "newSurveyQuestion": {
@@ -3111,11 +3110,7 @@
                     "minLength": 1
                 },
                 "questions": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/newSurveyQuestion"
-                    },
-                    "minItems": 1
+                    "$ref": "#/definitions/newSurveyQuestions"
                 },
                 "sections": {
                     "type": "array",
@@ -3127,7 +3122,7 @@
                     "$ref": "#/definitions/newEnableWhen"
                 }
             },
-            "maxProperties": 2,
+            "maxProperties": 3,
             "additionalProperties": false
         },
         "section": {
@@ -3208,11 +3203,7 @@
                     "minItems": 1
                 },
                 "questions": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/newSurveyQuestion"
-                    },
-                    "minItems": 1
+                    "$ref": "#/definitions/newSurveyQuestions"
                 }
             },
             "additionalProperties": false
@@ -3222,7 +3213,6 @@
             "items": {
                 "$ref": "#/definitions/rule"
             },
-            "maxItems": 1,
             "minItems": 1
         },
         "rule": {
@@ -3843,6 +3833,10 @@
                 "dayValue": {
                     "type": "string",
                     "pattern": "^\\d{2}$"
+                },
+                "code": {
+                    "type": "string",
+                    "minLength": 1
                 }
             },
             "minProperties": 1,
