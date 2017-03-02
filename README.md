@@ -13,7 +13,7 @@ Recruitment Registry API
 ## Installation
 
 1. Install Node.js v6 - previous node versions may require Babel
-2. Install and initialize Postgres v9.4 or better (see Postgres dependencies to switch to another Sequelize compatible relational database)
+2. Install and initialize Postgres v9.5 or better
 3. Create a database `createdb recreg`
 4. Install Grunt
 5. Cd into api directory and install dependencies: `npm install`
@@ -125,19 +125,6 @@ $ mocha test/survey.model.spec.js --bail
 Each test in a file may depend on some of the previous tests so using flag `bail` is recommended.
 
 Most API resources are documented in snippets in the [integration document](./docs/api.md).  A script that exercises most snippets is.  This script however is not yet part of the testing suite and needs to be run independently and updated according to changes.
-
-## Postgres specific functionality
-<a name="postgresdepend"/>
-
-Although this project uses [Sequelize](http://docs.sequelizejs.com/en/v3/), it does not support other Sequelize compatible relational databases such as [MySQL](https://www.mysql.com/) and [MSSql](https://www.microsoft.com/en-us/sql-server/sql-server-2016) out of the box.  The following are the Postgres only fconstructs that need to be replaced to be able to use other databases
-
-* `survey` table includes a JSON type column named `meta`.
-* `question` table includes a JSON type column named `meta`.
-* `smtp` table includes a JSON type column named `other_options`.
-* `rr_section`table includes an integer array type column named `indices`.
-* `answer` data access object (answer.dao.js) uses Postgres `to_char` function in one of the queries.
-
-JSON columns can be changed to Text and Text to/from JSON conversions can be done manually in the code.  For array columns a seperate table can be used.  Postgres `to_char` function needs to be replaced by equivalent.
 
 ## API
 
