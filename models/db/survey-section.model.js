@@ -14,9 +14,17 @@ module.exports = function (sequelize, DataTypes) {
                 key: 'id'
             }
         },
-        type: {
-            type: DataTypes.ENUM('question', 'section'),
-            allowNull: false
+        sectionId: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            field: 'section_id',
+            references: {
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'section'
+                },
+                key: 'id'
+            }
         },
         parentId: {
             type: DataTypes.INTEGER,

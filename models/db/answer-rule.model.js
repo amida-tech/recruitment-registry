@@ -37,14 +37,14 @@ module.exports = function (sequelize, DataTypes) {
                 key: 'id'
             }
         },
-        surveySectionId: {
+        sectionId: {
             type: DataTypes.INTEGER,
-            field: 'survey_section_id',
+            field: 'section_id',
             allowNull: true,
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'survey_section'
+                    tableName: 'section'
                 },
                 key: 'id'
             }

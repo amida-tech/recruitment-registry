@@ -6,29 +6,27 @@ const SurveyQuestion = db.SurveyQuestion;
 const SurveySection = db.SurveySection;
 const SurveySectionQuestion = db.SurveySectionQuestion;
 
-const updateQuestionSectionDependency = function updateQuestionSectionDependency(parents, sectionId, questionParents, sectionParents) {
-    const parent = sectionParents.get(sectionId);
-    if (parent) {
-        parents.push(parent);
-        if (parent.sectionId) {
-            return updateQuestionSectionDependency(parents, parent.sectionId, questionParents, sectionParents);
-        }
-        if (parent.questionId) {
-            const grandparentSectionId = questionParents.get(parent.questionId);
-            if (grandparentSectionId) {
-                parents.push({ sectionId: grandparentSectionId });
-                updateQuestionSectionDependency(parents, grandparentSectionId, questionParents, sectionParents);
-            }
+const updateQuestionSectionDependency = function updateQuestionSectionDependency(parents, id, questionParents, sectionParents) {
+    const { sectionId, parentId, questionParentId } = sectionParents.get(id);
+    parents.push({ sectionId });
+    if (parentId) {
+        updateQuestionSectionDependency(parents, parentId, questionParents, sectionParents);
+    }
+    if (questionParentId) {
+        parents.push({ questionId: questionParentId });
+        const parentId = questionParents.get(questionParentId);
+        if (parentId) {
+            updateQuestionSectionDependency(parents, parentId, questionParents, sectionParents);
         }
     }
 };
 
 const updateQuestionDependency = function updateQuestionDependency(question, questionParents, sectionParents) {
     const id = question.questionId;
-    const sectionId = questionParents.get(id);
-    if (sectionId) {
-        question.parents = [{ sectionId }];
-        updateQuestionSectionDependency(question.parents, sectionId, questionParents, sectionParents);
+    const parentId = questionParents.get(id);
+    if (parentId) {
+        question.parents = [];
+        updateQuestionSectionDependency(question.parents, parentId, questionParents, sectionParents);
     }
 };
 
@@ -56,7 +54,7 @@ module.exports = class SurveyQuestionsDAO {
                 where: { surveyId },
                 raw: true,
                 order: 'line',
-                attributes: ['id', 'type', 'parentId', 'parentQuestionId']
+                attributes: ['id', 'sectionId', 'parentId', 'parentQuestionId']
             })
             .then(sections => {
                 if (!sections.length) {
@@ -71,14 +69,7 @@ module.exports = class SurveyQuestionsDAO {
                     })
                     .then(sectionQuestions => {
                         const sectionParents = sections.reduce((r, section) => {
-                            if (section.parentId) {
-                                r.set(section.id, { sectionId: section.parentId });
-                                return r;
-                            }
-                            if (section.parentQuestionId) {
-                                r.set(section.id, { questionId: section.parentQuestionId });
-                                return r;
-                            }
+                            r.set(section.id, section);
                             return r;
                         }, new Map());
                         const questionParents = sectionQuestions.reduce((r, sectionQuestion) => {

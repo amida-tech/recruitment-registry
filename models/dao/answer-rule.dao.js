@@ -14,7 +14,7 @@ module.exports = class AnswerRuleDAO {
 
     getSurveyAnswerRules(surveyId) {
         const where = { surveyId };
-        const attributes = ['id', 'logic', 'questionId', 'answerQuestionId', 'surveySectionId'];
+        const attributes = ['id', 'logic', 'questionId', 'answerQuestionId', 'sectionId'];
         const include = [
             { model: Question, as: 'question', attributes: ['type'] },
             { model: Question, as: 'answerQuestion', attributes: ['type'] },
@@ -27,12 +27,12 @@ module.exports = class AnswerRuleDAO {
                 const rules = {};
                 const ruleIds = [];
                 const result = answerRules.map(answerRule => {
-                    const { id, logic, questionId, answerQuestionId, surveySectionId } = answerRule;
+                    const { id, logic, questionId, answerQuestionId, sectionId } = answerRule;
                     const questionType = answerRule['answerQuestion.type'];
                     const rule = { id, logic, type: questionType };
                     ruleIds.push(id);
                     rules[id] = rule;
-                    const ruleInfo = { questionId, surveySectionId, rule };
+                    const ruleInfo = { questionId, sectionId, rule };
                     ruleInfo.rule.questionId = answerQuestionId;
                     return ruleInfo;
                 });
@@ -75,12 +75,12 @@ module.exports = class AnswerRuleDAO {
                 }
                 return answerRules.reduce((r, answerRule) => {
                     const { sectionAnswerRulesMap, questionAnswerRulesMap } = r;
-                    const { surveySectionId, questionId, rule } = answerRule;
-                    if (surveySectionId) {
-                        let sectionRules = sectionAnswerRulesMap.get(surveySectionId);
+                    const { sectionId, questionId, rule } = answerRule;
+                    if (sectionId) {
+                        let sectionRules = sectionAnswerRulesMap.get(sectionId);
                         if (!sectionRules) {
                             sectionRules = [];
-                            sectionAnswerRulesMap.set(surveySectionId, sectionRules);
+                            sectionAnswerRulesMap.set(sectionId, sectionRules);
                         }
                         sectionRules.push(rule);
                         return r;

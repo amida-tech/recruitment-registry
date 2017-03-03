@@ -127,11 +127,11 @@ module.exports = class Translatable {
             });
     }
 
-    updateAllTexts(parents, language) {
+    updateAllTexts(parents, language, idField = 'id') {
         const ids = _.map(parents, 'id');
         return this.getAllTexts(ids, language)
             .then(map => {
-                parents.forEach(parent => this._updateTextFields(parent, map[parent.id]));
+                parents.forEach(parent => this._updateTextFields(parent, map[parent[idField]]));
                 return parents;
             });
     }

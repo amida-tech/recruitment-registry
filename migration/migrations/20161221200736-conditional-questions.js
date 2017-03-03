@@ -95,12 +95,12 @@ const answerRule = function (queryInterface, Sequelize) {
                 key: 'id'
             }
         },
-        surveySectionId: {
+        sectionId: {
             type: Sequelize.INTEGER,
-            field: 'survey_section_id',
+            field: 'section_id',
             allowNull: true,
             references: {
-                model: 'survey_section',
+                model: 'section',
                 key: 'id'
             }
         },

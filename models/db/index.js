@@ -56,8 +56,9 @@ const ConsentSection = sequelize.import('./consent-section.model');
 const Consent = sequelize.import('./consent.model');
 const SurveyConsent = sequelize.import('./survey-consent.model');
 const Language = sequelize.import('./language.model');
+const Section = sequelize.import('./section.model');
+const SectionText = sequelize.import('./section-text.model');
 const SurveySection = sequelize.import('./survey-section.model');
-const SurveySectionText = sequelize.import('./survey-section-text.model');
 const SurveySectionQuestion = sequelize.import('./survey-section-question.model');
 const SmtpText = sequelize.import('./smtp-text.model');
 const Smtp = sequelize.import('./smtp.model');
@@ -136,6 +137,18 @@ AnswerRule.belongsTo(Question, {
 });
 
 SurveyQuestion.belongsTo(Question, questionBelongsToArgument);
+SurveySection.belongsTo(Section, {
+    as: 'section',
+    foreignKey: {
+        allowNull: false,
+        fieldName: 'sectionId',
+        field: 'section_id',
+        references: {
+            model: 'section',
+            key: 'id'
+        }
+    }
+});
 
 UserAssessment.belongsTo(Assessment, {
     as: 'assessment',
@@ -168,8 +181,9 @@ module.exports = {
     sequelize,
     SurveyStatus,
     User,
+    Section,
+    SectionText,
     SurveySection,
-    SurveySectionText,
     SurveySectionQuestion,
     QuestionType,
     QuestionChoice,
