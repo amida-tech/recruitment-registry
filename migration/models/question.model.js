@@ -1,14 +1,28 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    const Question = sequelize.define('question', {
+    return sequelize.define('question', {
         type: {
             type: DataTypes.TEXT,
             allowNull: false,
             references: {
-                model: 'question_type',
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'question_type'
+                },
                 key: 'name'
-            },
+            }
+        },
+        choiceSetId: {
+            type: DataTypes.INTEGER,
+            field: 'choice_set_id',
+            references: {
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'choice_set'
+                },
+                key: 'id'
+            }
         },
         version: {
             type: DataTypes.INTEGER
@@ -19,6 +33,13 @@ module.exports = function (sequelize, DataTypes) {
         },
         meta: {
             type: DataTypes.JSON
+        },
+        multiple: {
+            type: DataTypes.BOOLEAN
+        },
+        maxCount: {
+            type: DataTypes.INTEGER,
+            field: 'max_count'
         },
         createdAt: {
             type: DataTypes.DATE,
@@ -34,11 +55,10 @@ module.exports = function (sequelize, DataTypes) {
         }
     }, {
         freezeTableName: true,
+        schema: sequelize.options.schema,
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
         deletedAt: 'deletedAt',
         paranoid: true
     });
-
-    return Question;
 };

@@ -1,13 +1,16 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    const ConsentDocumentText = sequelize.define('consent_document_text', {
+    return sequelize.define('consent_document_text', {
         consentDocumentId: {
             type: DataTypes.INTEGER,
             allowNull: false,
             field: 'consent_document_id',
             references: {
-                model: 'consent_document',
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'consent_document'
+                },
                 key: 'id'
             }
         },
@@ -24,7 +27,10 @@ module.exports = function (sequelize, DataTypes) {
             allowNull: false,
             field: 'language_code',
             references: {
-                model: 'language',
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'language'
+                },
                 key: 'code'
             }
         },
@@ -32,17 +38,16 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.DATE,
             field: 'created_at',
         },
-        deleteAt: {
+        deletedAt: {
             type: DataTypes.DATE,
             field: 'deleted_at'
         }
     }, {
         freezeTableName: true,
+        schema: sequelize.options.schema,
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',
         paranoid: true,
     });
-
-    return ConsentDocumentText;
 };

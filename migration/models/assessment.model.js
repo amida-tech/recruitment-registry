@@ -1,21 +1,24 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('profile_survey', {
-        surveyId: {
-            type: DataTypes.INTEGER,
-            field: 'survey_id',
-            references: {
-                model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'survey'
-                },
-                key: 'id'
-            }
+    return sequelize.define('assessment', {
+        name: {
+            type: DataTypes.TEXT,
+            allowNull: false,
+            unique: true
+        },
+        sequenceType: {
+            type: DataTypes.ENUM('ondemand', 'biyearly'),
+            field: 'sequence_type',
+            allowNull: false
         },
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',
+        },
+        updatedAt: {
+            type: DataTypes.DATE,
+            field: 'updated_at',
         },
         deletedAt: {
             type: DataTypes.DATE,
@@ -25,7 +28,7 @@ module.exports = function (sequelize, DataTypes) {
         freezeTableName: true,
         schema: sequelize.options.schema,
         createdAt: 'createdAt',
-        updatedAt: false,
+        updatedAt: 'updatedAt',
         deletedAt: 'deletedAt',
         paranoid: true
     });

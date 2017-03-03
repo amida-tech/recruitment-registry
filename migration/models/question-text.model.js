@@ -1,13 +1,16 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    const QuestionText = sequelize.define('question_text', {
+    return sequelize.define('question_text', {
         questionId: {
             type: DataTypes.INTEGER,
             allowNull: false,
             field: 'question_id',
             references: {
-                model: 'question',
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'question'
+                },
                 key: 'id'
             }
         },
@@ -16,7 +19,10 @@ module.exports = function (sequelize, DataTypes) {
             allowNull: false,
             field: 'language_code',
             references: {
-                model: 'language',
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'language'
+                },
                 key: 'code'
             }
         },
@@ -37,11 +43,10 @@ module.exports = function (sequelize, DataTypes) {
         }
     }, {
         freezeTableName: true,
+        schema: sequelize.options.schema,
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',
         paranoid: true
     });
-
-    return QuestionText;
 };

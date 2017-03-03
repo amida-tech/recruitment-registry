@@ -1,19 +1,7 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('answer', {
-        userId: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            field: 'user_id',
-            references: {
-                model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'registry_user'
-                },
-                key: 'id'
-            }
-        },
+    return sequelize.define('answer_rule', {
         surveyId: {
             type: DataTypes.INTEGER,
             allowNull: false,
@@ -26,22 +14,21 @@ module.exports = function (sequelize, DataTypes) {
                 key: 'id'
             }
         },
-        language: {
+        logic: {
             type: DataTypes.TEXT,
             allowNull: false,
-            field: 'language_code',
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'language'
+                    tableName: 'answer_rule_logic'
                 },
-                key: 'code'
+                key: 'name'
             }
         },
         questionId: {
             type: DataTypes.INTEGER,
-            allowNull: false,
             field: 'question_id',
+            allowNull: true,
             references: {
                 model: {
                     schema: sequelize.options.schema,
@@ -50,40 +37,44 @@ module.exports = function (sequelize, DataTypes) {
                 key: 'id'
             }
         },
-        questionChoiceId: {
+        sectionId: {
             type: DataTypes.INTEGER,
-            field: 'question_choice_id',
+            field: 'section_id',
+            allowNull: true,
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'question_choice'
+                    tableName: 'section'
                 },
                 key: 'id'
             }
         },
-        multipleIndex: {
+        answerQuestionId: {
             type: DataTypes.INTEGER,
-            field: 'multiple_index'
+            field: 'answer_question_id',
+            allowNull: true,
+            references: {
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'question'
+                },
+                key: 'id'
+            }
         },
-        value: {
-            type: DataTypes.TEXT
-        },
-        meta: {
-            type: DataTypes.JSON
+        line: {
+            type: DataTypes.INTEGER
         },
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',
-            defaultValue: sequelize.literal('NOW()')
         },
         deletedAt: {
             type: DataTypes.DATE,
-            field: 'deleted_at',
+            field: 'deleted_at'
         }
     }, {
         freezeTableName: true,
         schema: sequelize.options.schema,
-        timestamps: true,
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',
