@@ -87,6 +87,7 @@ module.exports = function (sequelize, DataTypes) {
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',
-        paranoid: true
+        paranoid: true,
+        indexes: [{ fields: ['survey_id'], where: { deleted_at: { $eq: null } } }]
     });
 };

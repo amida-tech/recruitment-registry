@@ -3,7 +3,12 @@
 module.exports = {
     up: function (queryInterface) {
         return queryInterface.dropTable('question_action_text')
-            .then(() => queryInterface.dropTable('question_action'));
+            .then(() => queryInterface.dropTable('question_action'))
+            .then(() => queryInterface.addIndex('answer', ['survey_id'], {
+                indexName: 'answer_survey_id',
+                where: { deleted_at: { $eq: null } }
+            }));
+
     },
 
     down: function () {
