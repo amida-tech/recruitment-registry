@@ -1,0 +1,28 @@
+SubjectCode,Timepoint,DaysAfterBaseline,Latest,Status,QID1_1,QID1_2,QID1_3,QID2,QID3_1_TEXT,QID3_2_TEXT,QID3_3_TEXT,QID4_1_TEXT,QID4_2_TEXT,QID4_3_TEXT,QID5,QID6_1_TEXT,QID6_2_TEXT,QID6_3_TEXT,QID7_1,QID7_2,QID7_3,QID7_4
+Code-000,m00,-215,False,Collected,1,,1,1,Grundig,Visio,,M65354,K8945,,1,,,0,2,3,3
+Code-000,m12,408,False,Collected,1,1,1,1,Visio,,,K8945,,,1,,,,,,,
+Code-000,m24,730,True,Collected,,1,1,1,Visio,,,K8945,,,2,Visio,Sharp,LG,3,2,1,3
+Code-001,m00,278,False,Failed To Collect,,,,,,,,,,,,,,
+Code-001,m00,,False,Not In Protocol,,,,,,,,,,,,,,
+Code-001,m12,482,False,Failed To Collect,,,,,,,,,,,,,,
+Code-001,m18,635,False,Failed To Collect,,,,,,,,,,,,,,
+Code-001,m24,635,False,Scheduled,,,,,,,,,,,,,,
+Code-002,m00,11,False,Collected,1,,,,,,,,,,1,,,
+Code-002,m06,187,False,Collected,1,,,1,Sony,,,LM8945,,,1,,,2,1,0,3
+Code-002,m12,380,True,Collected,1,,,1,Sony,,,LM8945,,,2,Sony,,3,1,,1
+Code-002,m18,730,False,Scheduled,,,,,,,,,,,,,,
+Code-003,m00,,False,Not In Protocol,,,,,,,,,,,,,,
+Code-003,m06,319,False,Started,,,,,,,,,,,,,,
+Code-003,m12,455,False,Failed To Collect,,,,,,,,,,,,,,
+Code-003,m18,455,False,Scheduled,,,,,,,,,,,,,,
+Code-004,m00,90,False,Failed To Collect,,,,,,,,,,,,,,
+Code-004,m06,191,True,Collected,1,,1,1,Vestel,,,HH7564,,,1,,,1,1,,1
+Code-004,m12,365,False,Refused,,,,,,,,,,,,,,
+Code-004,m18,455,False,Scheduled,,,,,,,,,,,,,,
+Code-005,m00,4,True,Collected,,,1,2,,,,,,,2,Sharp,,1,,,2
+Code-005,m06,186,False,Technical Difficulties,,,,,,,,,,,,,,
+Code-005,m12,270,False,Scheduled,,,,,,,,,,,,,,
+Code-006,m00,2,True,Collected,1,1,1,2,,,,,,,1,,,
+Code-006,m06,237,False,Unable To Perform,,,,,,,,,,,,,,
+Code-007,m00,124,False,Technical Difficulties,1,,1,2,,,,,,,1,,,
+Code-007,m06,310,True,Collected,1,1,1,2,,,,,,,2,LG,,
