@@ -7,10 +7,6 @@ const section = function (queryInterface, Sequelize) {
             primaryKey: true,
             autoIncrement: true
         },
-        type: {
-            type: Sequelize.ENUM('question', 'section'),
-            allowNull: false
-        },
         createdAt: {
             type: Sequelize.DATE,
             field: 'created_at',

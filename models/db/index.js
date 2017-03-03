@@ -137,18 +137,6 @@ AnswerRule.belongsTo(Question, {
 });
 
 SurveyQuestion.belongsTo(Question, questionBelongsToArgument);
-SurveySection.belongsTo(Section, {
-    as: 'section',
-    foreignKey: {
-        allowNull: false,
-        fieldName: 'sectionId',
-        field: 'section_id',
-        references: {
-            model: 'section',
-            key: 'id'
-        }
-    }
-});
 
 UserAssessment.belongsTo(Assessment, {
     as: 'assessment',

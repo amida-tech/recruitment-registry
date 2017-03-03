@@ -2,10 +2,6 @@
 
 module.exports = function (sequelize, DataTypes) {
     return sequelize.define('section', {
-        type: {
-            type: DataTypes.ENUM('question', 'section'),
-            allowNull: false
-        },
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',

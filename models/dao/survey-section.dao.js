@@ -12,8 +12,8 @@ module.exports = class SectionDAO {
         Object.assign(this, dependencies);
     }
 
-    createSurveySectionTx({ name, description, surveyId, parentQuestionId, line, type, parentIndex }, ids, transaction) {
-        return this.section.createSectionTx({ name, description, type }, transaction)
+    createSurveySectionTx({ name, description, surveyId, parentQuestionId, line, parentIndex }, ids, transaction) {
+        return this.section.createSectionTx({ name, description }, transaction)
             .then(({ id: sectionId }) => {
                 const parentId = parentIndex === null || parentIndex === undefined ? null : ids[parentIndex].id;
                 const record = { surveyId, sectionId, parentId, line };
@@ -34,8 +34,8 @@ module.exports = class SectionDAO {
         }
         return SurveySection.destroy({ where: { surveyId }, transaction })
             .then(() => {
-                return flattenedSections.reduce((r, { parentIndex, questionIndex, line, name, type }) => {
-                    const record = { name, surveyId, line, type, parentIndex };
+                return flattenedSections.reduce((r, { parentIndex, questionIndex, line, name }) => {
+                    const record = { name, surveyId, line, parentIndex };
                     if (questionIndex !== undefined) {
                         record.parentQuestionId = surveyQuestionIds[questionIndex];
                     }
@@ -72,8 +72,7 @@ module.exports = class SectionDAO {
                 where: { surveyId },
                 raw: true,
                 order: 'line',
-                attributes: ['id', 'sectionId', 'parentId', 'parentQuestionId'],
-                include: [{ model: db.Section, as: 'section', attributes: ['type'] }],
+                attributes: ['id', 'sectionId', 'parentId', 'parentQuestionId']
             })
             .then(surveySections => {
                 if (!surveySections.length) {
@@ -83,9 +82,7 @@ module.exports = class SectionDAO {
                     .then(surveySections => {
                         const ids = surveySections.reduce((r, section) => {
                             const { id, parentQuestionId } = section;
-                            if (section['section.type'] === 'question') {
-                                r.push(id);
-                            }
+                            r.push(id);
                             if (parentQuestionId) {
                                 const question = questionMap.get(parentQuestionId);
                                 if (!question.sections) {
@@ -108,10 +105,6 @@ module.exports = class SectionDAO {
                                 const { idMap, sectionIdMap } = surveySections.reduce((r, section) => {
                                     r.idMap[section.id] = section;
                                     r.sectionIdMap[section.sectionId] = section;
-                                    if (section['section.type'] === 'question') {
-                                        section.questions = [];
-                                    }
-                                    delete section['section.type'];
                                     return r;
                                 }, { idMap: {}, sectionIdMap: {} });
                                 answerRuleInfos.forEach(({ sectionId, rule }) => {
@@ -127,6 +120,9 @@ module.exports = class SectionDAO {
                                 records.forEach(record => {
                                     const section = idMap[record.surveySectionId];
                                     const question = questionMap.get(record.questionId);
+                                    if (!section.questions) {
+                                        section.questions = [];
+                                    }
                                     section.questions.push(question);
                                     innerQuestionSet.add(question.id);
                                 });
