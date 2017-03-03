@@ -3087,9 +3087,6 @@
                         "$ref": "#/definitions/newChoice"
                     },
                     "minItems": 1
-                },
-                "actions": {
-                    "$ref": "#/definitions/newActions"
                 }
             },
             "minProperties": 2,
@@ -3292,9 +3289,6 @@
                     },
                     "minItems": 1
                 },
-                "actions": {
-                    "$ref": "#/definitions/actions"
-                 },
                 "answer": {
                     "$ref": "#/definitions/answer"
                 },
@@ -3881,9 +3875,6 @@
                         "$ref": "#/definitions/choice"
                     }
                 },
-                "actions": {
-                    "$ref": "#/definitions/actions"
-                 },
                 "answer": {
                     "$ref": "#/definitions/answer"
                 }
@@ -3919,13 +3910,7 @@
                     "items": {
                         "$ref": "#/definitions/choiceTextUpdate"
                     }
-                },
-                "actions": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/actionTextUpdate"
-                    }
-                 }
+                }
             },
             "additionalProperties": false,
             "minProperties": 2
@@ -4000,9 +3985,6 @@
                     "items": {
                         "$ref": "#/definitions/newChoice"
                     }
-                },
-                "actions": {
-                    "$ref": "#/definitions/newActions"
                 }
             },
             "additionalProperties": false
@@ -4122,65 +4104,6 @@
                 "survey": {
                     "$ref": "#/definitions/survey"
                 }
-            }
-        },
-        "newAction": {
-            "type": "object",
-            "required": ["text", "type"],
-            "properties": {
-                "text": {
-                    "type": "string"
-                },
-                "type": {
-                    "type": "string"
-                }
-            },
-            "additionalProperties": false
-        },
-        "action": {
-            "type": "object",
-            "required": ["id", "text", "type"],
-            "properties": {
-                "id": {
-                    "type": "integer",
-                    "minimum": 1
-                },
-                "text": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "type": {
-                    "type": "string",
-                    "minLength": 1
-                }
-            },
-            "additionalProperties": false
-        },
-        "actionTextUpdate": {
-            "type": "object",
-            "required": ["id", "text"],
-            "properties": {
-                "id": {
-                    "type": "integer",
-                    "minimum": 1
-                },
-                "text": {
-                    "type": "string",
-                    "minLength": 1
-                }
-            },
-            "additionalProperties": false
-        },
-        "newActions": {
-            "type": "array",
-            "items": {
-                "$ref": "#/definitions/newAction"
-            }
-        },
-        "actions": {
-            "type": "array",
-            "items": {
-                "$ref": "#/definitions/action"
             }
         },
         "newConsent": {

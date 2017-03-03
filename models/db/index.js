@@ -35,8 +35,6 @@ const Question = sequelize.import('./question.model');
 const ChoiceSet = sequelize.import('./choice-set.model');
 const QuestionChoice = sequelize.import('./question-choice.model');
 const QuestionChoiceText = sequelize.import('./question-choice-text.model');
-const QuestionAction = sequelize.import('./question-action.model');
-const QuestionActionText = sequelize.import('./question-action-text.model');
 const QuestionText = sequelize.import('./question-text.model');
 const AnswerRuleLogic = sequelize.import('./answer-rule-logic.model');
 const AnswerRule = sequelize.import('./answer-rule.model');
@@ -176,8 +174,6 @@ module.exports = {
     QuestionType,
     QuestionChoice,
     QuestionChoiceText,
-    QuestionAction,
-    QuestionActionText,
     Question,
     QuestionText,
     AnswerRuleLogic,
