@@ -1,15 +1,15 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('survey_section_text', {
-        surveySectionId: {
+    return sequelize.define('section_text', {
+        sectionId: {
             type: DataTypes.INTEGER,
             allowNull: false,
-            field: 'survey_section_id',
+            field: 'section_id',
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'survey_section'
+                    tableName: 'section'
                 },
                 key: 'id'
             }

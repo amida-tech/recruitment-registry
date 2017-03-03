@@ -4,32 +4,27 @@ const db = require('../db');
 
 const SPromise = require('../../lib/promise');
 
-const Translatable = require('./translatable');
-
 const SurveySection = db.SurveySection;
 const SurveySectionQuestion = db.SurveySectionQuestion;
 
-module.exports = class SectionDAO extends Translatable {
-    constructor() {
-        super('survey_section_text', 'surveySectionId', ['name'], { name: true });
+module.exports = class SectionDAO {
+    constructor(dependencies) {
+        Object.assign(this, dependencies);
     }
 
-    createSurveySectionTx({ name, surveyId, parentQuestionId, line, type, parentIndex }, ids, transaction) {
-        const parentId = parentIndex === null ? null : ids[parentIndex];
-        const record = { surveyId, line, type, parentId };
-        if (parentQuestionId) {
-            record.parentQuestionId = parentQuestionId;
-        }
-        return SurveySection.create(record, { transaction })
-            .then(({ id }) => {
-                ids.push(id);
-                if (name) {
-                    return this.createTextTx({ id, name }, transaction).then(() => ids);
-                } else {
-                    return this.deleteTextTx(id, transaction).then(() => {
+    createSurveySectionTx({ name, description, surveyId, parentQuestionId, line, parentIndex }, ids, transaction) {
+        return this.section.createSectionTx({ name, description }, transaction)
+            .then(({ id: sectionId }) => {
+                const parentId = parentIndex === null || parentIndex === undefined ? null : ids[parentIndex].id;
+                const record = { surveyId, sectionId, parentId, line };
+                if (parentQuestionId) {
+                    record.parentQuestionId = parentQuestionId;
+                }
+                return SurveySection.create(record, { transaction })
+                    .then(({ id }) => {
+                        ids.push({ id, sectionId });
                         return ids;
                     });
-                }
             });
     }
 
@@ -39,8 +34,8 @@ module.exports = class SectionDAO extends Translatable {
         }
         return SurveySection.destroy({ where: { surveyId }, transaction })
             .then(() => {
-                return flattenedSections.reduce((r, { parentIndex, questionIndex, line, name, type }) => {
-                    const record = { name, surveyId, line, type, parentIndex };
+                return flattenedSections.reduce((r, { parentIndex, questionIndex, line, name }) => {
+                    const record = { name, surveyId, line, parentIndex };
                     if (questionIndex !== undefined) {
                         record.parentQuestionId = surveyQuestionIds[questionIndex];
                     }
@@ -58,7 +53,7 @@ module.exports = class SectionDAO extends Translatable {
                     }
                     const questionIds = indices.map(index => surveyQuestionIds[index]);
                     if (questionIds) {
-                        const surveySectionId = sectionIds[line];
+                        const surveySectionId = sectionIds[line].id;
                         questionIds.forEach(questionId => {
                             const record = { surveySectionId, questionId, line };
                             const promise = SurveySectionQuestion.create(record, { transaction });
@@ -67,7 +62,7 @@ module.exports = class SectionDAO extends Translatable {
                     }
                     return r;
                 }, []);
-                return SPromise.all(promises).then(() => sectionIds);
+                return SPromise.all(promises).then(() => sectionIds.map(sectionId => sectionId.sectionId));
             }));
     }
 
@@ -77,19 +72,17 @@ module.exports = class SectionDAO extends Translatable {
                 where: { surveyId },
                 raw: true,
                 order: 'line',
-                attributes: ['id', 'type', 'parentId', 'parentQuestionId']
+                attributes: ['id', 'sectionId', 'parentId', 'parentQuestionId']
             })
-            .then(sections => {
-                if (!sections.length) {
+            .then(surveySections => {
+                if (!surveySections.length) {
                     return null;
                 }
-                return this.updateAllTexts(sections, language)
-                    .then(sections => {
-                        const ids = sections.reduce((r, section) => {
-                            const { id, type, parentQuestionId } = section;
-                            if (type === 'question') {
-                                r.push(id);
-                            }
+                return this.section.updateAllTexts(surveySections, language, 'sectionId')
+                    .then(surveySections => {
+                        const ids = surveySections.reduce((r, section) => {
+                            const { id, parentQuestionId } = section;
+                            r.push(id);
                             if (parentQuestionId) {
                                 const question = questionMap.get(parentQuestionId);
                                 if (!question.sections) {
@@ -109,17 +102,14 @@ module.exports = class SectionDAO extends Translatable {
                                 attributes: ['surveySectionId', 'questionId']
                             })
                             .then(records => {
-                                const map = sections.reduce((r, section) => {
-                                    r[section.id] = section;
-                                    if (section.type === 'question') {
-                                        section.questions = [];
-                                    }
-                                    delete section.type;
+                                const { idMap, sectionIdMap } = surveySections.reduce((r, section) => {
+                                    r.idMap[section.id] = section;
+                                    r.sectionIdMap[section.sectionId] = section;
                                     return r;
-                                }, {});
-                                answerRuleInfos.forEach(({ surveySectionId, rule }) => {
-                                    if (surveySectionId) {
-                                        const section = map[surveySectionId];
+                                }, { idMap: {}, sectionIdMap: {} });
+                                answerRuleInfos.forEach(({ sectionId, rule }) => {
+                                    if (sectionId) {
+                                        const section = sectionIdMap[sectionId];
                                         if (!section.enableWhen) {
                                             section.enableWhen = [];
                                         }
@@ -128,15 +118,18 @@ module.exports = class SectionDAO extends Translatable {
                                 });
                                 const innerQuestionSet = new Set();
                                 records.forEach(record => {
-                                    const section = map[record.surveySectionId];
+                                    const section = idMap[record.surveySectionId];
                                     const question = questionMap.get(record.questionId);
+                                    if (!section.questions) {
+                                        section.questions = [];
+                                    }
                                     section.questions.push(question);
                                     innerQuestionSet.add(question.id);
                                 });
                                 const result = { innerQuestionSet };
-                                result.sections = sections.reduce((r, section) => {
+                                result.sections = surveySections.reduce((r, section) => {
                                     if (section.parentId) {
-                                        const parent = map[section.parentId];
+                                        const parent = idMap[section.parentId];
                                         if (!parent.sections) {
                                             parent.sections = [];
                                         }
@@ -148,6 +141,8 @@ module.exports = class SectionDAO extends Translatable {
                                         r.push(section);
                                         delete section.parentId;
                                     }
+                                    section.id = section.sectionId;
+                                    delete section.sectionId;
                                     return r;
                                 }, []);
                                 return result;
@@ -158,7 +153,7 @@ module.exports = class SectionDAO extends Translatable {
 
     updateMultipleSectionNamesTx(sections, language, transaction) {
         const inputs = sections.map(({ id, name }) => ({ id, name, language }));
-        return this.createMultipleTextsTx(inputs, transaction);
+        return this.section.createMultipleTextsTx(inputs, transaction);
     }
 
     deleteSurveySectionsTx(surveyId, transaction) {

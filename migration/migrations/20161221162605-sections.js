@@ -1,5 +1,33 @@
 'use strict';
 
+const section = function (queryInterface, Sequelize) {
+    return queryInterface.createTable('section', {
+        id: {
+            type: Sequelize.INTEGER,
+            primaryKey: true,
+            autoIncrement: true
+        },
+        createdAt: {
+            type: Sequelize.DATE,
+            field: 'created_at',
+        },
+        updatedAt: {
+            type: Sequelize.DATE,
+            field: 'updated_at',
+        },
+        deletedAt: {
+            type: Sequelize.DATE,
+            field: 'deleted_at'
+        }
+    }, {
+        freezeTableName: true,
+        createdAt: 'createdAt',
+        updatedAt: 'updatedAt',
+        deletedAt: 'deletedAt',
+        paranoid: true
+    });
+};
+
 const surveySectionQuestion = function (queryInterface, Sequelize) {
     return queryInterface.createTable('survey_section_question', {
         id: {
@@ -40,59 +68,18 @@ const surveySectionQuestion = function (queryInterface, Sequelize) {
     });
 };
 
-const surveySectionText = function (queryInterface, Sequelize) {
-    return queryInterface.createTable('survey_section_text', {
-        id: {
-            type: Sequelize.INTEGER,
-            primaryKey: true,
-            autoIncrement: true
-        },
-        surveySectionId: {
-            type: Sequelize.INTEGER,
-            allowNull: false,
-            field: 'survey_section_id',
-            references: {
-                model: 'survey_section',
-                key: 'id'
-            }
-        },
-        language: {
-            type: Sequelize.TEXT,
-            allowNull: false,
-            field: 'language_code',
-            references: {
-                model: 'language',
-                key: 'code'
-            }
-        },
-        name: {
-            type: Sequelize.TEXT,
-            allowNull: false
-        },
-        description: {
-            type: Sequelize.TEXT
-        },
-        createdAt: {
-            type: Sequelize.DATE,
-            field: 'created_at',
-        },
-        deletedAt: {
-            type: Sequelize.DATE,
-            field: 'deleted_at'
+const surveySectionSectionId = function (queryInterface, Sequelize) {
+    return queryInterface.addColumn('survey_section', 'section_id', {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        field: 'section_id',
+        references: {
+            model: {
+                schema: queryInterface.sequelize.options.schema,
+                tableName: 'section'
+            },
+            key: 'id'
         }
-    }, {
-        freezeTableName: true,
-        createdAt: 'createdAt',
-        updatedAt: false,
-        deletedAt: 'deletedAt',
-        paranoid: true
-    });
-};
-
-const surveySectionType = function (queryInterface, Sequelize) {
-    return queryInterface.addColumn('survey_section', 'type', {
-        type: Sequelize.ENUM('question', 'section'),
-        allowNull: false
     });
 };
 
@@ -104,6 +91,25 @@ const surveySectionParentId = function (queryInterface, Sequelize) {
             model: 'survey_section',
             key: 'id'
         }
+    });
+};
+
+const sectionTextSectionId = function (queryInterface, Sequelize) {
+    return queryInterface.addColumn('section_text', 'section_id', {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        field: 'section_id',
+        references: {
+            model: 'section',
+            key: 'id'
+        }
+    });
+};
+
+const sectionTextDescription = function (queryInterface, Sequelize) {
+    return queryInterface.addColumn('section_text', 'description', {
+        type: Sequelize.TEXT,
+        field: 'description'
     });
 };
 
@@ -127,16 +133,17 @@ const surveySectionLine = function (queryInterface, Sequelize) {
 
 module.exports = {
     up: function (queryInterface, Sequelize) {
-        //const sequelize = queryInterface.sequelize;
-        return surveySectionQuestion(queryInterface, Sequelize)
-            .then(() => surveySectionText(queryInterface, Sequelize))
+        return section(queryInterface, Sequelize)
+            .then(() => queryInterface.removeColumn('section_text', 'section_id'))
+            .then(() => sectionTextSectionId(queryInterface, Sequelize))
+            .then(() => sectionTextDescription(queryInterface, Sequelize))
+            .then(() => surveySectionQuestion(queryInterface, Sequelize))
             .then(() => queryInterface.removeColumn('survey_section', 'section_id'))
-            .then(() => queryInterface.dropTable('section_text'))
             .then(() => queryInterface.dropTable('rr_section'))
             .then(() => surveySectionParentId(queryInterface, Sequelize))
             .then(() => surveySectionParentQuestionId(queryInterface, Sequelize))
             .then(() => surveySectionLine(queryInterface, Sequelize))
-            .then(() => surveySectionType(queryInterface, Sequelize))
+            .then(() => surveySectionSectionId(queryInterface, Sequelize))
             .then(() => queryInterface.addIndex('survey_section_question', ['survey_section_id'], {
                 indexName: 'survey_section_question_survey_section_id'
             }))
