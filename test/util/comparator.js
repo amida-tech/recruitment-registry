@@ -88,12 +88,6 @@ const comparator = {
             });
             expect(server.choices).to.deep.equal(expected.choices);
         }
-        if (expected.actions || server.actions) {
-            expected.actions.forEach((action, index) => {
-                action.id = server.actions[index].id;
-            });
-            expect(server.actions).to.deep.equal(expected.actions);
-        }
         this.enableWhen(expected, server, options);
         if (expected.sections && server.sections) {
             expect(expected.sections.length).to.equal(server.sections.length);
