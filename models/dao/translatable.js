@@ -128,7 +128,7 @@ module.exports = class Translatable {
     }
 
     updateAllTexts(parents, language, idField = 'id') {
-        const ids = _.map(parents, 'id');
+        const ids = _.map(parents, idField);
         return this.getAllTexts(ids, language)
             .then(map => {
                 parents.forEach(parent => this._updateTextFields(parent, map[parent[idField]]));

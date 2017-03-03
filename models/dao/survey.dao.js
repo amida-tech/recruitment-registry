@@ -59,8 +59,11 @@ module.exports = class SurveyDAO extends Translatable {
 
     flattenSectionsHieararchy(sections, result, parentIndex) {
         sections.forEach((section, line) => {
-            let { name, questions, enableWhen } = section;
+            let { id, name, questions, enableWhen } = section;
             const sectionInfo = { name, parentIndex, line };
+            if (id) {
+                sectionInfo.id = id;
+            }
             if (enableWhen) {
                 sectionInfo.enableWhen = enableWhen;
             }
@@ -86,13 +89,18 @@ module.exports = class SurveyDAO extends Translatable {
             const questionSections = question.sections;
             if (questionSections) {
                 questionSections.forEach((section, line) => {
-                    let { name, sections, questions, enableWhen } = section;
+                    let { id, name, sections, questions, enableWhen } = section;
                     const sectionInfo = { name, questionIndex, line };
+                    if (id) {
+                        sectionInfo.id = id;
+                    }
+                    if (enableWhen) {
+                        sectionInfo.enableWhen = enableWhen;
+                    }
                     result.sections.push(sectionInfo);
                     if (questions) {
                         const indices = this.flattenQuestionsHierarchy(questions, result);
                         sectionInfo.indices = indices;
-                        sectionInfo.enableWhen = enableWhen;
                     }
                     if (sections) {
                         const parentIndex = result.sections.length ? result.sections.length - 1 : null;

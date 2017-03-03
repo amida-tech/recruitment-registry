@@ -381,18 +381,24 @@ describe('survey unit', function () {
 
     it('list surveys', tests.listSurveysFn());
 
-    it('extract existing questions', function () {
+    it('extract existing questions/sections', function () {
         const surveys = hxSurvey.listServers(['status', 'questions', 'sections']);
 
-        hxSurvey.questions = surveys.reduce((r, survey) => {
-            const questions = models.survey.flattenHierarchy(survey).questions;
-            r.push(...questions);
+        const { questions, sections } = surveys.reduce((r, survey) => {
+            const { questions, sections } = models.survey.flattenHierarchy(survey);
+            r.questions.push(...questions);
+            if (sections && sections.length) {
+                r.sections.push(...sections);
+            }
             return r;
-        }, []);
+        }, { questions: [], sections: [] });
+
+        hxSurvey.questions = questions;
+        hxSurvey.sections = sections;
     });
 
     it('create survey by existing questions only', function () {
-        const survey = generator.newSurvey({ noSection: true });
+        const survey = generator.surveyGenerator.newBody();
         const questions = hxSurvey.questions.slice(0, 10);
         survey.questions = questions.map(({ id, required }) => ({ id, required }));
         return models.survey.createSurvey(survey)
@@ -405,6 +411,33 @@ describe('survey unit', function () {
     });
 
     ++surveyCount;
+
+    //it('create survey by existing sections/questions only (0)', function () {
+    //    const survey = generator.surveyGenerator.newBody();
+    //    const questions = hxSurvey.questions.slice(0, 9);
+    //    const sections = hxSurvey.sections.slice(0, 3);
+    //    const surveyQuestions = questions.map(({ id, required }) => ({ id, required }));
+    //    const surveySections = sections.map(({ id }) => ({ id }));
+    //    survey.sections = surveySections.map((surveySection, index) => {
+    //        surveySection.questions = surveyQuestions.slice(index * 3, (index + 1) * 3);
+    //        return surveySection;
+    //    });
+    //    const expectedSections = sections.map((section, index) => {
+    //        const result = Object.assign({}, section);
+    //        result.questions = surveyQuestions.slice(index * 3, (index + 1) * 3);
+    //        return result;
+    //    });
+
+    //    return models.survey.createSurvey(survey)
+    //        .then(id => models.survey.getSurvey(id))
+    //        .then(serverSurvey => {
+    //            survey.sections = expectedSections;
+    //            comparator.survey(survey, serverSurvey);
+    //            hxSurvey.push(survey, serverSurvey);
+    //        });
+    //});
+
+    //++surveyCount;
 
     it('create survey by existing/new questions', function () {
         const survey = generator.newSurvey({ noSection: true });
