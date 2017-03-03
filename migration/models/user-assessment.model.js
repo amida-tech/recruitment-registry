@@ -1,64 +1,64 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('survey_consent', {
-        surveyId: {
+    return sequelize.define('user_assessment', {
+        userId: {
             type: DataTypes.INTEGER,
             allowNull: false,
-            field: 'survey_id',
+            field: 'user_id',
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'survey'
+                    tableName: 'registry_user'
                 },
                 key: 'id'
             }
         },
-        consentId: {
-            type: DataTypes.INTEGER,
-            field: 'consent_id',
-            references: {
-                model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'consent'
-                },
-                key: 'id'
-            }
-        },
-        consentTypeId: {
+        assessmentId: {
             type: DataTypes.INTEGER,
             allowNull: false,
-            field: 'consent_type_id',
+            field: 'assessment_id',
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'consent_type'
+                    tableName: 'assessment'
                 },
                 key: 'id'
             }
         },
-        action: {
-            type: DataTypes.ENUM('read', 'create'),
+        meta: {
+            type: DataTypes.JSON
+        },
+        sequence: {
+            type: DataTypes.INTEGER,
+            allowNull: false
+        },
+        status: {
+            type: DataTypes.ENUM('scheduled', 'not-in-protocol', 'failed-to-collect', 'collected', 'started', 'refused', 'no-status', 'technical-difficulties', 'unable-to-perform'),
             allowNull: false
         },
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',
         },
+        updatedAt: {
+            type: DataTypes.DATE,
+            field: 'updated_at',
+        },
         deletedAt: {
             type: DataTypes.DATE,
             field: 'deleted_at',
-        }
+        },
     }, {
         freezeTableName: true,
         schema: sequelize.options.schema,
         createdAt: 'createdAt',
-        updatedAt: false,
+        updatedAt: 'updatedAt',
         deletedAt: 'deletedAt',
         paranoid: true,
-        indexes: [{
-            unique: true,
-            fields: ['survey_id', 'consent_type_id', 'action']
-        }]
+        indexes: [
+            { fields: ['assessment_id'] },
+            { fields: ['user_id'] },
+        ]
     });
 };

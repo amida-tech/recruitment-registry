@@ -1,13 +1,16 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    const SurveySection = sequelize.define('survey_section', {
+    return sequelize.define('survey_section', {
         surveyId: {
             type: DataTypes.INTEGER,
             allowNull: false,
             field: 'survey_id',
             references: {
-                model: 'survey',
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'survey'
+                },
                 key: 'id'
             }
         },
@@ -16,12 +19,38 @@ module.exports = function (sequelize, DataTypes) {
             allowNull: false,
             field: 'section_id',
             references: {
-                model: 'rr_section',
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'section'
+                },
+                key: 'id'
+            }
+        },
+        parentId: {
+            type: DataTypes.INTEGER,
+            field: 'parent_id',
+            references: {
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'survey_section'
+                },
+                key: 'id'
+            }
+        },
+        parentQuestionId: {
+            type: DataTypes.INTEGER,
+            field: 'parent_question_id',
+            references: {
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'question'
+                },
                 key: 'id'
             }
         },
         line: {
-            type: DataTypes.INTEGER
+            type: DataTypes.INTEGER,
+            allowNull: false
         },
         createdAt: {
             type: DataTypes.DATE,
@@ -30,14 +59,14 @@ module.exports = function (sequelize, DataTypes) {
         deletedAt: {
             type: DataTypes.DATE,
             field: 'deleted_at',
-        },
+        }
     }, {
         freezeTableName: true,
+        schema: sequelize.options.schema,
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',
+        indexes: [{ fields: ['survey_id'], where: { deleted_at: { $eq: null } } }],
         paranoid: true
     });
-
-    return SurveySection;
 };

@@ -1,49 +1,39 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('consent_type_text', {
-        consentTypeId: {
+    return sequelize.define('user_assessment_answer', {
+        answerId: {
             type: DataTypes.INTEGER,
             allowNull: false,
-            field: 'consent_type_id',
+            field: 'answer_id',
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'consent_type'
+                    tableName: 'answer'
                 },
                 key: 'id'
             }
         },
-        language: {
-            type: DataTypes.TEXT,
+        userAssessmentId: {
+            type: DataTypes.INTEGER,
             allowNull: false,
-            field: 'language_code',
+            field: 'user_assessment_id',
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'language'
+                    tableName: 'user_assessment'
                 },
-                key: 'code'
+                key: 'id'
             }
-        },
-        title: {
-            type: DataTypes.TEXT,
-            allowNull: false
         },
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',
-        },
-        deletedAt: {
-            type: DataTypes.DATE,
-            field: 'deleted_at'
         }
     }, {
         freezeTableName: true,
         schema: sequelize.options.schema,
         createdAt: 'createdAt',
-        updatedAt: false,
-        deletedAt: 'deletedAt',
-        paranoid: true
+        updatedAt: false
     });
 };

@@ -1,13 +1,16 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    const QuestionChoiceText = sequelize.define('question_choice_text', {
+    return sequelize.define('question_choice_text', {
         questionChoiceId: {
             type: DataTypes.INTEGER,
             allowNull: false,
-            field: 'question_choice_text',
+            field: 'question_choice_id',
             references: {
-                model: 'question_choice',
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'question_choice'
+                },
                 key: 'id'
             }
         },
@@ -16,7 +19,10 @@ module.exports = function (sequelize, DataTypes) {
             allowNull: false,
             field: 'language_code',
             references: {
-                model: 'language',
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'language'
+                },
                 key: 'code'
             }
         },
@@ -34,10 +40,9 @@ module.exports = function (sequelize, DataTypes) {
         }
     }, {
         freezeTableName: true,
+        schema: sequelize.options.schema,
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt'
     });
-
-    return QuestionChoiceText;
 };

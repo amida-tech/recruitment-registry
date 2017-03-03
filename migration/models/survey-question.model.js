@@ -1,13 +1,16 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    const SurveyQuestion = sequelize.define('survey_question', {
+    return sequelize.define('survey_question', {
         surveyId: {
             type: DataTypes.INTEGER,
             allowNull: false,
             field: 'survey_id',
             references: {
-                model: 'survey',
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'survey'
+                },
                 key: 'id'
             }
         },
@@ -16,7 +19,10 @@ module.exports = function (sequelize, DataTypes) {
             allowNull: false,
             field: 'question_id',
             references: {
-                model: 'question',
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'question'
+                },
                 key: 'id'
             }
         },
@@ -36,11 +42,11 @@ module.exports = function (sequelize, DataTypes) {
         },
     }, {
         freezeTableName: true,
+        schema: sequelize.options.schema,
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',
-        paranoid: true
+        paranoid: true,
+        indexes: [{ unique: true, fields: ['survey_id', 'question_id'], where: { deleted_at: { $eq: null } } }],
     });
-
-    return SurveyQuestion;
 };

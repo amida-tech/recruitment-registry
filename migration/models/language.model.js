@@ -25,7 +25,7 @@ module.exports = function (sequelize, DataTypes) {
         code: 'fr'
     }];
 
-    const Language = sequelize.define('language', {
+    return sequelize.define('language', {
         code: {
             type: DataTypes.TEXT,
             allowNull: false,
@@ -54,6 +54,7 @@ module.exports = function (sequelize, DataTypes) {
         }
     }, {
         freezeTableName: true,
+        schema: sequelize.options.schema,
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
         deletedAt: 'deletedAt',
@@ -61,12 +62,10 @@ module.exports = function (sequelize, DataTypes) {
         hooks: {
             afterSync(options) {
                 if (options.force) {
-                    const pxs = languages.map(lang => Language.create(lang));
+                    const pxs = languages.map(lang => this.create(lang));
                     return SPromise.all(pxs);
                 }
             }
         }
     });
-
-    return Language;
 };

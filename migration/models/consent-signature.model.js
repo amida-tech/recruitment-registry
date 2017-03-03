@@ -1,14 +1,17 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    const ConsentSignature = sequelize.define('consent_signature', {
+    return sequelize.define('consent_signature', {
         consentDocumentId: {
             type: DataTypes.INTEGER,
             allowNull: false,
             field: 'consent_document_id',
             unique: 'signature',
             references: {
-                model: 'consent_document',
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'consent_document'
+                },
                 key: 'id'
             }
         },
@@ -18,7 +21,10 @@ module.exports = function (sequelize, DataTypes) {
             field: 'user_id',
             unique: 'signature',
             references: {
-                model: 'registry_user',
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'registry_user'
+                },
                 key: 'id'
             }
         },
@@ -26,8 +32,11 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.TEXT,
             allowNull: false,
             field: 'language_code',
-            reference: {
-                model: 'language',
+            references: {
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'language'
+                },
                 key: 'code'
             }
         },
@@ -45,8 +54,7 @@ module.exports = function (sequelize, DataTypes) {
     }, {
         updatedAt: false,
         freezeTableName: true,
+        schema: sequelize.options.schema,
         createdAt: 'createdAt'
     });
-
-    return ConsentSignature;
 };

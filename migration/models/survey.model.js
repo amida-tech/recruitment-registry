@@ -1,7 +1,19 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    const Survey = sequelize.define('survey', {
+    return sequelize.define('survey', {
+        status: {
+            type: DataTypes.TEXT,
+            allowNull: false,
+            defaultValue: 'published',
+            references: {
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'survey_status'
+                },
+                key: 'name'
+            }
+        },
         version: {
             type: DataTypes.INTEGER
         },
@@ -26,11 +38,10 @@ module.exports = function (sequelize, DataTypes) {
         }
     }, {
         freezeTableName: true,
+        schema: sequelize.options.schema,
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
         deletedAt: 'deletedAt',
         paranoid: true
     });
-
-    return Survey;
 };
