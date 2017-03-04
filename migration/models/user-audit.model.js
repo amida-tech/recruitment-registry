@@ -1,22 +1,26 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    const QuestionAction = sequelize.define('question_action', {
-        questionId: {
+    return sequelize.define('user_audit', {
+        userId: {
             type: DataTypes.INTEGER,
-            field: 'question_id',
             allowNull: false,
+            field: 'user_id',
             references: {
-                model: 'question',
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'registry_user'
+                },
                 key: 'id'
             }
         },
-        type: {
+        endpoint: {
             type: DataTypes.TEXT,
-            allowNull: false,
+            allowNull: false
         },
-        line: {
-            type: DataTypes.INTEGER
+        operation: {
+            type: DataTypes.TEXT,
+            allowNull: false
         },
         createdAt: {
             type: DataTypes.DATE,
@@ -24,9 +28,8 @@ module.exports = function (sequelize, DataTypes) {
         }
     }, {
         freezeTableName: true,
+        schema: sequelize.options.schema,
         createdAt: 'createdAt',
         updatedAt: false
     });
-
-    return QuestionAction;
 };

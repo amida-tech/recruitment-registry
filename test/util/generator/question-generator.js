@@ -195,14 +195,6 @@ module.exports = class QuestionGenerator {
         return question;
     }
 
-    newActions(index, count) {
-        return _.range(count).map(i => {
-            const text = `text_${index}_${i}`;
-            const type = `type_${index}_${i}`;
-            return { text, type };
-        });
-    }
-
     newBody(type) {
         return this[type] ? this[type]() : this.body(type);
     }
@@ -210,10 +202,6 @@ module.exports = class QuestionGenerator {
     newQuestion(type) {
         type = type || questionTypes[(this.index + 1) % questionTypes.length];
         const result = this.newBody(type);
-        const actionCount = (this.index % 3) - 1;
-        if (actionCount > 0) {
-            result.actions = this.newActions(this.index, actionCount);
-        }
         return result;
     }
 

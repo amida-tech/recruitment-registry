@@ -22,15 +22,6 @@ module.exports = class QuestionDAO extends Translatable {
         Object.assign(this, dependencies);
     }
 
-    createActionsTx(id, actions, tx) {
-        if (actions && actions.length) {
-            return this.questionAction.createActionsPerQuestionTx(id, actions, tx)
-                .then(() => ({ id }));
-        } else {
-            return SPromise.resolve({ id });
-        }
-    }
-
     createChoicesTx(questionId, choices, transaction) {
         const pxs = choices.map(({ text, code, type, meta, answerIdentifier }, line) => {
             type = type || 'bool';
@@ -85,7 +76,6 @@ module.exports = class QuestionDAO extends Translatable {
                         const { text, instruction } = question;
                         const id = result.id;
                         return this.createTextTx({ text, instruction, id }, transaction)
-                            .then(() => this.createActionsTx(result.id, question.actions, transaction))
                             .then(() => {
                                 let { oneOfChoices, choices } = question;
                                 const nOneOfChoices = (oneOfChoices && oneOfChoices.length) || 0;
@@ -200,16 +190,6 @@ module.exports = class QuestionDAO extends Translatable {
             })
             .then(question => this.updateText(question, language))
             .then(question => {
-                return this.questionAction.findActionsPerQuestion(question.id, language)
-                    .then(actions => {
-                        if (actions.length) {
-                            question.actions = actions;
-
-                        }
-                        return question;
-                    });
-            })
-            .then(question => {
                 if (['choice', 'choices'].indexOf(question.type) < 0) {
                     return question;
                 }
@@ -238,12 +218,6 @@ module.exports = class QuestionDAO extends Translatable {
                 const choices = translation.choices;
                 if (choices) {
                     return this.questionChoice.updateMultipleChoiceTextsTx(choices, language, tx);
-                }
-            })
-            .then(() => {
-                const actions = translation.actions;
-                if (actions) {
-                    return this.questionAction.updateMultipleActionTextsTx(actions, language, tx);
                 }
             });
     }
@@ -318,26 +292,6 @@ module.exports = class QuestionDAO extends Translatable {
                             return r;
                         }, []);
                         return SPromise.all(promises);
-                    })
-                    .then(() => {
-                        if (scope === 'complete') {
-                            return this.questionAction.findActionsPerQuestions(ids, language)
-                                .then(actions => {
-                                    if (actions.length) {
-                                        actions.forEach(action => {
-                                            const q = map.get(action.questionId);
-                                            if (q) {
-                                                delete action.questionId;
-                                                if (q.actions) {
-                                                    q.actions.push(action);
-                                                } else {
-                                                    q.actions = [action];
-                                                }
-                                            }
-                                        });
-                                    }
-                                });
-                        }
                     })
                     .then(() => {
                         if (scope !== 'summary') {

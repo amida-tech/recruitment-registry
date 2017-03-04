@@ -1,32 +1,26 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    const QuestionActionText = sequelize.define('question_action_text', {
-        questionActionId: {
+    return sequelize.define('research_site_vicinity', {
+        researchSiteId: {
             type: DataTypes.INTEGER,
             allowNull: false,
-            field: 'question_action_text',
+            field: 'research_site_id',
             references: {
-                model: 'question_action',
+                model: {
+                    schema: sequelize.options.schema,
+                    tableName: 'research_site'
+                },
                 key: 'id'
             }
         },
-        language: {
-            type: DataTypes.TEXT,
-            allowNull: false,
-            field: 'language_code',
-            references: {
-                model: 'language',
-                key: 'code'
-            }
-        },
-        text: {
+        zip: {
             type: DataTypes.TEXT,
             allowNull: false
         },
         createdAt: {
             type: DataTypes.DATE,
-            field: 'created_at',
+            field: 'created_at'
         },
         deletedAt: {
             type: DataTypes.DATE,
@@ -34,10 +28,11 @@ module.exports = function (sequelize, DataTypes) {
         }
     }, {
         freezeTableName: true,
+        schema: sequelize.options.schema,
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',
+        paranoid: true,
+        indexes: [{ unique: true, fields: ['zip', 'research_site_id'], where: { deleted_at: { $eq: null } } }]
     });
-
-    return QuestionActionText;
 };

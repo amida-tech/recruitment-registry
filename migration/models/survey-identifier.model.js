@@ -1,9 +1,20 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('profile_survey', {
+    return sequelize.define('survey_identifier', {
+        type: {
+            type: DataTypes.TEXT,
+            allowNull: false,
+            unique: 'identifier'
+        },
+        identifier: {
+            type: DataTypes.TEXT,
+            allowNull: false,
+            unique: 'identifier'
+        },
         surveyId: {
             type: DataTypes.INTEGER,
+            allowNull: false,
             field: 'survey_id',
             references: {
                 model: {
@@ -17,16 +28,15 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.DATE,
             field: 'created_at',
         },
-        deletedAt: {
+        updatedAt: {
             type: DataTypes.DATE,
-            field: 'deleted_at'
+            field: 'updated_at'
         }
     }, {
         freezeTableName: true,
         schema: sequelize.options.schema,
         createdAt: 'createdAt',
-        updatedAt: false,
-        deletedAt: 'deletedAt',
-        paranoid: true
+        updatedAt: 'updatedAt',
+        indexes: [{ fields: ['survey_id'] }]
     });
 };

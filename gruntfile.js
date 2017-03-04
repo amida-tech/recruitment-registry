@@ -9,6 +9,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-mocha-test');
     grunt.loadNpmTasks('grunt-shell');
     grunt.loadNpmTasks('grunt-env');
+    grunt.loadNpmTasks('grunt-eslint');
 
     const mochaBin = './node_modules/mocha/bin/_mocha';
 
@@ -88,6 +89,19 @@ module.exports = function (grunt) {
             options: {
                 jshintrc: '.jshintrc'
             }
+        },
+        eslint: {
+            options: {
+                configFile: '.eslintrc.js'
+            },
+            target: [
+                '**/*.js',
+                '!node_modules/**/*.js',
+                '!coverage/**/*.js',
+                'gruntfile.js',
+                'index.js',
+                'app.js'
+            ]
         },
         watch: {
             all: {

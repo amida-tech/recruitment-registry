@@ -3,7 +3,6 @@
 const UserDAO = require('./user.dao');
 const AuthDAO = require('./auth.dao');
 const QuestionChoiceDAO = require('./question-choice.dao');
-const QuestionActionDAO = require('./question-action.dao');
 const QuestionDAO = require('./question.dao');
 const AnswerDAO = require('./answer.dao');
 const SurveyDAO = require('./survey.dao');
@@ -46,8 +45,7 @@ const section = new SectionDAO();
 const surveySection = new SurveySectionDAO({ section });
 const questionChoice = new QuestionChoiceDAO();
 const choiceSet = new ChoiceSetDAO({ questionChoice });
-const questionAction = new QuestionActionDAO();
-const question = new QuestionDAO({ questionChoice, questionAction, choiceSet, questionIdentifier, answerIdentifier });
+const question = new QuestionDAO({ questionChoice, choiceSet, questionIdentifier, answerIdentifier });
 const surveyQuestion = new SurveyQuestionDAO();
 const answerRule = new AnswerRuleDAO();
 const answer = new AnswerDAO({ surveyConsentDocument, surveyQuestion, answerRule });
@@ -68,7 +66,6 @@ module.exports = {
     section,
     surveySection,
     questionChoice,
-    questionAction,
     question,
     answer,
     survey,

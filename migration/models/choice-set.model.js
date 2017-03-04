@@ -1,21 +1,14 @@
 'use strict';
 
 module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('profile_survey', {
-        surveyId: {
-            type: DataTypes.INTEGER,
-            field: 'survey_id',
-            references: {
-                model: {
-                    schema: sequelize.options.schema,
-                    tableName: 'survey'
-                },
-                key: 'id'
-            }
+    return sequelize.define('choice_set', {
+        reference: {
+            type: DataTypes.TEXT,
+            allowNull: false
         },
         createdAt: {
             type: DataTypes.DATE,
-            field: 'created_at',
+            field: 'created_at'
         },
         deletedAt: {
             type: DataTypes.DATE,
@@ -27,6 +20,7 @@ module.exports = function (sequelize, DataTypes) {
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',
+        indexes: [{ unique: true, fields: ['reference'], where: { deleted_at: { $eq: null } } }],
         paranoid: true
     });
 };

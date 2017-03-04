@@ -3,7 +3,7 @@
 const SPromise = require('../../lib/promise');
 
 module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('question_type', {
+    return sequelize.define('survey_status', {
         name: {
             type: DataTypes.TEXT,
             allowNull: false,
@@ -21,11 +21,7 @@ module.exports = function (sequelize, DataTypes) {
         hooks: {
             afterSync(options) {
                 if (options.force) {
-                    const names = [
-                        'text', 'choice', 'choices', 'bool', 'integer', 'float',
-                        'zip', 'date', 'pounds', 'year', 'month', 'day',
-                        'feet-inches', 'blood-pressure', 'choice-ref'
-                    ];
+                    const names = ['draft', 'published', 'retired'];
                     const ps = names.map(name => this.create({ name }));
                     return SPromise.all(ps);
                 }
