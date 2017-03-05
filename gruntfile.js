@@ -69,6 +69,7 @@ module.exports = function (grunt) {
                 'gruntfile.js',
                 'index.js',
                 'app.js',
+                '.eslintrc.js',
             ],
             options: {
                 jshintrc: '.jshintrc',
