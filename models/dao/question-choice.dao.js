@@ -1,7 +1,6 @@
 'use strict';
 
 const db = require('../db');
-const sequelize = db.sequelize;
 
 const SPromise = require('../../lib/promise');
 const queryrize = require('../../lib/queryrize');
@@ -9,8 +8,8 @@ const RRError = require('../../lib/rr-error');
 
 const Translatable = require('./translatable');
 
+const sequelize = db.sequelize;
 const QuestionChoice = db.QuestionChoice;
-
 const idFromCodeQuery = queryrize.readQuerySync('question-choice-id-from-code.sql');
 
 module.exports = class QuestionChoiceDAO extends Translatable {

@@ -258,8 +258,8 @@ describe('answer unit', () => {
     };
 
     searchCases.forEach(({ surveyIdx, qxIndices }) => {
-        let searchAnswersOne,
-            searchAnswersTwo;
+        let searchAnswersOne;
+        let searchAnswersTwo;
         const generateAnswers = generateAnswersFn(surveyIdx, qxIndices);
         const saveAnswers = saveAnswersFn(surveyIdx);
 

@@ -7,8 +7,6 @@ const sequelize = db.sequelize;
 const User = db.User;
 
 module.exports = class UserDAO {
-    constructor() {}
-
     getUser({ id, username }) {
         return User.findOne({
             raw: true,

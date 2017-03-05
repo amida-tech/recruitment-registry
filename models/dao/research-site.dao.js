@@ -10,8 +10,6 @@ const ResearchSiteVicinity = db.ResearchSiteVicinity;
 const attributes = ['id', 'name', 'url', 'city', 'state', 'zip'];
 
 module.exports = class ResearchSiteDAO {
-    constructor() {}
-
     createResearchSite(researchSite) {
         return db.sequelize.transaction(transaction => ResearchSite.create(researchSite, { transaction })
                 .then(({ id }) => zipUtil.findVicinity(researchSite.zip)

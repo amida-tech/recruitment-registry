@@ -8,8 +8,6 @@ const sequelize = db.sequelize;
 const ConsentSignature = db.ConsentSignature;
 
 module.exports = class ConsentSignatureDAO {
-    constructor() {}
-
     createSignature(input, tx) {
         const options = tx ? { transaction: tx } : {};
         const record = Object.assign({}, input);

@@ -81,7 +81,7 @@ const SurveyCSVConverter = class SurveyCSVConverter {
             if (value !== undefined && value !== null) {
                 value = value.toString();
                 if (field === 'value') {
-                    value = value.replace(/\"/g, '""');
+                    value = value.replace(/\"/g, '""');  // eslint-disable-line no-useless-escape
                     fileStream.write(`"${value}"`);
                 } else {
                     fileStream.write(value);

@@ -8,8 +8,6 @@ const Question = db.Question;
 const QuestionChoice = db.QuestionChoice;
 
 module.exports = class QuestionIdentifierDAO {
-    constructor() {}
-
     createAnswerIdentifier(answerIdentifier, transaction) {
         return AnswerIdentifier.create(answerIdentifier, { transaction })
             .then(({ id }) => ({ id }));

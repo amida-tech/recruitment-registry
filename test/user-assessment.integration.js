@@ -19,6 +19,7 @@ const MultiIndexHistory = require('./util/multi-index-history');
 const surveyCommon = require('./util/survey-common');
 const assessmentCommon = require('./util/assessment-common');
 const answerCommon = require('./util/answer-common');
+
 const expect = chai.expect;
 
 const generator = new Generator();

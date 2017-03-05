@@ -10,8 +10,6 @@ const Question = db.Question;
 const QuestionChoice = db.QuestionChoice;
 
 module.exports = class AnswerRuleDAO {
-    constructor() {}
-
     getSurveyAnswerRules(surveyId) {
         const where = { surveyId };
         const attributes = ['id', 'logic', 'questionId', 'answerQuestionId', 'sectionId'];

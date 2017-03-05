@@ -21,11 +21,8 @@ module.exports = {
         'no-confusing-arrow': 'warn',
         'array-callback-return': 'warn',
         'no-mixed-operators': 'warn',
-        'no-useless-constructor': 'warn',
-        'no-empty-function': 'warn',
         'newline-per-chained-call': 'warn',
         'new-cap': 'warn',
-        'strict': 'warn',
         'no-multi-assign': 'warn',
         'camelcase': 'warn',
         'no-useless-concat': 'warn',
@@ -35,10 +32,7 @@ module.exports = {
         'default-case': 'warn',
         'import/no-dynamic-require': 'warn',
         'no-use-before-define': 'warn',
-        'no-useless-escape': 'warn',
-        'import/newline-after-import': 'warn',
-        'import/no-extraneous-dependencies': 'warn',
-        'one-var': 'warn'
+        'import/no-extraneous-dependencies': 'warn'
     },
     'parserOptions': {
         'sourceType': 'script'

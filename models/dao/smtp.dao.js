@@ -9,8 +9,6 @@ const Smtp = db.Smtp;
 const SmtpText = db.SmtpText;
 
 module.exports = class SMTPDAO {
-    constructor() {}
-
     createSmtpTx(smtp, transaction) {
         return Smtp.destroy({ where: { deletedAt: null }, transaction })
             .then(() => {

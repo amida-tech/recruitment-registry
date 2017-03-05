@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports = function (sequelize, DataTypes) {
     return sequelize.define('survey_section_question', {
         surveySectionId: {

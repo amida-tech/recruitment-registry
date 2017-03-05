@@ -6,8 +6,6 @@ const RRError = require('../../lib/rr-error');
 const SurveyIdentifier = db.SurveyIdentifier;
 
 module.exports = class SurveyIdentifierDAO {
-    constructor() {}
-
     createSurveyIdentifier(surveyIdentifier, transaction) {
         return SurveyIdentifier.create(surveyIdentifier, { transaction })
             .then(({ id }) => ({ id }));
