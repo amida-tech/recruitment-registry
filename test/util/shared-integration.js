@@ -24,7 +24,7 @@ class SharedIntegration {
                     return done(err);
                 }
                 store.initialize(app);
-                done();
+                return done();
             });
         };
     }
@@ -66,7 +66,7 @@ class SharedIntegration {
                         return done(err);
                     }
                     hxSurvey.push(clientSurvey, res.body);
-                    done();
+                    return done();
                 });
         };
     }
@@ -98,7 +98,7 @@ class SharedIntegration {
                         return done(err);
                     }
                     history.push(user, { id: res.body.id });
-                    done();
+                    return done();
                 });
         };
     }
@@ -120,7 +120,7 @@ class SharedIntegration {
                         return done(err);
                     }
                     hxSurvey.push(inputSurvey, res.body);
-                    done();
+                    return done();
                 });
         };
     }
@@ -145,7 +145,7 @@ class SharedIntegration {
                         return done(err);
                     }
                     history.pushType(cst, res.body);
-                    done();
+                    return done();
                 });
         };
     }
@@ -202,7 +202,7 @@ class SharedIntegration {
                         return done(err);
                     }
                     history.push(typeIndex, cs, res.body);
-                    done();
+                    return done();
                 });
         };
     }
@@ -217,7 +217,7 @@ class SharedIntegration {
                         return done(err);
                     }
                     hxType.translate(index, language, translation);
-                    done();
+                    return done();
                 });
         };
     }
@@ -232,7 +232,7 @@ class SharedIntegration {
                         return done(err);
                     }
                     history.hxDocument.translateWithServer(server, language, translation);
-                    done();
+                    return done();
                 });
         };
     }

@@ -33,7 +33,7 @@ describe('user survey unit', () => {
     const mapStatus = new Map();
     const surveyTests = new surveyCommon.SpecTests(generator, hxSurvey);
 
-    const _key = function (userIndex, surveyIndex) {
+    const getKey = function (userIndex, surveyIndex) {
         return `${userIndex}:${surveyIndex}`;
     };
 
@@ -99,7 +99,7 @@ describe('user survey unit', () => {
             return models.userSurvey.getUserSurvey(userId, surveyId)
                 .then((userSurvey) => {
                     const survey = hxSurvey.server(surveyIndex);
-                    const key = _key(userIndex, surveyIndex);
+                    const key = getKey(userIndex, surveyIndex);
                     const answers = mapAnswers.get(key) || [];
                     expect(userSurvey.status).to.equal(status);
                     comparator.answeredSurvey(survey, answers, userSurvey.survey);
@@ -123,7 +123,7 @@ describe('user survey unit', () => {
                     } else {
                         expect(userSurveyAnswers.survey).to.equal(undefined);
                     }
-                    const key = _key(userIndex, surveyIndex);
+                    const key = getKey(userIndex, surveyIndex);
                     const answers = mapAnswers.get(key) || [];
                     expect(userSurveyAnswers.status).to.equal(status);
                     comparator.answers(answers, userSurveyAnswers.answers);
@@ -140,7 +140,7 @@ describe('user survey unit', () => {
                 status,
             };
             const userId = hxUser.id(userIndex);
-            const key = _key(userIndex, surveyIndex);
+            const key = getKey(userIndex, surveyIndex);
             return models.userSurvey.createUserSurveyAnswers(userId, survey.id, input)
                 .then(() => mapAnswers.set(key, answers))
                 .then(() => mapStatus.set(key, status));
@@ -159,7 +159,7 @@ describe('user survey unit', () => {
                 status: 'in-progress',
             };
             const userId = hxUser.id(userIndex);
-            const key = _key(userIndex, surveyIndex);
+            const key = getKey(userIndex, surveyIndex);
             return models.userSurvey.createUserSurveyAnswers(userId, survey.id, input)
                 .then(() => mapAnswers.set(key, answers))
                 .then(() => mapStatus.set(key, 'in-progress'));
@@ -180,7 +180,7 @@ describe('user survey unit', () => {
                 status: 'completed',
             };
             const userId = hxUser.id(userIndex);
-            const key = _key(userIndex, surveyIndex);
+            const key = getKey(userIndex, surveyIndex);
             return models.userSurvey.createUserSurveyAnswers(userId, survey.id, input)
                 .then(() => {
                     const qxIdsNewlyAnswered = new Set(answers.map(answer => answer.questionId));
@@ -302,7 +302,7 @@ describe('user survey unit', () => {
                     if (!notTranslated) {
                         translator.isSurveyTranslated(userSurvey.survey, language);
                     }
-                    const key = _key(userIndex, surveyIndex);
+                    const key = getKey(userIndex, surveyIndex);
                     const answers = mapAnswers.get(key) || [];
                     expect(userSurvey.status).to.equal(status);
                     comparator.answeredSurvey(survey, answers, userSurvey.survey);
@@ -322,7 +322,7 @@ describe('user survey unit', () => {
                         translator.isSurveyTranslated(userSurveyAnswers.survey, language);
                     }
                     expect(userSurveyAnswers.survey).to.deep.equal(survey);
-                    const key = _key(userIndex, surveyIndex);
+                    const key = getKey(userIndex, surveyIndex);
                     const answers = mapAnswers.get(key) || [];
                     expect(userSurveyAnswers.status).to.equal(status);
                     comparator.answers(answers, userSurveyAnswers.answers);
@@ -371,11 +371,11 @@ describe('user survey unit', () => {
                 language,
             };
             const userId = hxUser.id(userIndex);
-            const key = _key(userIndex, surveyIndex);
+            const key = getKey(userIndex, surveyIndex);
             mapAnswers.set(key, answers);
             mapStatus.set(key, status);
             return models.userSurvey.createUserSurveyAnswers(userId, survey.id, input)
-                .then(() => answers.forEach(answer => answer.language = language));
+                .then(() => answers.forEach((answer) => { answer.language = language; }));
         };
     };
 

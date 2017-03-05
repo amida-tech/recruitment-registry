@@ -50,14 +50,14 @@ describe('auth integration', () => {
                         return done(err);
                     }
                     const jwtCookie = store.getJWT();
-                    jwt.verify(jwtCookie.value, config.jwt.secret, {}, (err, jwtObject) => {
+                    return jwt.verify(jwtCookie.value, config.jwt.secret, {}, (err, jwtObject) => {
                         if (err) {
                             return done(err);
                         }
                         const id = hxUser.id(index);
                         expect(jwtObject.username).to.equal(client.username || client.email.toLowerCase());
                         expect(jwtObject.id).to.equal(id);
-                        done();
+                        return done();
                     });
                 });
         };
@@ -118,7 +118,7 @@ describe('auth integration', () => {
                 }
                 expect(typeof res.body).to.equal('object');
                 expect(res.body.message).to.equal('stub error');
-                done();
+                return done();
             });
     });
 });

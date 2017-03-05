@@ -73,11 +73,11 @@ module.exports = class ConsentDAO {
             return ConsentSection.findAll({ where: { consentId: id }, raw: true, attributes: ['typeId', 'line'], order: 'line' })
                 .then((sections) => {
                     const typeIds = _.map(sections, 'typeId');
-                    const _options = { typeIds, typeOrder: true };
+                    const opt = { typeIds, typeOrder: true };
                     if (options.language) {
-                        _options.language = options.language;
+                        opt.language = options.language;
                     }
-                    return consentDocument.listConsentDocuments(_options);
+                    return consentDocument.listConsentDocuments(opt);
                 })
                 .then((sections) => {
                     result.sections = sections;

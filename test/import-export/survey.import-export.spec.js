@@ -51,10 +51,10 @@ describe('survey import-export unit', () => {
     let surveyCsvContent;
 
     it('export questions to csv', () => models.question.export()
-            .then(result => questionCsvContent = result));
+            .then((result) => { questionCsvContent = result; }));
 
     it('export surveys to csv', () => models.survey.export()
-            .then(result => surveyCsvContent = result));
+            .then((result) => { surveyCsvContent = result; }));
 
     it('reset database', shared.setUpFn());
 
@@ -63,7 +63,7 @@ describe('survey import-export unit', () => {
     it('import question csv into db', () => {
         const stream = intoStream(questionCsvContent);
         return models.question.import(stream)
-            .then(result => questionIdMap = result);
+            .then((result) => { questionIdMap = result; });
     });
 
     let idMap;
@@ -71,7 +71,7 @@ describe('survey import-export unit', () => {
     it('import survey csv into db', () => {
         const stream = intoStream(surveyCsvContent);
         return models.survey.import(stream, questionIdMap)
-            .then(result => idMap = result);
+            .then((result) => { idMap = result; });
     });
 
     it('list imported surveys and verify', () => models.survey.listSurveys({ scope: 'export' })

@@ -298,6 +298,7 @@ describe('question unit', () => {
                         return Question.count({ where: { groupId: versionInfo.groupId }, paranoid: false })
                             .then(count => expect(count).to.equal(versionInfo.version));
                     }
+                    return null;
                 });
         };
     };

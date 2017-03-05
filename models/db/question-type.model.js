@@ -29,6 +29,7 @@ module.exports = function (sequelize, DataTypes) {
                     const ps = names.map(name => this.create({ name }));
                     return SPromise.all(ps);
                 }
+                return null;
             },
         },
     });

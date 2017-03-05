@@ -94,6 +94,7 @@ module.exports = function (sequelize, DataTypes) {
                     const user = Object.assign({ role }, config.superUser);
                     return this.create(user);
                 }
+                return null;
             },
             beforeCreate(user) {
                 return user.updatePassword();
@@ -102,6 +103,7 @@ module.exports = function (sequelize, DataTypes) {
                 if (user.changed('password')) {
                     return user.updatePassword();
                 }
+                return null;
             },
         },
         instanceMethods: {

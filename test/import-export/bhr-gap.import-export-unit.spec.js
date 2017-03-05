@@ -49,7 +49,7 @@ describe('bhr gap import-export unit', () => {
     it('load all surveys', () => models.macro.createSurveys(surveys));
 
     it('survey identifier map', () => models.surveyIdentifier.getIdsBySurveyIdentifier('bhr-unit-test')
-            .then(map => store.surveyMap = map));
+            .then((map) => { store.surveyMap = map; }));
 
     surveys.forEach((bhrSurvey) => {
         it(`compare survey ${bhrSurvey.identifier.value}`, () => {

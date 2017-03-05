@@ -27,7 +27,7 @@ module.exports = class SurveyIdentifierDAO {
         const ids = surveys.map(survey => survey.id);
         return this.getIdentifiersBySurveyId(type, ids)
             .then((identifierMap) => {
-                surveys.forEach(survey => survey.identifier = identifierMap.get(survey.id));
+                surveys.forEach((survey) => { survey.identifier = identifierMap.get(survey.id); });
                 return surveys;
             });
     }

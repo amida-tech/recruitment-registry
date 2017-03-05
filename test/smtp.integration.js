@@ -123,7 +123,7 @@ describe('smtp integration', () => {
                             expect(location).to.be.above(0);
                         });
                     }
-                    done();
+                    return done();
                 });
         };
     };

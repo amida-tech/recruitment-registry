@@ -195,7 +195,7 @@ describe('survey unit', () => {
         it(`update survey ${index} status ${status} to ${updateStatus}`, () => {
             const id = hxSurvey.id(index);
             return models.survey.patchSurvey(id, { status: updateStatus })
-                .then(() => hxSurvey.server(index).status = updateStatus);
+                .then(() => { hxSurvey.server(index).status = updateStatus; });
         });
     });
 

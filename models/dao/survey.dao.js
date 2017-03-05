@@ -322,6 +322,7 @@ module.exports = class SurveyDAO extends Translatable {
                 if (sections) {
                     return this.surveySection.updateMultipleSectionNamesTx(sections, language, transaction);
                 }
+                return null;
             });
     }
 
@@ -380,6 +381,7 @@ module.exports = class SurveyDAO extends Translatable {
                                 return Survey.update(fields, { where: { id: surveyId }, transaction });
                             }
                         }
+                        return null;
                     })
                     .then(() => {
                         let { name, description } = surveyPatch;
@@ -392,10 +394,11 @@ module.exports = class SurveyDAO extends Translatable {
                             }
                             return this.createTextTx({ id: surveyId, name, description }, transaction);
                         }
+                        return null;
                     })
                     .then(() => {
                         if (!(surveyPatch.questions || surveyPatch.sections)) {
-                            return;
+                            return null;
                         }
                         const { sections, questions } = this.flattenHierarchy(surveyPatch);
                         if (!questions) {
@@ -424,6 +427,7 @@ module.exports = class SurveyDAO extends Translatable {
                                 if (removedQuestionIds.length) {
                                     return Answer.destroy({ where: { surveyId, questionId: { $in: removedQuestionIds } }, transaction });
                                 }
+                                return null;
                             })
                             .then(() => this.createSurveyQuestionsTx(questions, sections, surveyId, transaction))
                             .then(questions => questions.map(question => question.id))
@@ -434,6 +438,7 @@ module.exports = class SurveyDAO extends Translatable {
                                 } else if (survey.sectionCount) {
                                     return this.surveySection.deleteSurveySectionsTx(surveyId, transaction);
                                 }
+                                return null;
                             });
                     });
             });
@@ -554,11 +559,11 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     getSurvey(id, options = {}) {
-        let _options = { where: { id }, raw: true, attributes: ['id', 'meta', 'status'] };
+        let opt = { where: { id }, raw: true, attributes: ['id', 'meta', 'status'] };
         if (options.override) {
-            _options = _.assign({}, _options, options.override);
+            opt = _.assign({}, opt, options.override);
         }
-        return Survey.findOne(_options)
+        return Survey.findOne(opt)
             .then((survey) => {
                 if (!survey) {
                     return RRError.reject('surveyNotFound');
@@ -627,6 +632,7 @@ module.exports = class SurveyDAO extends Translatable {
         sections.forEach((section) => {
             this.updateQuestionsMap(section, map);
         });
+        return null;
     }
 
     getQuestionsMap(survey) {
@@ -651,6 +657,7 @@ module.exports = class SurveyDAO extends Translatable {
         sections.forEach((section) => {
             this.updateQuestionsList(section, list);
         });
+        return null;
     }
 
     getQuestions(survey) {
@@ -784,7 +791,7 @@ module.exports = class SurveyDAO extends Translatable {
                 return sequelize.transaction((transaction) => {
                     const mapIds = {};
                     const pxs = records.map(({ id, survey }) => this.createSurveyTx(survey, transaction)
-                            .then(surveyId => mapIds[id] = surveyId));
+                            .then((surveyId) => { mapIds[id] = surveyId; }));
                     return SPromise.all(pxs)
                         .then(() => {
                             if (options.sourceType) {

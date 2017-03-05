@@ -42,6 +42,7 @@ module.exports = class AssessmentDAO {
                             return SPromise.all(promises);
                         });
                 }
+                return null;
             });
     }
 

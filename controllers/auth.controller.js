@@ -28,6 +28,6 @@ exports.authenticateBasic = function (req, res) {
         }
         const token = tokener.createJWT(req.user);
         res.cookie('rr-jwt-token', token);
-        res.status(200).json({});
+        return res.status(200).json({});
     });
 };

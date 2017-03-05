@@ -37,6 +37,7 @@ models.sequelize.query('SELECT COUNT(*) AS count FROM information_schema.tables 
                 .then(() => console.log('success'));
         }
         console.log('already initialized');
+        return null;
     })
     .then(() => process.exit(0))
     .catch((err) => {

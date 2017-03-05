@@ -37,7 +37,7 @@ describe('user survey integration', () => {
 
     before(shared.setUpFn(store));
 
-    const _key = function (userIndex, surveyIndex) {
+    const getKey = function (userIndex, surveyIndex) {
         return `${userIndex}:${surveyIndex}`;
     };
 
@@ -122,7 +122,7 @@ describe('user survey integration', () => {
                 .expect((res) => {
                     const userSurvey = res.body;
                     const survey = hxSurvey.server(surveyIndex);
-                    const key = _key(userIndex, surveyIndex);
+                    const key = getKey(userIndex, surveyIndex);
                     const answers = mapAnswers.get(key) || [];
                     expect(userSurvey.status).to.equal(status);
                     comparator.answeredSurvey(survey, answers, userSurvey.survey);
@@ -147,7 +147,7 @@ describe('user survey integration', () => {
                     } else {
                         expect(userSurveyAnswers.survey).to.equal(undefined);
                     }
-                    const key = _key(userIndex, surveyIndex);
+                    const key = getKey(userIndex, surveyIndex);
                     const answers = mapAnswers.get(key) || [];
                     expect(userSurveyAnswers.status).to.equal(status);
                     comparator.answers(answers, userSurveyAnswers.answers);
@@ -164,7 +164,7 @@ describe('user survey integration', () => {
                 answers,
                 status,
             };
-            const key = _key(userIndex, surveyIndex);
+            const key = getKey(userIndex, surveyIndex);
             store.post(`/user-surveys/${survey.id}/answers`, input, 204)
                 .expect(() => {
                     mapAnswers.set(key, answers);
@@ -185,7 +185,7 @@ describe('user survey integration', () => {
                 answers,
                 status: 'in-progress',
             };
-            const key = _key(userIndex, surveyIndex);
+            const key = getKey(userIndex, surveyIndex);
             store.post(`/user-surveys/${survey.id}/answers`, input, 204)
                 .expect(() => {
                     mapAnswers.set(key, answers);
@@ -208,7 +208,7 @@ describe('user survey integration', () => {
                 answers,
                 status: 'completed',
             };
-            const key = _key(userIndex, surveyIndex);
+            const key = getKey(userIndex, surveyIndex);
             store.post(`/user-surveys/${survey.id}/answers`, input, 204)
                 .expect(() => {
                     const qxIdsNewlyAnswered = new Set(answers.map(answer => answer.questionId));
@@ -353,7 +353,7 @@ describe('user survey integration', () => {
                     if (!notTranslated) {
                         translator.isSurveyTranslated(userSurvey.survey, language);
                     }
-                    const key = _key(userIndex, surveyIndex);
+                    const key = getKey(userIndex, surveyIndex);
                     const answers = mapAnswers.get(key) || [];
                     expect(userSurvey.status).to.equal(status);
                     comparator.answeredSurvey(survey, answers, userSurvey.survey);
@@ -374,7 +374,7 @@ describe('user survey integration', () => {
                         translator.isSurveyTranslated(userSurveyAnswers.survey, language);
                     }
                     expect(userSurveyAnswers.survey).to.deep.equal(survey);
-                    const key = _key(userIndex, surveyIndex);
+                    const key = getKey(userIndex, surveyIndex);
                     const answers = mapAnswers.get(key) || [];
                     expect(userSurveyAnswers.status).to.equal(status);
                     comparator.answers(answers, userSurveyAnswers.answers);
@@ -434,12 +434,12 @@ describe('user survey integration', () => {
                 status,
                 language,
             };
-            const key = _key(userIndex, surveyIndex);
+            const key = getKey(userIndex, surveyIndex);
             store.post(`/user-surveys/${survey.id}/answers`, input, 204)
                 .expect(() => {
                     mapAnswers.set(key, answers);
                     mapStatus.set(key, status);
-                    answers.forEach(answer => answer.language = language);
+                    answers.forEach((answer) => { answer.language = language; });
                 })
                 .end(done);
         };

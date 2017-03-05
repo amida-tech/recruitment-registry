@@ -38,6 +38,7 @@ describe('auth unit', () => {
                 const username = testJsutil.oppositeCase(client.email);
                 return models.auth.authenticateUser(username, client.password);
             }
+            return null;
         };
     };
 
@@ -49,6 +50,7 @@ describe('auth unit', () => {
                 return models.auth.authenticateUser(username, client.password)
                     .then(shared.throwingHandler, shared.expectedErrorHandler('authenticationError'));
             }
+            return null;
         };
     };
 
@@ -58,7 +60,7 @@ describe('auth unit', () => {
             const password = `${client.password}updated`;
             const id = hxUser.id(index);
             return models.user.updateUser(id, { password })
-                .then(() => client.password = password);
+                .then(() => { client.password = password; });
         };
     };
 

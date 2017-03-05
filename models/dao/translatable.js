@@ -74,7 +74,7 @@ module.exports = class Translatable {
             });
     }
 
-    _updateTextFields(parent, fieldValues) {
+    updateTextFields(parent, fieldValues) {
         if (fieldValues) {
             this.textFields.forEach((field) => {
                 const value = fieldValues[field];
@@ -90,7 +90,7 @@ module.exports = class Translatable {
 
     updateText(parent, language) {
         return this.getText(parent.id, language)
-            .then(result => this._updateTextFields(parent, result));
+            .then(result => this.updateTextFields(parent, result));
     }
 
     getAllTexts(ids, language = 'en') {
@@ -125,7 +125,7 @@ module.exports = class Translatable {
         const ids = _.map(parents, idField);
         return this.getAllTexts(ids, language)
             .then((map) => {
-                parents.forEach(parent => this._updateTextFields(parent, map[parent[idField]]));
+                parents.forEach(parent => this.updateTextFields(parent, map[parent[idField]]));
                 return parents;
             });
     }

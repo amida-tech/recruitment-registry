@@ -25,7 +25,7 @@ describe('swagger validations', () => {
                     return done(err);
                 }
                 expect(Boolean(result)).to.equal(false, JSON.stringify(result, undefined, 4));
-                done();
+                return done();
             });
         };
     };

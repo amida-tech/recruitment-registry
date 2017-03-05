@@ -54,17 +54,17 @@ module.exports = class ConsentDocumentDAO extends Translatable {
                 if (options.noTypeExpand) {
                     return documents;
                 }
-                const _options = {};
+                const opt = {};
                 if (options.transaction) {
-                    _options.transaction = options.transaction;
+                    opt.transaction = options.transaction;
                 }
                 if (typeIds && typeIds.length) {
-                    _options.ids = typeIds;
+                    opt.ids = typeIds;
                 }
                 if (options.language) {
-                    _options.language = options.language;
+                    opt.language = options.language;
                 }
-                return this.consentType.listConsentTypes(_options)
+                return this.consentType.listConsentTypes(opt)
                     .then((types) => {
                         if (options.summary) {
                             return types.map(type => _.omit(type, 'type'));

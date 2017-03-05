@@ -149,6 +149,7 @@ const updateStatus = function (userId, surveyId, status, transaction) {
                 return UserSurvey.destroy({ where: { userId, surveyId }, transaction })
                     .then(() => UserSurvey.create({ userId, surveyId, status }, { transaction }));
             }
+            return null;
         });
 };
 
@@ -212,6 +213,7 @@ module.exports = class AnswerDAO {
                     err.consentDocuments = consentDocuments;
                     return SPromise.reject(err);
                 }
+                return null;
             });
     }
 
@@ -219,9 +221,7 @@ module.exports = class AnswerDAO {
         const rules = questionAnswerRulesMap.get(questionId);
         if (rules && rules.length) {
             const enabled = evaluateEnableWhen(rules, answersByQuestionId);
-            if (!enabled) {
-                return false;
-            }
+            return enabled;
         }
         if (parents && parents.length) {
             const enabled = parents.every(({ sectionId, questionId }) => {
@@ -312,6 +312,7 @@ module.exports = class AnswerDAO {
                             });
                     }
                 }
+                return null;
             });
     }
 
@@ -334,6 +335,7 @@ module.exports = class AnswerDAO {
                 if (answers.length) {
                     return fileAnswer({ userId, surveyId, language, answers }, transaction);
                 }
+                return null;
             });
     }
 

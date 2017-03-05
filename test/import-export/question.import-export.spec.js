@@ -52,7 +52,7 @@ describe('question import-export unit', () => {
     let csvContent;
 
     it('export questions to csv', () => models.question.export()
-            .then(result => csvContent = result));
+            .then((result) => { csvContent = result; }));
 
     it('reset database', shared.setUpFn());
 
@@ -61,7 +61,7 @@ describe('question import-export unit', () => {
     it('import csv into db', () => {
         const stream = intoStream(csvContent);
         return models.question.import(stream)
-            .then(result => idMap = result);
+            .then((result) => { idMap = result; });
     });
 
     it('list imported questions and verify', () => models.question.listQuestions({ scope: 'export' })

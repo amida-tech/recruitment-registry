@@ -115,6 +115,7 @@ describe('user unit', () => {
                 return models.user.updateUser(id, { username, email, password })
                     .then(shared.throwingHandler, shared.expectedErrorHandler('userNoUsernameChange'));
             }
+            return null;
         };
     };
 

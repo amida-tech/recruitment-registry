@@ -100,7 +100,7 @@ describe('security unit', () => {
             const actual = _.pick(req.user, ['id', 'username', 'email', 'role']);
             const expected = _.omit(admin, 'password');
             expect(actual).to.deep.equal(expected);
-            done();
+            return done();
         });
     });
 
@@ -115,7 +115,7 @@ describe('security unit', () => {
             const actual = _.pick(req.user, ['id', 'username', 'email', 'role']);
             const expected = _.omit(admin, 'password');
             expect(actual).to.deep.equal(expected);
-            done();
+            return done();
         });
     });
 
@@ -129,7 +129,7 @@ describe('security unit', () => {
             const actual = _.pick(req.user, ['id', 'username', 'email', 'role']);
             const expected = _.omit(admin, 'password');
             expect(actual).to.deep.equal(expected);
-            done();
+            return done();
         });
     });
 
@@ -143,7 +143,7 @@ describe('security unit', () => {
             const actual = _.pick(req.user, ['id', 'username', 'email', 'role']);
             const expected = _.omit(participant, 'password');
             expect(actual).to.deep.equal(expected);
-            done();
+            return done();
         });
     });
 
@@ -157,7 +157,7 @@ describe('security unit', () => {
             const actual = _.pick(req.user, ['id', 'username', 'email', 'role']);
             const expected = _.omit(clinician, 'password');
             expect(actual).to.deep.equal(expected);
-            done();
+            return done();
         });
     });
 
@@ -171,7 +171,7 @@ describe('security unit', () => {
             const actual = _.pick(req.user, ['id', 'username', 'email', 'role']);
             const expected = _.omit(admin, 'password');
             expect(actual).to.deep.equal(expected);
-            done();
+            return done();
         });
     });
 
@@ -185,7 +185,7 @@ describe('security unit', () => {
             const actual = _.pick(req.user, ['id', 'username', 'email', 'role']);
             const expected = _.omit(participant, 'password');
             expect(actual).to.deep.equal(expected);
-            done();
+            return done();
         });
     });
 
@@ -199,7 +199,7 @@ describe('security unit', () => {
             const actual = _.pick(req.user, ['id', 'username', 'email', 'role']);
             const expected = _.omit(clinician, 'password');
             expect(actual).to.deep.equal(expected);
-            done();
+            return done();
         });
     });
 
@@ -211,7 +211,7 @@ describe('security unit', () => {
                 expect(err).to.deep.equal(security.invalidAuth);
                 return done();
             }
-            done(new Error('unexpected no error'));
+            return done(new Error('unexpected no error'));
         });
     });
 
@@ -223,7 +223,7 @@ describe('security unit', () => {
                 expect(err).to.deep.equal(security.invalidAuth);
                 return done();
             }
-            done(new Error('unexpected no error'));
+            return done(new Error('unexpected no error'));
         });
     });
 
@@ -235,7 +235,7 @@ describe('security unit', () => {
                 expect(err).to.deep.equal(security.noAuth);
                 return done();
             }
-            done(new Error('unexpected no error'));
+            return done(new Error('unexpected no error'));
         });
     });
 
@@ -247,7 +247,7 @@ describe('security unit', () => {
                 expect(err).to.deep.equal(security.invalidAuth);
                 return done();
             }
-            done(new Error('unexpected no error'));
+            return done(new Error('unexpected no error'));
         });
     });
 
@@ -259,7 +259,7 @@ describe('security unit', () => {
                 expect(err).to.deep.equal(security.invalidUser);
                 return done();
             }
-            done(new Error('unexpected no error'));
+            return done(new Error('unexpected no error'));
         });
     });
 
@@ -271,7 +271,7 @@ describe('security unit', () => {
                 expect(err).to.deep.equal(security.unauthorizedUser);
                 return done();
             }
-            done(new Error('unexpected no error'));
+            return done(new Error('unexpected no error'));
         });
     });
 
@@ -283,7 +283,7 @@ describe('security unit', () => {
                 expect(err).to.deep.equal(security.unauthorizedUser);
                 return done();
             }
-            done(new Error('unexpected no error'));
+            return done(new Error('unexpected no error'));
         });
     });
 
@@ -295,7 +295,7 @@ describe('security unit', () => {
                 expect(err).to.deep.equal(security.unauthorizedUser);
                 return done();
             }
-            done(new Error('unexpected no error'));
+            return done(new Error('unexpected no error'));
         });
     });
 
@@ -307,7 +307,7 @@ describe('security unit', () => {
                 expect(err).to.deep.equal(security.unauthorizedUser);
                 return done();
             }
-            done(new Error('unexpected no error'));
+            return done(new Error('unexpected no error'));
         });
     });
 });

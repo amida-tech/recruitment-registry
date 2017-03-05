@@ -53,7 +53,7 @@ const comparator = {
         const id = server.id;
         const expected = _.cloneDeep(client);
         if (expected.type === 'choices') {
-            expected.choices.forEach(choice => choice.type = choice.type || 'bool');
+            expected.choices.forEach((choice) => { choice.type = choice.type || 'bool'; });
         }
         if (expected.type === 'choice' && expected.oneOfChoices) {
             expected.choices = expected.oneOfChoices.map(choice => ({ text: choice }));

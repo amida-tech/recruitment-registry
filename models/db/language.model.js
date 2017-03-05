@@ -65,6 +65,7 @@ module.exports = function (sequelize, DataTypes) {
                     const pxs = languages.map(lang => this.create(lang));
                     return SPromise.all(pxs);
                 }
+                return null;
             },
         },
     });

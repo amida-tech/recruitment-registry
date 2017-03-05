@@ -21,6 +21,7 @@ const valueConverterByChoiceType = {
         if (value === 1 || value === '1') {
             return 'true';
         }
+        return undefined;
     },
     integer(value) {
         return parseInt(value, 10);
@@ -185,6 +186,7 @@ const generateChoiceAnswerer = function (question_id, columnName, choiceMap) {
             }
             return [{ survey_id, question_id, question_choice_id, username }];
         }
+        return undefined;
     };
 };
 
@@ -201,6 +203,7 @@ const generateChoicesAnswerer = function (question_id, columnName, choiceMap) {
                 return { survey_id, question_id, question_choice_id, value: 'true', username };
             });
         }
+        return undefined;
     };
 };
 
@@ -209,6 +212,7 @@ const generateIntegerAnswerer = function (question_id) {
         if (value !== undefined) {
             return [{ survey_id, question_id, value, username }];
         }
+        return undefined;
     };
 };
 

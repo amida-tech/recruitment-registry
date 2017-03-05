@@ -40,7 +40,7 @@ const jwtAuth = function (req, header, verifyUserFn, callback) {
                 if (err) {
                     return callback(invalidAuth);
                 }
-                models.auth.getUser(payload)
+                return models.auth.getUser(payload)
                     .then((user) => {
                         if (user) {
                             const err = verifyUserFn(user);
@@ -53,7 +53,7 @@ const jwtAuth = function (req, header, verifyUserFn, callback) {
         }
         return callback(invalidAuth);
     }
-    callback(noAuth);
+    return callback(noAuth);
 };
 
 const roleCheck = function (role) {

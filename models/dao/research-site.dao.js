@@ -43,6 +43,7 @@ module.exports = class ResearchSiteDAO {
                         return zipUtil.findVicinity(zip)
                             .then(vicinity => this.createResearchSiteVicinityTx(id, vicinity, transaction));
                     }
+                    return null;
                 }));
     }
 
@@ -62,6 +63,7 @@ module.exports = class ResearchSiteDAO {
                     const promises = vicinity.map(zip => ResearchSiteVicinity.create({ zip, researchSiteId }, { transaction }));
                     return SPromise.all(promises);
                 }
+                return null;
             });
     }
 

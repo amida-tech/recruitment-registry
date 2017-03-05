@@ -39,6 +39,6 @@ exports.handleError = function (res) {
         if (err instanceof Sequelize.Error) {
             return res.status(400).json(json);
         }
-        res.status(500).json(json);
+        return res.status(500).json(json);
     };
 };

@@ -169,7 +169,7 @@ describe('answer integration', () => {
     it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
     let answers;
     it('user 2 answers survey 12', () => tests.answerSurveyFn(2, 12, [31, 49, 32, 50, 33, 51])()
-            .then(ans => answers = ans));
+            .then((ans) => { answers = ans; }));
     it('user 2 gets answers to survey 12', tests.getAnswersFn(2, 12));
     it('error: search as user 2', (done) => {
         store.post('/answers/queries', answerCommon.answersToSearchQuery(answers), 403).end(done);

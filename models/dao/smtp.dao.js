@@ -20,6 +20,7 @@ module.exports = class SMTPDAO {
                             return SmtpText.destroy({ where: {}, transaction })
                                 .then(() => SmtpText.create({ subject, content, language: 'en' }, { transaction }));
                         }
+                        return null;
                     });
             });
     }

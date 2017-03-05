@@ -51,15 +51,15 @@ describe('answer import-export unit', () => {
     let answerCsvContent;
 
     it('export questions to csv', () => models.question.export()
-            .then(result => questionCsvContent = result));
+            .then((result) => { questionCsvContent = result; }));
 
     it('export surveys to csv', () => models.survey.export()
-            .then(result => surveyCsvContent = result));
+            .then((result) => { surveyCsvContent = result; }));
 
     it('export answers to csv', () => {
         const userId = hxUser.id(0);
         return models.answer.exportForUser(userId)
-            .then(result => answerCsvContent = result);
+            .then((result) => { answerCsvContent = result; });
     });
 
     it('reset database', shared.setUpFn());
@@ -73,7 +73,7 @@ describe('answer import-export unit', () => {
     it('import question csv into db', () => {
         const stream = intoStream(questionCsvContent);
         return models.question.import(stream)
-            .then(result => questionIdMap = result);
+            .then((result) => { questionIdMap = result; });
     });
 
     let idMap;
@@ -81,7 +81,7 @@ describe('answer import-export unit', () => {
     it('import survey csv into db', () => {
         const stream = intoStream(surveyCsvContent);
         return models.survey.import(stream, questionIdMap)
-            .then(result => idMap = result);
+            .then((result) => { idMap = result; });
     });
 
     _.range(4).forEach((i) => {

@@ -104,7 +104,7 @@ const surveysPost = function (result, key, lines) {
         return r;
     }, {}));
     result.surveysTitleIndex = _.keyBy(lines.Pillars, 'title');
-    lines.Pillars.forEach(pillar => pillar.isBHI = (pillar.isBHI === 'true'));
+    lines.Pillars.forEach((pillar) => { pillar.isBHI = (pillar.isBHI === 'true'); });
     if (!(lines.Pillars && result.surveysTitleIndex)) {
         throw new Error('Pillar records have to be read before questions.');
     }

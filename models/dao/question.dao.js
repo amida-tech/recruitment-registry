@@ -86,6 +86,7 @@ module.exports = class QuestionDAO extends Translatable {
                                     return this.createChoicesTx(result.id, choices, transaction)
                                         .then(choices => (result.choices = choices));
                                 }
+                                return null;
                             })
                             .then(() => {
                                 if (question.questionIdentifier) {
@@ -93,6 +94,7 @@ module.exports = class QuestionDAO extends Translatable {
                                     const { type, value: identifier } = question.questionIdentifier;
                                     return this.questionIdentifier.createQuestionIdentifier({ type, identifier, questionId }, transaction);
                                 }
+                                return null;
                             })
                             .then(() => {
                                 const questionId = result.id;
@@ -104,6 +106,7 @@ module.exports = class QuestionDAO extends Translatable {
                                     const promises = values.map((identifier, multipleIndex) => this.answerIdentifier.createAnswerIdentifier({ type, identifier, questionId, multipleIndex }, transaction));
                                     return SPromise.all(promises);
                                 }
+                                return null;
                             })
                             .then(() => result);
                     });
@@ -193,7 +196,7 @@ module.exports = class QuestionDAO extends Translatable {
             });
     }
 
-    _updateQuestionTextTx({ id, text, instruction }, language, tx) {
+    auxUpdateQuestionTextTx({ id, text, instruction }, language, tx) {
         if (text) {
             return this.createTextTx({ id, text, instruction, language }, tx);
         }
@@ -201,12 +204,13 @@ module.exports = class QuestionDAO extends Translatable {
     }
 
     updateQuestionTextTx(translation, language, tx) {
-        return this._updateQuestionTextTx(translation, language, tx)
+        return this.auxUpdateQuestionTextTx(translation, language, tx)
             .then(() => {
                 const choices = translation.choices;
                 if (choices) {
                     return this.questionChoice.updateMultipleChoiceTextsTx(choices, language, tx);
                 }
+                return null;
             });
     }
 
@@ -296,6 +300,7 @@ module.exports = class QuestionDAO extends Translatable {
                                     });
                                 });
                         }
+                        return null;
                     })
                     .then(() => questions);
             });
@@ -453,6 +458,7 @@ module.exports = class QuestionDAO extends Translatable {
                                                 const tag = parseInt(question.tag, 10);
                                                 return AnswerIdentifier.create({ type, identifier, questionId, tag }, { transaction });
                                             }
+                                            return null;
                                         })
                                         .then(() => questionId);
                                 }
@@ -485,6 +491,7 @@ module.exports = class QuestionDAO extends Translatable {
                                         });
                                 }
                                 mapIds[id] = { questionId };
+                                return null;
                             });
                     });
                     return SPromise.all(pxs).then(() => mapIds);

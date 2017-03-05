@@ -39,7 +39,7 @@ describe('ccf import-export ccf', () => {
 
     let userIdMap;
     it('import to database', () => ccfImport.importCCFFiles(filepaths)
-            .then(result => userIdMap = result));
+            .then((result) => { userIdMap = result; }));
 
     it('export from database', () => ccfExport.exportSurveys()
             .then(result => ccfImport.converters.surveys().fileToRecords(filepaths.surveys)
@@ -55,13 +55,13 @@ describe('ccf import-export ccf', () => {
         return ccfExport.exportAssessments()
             .then((result) => {
                 dbExport = result;
-                dbExport.assessments.forEach(record => record.id = idMap[record.id]);
+                dbExport.assessments.forEach((record) => { record.id = idMap[record.id]; });
             });
     });
 
     it('compare db assessments', () => ccfImport.converters.assessments().fileToRecords(filepaths.assessments)
             .then((rawJson) => {
-                rawJson.forEach(assessment => assessment.hb_user_id = userIdMap.get(assessment.hb_user_id));
+                rawJson.forEach((assessment) => { assessment.hb_user_id = userIdMap.get(assessment.hb_user_id); });
                 const expected = _.sortBy(rawJson, ['hb_user_id', 'assessment_id']);
                 const actual = _.sortBy(dbExport.assessments, ['hb_user_id', 'assessment_id']);
                 expect(actual).to.deep.equal(expected);
@@ -69,7 +69,7 @@ describe('ccf import-export ccf', () => {
 
     it('compare db answers', () => ccfImport.converters.answers().fileToRecords(filepaths.answers)
             .then((rawJson) => {
-                rawJson.forEach(answer => answer.hb_user_id = userIdMap.get(answer.hb_user_id));
+                rawJson.forEach((answer) => { answer.hb_user_id = userIdMap.get(answer.hb_user_id); });
                 const expected = _.sortBy(rawJson, ['hb_user_id', 'hb_assessment_id', 'pillar_hash', 'answer_hash']);
                 const actual = _.sortBy(dbExport.answers, ['hb_user_id', 'hb_assessment_id', 'pillar_hash', 'answer_hash']);
                 const assessmentMap = new Map([

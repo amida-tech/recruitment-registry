@@ -43,10 +43,9 @@ module.exports = function (grunt) {
                     return done(false);
                 }
                 done();
-            } else {
-                grunt.log.writeln('Swagger document is valid');
-                return done();
             }
+            grunt.log.writeln('Swagger document is valid');
+            return done();
         });
     };
 

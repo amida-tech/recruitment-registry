@@ -17,11 +17,11 @@ module.exports = class ConsentTypeDAO extends Translatable {
     }
 
     getConsentType(id, options = {}) {
-        const _options = {
+        const opt = {
             raw: true,
             attributes: ['id', 'name', 'type'],
         };
-        return ConsentType.findById(id, _options)
+        return ConsentType.findById(id, opt)
             .then(consentType => this.updateText(consentType, options.language));
     }
 

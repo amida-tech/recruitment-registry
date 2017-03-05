@@ -26,14 +26,15 @@ module.exports = class UserSurveyDAO {
     getUserSurveyAnswers(userId, surveyId, options) {
         const result = {};
         return this.getUserSurveyStatus(userId, surveyId)
-            .then(status => result.status = status)
+            .then((status) => { result.status = status; })
             .then(() => this.answer.getAnswers({ userId, surveyId }))
-            .then(answers => result.answers = answers)
+            .then((answers) => { result.answers = answers; })
             .then(() => {
                 if (options.includeSurvey) {
                     return this.survey.getSurvey(surveyId, options)
-                        .then(survey => result.survey = survey);
+                        .then((survey) => { result.survey = survey; });
                 }
+                return null;
             })
             .then(() => result);
     }
