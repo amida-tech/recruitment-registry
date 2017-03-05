@@ -15,7 +15,7 @@ module.exports = class XLSXConverter {
 
     static convertDateTime(rawValue) {
         const pieces = rawValue.toString().split('.');
-        const rawDate = parseInt(pieces[0]);
+        const rawDate = parseInt(pieces[0], 10);
         const rawTime = parseFloat(`0.${pieces[1]}`) * milliSecondsInADay;
 
         const m = moment(origin);

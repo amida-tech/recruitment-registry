@@ -38,7 +38,8 @@ module.exports = class QuestionGenerator {
     }
 
     body(type) {
-        const index = ++this.index;
+        this.index += 1;
+        const index = this.index;
         const result = { text: `text_${index}`, type };
         if (index % 2 === 0) {
             result.instruction = `instruction_${index}`;
@@ -61,7 +62,8 @@ module.exports = class QuestionGenerator {
     }
 
     choice() {
-        const typeChoiceIndex = ++this.typeChoiceIndex;
+        this.typeChoiceIndex += 1;
+        const typeChoiceIndex = this.typeChoiceIndex;
         const question = this.body('choice');
         const choices = this.newChoices();
         if ((typeChoiceIndex % 3) === 0) {
@@ -92,7 +94,8 @@ module.exports = class QuestionGenerator {
             choices = this.newChoices().map(choice => ({ text: choice }));
         }
         choices.forEach((choice) => {
-            const choiceType = ++this.typeChoicesIndex % 4;
+            this.typeChoicesIndex += 1;
+            const choiceType = this.typeChoicesIndex % 4;
             switch (choiceType) {
             case 2:
                 choice.type = 'bool';

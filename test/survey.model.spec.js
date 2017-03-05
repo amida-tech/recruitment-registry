@@ -151,7 +151,7 @@ describe('survey unit', () => {
         it('list surveys', tests.listSurveysFn());
     });
     _.range(9).forEach((index) => {
-        const status = ['draft', 'published', 'retired'][parseInt(index / 3)];
+        const status = ['draft', 'published', 'retired'][parseInt(index / 3, 10)];
         it(`create survey ${surveyCount + index}`, tests.createSurveyFn({ status }));
         it(`get survey ${surveyCount + index}`, tests.getSurveyFn(surveyCount + index));
     });
@@ -402,7 +402,7 @@ describe('survey unit', () => {
             });
     });
 
-    ++surveyCount;
+    surveyCount += 1;
 
     // it('create survey by existing sections/questions only (0)', function () {
     //    const survey = generator.surveyGenerator.newBody();
@@ -429,7 +429,7 @@ describe('survey unit', () => {
     //        });
     // });
 
-    // ++surveyCount;
+    // surveyCount += 1;
 
     it('create survey by existing/new questions', () => {
         const survey = generator.newSurvey({ noSection: true });
@@ -446,7 +446,7 @@ describe('survey unit', () => {
             });
     });
 
-    ++surveyCount;
+    surveyCount += 1;
 
     it('update survey generator for multi questions', () => {
         generator.updateSurveyGenerator(MultiQuestionSurveyGenerator);
@@ -479,9 +479,9 @@ describe('survey unit', () => {
 
     surveyCount += 3;
 
-    for (let i = 0; i < userCount; ++i) {
+    _.range(userCount).forEach((i) => {
         it(`create user ${i}`, shared.createUserFn(hxUser));
-    }
+    });
 
     const auxAnswerVerifySurvey = function (survey, input) {
         return models.answer.createAnswers(input)

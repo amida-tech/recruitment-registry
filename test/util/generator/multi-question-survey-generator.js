@@ -14,7 +14,7 @@ module.exports = class MultiQuestionSurveyGenerator extends SurveyGenerator {
 
     newSurvey() {
         const result = this.newBody();
-        ++this.patternIndex;
+        this.patternIndex += 1;
         const pattern = patterns[this.patternIndex % patterns.length];
         result.questions = pattern.split('').map((code, index) => {
             let question;

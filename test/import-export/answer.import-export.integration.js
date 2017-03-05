@@ -36,9 +36,9 @@ describe('answer import-export integration', () => {
 
     it('login as super', shared.loginFn(rrSuperTest, config.superUser));
 
-    for (let i = 0; i < 4; ++i) {
+    _.range(4).forEach((i) => {
         it(`create user ${i}`, shared.createUserFn(rrSuperTest, hxUser));
-    }
+    });
 
     _.range(4).forEach((index) => {
         it(`create survey ${index}`, surveyTests.createSurveyFn({ noSection: true }));
@@ -128,9 +128,9 @@ describe('answer import-export integration', () => {
             .end(done);
     });
 
-    for (let i = 0; i < 4; ++i) {
+    _.range(4).forEach((i) => {
         it(`create user ${i}`, shared.createUserFn(rrSuperTest, hxUser));
-    }
+    });
 
     it('logout as super', shared.logoutFn(rrSuperTest));
 

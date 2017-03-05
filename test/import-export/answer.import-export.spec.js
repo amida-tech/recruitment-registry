@@ -30,9 +30,9 @@ describe('answer import-export unit', () => {
     const answerTests = new answerCommon.SpecTests(generator, hxUser, hxSurvey);
     const hxAnswer = answerTests.hxAnswer;
 
-    for (let i = 0; i < 4; ++i) {
+    _.range(4).forEach((i) => {
         it(`create user ${i}`, shared.createUserFn(hxUser));
-    }
+    });
 
     _.range(4).forEach((index) => {
         it(`create survey ${index}`, surveyTests.createSurveyFn({ noSection: true }));
@@ -84,9 +84,9 @@ describe('answer import-export unit', () => {
             .then(result => idMap = result);
     });
 
-    for (let i = 0; i < 4; ++i) {
+    _.range(4).forEach((i) => {
         it(`create user ${i}`, shared.createUserFn(hxUser));
-    }
+    });
 
     it('import answer csv into db', () => {
         const userId = hxUser.id(0);

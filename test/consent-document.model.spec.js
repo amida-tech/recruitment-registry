@@ -37,15 +37,15 @@ describe('consent document/type/signature unit', () => {
         };
     };
 
-    for (let i = 0; i < 2; ++i) {
+    _.range(2).forEach((i) => {
         it(`create consent type ${i}`, shared.createConsentTypeFn(history));
         it('verify consent type list', verifyConsentTypeInListFn);
         it(`add translated (es) consent type ${i}`, shared.translateConsentTypeFn(i, 'es', history.hxType));
-    }
+    });
 
-    for (let i = 0; i < userCount; ++i) {
+    _.range(userCount).forEach((i) => {
         it(`create user ${i}`, shared.createUserFn(history.hxUser));
-    }
+    });
 
     it('error: no consent documents of existing types', () => models.userConsentDocument.listUserConsentDocuments(history.userId(0))
             .then(shared.throwingHandler, shared.expectedErrorHandler('noSystemConsentDocuments')));
@@ -82,13 +82,13 @@ describe('consent document/type/signature unit', () => {
         };
     };
 
-    for (let i = 0; i < 2; ++i) {
+    _.range(2).forEach((i) => {
         it(`create consent document of type ${i}`, shared.createConsentDocumentFn(history, i));
         it(`verify consent document of type ${i}`, verifyConsentDocumentFn(i));
         it(`verify consent document of type ${i} (type name)`, verifyConsentDocumentByTypeNameFn(i));
         it(`add translated (es) consent document ${i}`, shared.translateConsentDocumentFn(i, 'es', history));
         it(`verify translated (es) consent document of type ${i}`, verifyTranslatedConsentDocumentFn(i, 'es'));
-    }
+    });
 
     it('error: no consent documents with type name', () => models.consentDocument.getConsentDocumentByTypeName('Not Here')
             .then(shared.throwingHandler, shared.expectedErrorHandler('consentTypeNotFound')));
@@ -131,10 +131,10 @@ describe('consent document/type/signature unit', () => {
         });
     };
 
-    for (let i = 0; i < 4; ++i) {
+    _.range(4).forEach((i) => {
         verifyConsentDocuments(i, [0, 1]);
         verifyTranslatedConsentDocuments(i, [0, 1], 'es');
-    }
+    });
 
     const signConsentTypeFn = function (userIndex, typeIndex, language) {
         return function () {
@@ -281,9 +281,9 @@ describe('consent document/type/signature unit', () => {
         };
     };
 
-    for (let i = 0; i < userCount; ++i) {
+    _.range(userCount).forEach((i) => {
         it(`verify all signings still exists for user ${i}`, verifySignatureExistenceFn(i));
-    }
+    });
 
     it('verify all consent documents still exists', () => models.consentDocument.listConsentDocuments({ noTypeExpand: true, paranoid: false })
             .then((consentDocuments) => {

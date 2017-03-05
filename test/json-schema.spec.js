@@ -56,7 +56,7 @@ describe('json schema validations', () => {
         };
     };
 
-    for (let i = 0; i < objectTypes.length; ++i) {
-        it(objectTypes[i], testFn(objectTypes[i]));
-    }
+    objectTypes.forEach((objectType) => {
+        it(objectType, testFn(objectType));
+    });
 });

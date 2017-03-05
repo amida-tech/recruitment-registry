@@ -100,7 +100,7 @@ describe('question identifier integration', () => {
                             expect(res.body).to.deep.equal(expected);
                         })
                         .end(() => {
-                            ++count;
+                            count += 1;
                             if (count === question.choices.length) {
                                 done();
                             }

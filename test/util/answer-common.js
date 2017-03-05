@@ -123,7 +123,7 @@ const AllChoicesAnswerer = class AllChoicesAnswerer extends Answerer {
 
     choices(question) {
         const choices = question.choices.map((choice) => {
-            ++this.answerIndex;
+            this.answerIndex += 1;
             const answer = { id: choice.id };
             const type = _.camelCase(choice.type || 'bool');
             Object.assign(answer, this[type]());

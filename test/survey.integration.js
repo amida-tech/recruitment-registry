@@ -194,7 +194,7 @@ describe('survey integration', () => {
     });
 
     _.range(9).forEach((index) => {
-        const status = ['draft', 'published', 'retired'][parseInt(index / 3)];
+        const status = ['draft', 'published', 'retired'][parseInt(index / 3, 10)];
         it(`create survey ${surveyCount + index}`, tests.createSurveyFn({ status }));
         it(`get survey ${surveyCount + index}`, tests.getSurveyFn(surveyCount + index));
     });
@@ -329,7 +329,7 @@ describe('survey integration', () => {
     it('verify survey 3 replacement', tests.getSurveyFn(surveyCount));
     it('list surveys and verify', tests.listSurveysFn());
 
-    ++surveyCount;
+    surveyCount += 1;
 
     it('delete survey 5', tests.deleteSurveyFn(5));
     it('remove deleted survey locally', () => {
@@ -351,7 +351,7 @@ describe('survey integration', () => {
     it('create survey', tests.createSurveyFn());
     it('verify survey', tests.getSurveyFn());
 
-    ++surveyCount;
+    surveyCount += 1;
 
     it('translate survey', (done) => {
         const name = 'puenno';

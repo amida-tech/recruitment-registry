@@ -78,12 +78,12 @@ describe('profile integration', () => {
     });
 
     it('login as super', shared.loginFn(store, config.superUser));
-    for (let i = 0; i < 2; ++i) {
+    _.range(2).forEach((i) => {
         it(`create consent type ${i}`, shared.createConsentTypeFn(store, hxConsentDoc));
-    }
-    for (let i = 0; i < 2; ++i) {
+    });
+    _.range(2).forEach((i) => {
         it(`create consent document of type ${i}`, shared.createConsentDocumentFn(store, hxConsentDoc, i));
-    }
+    });
     it('create profile survey', shared.createProfileSurveyFn(store, hxSurvey));
     it('logout as super', shared.logoutFn(store));
 

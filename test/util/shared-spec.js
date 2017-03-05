@@ -180,9 +180,9 @@ class SharedSpec {
             const userCount = hxUser.length();
             const counts = _.range(userCount).reduce((r, index) => {
                 if (hxUser.client(index).username) {
-                    ++r.username;
+                    r.username += 1;
                 } else {
-                    ++r.email;
+                    r.email += 1;
                 }
                 return r;
             }, { username: 0, email: 0 });

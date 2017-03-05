@@ -69,9 +69,9 @@ describe('question integration', () => {
         };
     };
 
-    for (let i = 0; i < invalidQuestionsJSON.length; ++i) {
+    _.range(invalidQuestionsJSON.length).forEach((i) => {
         it(`error: invalid (json) question input ${i}`, invalidQuestionJSONFn(i));
-    }
+    });
 
     const invalidQuestionSwaggerFn = function (index) {
         return function (done) {
@@ -84,9 +84,9 @@ describe('question integration', () => {
         };
     };
 
-    for (let i = 0; i < invalidQuestionsSwagger.length; ++i) {
+    _.range(invalidQuestionsSwagger.length).forEach((i) => {
         it(`error: invalid (swagger) question input ${i}`, invalidQuestionSwaggerFn(i));
-    }
+    });
 
     const hxQuestion = new History();
     const hxChoiceSet = new History();
@@ -94,13 +94,13 @@ describe('question integration', () => {
     const tests = new questionCommon.IntegrationTests(store, generator, hxQuestion);
     const choceSetTests = new choiceSetCommon.SpecTests(generator, hxChoiceSet);
 
-    for (let i = 0; i < 10; ++i) {
+    _.range(10).forEach((i) => {
         it(`create question ${i}`, tests.createQuestionFn());
-    }
+    });
 
-    for (let i = 0; i < 10; ++i) {
+    _.range(10).forEach((i) => {
         it(`get question ${i}`, tests.getQuestionFn(i));
-    }
+    });
 
     const updateQxFn = function (index) {
         return function (done) {
@@ -149,11 +149,11 @@ describe('question integration', () => {
         };
     };
 
-    for (let i = 0; i < 10; ++i) {
+    _.range(10).forEach((i) => {
         it(`update question ${i} text`, updateQxFn(i));
         it(`verify updated question ${i}`, verifyUpdatedQxFn(i));
         it(`restore question ${i} text`, restoreUpdatedQxFn(i));
-    }
+    });
 
     it('list questions (complete)', tests.listQuestionsFn('complete'));
 
@@ -202,17 +202,17 @@ describe('question integration', () => {
 
     it('list questions in spanish when no translation', listTranslatedQuestionsFn('es'));
 
-    for (let i = 0; i < 10; ++i) {
+    _.range(10).forEach((i) => {
         it(`add translated (es) question ${i}`, translateQuestionFn(i, 'es'));
         it(`get and verify tanslated question ${i}`, getTranslatedQuestionFn(i, 'es'));
-    }
+    });
 
     it('list and verify translated (es) questions', listTranslatedQuestionsFn('es'));
 
-    for (let i = 0; i < 10; i += 2) {
+    _.range(0, 10, 2).forEach((i) => {
         it(`add translated (fr) question ${i}`, translateQuestionFn(i, 'fr'));
         it(`get and verify tanslated (fr) question ${i}`, getTranslatedQuestionFn(i, 'fr'));
-    }
+    });
 
     it('list and verify translated (fr) questions', listTranslatedQuestionsFn('fr'));
 
@@ -224,13 +224,13 @@ describe('question integration', () => {
 
     it('list questions (complete)', tests.listQuestionsFn('complete'));
 
-    for (let i = 10; i < 20; ++i) {
+    _.range(10, 20).forEach((i) => {
         it(`create question ${i}`, tests.createQuestionFn());
         it(`get question ${i}`, tests.getQuestionFn(i));
         it(`update question ${i} text`, updateQxFn(i));
         it(`verify updated question ${i}`, verifyUpdatedQxFn(i));
         it(`restore question ${i} text`, restoreUpdatedQxFn(i));
-    }
+    });
 
     const createSurveyFn = function (questionIndices) {
         return function (done) {

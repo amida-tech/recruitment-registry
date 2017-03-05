@@ -37,9 +37,9 @@ describe('user survey unit', () => {
         return `${userIndex}:${surveyIndex}`;
     };
 
-    for (let i = 0; i < userCount; ++i) {
+    _.range(userCount).forEach((i) => {
         it(`create user ${i}`, shared.createUserFn(hxUser));
-    }
+    });
 
     const verifyNoUserSurveys = function (userIndex) {
         return function () {
@@ -49,14 +49,14 @@ describe('user survey unit', () => {
         };
     };
 
-    for (let i = 0; i < userCount; ++i) {
+    _.range(userCount).forEach((i) => {
         it(`verify no surveys for user ${i}`, verifyNoUserSurveys(i));
-    }
+    });
 
-    for (let i = 0; i < surveyCount; ++i) {
+    _.range(surveyCount).forEach((i) => {
         it(`create survey ${i}`, surveyTests.createSurveyFn({ noSection: true }));
         it(`get survey ${i}`, surveyTests.getSurveyFn(i));
-    }
+    });
 
     const verifyStatusFn = function (userIndex, surveyIndex, expectedStatus) {
         return function () {
@@ -349,9 +349,9 @@ describe('user survey unit', () => {
         };
     };
 
-    for (let i = 0; i < surveyCount; ++i) {
+    _.range(surveyCount).forEach((i) => {
         it(`translate survey ${i}`, translateSurveyFn(i, 'es'));
-    }
+    });
 
     it('verify user 2 user survey list in spanish', verifyTranslatedUserSurveyListFn(2, ['new', 'new', 'new'], 'es'));
 

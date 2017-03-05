@@ -30,14 +30,14 @@ describe('consent unit', () => {
 
     before(shared.setUpFn());
 
-    for (let i = 0; i < typeCount; ++i) {
+    _.range(typeCount).forEach((i) => {
         it(`create consent type ${i}`, shared.createConsentTypeFn(history));
         it(`add translated (es) consent type ${i}`, shared.translateConsentTypeFn(i, 'es', history.hxType));
-    }
+    });
 
-    for (let i = 0; i < userCount; ++i) {
+    _.range(userCount).forEach((i) => {
         it(`create user ${i}`, shared.createUserFn(history.hxUser));
-    }
+    });
 
     const consentSpecs = [
         [0, 1, 2, 3, 4], // consent 0. Sections of types 0, 1, 2, 3, 4
@@ -160,10 +160,10 @@ describe('consent unit', () => {
             });
     };
 
-    for (let i = 0; i < 3; ++i) {
+    _.range(3).forEach((i) => {
         it(`create/verify consent document of type ${i}`, shared.createConsentDocumentFn(history, i));
         it(`add translated (es) consent document ${i}`, shared.translateConsentDocumentFn(i, 'es', history));
-    }
+    });
 
     it('error: get consent 0 documents', () => {
         const id = hxConsent.id(0);
@@ -171,10 +171,10 @@ describe('consent unit', () => {
             .then(shared.throwingHandler, shared.expectedErrorHandler('noSystemConsentDocuments'));
     });
 
-    for (let i = 3; i < typeCount; ++i) {
+    _.range(3, typeCount).forEach((i) => {
         it(`create/verify consent document of type ${i}`, shared.createConsentDocumentFn(history, i));
         it(`add translated (es) consent document ${i}`, shared.translateConsentDocumentFn(i, 'es', history));
-    }
+    });
 
     [0, 1, 3].forEach((consentIndex) => {
         it(`get/verify consent ${consentIndex} documents`, () => {

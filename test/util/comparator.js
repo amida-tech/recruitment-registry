@@ -164,7 +164,7 @@ const comparator = {
                     qx.answer.choices.forEach((choice) => {
                         const numValues = ['textValue', 'code', 'monthValue', 'yearValue', 'dayValue', 'integerValue', 'boolValue'].reduce((r, p) => {
                             if (choice.hasOwnProperty(p)) {
-                                ++r;
+                                r += 1;
                             }
                             return r;
                         }, 0);
@@ -185,7 +185,7 @@ const comparator = {
                 answer.answer.choices.forEach((choice) => {
                     const numValues = ['textValue', 'code', 'monthValue', 'yearValue', 'dayValue', 'integerValue', 'boolValue', 'dateValue', 'numberValue', 'feetInchesValue', 'bloodPressureValue'].reduce((r, p) => {
                         if (choice.hasOwnProperty(p)) {
-                            ++r;
+                            r += 1;
                         }
                         return r;
                     }, 0);

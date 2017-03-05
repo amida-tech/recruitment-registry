@@ -25,10 +25,10 @@ describe('question import-export unit', () => {
     const hxQuestion = new History();
     const tests = new questionCommon.SpecTests(generator, hxQuestion);
 
-    for (let i = 0; i < 12; ++i) {
+    _.range(12).forEach((i) => {
         it(`create question ${i}`, tests.createQuestionFn());
         it(`get question ${i}`, tests.getQuestionFn(i));
-    }
+    });
 
     it('list all questions', tests.listQuestionsFn('export'));
 
@@ -38,10 +38,10 @@ describe('question import-export unit', () => {
 
     it('list all questions (export)', tests.listQuestionsFn('export'));
 
-    for (let i = 12; i < 24; ++i) {
+    _.range(12, 24).forEach((i) => {
         it(`create question ${i}`, tests.createQuestionFn());
         it(`get question ${i}`, tests.getQuestionFn(i));
-    }
+    });
 
     _.forEach([4, 17], (index) => {
         it(`delete question ${index}`, tests.deleteQuestionFn(index));

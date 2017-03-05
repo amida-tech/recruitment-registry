@@ -5,6 +5,7 @@
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
+const _ = require('lodash');
 
 const SharedSpec = require('./util/shared-spec');
 const Generator = require('./util/generator');
@@ -51,10 +52,10 @@ describe('consent unit', () => {
         };
     };
 
-    for (let i = 0; i < typeCount; ++i) {
+    _.range(typeCount).forEach((i) => {
         it(`create consent type ${i}`, createConsentTypeFn(hxType));
         it(`get and verify consent type ${i}`, getConsentTypeFn(i));
-    }
+    });
 
     it('list consent types and verify', listConsentTypesFn());
 
@@ -83,17 +84,17 @@ describe('consent unit', () => {
 
     it('list consent types in spanish when no translation', listTranslatedConsentTypesFn('es'));
 
-    for (let i = 0; i < typeCount; ++i) {
+    _.range(typeCount).forEach((i) => {
         it(`add translated (es) consent type ${i}`, shared.translateConsentTypeFn(i, 'es', hxType));
         it(`get and verify tanslated consent type ${i}`, getTranslatedConsentTypeFn(i, 'es'));
-    }
+    });
 
     it('list and verify translated (es) consent types', listTranslatedConsentTypesFn('es'));
 
-    for (let i = 0; i < typeCount; i += 2) {
+    _.range(0, typeCount, 2).forEach((i) => {
         it(`add translated (fr) consent type ${i}`, shared.translateConsentTypeFn(i, 'fr', hxType));
         it(`get and verify tanslated (fr) consent type ${i}`, getTranslatedConsentTypeFn(i, 'fr'));
-    }
+    });
 
     it('list and verify translated (fr) consent types', listTranslatedConsentTypesFn('fr'));
 

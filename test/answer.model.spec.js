@@ -40,14 +40,14 @@ describe('answer unit', () => {
     before(shared.setUpFn());
 
     const userCount = 3;
-    for (let i = 0; i <= userCount; ++i) {
+    _.range(userCount + 1).forEach((i) => {
         it(`create user ${i}`, shared.createUserFn(hxUser));
-    }
+    });
 
-    for (let i = 0; i < 20; ++i) {
+    _.range(20).forEach((i) => {
         it(`create question ${i}`, questionTests.createQuestionFn());
         it(`get question ${i}`, questionTests.getQuestionFn(i));
-    }
+    });
 
     const createSurveyFn = function (qxIndices) {
         return function () {
@@ -112,9 +112,9 @@ describe('answer unit', () => {
                     const expectedKeys = _.sortBy(Object.keys(expectedAnswers), r => Number(r));
                     const actualKeys = _.sortBy(Object.keys(actual), r => Number(r));
                     expect(actualKeys.length).to.equal(expectedKeys.length);
-                    for (let i = 0; i < expectedKeys.length; ++i) {
+                    _.range(expectedKeys.length).forEach((i) => {
                         comparator.answers(expectedAnswers[expectedKeys[i]], actual[actualKeys[i]]);
-                    }
+                    });
                 });
         };
     };
@@ -128,22 +128,22 @@ describe('answer unit', () => {
         { userIndex: 0, surveyIndex: 3, seqIndex: 1 },
     ];
 
-    for (let i = 0; i < cases.length; ++i) {
+    _.range(cases.length).forEach((i) => {
         const { userIndex, surveyIndex, seqIndex } = cases[i];
         const questionIndices = testQuestions[surveyIndex].answerSequences[seqIndex][0];
         it(`user ${userIndex} answers survey ${surveyIndex} (step 0)`, tests.answerSurveyFn(userIndex, surveyIndex, questionIndices));
         it(`user ${userIndex} gets answers to survey ${surveyIndex} (step 0)`, tests.getAnswersFn(userIndex, surveyIndex));
-    }
+    });
 
-    for (let j = 1; j < 3; ++j) {
-        for (let i = 0; i < cases.length; ++i) {
+    _.range(3).forEach((j) => {
+        _.range(cases.length).forEach((i) => {
             const { userIndex, surveyIndex, seqIndex } = cases[i];
             const questionIndices = testQuestions[surveyIndex].answerSequences[seqIndex][j];
             it(`user ${userIndex} answers survey ${surveyIndex} (step ${j})`, tests.answerSurveyFn(userIndex, surveyIndex, questionIndices));
             it(`user ${userIndex} gets answers to survey ${surveyIndex} (step ${j})`, tests.getAnswersFn(userIndex, surveyIndex));
             it('list user ${userIndex} survey ${surveyIndex} answer history (step ${j})', listAnswersFn(userIndex, surveyIndex));
-        }
-    }
+        });
+    });
 
     it('create question 20 (choices of all types)', () => {
         const question = generator.questionGenerator.allChoices();

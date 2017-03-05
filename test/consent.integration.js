@@ -35,15 +35,15 @@ describe('consent integration', () => {
 
     it('login as super', shared.loginFn(store, config.superUser));
 
-    for (let i = 0; i < typeCount; ++i) {
+    _.range(typeCount).forEach((i) => {
         it(`create consent type ${i}`, shared.createConsentTypeFn(store, history));
         it(`add translated (es) consent type ${i}`, shared.translateConsentTypeFn(store, i, 'es', history.hxType));
-    }
+    });
 
-    for (let i = 0; i < userCount; ++i) {
+    _.range(userCount).forEach((i) => {
         const user = generator.newUser();
         it(`create user ${i}`, shared.createUserFn(store, history.hxUser, user));
-    }
+    });
 
     const consentSpecs = [
         [0, 1, 2, 3, 4], // consent 0. Sections of types 0, 1, 2, 3, 4
@@ -183,10 +183,10 @@ describe('consent integration', () => {
     };
 
     it('login as super', shared.loginFn(store, config.superUser));
-    for (let i = 0; i < typeCount; ++i) {
+    _.range(typeCount).forEach((i) => {
         it(`create/verify consent document of type ${i}`, shared.createConsentDocumentFn(store, history, i));
         it(`add translated (es) consent document ${i}`, shared.translateConsentDocumentFn(store, i, 'es', history));
-    }
+    });
     it('logout as super', shared.logoutFn(store));
 
     [0, 1, 3].forEach((consentIndex) => {
@@ -257,7 +257,7 @@ describe('consent integration', () => {
                 if (language) {
                     input.language = language;
                 }
-                ++browserIndex;
+                browserIndex += 1;
                 const userAgent = `Browser-${browserIndex}`;
                 const ip = `9848.3${browserIndex}.838`;
                 const userId = history.hxUser.id(userIndex);

@@ -71,12 +71,12 @@ describe('profile unit', () => {
     it('create profile survey', shared.createProfileSurveyFn(hxSurvey));
     it('get/verify profile survey', shared.verifyProfileSurveyFn(hxSurvey, 0));
 
-    for (let i = 0; i < 2; ++i) {
+    _.range(2).forEach((i) => {
         it(`create consent type ${i}`, shared.createConsentTypeFn(hxConsentDoc));
-    }
-    for (let i = 0; i < 2; ++i) {
+    });
+    _.range(2).forEach((i) => {
         it(`create consent document of type ${i}`, shared.createConsentDocumentFn(hxConsentDoc, i));
-    }
+    });
 
     const createProfileWithSurveyFn = function (surveyIndex, signatures, language) {
         return function () {

@@ -11,15 +11,15 @@ const generateAnswerSingleFn = {
     day: value => ({ dayValue: value }),
     bool: value => ({ boolValue: value === 'true' }),
     'bool-sole': value => ({ boolValue: value === 'true' }),
-    pounds: value => ({ numberValue: parseInt(value) }),
-    integer: value => ({ integerValue: parseInt(value) }),
+    pounds: value => ({ numberValue: parseInt(value, 10) }),
+    integer: value => ({ integerValue: parseInt(value, 10) }),
     float: value => ({ integerValue: parseFloat(value) }),
     'blood-pressure': (value) => {
         const pieces = value.split('-');
         return {
             bloodPressureValue: {
-                systolic: parseInt(pieces[0]),
-                diastolic: parseInt(pieces[1]),
+                systolic: parseInt(pieces[0], 10),
+                diastolic: parseInt(pieces[1], 10),
             },
         };
     },
@@ -27,8 +27,8 @@ const generateAnswerSingleFn = {
         const pieces = value.split('-');
         return {
             feetInchesValue: {
-                feet: parseInt(pieces[0]),
-                inches: parseInt(pieces[1]),
+                feet: parseInt(pieces[0], 10),
+                inches: parseInt(pieces[1], 10),
             },
         };
     },

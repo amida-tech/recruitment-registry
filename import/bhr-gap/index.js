@@ -23,7 +23,7 @@ const valueConverterByChoiceType = {
         }
     },
     integer(value) {
-        return parseInt(value);
+        return parseInt(value, 10);
     },
     float(value) {
         return parseFloat(value);
@@ -39,7 +39,7 @@ const valueConverterByType = {
         return converter(value);
     },
     'choice-ref': function (value) {
-        return parseInt(value);
+        return parseInt(value, 10);
     },
     text(value) {
         if (value.indexOf('\\') > -1) {
@@ -48,7 +48,7 @@ const valueConverterByType = {
         return value;
     },
     integer(value) {
-        return parseInt(value);
+        return parseInt(value, 10);
     },
     float(value) {
         return parseFloat(value);

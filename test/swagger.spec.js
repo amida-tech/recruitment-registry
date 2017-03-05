@@ -42,17 +42,17 @@ describe('swagger validations', () => {
     //    };
     // };
 
-    for (let i = 0; i < objectTypes.length; ++i) {
-        const kebabObjectType = _.kebabCase(objectTypes[i]);
+    objectTypes.forEach((objectType) => {
+        const kebabObjectType = _.kebabCase(objectType);
 
         const valids = require(`./fixtures/valids/${kebabObjectType}`);
-        for (let j = 0; j < valids.length; ++j) {
-            it(`valid ${objectTypes[i]} case ${j}`, testValidFn(objectTypes[i], valids[j]));
-        }
+        valids.forEach((valid, index) => {
+            it(`valid ${objectType} case ${index}`, testValidFn(objectType, valid));
+        });
 
         // const invalids = require(`./fixtures/swagger-invalid/${kebabObjectType}`);
         // for (let j = 0; j < invalids.length; ++j) {
         //    it(`invalid ${objectTypes[i]} case ${j}`, testInvalidFn(objectTypes[i], invalids[j]));
         // }
-    }
+    });
 });

@@ -22,7 +22,7 @@ const formAnswersToPost = function (survey, answersSpec) {
                     const result = { id };
                     const numValues = ['textValue', 'code', 'monthValue', 'yearValue', 'dayValue', 'integerValue', 'boolValue'].reduce((r, p) => {
                         if (cindex.hasOwnProperty(p)) {
-                            ++r;
+                            r += 1;
                             result[p] = cindex[p];
                         }
                         return r;

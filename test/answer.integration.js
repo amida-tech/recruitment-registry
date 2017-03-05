@@ -46,16 +46,16 @@ describe('answer integration', () => {
 
     it('login as super', shared.loginFn(store, config.superUser));
 
-    for (let i = 0; i < 4; ++i) {
+    _.range(4).forEach((i) => {
         it(`create user ${i}`, shared.createUserFn(store, hxUser));
-    }
+    });
 
     it('create clinician', shared.createUserFn(store, hxClinician, null, { role: 'clinician' }));
 
-    for (let i = 0; i < 20; ++i) {
+    _.range(20).forEach((i) => {
         it(`create question ${i}`, questionTests.createQuestionFn());
         it(`get question ${i}`, questionTests.getQuestionFn(i));
-    }
+    });
 
     _.map(testQuestions, 'survey').forEach((surveyQuestion, index) => it(`create survey ${index}`, shared.createSurveyFn(store, hxSurvey, hxQuestion, surveyQuestion)));
 
@@ -70,16 +70,16 @@ describe('answer integration', () => {
         { userIndex: 0, surveyIndex: 3, seqIndex: 1 },
     ];
 
-    for (let j = 0; j < 3; ++j) {
-        for (let i = 0; i < cases.length; ++i) {
+    _.range(3).forEach((j) => {
+        _.range(cases.length).forEach((i) => {
             const { userIndex, surveyIndex, seqIndex } = cases[i];
             const questionIndices = testQuestions[surveyIndex].answerSequences[seqIndex][j];
             it(`login as user ${userIndex}`, shared.loginIndexFn(store, hxUser, userIndex));
             it(`user ${userIndex} answers survey ${surveyIndex} (step ${j})`, tests.answerSurveyFn(userIndex, surveyIndex, questionIndices));
             it(`user ${userIndex} gets answers to survey ${surveyIndex} (step ${j})`, tests.getAnswersFn(userIndex, surveyIndex));
             it(`logout as  user ${userIndex}`, shared.logoutFn(store));
-        }
-    }
+        });
+    });
 
     it('login as super', shared.loginFn(store, config.superUser));
     it('create question 20 (choices of all types)', (done) => {

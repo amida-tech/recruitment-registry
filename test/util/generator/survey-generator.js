@@ -55,7 +55,7 @@ module.exports = class SurveyGenerator {
     }
 
     incrementIndex() {
-        ++this.surveyIndex;
+        this.surveyIndex += 1;
     }
 
     sectionType() {
@@ -75,7 +75,8 @@ module.exports = class SurveyGenerator {
     }
 
     newBody() {
-        const surveyIndex = ++this.surveyIndex;
+        this.surveyIndex += 1;
+        const surveyIndex = this.surveyIndex;
         const name = `name_${surveyIndex}`;
         const result = { name };
         if (surveyIndex % 2 === 0) {
@@ -122,7 +123,8 @@ module.exports = class SurveyGenerator {
     }
 
     newSurveyQuestionIds(questionIds) {
-        const surveyIndex = ++this.surveyIndex;
+        this.surveyIndex += 1;
+        const surveyIndex = this.surveyIndex;
         const name = `name_${surveyIndex}`;
         const result = { name };
         result.questions = questionIds.map(id => ({ id, required: Boolean(surveyIndex % 2) }));

@@ -103,11 +103,11 @@ module.exports = class Answerer {
     }
 
     choices(question) {
-        ++this.answerIndex;
+        this.answerIndex += 1;
         this.answerChoicesCountIndex = (this.answerChoicesCountIndex + 1) % 3;
         const choiceCount = Math.min(this.answerChoicesCountIndex + 1, question.choices.length);
         const choices = _.range(choiceCount).map(() => {
-            ++this.answerIndex;
+            this.answerIndex += 1;
             const choice = this.selectChoice(question.choices);
             const answer = { id: choice.id };
             if (choice.type !== 'bool') {
@@ -122,14 +122,14 @@ module.exports = class Answerer {
     answerQuestion(question) {
         const type = _.camelCase(question.type);
         if (question.multiple) {
-            ++this.multiCount;
+            this.multiCount += 1;
             const answers = _.range(this.multiCount % 4 + 1).map((multipleIndex) => {
-                ++this.answerIndex;
+                this.answerIndex += 1;
                 return Object.assign({ multipleIndex }, this[type](question));
             });
             return { questionId: question.id, answers };
         }
-        ++this.answerIndex;
+        this.answerIndex += 1;
         const answer = this[type](question);
         return { questionId: question.id, answer };
     }
@@ -137,7 +137,7 @@ module.exports = class Answerer {
     answerMultipleQuestion(question, multipleIndices) {
         const type = _.camelCase(question.type);
         const answers = multipleIndices.map((multipleIndex) => {
-            ++this.answerIndex;
+            this.answerIndex += 1;
             return Object.assign({ multipleIndex }, this[type](question));
         });
         return { questionId: question.id, answers };
@@ -167,7 +167,7 @@ module.exports = class Answerer {
 
     answerRawQuestion(question) {
         const type = _.camelCase(question.type);
-        ++this.answerIndex;
+        this.answerIndex += 1;
         if (type === 'choice') {
             const choices = question.oneOfChoices || question.choices.map(choice => choice.text);
             return { choiceText: this.selectChoice(choices) };

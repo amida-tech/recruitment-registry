@@ -37,9 +37,9 @@ describe('survey consent unit', () => {
 
     before(shared.setUpFn());
 
-    for (let i = 0; i < 10; ++i) {
+    _.range(10).forEach((i) => {
         it(`create consent type ${i}`, shared.createConsentTypeFn(hxConsentDocument));
-    }
+    });
 
     [
         [4, 5, 6],
@@ -52,10 +52,10 @@ describe('survey consent unit', () => {
     it('create profile survey (survey 0)', shared.createProfileSurveyFn(hxSurvey));
     it('verify profile survey (survey 0)', shared.verifyProfileSurveyFn(hxSurvey, 0));
 
-    for (let i = 1; i < 7; ++i) {
+    _.range(1, 7).forEach((i) => {
         it(`create survey ${i}`, surveyTests.createSurveyFn({ noSection: true }));
         it(`verify survey ${i}`, surveyTests.getSurveyFn(i));
-    }
+    });
 
     const createSurveyConsentFn = function (surveyIndex, typeIndex, action, consentIndex) {
         return function () {
@@ -139,9 +139,9 @@ describe('survey consent unit', () => {
     it('error: get profile survey with no consent documents of existing types', () => models.profileSurvey.getProfileSurvey()
             .then(shared.throwingHandler, shared.expectedErrorHandler('noSystemConsentDocuments')));
 
-    for (let i = 0; i < 10; ++i) {
+    _.range(10).forEach((i) => {
         it(`create consent document of type ${i}`, shared.createConsentDocumentFn(hxConsentDocument, i));
-    }
+    });
 
     it('get profile survey with required consentDocuments', () => models.profileSurvey.getProfileSurvey()
             .then((result) => {
@@ -163,9 +163,9 @@ describe('survey consent unit', () => {
         };
     };
 
-    for (let i = 0; i < 10; ++i) {
+    _.range(10).forEach((i) => {
         it(`get/verify consent section of type ${i}`, verifyConsentDocumentContentFn(i));
-    }
+    });
 
     const createProfileWithoutSignaturesFn = function (index, signIndices, documentIndices) {
         return function () {
@@ -224,22 +224,22 @@ describe('survey consent unit', () => {
         };
     };
 
-    for (let i = 0; i < userCount; ++i) {
+    _.range(userCount).forEach((i) => {
         it(`create user profile ${i} without signatures 0`, createProfileWithoutSignaturesFn(i, null, [0, 1]));
         it(`create user profile ${i} without signatures 1`, createProfileWithoutSignaturesFn(i, [], [0, 1]));
         it(`create user profile ${i} without signatures 2`, createProfileWithoutSignaturesFn(i, [0], [1]));
         it(`create user profile ${i} without signatures 3`, createProfileWithoutSignaturesFn(i, [1], [0]));
         it(`create user profile ${i} with signatures`, createProfileFn(i, [0, 1]));
         it(`read user profile ${i} with signatures`, getProfileFn(i));
-    }
+    });
 
-    for (let i = 0; i < 2; ++i) {
+    _.range(2).forEach((i) => {
         it(`create consent document of type ${i}`, shared.createConsentDocumentFn(hxConsentDocument, i));
-    }
+    });
 
-    for (let i = 0; i < userCount; ++i) {
+    _.range(userCount).forEach((i) => {
         it(`read user profile ${i} without signatures`, readProfileWithoutSignaturesFn(i, [0, 1]));
-    }
+    });
 
     it('user 0 signs consent document 0', shared.signConsentTypeFn(hxConsentDocument, 0, 0));
     it('user 0 signs consent document 1', shared.signConsentTypeFn(hxConsentDocument, 0, 1));
@@ -394,9 +394,9 @@ describe('survey consent unit', () => {
     it('error: user 2 gets answers to survey 3 without signatures', getAnswersWithoutSignaturesFn(2, 3, [1]));
     it('error: user 3 gets answers to survey 3 without signatures', getAnswersWithoutSignaturesFn(3, 3, [3]));
 
-    for (let i = 0; i < 2; ++i) {
+    _.range(2).forEach((i) => {
         it(`create consent document of type ${i}`, shared.createConsentDocumentFn(hxConsentDocument, i));
-    }
+    });
 
     it('user 0 survey 1 consent documents for read', listConsentSurveyDocumentsFn(0, 1, 'read', [1]));
     it('user 1 survey 1 consent documents for read', listConsentSurveyDocumentsFn(1, 1, 'read', [1]));
@@ -557,9 +557,9 @@ describe('survey consent unit', () => {
     it('user 3 gets answered survey 4', answerTests.verifyAnsweredSurveyFn(3, 4));
     it('user 3 gets answered survey 5', answerTests.verifyAnsweredSurveyFn(3, 5));
 
-    for (let i = 7; i < 10; ++i) {
+    _.range(7, 10).forEach((i) => {
         it(`create consent document of type ${i}`, shared.createConsentDocumentFn(hxConsentDocument, i));
-    }
+    });
 
     it('user 0 survey 4 consent documents for read', listConsentSurveyDocumentsFn(0, 5, 'read', [
         [1, 7],

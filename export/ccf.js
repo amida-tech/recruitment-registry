@@ -42,7 +42,7 @@ const exportSurveys = function () {
                 r.push({ number: survey.name });
                 const questions = models.survey.getQuestions(survey);
                 questions.forEach((question) => {
-                    ++index;
+                    index += 1;
                     let line = {
                         number: index.toString(),
                         question: question.text,

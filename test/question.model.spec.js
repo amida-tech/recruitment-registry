@@ -82,14 +82,14 @@ describe('question unit', () => {
         };
     };
 
-    for (let i = 0; i < 10; ++i) {
+    _.range(10).forEach((i) => {
         it(`create question ${i}`, tests.createQuestionFn());
         it(`get question ${i}`, tests.getQuestionFn(i));
         it(`update question ${i}`, updateQuestionTextFn(i));
         it(`verify question ${i}`, verifyQuestionFn(i));
         it(`revert update question ${i}`, revertUpdateQuestionTextFn(i));
         it(`verify question ${i}`, verifyQuestionFn(i));
-    }
+    });
 
     it('error: get with non-existent id', () => models.question.getQuestion(99999)
             .then(shared.throwingHandler, shared.expectedErrorHandler('qxNotFound')));
@@ -158,17 +158,17 @@ describe('question unit', () => {
 
     it('list questions in spanish when no translation', listTranslatedQuestionsFn('es', true));
 
-    for (let i = 0; i < 10; ++i) {
+    _.range(10).forEach((i) => {
         it(`add translated (es) question ${i}`, translateQuestionFn(i, 'es'));
         it(`get and verify tanslated question ${i}`, getTranslatedQuestionFn(i, 'es'));
-    }
+    });
 
     it('list and verify translated (es) questions', listTranslatedQuestionsFn('es'));
 
-    for (let i = 0; i < 10; i += 2) {
+    _.range(0, 10, 2).forEach((i) => {
         it(`add translated (fr) question ${i}`, translateQuestionFn(i, 'fr'));
         it(`get and verify tanslated (fr) question ${i}`, getTranslatedQuestionFn(i, 'fr'));
-    }
+    });
 
     it('list and verify translated (fr) questions', listTranslatedQuestionsFn('fr', true));
 
@@ -182,14 +182,14 @@ describe('question unit', () => {
 
     it('list all questions (summary)', tests.listQuestionsFn('summary'));
 
-    for (let i = 10; i < 20; ++i) {
+    _.range(10, 20).forEach((i) => {
         it(`create question ${i}`, tests.createQuestionFn());
         it(`get question ${i}`, tests.getQuestionFn(i));
         it(`update question ${i}`, updateQuestionTextFn(i));
         it(`verify question ${i}`, verifyQuestionFn(i));
         it(`revert update question ${i}`, revertUpdateQuestionTextFn(i));
         it(`verify question ${i}`, verifyQuestionFn(i));
-    }
+    });
 
     const createSurveyFn = function (questionIndices) {
         return function () {

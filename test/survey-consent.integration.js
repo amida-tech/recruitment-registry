@@ -43,9 +43,9 @@ describe('survey consent integration', () => {
 
     it('login as super', shared.loginFn(store, config.superUser));
 
-    for (let i = 0; i < 10; ++i) {
+    _.range(10).forEach((i) => {
         it(`create consent type ${i}`, shared.createConsentTypeFn(store, hxConsentDocument));
-    }
+    });
 
     [
         [4, 5, 6],
@@ -58,10 +58,10 @@ describe('survey consent integration', () => {
     it('create profile survey (survey 0)', shared.createProfileSurveyFn(store, hxSurvey));
     it('verify profile survey (survey 0)', shared.verifyProfileSurveyFn(store, hxSurvey, 0));
 
-    for (let i = 1; i < 7; ++i) {
+    _.range(1, 7).forEach((i) => {
         it(`create survey ${i}`, surveyTests.createSurveyFn(({ noSection: true })));
         it(`get survey ${i}`, surveyTests.getSurveyFn(i));
-    }
+    });
 
     const createSurveyConsentFn = function (surveyIndex, typeIndex, action, consentIndex) {
         return function (done) {
@@ -158,9 +158,9 @@ describe('survey consent integration', () => {
             .end(done);
     });
 
-    for (let i = 0; i < 10; ++i) {
+    _.range(10).forEach((i) => {
         it(`create consent document of type ${i}`, shared.createConsentDocumentFn(store, hxConsentDocument, i));
-    }
+    });
 
     it('get profile survey with required consentDocuments', (done) => {
         store.get('/profile-survey', false, 200)
@@ -188,9 +188,9 @@ describe('survey consent integration', () => {
         };
     };
 
-    for (let i = 0; i < 10; ++i) {
+    _.range(10).forEach((i) => {
         it(`get/verify consent section of type ${i}`, verifyConsentDocumentContentFn(i));
-    }
+    });
 
     it('logout as super', shared.logoutFn(store));
 
@@ -255,7 +255,7 @@ describe('survey consent integration', () => {
         };
     };
 
-    for (let i = 0; i < userCount; ++i) {
+    _.range(userCount).forEach((i) => {
         it(`create user profile ${i} without signatures 0`, createProfileWithoutSignaturesFn(i, null, [0, 1]));
         it(`create user profile ${i} without signatures 1`, createProfileWithoutSignaturesFn(i, [], [0, 1]));
         it(`create user profile ${i} without signatures 2`, createProfileWithoutSignaturesFn(i, [0], [1]));
@@ -263,19 +263,19 @@ describe('survey consent integration', () => {
         it(`create user profile ${i} with signatures`, createProfileFn(i, [0, 1]));
         it(`read user profile ${i} with signatures`, getProfileFn(i));
         it(`logout as user ${i}`, shared.logoutFn(store));
-    }
+    });
 
     it('login as super', shared.loginFn(store, config.superUser));
-    for (let i = 0; i < 2; ++i) {
+    _.range(2).forEach((i) => {
         it(`create consent document of type ${i}`, shared.createConsentDocumentFn(store, hxConsentDocument, i));
-    }
+    });
     it('logout as super', shared.logoutFn(store));
 
-    for (let i = 0; i < userCount; ++i) {
+    _.range(userCount).forEach((i) => {
         it(`login as user ${i}`, shared.loginIndexFn(store, hxUser, i));
         it(`read user profile ${i} without signatures`, readProfileWithoutSignaturesFn(i, [0, 1]));
         it(`logout as user ${i}`, shared.logoutFn(store));
-    }
+    });
 
     it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
     it('user 0 signs consent document 0', shared.signConsentTypeFn(store, hxConsentDocument, 0, 0));
@@ -597,11 +597,11 @@ describe('survey consent integration', () => {
     it('error: user 3 gets answers to survey 3 without signatures', getAnswersWithoutSignaturesFn(3, 3, [3]));
     it('logout as user 3', shared.logoutFn(store));
 
-    for (let i = 0; i < 2; ++i) {
+    _.range(2).forEach((i) => {
         it('login as super', shared.loginFn(store, config.superUser));
         it(`create consent document of type ${i}`, shared.createConsentDocumentFn(store, hxConsentDocument, i));
         it('logout as super', shared.logoutFn(store));
-    }
+    });
 
     it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
     it('user 0 survey 1 consent documents for read', listConsentSurveyDocumentsFn(0, 1, 'read', [1]));
@@ -858,11 +858,11 @@ describe('survey consent integration', () => {
     it('user 3 gets answered survey 5', answerTests.verifyAnsweredSurveyFn(3, 5));
     it('logout as user 3', shared.logoutFn(store));
 
-    for (let i = 7; i < 10; ++i) {
+    _.range(7, 10).forEach((i) => {
         it('login as super', shared.loginFn(store, config.superUser));
         it(`create consent document of type ${i}`, shared.createConsentDocumentFn(store, hxConsentDocument, i));
         it('logout as super', shared.logoutFn(store));
-    }
+    });
 
     it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
     it('user 0 survey 4 consent documents for read', listConsentSurveyDocumentsFn(0, 5, 'read', [

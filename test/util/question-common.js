@@ -48,7 +48,7 @@ const IdentifierGenerator = class identifierGenerator {
     }
 
     newAllIdentifiers(question, type) {
-        ++this.index;
+        this.index += 1;
         const identifier = `qid-${this.index}-${question.id}`;
         const result = { type, identifier };
         const questionType = question.type;
@@ -58,7 +58,7 @@ const IdentifierGenerator = class identifierGenerator {
                 id: choice.id,
             }));
         } else {
-            ++this.index;
+            this.index += 1;
             const answerIdentifier = `aid-${this.index}-${question.id}`;
             result.answerIdentifier = answerIdentifier;
         }

@@ -42,9 +42,9 @@ describe('user survey integration', () => {
     };
 
     it('login as super', shared.loginFn(store, config.superUser));
-    for (let i = 0; i < userCount; ++i) {
+    _.range(userCount).forEach((i) => {
         it(`create user ${i}`, shared.createUserFn(store, hxUser));
-    }
+    });
     it('logout as super', shared.logoutFn(store));
 
     const verifyNoUserSurveys = function (done) {
@@ -56,17 +56,17 @@ describe('user survey integration', () => {
             .end(done);
     };
 
-    for (let i = 0; i < userCount; ++i) {
+    _.range(userCount).forEach((i) => {
         it(`login as user ${i}`, shared.loginIndexFn(store, hxUser, i));
         it(`verify no surveys for user ${i}`, verifyNoUserSurveys);
         it(`logout as user ${i}`, shared.logoutFn(store));
-    }
+    });
 
     it('login as super', shared.loginFn(store, config.superUser));
-    for (let i = 0; i < surveyCount; ++i) {
+    _.range(surveyCount).forEach((i) => {
         it(`create survey ${i}`, surveyTests.createSurveyFn({ noSection: true }));
         it(`get survey ${i}`, surveyTests.getSurveyFn(i));
-    }
+    });
     it('logout as super', shared.logoutFn(store));
 
     const verifyStatusFn = function (surveyIndex, expectedStatus) {
@@ -409,9 +409,9 @@ describe('user survey integration', () => {
 
     it('login as super', shared.loginFn(store, config.superUser));
 
-    for (let i = 0; i < surveyCount; ++i) {
+    _.range(surveyCount).forEach((i) => {
         it(`translate survey ${i}`, translateSurveyFn(i, 'es'));
-    }
+    });
 
     it('logout as super', shared.logoutFn(store));
 
