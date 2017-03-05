@@ -95,21 +95,21 @@ const SurveyCSVConverter = class SurveyCSVConverter {
         fileStream.write('\n');
     }
 
-    jsonHandler(outputStream, record, line_index) {
+    jsonHandler(outputStream, record, lineIndex) {
         const username = record.SubjectCode;
         if (!username) {
-            throw new Error(`Subject code is missing on line ${line_index + 1}.`);
+            throw new Error(`Subject code is missing on line ${lineIndex + 1}.`);
         }
-        const assessment_name = record.Timepoint;
-        if (!assessment_name) {
-            throw new Error(`Assessment name is missing on line ${line_index + 1}.`);
+        const assessmentName = record.Timepoint;
+        if (!assessmentName) {
+            throw new Error(`Assessment name is missing on line ${lineIndex + 1}.`);
         }
         const status = record.Status ? assessmentStatusMap[record.Status] : 'no-status';
         if (!status) {
             throw new Error(`Status ${record.Status} is not recognized.`);
         }
-        const last_answer = record.Latest ? record.Latest.toLowerCase() === 'true' : false;
-        const baseObject = { username, assessment_name, status, line_index, last_answer };
+        const lastAnswer = record.Latest ? record.Latest.toLowerCase() === 'true' : false;
+        const baseObject = { username, assessment_name: assessmentName, status, line_index: lineIndex, last_answer: lastAnswer };
         if (record.DaysAfterBaseline) {
             baseObject.days_after_baseline = record.DaysAfterBaseline;
         }
@@ -120,19 +120,19 @@ const SurveyCSVConverter = class SurveyCSVConverter {
                 if (!answerInformation) {
                     throw new Error(`Unexpected column name ${key} for ${this.answerIdentifierType}.`);
                 }
-                const { questionId: question_id, questionChoiceId: question_choice_id, multipleIndex: multiple_index, questionType, questionChoiceType } = answerInformation;
+                const { questionId, questionChoiceId, multipleIndex, questionType, questionChoiceType } = answerInformation;
                 if (value !== '' && value !== undefined) {
                     const valueConverter = valueConverterByType[questionType];
                     if (!valueConverter) {
                         throw new Error(`Question type ${questionType} has not been implemented.`);
                     }
                     const answerValue = valueConverter(value, questionChoiceType);
-                    const answer = Object.assign({ question_id }, baseObject);
-                    if (question_choice_id) {
-                        answer.question_choice_id = question_choice_id;
+                    const answer = Object.assign({ question_id: questionId }, baseObject);
+                    if (questionChoiceId) {
+                        answer.question_choice_id = questionChoiceId;
                     }
-                    if (multiple_index || multiple_index === 0) {
-                        answer.multiple_index = multiple_index;
+                    if (multipleIndex || multipleIndex === 0) {
+                        answer.multiple_index = multipleIndex;
                     }
                     if (answerValue !== null) {
                         answer.value = answerValue;
@@ -176,41 +176,41 @@ const SurveyCSVConverter = class SurveyCSVConverter {
     }
 };
 
-const generateChoiceAnswerer = function (question_id, columnName, choiceMap) {
-    const choiceIdMap = choiceMap.get(question_id);
-    return function (value, survey_id, username) {
+const generateChoiceAnswerer = function (questionId, columnName, choiceMap) {
+    const choiceIdMap = choiceMap.get(questionId);
+    return function (value, surveyId, username) {
         if (value) {
-            const question_choice_id = choiceIdMap.get(value);
-            if (!question_choice_id) {
+            const questionChoiceId = choiceIdMap.get(value);
+            if (!questionChoiceId) {
                 throw new Error(`Unexpected value ${value} for ${columnName}.`);
             }
-            return [{ survey_id, question_id, question_choice_id, username }];
+            return [{ survey_id: surveyId, question_id: questionId, question_choice_id: questionChoiceId, username }];
         }
         return undefined;
     };
 };
 
-const generateChoicesAnswerer = function (question_id, columnName, choiceMap) {
-    const choiceIdMap = choiceMap.get(question_id);
-    return function (semicolonValues, survey_id, username) {
+const generateChoicesAnswerer = function (questionId, columnName, choiceMap) {
+    const choiceIdMap = choiceMap.get(questionId);
+    return function (semicolonValues, surveyId, username) {
         if (semicolonValues) {
             const values = semicolonValues.split(';');
             return values.map((value) => {
-                const question_choice_id = choiceIdMap.get(value);
-                if (!question_choice_id) {
+                const questionChoiceId = choiceIdMap.get(value);
+                if (!questionChoiceId) {
                     throw new Error(`Unexpected value ${value} for ${columnName}.`);
                 }
-                return { survey_id, question_id, question_choice_id, value: 'true', username };
+                return { survey_id: surveyId, question_id: questionId, question_choice_id: questionChoiceId, value: 'true', username };
             });
         }
         return undefined;
     };
 };
 
-const generateIntegerAnswerer = function (question_id) {
-    return function (value, survey_id, username) {
+const generateIntegerAnswerer = function (questionId) {
+    return function (value, surveyId, username) {
         if (value !== undefined) {
-            return [{ survey_id, question_id, value, username }];
+            return [{ survey_id: surveyId, question_id: questionId, value, username }];
         }
         return undefined;
     };

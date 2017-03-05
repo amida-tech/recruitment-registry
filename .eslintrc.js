@@ -10,7 +10,6 @@ module.exports = {
         'class-methods-use-this': 'off',
         'no-shadow': 'off',
         'max-len': 'off',
-        'camelcase': 'warn',
     },
     'parserOptions': {
         'sourceType': 'script'
