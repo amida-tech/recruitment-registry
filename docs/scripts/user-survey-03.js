@@ -1,5 +1,7 @@
 'use strict';
 
+/* eslint func-names: 0, no-console: 0 */
+
 module.exports = function (locals) {
     console.log(`------ start ${module.filename}`);
     const jwtUser2 = locals.jwtUser2;

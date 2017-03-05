@@ -1,5 +1,7 @@
 'use strict';
 
+/* eslint func-names: 0, no-console: 0 */
+
 const request = require('superagent');
 
 module.exports = function (locals) {
