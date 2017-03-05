@@ -182,7 +182,7 @@ const generateChoiceAnswerer = function (question_id, columnName, choiceMap) {
         if (value) {
             const question_choice_id = choiceIdMap.get(value);
             if (!question_choice_id) {
-                throw new Error('Unexpected value ${questionChoiceId} for ${columnName}.');
+                throw new Error(`Unexpected value ${value} for ${columnName}.`);
             }
             return [{ survey_id, question_id, question_choice_id, username }];
         }
@@ -198,7 +198,7 @@ const generateChoicesAnswerer = function (question_id, columnName, choiceMap) {
             return values.map((value) => {
                 const question_choice_id = choiceIdMap.get(value);
                 if (!question_choice_id) {
-                    throw new Error('Unexpected value ${value} for ${columnName}.');
+                    throw new Error(`Unexpected value ${value} for ${columnName}.`);
                 }
                 return { survey_id, question_id, question_choice_id, value: 'true', username };
             });

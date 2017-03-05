@@ -76,7 +76,8 @@ module.exports = class QuestionDAO extends Translatable {
                         const id = result.id;
                         return this.createTextTx({ text, instruction, id }, transaction)
                             .then(() => {
-                                let { oneOfChoices, choices } = question;
+                                const oneOfChoices = question.oneOfChoices;
+                                let choices = question.choices;
                                 const nOneOfChoices = (oneOfChoices && oneOfChoices.length) || 0;
                                 const nChoices = (choices && choices.length) || 0;
                                 if (nOneOfChoices || nChoices) {

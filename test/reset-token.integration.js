@@ -151,9 +151,10 @@ describe('reset-token integration', () => {
 
     it('login as super', shared.loginFn(store, config.superUser));
 
+    const actualLink = '${link}'; // eslint-disable-line no-template-curly-in-string
     const smtpText = {
         subject: 'Registry Admin',
-        content: 'Click on this: ${link}',
+        content: `Click on this: ${actualLink}`,
     };
 
     it('setup server specifications', (done) => {

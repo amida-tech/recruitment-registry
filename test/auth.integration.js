@@ -40,7 +40,9 @@ describe('auth integration', () => {
     const successfullLoginFn = function (index) {
         return function (done) {
             const client = hxUser.client(index);
-            let { username, email, password } = client;
+            let username = client.username;
+            const email = client.email;
+            const password = client.password;
             if (!username) {
                 username = email;
             }
@@ -66,7 +68,9 @@ describe('auth integration', () => {
     const wrongUsernameFn = function (index) {
         return function (done) {
             const client = hxUser.client(index);
-            let { username, email, password } = client;
+            let username = client.username;
+            const email = client.email;
+            const password = client.password;
             if (!username) {
                 username = email;
             }
@@ -82,7 +86,9 @@ describe('auth integration', () => {
     const wrongPasswordFn = function (index) {
         return function (done) {
             const client = hxUser.client(index);
-            let { username, email, password } = client;
+            let username = client.username;
+            const email = client.email;
+            let password = client.password;
             if (!username) {
                 username = email;
             }

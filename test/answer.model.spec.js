@@ -141,7 +141,7 @@ describe('answer unit', () => {
             const questionIndices = testQuestions[surveyIndex].answerSequences[seqIndex][j];
             it(`user ${userIndex} answers survey ${surveyIndex} (step ${j})`, tests.answerSurveyFn(userIndex, surveyIndex, questionIndices));
             it(`user ${userIndex} gets answers to survey ${surveyIndex} (step ${j})`, tests.getAnswersFn(userIndex, surveyIndex));
-            it('list user ${userIndex} survey ${surveyIndex} answer history (step ${j})', listAnswersFn(userIndex, surveyIndex));
+            it(`list user ${userIndex} survey ${surveyIndex} answer history (step ${j})`, listAnswersFn(userIndex, surveyIndex));
         });
     });
 
@@ -267,12 +267,13 @@ describe('answer unit', () => {
             // ensure intersection in answers
             searchAnswersOne = generateAnswers();
             searchAnswersTwo = generateAnswers();
-            for (const [index, answer] of searchAnswersTwo.entries()) {
+            searchAnswersTwo.some((answer, index) => {
                 if (answer.questionId === searchAnswersOne[0].questionId) {
                     searchAnswersTwo[index] = searchAnswersOne[0];
+                    return true;
                 }
-                break;
-            }
+                return false;
+            });
 
             return Promise.all([
                 saveAnswers(1, searchAnswersOne),
@@ -294,12 +295,13 @@ describe('answer unit', () => {
             searchAnswersTwo.forEach(answer => answersTwo.set(answer.questionId, answer));
 
             const answersOne = searchAnswersOne.slice();
-            for (const [index, answer] of searchAnswersOne.entries()) {
+            searchAnswersOne.some((answer, index) => {
                 if (!_.isEqual(answersTwo.get(answer.questionId), answer)) {
                     answersOne[index] = answersTwo.get(answer.questionId);
-                    break;
+                    return true;
                 }
-            }
+                return false;
+            });
 
             return searchCountFromAnswers(answersOne).then(count => expect(count).to.equal(0));
         });

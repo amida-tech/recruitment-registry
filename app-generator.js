@@ -26,7 +26,9 @@ const errHandler = function (err, req, res, next) { // eslint-disable-line no-un
 const userAudit = function (req, res, next) {
     const userId = _.get(req, 'user.id');
     if (userId) {
-        let [, endpoint, operation] = _.get(req, 'swagger.operationPath', ['', '', '']);
+        const operationSpec = _.get(req, 'swagger.operationPath', ['', '', '']);
+        let endpoint = operationSpec[1];
+        const operation = operationSpec[2];
         if (req.swagger.params) {
             _.forOwn(req.swagger.params, (description, name) => {
                 const value = description && description.value;

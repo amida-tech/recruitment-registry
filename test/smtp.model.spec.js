@@ -41,9 +41,10 @@ describe('smtp unit', () => {
     };
 
     const createNewSmtpText = function (index) {
+        const actualLink = '${link}'; // eslint-disable-line no-template-curly-in-string
         return {
             subject: `subject_${index}`,
-            content: `content_${index} with link:` + '${link}',
+            content: `content_${index} with link:${actualLink}`,
         };
     };
 

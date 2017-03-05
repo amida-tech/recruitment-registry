@@ -107,12 +107,12 @@ describe('user unit', () => {
         return function () {
             const client = hxUser.client(index);
             if (!client.username) {
-                let { username, email, password } = generator.newUser();
-                if (!username) {
-                    username = email.split('@')[0];
+                const newUser = generator.newUser();
+                if (!newUser.username) {
+                    newUser.username = newUser.email.split('@')[0];
                 }
                 const id = hxUser.id(index);
-                return models.user.updateUser(id, { username, email, password })
+                return models.user.updateUser(id, newUser)
                     .then(shared.throwingHandler, shared.expectedErrorHandler('userNoUsernameChange'));
             }
             return null;

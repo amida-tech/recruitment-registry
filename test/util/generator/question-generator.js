@@ -97,12 +97,11 @@ module.exports = class QuestionGenerator {
             this.typeChoicesIndex += 1;
             const choiceType = this.typeChoicesIndex % 4;
             switch (choiceType) {
-            case 2:
-                choice.type = 'bool';
-                break;
             case 3:
                 choice.type = 'text';
                 break;
+            default:
+                choice.type = 'bool';
             }
         });
         question.choices = choices;

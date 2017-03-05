@@ -169,7 +169,8 @@ describe('user assessment integration', () => {
                         }
                         const surveyTimeIndex = surveyTimeIndices[record.surveyIndex];
                         surveyTimeIndices[record.surveyIndex] = surveyTimeIndex + 1;
-                        let { surveyIndex, answers } = record;
+                        const surveyIndex = record.surveyIndex;
+                        let answers = record.answers;
                         if (surveyIndex >= minSurveyIndex && surveyIndex <= maxSurveyIndex && timeIndex === surveyTimeIndex) {
                             const surveyId = hxSurvey.id(surveyIndex);
                             answers = answers.map(answer => Object.assign({ surveyId }, answer));

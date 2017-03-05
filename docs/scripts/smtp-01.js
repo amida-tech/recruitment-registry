@@ -13,7 +13,7 @@ module.exports = function (locals) {
         from: 'admin@rr.com',
         otherOptions: {},
         subject: 'Registry Admin',
-        content: 'Click on this: ${link}',
+        content: 'Click on this: ${link}', // eslint-disable-line no-template-curly-in-string
     };
 
     return locals.agent
