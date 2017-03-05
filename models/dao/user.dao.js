@@ -60,10 +60,10 @@ module.exports = class UserDAO {
             .then((user) => {
                 fields = _.pick(fields, ['username', 'email', 'password']);
                 if (user.username === user.email.toLowerCase()) {
-                    if (fields.hasOwnProperty('username')) {
+                    if (Object.prototype.hasOwnProperty.call(fields, 'username')) {
                         return RRError.reject('userNoUsernameChange');
                     }
-                    if (fields.hasOwnProperty('email')) {
+                    if (Object.prototype.hasOwnProperty.call(fields, 'email')) {
                         fields.username = fields.email.toLowerCase();
                     }
                 }

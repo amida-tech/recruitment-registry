@@ -8,8 +8,8 @@ const RRError = require('../../lib/rr-error');
 const SPromise = require('../../lib/promise');
 const queryrize = require('../../lib/queryrize');
 const Translatable = require('./translatable');
-const exportCSVConverter = require('../../export/csv-converter.js');
-const importCSVConverter = require('../../import/csv-converter.js');
+const ExportCSVConverter = require('../../export/csv-converter.js');
+const ImportCSVConverter = require('../../import/csv-converter.js');
 
 const sequelize = db.sequelize;
 const Survey = db.Survey;
@@ -704,7 +704,7 @@ module.exports = class SurveyDAO extends Translatable {
                 return r;
             }, []))
             .then((lines) => {
-                const converter = new exportCSVConverter({ fields: ['id', 'name', 'description', 'questionId', 'required'] });
+                const converter = new ExportCSVConverter({ fields: ['id', 'name', 'description', 'questionId', 'required'] });
                 return converter.dataToCSV(lines);
             });
     }
@@ -729,7 +729,7 @@ module.exports = class SurveyDAO extends Translatable {
             r[pair[0]] = pair[1].questionId;
             return r;
         }, {});
-        const converter = new importCSVConverter();
+        const converter = new ImportCSVConverter();
         return converter.streamToRecords(stream)
             .then((records) => {
                 const numRecords = records.length;

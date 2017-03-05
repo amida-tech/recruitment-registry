@@ -21,7 +21,7 @@ const formAnswersToPost = function (survey, answersSpec) {
                     const { id } = questions[index].choices[cindex.index];
                     const result = { id };
                     const numValues = ['textValue', 'code', 'monthValue', 'yearValue', 'dayValue', 'integerValue', 'boolValue'].reduce((r, p) => {
-                        if (cindex.hasOwnProperty(p)) {
+                        if (Object.prototype.hasOwnProperty.call(cindex, p)) {
                             r += 1;
                             result[p] = cindex[p];
                         }
@@ -33,13 +33,13 @@ const formAnswersToPost = function (survey, answersSpec) {
                     return result;
                 });
             }
-            if (spec.hasOwnProperty('choice')) {
+            if (Object.prototype.hasOwnProperty.call(spec, 'choice')) {
                 entry.answer.choice = questions[index].choices[spec.choice].id;
             }
-            if (spec.hasOwnProperty('textValue')) {
+            if (Object.prototype.hasOwnProperty.call(spec, 'textValue')) {
                 entry.answer.textValue = spec.textValue;
             }
-            if (spec.hasOwnProperty('boolValue')) {
+            if (Object.prototype.hasOwnProperty.call(spec, 'boolValue')) {
                 entry.answer.boolValue = spec.boolValue;
             }
             r.push(entry);
@@ -59,7 +59,7 @@ const formAnsweredSurvey = function (survey, answers) {
 };
 
 const updateIds = function (surveys, idMap, questionIdMap) {
-    return surveys.map((survey) => {
+    surveys.forEach((survey) => {
         const surveyId = idMap[survey.id];
         if (!surveyId) {
             throw new Error(`updateIds: id for '${survey.name}' does not exist in the map`);

@@ -19,7 +19,7 @@ const getFieldsForList = function (scope) {
 };
 
 const updateIds = function (questions, idMap) {
-    return questions.map((question) => {
+    questions.forEach((question) => {
         const questionIdMap = idMap[question.id];
         if (!questionIdMap) {
             throw new Error(`updateIds: id for '${question.text}' does not exist in the map`);

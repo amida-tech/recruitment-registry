@@ -15,8 +15,8 @@ const QuestionChoice = db.QuestionChoice;
 const UserSurvey = db.UserSurvey;
 const User = db.User;
 
-const exportCSVConverter = require('../../export/csv-converter.js');
-const importCSVConverter = require('../../import/csv-converter.js');
+const ExportCSVConverter = require('../../export/csv-converter.js');
+const ImportCSVConverter = require('../../import/csv-converter.js');
 
 const answerValueToDBFormat = {
     boolValue(value) {
@@ -126,7 +126,7 @@ const fileAnswer = function ({ userId, surveyId, language, answers }, tx) {
             questionId,
             questionChoiceId: value.questionChoiceId || null,
             multipleIndex: (value.multipleIndex || value.multipleIndex === 0) ? value.multipleIndex : null,
-            value: value.hasOwnProperty('value') ? value.value : null,
+            value: Object.prototype.hasOwnProperty.call(value, 'value') ? value.value : null,
         }));
         values.forEach(value => r.push(value));
         return r;
@@ -433,13 +433,13 @@ module.exports = class AnswerDAO {
     exportForUser(userId) {
         return this.listAnswers({ userId, scope: 'export' })
             .then((answers) => {
-                const converter = new exportCSVConverter({ fields: ['surveyId', 'questionId', 'questionChoiceId', 'questionType', 'choiceType', 'value'] });
+                const converter = new ExportCSVConverter({ fields: ['surveyId', 'questionId', 'questionChoiceId', 'questionType', 'choiceType', 'value'] });
                 return converter.dataToCSV(answers);
             });
     }
 
     importForUser(userId, stream, surveyIdMap, questionIdMap) {
-        const converter = new importCSVConverter({ checkType: false });
+        const converter = new ImportCSVConverter({ checkType: false });
         return converter.streamToRecords(stream)
             .then(records => records.map((record) => {
                 record.surveyId = surveyIdMap[record.surveyId];

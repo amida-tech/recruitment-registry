@@ -34,7 +34,7 @@ module.exports = class AnswerHistory {
             const remaining = record.remaining;
             const removed = record.removed;
             answers.forEach(({ questionId }) => {
-                if (remaining.hasOwnProperty(questionId)) {
+                if (Object.prototype.hasOwnProperty.call(remaining, questionId)) {
                     delete remaining[questionId];
                     removed[questionId] = timeIndex;
                 }
@@ -76,7 +76,7 @@ module.exports = class AnswerHistory {
         return this.store.reduce((r, record) => {
             if (record.userIndex === userIndex) {
                 const { surveyIndex, answers, remaining } = record;
-                const remainingAnswers = answers.filter(({ questionId }) => remaining.hasOwnProperty(questionId));
+                const remainingAnswers = answers.filter(({ questionId }) => Object.prototype.hasOwnProperty.call(remaining, questionId));
                 if (remainingAnswers.length) {
                     r.push({ surveyIndex, answers: remainingAnswers });
                 }
@@ -94,7 +94,7 @@ module.exports = class AnswerHistory {
             }
             answers.forEach((answer) => {
                 const questionId = answer.questionId;
-                if (remaining.hasOwnProperty(questionId)) {
+                if (Object.prototype.hasOwnProperty.call(remaining, questionId)) {
                     r.push(answer);
                 }
             });

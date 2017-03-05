@@ -71,11 +71,13 @@ const survey = {
     }],
 };
 
-models.sequelize.sync({
-    force: true,
-}).then(() => models.survey.createSurvey(survey)).then(() => consentSeed(consentExample)).then(() => {
-    console.log('success');
-}).catch((err) => {
-    console.log('failure');
-    console.log(err);
-});
+models.sequelize.sync({ force: true })
+    .then(() => models.survey.createSurvey(survey))
+    .then(() => consentSeed(consentExample))
+    .then(() => {
+        console.log('success');
+    })
+    .catch((err) => {
+        console.log('failure');
+        console.log(err);
+    });

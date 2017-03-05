@@ -163,7 +163,7 @@ const comparator = {
                 if (qx.type === 'choices' && qx.answer.choices) {
                     qx.answer.choices.forEach((choice) => {
                         const numValues = ['textValue', 'code', 'monthValue', 'yearValue', 'dayValue', 'integerValue', 'boolValue'].reduce((r, p) => {
-                            if (choice.hasOwnProperty(p)) {
+                            if (Object.prototype.hasOwnProperty.call(choice, p)) {
                                 r += 1;
                             }
                             return r;
@@ -184,7 +184,7 @@ const comparator = {
             if (answer.answer && answer.answer.choices) {
                 answer.answer.choices.forEach((choice) => {
                     const numValues = ['textValue', 'code', 'monthValue', 'yearValue', 'dayValue', 'integerValue', 'boolValue', 'dateValue', 'numberValue', 'feetInchesValue', 'bloodPressureValue'].reduce((r, p) => {
-                        if (choice.hasOwnProperty(p)) {
+                        if (Object.prototype.hasOwnProperty.call(choice, p)) {
                             r += 1;
                         }
                         return r;
@@ -203,7 +203,7 @@ const comparator = {
         const expected = _.cloneDeep(client);
         expected.id = server.id;
         delete expected.password;
-        if (!expected.hasOwnProperty('role')) {
+        if (!Object.prototype.hasOwnProperty.call(expected, 'role')) {
             expected.role = 'participant';
         }
         if (!expected.username) {

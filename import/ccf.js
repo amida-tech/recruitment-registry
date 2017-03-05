@@ -135,7 +135,7 @@ const surveysPost = function (result, key, lines) {
                 instruction: line.instruction || '',
                 type: line.type,
             };
-            if (activeQuestion.hasOwnProperty('type')) {
+            if (Object.prototype.hasOwnProperty.call(activeQuestion, 'type')) {
                 activeQuestion.type = parseInt(activeQuestion.type, 10);
             }
             pillarQuestion = {
@@ -205,9 +205,9 @@ const answersPost = function (result, key, lines) {
                 indexAnswers[index] = record;
             }
             const answer = { answer_hash: p.answer_hash };
-            if (p.hasOwnProperty('string_value')) {
+            if (Object.prototype.hasOwnProperty.call(p, 'string_value')) {
                 answer.string_value = p.string_value;
-            } else if (p.hasOwnProperty('boolean_value')) {
+            } else if (Object.prototype.hasOwnProperty.call(p, 'boolean_value')) {
                 answer.boolean_value = p.boolean_value;
             }
             record.answers.push(answer);
@@ -274,7 +274,10 @@ const importToDb = function (jsonDB) {
                 }
                 const line = `${id},${questionType},"${text}","${instruction}",${ccType},${key},${choiceId},"${choiceText}",${choiceType},${answerKey},${tag}`;
                 r.push(line);
-                questionType = text = instruction = key = '';
+                questionType = '';
+                text = '';
+                instruction = '';
+                key = '';
             });
             return r;
         }
@@ -378,9 +381,9 @@ const importAnswersToDb = function (jsonDB, userIdMap) {
                         answer.questionChoiceId = answerInfo.questionChoiceId;
                         answer.questionChoiceType = answerInfo.questionChoiceType;
                     }
-                    if (record.hasOwnProperty('string_value')) {
+                    if (Object.prototype.hasOwnProperty.call(record, 'string_value')) {
                         answer.value = record.string_value.toString();
-                    } else if (record.hasOwnProperty('boolean_value')) {
+                    } else if (Object.prototype.hasOwnProperty.call(record, 'boolean_value')) {
                         answer.value = record.boolean_value;
                     }
                     dbAnswer.answers.push(answer);
@@ -398,7 +401,8 @@ const importAnswersToDb = function (jsonDB, userIdMap) {
                     if (assessmentSet[assessment.id]) {
                         let answerIndices = assessment.answerIndices;
                         if (!answerIndices) {
-                            assessment.answerIndices = (answerIndices = []);
+                            answerIndices = [];
+                            assessment.answerIndices = answerIndices;
                         }
                         _.range(overallIndex, endIndex).forEach((answerIndex) => {
                             answerIndices.push(answerIndex);

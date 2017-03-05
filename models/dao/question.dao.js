@@ -7,8 +7,8 @@ const db = require('../db');
 const RRError = require('../../lib/rr-error');
 const SPromise = require('../../lib/promise');
 const Translatable = require('./translatable');
-const exportCSVConverter = require('../../export/csv-converter.js');
-const importCSVConverter = require('../../import/csv-converter.js');
+const ExportCSVConverter = require('../../export/csv-converter.js');
+const ImportCSVConverter = require('../../import/csv-converter.js');
 
 const sequelize = db.sequelize;
 const SurveyQuestion = db.SurveyQuestion;
@@ -328,7 +328,7 @@ module.exports = class QuestionDAO extends Translatable {
                 return r;
             }
             const name = propertyInfo.name;
-            if (meta.hasOwnProperty(name)) {
+            if (Object.prototype.hasOwnProperty.call(meta, name)) {
                 r[name] = meta[name];
             }
             return r;
@@ -367,7 +367,7 @@ module.exports = class QuestionDAO extends Translatable {
                 return r;
             }, []))
             .then((lines) => {
-                const converter = new exportCSVConverter();
+                const converter = new ExportCSVConverter();
                 return converter.dataToCSV(lines);
             });
     }
@@ -386,7 +386,7 @@ module.exports = class QuestionDAO extends Translatable {
     }
 
     import(stream, options = {}) {
-        const converter = new importCSVConverter();
+        const converter = new ImportCSVConverter();
         return converter.streamToRecords(stream)
             .then((records) => {
                 const numRecords = records.length;

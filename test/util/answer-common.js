@@ -93,7 +93,7 @@ const expectedAnswerListForUser = function (userIndex, hxSurvey, hxAnswer) {
             dbAnswers.forEach((dbAnswer) => {
                 const value = Object.assign({ surveyId, questionId: answer.questionId }, dbAnswer);
                 value.questionType = idToType.get(value.questionId);
-                if (value.hasOwnProperty('value')) {
+                if (Object.prototype.hasOwnProperty.call(value, 'value')) {
                     value.value = value.value.toString();
                 }
                 if (value.questionType === 'choices') {

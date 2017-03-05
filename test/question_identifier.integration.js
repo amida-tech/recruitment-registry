@@ -92,7 +92,7 @@ describe('question identifier integration', () => {
             const questionType = question.type;
             if (questionType === 'choice' || questionType === 'choices') {
                 let count = 0;
-                question.choices.map(({ id: questionChoiceId }, choiceIndex) => {
+                question.choices.forEach(({ id: questionChoiceId }, choiceIndex) => {
                     const identifier = allIdentifiers.choices[choiceIndex].answerIdentifier;
                     rrSuperTest.get(`/answer-identifiers/${type}/${identifier}`, true, 200)
                         .expect((res) => {

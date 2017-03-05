@@ -40,7 +40,7 @@ module.exports = class ConsentDocumentDAO extends Translatable {
         if (typeIds && typeIds.length) {
             query.where = { typeId: { $in: typeIds } };
         }
-        if (options.hasOwnProperty('paranoid')) {
+        if (Object.prototype.hasOwnProperty.call(options, 'paranoid')) {
             query.paranoid = options.paranoid;
         }
         return ConsentDocument.findAll(query)
