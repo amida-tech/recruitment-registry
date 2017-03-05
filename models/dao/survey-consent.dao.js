@@ -58,7 +58,7 @@ module.exports = class SurveyConsentDAO {
                 if (surveyConsents.length < 1) {
                     return surveyConsents;
                 }
-                surveyConsents.forEach(surveyConsent => surveyConsent.consentId ? null : delete surveyConsent.consentId);
+                surveyConsents.forEach(surveyConsent => (surveyConsent.consentId ? null : delete surveyConsent.consentId));
                 const consentTypeIds = surveyConsents.map(({ consentTypeId }) => consentTypeId);
                 const typeIdSet = new Set(consentTypeIds);
                 const ids = [...typeIdSet];

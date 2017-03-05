@@ -13,7 +13,7 @@ module.exports = {
         expect(lines, `no lines in ${filepath}`).to.have.length.above(0);
         const header = lines[0];
         const names = header.split(',');
-        const numFields = names.reduce((r, name, index) => name ? index : r, 0) + 1;
+        const numFields = names.reduce((r, name, index) => (name ? index : r), 0) + 1;
         return lines.reduce((r, line) => {
             const fields = line.split(',').slice(0, numFields);
             const hasField = fields.some(field => field);

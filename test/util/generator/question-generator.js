@@ -79,7 +79,7 @@ module.exports = class QuestionGenerator {
     choiceMeta() {
         const question = this.body('choice');
         const choices = this.newChoices();
-        question.choices = choices.map((choice, index) => ({ text: choice, meta: { tag: index * 10 + 10 } }));
+        question.choices = choices.map((choice, index) => ({ text: choice, meta: { tag: (index * 10) + 10 } }));
         return question;
     }
 
@@ -111,7 +111,7 @@ module.exports = class QuestionGenerator {
 
     choicesMeta() {
         const question = this.body('choices');
-        const choices = this.newChoices().map((choice, index) => ({ text: choice, type: 'bool', meta: { tag: index * 10 + 10 } }));
+        const choices = this.newChoices().map((choice, index) => ({ text: choice, type: 'bool', meta: { tag: (index * 10) + 10 } }));
         question.choices = choices;
         return question;
     }

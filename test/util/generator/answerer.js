@@ -47,27 +47,27 @@ module.exports = class Answerer {
 
     date() {
         const answerIndex = this.answerIndex;
-        const month = answerIndex % 8 + 1;
-        const day = answerIndex % 13 + 10;
-        const year = answerIndex % 34 + 1970;
+        const month = (answerIndex % 8) + 1;
+        const day = (answerIndex % 13) + 10;
+        const year = (answerIndex % 34) + 1970;
         return { dateValue: `${year}-0${month}-${day}` };
     }
 
     year() {
         const answerIndex = this.answerIndex;
-        const year = answerIndex % 34 + 1980;
+        const year = (answerIndex % 34) + 1980;
         return { yearValue: `${year}` };
     }
 
     month() {
         const answerIndex = this.answerIndex;
-        const month = answerIndex % 8 + 1;
+        const month = (answerIndex % 8) + 1;
         return { monthValue: `0${month}` };
     }
 
     day() {
         const answerIndex = this.answerIndex;
-        const day = answerIndex % 13 + 10;
+        const day = (answerIndex % 13) + 10;
         return { dayValue: `${day}` };
     }
 
@@ -84,7 +84,7 @@ module.exports = class Answerer {
 
     bool() {
         const answerIndex = this.answerIndex;
-        return { boolValue: answerIndex % 2 === 0 };
+        return { boolValue: (answerIndex % 2) === 0 };
     }
 
     selectChoice(choices) {
@@ -123,7 +123,7 @@ module.exports = class Answerer {
         const type = _.camelCase(question.type);
         if (question.multiple) {
             this.multiCount += 1;
-            const answers = _.range(this.multiCount % 4 + 1).map((multipleIndex) => {
+            const answers = _.range((this.multiCount % 4) + 1).map((multipleIndex) => {
                 this.answerIndex += 1;
                 return Object.assign({ multipleIndex }, this[type](question));
             });

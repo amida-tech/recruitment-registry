@@ -13,8 +13,8 @@ const security = require('./security');
 const logger = require('./logger');
 const jsutil = require('./lib/jsutil');
 
-const errHandler = function (err, req, res, next) {
-    next = next; // rid of unused error
+/* jshint unused:false*/
+const errHandler = function (err, req, res, next) { // eslint-disable-line no-unused-vars
     logger.error(err);
     err = jsutil.errToJSON(err);
     if ((!res.statusCode) || (res.statusCode < 300)) {

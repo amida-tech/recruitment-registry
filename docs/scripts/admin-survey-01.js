@@ -150,14 +150,13 @@ module.exports = function (locals) {
         }],
     };
 
-    let surveyId = null;
     return locals.agent
         .post('http://localhost:9005/api/v1.0/surveys')
         .send(survey)
         .then((res) => {
             console.log(res.status); // 201
             console.log(res.body.id); // id of the new survey
-            surveyId = res.body.id;
+            locals.surveyId = res.body.id;
         })
         .then(() => {
             console.log(`------ end ${module.filename}`);

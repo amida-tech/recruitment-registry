@@ -317,7 +317,7 @@ describe('survey unit', () => {
                         order: 'version',
                         groupId,
                     })
-                        .then(actual => actual.map(({ id, version, groupId }) => ({ version, groupId })))
+                        .then(actual => actual.map(({ version, groupId }) => ({ version, groupId })))
                         .then((actual) => {
                             const expected = _.range(1, count + 1).map(version => ({ version, groupId }));
                             expect(actual).to.deep.equal(expected);

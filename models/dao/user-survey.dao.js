@@ -15,7 +15,7 @@ module.exports = class UserSurveyDAO {
             raw: true,
             attributes: ['status'],
         })
-            .then(userSurvey => userSurvey ? userSurvey.status : 'new');
+            .then(userSurvey => (userSurvey ? userSurvey.status : 'new'));
     }
 
     createUserSurveyAnswers(userId, surveyId, input) {

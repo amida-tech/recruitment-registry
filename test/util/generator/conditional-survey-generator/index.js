@@ -180,7 +180,7 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
         return choiceSets;
     }
 
-    answersWithConditions(survey, { questionIndex, rulePath, ruleAnswerState, selectionChoice, multipleIndices, noAnswers = [], specialAnswers = [] }) {
+    answersWithConditions(survey, { questionIndex, multipleIndices, noAnswers = [], specialAnswers = [] }) {
         const questions = models.survey.getQuestions(survey);
         const doNotAnswer = new Set(noAnswers);
         const doAnswer = new Map(specialAnswers.map(r => [r.questionIndex, r]));

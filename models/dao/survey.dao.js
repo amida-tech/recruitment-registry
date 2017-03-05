@@ -492,7 +492,7 @@ module.exports = class SurveyDAO extends Translatable {
                 .then(() => ProfileSurvey.destroy({ where: { surveyId: id }, transaction })));
     }
 
-    listSurveys({ scope, status, language, history, where, order, groupId, version } = {}) {
+    listSurveys({ scope, status, language, history, order, groupId, version } = {}) {
         if (!status) {
             status = 'published';
         }

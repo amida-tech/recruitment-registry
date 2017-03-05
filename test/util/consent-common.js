@@ -58,8 +58,8 @@ class ConsentCommon {
     }
 
     getSurveyConsentDocuments(documentInfo) {
-        const documentIndices = documentInfo.map(info => Array.isArray(info) ? info[1] : info);
-        const consentIndices = documentInfo.map(info => Array.isArray(info) ? info[0] : null);
+        const documentIndices = documentInfo.map(info => (Array.isArray(info) ? info[1] : info));
+        const consentIndices = documentInfo.map(info => (Array.isArray(info) ? info[0] : null));
         const result = this.history.serversInList(documentIndices);
         _.range(result.length).forEach((index) => {
             const consentIndex = consentIndices[index];
