@@ -1,5 +1,7 @@
 /* global describe,it*/
+
 'use strict';
+
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
@@ -9,19 +11,19 @@ const expect = chai.expect;
 
 const js = require('../lib/json-schema');
 
-describe('json schema validations', function () {
+describe('json schema validations', () => {
     const objectTypes = [
-        'newSurvey', 'newQuestion', 'answer'
+        'newSurvey', 'newQuestion', 'answer',
     ];
 
     let lastErr = {};
     let lastStatusCode;
     const res = {
         status(statusCode) { lastStatusCode = statusCode; return this; },
-        json(err) { lastErr = err; }
+        json(err) { lastErr = err; },
     };
 
-    it('invalid object key', function () {
+    it('invalid object key', () => {
         const r = js('newSurveyXXX', { a: 1 }, res);
         expect(r).to.equal(false, 'invalid key no error');
         expect(lastErr).to.have.property('message');
@@ -34,7 +36,7 @@ describe('json schema validations', function () {
 
             const valids = require(`./fixtures/valids/${kebabObjectType}`);
 
-            valids.forEach(valid => {
+            valids.forEach((valid) => {
                 const r = js(objectType, valid, res);
                 if (!r) {
                     console.log(valid);
@@ -44,7 +46,7 @@ describe('json schema validations', function () {
 
             const invalids = require(`./fixtures/json-schema-invalid/${kebabObjectType}`);
 
-            invalids.forEach(invalid => {
+            invalids.forEach((invalid) => {
                 const r = js(objectType, invalid, res);
                 expect(r).to.equal(false, JSON.stringify(invalid, undefined, 4));
                 expect(lastErr).to.have.property('message');

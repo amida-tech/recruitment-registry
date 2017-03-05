@@ -1,5 +1,7 @@
 /* global describe,before,after,it*/
+
 'use strict';
+
 process.env.NODE_ENV = 'test';
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
@@ -19,7 +21,7 @@ const expect = chai.expect;
 const generator = new Generator();
 const shared = new SharedIntegration(generator);
 
-describe('reset-token integration', function () {
+describe('reset-token integration', () => {
     const userExample = generator.newUser();
     const surveyExample = generator.newSurvey();
 
@@ -31,7 +33,7 @@ describe('reset-token integration', function () {
         auth: null,
         from: null,
         to: null,
-        content: ''
+        content: '',
     };
 
     class SMTPStream extends stream.Writable {
@@ -49,16 +51,15 @@ describe('reset-token integration', function () {
         onAuth(auth, session, callback) {
             receivedEmail.auth = auth;
             callback(null, {
-                user: 1
+                user: 1,
             });
         },
         onMailFrom(address, session, callback) {
             receivedEmail.from = address.address;
             if (address.address.indexOf('smtp') >= 0) {
                 return callback(null);
-            } else {
-                return callback(new Error('invalid'));
             }
+            return callback(new Error('invalid'));
         },
         onRcptTo(address, session, callback) {
             receivedEmail.to = address.address;
@@ -67,12 +68,12 @@ describe('reset-token integration', function () {
         onData(stream, session, callback) {
             stream.pipe(smtpStream);
             stream.on('end', callback);
-        }
+        },
     });
 
     before(shared.setUpFn(store));
 
-    it('start smtp server', function () {
+    it('start smtp server', () => {
         server.listen(9001);
     });
 
@@ -88,9 +89,9 @@ describe('reset-token integration', function () {
 
     let survey;
 
-    it('get profile survey', function (done) {
+    it('get profile survey', (done) => {
         store.get('/profile-survey', false, 200)
-            .expect(function (res) {
+            .expect((res) => {
                 survey = res.body.survey;
             })
             .end(done);
@@ -100,7 +101,7 @@ describe('reset-token integration', function () {
 
     let answers;
 
-    it('fill user profile and submit', function (done) {
+    it('fill user profile and submit', (done) => {
         answers = generator.answerQuestions(survey.questions);
         const user = userExample;
         store.post('/profiles', { user, answers }, 201).end(done);
@@ -112,10 +113,10 @@ describe('reset-token integration', function () {
 
     let token = null;
 
-    it('error: no smtp settings is specified', function (done) {
+    it('error: no smtp settings is specified', (done) => {
         const email = userExample.email;
         store.post('/reset-tokens', { email }, 400)
-            .expect(function (res) {
+            .expect((res) => {
                 expect(res.body.message).to.equal(RRError.message('smtpNotSpecified'));
             })
             .end(done);
@@ -129,19 +130,19 @@ describe('reset-token integration', function () {
         password: 'pw',
         host: 'localhost',
         from: 'admin@rr.com',
-        otherOptions: {}
+        otherOptions: {},
     };
 
-    it('setup server specifications', function (done) {
+    it('setup server specifications', (done) => {
         store.post('/smtp', smtpSpec, 204).end(done);
     });
 
     it('logout as super', shared.logoutFn(store));
 
-    it('error: no email subject/content is specified', function (done) {
+    it('error: no email subject/content is specified', (done) => {
         const email = userExample.email;
         store.post('/reset-tokens', { email }, 400)
-            .expect(function (res) {
+            .expect((res) => {
                 expect(res.body.message).to.not.equal(RRError.message('unknown'));
                 expect(res.body.message).to.equal(RRError.message('smtpTextNotSpecified'));
             })
@@ -155,34 +156,34 @@ describe('reset-token integration', function () {
         content: 'Click on this: ${link}',
     };
 
-    it('setup server specifications', function (done) {
+    it('setup server specifications', (done) => {
         store.patch('/smtp/text/en', smtpText, 204).end(done);
     });
 
     it('logout as super', shared.logoutFn(store));
 
-    it('error: generate reset tokens', function (done) {
+    it('error: generate reset tokens', (done) => {
         const email = userExample.email;
         store.post('/reset-tokens', { email }, 500).end(done);
     });
 
     it('login as super', shared.loginFn(store, config.superUser));
 
-    it('setup server specifications', function (done) {
+    it('setup server specifications', (done) => {
         smtpSpec.from = 'smtp@rr.com';
         store.post('/smtp', smtpSpec, 204).end(done);
     });
 
     it('logout as super', shared.logoutFn(store));
 
-    it('generate reset tokens', function (done) {
+    it('generate reset tokens', (done) => {
         const email = userExample.email;
         store.post('/reset-tokens', { email }, 204).end(done);
     });
 
     it('verify user can not login', shared.badLoginFn(store, userExample));
 
-    it('checked received email and recover token', function () {
+    it('checked received email and recover token', () => {
         expect(receivedEmail.auth.username).to.equal(smtpSpec.username);
         expect(receivedEmail.auth.password).to.equal(smtpSpec.password);
         expect(receivedEmail.from).to.equal(smtpSpec.from);
@@ -207,7 +208,7 @@ describe('reset-token integration', function () {
         expect(token).to.not.equal(null);
     });
 
-    it('reset password', function (done) {
+    it('reset password', (done) => {
         const password = 'newPassword';
         store.post('/users/password', { token, password }, 204).end(done);
     });
@@ -216,10 +217,10 @@ describe('reset-token integration', function () {
 
     it('verify user can login', shared.loginFn(store, {
         username: userExample.username,
-        password: 'newPassword'
+        password: 'newPassword',
     }));
 
-    after(function (done) {
+    after((done) => {
         server.close(done);
     });
 });

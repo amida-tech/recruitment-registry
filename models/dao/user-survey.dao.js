@@ -11,10 +11,10 @@ module.exports = class UserSurveyDAO {
 
     getUserSurveyStatus(userId, surveyId) {
         return UserSurvey.findOne({
-                where: { userId, surveyId },
-                raw: true,
-                attributes: ['status']
-            })
+            where: { userId, surveyId },
+            raw: true,
+            attributes: ['status'],
+        })
             .then(userSurvey => userSurvey ? userSurvey.status : 'new');
     }
 
@@ -40,33 +40,30 @@ module.exports = class UserSurveyDAO {
 
     getUserSurvey(userId, surveyId, options) {
         return this.getUserSurveyStatus(userId, surveyId)
-            .then(status => {
-                return this.survey.getAnsweredSurvey(userId, surveyId, options)
-                    .then(survey => ({ status, survey }));
-            });
+            .then(status => this.survey.getAnsweredSurvey(userId, surveyId, options)
+                    .then(survey => ({ status, survey })));
     }
 
     listUserSurveys(userId, options) {
         return this.survey.listSurveys(options)
-            .then(surveys => {
+            .then((surveys) => {
                 if (surveys.length) {
                     const ids = surveys.map(survey => survey.id);
                     return UserSurvey.findAll({
-                            where: { userId, surveyId: { $in: ids } },
-                            raw: true,
-                            attributes: ['surveyId', 'status']
-                        })
-                        .then(userSurveys => {
+                        where: { userId, surveyId: { $in: ids } },
+                        raw: true,
+                        attributes: ['surveyId', 'status'],
+                    })
+                        .then((userSurveys) => {
                             const mapInput = userSurveys.map(userSurvey => [userSurvey.surveyId, userSurvey.status]);
                             const map = new Map(mapInput);
-                            surveys.forEach(survey => {
+                            surveys.forEach((survey) => {
                                 survey.status = map.get(survey.id) || 'new';
                             });
                             return surveys;
                         });
-                } else {
-                    return surveys;
                 }
+                return surveys;
             });
     }
 };

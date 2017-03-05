@@ -10,7 +10,7 @@ const survey = {
     questions: [{
         text: 'Zip Code',
         required: false,
-        type: 'text'
+        type: 'text',
     }, {
         text: 'Date of Birth',
         required: true,
@@ -19,7 +19,7 @@ const survey = {
         text: 'Sex',
         required: true,
         type: 'choice',
-        oneOfChoices: ['Male', 'Female', 'Other']
+        oneOfChoices: ['Male', 'Female', 'Other'],
     }, {
         text: 'Ethnicity',
         required: true,
@@ -30,8 +30,8 @@ const survey = {
             'Black / African',
             'Hispanic / Latino',
             'White / Caucasian',
-            'Other'
-        ]
+            'Other',
+        ],
     }, {
         text: 'Do you have a family history of memory disorders/Alzheimer\'s Disease/dementia?',
         required: true,
@@ -39,20 +39,20 @@ const survey = {
         oneOfChoices: [
             'Yes',
             'No',
-            'I\'m not sure'
-        ]
+            'I\'m not sure',
+        ],
     }, {
         text: 'Are you interested in volunteering in clinical research?',
         required: false,
-        type: 'bool'
+        type: 'bool',
     }, {
         text: 'Are you interested in receiving info on:',
         required: true,
         type: 'choices',
         choices: [
             { text: 'Brain Health' },
-            { text: 'Clinical Trials' }
-        ]
+            { text: 'Clinical Trials' },
+        ],
     }, {
         text: 'How did you hear about us?',
         required: false,
@@ -66,20 +66,16 @@ const survey = {
             { text: 'Caregiver' },
             { text: 'Friend/Family member' },
             { text: 'Community Event' },
-            { text: 'Please specify', type: 'text' }
-        ]
-    }]
+            { text: 'Please specify', type: 'text' },
+        ],
+    }],
 };
 
 models.sequelize.sync({
-    force: true
-}).then(function () {
-    return models.survey.createSurvey(survey);
-}).then(function () {
-    return consentSeed(consentExample);
-}).then(function () {
+    force: true,
+}).then(() => models.survey.createSurvey(survey)).then(() => consentSeed(consentExample)).then(() => {
     console.log('success');
-}).catch(function (err) {
+}).catch((err) => {
     console.log('failure');
     console.log(err);
 });

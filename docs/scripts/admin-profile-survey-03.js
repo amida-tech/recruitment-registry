@@ -5,7 +5,7 @@ module.exports = function (locals) {
 
     return locals.agent
         .delete('http://localhost:9005/api/v1.0/profile-survey-id')
-        .then(res => {
+        .then((res) => {
             console.log(res.status); // 204
         })
         .then(() => {

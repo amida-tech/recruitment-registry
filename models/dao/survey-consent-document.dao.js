@@ -15,14 +15,14 @@ module.exports = class SurveyConsentDocumentDAO {
         const query = {
             where: { surveyId, action },
             raw: true,
-            attributes: ['consentId', 'consentTypeId']
+            attributes: ['consentId', 'consentTypeId'],
         };
         if (tx) {
             query.transaction = tx;
         }
         return SurveyConsent.findAll(query)
             .then(surveyConsents => this.surveyConsent.updateConsentsInSurveyConsents(surveyConsents))
-            .then(surveyConsents => {
+            .then((surveyConsents) => {
                 if (surveyConsents.length < 1) {
                     return surveyConsents;
                 }
@@ -32,9 +32,9 @@ module.exports = class SurveyConsentDocumentDAO {
                     options.transaction = tx;
                 }
                 return this.userConsentDocument.listUserConsentDocuments(userId, options)
-                    .then(docs => {
+                    .then((docs) => {
                         const typeIdMap = _.keyBy(surveyConsents, 'consentTypeId');
-                        docs.forEach(doc => {
+                        docs.forEach((doc) => {
                             const surveyConsent = typeIdMap[doc.typeId];
                             if (surveyConsent.consentId) {
                                 doc.consentId = surveyConsent.consentId;

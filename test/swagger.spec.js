@@ -1,5 +1,7 @@
 /* global describe,it*/
+
 'use strict';
+
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
@@ -11,14 +13,14 @@ const swaggerJson = require('../swagger.json');
 const expect = chai.expect;
 const spec = st.specs.v2;
 
-describe('swagger validations', function () {
+describe('swagger validations', () => {
     const objectTypes = [
-        'newSurvey', 'newQuestion', 'language'
+        'newSurvey', 'newQuestion', 'language',
     ];
 
     const testValidFn = function (objectType, data) {
         return function (done) {
-            spec.validateModel(swaggerJson, `#/definitions/${objectType}`, data, function (err, result) {
+            spec.validateModel(swaggerJson, `#/definitions/${objectType}`, data, (err, result) => {
                 if (err) {
                     return done(err);
                 }
@@ -28,7 +30,7 @@ describe('swagger validations', function () {
         };
     };
 
-    //const testInvalidFn = function (objectType, data) {
+    // const testInvalidFn = function (objectType, data) {
     //    return function (done) {
     //        spec.validateModel(swaggerJson, `#/definitions/${objectType}`, data, function (err, result) {
     //            if (err) {
@@ -38,7 +40,7 @@ describe('swagger validations', function () {
     //            done();
     //        });
     //    };
-    //};
+    // };
 
     for (let i = 0; i < objectTypes.length; ++i) {
         const kebabObjectType = _.kebabCase(objectTypes[i]);
@@ -48,9 +50,9 @@ describe('swagger validations', function () {
             it(`valid ${objectTypes[i]} case ${j}`, testValidFn(objectTypes[i], valids[j]));
         }
 
-        //const invalids = require(`./fixtures/swagger-invalid/${kebabObjectType}`);
-        //for (let j = 0; j < invalids.length; ++j) {
+        // const invalids = require(`./fixtures/swagger-invalid/${kebabObjectType}`);
+        // for (let j = 0; j < invalids.length; ++j) {
         //    it(`invalid ${objectTypes[i]} case ${j}`, testInvalidFn(objectTypes[i], invalids[j]));
-        //}
+        // }
     }
 });

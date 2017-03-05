@@ -6,17 +6,17 @@ module.exports = function (locals) {
 
     const answers = [{
         questionId: 2,
-        answer: { boolValue: true }
+        answer: { boolValue: true },
     }, {
         questionId: 5,
-        answer: { choice: 6 }
+        answer: { choice: 6 },
     }];
 
     return locals.agent
         .post('http://localhost:9005/api/v1.0/user-surveys/1/answers')
-        .set('Authorization', 'Bearer ' + jwtUser2)
+        .set('Authorization', `Bearer ${jwtUser2}`)
         .send({ status: 'in-progress', answers })
-        .then(res => {
+        .then((res) => {
             console.log(res.status); // 204
         })
         .then(() => {

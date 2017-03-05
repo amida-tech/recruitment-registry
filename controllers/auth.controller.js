@@ -17,11 +17,11 @@ passport.use(new passportHttp.BasicStrategy(basicStrategy));
 
 const authenticate = passport.authenticate('basic', {
     session: false,
-    failWithError: true
+    failWithError: true,
 });
 
 exports.authenticateBasic = function (req, res) {
-    authenticate(req, res, function (err) {
+    authenticate(req, res, (err) => {
         if (err) {
             err = jsutil.errToJSON(err);
             return res.status(401).json(err);

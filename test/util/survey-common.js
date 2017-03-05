@@ -10,14 +10,14 @@ const expect = chai.expect;
 
 const formAnswersToPost = function (survey, answersSpec) {
     const questions = survey.questions;
-    const result = answersSpec.reduce(function (r, spec, index) {
+    const result = answersSpec.reduce((r, spec, index) => {
         if (spec !== null) {
             const entry = {
                 questionId: questions[index].id,
-                answer: {}
+                answer: {},
             };
             if (spec.choices) {
-                entry.answer.choices = spec.choices.map(function (cindex) {
+                entry.answer.choices = spec.choices.map((cindex) => {
                     const { id } = questions[index].choices[cindex.index];
                     const result = { id };
                     const numValues = ['textValue', 'code', 'monthValue', 'yearValue', 'dayValue', 'integerValue', 'boolValue'].reduce((r, p) => {
@@ -51,7 +51,7 @@ const formAnswersToPost = function (survey, answersSpec) {
 
 const formAnsweredSurvey = function (survey, answers) {
     const result = _.cloneDeep(survey);
-    result.questions.forEach(function (question, index) {
+    result.questions.forEach((question, index) => {
         question.answer = answers[index].answer;
         question.language = answers.language || 'en';
     });
@@ -59,13 +59,13 @@ const formAnsweredSurvey = function (survey, answers) {
 };
 
 const updateIds = function (surveys, idMap, questionIdMap) {
-    return surveys.map(survey => {
+    return surveys.map((survey) => {
         const surveyId = idMap[survey.id];
         if (!surveyId) {
             throw new Error(`updateIds: id for '${survey.name}' does not exist in the map`);
         }
         survey.id = surveyId;
-        survey.questions.forEach(question => {
+        survey.questions.forEach((question) => {
             const questionIdObj = questionIdMap[question.id];
             if (!questionIdObj) {
                 throw new Error(`updateIds: choice id does not exist for for '${survey.name}' in '${question.id}'`);
@@ -80,7 +80,7 @@ let removeSurveySectionIds;
 
 const removeSectionIds = function removeSectionIds(sections) {
     if (sections) {
-        sections.forEach(section => {
+        sections.forEach((section) => {
             delete section.id;
             removeSectionIds(section.sections);
             removeQuestionSectionIds(section.questions);
@@ -92,7 +92,7 @@ removeQuestionSectionIds = function (questions) {
     if (questions) {
         questions.forEach(({ sections }) => {
             if (sections) {
-                sections.forEach(section => {
+                sections.forEach((section) => {
                     delete section.id;
                     removeSurveySectionIds(section);
                 });
@@ -148,7 +148,7 @@ const SpecTests = class SurveySpecTests {
         return function () {
             const surveyId = hxSurvey.id(index);
             return models.survey.getSurvey(surveyId)
-                .then(survey => {
+                .then((survey) => {
                     comparator.survey(hxSurvey.client(index), survey);
                     hxSurvey.updateServer(index, survey);
                 });
@@ -168,7 +168,7 @@ const SpecTests = class SurveySpecTests {
         const hxSurvey = this.hxSurvey;
         return function () {
             return models.survey.listSurveys(options)
-                .then(surveys => {
+                .then((surveys) => {
                     if (count >= 0) {
                         expect(surveys).to.have.length(count);
                     }
@@ -193,7 +193,7 @@ const IntegrationTests = class SurveyIntegrationTests {
         return function (done) {
             const survey = generator.newSurvey(options);
             rrSuperTest.post('/surveys', survey, 201)
-                .expect(function (res) {
+                .expect((res) => {
                     hxSurvey.push(survey, res.body);
                 })
                 .end(done);
@@ -209,7 +209,7 @@ const IntegrationTests = class SurveyIntegrationTests {
             }
             const id = hxSurvey.id(index);
             rrSuperTest.get(`/surveys/${id}`, true, 200)
-                .expect(function (res) {
+                .expect((res) => {
                     hxSurvey.reloadServer(res.body);
                     const expected = hxSurvey.client(index);
                     comparator.survey(expected, res.body);
@@ -224,7 +224,7 @@ const IntegrationTests = class SurveyIntegrationTests {
         return function (done) {
             const id = hxSurvey.id(index);
             rrSuperTest.delete(`/surveys/${id}`, 204)
-                .expect(function () {
+                .expect(() => {
                     hxSurvey.remove(index);
                 })
                 .end(done);
@@ -236,7 +236,7 @@ const IntegrationTests = class SurveyIntegrationTests {
         const hxSurvey = this.hxSurvey;
         return function (done) {
             rrSuperTest.get('/surveys', true, 200, options)
-                .expect(function (res) {
+                .expect((res) => {
                     if (count >= 0) {
                         expect(res.body).to.have.length(count);
                     }
@@ -256,5 +256,5 @@ module.exports = {
     removeSurveySectionIds,
     formQuestionsSectionsSurveyPatch,
     SpecTests,
-    IntegrationTests
+    IntegrationTests,
 };

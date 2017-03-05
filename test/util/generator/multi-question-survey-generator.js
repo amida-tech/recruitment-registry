@@ -3,7 +3,7 @@
 const SurveyGenerator = require('./survey-generator');
 
 const patterns = [
-    'MSSS', 'SMSMS', 'MSSSMMM', 'SSSM', 'MMSSS', 'MSMSM', 'SMMSSS'
+    'MSSS', 'SMSMS', 'MSSSMMM', 'SSSM', 'MMSSS', 'MSMSM', 'SMMSSS',
 ];
 
 module.exports = class MultiQuestionSurveyGenerator extends SurveyGenerator {

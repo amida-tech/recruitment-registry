@@ -5,14 +5,14 @@ module.exports = function (locals) {
 
     const boolQx = {
         type: 'bool',
-        text: 'Do you own a pet?'
+        text: 'Do you own a pet?',
     };
 
     let boolQxId = null;
     return locals.agent
         .post('http://localhost:9005/api/v1.0/questions')
         .send(boolQx)
-        .then(res => {
+        .then((res) => {
             console.log(res.status); // 201
             console.log(res.body.id); // Expected to be internal id of question
             boolQxId = res.body.id;

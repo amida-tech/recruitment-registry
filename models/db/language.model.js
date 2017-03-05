@@ -6,39 +6,39 @@ module.exports = function (sequelize, DataTypes) {
     const languages = [{
         name: 'English',
         nativeName: 'English',
-        code: 'en'
+        code: 'en',
     }, {
         name: 'Russian',
         nativeName: 'Русский',
-        code: 'ru'
+        code: 'ru',
     }, {
         name: 'Japanese',
         nativeName: '日本語',
-        code: 'jp'
+        code: 'jp',
     }, {
         name: 'Spanish',
         nativeName: 'Español',
-        code: 'es'
+        code: 'es',
     }, {
         name: 'French',
         nativeName: 'Le français',
-        code: 'fr'
+        code: 'fr',
     }];
 
     return sequelize.define('language', {
         code: {
             type: DataTypes.TEXT,
             allowNull: false,
-            primaryKey: true
+            primaryKey: true,
         },
         name: {
             type: DataTypes.TEXT,
-            allowNull: false
+            allowNull: false,
         },
         nativeName: {
             type: DataTypes.TEXT,
             allowNull: false,
-            field: 'native_name'
+            field: 'native_name',
         },
         createdAt: {
             type: DataTypes.DATE,
@@ -50,8 +50,8 @@ module.exports = function (sequelize, DataTypes) {
         },
         deletedAt: {
             type: DataTypes.DATE,
-            field: 'deleted_at'
-        }
+            field: 'deleted_at',
+        },
     }, {
         freezeTableName: true,
         schema: sequelize.options.schema,
@@ -65,7 +65,7 @@ module.exports = function (sequelize, DataTypes) {
                     const pxs = languages.map(lang => this.create(lang));
                     return SPromise.all(pxs);
                 }
-            }
-        }
+            },
+        },
     });
 };

@@ -5,13 +5,13 @@ module.exports = function (locals) {
 
     const languageUpdate = {
         name: 'Castilian Spanish',
-        nativeName: 'Castillan'
+        nativeName: 'Castillan',
     };
 
     return locals.agent
         .patch('http://localhost:9005/api/v1.0/languages/es')
         .send(languageUpdate)
-        .then(res => {
+        .then((res) => {
             console.log(res.status); // 204
         })
         .then(() => {

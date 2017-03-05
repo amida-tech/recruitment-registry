@@ -4,13 +4,13 @@ const path = require('path');
 
 module.exports = {
     jwt: {
-        secret: 'this is a secret'
+        secret: 'this is a secret',
     },
     cors: {
-        origin: '*'
+        origin: '*',
     },
     db: {
         name: 'recregtest',
     },
-    tmpDirectory: path.join(__dirname, '../test/generated')
+    tmpDirectory: path.join(__dirname, '../test/generated'),
 };

@@ -10,15 +10,15 @@ module.exports = function (locals) {
             'Black',
             'Brown',
             'Blonde',
-            'Other'
-        ]
+            'Other',
+        ],
     };
 
     let choiceQxId = null;
     return locals.agent
         .post('http://localhost:9005/api/v1.0/questions')
         .send(choiceQx)
-        .then(res => {
+        .then((res) => {
             console.log(res.status); // 201
             console.log(res.body.id); // id of the new question
             choiceQxId = res.body.id;

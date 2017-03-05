@@ -9,10 +9,10 @@ module.exports = function (sequelize, DataTypes) {
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'consent'
+                    tableName: 'consent',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         typeId: {
             type: DataTypes.INTEGER,
@@ -21,13 +21,13 @@ module.exports = function (sequelize, DataTypes) {
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'consent_type'
+                    tableName: 'consent_type',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         line: {
-            type: DataTypes.INTEGER
+            type: DataTypes.INTEGER,
         },
         createdAt: {
             type: DataTypes.DATE,
@@ -43,6 +43,6 @@ module.exports = function (sequelize, DataTypes) {
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',
-        paranoid: true
+        paranoid: true,
     });
 };

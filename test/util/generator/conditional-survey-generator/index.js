@@ -53,7 +53,7 @@ const specialQuestionGenerator = {
     },
     questionSection(surveyGenerator, questionInfo) {
         return surveyGenerator.questionGenerator.newQuestion(questionInfo.type);
-    }
+    },
 };
 
 const specialAnswerer = {
@@ -101,7 +101,7 @@ const specialAnswerer = {
     },
     selectchoice(generator, questions, question, answerInfo) {
         return generator.answerer.answerChoiceQuestion(question, answerInfo.selectionChoice);
-    }
+    },
 };
 
 const surveyManipulator = {
@@ -119,9 +119,9 @@ const surveyManipulator = {
         generator.addAnswer(rule, questionInfo, question);
         question.sections = [{
             questions: deletedQuestions,
-            enableWhen: [rule]
+            enableWhen: [rule],
         }];
-    }
+    },
 };
 
 module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
@@ -217,7 +217,7 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
             return surveyQuestionInfos.survey;
         }
         const survey = super.newSurvey({ noSection: true });
-        _.forOwn(surveyQuestionInfos, questionInfo => {
+        _.forOwn(surveyQuestionInfos, (questionInfo) => {
             const purpose = questionInfo.purpose;
             const manipulator = surveyManipulator[purpose];
             if (manipulator) {

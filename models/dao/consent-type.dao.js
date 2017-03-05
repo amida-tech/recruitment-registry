@@ -19,7 +19,7 @@ module.exports = class ConsentTypeDAO extends Translatable {
     getConsentType(id, options = {}) {
         const _options = {
             raw: true,
-            attributes: ['id', 'name', 'type']
+            attributes: ['id', 'name', 'type'],
         };
         return ConsentType.findById(id, _options)
             .then(consentType => this.updateText(consentType, options.language));
@@ -33,7 +33,7 @@ module.exports = class ConsentTypeDAO extends Translatable {
         const query = {
             raw: true,
             attributes: ['id', 'name', 'type'],
-            order: 'id'
+            order: 'id',
         };
         if (options.ids) {
             query.where = { id: { $in: options.ids } };
@@ -53,15 +53,12 @@ module.exports = class ConsentTypeDAO extends Translatable {
 
     deleteConsentType(id) {
         return ConsentSection.count({ where: { typeId: id } })
-            .then(count => {
+            .then((count) => {
                 if (count) {
                     return RRError.reject('consentTypeDeleteOnConsent');
-                } else {
-                    return sequelize.transaction(transaction => {
-                        return ConsentType.destroy({ where: { id }, transaction })
-                            .then(() => ConsentDocument.destroy({ where: { typeId: id }, transaction }));
-                    });
                 }
+                return sequelize.transaction(transaction => ConsentType.destroy({ where: { id }, transaction })
+                            .then(() => ConsentDocument.destroy({ where: { typeId: id }, transaction })));
             });
     }
 };

@@ -6,11 +6,11 @@ const singleQuestionTypes = [
     'text', 'choice', 'bool',
     'integer', 'zip', 'pounds',
     'date', 'year', 'month', 'day',
-    'feet-inches', 'blood-pressure'
+    'feet-inches', 'blood-pressure',
 ];
 
 const virtualQuestionTypes = [
-    'dateChoices', 'integerChoices', 'choicesMeta', 'choiceMeta'
+    'dateChoices', 'integerChoices', 'choicesMeta', 'choiceMeta',
 ];
 
 const questionTypes = ['choices', ...singleQuestionTypes, ...virtualQuestionTypes];
@@ -47,7 +47,7 @@ module.exports = class QuestionGenerator {
         if (metaIndex > 0) {
             result.meta = {
                 someBool: metaIndex === 1,
-                someOtherBool: metaIndex === 2
+                someOtherBool: metaIndex === 2,
             };
         }
         return result;
@@ -66,12 +66,10 @@ module.exports = class QuestionGenerator {
         const choices = this.newChoices();
         if ((typeChoiceIndex % 3) === 0) {
             question.oneOfChoices = choices;
+        } else if ((typeChoiceIndex % 3) === 1) {
+            question.choices = choices.map(choice => ({ text: choice, code: `code_${choice}` }));
         } else {
-            if ((typeChoiceIndex % 3) === 1) {
-                question.choices = choices.map(choice => ({ text: choice, code: `code_${choice}` }));
-            } else {
-                question.choices = choices.map(choice => ({ text: choice }));
-            }
+            question.choices = choices.map(choice => ({ text: choice }));
         }
         return question;
     }
@@ -93,7 +91,7 @@ module.exports = class QuestionGenerator {
             this.choicesCode = true;
             choices = this.newChoices().map(choice => ({ text: choice }));
         }
-        choices.forEach(choice => {
+        choices.forEach((choice) => {
             const choiceType = ++this.typeChoicesIndex % 4;
             switch (choiceType) {
             case 2:
@@ -119,13 +117,13 @@ module.exports = class QuestionGenerator {
         const question = this.body('choices');
         question.choices = [{
             text: 'year text',
-            type: 'year'
+            type: 'year',
         }, {
             text: 'month text',
-            type: 'month'
+            type: 'month',
         }, {
             text: 'day text',
-            type: 'day'
+            type: 'day',
         }];
         return question;
     }
@@ -134,10 +132,10 @@ module.exports = class QuestionGenerator {
         const question = this.body('choices');
         question.choices = [{
             text: 'feet',
-            type: 'integer'
+            type: 'integer',
         }, {
             text: 'inches',
-            type: 'integer'
+            type: 'integer',
         }];
         return question;
     }
@@ -146,43 +144,43 @@ module.exports = class QuestionGenerator {
         const question = this.body('choices');
         question.choices = [{
             text: 'feet',
-            type: 'integer'
+            type: 'integer',
         }, {
             text: 'inches',
-            type: 'integer'
+            type: 'integer',
         }, {
             text: 'year text',
-            type: 'year'
+            type: 'year',
         }, {
             text: 'month text',
-            type: 'month'
+            type: 'month',
         }, {
             text: 'day text',
-            type: 'day'
+            type: 'day',
         }, {
             text: 'text text',
-            type: 'text'
+            type: 'text',
         }, {
             text: 'bool text',
-            type: 'bool'
+            type: 'bool',
         }, {
             text: 'zip text',
-            type: 'zip'
+            type: 'zip',
         }, {
             text: 'date text',
-            type: 'date'
+            type: 'date',
         }, {
             text: 'pounds text',
-            type: 'pounds'
+            type: 'pounds',
         }, {
             text: 'zip text',
-            type: 'zip'
+            type: 'zip',
         }, {
             text: 'feet-inches text',
-            type: 'feet-inches'
+            type: 'feet-inches',
         }, {
             text: 'blood-pressure text',
-            type: 'blood-pressure'
+            type: 'blood-pressure',
         }];
         return question;
     }

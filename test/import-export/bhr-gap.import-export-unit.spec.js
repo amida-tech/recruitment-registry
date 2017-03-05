@@ -1,5 +1,7 @@
 /* global before,describe,it,it*/
+
 'use strict';
+
 process.env.NODE_ENV = 'test';
 
 const path = require('path');
@@ -26,109 +28,99 @@ const expect = chai.expect;
 
 const shared = new SharedSpec();
 
-describe('bhr gap import-export unit', function () {
+describe('bhr gap import-export unit', () => {
     const fixtureDir = path.join(__dirname, '../fixtures/import-export/bhr-gap');
     const outputDir = path.join(__dirname, '../generated');
 
     const store = {
         surveyMap: null,
-        answerIdentifierMap: null
+        answerIdentifierMap: null,
     };
 
     before(shared.setUpFn());
 
-    it('load all choice sets', function () {
-        return models.choiceSet.createChoiceSets(choiceSets)
+    it('load all choice sets', () => models.choiceSet.createChoiceSets(choiceSets)
             .then(() => models.choiceSet.listChoiceSets())
-            .then(choiceSets => {
+            .then((choiceSets) => {
                 const promises = choiceSets.map(({ id }) => models.choiceSet.getChoiceSet(id));
                 return SPromise.all(promises).then(result => comparator.updateChoiceSetMap(result));
-            });
-    });
+            }));
 
-    it('load all surveys', function () {
-        return models.macro.createSurveys(surveys);
-    });
+    it('load all surveys', () => models.macro.createSurveys(surveys));
 
-    it('survey identifier map', function () {
-        return models.surveyIdentifier.getIdsBySurveyIdentifier('bhr-unit-test')
-            .then(map => store.surveyMap = map);
-    });
+    it('survey identifier map', () => models.surveyIdentifier.getIdsBySurveyIdentifier('bhr-unit-test')
+            .then(map => store.surveyMap = map));
 
-    surveys.forEach(bhrSurvey => {
-        it(`compare survey ${bhrSurvey.identifier.value}`, function () {
+    surveys.forEach((bhrSurvey) => {
+        it(`compare survey ${bhrSurvey.identifier.value}`, () => {
             const identifier = bhrSurvey.identifier.value;
             const surveyId = store.surveyMap.get(identifier);
             return models.survey.getSurvey(surveyId)
-                .then(survey => {
+                .then((survey) => {
                     const options = {
                         ignoreQuestionIdentifier: true,
                         ignoreSurveyIdentifier: true,
-                        ignoreAnswerIdentifier: true
+                        ignoreAnswerIdentifier: true,
                     };
                     comparator.survey(bhrSurvey, survey, options);
                 });
         });
     });
 
-    it('import user profiles', function () {
+    it('import user profiles', () => {
         const filepath = path.join(fixtureDir, 'users.csv');
         return bhrGapImport.importSubjects(filepath, {
             surveyIdentifier: { type: 'bhr-unit-test', value: 'users' },
             questionIdentifierType: 'users-column',
-            subjectCode: 'UserCode'
+            subjectCode: 'UserCode',
         });
     });
 
-    it('export user profiles', function () {
+    it('export user profiles', () => {
         const filepath = path.join(outputDir, 'users-exported.csv');
         return bhrGapExport.writeSubjectsData(filepath, {
             order: 'UserCode',
             surveyIdentifier: {
                 type: 'bhr-unit-test',
-                value: 'users'
+                value: 'users',
             },
             questionIdentifierType: 'users-column',
-            subjectCode: 'UserCode'
+            subjectCode: 'UserCode',
         });
     });
 
-    it('verify profiles', function () {
+    it('verify profiles', () => {
         const originalPath = path.join(fixtureDir, 'users.csv');
         const exportedPath = path.join(outputDir, 'users-exported.csv');
         const converter = new CSVConverterImport({ checkType: false, ignoreEmpty: true });
         return converter.fileToRecords(originalPath)
-            .then(original => {
-                return converter.fileToRecords(exportedPath)
-                    .then(exported => {
+            .then(original => converter.fileToRecords(exportedPath)
+                    .then((exported) => {
                         const originalOrdered = _.sortBy(original, 'UserCode');
                         const exportedOrdered = _.sortBy(exported, 'UserCode');
-                        exported.forEach(r => {
+                        exported.forEach((r) => {
                             const races = r.RaceEthnicity.split(';').sort().join(';');
                             r.RaceEthnicity = races;
                         });
                         expect(exportedOrdered).to.deep.equal(originalOrdered);
                         return original;
                     })
-                    .then(originalUsers => {
+                    .then((originalUsers) => {
                         const query = 'SELECT username FROM registry_user WHERE role = \'import\'';
                         return models.sequelize.query(query, { type: models.sequelize.QueryTypes.SELECT })
-                            .then(users => {
+                            .then((users) => {
                                 const dbUsernames = users.map(user => user.username).sort();
                                 const fileUsernames = originalUsers.map(originalUsers => originalUsers.UserCode).sort();
                                 expect(dbUsernames).to.deep.equal(fileUsernames);
                             });
-                    });
-            });
+                    }));
     });
 
-    it('error: try to login with a imported user', function () {
+    it('error: try to login with a imported user', () => {
         const getAUserQuery = 'SELECT username, password, role FROM registry_user WHERE role = \'import\' LIMIT 1';
         return models.sequelize.query(getAUserQuery, { type: models.sequelize.QueryTypes.SELECT })
-            .then(([{ username, password }]) => {
-                return models.auth.authenticateUser(username, password)
-                    .then(shared.throwingHandler, shared.expectedErrorHandler('authenticationImportedUser'));
-            });
+            .then(([{ username, password }]) => models.auth.authenticateUser(username, password)
+                    .then(shared.throwingHandler, shared.expectedErrorHandler('authenticationImportedUser')));
     });
 
     const transformTableDataFn = function (columIdentifier, filebase) {
@@ -159,14 +151,12 @@ describe('bhr gap import-export unit', function () {
             const exportedPath = path.join(outputDir, `${filenamebase}-exported.csv`);
             const converter = new CSVConverterImport({ checkType: false, ignoreEmpty: true });
             return converter.fileToRecords(originalPath)
-                .then(original => {
-                    return converter.fileToRecords(exportedPath)
-                        .then(exported => {
+                .then(original => converter.fileToRecords(exportedPath)
+                        .then((exported) => {
                             const originalOrdered = _.sortBy(original, ['SubjectCode', 'Timepoint', 'DaysAfterBaseline', 'Latest', 'Status']);
                             const exportedOrdered = _.sortBy(exported, ['SubjectCode', 'Timepoint', 'DaysAfterBaseline', 'Latest', 'Status']);
                             expect(exportedOrdered).to.deep.equal(originalOrdered);
-                        });
-                });
+                        }));
         };
     };
 

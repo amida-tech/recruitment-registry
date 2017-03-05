@@ -1,5 +1,7 @@
 /* global describe,before,it*/
+
 'use strict';
+
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
@@ -16,7 +18,7 @@ const expect = chai.expect;
 const generator = new Generator();
 const shared = new SharedSpec(generator);
 
-describe('question identifier unit', function () {
+describe('question identifier unit', () => {
     const hxQuestion = new History();
     const tests = new questionCommon.SpecTests(generator, hxQuestion);
     const idGenerator = new questionCommon.IdentifierGenerator();
@@ -38,17 +40,17 @@ describe('question identifier unit', function () {
         };
     };
 
-    _.range(20).forEach(index => {
+    _.range(20).forEach((index) => {
         it(`create question ${index}`, tests.createQuestionFn());
         it(`get question ${index}`, tests.getQuestionFn(index));
         it(`add cc type id to question ${index}`, addIdentifierFn(index, 'cc'));
     });
 
-    it('reset identifier generator', function () {
+    it('reset identifier generator', () => {
         idGenerator.reset();
     });
 
-    it('error: cannot specify same type/value identifier', function () {
+    it('error: cannot specify same type/value identifier', () => {
         const question = hxQuestion.server(0);
         const allIdentifiers = idGenerator.newAllIdentifiers(question, 'cc');
         const { type, identifier } = allIdentifiers;
@@ -56,15 +58,15 @@ describe('question identifier unit', function () {
             .then(shared.throwingHandler, shared.expectedSeqErrorHandler('SequelizeUniqueConstraintError', { type, identifier }));
     });
 
-    it('reset identifier generator', function () {
+    it('reset identifier generator', () => {
         idGenerator.reset();
     });
 
-    _.range(20).forEach(index => {
+    _.range(20).forEach((index) => {
         it(`add au type id to question ${index}`, addIdentifierFn(index, 'au'));
     });
 
-    _.range(20).forEach(index => {
+    _.range(20).forEach((index) => {
         it(`add ot type id to question ${index}`, addIdentifierFn(index, 'ot'));
     });
 
@@ -73,7 +75,7 @@ describe('question identifier unit', function () {
             const id = hxQuestion.id(index);
             const allIdentifiers = hxIdentifiers[type][id];
             return models.questionIdentifier.getQuestionIdByIdentifier(allIdentifiers.type, allIdentifiers.identifier)
-                .then(result => {
+                .then((result) => {
                     const expected = { questionId: id };
                     expect(result).to.deep.equal(expected);
                 });
@@ -86,31 +88,28 @@ describe('question identifier unit', function () {
             const allIdentifiers = hxIdentifiers[type][question.id];
             const questionType = question.type;
             if (questionType === 'choice' || questionType === 'choices') {
-                const pxs = question.choices.map(({ id: questionChoiceId }, choiceIndex) => {
-                    return models.answerIdentifier.getIdsByAnswerIdentifier(allIdentifiers.type, allIdentifiers.choices[choiceIndex].answerIdentifier)
-                        .then(result => {
+                const pxs = question.choices.map(({ id: questionChoiceId }, choiceIndex) => models.answerIdentifier.getIdsByAnswerIdentifier(allIdentifiers.type, allIdentifiers.choices[choiceIndex].answerIdentifier)
+                        .then((result) => {
                             const expected = { questionId: question.id, questionChoiceId };
                             expect(result).to.deep.equal(expected);
-                        });
-                });
+                        }));
                 return SPromise.all(pxs);
-            } else {
-                return models.answerIdentifier.getIdsByAnswerIdentifier(allIdentifiers.type, allIdentifiers.answerIdentifier)
-                    .then(result => {
+            }
+            return models.answerIdentifier.getIdsByAnswerIdentifier(allIdentifiers.type, allIdentifiers.answerIdentifier)
+                    .then((result) => {
                         const expected = { questionId: question.id };
                         expect(result).to.deep.equal(expected);
                     });
-            }
         };
     };
 
-    _.range(20).forEach(index => {
+    _.range(20).forEach((index) => {
         it(`verify cc type id to question ${index}`, verifyQuestionIdentifiersFn(index, 'cc'));
         it(`verify ot type id to question ${index}`, verifyQuestionIdentifiersFn(index, 'ot'));
         it(`verify au type id to question ${index}`, verifyQuestionIdentifiersFn(index, 'au'));
     });
 
-    _.range(20).forEach(index => {
+    _.range(20).forEach((index) => {
         it(`verify cc type answer id to question ${index}`, verifyAnswerIdentifiersFn(index, 'cc'));
         it(`verify ot type answer id to question ${index}`, verifyAnswerIdentifiersFn(index, 'ot'));
         it(`verify au type answer id to question ${index}`, verifyAnswerIdentifiersFn(index, 'au'));

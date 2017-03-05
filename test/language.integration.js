@@ -1,5 +1,7 @@
 /* global describe,before,it*/
+
 'use strict';
+
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
@@ -13,7 +15,7 @@ const config = require('../config');
 const expect = chai.expect;
 const shared = new SharedIntegration();
 
-describe('language integration', function () {
+describe('language integration', () => {
     const store = new RRSuperTest();
 
     before(shared.setUpFn(store));
@@ -22,7 +24,7 @@ describe('language integration', function () {
 
     const listLanguagesFn = function (done) {
         store.get('/languages', true, 200)
-            .expect(function (res) {
+            .expect((res) => {
                 expect(res.body).to.deep.equal(languages);
             })
             .end(done);
@@ -30,9 +32,9 @@ describe('language integration', function () {
 
     it('login as super', shared.loginFn(store, config.superUser));
 
-    it('list existing languages', function (done) {
+    it('list existing languages', (done) => {
         store.get('/languages', true, 200)
-            .expect(function (res) {
+            .expect((res) => {
                 languages = res.body;
                 expect(languages).to.have.length.above(0);
             })
@@ -42,21 +44,21 @@ describe('language integration', function () {
     const example = {
         code: 'tr',
         name: 'Turkish',
-        nativeName: 'Türkçe'
+        nativeName: 'Türkçe',
     };
 
-    it('create language', function (done) {
+    it('create language', (done) => {
         store.post('/languages', example, 201)
-            .expect(function () {
+            .expect(() => {
                 languages.push(example);
                 _.sortBy(languages, 'code');
             })
             .end(done);
     });
 
-    it('get language', function (done) {
+    it('get language', (done) => {
         store.get(`/languages/${example.code}`, true, 200)
-            .expect(function (res) {
+            .expect((res) => {
                 expect(res.body).to.deep.equal(example);
             })
             .end(done);
@@ -64,9 +66,9 @@ describe('language integration', function () {
 
     it('list existing languages', listLanguagesFn);
 
-    it('delete language', function (done) {
+    it('delete language', (done) => {
         store.delete('/languages/fr', 204)
-            .expect(function () {
+            .expect(() => {
                 _.remove(languages, { code: 'fr' });
             })
             .end(done);
@@ -74,10 +76,10 @@ describe('language integration', function () {
 
     it('list existing languages', listLanguagesFn);
 
-    it('patch language', function (done) {
+    it('patch language', (done) => {
         const languageUpdate = { name: 'Turk', nativeName: 'Türk' };
         store.patch('/languages/tr', languageUpdate, 204)
-            .expect(function () {
+            .expect(() => {
                 const language = _.find(languages, { code: 'tr' });
                 Object.assign(language, languageUpdate);
             })

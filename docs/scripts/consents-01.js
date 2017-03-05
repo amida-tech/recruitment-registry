@@ -5,13 +5,13 @@ module.exports = function (locals) {
 
     const consent = {
         name: 'primary-consent',
-        sections: [1, 2]
+        sections: [1, 2],
     };
 
     return locals.agent
         .post('http://localhost:9005/api/v1.0/consents')
         .send(consent)
-        .then(res => {
+        .then((res) => {
             console.log(res.status); // 201
             console.log(res.body.id); // id of the new consent
         })

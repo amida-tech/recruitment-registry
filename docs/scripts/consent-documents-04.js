@@ -6,7 +6,7 @@ module.exports = function (locals) {
     return locals.agent
         .post('http://localhost:9005/api/v1.0/consent-signatures')
         .send({ consentDocumentId: 2 })
-        .then(res => {
+        .then((res) => {
             console.log(res.status); // 201
             console.log(res.body.id); // id of the signature
         })

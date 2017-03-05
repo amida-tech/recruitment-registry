@@ -21,8 +21,8 @@ module.exports = class ConsentSignatureDAO {
     }
 
     bulkCreateSignatures(consentDocumentsIds, commonProperties) {
-        return sequelize.transaction(tx => {
-            const pxs = consentDocumentsIds.map(consentDocumentId => {
+        return sequelize.transaction((tx) => {
+            const pxs = consentDocumentsIds.map((consentDocumentId) => {
                 const input = Object.assign({ consentDocumentId }, commonProperties);
                 return this.createSignature(input, tx);
             });
@@ -32,14 +32,14 @@ module.exports = class ConsentSignatureDAO {
 
     getSignatureHistory(userId) {
         return ConsentSignature.findAll({
-                where: { userId },
-                raw: true,
-                attributes: ['consentDocumentId', 'language'],
-                order: 'consent_document_id'
-            })
+            where: { userId },
+            raw: true,
+            attributes: ['consentDocumentId', 'language'],
+            order: 'consent_document_id',
+        })
             .then(signatures => signatures.map(sign => ({
                 id: sign.consentDocumentId,
-                language: sign.language
+                language: sign.language,
             })));
     }
 };

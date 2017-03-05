@@ -4,14 +4,14 @@ module.exports = {
     name: 'Sports',
     identifier: {
         type: 'bhr-unit-test',
-        value: 'sports'
+        value: 'sports',
     },
     questions: [{
         text: 'How many hours a week do you participate in a team sports?',
         required: true,
         type: 'choice-ref',
         answerIdentifier: { type: 'sports-column', value: 'QID1' },
-        choiceSetReference: 'count-0-8-plus'
+        choiceSetReference: 'count-0-8-plus',
     }, {
         text: 'What types of sports do you frequently watch?',
         instruction: 'Check all that apply',
@@ -22,7 +22,7 @@ module.exports = {
             { text: 'Basketball', answerIdentifier: { type: 'sports-column', value: 'QID2_2' } },
             { text: 'Hockey', answerIdentifier: { type: 'sports-column', value: 'QID2_3' } },
             { text: 'Baseball', answerIdentifier: { type: 'sports-column', value: 'QID2_4' } },
-            { text: 'Other', answerIdentifier: { type: 'sports-column', value: 'QID2_5' } }
+            { text: 'Other', answerIdentifier: { type: 'sports-column', value: 'QID2_5' } },
         ],
         //skip: {
         //    count: 1,
@@ -35,13 +35,13 @@ module.exports = {
         text: 'Please indicate \'Other\' sport.',
         required: false,
         type: 'text',
-        answerIdentifier: { type: 'sports-column', value: 'QID2_TEXT' }
+        answerIdentifier: { type: 'sports-column', value: 'QID2_TEXT' },
     }, {
         text: 'On average how many hours do you watch sports or sport related programming on TV a week?',
         required: false,
         type: 'choice-ref',
         answerIdentifier: { type: 'sports-column', value: 'QID3' },
-        choiceSetReference: 'count-0-8-plus'
+        choiceSetReference: 'count-0-8-plus',
     }, {
         text: 'What types of beverages do you usually drink while watching sports?',
         required: false,
@@ -51,7 +51,7 @@ module.exports = {
             { text: 'Water', answerIdentifier: { type: 'sports-column', value: 'QID4_1' } },
             { text: 'Juice', answerIdentifier: { type: 'sports-column', value: 'QID4_2' } },
             { text: 'Soda', answerIdentifier: { type: 'sports-column', value: 'QID4_3' } },
-            { text: 'Diet soda', answerIdentifier: { type: 'sports-column', value: 'QID4_4' } }
+            { text: 'Diet soda', answerIdentifier: { type: 'sports-column', value: 'QID4_4' } },
         ],
         //skip: {
         //    count: 1,
@@ -66,7 +66,7 @@ module.exports = {
         multiple: true,
         answerIdentifiers: {
             type: 'sports-column',
-            values: ['QID5_1_TEXT', 'QID5_2_TEXT', 'QID5_3_TEXT', 'QID5_4_TEXT']
-        }
-    }]
+            values: ['QID5_1_TEXT', 'QID5_2_TEXT', 'QID5_3_TEXT', 'QID5_4_TEXT'],
+        },
+    }],
 };

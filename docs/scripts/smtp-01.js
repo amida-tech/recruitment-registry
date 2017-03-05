@@ -11,13 +11,13 @@ module.exports = function (locals) {
         from: 'admin@rr.com',
         otherOptions: {},
         subject: 'Registry Admin',
-        content: 'Click on this: ${link}'
+        content: 'Click on this: ${link}',
     };
 
     return locals.agent
         .post('http://localhost:9005/api/v1.0/smtp')
         .send(smtpSpec)
-        .then(res => {
+        .then((res) => {
             console.log(res.status); // 204
         })
         .then(() => {

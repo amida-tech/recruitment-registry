@@ -4,7 +4,7 @@ module.exports = {
     name: 'Sleep',
     identifier: {
         type: 'bhr-gap',
-        value: 'sleep'
+        value: 'sleep',
     },
     sections: [{
         questions: [{
@@ -12,26 +12,26 @@ module.exports = {
             required: false,
             type: 'choice-ref',
             answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID141' },
-            choiceSetReference: 'sleep-time'
+            choiceSetReference: 'sleep-time',
         }, {
             text: 'During the past month, how long (in minutes) has it usually taken you to fall asleep each night?',
             required: true,
             type: 'choice-ref',
             answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID142' },
-            choiceSetReference: 'duration-5-minutes'
+            choiceSetReference: 'duration-5-minutes',
         }, {
             text: 'During the past month, when have you usually gotten up in the morning?',
             required: true,
             type: 'choice-ref',
             answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID143' },
-            choiceSetReference: 'wakeup-time'
+            choiceSetReference: 'wakeup-time',
         }, {
             text: 'During the past month, how many hours of actual sleep did you get at night? (This may be different than the number of hours you spend in bed.)',
             required: true,
             type: 'choice-ref',
             answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID94' },
-            choiceSetReference: 'amount-3-12-.5'
-        }]
+            choiceSetReference: 'amount-3-12-.5',
+        }],
     }, {
         name: 'During the past month, how often have you had trouble sleeping because you...',
         questions: [{
@@ -98,40 +98,40 @@ module.exports = {
             text: 'If other reason, please describe',
             type: 'text',
             required: false,
-            answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID95_10_TEXT' }
-        }]
+            answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID95_10_TEXT' },
+        }],
     }, {
         questions: [{
             text: 'During the past month, how would you rate your sleep quality overall?',
             type: 'choice-ref',
             required: false,
             answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID96' },
-            choiceSetReference: 'condition-4'
+            choiceSetReference: 'condition-4',
         }, {
             text: 'During the past month, how often have you taken medicine (prescribed or "over the counter") to help you sleep?',
             type: 'choice-ref',
             required: false,
             answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID97' },
-            choiceSetReference: 'frequency-weekly'
+            choiceSetReference: 'frequency-weekly',
         }, {
             text: 'During the past month, how often have you had trouble staying awake while driving, eating meals, or engaging in social activity?',
             type: 'choice-ref',
             required: false,
             answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID98' },
-            choiceSetReference: 'frequency-weekly'
+            choiceSetReference: 'frequency-weekly',
         }, {
             text: 'During the past month, how much of a problem has it been for you to keep up enough enthusiasm to get things done?',
             type: 'choice-ref',
             required: false,
             answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID145' },
-            choiceSetReference: 'is-problem'
+            choiceSetReference: 'is-problem',
         }, {
             text: 'Do you have a bed partner or roommate?',
             type: 'choice-ref',
             required: false,
             answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID146' },
-            choiceSetReference: 'bed-partner'
-        }]
+            choiceSetReference: 'bed-partner',
+        }],
     }, {
         name: 'If you have a roommate or bed partner, ask him/her how often in the past month you have had...',
         questions: [{
@@ -164,25 +164,25 @@ module.exports = {
             required: false,
             answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID101_5' },
             text: 'Other restlessness while you sleep',
-        }]
+        }],
     }, {
         questions: [{
             text: 'If other reason, please describe',
             type: 'text',
             required: false,
-            answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID101_5_TEXT' }
+            answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID101_5_TEXT' },
         }, {
             text: 'How many hours do you spend napping in a typical day?',
             required: false,
             type: 'choice-ref',
             answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID196' },
-            choiceSetReference: 'duration-hour'
+            choiceSetReference: 'duration-hour',
         }, {
             text: 'I feel sleepy during the day and struggle to remain alert.',
             required: false,
             type: 'choice-ref',
             answerIdentifier: { type: 'bhr-gap-sleep-column', value: 'QID197' },
-            choiceSetReference: 'much-to-none'
-        }]
-    }]
+            choiceSetReference: 'much-to-none',
+        }],
+    }],
 };

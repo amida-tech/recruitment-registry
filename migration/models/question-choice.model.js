@@ -8,10 +8,10 @@ module.exports = function (sequelize, DataTypes) {
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'question'
+                    tableName: 'question',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         type: {
             type: DataTypes.TEXT,
@@ -19,19 +19,19 @@ module.exports = function (sequelize, DataTypes) {
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'answer_type'
+                    tableName: 'answer_type',
                 },
-                key: 'name'
-            }
+                key: 'name',
+            },
         },
         code: {
-            type: DataTypes.TEXT
+            type: DataTypes.TEXT,
         },
         meta: {
-            type: DataTypes.JSON
+            type: DataTypes.JSON,
         },
         line: {
-            type: DataTypes.INTEGER
+            type: DataTypes.INTEGER,
         },
         createdAt: {
             type: DataTypes.DATE,
@@ -47,15 +47,15 @@ module.exports = function (sequelize, DataTypes) {
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'choice_set'
+                    tableName: 'choice_set',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         deletedAt: {
             type: DataTypes.DATE,
-            field: 'deleted_at'
-        }
+            field: 'deleted_at',
+        },
     }, {
         freezeTableName: true,
         schema: sequelize.options.schema,
@@ -64,11 +64,11 @@ module.exports = function (sequelize, DataTypes) {
         deletedAt: 'deletedAt',
         indexes: [{
             fields: ['question_id'],
-            where: { deleted_at: { $eq: null } }
+            where: { deleted_at: { $eq: null } },
         }, {
             fields: ['choice_set_id'],
-            where: { deleted_at: { $eq: null } }
+            where: { deleted_at: { $eq: null } },
         }],
-        paranoid: true
+        paranoid: true,
     });
 };

@@ -5,32 +5,32 @@ module.exports = function (locals) {
 
     const answers = [{
         questionId: 1,
-        answer: { textValue: 'Try new medicine' }
+        answer: { textValue: 'Try new medicine' },
     }, {
         questionId: 2,
-        answer: { boolValue: false }
+        answer: { boolValue: false },
     }, {
         questionId: 5,
-        answer: { choice: 4 }
+        answer: { choice: 4 },
     }, {
         questionId: 4,
         answer: {
             choices: [{
                 id: 5,
-                boolValue: true
+                boolValue: true,
             }, {
-                id: 7
+                id: 7,
             }, {
                 id: 8,
-                textValue: 'Soccer'
-            }]
-        }
+                textValue: 'Soccer',
+            }],
+        },
     }];
 
     return locals.agent
         .post('http://localhost:9005/api/v1.0/answers')
         .send({ surveyId: 1, answers })
-        .then(res => {
+        .then((res) => {
             console.log(res.status); // 204
         })
         .then(() => {

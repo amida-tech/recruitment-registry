@@ -5,7 +5,7 @@ module.exports = function (locals) {
 
     return locals.agent
         .get('http://localhost:9005/api/v1.0/questions')
-        .then(res => {
+        .then((res) => {
             console.log(res.status); // 200
             const questionList = res.body;
             console.log(JSON.stringify(questionList, undefined, 4));

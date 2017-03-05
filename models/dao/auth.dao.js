@@ -13,26 +13,26 @@ module.exports = class UserDAO {
         return User.findOne({
             raw: true,
             where: { id, originalUsername: username },
-            attributes: ['id', 'username', 'email', 'role']
+            attributes: ['id', 'username', 'email', 'role'],
         });
     }
 
     authenticateUser(username, password) {
         return User.findOne({
-                where: {
-                    $or: [
+            where: {
+                $or: [
                         { username },
-                        {
-                            $and: [{
-                                username: sequelize.fn('lower', sequelize.col('email'))
-                            }, {
-                                username: sequelize.fn('lower', username)
-                            }]
-                        }
-                    ]
-                }
-            })
-            .then(user => {
+                    {
+                        $and: [{
+                            username: sequelize.fn('lower', sequelize.col('email')),
+                        }, {
+                            username: sequelize.fn('lower', username),
+                        }],
+                    },
+                ],
+            },
+        })
+            .then((user) => {
                 if (user) {
                     if (user.role === 'import') {
                         return RRError.reject('authenticationImportedUser');
@@ -40,11 +40,10 @@ module.exports = class UserDAO {
                     return user.authenticate(password)
                         .then(() => ({
                             id: user.id,
-                            originalUsername: user.originalUsername
+                            originalUsername: user.originalUsername,
                         }));
-                } else {
-                    return RRError.reject('authenticationError');
                 }
+                return RRError.reject('authenticationError');
             });
     }
 };

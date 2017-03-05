@@ -7,10 +7,10 @@ module.exports = function (sequelize, DataTypes) {
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'survey_section'
+                    tableName: 'survey_section',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         questionId: {
             type: DataTypes.INTEGER,
@@ -19,24 +19,24 @@ module.exports = function (sequelize, DataTypes) {
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'question'
+                    tableName: 'question',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         line: {
             type: DataTypes.INTEGER,
-            allowNull: false
+            allowNull: false,
         },
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',
-        }
+        },
     }, {
         freezeTableName: true,
         schema: sequelize.options.schema,
         createdAt: 'createdAt',
         updatedAt: false,
-        indexes: [{ fields: ['survey_section_id'] }]
+        indexes: [{ fields: ['survey_section_id'] }],
     });
 };

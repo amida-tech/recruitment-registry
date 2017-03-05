@@ -8,10 +8,10 @@ module.exports = function (sequelize, DataTypes) {
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'question_type'
+                    tableName: 'question_type',
                 },
-                key: 'name'
-            }
+                key: 'name',
+            },
         },
         choiceSetId: {
             type: DataTypes.INTEGER,
@@ -19,27 +19,27 @@ module.exports = function (sequelize, DataTypes) {
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'choice_set'
+                    tableName: 'choice_set',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         version: {
-            type: DataTypes.INTEGER
+            type: DataTypes.INTEGER,
         },
         groupId: {
             type: DataTypes.INTEGER,
-            field: 'group_id'
+            field: 'group_id',
         },
         meta: {
-            type: DataTypes.JSON
+            type: DataTypes.JSON,
         },
         multiple: {
-            type: DataTypes.BOOLEAN
+            type: DataTypes.BOOLEAN,
         },
         maxCount: {
             type: DataTypes.INTEGER,
-            field: 'max_count'
+            field: 'max_count',
         },
         createdAt: {
             type: DataTypes.DATE,
@@ -51,14 +51,14 @@ module.exports = function (sequelize, DataTypes) {
         },
         deletedAt: {
             type: DataTypes.DATE,
-            field: 'deleted_at'
-        }
+            field: 'deleted_at',
+        },
     }, {
         freezeTableName: true,
         schema: sequelize.options.schema,
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
         deletedAt: 'deletedAt',
-        paranoid: true
+        paranoid: true,
     });
 };

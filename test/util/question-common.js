@@ -6,9 +6,9 @@ const models = require('../../models');
 const comparator = require('./comparator');
 
 const scopeToFieldsMap = {
-    'summary': ['id', 'type', 'text', 'instruction'],
-    'complete': null,
-    'export': ['id', 'type', 'text', 'instruction', 'choices', 'meta']
+    summary: ['id', 'type', 'text', 'instruction'],
+    complete: null,
+    export: ['id', 'type', 'text', 'instruction', 'choices', 'meta'],
 };
 
 const expect = chai.expect;
@@ -19,7 +19,7 @@ const getFieldsForList = function (scope) {
 };
 
 const updateIds = function (questions, idMap) {
-    return questions.map(question => {
+    return questions.map((question) => {
         const questionIdMap = idMap[question.id];
         if (!questionIdMap) {
             throw new Error(`updateIds: id for '${question.text}' does not exist in the map`);
@@ -31,7 +31,7 @@ const updateIds = function (questions, idMap) {
             if (!choiceIdMap) {
                 throw new Error(`updateIds: choice id map does not exist for '${question.text}'`);
             }
-            choices.forEach(choice => {
+            choices.forEach((choice) => {
                 const choiceId = choiceIdMap[choice.id];
                 if (!choiceId) {
                     throw new Error(`updateIds: choice id does not exist for for '${choice.text}' in '${question.id}'`);
@@ -55,7 +55,7 @@ const IdentifierGenerator = class identifierGenerator {
         if ((questionType === 'choice') || (questionType === 'choices')) {
             result.choices = question.choices.map(choice => ({
                 answerIdentifier: `cid-${this.index}-${question.id}-${choice.id}`,
-                id: choice.id
+                id: choice.id,
             }));
         } else {
             ++this.index;
@@ -92,7 +92,7 @@ const SpecTests = class QuestionSpecTests {
             index = (index === undefined) ? hxQuestion.lastIndex() : index;
             const id = hxQuestion.id(index);
             return models.question.getQuestion(id)
-                .then(question => {
+                .then((question) => {
                     hxQuestion.updateServer(index, question);
                     comparator.question(hxQuestion.client(index), question);
                 });
@@ -117,7 +117,7 @@ const SpecTests = class QuestionSpecTests {
                 options.scope = scope;
             }
             return models.question.listQuestions(options)
-                .then(questions => {
+                .then((questions) => {
                     const fields = getFieldsForList(scope);
                     const expected = hxQuestion.listServers(fields);
                     expect(questions).to.deep.equal(expected);
@@ -140,7 +140,7 @@ const IntegrationTests = class QuestionIntegrationTests {
         return function (done) {
             question = question || generator.newQuestion();
             rrSuperTest.post('/questions', question, 201)
-                .expect(function (res) {
+                .expect((res) => {
                     hxQuestion.push(question, res.body);
                 })
                 .end(done);
@@ -154,7 +154,7 @@ const IntegrationTests = class QuestionIntegrationTests {
             index = (index === undefined) ? hxQuestion.lastIndex() : index;
             const id = hxQuestion.id(index);
             rrSuperTest.get(`/questions/${id}`, true, 200)
-                .expect(function (res) {
+                .expect((res) => {
                     hxQuestion.reloadServer(res.body);
                     comparator.question(hxQuestion.client(index), res.body);
                 })
@@ -168,7 +168,7 @@ const IntegrationTests = class QuestionIntegrationTests {
         return function (done) {
             const id = hxQuestion.id(index);
             rrSuperTest.delete(`/questions/${id}`, 204)
-                .expect(function () {
+                .expect(() => {
                     hxQuestion.remove(index);
                 })
                 .end(done);
@@ -181,7 +181,7 @@ const IntegrationTests = class QuestionIntegrationTests {
         const query = scope ? { scope } : undefined;
         return function (done) {
             rrSuperTest.get('/questions', true, 200, query)
-                .expect(function (res) {
+                .expect((res) => {
                     const fields = getFieldsForList(scope);
                     const expected = hxQuestion.listServers(fields);
                     expect(res.body).to.deep.equal(expected);
@@ -196,5 +196,5 @@ module.exports = {
     SpecTests,
     IntegrationTests,
     updateIds,
-    IdentifierGenerator
+    IdentifierGenerator,
 };

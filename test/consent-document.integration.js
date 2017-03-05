@@ -1,5 +1,7 @@
 /* global describe,before,it*/
+
 'use strict';
+
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
@@ -17,7 +19,7 @@ const expect = chai.expect;
 const generator = new Generator();
 const shared = new SharedIntegration(generator);
 
-describe('consent document integration', function () {
+describe('consent document integration', () => {
     const userCount = 4;
 
     const store = new RRSuperTest();
@@ -28,7 +30,7 @@ describe('consent document integration', function () {
     const listConsentTypesFn = function () {
         return function (done) {
             store.get('/consent-types', true, 200)
-                .expect(function (res) {
+                .expect((res) => {
                     const types = history.listTypes();
                     expect(res.body).to.deep.equal(types);
                 })
@@ -51,9 +53,9 @@ describe('consent document integration', function () {
     it('logout as super', shared.logoutFn(store));
 
     it('login as user 0', shared.loginIndexFn(store, history.hxUser, 0));
-    it('error: no consent documents of existing types', function (done) {
+    it('error: no consent documents of existing types', (done) => {
         store.get('/user-consent-documents', true, 400)
-            .expect(function (res) {
+            .expect((res) => {
                 expect(res.body.message).to.equal(RRError.message('noSystemConsentDocuments'));
             })
             .end(done);
@@ -64,7 +66,7 @@ describe('consent document integration', function () {
         return function (done) {
             const id = history.id(typeIndex);
             store.get(`/consent-documents/${id}`, false, 200)
-                .expect(function (res) {
+                .expect((res) => {
                     const expected = history.server(typeIndex);
                     expect(res.body).to.deep.equal(expected);
                 })
@@ -76,7 +78,7 @@ describe('consent document integration', function () {
         return function (done) {
             const typeName = history.type(typeIndex).name;
             store.get(`/consent-documents/type-name/${typeName}`, false, 200)
-                .expect(function (res) {
+                .expect((res) => {
                     const expected = history.server(typeIndex);
                     expect(res.body).to.deep.equal(expected);
                 })
@@ -88,7 +90,7 @@ describe('consent document integration', function () {
         return function (done) {
             const id = history.id(typeIndex);
             store.get(`/consent-documents/${id}`, false, 200, { language })
-                .expect(function (res) {
+                .expect((res) => {
                     const expected = history.hxDocument.translatedServer(typeIndex, language);
                     expect(res.body).to.deep.equal(expected);
                 })
@@ -111,7 +113,7 @@ describe('consent document integration', function () {
     const getUserConsentDocumentsFn = function (expectedIndices) {
         return function (done) {
             store.get('/user-consent-documents', true, 200)
-                .expect(function (res) {
+                .expect((res) => {
                     const expected = history.serversInList(expectedIndices);
                     expect(res.body).to.deep.equal(expected);
                 })
@@ -122,7 +124,7 @@ describe('consent document integration', function () {
     const getUserConsentDocumentsAllFn = function (userIndex) {
         return function (done) {
             store.get('/user-consent-documents', true, 200, { 'include-signed': true })
-                .expect(function (res) {
+                .expect((res) => {
                     const expected = history.serversInListWithSigned(userIndex);
                     expect(res.body).to.deep.equal(expected);
                 })
@@ -133,7 +135,7 @@ describe('consent document integration', function () {
     const getTranslatedUserConsentDocumentsFn = function (expectedIndices, language) {
         return function (done) {
             store.get('/user-consent-documents', true, 200, { language })
-                .expect(function (res) {
+                .expect((res) => {
                     const expected = history.translatedServersInList(expectedIndices, language);
                     expect(res.body).to.deep.equal(expected);
                 })
@@ -164,10 +166,10 @@ describe('consent document integration', function () {
             }
             const header = {
                 'User-Agent': `Browser-${typeId}`,
-                'X-Forwarded-For': [`9848.3${typeId}.838`, `111.${typeId}0.999`]
+                'X-Forwarded-For': [`9848.3${typeId}.838`, `111.${typeId}0.999`],
             };
             store.post('/consent-signatures', input, 201, header)
-                .expect(function () {
+                .expect(() => {
                     history.sign(typeIndex, userIndex, language);
                 })
                 .end(done);
@@ -181,45 +183,45 @@ describe('consent document integration', function () {
         };
     };
 
-    it(`login as user 0`, shared.loginIndexFn(store, history.hxUser, 0));
+    it('login as user 0', shared.loginIndexFn(store, history.hxUser, 0));
     it('user 0 signs consent document of type 0', signConsentTypeFn(0, 0));
     it('user 0 signs consent document of type 1', signConsentTypeFn(0, 1));
     it('logout as user 0', shared.logoutFn(store));
 
-    it(`login as user 0`, shared.loginIndexFn(store, history.hxUser, 0));
+    it('login as user 0', shared.loginIndexFn(store, history.hxUser, 0));
     it('user 0 signs consent document of type again 0', signConsentTypeAgainFn(0));
     it('logout as user 0', shared.logoutFn(store));
 
-    it(`login as user 1`, shared.loginIndexFn(store, history.hxUser, 1));
+    it('login as user 1', shared.loginIndexFn(store, history.hxUser, 1));
     it('user 1 signs consent document of type 0', signConsentTypeFn(1, 0, 'en'));
     it('user 1 signs consent document of type 1', signConsentTypeFn(1, 1, 'es'));
     it('logout as user 1', shared.logoutFn(store));
 
-    it(`login as user 2`, shared.loginIndexFn(store, history.hxUser, 2));
+    it('login as user 2', shared.loginIndexFn(store, history.hxUser, 2));
     it('user 2 signs consent document of type 1', signConsentTypeFn(2, 0));
     it('logout as user 2', shared.logoutFn(store));
 
-    it(`login as user 3`, shared.loginIndexFn(store, history.hxUser, 3));
+    it('login as user 3', shared.loginIndexFn(store, history.hxUser, 3));
     it('user 3 signs consent document of type 0', signConsentTypeFn(3, 1));
     it('logout as user 3', shared.logoutFn(store));
 
-    it(`login as user 0`, shared.loginIndexFn(store, history.hxUser, 0));
-    it(`verify consent documents required for user 0`, getUserConsentDocumentsFn([]));
+    it('login as user 0', shared.loginIndexFn(store, history.hxUser, 0));
+    it('verify consent documents required for user 0', getUserConsentDocumentsFn([]));
     it('logout as user 0', shared.logoutFn(store));
 
-    it(`login as user 1`, shared.loginIndexFn(store, history.hxUser, 1));
-    it(`verify consent documents required for user 1`, getUserConsentDocumentsFn([]));
+    it('login as user 1', shared.loginIndexFn(store, history.hxUser, 1));
+    it('verify consent documents required for user 1', getUserConsentDocumentsFn([]));
     it('logout as user 1', shared.logoutFn(store));
 
-    it(`login as user 2`, shared.loginIndexFn(store, history.hxUser, 2));
-    it(`verify consent documents required for user 2`, getUserConsentDocumentsFn([1]));
+    it('login as user 2', shared.loginIndexFn(store, history.hxUser, 2));
+    it('verify consent documents required for user 2', getUserConsentDocumentsFn([1]));
     it('logout as user 2', shared.logoutFn(store));
-    it(`user 2 get consent document of 1`, getConsentDocumentFn(1));
+    it('user 2 get consent document of 1', getConsentDocumentFn(1));
 
-    it(`login as user 3`, shared.loginIndexFn(store, history.hxUser, 3));
-    it(`verify consent documents required for user 3`, getUserConsentDocumentsFn([0]));
+    it('login as user 3', shared.loginIndexFn(store, history.hxUser, 3));
+    it('verify consent documents required for user 3', getUserConsentDocumentsFn([0]));
     it('logout as user 3', shared.logoutFn(store));
-    it(`user 3 get consent document of 0`, getConsentDocumentFn(0));
+    it('user 3 get consent document of 0', getConsentDocumentFn(0));
 
     it('login as super', shared.loginFn(store, config.superUser));
     it('add a new consent type', shared.createConsentTypeFn(store, history));
@@ -300,7 +302,7 @@ describe('consent document integration', function () {
         return function (done) {
             const id = history.typeId(index);
             store.delete(`/consent-types/${id}`, 204)
-                .expect(function () {
+                .expect(() => {
                     history.deleteType(index);
                 })
                 .end(done);
@@ -321,7 +323,7 @@ describe('consent document integration', function () {
         return function (done) {
             const userId = history.userId(userIndex);
             store.get('/consent-signatures', true, 200, { 'user-id': userId })
-                .expect(function (res) {
+                .expect((res) => {
                     const expected = _.sortBy(history.signatures[userIndex], 'id');
                     expect(res.body).to.deep.equal(expected);
                 })
@@ -335,14 +337,14 @@ describe('consent document integration', function () {
     }
     it('logout as super', shared.logoutFn(store));
 
-    it('check ip and browser (user-agent) of signature', function () {
+    it('check ip and browser (user-agent) of signature', () => {
         const query = 'select consent_type.id as "typeId", ip, user_agent as "userAgent" from consent_signature, consent_type, consent_document where consent_signature.consent_document_id = consent_document.id and consent_type.id = consent_document.type_id';
         return models.sequelize.query(query, { type: models.sequelize.QueryTypes.SELECT })
-            .then(result => {
+            .then((result) => {
                 const typeGroups = _.groupBy(result, 'typeId');
                 const typeIds = Object.keys(typeGroups);
                 expect(typeIds).to.have.length(3);
-                typeIds.forEach(typeId => {
+                typeIds.forEach((typeId) => {
                     const expectedUserAgent = `Browser-${typeId}`;
                     const expectedIp = `9848.3${typeId}.838`;
                     const records = typeGroups[typeId];
@@ -351,7 +353,6 @@ describe('consent document integration', function () {
                         expect(userAgent).to.equal(expectedUserAgent);
                     });
                 });
-
             });
     });
 

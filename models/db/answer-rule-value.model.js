@@ -9,10 +9,10 @@ module.exports = function (sequelize, DataTypes) {
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'answer_rule'
+                    tableName: 'answer_rule',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         questionChoiceId: {
             type: DataTypes.INTEGER,
@@ -20,13 +20,13 @@ module.exports = function (sequelize, DataTypes) {
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'question_choice'
+                    tableName: 'question_choice',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         value: {
-            type: DataTypes.TEXT
+            type: DataTypes.TEXT,
         },
         createdAt: {
             type: DataTypes.DATE,
@@ -35,13 +35,13 @@ module.exports = function (sequelize, DataTypes) {
         deletedAt: {
             type: DataTypes.DATE,
             field: 'deleted_at',
-        }
+        },
     }, {
         freezeTableName: true,
         schema: sequelize.options.schema,
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',
-        paranoid: true
+        paranoid: true,
     });
 };

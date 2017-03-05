@@ -9,15 +9,15 @@ module.exports = function (locals) {
             text: 'Gender',
             required: true,
             type: 'choice',
-            oneOfChoices: ['male', 'female', 'other']
+            oneOfChoices: ['male', 'female', 'other'],
         }, {
             text: 'Zip code',
             required: false,
-            type: 'text'
+            type: 'text',
         }, {
             text: 'Family history of memory disorders/AD/dementia?',
             required: true,
-            type: 'bool'
+            type: 'bool',
         }, {
             text: 'How did you hear about us?',
             required: false,
@@ -30,15 +30,15 @@ module.exports = function (locals) {
                 { text: 'Physician/nurse/healthcare professional' },
                 { text: 'Caregiver' },
                 { text: 'Friend/Family member' },
-                { text: 'Other source', type: 'text' }
-            ]
-        }]
+                { text: 'Other source', type: 'text' },
+            ],
+        }],
     };
 
     return locals.agent
         .post('http://localhost:9005/api/v1.0/profile-survey')
         .send(profileSurvey)
-        .then(res => {
+        .then((res) => {
             console.log(res.status); // 201
             console.log(res.body.id); // id of the profile survey
         })

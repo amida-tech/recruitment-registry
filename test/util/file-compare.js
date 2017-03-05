@@ -22,7 +22,6 @@ module.exports = {
             }
             return r;
         }, []);
-
     },
     contentToLines(content) {
         const lines = content.split('\n');
@@ -33,7 +32,7 @@ module.exports = {
         const contentLines = this.contentToLines(content);
         expect(contentLines, `no content to compare for ${filepath}`).to.have.length.above(0);
         const numLines = Math.min(expectedLines.length, contentLines.length);
-        _.range(numLines).forEach(index => {
+        _.range(numLines).forEach((index) => {
             expect(contentLines[index], `line ${contentLines[0][0]} equals ${contentLines[index][0]}`).to.deep.equal(expectedLines[index]);
         });
         expect(contentLines.length, `lines mismatch for ${filepath}`).to.equal(expectedLines.length);

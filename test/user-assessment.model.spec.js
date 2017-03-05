@@ -1,5 +1,7 @@
 /* global describe,before,it*/
+
 'use strict';
+
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
@@ -22,7 +24,7 @@ const generator = new Generator();
 
 const shared = new SharedSpec(generator);
 
-describe('user assessment unit', function () {
+describe('user assessment unit', () => {
     const surveyCount = 6;
     const assessmentCount = 2;
 
@@ -38,16 +40,16 @@ describe('user assessment unit', function () {
 
     before(shared.setUpFn());
 
-    _.range(2).forEach(index => {
+    _.range(2).forEach((index) => {
         it(`create user ${index}`, shared.createUserFn(hxUser));
     });
 
-    _.range(surveyCount).forEach(index => {
+    _.range(surveyCount).forEach((index) => {
         it(`create survey ${index}`, surveyTests.createSurveyFn({ noSection: true }));
         it(`get survey ${index}`, surveyTests.getSurveyFn(index));
     });
 
-    _.range(assessmentCount).forEach(index => {
+    _.range(assessmentCount).forEach((index) => {
         const indices = _.range(index * 3, (index + 1) * 3);
         it(`create assessment ${index}`, assessmentTests.createAssessmentFn(indices));
         it(`get assessment ${index}`, assessmentTests.getAssessmentFn(index));
@@ -74,36 +76,36 @@ describe('user assessment unit', function () {
 
     it('open user 0 assessment 0 (0)', openUserAssessmentFn(0, 0, 0));
     it('open user 1 assessment 1 (0)', openUserAssessmentFn(1, 1, 0));
-    _.range(0, 3).forEach(index => {
+    _.range(0, 3).forEach((index) => {
         it(`user 0 answers survey ${index}`, answerTests.answerSurveyFn(0, index));
     });
-    _.range(3, 6).forEach(index => {
+    _.range(3, 6).forEach((index) => {
         it(`user 1 answers survey ${index}`, answerTests.answerSurveyFn(1, index));
     });
     it('open user 0 assessment 0 (1)', openUserAssessmentFn(0, 0, 1));
     it('open user 1 assessment 1 (1)', openUserAssessmentFn(1, 1, 1));
-    _.range(0, 3).forEach(index => {
+    _.range(0, 3).forEach((index) => {
         it(`user 0 answers survey ${index}`, answerTests.answerSurveyFn(0, index));
     });
-    _.range(3, 6).forEach(index => {
+    _.range(3, 6).forEach((index) => {
         it(`user 1 answers survey ${index}`, answerTests.answerSurveyFn(1, index));
     });
     it('close user 0 assessment 0', closeUserAssessmentFn(0, 0));
     it('close user 1 assessment 1', closeUserAssessmentFn(1, 1));
     it('open user 0 assessment 0 (2)', openUserAssessmentFn(0, 0, 2));
     it('open user 1 assessment 1 (2)', openUserAssessmentFn(1, 1, 2));
-    _.range(0, 3).forEach(index => {
+    _.range(0, 3).forEach((index) => {
         it(`user 0 answers survey ${index}`, answerTests.answerSurveyFn(0, index));
     });
-    _.range(3, 6).forEach(index => {
+    _.range(3, 6).forEach((index) => {
         it(`user 1 answers survey ${index}`, answerTests.answerSurveyFn(1, index));
     });
     it('close user 0 assessment 0', closeUserAssessmentFn(0, 0));
     it('close user 1 assessment 1', closeUserAssessmentFn(1, 1));
 
-    let answersForUser = [null, null];
+    const answersForUser = [null, null];
 
-    it('transfer expected answers', function () {
+    it('transfer expected answers', () => {
         answersForUser[0] = hxAnswer.listFlatForUser(0);
         answersForUser[1] = hxAnswer.listFlatForUser(1);
     });
@@ -113,8 +115,8 @@ describe('user assessment unit', function () {
             const userId = hxUser.id(userIndex);
             const assessmentId = hxAssessment.id(assessmentIndex);
             return models.userAssessment.listUserAssessments(userId, assessmentId)
-                .then(actual => {
-                    const expected = _.range(3).map(index => {
+                .then((actual) => {
+                    const expected = _.range(3).map((index) => {
                         const id = hxUserAssessment.id([userIndex, assessmentIndex, index]);
                         return Object.assign({ sequence: index }, { id });
                     });
@@ -132,7 +134,7 @@ describe('user assessment unit', function () {
                 return r;
             }, {});
             return models.userAssessment.listUserAssessmentAnswers(id)
-                .then(actual => {
+                .then((actual) => {
                     const expected = hxAnswer.store.reduce((r, record) => {
                         if (record.userIndex !== userIndex) {
                             return r;

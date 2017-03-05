@@ -18,8 +18,8 @@ module.exports = function (locals) {
                 { text: 'Football' },
                 { text: 'Basketball' },
                 { text: 'Soccer' },
-                { text: 'Tennis' }
-            ]
+                { text: 'Tennis' },
+            ],
         }, {
             text: 'What is your hair color?',
             required: true,
@@ -28,44 +28,44 @@ module.exports = function (locals) {
                 { text: 'Black' },
                 { text: 'Brown' },
                 { text: 'Blonde' },
-                { text: 'Other' }
-            ]
+                { text: 'Other' },
+            ],
         }, {
             text: 'Where were you born?',
             required: true,
-            type: 'text'
+            type: 'text',
         }, {
             text: 'Are you injured?',
             required: false,
-            type: 'bool'
-        }]
+            type: 'bool',
+        }],
     };
 
     survey = {
         name: 'Example',
         questions: [{
             required: false,
-            id: textQxId
+            id: textQxId,
         }, {
             required: true,
-            id: boolQxId
+            id: boolQxId,
         }, {
             required: true,
-            id: choiceQxId
+            id: choiceQxId,
         }, {
             required: false,
-            id: choicesQxId
-        }]
+            id: choicesQxId,
+        }],
     };
 
     survey = {
         name: 'Example',
         questions: [{
             required: false,
-            id: textQxId
+            id: textQxId,
         }, {
             required: true,
-            id: boolQxId
+            id: boolQxId,
         }, {
             text: 'What is your hair color?',
             required: true,
@@ -74,29 +74,29 @@ module.exports = function (locals) {
                 { text: 'Black' },
                 { text: 'Brown' },
                 { text: 'Blonde' },
-                { text: 'Other' }
-            ]
+                { text: 'Other' },
+            ],
         }, {
             required: false,
-            id: choicesQxId
-        }]
+            id: choicesQxId,
+        }],
     };
 
     survey = {
         name: 'Example',
         sections: [{
             name: 'Demographics',
-            indices: [1, 2]
+            indices: [1, 2],
         }, {
             name: 'Health',
-            indices: [0, 3]
+            indices: [0, 3],
         }],
         questions: [{
             required: false,
-            id: textQxId
+            id: textQxId,
         }, {
             required: true,
-            id: boolQxId
+            id: boolQxId,
         }, {
             text: 'What is your hair color?',
             required: true,
@@ -105,33 +105,33 @@ module.exports = function (locals) {
                 { text: 'Black' },
                 { text: 'Brown' },
                 { text: 'Blonde' },
-                { text: 'Other' }
-            ]
+                { text: 'Other' },
+            ],
         }, {
             required: false,
-            id: choicesQxId
-        }]
+            id: choicesQxId,
+        }],
     };
 
     survey = {
         name: 'Example',
         sections: [{
             name: 'Demographics',
-            indices: [1, 2]
+            indices: [1, 2],
         }, {
             name: 'Health',
-            indices: [0, 3]
+            indices: [0, 3],
         }],
         meta: {
             displayAsWizard: true,
-            saveProgress: false
+            saveProgress: false,
         },
         questions: [{
             required: false,
-            id: textQxId
+            id: textQxId,
         }, {
             required: true,
-            id: boolQxId
+            id: boolQxId,
         }, {
             text: 'What is your hair color?',
             required: true,
@@ -140,19 +140,19 @@ module.exports = function (locals) {
                 { text: 'Black' },
                 { text: 'Brown' },
                 { text: 'Blonde' },
-                { text: 'Other' }
-            ]
+                { text: 'Other' },
+            ],
         }, {
             required: false,
-            id: choicesQxId
-        }]
+            id: choicesQxId,
+        }],
     };
 
     let surveyId = null;
     return locals.agent
         .post('http://localhost:9005/api/v1.0/surveys')
         .send(survey)
-        .then(res => {
+        .then((res) => {
             console.log(res.status); // 201
             console.log(res.body.id); // id of the new survey
             surveyId = res.body.id;

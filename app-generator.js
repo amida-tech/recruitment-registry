@@ -42,11 +42,11 @@ const userAudit = function (req, res, next) {
 
 exports.initialize = function (app, options, callback) {
     const swaggerObject = options.swaggerJson || swaggerJson;
-    swaggerTools.initializeMiddleware(swaggerObject, function (middleware) {
+    swaggerTools.initializeMiddleware(swaggerObject, (middleware) => {
         app.use(middleware.swaggerMetadata());
 
         app.use(middleware.swaggerValidator({
-            validateResponse: true
+            validateResponse: true,
         }));
 
         app.use(middleware.swaggerSecurity(security));
@@ -56,7 +56,7 @@ exports.initialize = function (app, options, callback) {
         app.use(middleware.swaggerRouter({
             useStubs: false,
             ignoreMissingHandlers: true,
-            controllers: './controllers'
+            controllers: './controllers',
         }));
 
         app.use(middleware.swaggerUi());
@@ -64,8 +64,8 @@ exports.initialize = function (app, options, callback) {
         app.use(errHandler);
 
         models.sequelize.sync({
-            force: config.env === 'test'
-        }).then(function () {
+            force: config.env === 'test',
+        }).then(() => {
             callback(null, app);
         });
     });

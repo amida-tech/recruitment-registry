@@ -6,13 +6,13 @@ module.exports = function (locals) {
     const newLanguage = {
         code: 'tr',
         name: 'Turkish',
-        nativeName: 'Türkçe'
+        nativeName: 'Türkçe',
     };
 
     return locals.agent
         .post('http://localhost:9005/api/v1.0/languages')
         .send(newLanguage)
-        .then(res => {
+        .then((res) => {
             console.log(res.status); // 202
             console.log(res.body); // code of the new language
         })

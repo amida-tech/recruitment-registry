@@ -6,13 +6,13 @@ module.exports = function (locals) {
     const consentDocTurkish = {
         id: 3,
         content: 'Bu güncelleştirilmiş bir izin metnidir.',
-        updateComment: 'Güncelleştirilmiş ibaresi eklendi'
+        updateComment: 'Güncelleştirilmiş ibaresi eklendi',
     };
 
     return locals.agent
         .patch('http://localhost:9005/api/v1.0/consent-documents/text/tr')
         .send(consentDocTurkish)
-        .then(res => {
+        .then((res) => {
             console.log(res.status); // 204
         })
         .then(() => {

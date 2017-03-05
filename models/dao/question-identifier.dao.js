@@ -16,11 +16,11 @@ module.exports = class QuestionIdentifierDAO {
 
     getQuestionIdByIdentifier(type, identifier) {
         return QuestionIdentifier.findOne({
-                where: { type, identifier },
-                attributes: ['questionId'],
-                raw: true
-            })
-            .then(ids => {
+            where: { type, identifier },
+            attributes: ['questionId'],
+            raw: true,
+        })
+            .then((ids) => {
                 if (!ids) {
                     return RRError.reject('questionIdentifierNotFound');
                 }
@@ -30,15 +30,15 @@ module.exports = class QuestionIdentifierDAO {
 
     getInformationByQuestionIdentifier(type) {
         return QuestionIdentifier.findAll({
-                where: { type },
-                attributes: ['questionId', 'identifier'],
-                include: [{ model: Question, as: 'question', attributes: ['id', 'type'] }],
-                raw: true
-            })
-            .then(records => {
+            where: { type },
+            attributes: ['questionId', 'identifier'],
+            include: [{ model: Question, as: 'question', attributes: ['id', 'type'] }],
+            raw: true,
+        })
+            .then((records) => {
                 const map = records.map(record => [record.identifier, {
                     id: record['question.id'],
-                    type: record['question.type']
+                    type: record['question.type'],
                 }]);
                 return new Map(map);
             });
@@ -49,20 +49,18 @@ module.exports = class QuestionIdentifierDAO {
             where: { type },
             attributes: ['identifier', 'questionId'],
             include: [{ model: Question, as: 'question', attributes: ['type'] }],
-            raw: true
+            raw: true,
         };
         if (ids) {
             options.where.questionId = { $in: ids };
         }
         return QuestionIdentifier.findAll(options)
-            .then(records => {
-                return records.reduce((r, record) => {
-                    r[record.questionId] = {
-                        identifier: record.identifier,
-                        type: record['question.type']
-                    };
-                    return r;
-                }, {});
-            });
+            .then(records => records.reduce((r, record) => {
+                r[record.questionId] = {
+                    identifier: record.identifier,
+                    type: record['question.type'],
+                };
+                return r;
+            }, {}));
     }
 };

@@ -30,8 +30,8 @@ module.exports = class Answerer {
         return {
             bloodPressureValue: {
                 systolic: 100 + (answerIndex % 40),
-                diastolic: 70 + (answerIndex % 20)
-            }
+                diastolic: 70 + (answerIndex % 20),
+            },
         };
     }
 
@@ -40,8 +40,8 @@ module.exports = class Answerer {
         return {
             feetInchesValue: {
                 feet: 5 + (answerIndex % 2),
-                inches: answerIndex % 12
-            }
+                inches: answerIndex % 12,
+            },
         };
     }
 
@@ -128,11 +128,10 @@ module.exports = class Answerer {
                 return Object.assign({ multipleIndex }, this[type](question));
             });
             return { questionId: question.id, answers };
-        } else {
-            ++this.answerIndex;
-            const answer = this[type](question);
-            return { questionId: question.id, answer };
         }
+        ++this.answerIndex;
+        const answer = this[type](question);
+        return { questionId: question.id, answer };
     }
 
     answerMultipleQuestion(question, multipleIndices) {
@@ -146,7 +145,7 @@ module.exports = class Answerer {
 
     answerChoicesQuestion(question, selectionChoice) {
         const count = question.choices.length;
-        const choices = selectionChoice.map(choiceIndex => {
+        const choices = selectionChoice.map((choiceIndex) => {
             if (choiceIndex < 0) {
                 choiceIndex += count;
             }

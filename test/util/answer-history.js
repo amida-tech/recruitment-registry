@@ -10,7 +10,7 @@ const toAnswerRecord = function (answers, language) {
         return r;
     }, {});
     language = language || 'en';
-    answers = answers.map(answer => {
+    answers = answers.map((answer) => {
         const r = Object.assign({ language }, answer);
         return r;
     });
@@ -30,7 +30,7 @@ module.exports = class AnswerHistory {
     updateRecords(userIndex, surveyIndex, answers) {
         const records = this.getAll(userIndex, surveyIndex);
         const timeIndex = records.length;
-        records.forEach(record => {
+        records.forEach((record) => {
             const remaining = record.remaining;
             const removed = record.removed;
             answers.forEach(({ questionId }) => {
@@ -92,7 +92,7 @@ module.exports = class AnswerHistory {
                 r.push(...answers);
                 return r;
             }
-            answers.forEach(answer => {
+            answers.forEach((answer) => {
                 const questionId = answer.questionId;
                 if (remaining.hasOwnProperty(questionId)) {
                     r.push(answer);
@@ -106,7 +106,7 @@ module.exports = class AnswerHistory {
     expectedRemovedAnswers(userIndex, surveyIndex) {
         const records = this.getAll(userIndex, surveyIndex);
         const result = records.reduce((r, { removed, answers }) => {
-            answers.forEach(answer => {
+            answers.forEach((answer) => {
                 const questionId = answer.questionId;
                 const timeIndex = removed[questionId];
                 if (timeIndex !== undefined) {

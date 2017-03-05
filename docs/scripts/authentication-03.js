@@ -9,7 +9,7 @@ module.exports = function (locals) {
     return locals.agent
         .get('http://localhost:9005/api/v1.0/auth/basic')
         .auth('test2participant', 'test2password')
-        .then(res => {
+        .then((res) => {
             console.log(res.status); // 200
         })
         .then(() => {

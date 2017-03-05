@@ -5,7 +5,7 @@ module.exports = function (locals) {
 
     return locals.agent
         .get('http://localhost:9005/api/v1.0/user-consent-documents?include-signed=true')
-        .then(res => {
+        .then((res) => {
             console.log(res.status); // 200'
             console.log(JSON.stringify(res.body, undefined, 4)); // consent documents
         })

@@ -48,7 +48,7 @@ class Generator {
         let user = {
             username: `${username}_${userIndex}`,
             password: `password_${userIndex}`,
-            email: `${email}_${userIndex}@example.com`
+            email: `${email}_${userIndex}@example.com`,
         };
         if ((userIndex + 1) % 2 === 0) {
             delete user.username;
@@ -77,9 +77,8 @@ class Generator {
     answerQuestion(question) {
         if (question.id < 0) {
             return { questionId: -question.id };
-        } else {
-            return this.answerer.answerQuestion(question);
         }
+        return this.answerer.answerQuestion(question);
     }
 
     answerQuestions(questions) {
@@ -96,7 +95,7 @@ class Generator {
         return {
             name: `name_${index}`,
             title: `title_${index}`,
-            type: `type_${index}`
+            type: `type_${index}`,
         };
     }
 
@@ -106,7 +105,7 @@ class Generator {
         }
         const index = ++this.consentDocumentIndex;
         const result = {
-            content: `Sample consent section content ${index}`
+            content: `Sample consent section content ${index}`,
         };
         const count = this.consentTypeAdded[override.typeId] || 0;
         if (count) {
@@ -123,7 +122,7 @@ class Generator {
         }
         const index = ++this.consentIndex;
         const result = {
-            name: `name_${index}`
+            name: `name_${index}`,
         };
         Object.assign(result, override);
         return result;
@@ -143,12 +142,10 @@ class Generator {
         const reference = `reference_${choiceSetIndex}`;
         const numChoices = (choiceSetIndex % 4) + 2;
         const startValue = choiceSetIndex % 3;
-        const choices = _.range(numChoices).map(index => {
-            return {
-                text: `text_${choiceSetIndex}_${index}`,
-                code: `${startValue + index}`
-            };
-        });
+        const choices = _.range(numChoices).map(index => ({
+            text: `text_${choiceSetIndex}_${index}`,
+            code: `${startValue + index}`,
+        }));
         return { reference, choices };
     }
 
@@ -172,7 +169,7 @@ class Generator {
             url: `server_${index}@example.com`,
             city: `city_${index}`,
             state: this.newState(index),
-            zip
+            zip,
         };
     }
 
@@ -182,7 +179,7 @@ class Generator {
             zip_code: zip,
             distance: index + 1,
             city: `city_${index}`,
-            state: this.newState(index)
+            state: this.newState(index),
         };
     }
 

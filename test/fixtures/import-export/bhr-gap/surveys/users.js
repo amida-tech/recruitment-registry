@@ -4,7 +4,7 @@ module.exports = {
     name: 'Users',
     identifier: {
         type: 'bhr-unit-test',
-        value: 'users'
+        value: 'users',
     },
     questions: [{
         text: 'Eye Color',
@@ -12,36 +12,36 @@ module.exports = {
         type: 'choice',
         questionIdentifier: {
             type: 'users-column',
-            value: 'EyeColor'
+            value: 'EyeColor',
         },
         choices: [
             { text: 'Blue' },
             { text: 'Green' },
             { text: 'Brown' },
             { text: 'Hazel' },
-            { text: 'Black' }
-        ]
+            { text: 'Black' },
+        ],
     }, {
         text: 'Hair Color',
         required: false,
         type: 'choice',
         questionIdentifier: {
             type: 'users-column',
-            value: 'HairColor'
+            value: 'HairColor',
         },
         choices: [
             { text: 'Brown' },
             { text: 'Black' },
             { text: 'Blonde' },
-            { text: 'White' }
-        ]
+            { text: 'White' },
+        ],
     }, {
         text: 'Race/Ethnicity',
         required: false,
         type: 'choices',
         questionIdentifier: {
             type: 'users-column',
-            value: 'RaceEthnicity'
+            value: 'RaceEthnicity',
         },
         choices: [
             { text: 'Latino' },
@@ -51,15 +51,15 @@ module.exports = {
             { text: 'Native American' },
             { text: 'Pacific Islander' },
             { text: 'Other' },
-            { text: 'Declined To State', type: 'bool-sole' }
-        ]
+            { text: 'Declined To State', type: 'bool-sole' },
+        ],
     }, {
         text: 'Age',
         required: true,
         type: 'integer',
         questionIdentifier: {
             type: 'users-column',
-            value: 'Age'
-        }
-    }]
+            value: 'Age',
+        },
+    }],
 };

@@ -11,7 +11,7 @@ const translator = {
     },
     isTranslated(texts, language) {
         const languageText = `(${language})`;
-        texts.forEach(text => {
+        texts.forEach((text) => {
             if (text !== null) {
                 const location = text.indexOf(languageText);
                 expect(location).to.be.above(0, `is not translated to ${language}`);
@@ -24,13 +24,13 @@ const translator = {
         delete result.type;
         delete result.meta;
         if (result.choices) {
-            result.choices.forEach(choice => {
+            result.choices.forEach((choice) => {
                 choice.text = this._translate(choice.text, language);
                 delete choice.type;
             });
         }
         if (result.actions) {
-            result.actions.forEach(action => {
+            result.actions.forEach((action) => {
                 action.text = this._translate(action.text, language);
                 delete action.type;
             });
@@ -44,7 +44,7 @@ const translator = {
         surveySections.forEach(({ id, name, sections }) => {
             const translated = {
                 id,
-                name: this._translate(name, language)
+                name: this._translate(name, language),
             };
             result.push(translated);
             if (sections) {
@@ -69,7 +69,7 @@ const translator = {
     },
     translateChoiceSet(choiceSet, language) {
         const result = _.cloneDeep(choiceSet);
-        result.choices.forEach(choice => {
+        result.choices.forEach((choice) => {
             choice.text = this._translate(choice.text, language);
         });
         return result;
@@ -121,8 +121,8 @@ const translator = {
     },
     isConsentDocumentTranslated(consentDocument, language) {
         const languageText = `(${language})`;
-        consentDocument.sections.forEach(section => {
-            ['title', 'content', 'updateComment'].forEach(property => {
+        consentDocument.sections.forEach((section) => {
+            ['title', 'content', 'updateComment'].forEach((property) => {
                 const text = section[property];
                 if (text) {
                     const location = text.indexOf(languageText);
@@ -130,7 +130,7 @@ const translator = {
                 }
             });
         });
-    }
+    },
 };
 
 module.exports = translator;

@@ -24,7 +24,7 @@ module.exports = class RRSupertest {
             this.username = credentials.username;
         }
         return this.server
-            .get(this.baseUrl + '/auth/basic')
+            .get(`${this.baseUrl}/auth/basic`)
             .auth(credentials.username, credentials.password)
             .expect(status);
     }
@@ -35,9 +35,7 @@ module.exports = class RRSupertest {
     }
 
     getJWT() {
-        const jwt = _.find(this.server.cookies, function (cookie) {
-            return cookie.name === 'rr-jwt-token';
-        });
+        const jwt = _.find(this.server.cookies, cookie => cookie.name === 'rr-jwt-token');
         return jwt;
     }
 
@@ -49,7 +47,7 @@ module.exports = class RRSupertest {
         if (status < 401 && this.username && !validationError) {
             this.userAudit.push({ username: this.username, operation, endpoint });
         }
-        let r = this.server[operation](this.baseUrl + endpoint);
+        const r = this.server[operation](this.baseUrl + endpoint);
         if (header) {
             _.toPairs(header).forEach(([key, value]) => r.set(key, value));
         }
@@ -70,9 +68,8 @@ module.exports = class RRSupertest {
             .attach(field, filepath, filename);
         if (payload) {
             return request.field(payload).expect(status);
-        } else {
-            return request.expect(status);
         }
+        return request.expect(status);
     }
 
     patch(endpoint, payload, status, header) {

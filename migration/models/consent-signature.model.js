@@ -10,10 +10,10 @@ module.exports = function (sequelize, DataTypes) {
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'consent_document'
+                    tableName: 'consent_document',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         userId: {
             type: DataTypes.INTEGER,
@@ -23,10 +23,10 @@ module.exports = function (sequelize, DataTypes) {
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'registry_user'
+                    tableName: 'registry_user',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         language: {
             type: DataTypes.TEXT,
@@ -35,26 +35,26 @@ module.exports = function (sequelize, DataTypes) {
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'language'
+                    tableName: 'language',
                 },
-                key: 'code'
-            }
+                key: 'code',
+            },
         },
         ip: {
-            type: DataTypes.TEXT
+            type: DataTypes.TEXT,
         },
         userAgent: {
             type: DataTypes.TEXT,
-            field: 'user_agent'
+            field: 'user_agent',
         },
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',
-        }
+        },
     }, {
         updatedAt: false,
         freezeTableName: true,
         schema: sequelize.options.schema,
-        createdAt: 'createdAt'
+        createdAt: 'createdAt',
     });
 };

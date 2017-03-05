@@ -6,31 +6,31 @@ module.exports = function (locals) {
     const user = {
         username: 'testparticipant',
         password: 'testpassword',
-        email: 'test@example.com'
+        email: 'test@example.com',
     };
 
     const answers = [{
         questionId: 6,
-        answer: { choice: 13 }
+        answer: { choice: 13 },
     }, {
         questionId: 7,
-        answer: { textValue: '20850' }
+        answer: { textValue: '20850' },
     }, {
         questionId: 8,
-        answer: { boolValue: true }
+        answer: { boolValue: true },
     }, {
         questionId: 9,
         answer: {
             choices: [{
                 id: 16,
-                boolValue: true
+                boolValue: true,
             }, {
-                id: 17
+                id: 17,
             }, {
                 id: 23,
-                textValue: 'Community event'
-            }]
-        }
+                textValue: 'Community event',
+            }],
+        },
     }];
 
     const signatures = [1];
@@ -41,7 +41,7 @@ module.exports = function (locals) {
     return locals.agent
         .post('http://localhost:9005/api/v1.0/profiles')
         .send(registration)
-        .then(res => {
+        .then((res) => {
             console.log(res.status); // 201
             console.log(res.body); // {token: ...}
             jwtUser = res.body.token;

@@ -17,21 +17,21 @@ const sequelize = models.sequelize;
 const importSurveyScript = queryrize.readFileSync('bhr-gap-import.sql');
 
 const valueConverterByChoiceType = {
-    bool: function (value) {
+    bool(value) {
         if (value === 1 || value === '1') {
             return 'true';
         }
     },
-    integer: function (value) {
+    integer(value) {
         return parseInt(value);
     },
-    float: function (value) {
+    float(value) {
         return parseFloat(value);
-    }
+    },
 };
 
 const valueConverterByType = {
-    choices: function (value, choiceType) {
+    choices(value, choiceType) {
         const converter = valueConverterByChoiceType[choiceType];
         if (!converter) {
             throw new Error(`Choice type ${choiceType} has not been implemented.`);
@@ -41,29 +41,29 @@ const valueConverterByType = {
     'choice-ref': function (value) {
         return parseInt(value);
     },
-    text: function (value) {
+    text(value) {
         if (value.indexOf('\\') > -1) {
             value = value.replace(/\\/g, '\\\\');
         }
         return value;
     },
-    integer: function (value) {
+    integer(value) {
         return parseInt(value);
     },
-    float: function (value) {
+    float(value) {
         return parseFloat(value);
-    }
+    },
 };
 
 const assessmentStatusMap = {
-    'Scheduled': 'scheduled',
-    'Collected': 'collected',
+    Scheduled: 'scheduled',
+    Collected: 'collected',
     'Failed To Collect': 'failed-to-collect',
     'Not In Protocol': 'not-in-protocol',
-    'Started': 'started',
-    'Refused': 'refused',
+    Started: 'started',
+    Refused: 'refused',
     'Technical Difficulties': 'technical-difficulties',
-    'Unable To Perform': 'unable-to-perform'
+    'Unable To Perform': 'unable-to-perform',
 };
 
 const SurveyCSVConverter = class SurveyCSVConverter {
@@ -72,7 +72,6 @@ const SurveyCSVConverter = class SurveyCSVConverter {
         this.identifierMap = identifierMap;
         this.answerIdentifierType = answerIdentifierType;
         this.fields = ['username', 'assessment_name', 'status', 'line_index', 'question_id', 'question_choice_id', 'multiple_index', 'value', 'language_code', 'last_answer', 'days_after_baseline'];
-
     }
 
     handleLine(fileStream, line) {
@@ -194,7 +193,7 @@ const generateChoicesAnswerer = function (question_id, columnName, choiceMap) {
     return function (semicolonValues, survey_id, username) {
         if (semicolonValues) {
             const values = semicolonValues.split(';');
-            return values.map(value => {
+            return values.map((value) => {
                 const question_choice_id = choiceIdMap.get(value);
                 if (!question_choice_id) {
                     throw new Error('Unexpected value ${value} for ${columnName}.');
@@ -228,7 +227,6 @@ const generateAnswerConverter = function (identifierMap, choiceMap) {
         }
         if (type === 'choices') {
             result[identifier] = generateChoicesAnswerer(questionId, identifier, choiceMap);
-            return;
         }
     });
     return result;
@@ -236,13 +234,13 @@ const generateAnswerConverter = function (identifierMap, choiceMap) {
 
 const convertSubjects = function (filepath, { surveyIdentifier, questionIdentifierType, subjectCode }) {
     return models.surveyIdentifier.getIdsBySurveyIdentifier(surveyIdentifier.type)
-        .then(surveyIdentificaterMap => {
+        .then((surveyIdentificaterMap) => {
             const surveyId = surveyIdentificaterMap.get(surveyIdentifier.value);
             return models.questionIdentifier.getInformationByQuestionIdentifier(questionIdentifierType)
-                .then(identifierMap => {
+                .then((identifierMap) => {
                     const ids = [...identifierMap.values()].map(info => info.id);
                     return models.questionChoice.getAllQuestionChoices(ids)
-                        .then(allChoices => {
+                        .then((allChoices) => {
                             const choiceMap = allChoices.reduce((r, choice) => {
                                 const questionId = choice.questionId;
                                 let perQuestion = r.get(questionId);
@@ -256,17 +254,17 @@ const convertSubjects = function (filepath, { surveyIdentifier, questionIdentifi
                             return generateAnswerConverter(identifierMap, choiceMap);
                         });
                 })
-                .then(answerConverter => {
+                .then((answerConverter) => {
                     const converter = new Converter();
                     return converter.fileToRecords(filepath)
-                        .then(records => {
-                            const userRecords = records.map(record => {
+                        .then((records) => {
+                            const userRecords = records.map((record) => {
                                 const identifier = record[subjectCode];
                                 return {
                                     username: identifier,
                                     email: `${identifier}@example.com`,
                                     password: 'pwd',
-                                    role: 'import'
+                                    role: 'import',
                                 };
                             });
                             const answerRecords = records.reduce((r, record) => {
@@ -292,22 +290,22 @@ const importSubjects = function (filepath, options) {
     const userFilepath = path.join(config.tmpDirectory, `${basename}-trans-user.csv`);
     const answerFilepath = path.join(config.tmpDirectory, `${basename}-trans-answer.csv`);
     return convertSubjects(filepath, options)
-        .then(result => {
+        .then((result) => {
             const userConverter = new CSVConverterExport({ fields: ['username', 'email', 'password', 'role'] });
             fs.writeFileSync(userFilepath, userConverter.dataToCSV(result.userRecords));
             return result;
         })
-        .then(subjectsData => {
+        .then((subjectsData) => {
             const query = 'copy registry_user (username, email, password, role) from :filepath csv header';
             return sequelize.query(query, { replacements: { filepath: userFilepath } })
                 .then(() => sequelize.query('select id, username from registry_user', { type: sequelize.QueryTypes.SELECT }))
-                .then(users => {
+                .then((users) => {
                     const subjectMap = new Map();
                     users.forEach(({ id, username }) => subjectMap.set(username, id));
                     return subjectMap;
                 })
-                .then(subjectMap => {
-                    const subjectAnswers = subjectsData.answerRecords.map(r => {
+                .then((subjectMap) => {
+                    const subjectAnswers = subjectsData.answerRecords.map((r) => {
                         r.user_id = subjectMap.get(r.username);
                         delete r.username;
                         r.language_code = 'en';
@@ -321,12 +319,11 @@ const importSubjects = function (filepath, options) {
                     return sequelize.query(query, { replacements: { filepath: answerFilepath } });
                 });
         });
-
 };
 
 const transformSurveyFile = function (filepath, answerIdentifierType, outputFilepath) {
     return models.answerIdentifier.getTypeInformationByAnswerIdentifier(answerIdentifierType)
-        .then(identifierMap => {
+        .then((identifierMap) => {
             const converter = new SurveyCSVConverter(identifierMap, answerIdentifierType);
             return converter.convert(filepath, outputFilepath);
         });
@@ -334,14 +331,14 @@ const transformSurveyFile = function (filepath, answerIdentifierType, outputFile
 
 const importTransformedSurveyFile = function (surveyIdentifier, filepath) {
     return models.surveyIdentifier.getIdsBySurveyIdentifier(surveyIdentifier.type)
-        .then(surveyIdentificaterMap => {
+        .then((surveyIdentificaterMap) => {
             const surveyId = surveyIdentificaterMap.get(surveyIdentifier.value);
             const replacements = {
                 survey_id: surveyId,
-                filepath: filepath,
-                identifier: `${surveyIdentifier.value}`
+                filepath,
+                identifier: `${surveyIdentifier.value}`,
             };
-            let promise = importSurveyScript.reduce((r, query) => {
+            const promise = importSurveyScript.reduce((r, query) => {
                 if (r === null) {
                     r = sequelize.query(query, { replacements });
                 } else {
@@ -356,5 +353,5 @@ const importTransformedSurveyFile = function (surveyIdentifier, filepath) {
 module.exports = {
     importSubjects,
     transformSurveyFile,
-    importTransformedSurveyFile
+    importTransformedSurveyFile,
 };

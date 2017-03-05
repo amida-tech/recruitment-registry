@@ -1,4 +1,5 @@
 'use strict';
+
 const config = require('./config');
 const express = require('express');
 const cors = require('cors');
@@ -14,19 +15,18 @@ const app = express();
 
 const jsonParser = bodyParser.json();
 
-let origin = config.cors.origin;
+const origin = config.cors.origin;
 
 function determineOrigin(origin) {
     if (origin === '*') {
         return '*';
-    } else {
-        const corsWhitelist = origin.split(' ');
-        return function (requestOrigin, callback) {
-            const originStatus = corsWhitelist.indexOf(requestOrigin) > -1;
-            const errorMsg = originStatus ? null : 'CORS Error';
-            callback(errorMsg, originStatus);
-        };
     }
+    const corsWhitelist = origin.split(' ');
+    return function (requestOrigin, callback) {
+        const originStatus = corsWhitelist.indexOf(requestOrigin) > -1;
+        const errorMsg = originStatus ? null : 'CORS Error';
+        callback(errorMsg, originStatus);
+    };
 }
 
 const corsOptions = {
@@ -37,8 +37,8 @@ const corsOptions = {
         'Content-Type',
         'Authorization',
         'X-Requested-With',
-        'X-HTTP-Allow-Override'
-    ]
+        'X-HTTP-Allow-Override',
+    ],
 };
 
 expressWinston.requestWhitelist.push('body');
@@ -48,7 +48,7 @@ app.use(expressWinston.logger({
     winstonInstance: logger,
     msg: 'HTTP {{req.method}} {{req.url}}',
     expressFormat: true,
-    colorize: true
+    colorize: true,
 }));
 
 app.use(cors(corsOptions));
@@ -58,11 +58,11 @@ app.enable('trust proxy');
 app.use(passport.initialize());
 
 /* jshint unused:vars */
-app.use(function (req, res, next) {
+app.use((req, res, next) => {
     const isAuth = req.url.indexOf('/auth/basic') >= 0;
     const token = _.get(req, 'cookies.rr-jwt-token');
     if (token && !isAuth) {
-        _.set(req, 'headers.authorization', 'Bearer ' + token);
+        _.set(req, 'headers.authorization', `Bearer ${token}`);
     }
     next();
 });

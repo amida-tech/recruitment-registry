@@ -10,7 +10,7 @@ module.exports = function (locals) {
             { text: 'Walking' },
             { text: 'Jogging', type: 'bool' },
             { text: 'Cycling', type: 'bool' },
-            { text: 'Please specify other', type: 'text' }
+            { text: 'Please specify other', type: 'text' },
         ],
     };
 
@@ -21,22 +21,22 @@ module.exports = function (locals) {
             { text: 'Walking' },
             { text: 'Jogging', type: 'bool' },
             { text: 'Cycling', type: 'bool' },
-            { text: 'Please specify other', type: 'text' }
+            { text: 'Please specify other', type: 'text' },
         ],
         actions: [{
             type: 'true',
-            text: 'Confirm'
+            text: 'Confirm',
         }, {
             type: 'false',
-            text: 'I don\'t exercise.'
-        }]
+            text: 'I don\'t exercise.',
+        }],
     };
 
     let choicesQxId = null;
     return locals.agent
         .post('http://localhost:9005/api/v1.0/questions')
         .send(choicesQx)
-        .then(res => {
+        .then((res) => {
             console.log(res.status); // 201
             console.log(res.body.id); // Expected to be internal id of question
             choicesQxId = res.body.id;

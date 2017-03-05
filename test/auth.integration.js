@@ -1,5 +1,7 @@
 /* global describe,before,it*/
+
 'use strict';
+
 process.env.NODE_ENV = 'test';
 
 const jwt = require('jsonwebtoken');
@@ -22,7 +24,7 @@ const generator = new Generator();
 const shared = new SharedIntegration(generator);
 const sharedSpec = new SharedSpec(generator);
 
-describe('auth integration', function () {
+describe('auth integration', () => {
     const userCount = 4;
 
     const store = new RRSuperTest();
@@ -31,7 +33,7 @@ describe('auth integration', function () {
 
     before(shared.setUpFn(store));
 
-    _.range(userCount).forEach(index => {
+    _.range(userCount).forEach((index) => {
         it(`create user ${index} using model`, sharedSpec.createUserFn(hxUser));
     });
 
@@ -43,12 +45,12 @@ describe('auth integration', function () {
                 username = email;
             }
             store.authBasic({ username, password })
-                .end(function (err) {
+                .end((err) => {
                     if (err) {
                         return done(err);
                     }
                     const jwtCookie = store.getJWT();
-                    jwt.verify(jwtCookie.value, config.jwt.secret, {}, function (err, jwtObject) {
+                    jwt.verify(jwtCookie.value, config.jwt.secret, {}, (err, jwtObject) => {
                         if (err) {
                             return done(err);
                         }
@@ -68,9 +70,9 @@ describe('auth integration', function () {
             if (!username) {
                 username = email;
             }
-            username += 'u' + username;
+            username += `u${username}`;
             store.authBasic({ username, password }, 401)
-                .expect(function (res) {
+                .expect((res) => {
                     expect(res.body.message).to.equal(RRError.message('authenticationError'));
                 })
                 .end(done);
@@ -86,30 +88,30 @@ describe('auth integration', function () {
             }
             password += 'a';
             store.authBasic({ username, password }, 401)
-                .expect(function (res) {
+                .expect((res) => {
                     expect(res.body.message).to.equal(RRError.message('authenticationError'));
                 })
                 .end(done);
         };
     };
 
-    _.range(userCount).forEach(index => {
+    _.range(userCount).forEach((index) => {
         it(`user ${index} successfull login`, successfullLoginFn(index));
-        it(`log out user ${index}`, function () {
+        it(`log out user ${index}`, () => {
             store.resetAuth();
         });
         it(`user ${index} wrong username`, wrongUsernameFn(index));
         it(`user ${index} wrong password`, wrongPasswordFn(index));
     });
 
-    it('token creation throws', function (done) {
-        sinon.stub(tokener, 'createJWT', function () {
+    it('token creation throws', (done) => {
+        sinon.stub(tokener, 'createJWT', () => {
             throw new Error('stub error');
         });
-        let { username, password } = hxUser.client(0);
+        const { username, password } = hxUser.client(0);
 
         store.authBasic({ username, password }, 401)
-            .end(function (err, res) {
+            .end((err, res) => {
                 tokener.createJWT.restore();
                 if (err) {
                     return done(err);
@@ -119,5 +121,4 @@ describe('auth integration', function () {
                 done();
             });
     });
-
 });

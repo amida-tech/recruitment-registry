@@ -30,9 +30,9 @@ const sectionGenerators = {
         sections[lastIndex].name = 'parent_1';
         return [
             { name: 'parent_0', sections: sections.slice(0, lastIndex) },
-            sections[2]
+            sections[2],
         ];
-    }
+    },
 };
 
 module.exports = class SurveyGenerator {
@@ -85,7 +85,7 @@ module.exports = class SurveyGenerator {
         if (metaIndex > 0) {
             result.meta = {
                 displayAsWizard: metaIndex === 1,
-                saveProgress: metaIndex === 2
+                saveProgress: metaIndex === 2,
             };
         }
         return result;

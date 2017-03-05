@@ -1,5 +1,7 @@
 /* global describe,before,it*/
+
 'use strict';
+
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
@@ -18,7 +20,7 @@ const expect = chai.expect;
 const generator = new Generator();
 const shared = new SharedSpec(generator);
 
-describe('user unit', function () {
+describe('user unit', () => {
     const userCount = 8;
 
     const hxUser = new History();
@@ -29,7 +31,7 @@ describe('user unit', function () {
         return function () {
             const id = hxUser.id(index);
             return models.user.getUser(id)
-                .then(user => {
+                .then((user) => {
                     const client = hxUser.client(index);
                     comparator.user(client, user);
                     hxUser.updateServer(index, user);
@@ -63,44 +65,38 @@ describe('user unit', function () {
         };
     };
 
-    _.range(userCount / 2).forEach(index => {
+    _.range(userCount / 2).forEach((index) => {
         it(`create user ${index}`, shared.createUserFn(hxUser));
         it(`get user ${index}`, getUserFn(index));
     });
 
-    _.range(userCount / 2, userCount).forEach(index => {
+    _.range(userCount / 2, userCount).forEach((index) => {
         it(`create user ${index}`, shared.createUserFn(hxUser, { role: 'clinician' }));
         it(`get user ${index}`, getUserFn(index));
     });
 
-    it('list all non admin users', function () {
-        return models.user.listUsers()
-            .then(users => {
+    it('list all non admin users', () => models.user.listUsers()
+            .then((users) => {
                 let expected = hxUser.listServers().slice();
                 expected = _.sortBy(expected, 'username');
                 expect(users).to.deep.equal(expected);
-            });
-    });
+            }));
 
-    it('list all participant users', function () {
-        return models.user.listUsers({ role: 'participant' })
-            .then(users => {
+    it('list all participant users', () => models.user.listUsers({ role: 'participant' })
+            .then((users) => {
                 let expected = hxUser.listServers(undefined, _.range(userCount / 2)).slice();
                 expected = _.sortBy(expected, 'username');
                 expect(users).to.deep.equal(expected);
-            });
-    });
+            }));
 
-    it('list all clinician users', function () {
-        return models.user.listUsers({ role: 'clinician' })
-            .then(users => {
+    it('list all clinician users', () => models.user.listUsers({ role: 'clinician' })
+            .then((users) => {
                 let expected = hxUser.listServers(undefined, _.range(userCount / 2, userCount)).slice();
                 expected = _.sortBy(expected, 'username');
                 expect(users).to.deep.equal(expected);
-            });
-    });
+            }));
 
-    it('error: identical specified username and email', function () {
+    it('error: identical specified username and email', () => {
         const user = generator.newUser();
         user.username = user.email;
         return models.user.createUser(user)
@@ -122,7 +118,7 @@ describe('user unit', function () {
         };
     };
 
-    _.range(userCount).forEach(index => {
+    _.range(userCount).forEach((index) => {
         it(`error: update user ${index} error when email as username`, updateUsernameWhenEmailFn(index));
     });
 
@@ -178,14 +174,14 @@ describe('user unit', function () {
         };
     };
 
-    [0, 2, 1, 3].forEach(index => {
+    [0, 2, 1, 3].forEach((index) => {
         it(`error: create user with username of user ${index}`, uniqUsernameErrorFn(index));
         it(`error: create user with email of user ${index}`, uniqEmailErrorFn(index));
         it(`error: create user with opposite case email of user ${index}`, uniqOppCaseEmailErrorFn(index));
         it(`error: create user with username and email of user ${index}`, uniqUserErrorFn(index));
     });
 
-    _.range(userCount).forEach(index => {
+    _.range(userCount).forEach((index) => {
         it(`update user ${index}`, updateUserFn(index));
         it(`verify user ${index}`, verifyUserFn(index));
     });
@@ -199,7 +195,7 @@ describe('user unit', function () {
                 user.password = value;
             }
             return models.user.createUser(user)
-                .then(shared.throwingHandler, err => {
+                .then(shared.throwingHandler, (err) => {
                     expect(!!err.message).to.equal(true);
                 });
         };
@@ -209,7 +205,7 @@ describe('user unit', function () {
         [null, 'null'],
         [undefined, 'undefined'],
         ['--', 'no'],
-        ['', 'empty']
+        ['', 'empty'],
     ].forEach(([value, msg]) => {
         it(`error: create user with ${msg} password`, invalidPasswordErrorFn(value));
     });
@@ -218,7 +214,7 @@ describe('user unit', function () {
         return function () {
             const id = hxUser.id(0);
             return models.user.updateUser(id, { password: value })
-                .then(shared.throwingHandler, err => {
+                .then(shared.throwingHandler, (err) => {
                     expect(!!err.message).to.equal(true);
                 });
         };
@@ -227,7 +223,7 @@ describe('user unit', function () {
     [
         [null, 'null'],
         [undefined, 'undefined'],
-        ['', 'empty']
+        ['', 'empty'],
     ].forEach(([value, msg]) => {
         it(`error: update user with ${msg} password`, invalidPasswordUpdateErrorFn(value));
     });
@@ -241,7 +237,7 @@ describe('user unit', function () {
                 user.email = value;
             }
             return models.user.createUser(user)
-                .then(shared.throwingHandler, err => {
+                .then(shared.throwingHandler, (err) => {
                     expect(!!err.message).to.equal(true);
                 });
         };
@@ -252,7 +248,7 @@ describe('user unit', function () {
         [undefined, 'undefined'],
         ['--', 'no'],
         ['', 'empty'],
-        ['notemail', 'invalid (no @) ']
+        ['notemail', 'invalid (no @) '],
     ].forEach(([value, msg]) => {
         it(`error: create user with ${msg} email`, invalidEmailErrorFn(value));
     });
@@ -261,7 +257,7 @@ describe('user unit', function () {
         return function () {
             const id = hxUser.id(0);
             return models.user.updateUser(id, { email: value })
-                .then(shared.throwingHandler, err => {
+                .then(shared.throwingHandler, (err) => {
                     expect(!!err.message).to.equal(true);
                 });
         };
@@ -271,7 +267,7 @@ describe('user unit', function () {
         [null, 'null'],
         [undefined, 'undefined'],
         ['', 'empty'],
-        ['notemail', 'invalid (no @)']
+        ['notemail', 'invalid (no @)'],
     ].forEach(([value, msg]) => {
         it(`error: update user with ${msg} email`, invalidEmailUpdateErrorFn(value));
     });
@@ -288,7 +284,7 @@ describe('user unit', function () {
                 email = testJsutil.oppositeCase(email);
             }
             return models.user.resetPasswordToken(email)
-                .then(token => {
+                .then((token) => {
                     expect(!!token).to.equal(true);
                     tokens[index] = token;
                 });
@@ -324,7 +320,7 @@ describe('user unit', function () {
 
     it('sanity check both direct username and email username are tested', shared.sanityEnoughUserTested(hxUser));
 
-    _.range(userCount).forEach(index => {
+    _.range(userCount).forEach((index) => {
         it(`get reset password token for user ${index}`, resetPasswordTokenFn(index));
         it(`error: authenticate user ${index} with old password`, authenticateUserOldPWFn(index));
         it(`error: reset password with wrong token for user ${index}`, resetPasswordWrongTokenFn(index));
@@ -332,15 +328,13 @@ describe('user unit', function () {
         it(`authenticate user ${index}`, shared.authenticateUserFn(hxUser, index));
     });
 
-    it('error: reset password token for invalid email', function () {
-        return models.user.resetPasswordToken('a@a.com')
-            .then(shared.throwingHandler, shared.expectedErrorHandler('invalidEmail'));
-    });
+    it('error: reset password token for invalid email', () => models.user.resetPasswordToken('a@a.com')
+            .then(shared.throwingHandler, shared.expectedErrorHandler('invalidEmail')));
 
     let resetExpires;
     let resetExpiresUnit;
 
-    it('reduce password token expiration duration', function () {
+    it('reduce password token expiration duration', () => {
         resetExpires = config.crypt.resetExpires;
         resetExpiresUnit = config.crypt.resetExpiresUnit;
         config.crypt.resetExpires = 250;
@@ -348,15 +342,11 @@ describe('user unit', function () {
     });
 
     it('get reset password token for user 0', resetPasswordTokenFn(0));
-    it('delay to cause password tokenn expiration', function () {
-        return SPromise.delay(600);
-    });
-    it('error: reset password with expired reset token', function () {
-        return models.user.resetPassword(tokens[0], 'newPassword')
-            .then(shared.throwingHandler, shared.expectedErrorHandler('invalidOrExpiredPWToken'));
-    });
+    it('delay to cause password tokenn expiration', () => SPromise.delay(600));
+    it('error: reset password with expired reset token', () => models.user.resetPassword(tokens[0], 'newPassword')
+            .then(shared.throwingHandler, shared.expectedErrorHandler('invalidOrExpiredPWToken')));
 
-    it('restore password token expiration duraction', function () {
+    it('restore password token expiration duraction', () => {
         config.crypt.resetExpires = resetExpires;
         config.crypt.resetExpiresUnit = resetExpiresUnit;
     });

@@ -1,5 +1,7 @@
 /* global describe,before,it*/
+
 'use strict';
+
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
@@ -19,11 +21,11 @@ const expect = chai.expect;
 const generator = new Generator();
 const shared = new SharedSpec(generator);
 
-describe('user survey unit', function () {
+describe('user survey unit', () => {
     before(shared.setUpFn());
 
     const userCount = 3;
-    let surveyCount = 3;
+    const surveyCount = 3;
 
     const hxSurvey = new SurveyHistory();
     const hxUser = new History();
@@ -74,7 +76,7 @@ describe('user survey unit', function () {
         return function () {
             const userId = hxUser.id(userIndex);
             return models.userSurvey.listUserSurveys(userId)
-                .then(userSurveys => {
+                .then((userSurveys) => {
                     const expected = _.cloneDeep(hxSurvey.listServers());
                     expected.forEach((userSurvey, index) => {
                         userSurvey.status = statusList[index];
@@ -95,7 +97,7 @@ describe('user survey unit', function () {
             const userId = hxUser.id(userIndex);
             const surveyId = hxSurvey.id(surveyIndex);
             return models.userSurvey.getUserSurvey(userId, surveyId)
-                .then(userSurvey => {
+                .then((userSurvey) => {
                     const survey = hxSurvey.server(surveyIndex);
                     const key = _key(userIndex, surveyIndex);
                     const answers = mapAnswers.get(key) || [];
@@ -114,7 +116,7 @@ describe('user survey unit', function () {
                 options.includeSurvey = true;
             }
             return models.userSurvey.getUserSurveyAnswers(userId, surveyId, options)
-                .then(userSurveyAnswers => {
+                .then((userSurveyAnswers) => {
                     if (includeSurvey) {
                         const survey = hxSurvey.server(surveyIndex);
                         expect(userSurveyAnswers.survey).to.deep.equal(survey);
@@ -135,7 +137,7 @@ describe('user survey unit', function () {
             const answers = generator.answerQuestions(survey.questions);
             const input = {
                 answers,
-                status
+                status,
             };
             const userId = hxUser.id(userIndex);
             const key = _key(userIndex, surveyIndex);
@@ -154,7 +156,7 @@ describe('user survey unit', function () {
             const answers = generator.answerQuestions(questions);
             const input = {
                 answers,
-                status: 'in-progress'
+                status: 'in-progress',
             };
             const userId = hxUser.id(userIndex);
             const key = _key(userIndex, surveyIndex);
@@ -175,7 +177,7 @@ describe('user survey unit', function () {
             const answers = generator.answerQuestions(questions);
             const input = {
                 answers,
-                status: 'completed'
+                status: 'completed',
             };
             const userId = hxUser.id(userIndex);
             const key = _key(userIndex, surveyIndex);
@@ -198,13 +200,12 @@ describe('user survey unit', function () {
             const answers = generator.answerQuestions(questions);
             const input = {
                 answers,
-                status: 'completed'
+                status: 'completed',
             };
             const userId = hxUser.id(userIndex);
             return models.userSurvey.createUserSurveyAnswers(userId, survey.id, input)
                 .then(shared.throwingHandler, shared.expectedErrorHandler('answerRequiredMissing'));
         };
-
     };
 
     it('verify user 0 survey 0', verifyUserSurveyFn(0, 0, 'new'));
@@ -274,7 +275,7 @@ describe('user survey unit', function () {
         return function () {
             const userId = hxUser.id(userIndex);
             return models.userSurvey.listUserSurveys(userId, { language })
-                .then(userSurveys => {
+                .then((userSurveys) => {
                     if (!notTranslated) {
                         translator.isSurveyListTranslated(userSurveys, language);
                     }
@@ -296,7 +297,7 @@ describe('user survey unit', function () {
             const userId = hxUser.id(userIndex);
             const surveyId = hxSurvey.id(surveyIndex);
             return models.userSurvey.getUserSurvey(userId, surveyId, { language })
-                .then(userSurvey => {
+                .then((userSurvey) => {
                     const survey = hxSurvey.translatedServer(surveyIndex, language);
                     if (!notTranslated) {
                         translator.isSurveyTranslated(userSurvey.survey, language);
@@ -315,7 +316,7 @@ describe('user survey unit', function () {
             const surveyId = hxSurvey.id(surveyIndex);
             const options = { includeSurvey: true, language };
             return models.userSurvey.getUserSurveyAnswers(userId, surveyId, options)
-                .then(userSurveyAnswers => {
+                .then((userSurveyAnswers) => {
                     const survey = hxSurvey.translatedServer(surveyIndex, language);
                     if (!notTranslated) {
                         translator.isSurveyTranslated(userSurveyAnswers.survey, language);
@@ -367,7 +368,7 @@ describe('user survey unit', function () {
             const input = {
                 answers,
                 status,
-                language
+                language,
             };
             const userId = hxUser.id(userIndex);
             const key = _key(userIndex, surveyIndex);

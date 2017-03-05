@@ -7,8 +7,8 @@ const RRError = require('../lib/rr-error');
 
 const sequelizeErrorMap = {
     SequelizeUniqueConstraintError: {
-        'lower(email)': 'uniqueEmail'
-    }
+        'lower(email)': 'uniqueEmail',
+    },
 };
 
 const transformSequelizeError = function (err) {

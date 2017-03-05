@@ -6,13 +6,13 @@ module.exports = function (locals) {
     const consentDocUpdate = {
         typeId: 1,
         content: 'This is an updated Terms of Use.',
-        updateComment: 'Updated TOU notice added'
+        updateComment: 'Updated TOU notice added',
     };
 
     return locals.agent
         .post('http://localhost:9005/api/v1.0/consent-documents')
         .send(consentDocUpdate)
-        .then(res => {
+        .then((res) => {
             console.log(res.status); // 201
             console.log(res.body.id); // id of the updated consent document
         })

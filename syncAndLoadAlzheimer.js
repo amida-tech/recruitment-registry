@@ -13,24 +13,16 @@ const sample = surveyExamples.Alzheimer;
 const helper = require('./test/util/survey-common');
 
 models.sequelize.sync({
-    force: true
-}).then(function () {
-    return models.profileSurvey.createProfileSurvey(sample.survey);
-}).then(function () {
-    return models.profileSurvey.getProfileSurvey();
-}).then(function (profileSurvey) {
+    force: true,
+}).then(() => models.profileSurvey.createProfileSurvey(sample.survey)).then(() => models.profileSurvey.getProfileSurvey()).then((profileSurvey) => {
     const answers = helper.formAnswersToPost(profileSurvey.survey, sample.answer);
     return models.profile.createProfile({
         user: userExample,
-        answers
+        answers,
     });
-}).then(function () {
-    return models.survey.createSurvey(surveyExamples.Example.survey);
-}).then(function () {
-    return consentSeed(consentExample);
-}).then(function () {
+}).then(() => models.survey.createSurvey(surveyExamples.Example.survey)).then(() => consentSeed(consentExample)).then(() => {
     console.log('success');
-}).catch(function (err) {
+}).catch((err) => {
     console.log('failure');
     console.log(err);
 });

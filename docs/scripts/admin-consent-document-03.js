@@ -7,13 +7,13 @@ module.exports = function (locals) {
 
     const consentDocTOU = {
         typeId: consentTypeTOUId,
-        content: 'This is a terms of use document.'
+        content: 'This is a terms of use document.',
     };
 
     return locals.agent
         .post('http://localhost:9005/api/v1.0/consent-documents')
         .send(consentDocTOU)
-        .then(res => {
+        .then((res) => {
             console.log(res.status); // 201
             console.log(res.body.id); // id of the new consent document
         })

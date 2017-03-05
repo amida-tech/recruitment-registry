@@ -27,5 +27,5 @@ module.exports = [
     require('./quality-of-life'),
     require('./quolibri'),
     require('./rivermead'),
-    require('./sleep')
+    require('./sleep'),
 ];

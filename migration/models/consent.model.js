@@ -4,7 +4,7 @@ module.exports = function (sequelize, DataTypes) {
     return sequelize.define('consent', {
         name: {
             type: DataTypes.TEXT,
-            allowNull: false
+            allowNull: false,
         },
         createdAt: {
             type: DataTypes.DATE,
@@ -12,14 +12,14 @@ module.exports = function (sequelize, DataTypes) {
         },
         deletedAt: {
             type: DataTypes.DATE,
-            field: 'deleted_at'
-        }
+            field: 'deleted_at',
+        },
     }, {
         freezeTableName: true,
         schema: sequelize.options.schema,
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',
-        paranoid: true
+        paranoid: true,
     });
 };

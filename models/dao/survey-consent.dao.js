@@ -19,7 +19,7 @@ module.exports = class SurveyConsentDAO {
                 .then(({ id }) => ({ id }));
         }
         return ConsentSection.count({ where: { consentId, typeId: consentTypeId } })
-            .then(count => {
+            .then((count) => {
                 if (count) {
                     return SurveyConsent.create({ surveyId, consentId, consentTypeId, action })
                         .then(({ id }) => ({ id }));
@@ -40,8 +40,8 @@ module.exports = class SurveyConsentDAO {
         }, []);
         return Consent.findAll({ raw: true, id: { $in: consentIds }, attributes: ['id', 'name'] })
             .then(consents => new Map(consents.map(consent => [consent.id, consent.name])))
-            .then(consentMap => {
-                surveyConsents.forEach(surveyConsent => {
+            .then((consentMap) => {
+                surveyConsents.forEach((surveyConsent) => {
                     const consentId = surveyConsent.consentId;
                     if (consentId) {
                         const consentName = consentMap.get(consentId);
@@ -54,7 +54,7 @@ module.exports = class SurveyConsentDAO {
 
     listSurveyConsents(surveyId, options) {
         return SurveyConsent.findAll({ surveyId, raw: true, attributes: ['id', 'consentId', 'consentTypeId', 'action'] })
-            .then(surveyConsents => {
+            .then((surveyConsents) => {
                 if (surveyConsents.length < 1) {
                     return surveyConsents;
                 }
@@ -65,8 +65,8 @@ module.exports = class SurveyConsentDAO {
                 const typeOptions = Object.assign({ ids }, options);
                 return this.consentType.listConsentTypes(typeOptions)
                     .then(consentTypes => new Map(consentTypes.map(consentType => [consentType.id, consentType])))
-                    .then(consentTypeMap => {
-                        surveyConsents.forEach(surveyConsent => {
+                    .then((consentTypeMap) => {
+                        surveyConsents.forEach((surveyConsent) => {
                             const consentType = consentTypeMap.get(surveyConsent.consentTypeId);
                             surveyConsent.consentTypeName = consentType.name;
                             surveyConsent.consentTypeTitle = consentType.title;
