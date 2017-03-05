@@ -4,6 +4,7 @@
 
 const chai = require('chai');
 
+const app = require('../../app');
 const appgen = require('../../app-generator');
 const db = require('../../models/db');
 const Generator = require('./generator');
@@ -19,7 +20,7 @@ class SharedIntegration {
 
     setUpFn(store, options = {}) {
         return function (done) {
-            appgen.generate(options, (err, app) => {
+            appgen.initialize(app, options, (err, app) => {
                 if (err) {
                     return done(err);
                 }

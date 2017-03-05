@@ -2,6 +2,9 @@
 
 'use strict';
 
+const swaggerTools = require('swagger-tools');
+const swaggerObject = require('./swagger.json');
+
 module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-watch');
@@ -14,8 +17,7 @@ module.exports = function (grunt) {
 
     const swaggerValidation = function () {
         const done = this.async();
-        const spec = require('swagger-tools').specs.v2;
-        const swaggerObject = require('./swagger.json');
+        const spec = swaggerTools.specs.v2;
         spec.validate(swaggerObject, (err, result) => {
             if (err) {
                 grunt.log.error(err);

@@ -6,6 +6,10 @@ dotenv.config();
 
 const _ = require('lodash');
 
+const developmentEnv = require('./development');
+const testEnv = require('./test');
+const productionEnv = require('./production');
+
 const all = {
     env: 'development',
     cors: {
@@ -93,7 +97,12 @@ const main = {
 };
 
 const configBase = _.merge(all, main);
-const config = _.merge(configBase, require(`./${configBase.env}.js`));
+const envBase = {
+    development: developmentEnv,
+    test: testEnv,
+    production: productionEnv,
+};
+const config = _.merge(configBase, envBase[configBase.env]);
 
 process.env.NODE_ENV = config.env;
 

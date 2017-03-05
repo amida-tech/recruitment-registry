@@ -1,6 +1,6 @@
 'use strict';
 
-/* eslint func-names: 0, no-console: 0 */
+/* eslint func-names: 0, no-console: 0, import/no-extraneous-dependencies: 0 */
 
 const request = require('superagent');
 

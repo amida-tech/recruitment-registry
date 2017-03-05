@@ -10,11 +10,7 @@ module.exports = {
         'class-methods-use-this': 'off',
         'no-shadow': 'off',
         'max-len': 'off',
-        'global-require': 'warn',
         'camelcase': 'warn',
-        'import/no-unresolved': 'warn',
-        'import/no-dynamic-require': 'warn',
-        'import/no-extraneous-dependencies': 'warn'
     },
     'parserOptions': {
         'sourceType': 'script'

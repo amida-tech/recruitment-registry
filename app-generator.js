@@ -72,8 +72,3 @@ exports.initialize = function (app, options, callback) {
         });
     });
 };
-
-exports.generate = function (options, callback) {
-    const app = require('./app');
-    exports.initialize(app, options, callback);
-};

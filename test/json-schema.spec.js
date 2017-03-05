@@ -34,7 +34,7 @@ describe('json schema validations', () => {
         return function () {
             const kebabObjectType = _.kebabCase(objectType);
 
-            const valids = require(`./fixtures/valids/${kebabObjectType}`);
+            const valids = require(`./fixtures/valids/${kebabObjectType}`); // eslint-disable-line global-require, import/no-dynamic-require
 
             valids.forEach((valid) => {
                 const r = js(objectType, valid, res);
@@ -44,7 +44,7 @@ describe('json schema validations', () => {
                 expect(r).to.equal(true, JSON.stringify(lastErr, undefined, 4));
             });
 
-            const invalids = require(`./fixtures/json-schema-invalid/${kebabObjectType}`);
+            const invalids = require(`./fixtures/json-schema-invalid/${kebabObjectType}`); // eslint-disable-line global-require, import/no-dynamic-require
 
             invalids.forEach((invalid) => {
                 const r = js(objectType, invalid, res);

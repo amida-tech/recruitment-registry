@@ -45,7 +45,7 @@ describe('swagger validations', () => {
     objectTypes.forEach((objectType) => {
         const kebabObjectType = _.kebabCase(objectType);
 
-        const valids = require(`./fixtures/valids/${kebabObjectType}`);
+        const valids = require(`./fixtures/valids/${kebabObjectType}`); // eslint-disable-line global-require, import/no-dynamic-require
         valids.forEach((valid, index) => {
             it(`valid ${objectType} case ${index}`, testValidFn(objectType, valid));
         });

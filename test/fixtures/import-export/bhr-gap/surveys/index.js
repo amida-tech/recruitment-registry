@@ -1,8 +1,13 @@
 'use strict';
 
+const users = require('./users');
+const sports = require('./sports');
+const televisionHistory = require('./television-history');
+const employmentHistory = require('./employment-history');
+
 module.exports = [
-    require('./users'),
-    require('./sports'),
-    require('./television-history'),
-    require('./employment-history'),
+    users,
+    sports,
+    televisionHistory,
+    employmentHistory,
 ];

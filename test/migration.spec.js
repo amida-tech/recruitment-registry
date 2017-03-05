@@ -53,7 +53,7 @@ describe('migration spec', () => {
             filenames.sort();
             const pxs = filenames.map((filename) => {
                 const filepath = path.join(migrateDirectory, filename);
-                const m = require(filepath);
+                const m = require(filepath); // eslint-disable-line global-require, import/no-dynamic-require
                 return m.up(queryInterface, Sequelize);
             });
             return db.sequelize.Promise.all(pxs);
