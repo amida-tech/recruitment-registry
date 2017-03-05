@@ -77,6 +77,7 @@ module.exports = function (grunt) {
             options: {
                 configFile: '.eslintrc.js',
                 fix: true,
+                quiet: true,
             },
             target: [
                 '**/*.js',
