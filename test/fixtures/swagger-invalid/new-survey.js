@@ -5,14 +5,14 @@ module.exports = [{
     questions: [{
         text: 'What is this?',
         required: true,
-        type: 'text'
+        type: 'text',
     }, {
         text: 'Choice',
         required: true,
         type: 'choices',
         choices: [
             { text: 'Black', type: 'what' },
-            { text: 'Brown' }
-        ]
-    }]
+            { text: 'Brown' },
+        ],
+    }],
 }];

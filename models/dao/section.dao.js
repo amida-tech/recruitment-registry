@@ -15,9 +15,8 @@ module.exports = class SectionDAO extends Translatable {
             .then(({ id }) => {
                 if (name) {
                     return this.createTextTx({ name, description, id }, transaction);
-                } else {
-                    return { id };
                 }
+                return { id };
             });
     }
 };

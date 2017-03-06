@@ -42,7 +42,7 @@ module.exports = class SurveyHistory extends History {
         }
         if (scope === 'export') {
             const result = this.listServers(['id', 'name', 'description', 'questions', 'status']);
-            result.forEach(survey => {
+            result.forEach((survey) => {
                 survey.questions = survey.questions.map(question => ({ id: question.id, required: question.required }));
             });
             return result;

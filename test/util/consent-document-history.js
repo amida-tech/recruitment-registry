@@ -63,16 +63,16 @@ module.exports = class ConsentDocumentHistory {
     translatedServer(typeIndex, language) {
         const server = this.activeConsentDocuments[typeIndex];
         const tr = this.hxDocument.serverTranslation(server.id, language);
-        return tr ? tr : server;
+        return tr || server;
     }
 
     serversInList(typeIndices) {
-        const result = typeIndices.map(index => {
+        const result = typeIndices.map((index) => {
             const type = this.hxType.server(index);
             return {
                 id: this.activeConsentDocuments[index].id,
                 name: type.name,
-                title: type.title
+                title: type.title,
             };
         });
         return _.sortBy(result, 'id');
@@ -100,12 +100,12 @@ module.exports = class ConsentDocumentHistory {
     }
 
     translatedServersInList(typeIndices, language) {
-        const result = typeIndices.map(index => {
+        const result = typeIndices.map((index) => {
             const type = this.hxType.translatedServer(index, language);
             return {
                 id: this.activeConsentDocuments[index].id,
                 name: type.name,
-                title: type.title
+                title: type.title,
             };
         });
         return _.sortBy(result, 'id');

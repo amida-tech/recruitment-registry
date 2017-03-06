@@ -9,23 +9,23 @@ module.exports = function (sequelize, DataTypes) {
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'research_site'
+                    tableName: 'research_site',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         zip: {
             type: DataTypes.TEXT,
-            allowNull: false
+            allowNull: false,
         },
         createdAt: {
             type: DataTypes.DATE,
-            field: 'created_at'
+            field: 'created_at',
         },
         deletedAt: {
             type: DataTypes.DATE,
-            field: 'deleted_at'
-        }
+            field: 'deleted_at',
+        },
     }, {
         freezeTableName: true,
         schema: sequelize.options.schema,
@@ -33,6 +33,6 @@ module.exports = function (sequelize, DataTypes) {
         updatedAt: false,
         deletedAt: 'deletedAt',
         paranoid: true,
-        indexes: [{ unique: true, fields: ['zip', 'research_site_id'], where: { deleted_at: { $eq: null } } }]
+        indexes: [{ unique: true, fields: ['zip', 'research_site_id'], where: { deleted_at: { $eq: null } } }],
     });
 };

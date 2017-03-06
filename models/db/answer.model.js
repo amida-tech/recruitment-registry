@@ -9,10 +9,10 @@ module.exports = function (sequelize, DataTypes) {
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'registry_user'
+                    tableName: 'registry_user',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         surveyId: {
             type: DataTypes.INTEGER,
@@ -21,10 +21,10 @@ module.exports = function (sequelize, DataTypes) {
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'survey'
+                    tableName: 'survey',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         language: {
             type: DataTypes.TEXT,
@@ -33,10 +33,10 @@ module.exports = function (sequelize, DataTypes) {
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'language'
+                    tableName: 'language',
                 },
-                key: 'code'
-            }
+                key: 'code',
+            },
         },
         questionId: {
             type: DataTypes.INTEGER,
@@ -45,10 +45,10 @@ module.exports = function (sequelize, DataTypes) {
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'question'
+                    tableName: 'question',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         questionChoiceId: {
             type: DataTypes.INTEGER,
@@ -56,30 +56,30 @@ module.exports = function (sequelize, DataTypes) {
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'question_choice'
+                    tableName: 'question_choice',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         multipleIndex: {
             type: DataTypes.INTEGER,
-            field: 'multiple_index'
+            field: 'multiple_index',
         },
         value: {
-            type: DataTypes.TEXT
+            type: DataTypes.TEXT,
         },
         meta: {
-            type: DataTypes.JSON
+            type: DataTypes.JSON,
         },
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',
-            defaultValue: sequelize.literal('NOW()')
+            defaultValue: sequelize.literal('NOW()'),
         },
         deletedAt: {
             type: DataTypes.DATE,
             field: 'deleted_at',
-        }
+        },
     }, {
         freezeTableName: true,
         schema: sequelize.options.schema,
@@ -88,6 +88,6 @@ module.exports = function (sequelize, DataTypes) {
         updatedAt: false,
         deletedAt: 'deletedAt',
         paranoid: true,
-        indexes: [{ fields: ['survey_id'], where: { deleted_at: { $eq: null } } }]
+        indexes: [{ fields: ['survey_id'], where: { deleted_at: { $eq: null } } }],
     });
 };

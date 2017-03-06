@@ -9,8 +9,6 @@ const Smtp = db.Smtp;
 const SmtpText = db.SmtpText;
 
 module.exports = class SMTPDAO {
-    constructor() {}
-
     createSmtpTx(smtp, transaction) {
         return Smtp.destroy({ where: { deletedAt: null }, transaction })
             .then(() => {
@@ -22,6 +20,7 @@ module.exports = class SMTPDAO {
                             return SmtpText.destroy({ where: {}, transaction })
                                 .then(() => SmtpText.create({ subject, content, language: 'en' }, { transaction }));
                         }
+                        return null;
                     });
             });
     }
@@ -42,30 +41,30 @@ module.exports = class SMTPDAO {
 
     getSmtp(options = {}) {
         const attributes = {
-            exclude: ['id', 'createdAt', 'deletedAt']
+            exclude: ['id', 'createdAt', 'deletedAt'],
         };
         return Smtp.findOne({ raw: true, attributes })
-            .then(smtp => {
+            .then((smtp) => {
                 if (!smtp) {
                     return null;
                 }
                 const language = options.language || 'en';
                 return SmtpText.findOne({
-                        raw: true,
-                        where: { language },
-                        attributes: ['subject', 'content']
-                    })
-                    .then(text => {
+                    raw: true,
+                    where: { language },
+                    attributes: ['subject', 'content'],
+                })
+                    .then((text) => {
                         if (!text && (language !== 'en')) {
                             return SmtpText.findOne({
                                 raw: true,
                                 where: { language: 'en' },
-                                attributes: ['subject', 'content']
+                                attributes: ['subject', 'content'],
                             });
                         }
                         return text;
                     })
-                    .then(text => {
+                    .then((text) => {
                         if (text) {
                             Object.assign(smtp, text);
                         }

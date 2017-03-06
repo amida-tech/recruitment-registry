@@ -89,5 +89,5 @@ module.exports = {
     choiceSet,
     surveyQuestion,
     answerRule,
-    researchSite
+    researchSite,
 };

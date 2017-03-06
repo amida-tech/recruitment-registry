@@ -1,5 +1,7 @@
 /* global describe,before,it*/
+
 'use strict';
+
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
@@ -12,7 +14,7 @@ const expect = chai.expect;
 
 const shared = new SharedSpec();
 
-describe('smtp unit', function () {
+describe('smtp unit', () => {
     before(shared.setUpFn());
 
     let smtp;
@@ -33,15 +35,16 @@ describe('smtp unit', function () {
             from: `from_${index}`,
             otherOptions: {
                 key1: `key1_${index}`,
-                key2: `key2_${index}`
-            }
+                key2: `key2_${index}`,
+            },
         };
     };
 
     const createNewSmtpText = function (index) {
+        const actualLink = '${link}'; // eslint-disable-line no-template-curly-in-string
         return {
             subject: `subject_${index}`,
-            content: `content_${index} with link:` + '${link}'
+            content: `content_${index} with link:${actualLink}`,
         };
     };
 
@@ -74,8 +77,8 @@ describe('smtp unit', function () {
     const getSmtpFn = function () {
         return function () {
             return models.smtp.getSmtp()
-                .then(result => {
-                    let expected = _.cloneDeep(smtp);
+                .then((result) => {
+                    const expected = _.cloneDeep(smtp);
                     if (smtpText) {
                         Object.assign(expected, smtpText);
                     }
@@ -87,7 +90,7 @@ describe('smtp unit', function () {
     const getTranslatedSmtpFn = function (language, checkFields) {
         return function () {
             return models.smtp.getSmtp({ language })
-                .then(result => {
+                .then((result) => {
                     const expected = _.cloneDeep(smtp);
                     let translation = smtpTextTranslation[language];
                     if (!translation) {
@@ -96,7 +99,7 @@ describe('smtp unit', function () {
                     Object.assign(expected, translation);
                     expect(result).to.deep.equal(expected);
                     if (checkFields) { // sanity check
-                        ['subject', 'content'].forEach(property => {
+                        ['subject', 'content'].forEach((property) => {
                             const text = result[property];
                             const location = text.indexOf(`(${language})`);
                             expect(location).to.be.above(0);
@@ -109,8 +112,8 @@ describe('smtp unit', function () {
     const translateSmtpFn = (function () {
         const translateSmtp = function (server, language) {
             return {
-                subject: server.subject + ` (${language})`,
-                content: server.content + ` (${language})`
+                subject: `${server.subject} (${language})`,
+                content: `${server.content} (${language})`,
             };
         };
 
@@ -123,7 +126,7 @@ describe('smtp unit', function () {
                     });
             };
         };
-    })();
+    }());
 
     const deleteSmtpFn = function () {
         return function () {

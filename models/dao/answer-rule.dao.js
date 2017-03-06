@@ -10,8 +10,6 @@ const Question = db.Question;
 const QuestionChoice = db.QuestionChoice;
 
 module.exports = class AnswerRuleDAO {
-    constructor() {}
-
     getSurveyAnswerRules(surveyId) {
         const where = { surveyId };
         const attributes = ['id', 'logic', 'questionId', 'answerQuestionId', 'sectionId'];
@@ -20,13 +18,13 @@ module.exports = class AnswerRuleDAO {
             { model: Question, as: 'answerQuestion', attributes: ['type'] },
         ];
         return AnswerRule.findAll({ raw: true, where, attributes, include, order: 'line' })
-            .then(answerRules => {
+            .then((answerRules) => {
                 if (answerRules.length < 1) {
                     return answerRules;
                 }
                 const rules = {};
                 const ruleIds = [];
-                const result = answerRules.map(answerRule => {
+                const result = answerRules.map((answerRule) => {
                     const { id, logic, questionId, answerQuestionId, sectionId } = answerRule;
                     const questionType = answerRule['answerQuestion.type'];
                     const rule = { id, logic, type: questionType };
@@ -37,21 +35,21 @@ module.exports = class AnswerRuleDAO {
                     return ruleInfo;
                 });
                 return AnswerRuleValue.findAll({
-                        where: { ruleId: { $in: ruleIds } },
-                        attributes: ['ruleId', 'questionChoiceId', 'value'],
-                        raw: true,
-                        include: [{ model: QuestionChoice, as: 'questionChoice', attributes: ['type'] }]
-                    })
-                    .then(answerRuleValues => {
+                    where: { ruleId: { $in: ruleIds } },
+                    attributes: ['ruleId', 'questionChoiceId', 'value'],
+                    raw: true,
+                    include: [{ model: QuestionChoice, as: 'questionChoice', attributes: ['type'] }],
+                })
+                    .then((answerRuleValues) => {
                         if (answerRuleValues.length) {
-                            answerRuleValues.forEach(answer => {
+                            answerRuleValues.forEach((answer) => {
                                 if (answer['questionChoice.type']) {
                                     answer.choiceType = answer['questionChoice.type'];
                                 }
                                 delete answer['questionChoice.type'];
                             });
                             const groupedResult = _.groupBy(answerRuleValues, 'ruleId');
-                            ruleIds.forEach(ruleId => {
+                            ruleIds.forEach((ruleId) => {
                                 const entries = groupedResult[ruleId];
                                 if (entries) {
                                     const rule = rules[ruleId];
@@ -59,7 +57,7 @@ module.exports = class AnswerRuleDAO {
                                 }
                             });
                         }
-                        ruleIds.forEach(ruleId => {
+                        ruleIds.forEach((ruleId) => {
                             delete rules[ruleId].type;
                         });
                         return result;
@@ -69,7 +67,7 @@ module.exports = class AnswerRuleDAO {
 
     getQuestionExpandedSurveyAnswerRules(surveyId) {
         return this.getSurveyAnswerRules(surveyId)
-            .then(answerRules => {
+            .then((answerRules) => {
                 if (!answerRules.length) {
                     return { sectionAnswerRulesMap: null, questionAnswerRulesMap: null };
                 }

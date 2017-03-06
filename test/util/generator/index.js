@@ -38,7 +38,8 @@ class Generator {
     }
 
     newUser(override) {
-        const userIndex = ++this.userIndex;
+        this.userIndex += 1;
+        const userIndex = this.userIndex;
         let username = 'uSeRnAmE';
         let email = 'eMaIl';
         if ((userIndex + 1) % 3 === 0) {
@@ -48,7 +49,7 @@ class Generator {
         let user = {
             username: `${username}_${userIndex}`,
             password: `password_${userIndex}`,
-            email: `${email}_${userIndex}@example.com`
+            email: `${email}_${userIndex}@example.com`,
         };
         if ((userIndex + 1) % 2 === 0) {
             delete user.username;
@@ -77,9 +78,8 @@ class Generator {
     answerQuestion(question) {
         if (question.id < 0) {
             return { questionId: -question.id };
-        } else {
-            return this.answerer.answerQuestion(question);
         }
+        return this.answerer.answerQuestion(question);
     }
 
     answerQuestions(questions) {
@@ -92,11 +92,12 @@ class Generator {
     }
 
     newConsentType() {
-        const index = ++this.consentTypeIndex;
+        this.consentTypeIndex += 1;
+        const index = this.consentTypeIndex;
         return {
             name: `name_${index}`,
             title: `title_${index}`,
-            type: `type_${index}`
+            type: `type_${index}`,
         };
     }
 
@@ -104,9 +105,10 @@ class Generator {
         if (!override.typeId) {
             throw new Error('typeId is required');
         }
-        const index = ++this.consentDocumentIndex;
+        this.consentDocumentIndex += 1;
+        const index = this.consentDocumentIndex;
         const result = {
-            content: `Sample consent section content ${index}`
+            content: `Sample consent section content ${index}`,
         };
         const count = this.consentTypeAdded[override.typeId] || 0;
         if (count) {
@@ -121,16 +123,18 @@ class Generator {
         if (!override.sections) {
             throw new Error('sections is required.');
         }
-        const index = ++this.consentIndex;
+        this.consentIndex += 1;
+        const index = this.consentIndex;
         const result = {
-            name: `name_${index}`
+            name: `name_${index}`,
         };
         Object.assign(result, override);
         return result;
     }
 
     newAssessment(surveyIds) {
-        const index = ++this.assessmentIndex;
+        this.assessmentIndex += 1;
+        const index = this.assessmentIndex;
         const name = `name_${index}`;
         const sequenceType = (index % 2 === 0) ? 'ondemand' : 'biyearly';
         const lookback = (index % 2 === 1);
@@ -139,21 +143,21 @@ class Generator {
     }
 
     newChoiceSet() {
-        const choiceSetIndex = ++this.choiceSetIndex;
+        this.choiceSetIndex += 1;
+        const choiceSetIndex = this.choiceSetIndex;
         const reference = `reference_${choiceSetIndex}`;
         const numChoices = (choiceSetIndex % 4) + 2;
         const startValue = choiceSetIndex % 3;
-        const choices = _.range(numChoices).map(index => {
-            return {
-                text: `text_${choiceSetIndex}_${index}`,
-                code: `${startValue + index}`
-            };
-        });
+        const choices = _.range(numChoices).map(index => ({
+            text: `text_${choiceSetIndex}_${index}`,
+            code: `${startValue + index}`,
+        }));
         return { reference, choices };
     }
 
     nextLanguage() {
-        const index = ++this.languageIndex;
+        this.languageIndex += 1;
+        const index = this.languageIndex;
         const i4 = index % 4;
         switch (i4) {
         case 2:
@@ -166,29 +170,36 @@ class Generator {
     }
 
     newResearchSite(zip) {
-        const index = ++this.researchSiteIndex;
+        this.researchSiteIndex += 1;
+        const index = this.researchSiteIndex;
         return {
             name: `name_${index}`,
             url: `server_${index}@example.com`,
             street: `street_${index}`,
             city: `city_${index}`,
             state: this.newState(index),
-            zip
+            zip,
         };
     }
 
     newZipCodeApiObject(zip) {
-        const index = ++this.zipCodeApiIndex;
+        this.zipCodeApiIndex += 1;
+        const index = this.zipCodeApiIndex;
         return {
             zip_code: zip,
             distance: index + 1,
             city: `city_${index}`,
-            state: this.newState(index)
+            state: this.newState(index),
         };
     }
 
     newState(index) {
-        return ['MA', 'MD', 'ID', 'VA', 'GA'][(index || ++this.stateIndex) % 5];
+        let stateIndex = index;
+        if (stateIndex === undefined) {
+            this.stateIndex += 1;
+            stateIndex = this.stateIndex;
+        }
+        return ['MA', 'MD', 'ID', 'VA', 'GA'][stateIndex % 5];
     }
 }
 

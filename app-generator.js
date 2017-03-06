@@ -13,8 +13,8 @@ const security = require('./security');
 const logger = require('./logger');
 const jsutil = require('./lib/jsutil');
 
-const errHandler = function (err, req, res, next) {
-    next = next; // rid of unused error
+/* jshint unused:false*/
+const errHandler = function (err, req, res, next) { // eslint-disable-line no-unused-vars
     logger.error(err);
     err = jsutil.errToJSON(err);
     if ((!res.statusCode) || (res.statusCode < 300)) {
@@ -26,7 +26,9 @@ const errHandler = function (err, req, res, next) {
 const userAudit = function (req, res, next) {
     const userId = _.get(req, 'user.id');
     if (userId) {
-        let [, endpoint, operation] = _.get(req, 'swagger.operationPath', ['', '', '']);
+        const operationSpec = _.get(req, 'swagger.operationPath', ['', '', '']);
+        let endpoint = operationSpec[1];
+        const operation = operationSpec[2];
         if (req.swagger.params) {
             _.forOwn(req.swagger.params, (description, name) => {
                 const value = description && description.value;
@@ -42,11 +44,11 @@ const userAudit = function (req, res, next) {
 
 exports.initialize = function (app, options, callback) {
     const swaggerObject = options.swaggerJson || swaggerJson;
-    swaggerTools.initializeMiddleware(swaggerObject, function (middleware) {
+    swaggerTools.initializeMiddleware(swaggerObject, (middleware) => {
         app.use(middleware.swaggerMetadata());
 
         app.use(middleware.swaggerValidator({
-            validateResponse: true
+            validateResponse: true,
         }));
 
         app.use(middleware.swaggerSecurity(security));
@@ -56,7 +58,7 @@ exports.initialize = function (app, options, callback) {
         app.use(middleware.swaggerRouter({
             useStubs: false,
             ignoreMissingHandlers: true,
-            controllers: './controllers'
+            controllers: './controllers',
         }));
 
         app.use(middleware.swaggerUi());
@@ -64,14 +66,9 @@ exports.initialize = function (app, options, callback) {
         app.use(errHandler);
 
         models.sequelize.sync({
-            force: config.env === 'test'
-        }).then(function () {
+            force: config.env === 'test',
+        }).then(() => {
             callback(null, app);
         });
     });
-};
-
-exports.generate = function (options, callback) {
-    const app = require('./app');
-    exports.initialize(app, options, callback);
 };

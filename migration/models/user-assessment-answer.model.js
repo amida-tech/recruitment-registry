@@ -9,10 +9,10 @@ module.exports = function (sequelize, DataTypes) {
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'answer'
+                    tableName: 'answer',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         userAssessmentId: {
             type: DataTypes.INTEGER,
@@ -21,19 +21,19 @@ module.exports = function (sequelize, DataTypes) {
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'user_assessment'
+                    tableName: 'user_assessment',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',
-        }
+        },
     }, {
         freezeTableName: true,
         schema: sequelize.options.schema,
         createdAt: 'createdAt',
-        updatedAt: false
+        updatedAt: false,
     });
 };

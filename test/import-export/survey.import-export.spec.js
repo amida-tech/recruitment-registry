@@ -1,5 +1,7 @@
 /* global describe,before,it*/
+
 'use strict';
+
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
@@ -17,29 +19,29 @@ const expect = chai.expect;
 const generator = new Generator();
 const shared = new SharedSpec(generator);
 
-describe('survey import-export unit', function () {
+describe('survey import-export unit', () => {
     before(shared.setUpFn());
 
     const hxSurvey = new SurveyHistory();
     const tests = new surveyCommon.SpecTests(generator, hxSurvey);
 
-    _.range(8).forEach(index => {
+    _.range(8).forEach((index) => {
         it(`create survey ${index}`, tests.createSurveyFn({ noSection: true }));
         it(`get survey ${index}`, tests.getSurveyFn(index));
     });
 
-    _.forEach([2, 6], index => {
+    _.forEach([2, 6], (index) => {
         it(`delete survey ${index}`, tests.deleteSurveyFn(index));
     });
 
     it('list all surveys (export)', tests.listSurveysFn({ scope: 'export' }));
 
-    _.range(8, 14).forEach(index => {
+    _.range(8, 14).forEach((index) => {
         it(`create survey ${index}`, tests.createSurveyFn({ noSection: true }));
         it(`get survey ${index}`, tests.getSurveyFn(index));
     });
 
-    _.forEach([3, 11], index => {
+    _.forEach([3, 11], (index) => {
         it(`delete survey ${index}`, tests.deleteSurveyFn(index));
     });
 
@@ -48,40 +50,34 @@ describe('survey import-export unit', function () {
     let questionCsvContent;
     let surveyCsvContent;
 
-    it('export questions to csv', function () {
-        return models.question.export()
-            .then(result => questionCsvContent = result);
-    });
+    it('export questions to csv', () => models.question.export()
+            .then((result) => { questionCsvContent = result; }));
 
-    it('export surveys to csv', function () {
-        return models.survey.export()
-            .then(result => surveyCsvContent = result);
-    });
+    it('export surveys to csv', () => models.survey.export()
+            .then((result) => { surveyCsvContent = result; }));
 
     it('reset database', shared.setUpFn());
 
     let questionIdMap;
 
-    it('import question csv into db', function () {
+    it('import question csv into db', () => {
         const stream = intoStream(questionCsvContent);
         return models.question.import(stream)
-            .then(result => questionIdMap = result);
+            .then((result) => { questionIdMap = result; });
     });
 
     let idMap;
 
-    it('import survey csv into db', function () {
+    it('import survey csv into db', () => {
         const stream = intoStream(surveyCsvContent);
         return models.survey.import(stream, questionIdMap)
-            .then(result => idMap = result);
+            .then((result) => { idMap = result; });
     });
 
-    it('list imported surveys and verify', function () {
-        return models.survey.listSurveys({ scope: 'export' })
-            .then(list => {
+    it('list imported surveys and verify', () => models.survey.listSurveys({ scope: 'export' })
+            .then((list) => {
                 const expected = hxSurvey.listServersByScope({ scope: 'export' });
                 surveyCommon.updateIds(expected, idMap, questionIdMap);
                 expect(list).to.deep.equal(expected);
-            });
-    });
+            }));
 });

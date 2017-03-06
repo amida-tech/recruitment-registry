@@ -1,5 +1,7 @@
 /* global describe,before,it*/
+
 'use strict';
+
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
@@ -17,7 +19,7 @@ const expect = chai.expect;
 const generator = new Generator();
 const shared = new SharedSpec(generator);
 
-describe('profile unit', function () {
+describe('profile unit', () => {
     before(shared.setUpFn());
 
     const hxSurvey = new SurveyHistory();
@@ -39,7 +41,7 @@ describe('profile unit', function () {
         return function () {
             const userId = hxUser.id(userIndex);
             return models.profile.getProfile({ userId })
-                .then(result => {
+                .then((result) => {
                     comparator.user(hxUser.client(userIndex), result.user);
                 });
         };
@@ -48,7 +50,7 @@ describe('profile unit', function () {
     const updateProfileFn = function (userIndex) {
         return function () {
             const userUpdates = {
-                email: `updated${userIndex}@example.com`
+                email: `updated${userIndex}@example.com`,
             };
             hxUser.client(userIndex).email = userUpdates.email;
             const updateObj = {
@@ -59,7 +61,7 @@ describe('profile unit', function () {
         };
     };
 
-    _.range(0, 2).forEach(index => {
+    _.range(0, 2).forEach((index) => {
         it(`register user ${index}`, createProfileFn());
         it(`verify user ${index} profile`, verifyProfileFn(index));
         it(`update user ${index} profile`, updateProfileFn(index));
@@ -69,12 +71,12 @@ describe('profile unit', function () {
     it('create profile survey', shared.createProfileSurveyFn(hxSurvey));
     it('get/verify profile survey', shared.verifyProfileSurveyFn(hxSurvey, 0));
 
-    for (let i = 0; i < 2; ++i) {
+    _.range(2).forEach((i) => {
         it(`create consent type ${i}`, shared.createConsentTypeFn(hxConsentDoc));
-    }
-    for (let i = 0; i < 2; ++i) {
+    });
+    _.range(2).forEach((i) => {
         it(`create consent document of type ${i}`, shared.createConsentDocumentFn(hxConsentDoc, i));
-    }
+    });
 
     const createProfileWithSurveyFn = function (surveyIndex, signatures, language) {
         return function () {
@@ -96,7 +98,7 @@ describe('profile unit', function () {
             const survey = hxSurvey.server(surveyIndex);
             const userId = hxUser.id(userIndex);
             return models.profile.getProfile({ userId })
-                .then(function (result) {
+                .then((result) => {
                     comparator.user(hxUser.client(userIndex), result.user);
                     comparator.answeredSurvey(survey, hxAnswers[userIndex], result.survey, language);
                 });
@@ -108,12 +110,12 @@ describe('profile unit', function () {
             const survey = hxSurvey.server(surveyIndex);
             const answers = generator.answerQuestions(survey.questions);
             const userUpdates = {
-                email: `updated${userIndex}@example.com`
+                email: `updated${userIndex}@example.com`,
             };
             hxUser.client(userIndex).email = userUpdates.email;
             const updateObj = {
                 user: userUpdates,
-                answers
+                answers,
             };
             const userId = hxUser.id(userIndex);
             hxAnswers[userIndex] = answers;
@@ -127,7 +129,7 @@ describe('profile unit', function () {
             const server = hxConsentDoc.server(0);
             const userId = hxUser.id(userIndex);
             return models.userConsentDocument.getUserConsentDocument(userId, server.id)
-                .then(result => {
+                .then((result) => {
                     expect(result.content).to.equal(server.content);
                     expect(result.signature).to.equal(expected);
                     if (expected) {
@@ -144,7 +146,7 @@ describe('profile unit', function () {
             const typeName = hxConsentDoc.type(0).name;
             const userId = hxUser.id(userIndex);
             return models.userConsentDocument.getUserConsentDocumentByTypeName(userId, typeName)
-                .then(result => {
+                .then((result) => {
                     expect(result.content).to.equal(server.content);
                     expect(result.signature).to.equal(expected);
                     if (expected) {
@@ -154,7 +156,7 @@ describe('profile unit', function () {
         };
     };
 
-    _.range(2, 4).forEach(index => {
+    _.range(2, 4).forEach((index) => {
         it(`register user ${index} with profile survey`, createProfileWithSurveyFn(0));
         it(`verify user ${index} profile`, verifyProfileWithSurveyFn(0, index));
         it(`verify document 1 is not signed by user ${index}`, verifySignedDocumentFn(index, false));
@@ -163,14 +165,14 @@ describe('profile unit', function () {
         it(`verify user ${index} profile`, verifyProfileWithSurveyFn(0, index));
     });
 
-    _.range(4, 6).forEach(index => {
+    _.range(4, 6).forEach((index) => {
         it(`register user ${index} with profile survey 0 and doc 0 signature`, createProfileWithSurveyFn(0, [0]));
         it(`verify user ${index} profile`, verifyProfileWithSurveyFn(0, index));
         it(`verify document 0 is signed by user ${index}`, verifySignedDocumentFn(index, true));
         it(`verify document 0 is signed by user ${index} (type name)`, verifySignedDocumentByTypeNameFn(index, true));
     });
 
-    _.range(6, 8).forEach(index => {
+    _.range(6, 8).forEach((index) => {
         it(`register user ${index} with profile survey 1 and doc 0 signature in spanish`, createProfileWithSurveyFn(0, [0], 'es'));
         it(`verify user ${index} profile`, verifyProfileWithSurveyFn(0, index, 'es'));
         it(`verify document 0 is signed by user ${index} in spanish`, verifySignedDocumentFn(index, true, 'es'));

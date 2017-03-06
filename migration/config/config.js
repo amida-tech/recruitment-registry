@@ -13,11 +13,11 @@ const db = {
     password: process.env.RECREG_DB_PASS,
     host: process.env.RECREG_DB_HOST || 'localhost',
     dialect: process.env.RECREG_DB_DIALECT || 'postgres',
-    migrationStorage: 'json'
+    migrationStorage: 'json',
 };
 
 module.exports = {
     production: db,
     test: db,
-    development: db
+    development: db,
 };

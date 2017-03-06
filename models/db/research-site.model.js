@@ -4,11 +4,11 @@ module.exports = function (sequelize, DataTypes) {
     return sequelize.define('research_site', {
         name: {
             type: DataTypes.TEXT,
-            allowNull: false
+            allowNull: false,
         },
         url: {
             type: DataTypes.TEXT,
-            allowNull: false
+            allowNull: false,
         },
         street: {
             type: DataTypes.TEXT,
@@ -16,34 +16,34 @@ module.exports = function (sequelize, DataTypes) {
         },
         city: {
             type: DataTypes.TEXT,
-            allowNull: false
+            allowNull: false,
         },
         state: {
             type: DataTypes.TEXT,
-            allowNull: false
+            allowNull: false,
         },
         zip: {
             type: DataTypes.TEXT,
-            allowNull: false
+            allowNull: false,
         },
         createdAt: {
             type: DataTypes.DATE,
-            field: 'created_at'
+            field: 'created_at',
         },
         updatedAt: {
             type: DataTypes.DATE,
-            field: 'updated_at'
+            field: 'updated_at',
         },
         deletedAt: {
             type: DataTypes.DATE,
-            field: 'deleted_at'
-        }
+            field: 'deleted_at',
+        },
     }, {
         freezeTableName: true,
         schema: sequelize.options.schema,
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
         deletedAt: 'deletedAt',
-        paranoid: true
+        paranoid: true,
     });
 };

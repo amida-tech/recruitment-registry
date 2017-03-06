@@ -1,5 +1,7 @@
 /* global describe,before,it,afterEach*/
+
 'use strict';
+
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
@@ -15,7 +17,7 @@ const shared = new SharedSpec();
 const generator = new Generator();
 const expect = chai.expect;
 
-describe('zip-util unit', function () {
+describe('zip-util unit', () => {
     before(shared.setUpFn());
 
     const sampleData = zipUtilCommon.getSampleData(generator);
@@ -27,19 +29,17 @@ describe('zip-util unit', function () {
     };
 
     ['', null, undefined].forEach((zip) => {
-        it(`error: no zip code (${zip})`, function () {
-            return zipUtil.findVicinity(zip)
-                .then(shared.throwingHandler, shared.expectedErrorHandler('zipInvalidValue', zip));
-        });
+        it(`error: no zip code (${zip})`, () => zipUtil.findVicinity(zip)
+                .then(shared.throwingHandler, shared.expectedErrorHandler('zipInvalidValue', zip)));
     });
 
-    it('calls zip code api', function () {
+    it('calls zip code api', () => {
         const requestStub = stubRequestGetSuccessful();
         return zipUtil.findVicinity(sampleData.zip)
             .then(() => expect(requestStub.callCount).to.equal(1));
     });
 
-    it('parses zip code api response', function () {
+    it('parses zip code api response', () => {
         stubRequestGetSuccessful();
         return zipUtil.findVicinity(sampleData.zip).then((zipCodes) => {
             expect(zipCodes).to.be.an('array');
@@ -47,7 +47,7 @@ describe('zip-util unit', function () {
         });
     });
 
-    it('error: error in zip code api', function () {
+    it('error: error in zip code api', () => {
         const errorMsg = 'Internal server error';
         shared.stubRequestGet(null, {
             statusCode: 500,
@@ -60,7 +60,7 @@ describe('zip-util unit', function () {
             .then(shared.throwingHandler, shared.expectedErrorHandler('zipApiError', 500, errorMsg));
     });
 
-    it('error: timeout to API', function () {
+    it('error: timeout to API', () => {
         shared.stubRequestGet(() => {
             const e = new Error('ETIMEDOUT');
             e.code = 'ETIMEDOUT';
@@ -70,7 +70,7 @@ describe('zip-util unit', function () {
             .then(shared.throwingHandler, shared.expectedErrorHandler('zipApiError', 'ETIMEDOUT', 'ETIMEDOUT'));
     });
 
-    afterEach(function () {
+    afterEach(() => {
         if (request.get.restore) { request.get.restore(); }
     });
 });

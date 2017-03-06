@@ -25,7 +25,7 @@ module.exports = class Translatable {
             .then(() => {
                 const record = { language };
                 record[parentIdField] = input.id;
-                this.textFields.forEach(field => {
+                this.textFields.forEach((field) => {
                     let value = input[field];
                     if (value === undefined) {
                         value = null;
@@ -41,7 +41,7 @@ module.exports = class Translatable {
         const Table = sequelize.models[this.tableName];
         const parentIdField = this.parentIdField;
         const where = {
-            [parentIdField]: parentId
+            [parentIdField]: parentId,
         };
         return Table.destroy({ where, transaction });
     }
@@ -52,24 +52,20 @@ module.exports = class Translatable {
     }
 
     createText(input) {
-        return sequelize.transaction(transaction => {
-            return this.createTextTx(input, transaction);
-        });
+        return sequelize.transaction(transaction => this.createTextTx(input, transaction));
     }
 
     createMultipleTexts(input) {
-        return sequelize.transaction(transaction => {
-            return this.createMultipleTextsTx(input, transaction);
-        });
+        return sequelize.transaction(transaction => this.createMultipleTextsTx(input, transaction));
     }
 
     getText(parentId, language = 'en') {
         const Table = sequelize.models[this.tableName];
         const where = { language };
         where[this.parentIdField] = parentId;
-        let query = { where, raw: true, attributes: this.textFields };
+        const query = { where, raw: true, attributes: this.textFields };
         return Table.findOne(query)
-            .then(result => {
+            .then((result) => {
                 if ((language === 'en') || result) {
                     return result;
                 }
@@ -78,16 +74,14 @@ module.exports = class Translatable {
             });
     }
 
-    _updateTextFields(parent, fieldValues) {
+    updateTextFields(parent, fieldValues) {
         if (fieldValues) {
-            this.textFields.forEach(field => {
+            this.textFields.forEach((field) => {
                 const value = fieldValues[field];
                 if (value !== null) {
                     parent[field] = fieldValues[field];
-                } else {
-                    if (!this.optionals[field]) {
-                        parent[field] = '';
-                    }
+                } else if (!this.optionals[field]) {
+                    parent[field] = '';
                 }
             });
         }
@@ -96,7 +90,7 @@ module.exports = class Translatable {
 
     updateText(parent, language) {
         return this.getText(parent.id, language)
-            .then(result => this._updateTextFields(parent, result));
+            .then(result => this.updateTextFields(parent, result));
     }
 
     getAllTexts(ids, language = 'en') {
@@ -104,19 +98,19 @@ module.exports = class Translatable {
         const parentIdField = this.parentIdField;
         const options = { raw: true, attributes: [parentIdField, 'language', ...this.textFields] };
         if (language === 'en') {
-            _.set(options, `where.language`, 'en');
+            _.set(options, 'where.language', 'en');
         } else {
-            _.set(options, `where.language.$in`, ['en', language]);
+            _.set(options, 'where.language.$in', ['en', language]);
         }
         _.set(options, `where.${parentIdField}.$in`, ids);
         return Table.findAll(options)
-            .then(records => {
+            .then((records) => {
                 if (language === 'en') {
                     return _.keyBy(records, parentIdField);
                 }
                 const enRecords = _.remove(records, r => r.language === 'en');
                 const map = _.keyBy(records, parentIdField);
-                enRecords.forEach(record => {
+                enRecords.forEach((record) => {
                     const parentId = record[parentIdField];
                     if (!map[parentId]) {
                         map[parentId] = record;
@@ -130,8 +124,8 @@ module.exports = class Translatable {
     updateAllTexts(parents, language, idField = 'id') {
         const ids = _.map(parents, idField);
         return this.getAllTexts(ids, language)
-            .then(map => {
-                parents.forEach(parent => this._updateTextFields(parent, map[parent[idField]]));
+            .then((map) => {
+                parents.forEach(parent => this.updateTextFields(parent, map[parent[idField]]));
                 return parents;
             });
     }

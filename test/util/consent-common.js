@@ -11,7 +11,7 @@ class ConsentCommon {
 
     formExpectedConsent(index, typeIndices, signatures) {
         const serverConsent = this.hxConsent.server(index);
-        const expectedSections = typeIndices.map(typeIndex => {
+        const expectedSections = typeIndices.map((typeIndex) => {
             const consentDocument = _.cloneDeep(this.history.server(typeIndex));
             if (consentDocument === null) {
                 return null;
@@ -35,7 +35,7 @@ class ConsentCommon {
 
     formTranslatedExpectedConsent(index, typeIndices, signatures, language) {
         const serverConsent = this.hxConsent.server(index);
-        const expectedSections = typeIndices.map(typeIndex => {
+        const expectedSections = typeIndices.map((typeIndex) => {
             const consentDocument = _.cloneDeep(this.history.translatedServer(typeIndex, language));
             if (consentDocument === null) {
                 return null;
@@ -58,10 +58,10 @@ class ConsentCommon {
     }
 
     getSurveyConsentDocuments(documentInfo) {
-        const documentIndices = documentInfo.map(info => Array.isArray(info) ? info[1] : info);
-        const consentIndices = documentInfo.map(info => Array.isArray(info) ? info[0] : null);
+        const documentIndices = documentInfo.map(info => (Array.isArray(info) ? info[1] : info));
+        const consentIndices = documentInfo.map(info => (Array.isArray(info) ? info[0] : null));
         const result = this.history.serversInList(documentIndices);
-        _.range(result.length).forEach(index => {
+        _.range(result.length).forEach((index) => {
             const consentIndex = consentIndices[index];
             if (consentIndex !== null) {
                 const consent = this.hxConsent.server(consentIndex);

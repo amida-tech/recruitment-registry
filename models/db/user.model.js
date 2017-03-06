@@ -10,71 +10,71 @@ const RRError = require('../../lib/rr-error');
 
 module.exports = function (sequelize, DataTypes) {
     const bccompare = SPromise.promisify(bcrypt.compare, {
-        context: bcrypt
+        context: bcrypt,
     });
     const bchash = SPromise.promisify(bcrypt.hash, {
-        context: bcrypt
+        context: bcrypt,
     });
     const randomBytes = SPromise.promisify(crypto.randomBytes, {
-        context: crypto
+        context: crypto,
     });
 
     return sequelize.define('registry_user', {
         username: {
             type: DataTypes.TEXT,
             unique: {
-                msg: RRError.message('uniqueUsername')
+                msg: RRError.message('uniqueUsername'),
             },
             validate: {
-                notEmpty: true
+                notEmpty: true,
             },
-            allowNull: false
+            allowNull: false,
         },
         email: {
             type: DataTypes.TEXT,
             validate: {
-                isEmail: true
+                isEmail: true,
             },
-            allowNull: false
+            allowNull: false,
         },
         password: {
             type: DataTypes.TEXT,
             validate: {
-                notEmpty: true
+                notEmpty: true,
             },
-            allowNull: false
+            allowNull: false,
         },
         role: {
             type: DataTypes.ENUM('admin', 'participant', 'clinician', 'import'),
-            allowNull: false
+            allowNull: false,
         },
         originalUsername: {
             type: DataTypes.TEXT,
             field: 'original_username',
-            allowNull: true
+            allowNull: true,
         },
         resetPasswordToken: {
             unique: true,
             type: DataTypes.STRING,
-            field: 'reset_password_token'
+            field: 'reset_password_token',
         },
         resetPasswordExpires: {
             type: DataTypes.DATE,
-            field: 'reset_password_expires'
+            field: 'reset_password_expires',
         },
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',
-            defaultValue: sequelize.literal('NOW()')
+            defaultValue: sequelize.literal('NOW()'),
         },
         updatedAt: {
             type: DataTypes.DATE,
-            field: 'updated_at'
+            field: 'updated_at',
         },
         deletedAt: {
             type: DataTypes.DATE,
-            field: 'deleted_at'
-        }
+            field: 'deleted_at',
+        },
     }, {
         freezeTableName: true,
         schema: sequelize.options.schema,
@@ -85,7 +85,7 @@ module.exports = function (sequelize, DataTypes) {
         indexes: [{
             name: 'registry_user_lower_email_key',
             unique: true,
-            fields: [sequelize.fn('lower', sequelize.col('email'))]
+            fields: [sequelize.fn('lower', sequelize.col('email'))],
         }],
         hooks: {
             afterSync(options) {
@@ -94,6 +94,7 @@ module.exports = function (sequelize, DataTypes) {
                     const user = Object.assign({ role }, config.superUser);
                     return this.create(user);
                 }
+                return null;
             },
             beforeCreate(user) {
                 return user.updatePassword();
@@ -102,12 +103,13 @@ module.exports = function (sequelize, DataTypes) {
                 if (user.changed('password')) {
                     return user.updatePassword();
                 }
-            }
+                return null;
+            },
         },
         instanceMethods: {
             authenticate(password) {
                 return bccompare(password, this.password)
-                    .then(result => {
+                    .then((result) => {
                         if (!result) {
                             throw new RRError('authenticationError');
                         }
@@ -115,34 +117,28 @@ module.exports = function (sequelize, DataTypes) {
             },
             updatePassword() {
                 return bchash(this.password, config.crypt.hashrounds)
-                    .then(hash => {
+                    .then((hash) => {
                         this.password = hash;
                     });
             },
             updateResetPWToken() {
                 return randomBytes(config.crypt.resetTokenLength)
                     .then(buf => buf.toString('hex'))
-                    .then(token => {
-                        return randomBytes(config.crypt.resetPasswordLength)
-                            .then(passwordBuf => {
-                                return {
-                                    token,
-                                    password: passwordBuf.toString('hex')
-                                };
-                            });
-                    })
-                    .then(result => {
+                    .then(token => randomBytes(config.crypt.resetPasswordLength)
+                            .then(passwordBuf => ({
+                                token,
+                                password: passwordBuf.toString('hex'),
+                            })))
+                    .then((result) => {
                         this.resetPasswordToken = result.token;
                         this.password = result.password;
-                        let m = moment.utc();
+                        const m = moment.utc();
                         m.add(config.crypt.resetExpires, config.crypt.resetExpiresUnit);
                         this.resetPasswordExpires = m.toISOString();
                         return this.save()
-                            .then(() => {
-                                return result.token;
-                            });
+                            .then(() => result.token);
                     });
-            }
-        }
+            },
+        },
     });
 };

@@ -28,7 +28,7 @@ const SpecTests = class ChoiceSetSpecTests {
         return function () {
             const id = hxChoiceSet.id(index);
             return models.choiceSet.getChoiceSet(id)
-                .then(choiceSet => {
+                .then((choiceSet) => {
                     hxChoiceSet.updateServer(index, choiceSet);
                     comparator.choiceSet(hxChoiceSet.client(index), choiceSet);
                 });
@@ -50,7 +50,7 @@ const SpecTests = class ChoiceSetSpecTests {
         const hxChoiceSet = this.hxChoiceSet;
         return function () {
             return models.choiceSet.listChoiceSets()
-                .then(choiceSets => {
+                .then((choiceSets) => {
                     const expected = hxChoiceSet.listServers(['id', 'reference']);
                     expect(choiceSets).to.deep.equal(expected);
                 });
@@ -72,7 +72,7 @@ const IntegrationTests = class ChoiceSetIntegrationTests {
         return function (done) {
             const choiceSet = overrideChoiceSet || generator.newChoiceSet();
             rrSuperTest.post('/choice-sets', choiceSet, 201)
-                .expect(function (res) {
+                .expect((res) => {
                     hxChoiceSet.push(choiceSet, res.body);
                 })
                 .end(done);
@@ -85,7 +85,7 @@ const IntegrationTests = class ChoiceSetIntegrationTests {
         return function (done) {
             const id = hxChoiceSet.id(index);
             rrSuperTest.get(`/choice-sets/${id}`, true, 200)
-                .expect(function (res) {
+                .expect((res) => {
                     hxChoiceSet.updateServer(index, res.body);
                     comparator.choiceSet(hxChoiceSet.client(index), res.body);
                 })
@@ -99,7 +99,7 @@ const IntegrationTests = class ChoiceSetIntegrationTests {
         return function (done) {
             const id = hxChoiceSet.id(index);
             rrSuperTest.delete(`/choice-sets/${id}`, 204)
-                .expect(function () {
+                .expect(() => {
                     hxChoiceSet.remove(index);
                 })
                 .end(done);
@@ -111,7 +111,7 @@ const IntegrationTests = class ChoiceSetIntegrationTests {
         const hxChoiceSet = this.hxChoiceSet;
         return function (done) {
             rrSuperTest.get('/choice-sets', true, 200)
-                .expect(function (res) {
+                .expect((res) => {
                     const expected = hxChoiceSet.listServers(['id', 'reference']);
                     expect(res.body).to.deep.equal(expected);
                 })
@@ -122,5 +122,5 @@ const IntegrationTests = class ChoiceSetIntegrationTests {
 
 module.exports = {
     SpecTests,
-    IntegrationTests
+    IntegrationTests,
 };

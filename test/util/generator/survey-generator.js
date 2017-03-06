@@ -30,9 +30,9 @@ const sectionGenerators = {
         sections[lastIndex].name = 'parent_1';
         return [
             { name: 'parent_0', sections: sections.slice(0, lastIndex) },
-            sections[2]
+            sections[2],
         ];
-    }
+    },
 };
 
 module.exports = class SurveyGenerator {
@@ -55,7 +55,7 @@ module.exports = class SurveyGenerator {
     }
 
     incrementIndex() {
-        ++this.surveyIndex;
+        this.surveyIndex += 1;
     }
 
     sectionType() {
@@ -75,7 +75,8 @@ module.exports = class SurveyGenerator {
     }
 
     newBody() {
-        const surveyIndex = ++this.surveyIndex;
+        this.surveyIndex += 1;
+        const surveyIndex = this.surveyIndex;
         const name = `name_${surveyIndex}`;
         const result = { name };
         if (surveyIndex % 2 === 0) {
@@ -85,7 +86,7 @@ module.exports = class SurveyGenerator {
         if (metaIndex > 0) {
             result.meta = {
                 displayAsWizard: metaIndex === 1,
-                saveProgress: metaIndex === 2
+                saveProgress: metaIndex === 2,
             };
         }
         return result;
@@ -122,7 +123,8 @@ module.exports = class SurveyGenerator {
     }
 
     newSurveyQuestionIds(questionIds) {
-        const surveyIndex = ++this.surveyIndex;
+        this.surveyIndex += 1;
+        const surveyIndex = this.surveyIndex;
         const name = `name_${surveyIndex}`;
         const result = { name };
         result.questions = questionIds.map(id => ({ id, required: Boolean(surveyIndex % 2) }));

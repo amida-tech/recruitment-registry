@@ -1,5 +1,7 @@
 /* global describe,before,it*/
+
 'use strict';
+
 process.env.NODE_ENV = 'test';
 
 const _ = require('lodash');
@@ -11,19 +13,19 @@ const ConditionalSurveyGenerator = require('./util/generator/conditional-survey-
 const Generator = require('./util/generator');
 const comparator = require('./util/comparator');
 const SurveyHistory = require('./util/survey-history');
-const History = require('./util/History');
+const History = require('./util/history');
 const SharedSpec = require('./util/shared-spec');
 const choiceSetCommon = require('./util/choice-set-common');
 const surveyCommon = require('./util/survey-common');
 
-describe('survey (conditional questions) unit', function () {
+describe('survey (conditional questions) unit', () => {
     const answerer = new Answerer();
     const questionGenerator = new QuestionGenerator();
     const surveyGenerator = new ConditionalSurveyGenerator({ questionGenerator, answerer });
     const generator = new Generator({ surveyGenerator, questionGenerator, answerer });
     const shared = new SharedSpec(generator);
 
-    let surveyCount = surveyGenerator.numOfCases();
+    const surveyCount = surveyGenerator.numOfCases();
 
     const hxUser = new History();
     const hxSurvey = new SurveyHistory();
@@ -38,22 +40,22 @@ describe('survey (conditional questions) unit', function () {
         it(`create choice set ${index}`, choiceSetTests.createChoiceSetFn(choiceSet));
         it(`get choice set ${index}`, choiceSetTests.getChoiceSetFn(index));
     });
-    it('set comparator choice map', function () {
+    it('set comparator choice map', () => {
         comparator.updateChoiceSetMap(choiceSets);
     });
 
-    _.range(surveyCount).forEach(index => {
+    _.range(surveyCount).forEach((index) => {
         it(`create survey ${index}`, tests.createSurveyFn({ noSection: true }));
         it(`get survey ${index}`, tests.getSurveyFn(index));
     });
 
-    _.range(surveyCount).forEach(surveyIndex => {
-        it(`create survey ${surveyIndex + surveyCount} from survey ${surveyIndex} questions`, function () {
+    _.range(surveyCount).forEach((surveyIndex) => {
+        it(`create survey ${surveyIndex + surveyCount} from survey ${surveyIndex} questions`, () => {
             const survey = hxSurvey.server(surveyIndex);
             const clientSurvey = hxSurvey.client(surveyIndex);
             const newSurvey = ConditionalSurveyGenerator.newSurveyFromPrevious(clientSurvey, survey);
             return models.survey.createSurvey(newSurvey)
-                .then(id => {
+                .then((id) => {
                     const survey = _.cloneDeep(hxSurvey.server(surveyIndex));
                     survey.id = id;
                     hxSurvey.push(newSurvey, survey);
@@ -65,29 +67,29 @@ describe('survey (conditional questions) unit', function () {
         return function () {
             const survey = _.cloneDeep(hxSurvey.server(index));
             return models.survey.getSurvey(survey.id)
-                .then(serverSurvey => {
+                .then((serverSurvey) => {
                     comparator.conditionalSurveyTwiceCreated(survey, serverSurvey);
                 });
         };
     };
 
-    _.range(surveyCount, 2 * surveyCount).forEach(surveyIndex => {
+    _.range(surveyCount, 2 * surveyCount).forEach((surveyIndex) => {
         it(`verify survey ${surveyIndex}`, verifySurveyFn(surveyIndex));
     });
 
-    _.range(3).forEach(index => {
+    _.range(3).forEach((index) => {
         it(`create user ${index}`, shared.createUserFn(hxUser));
     });
 
-    ConditionalSurveyGenerator.conditionalErrorSetup().forEach(errorSetup => {
-        it(`error: survey ${errorSetup.surveyIndex} validation ${errorSetup.caseIndex}`, function () {
+    ConditionalSurveyGenerator.conditionalErrorSetup().forEach((errorSetup) => {
+        it(`error: survey ${errorSetup.surveyIndex} validation ${errorSetup.caseIndex}`, () => {
             const { surveyIndex, error } = errorSetup;
             const survey = hxSurvey.server(surveyIndex);
             const answers = surveyGenerator.answersWithConditions(survey, errorSetup);
             const input = {
                 userId: hxUser.id(0),
                 surveyId: survey.id,
-                answers
+                answers,
             };
 
             return models.answer.createAnswers(input)
@@ -95,28 +97,28 @@ describe('survey (conditional questions) unit', function () {
         });
     });
 
-    ConditionalSurveyGenerator.conditionalPassSetup().forEach(passSetup => {
+    ConditionalSurveyGenerator.conditionalPassSetup().forEach((passSetup) => {
         let answers;
 
-        it(`create survey ${passSetup.surveyIndex} answers ${passSetup.caseIndex}`, function () {
+        it(`create survey ${passSetup.surveyIndex} answers ${passSetup.caseIndex}`, () => {
             const { surveyIndex } = passSetup;
             const survey = hxSurvey.server(surveyIndex);
             answers = surveyGenerator.answersWithConditions(survey, passSetup);
             const input = {
                 userId: hxUser.id(0),
                 surveyId: survey.id,
-                answers
+                answers,
             };
 
             return models.answer.createAnswers(input);
         });
 
-        it(`verify survey ${passSetup.surveyIndex} answers ${passSetup.caseIndex}`, function () {
+        it(`verify survey ${passSetup.surveyIndex} answers ${passSetup.caseIndex}`, () => {
             const { surveyIndex } = passSetup;
             const survey = hxSurvey.server(surveyIndex);
             const userId = hxUser.id(0);
             return models.survey.getAnsweredSurvey(userId, survey.id)
-                .then(answeredSurvey => {
+                .then((answeredSurvey) => {
                     comparator.answeredSurvey(survey, answers, answeredSurvey);
                 });
         });

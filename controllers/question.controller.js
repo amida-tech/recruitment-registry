@@ -65,7 +65,7 @@ exports.addQuestionIdentifiers = function (req, res) {
 
 exports.exportQuestions = function (req, res) {
     models.question.export()
-        .then(csvContent => {
+        .then((csvContent) => {
             res.header('Content-disposition', 'attachment; filename=question.csv');
             res.type('text/csv');
             res.status(200).send(csvContent);

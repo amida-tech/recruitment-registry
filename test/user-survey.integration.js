@@ -1,5 +1,7 @@
 /* global describe,before,it*/
+
 'use strict';
+
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
@@ -21,9 +23,9 @@ const expect = chai.expect;
 const generator = new Generator();
 const shared = new Shared(generator);
 
-describe('user survey integration', function () {
+describe('user survey integration', () => {
     const userCount = 3;
-    let surveyCount = 3;
+    const surveyCount = 3;
 
     const hxSurvey = new SurveyHistory();
     const hxUser = new History();
@@ -35,43 +37,43 @@ describe('user survey integration', function () {
 
     before(shared.setUpFn(store));
 
-    const _key = function (userIndex, surveyIndex) {
+    const getKey = function (userIndex, surveyIndex) {
         return `${userIndex}:${surveyIndex}`;
     };
 
     it('login as super', shared.loginFn(store, config.superUser));
-    for (let i = 0; i < userCount; ++i) {
+    _.range(userCount).forEach((i) => {
         it(`create user ${i}`, shared.createUserFn(store, hxUser));
-    }
+    });
     it('logout as super', shared.logoutFn(store));
 
     const verifyNoUserSurveys = function (done) {
         store.get('/user-surveys', true, 200)
-            .expect(function (res) {
+            .expect((res) => {
                 const userSurveys = res.body;
                 expect(userSurveys.length).to.equal(0);
             })
             .end(done);
     };
 
-    for (let i = 0; i < userCount; ++i) {
+    _.range(userCount).forEach((i) => {
         it(`login as user ${i}`, shared.loginIndexFn(store, hxUser, i));
         it(`verify no surveys for user ${i}`, verifyNoUserSurveys);
         it(`logout as user ${i}`, shared.logoutFn(store));
-    }
+    });
 
     it('login as super', shared.loginFn(store, config.superUser));
-    for (let i = 0; i < surveyCount; ++i) {
+    _.range(surveyCount).forEach((i) => {
         it(`create survey ${i}`, surveyTests.createSurveyFn({ noSection: true }));
         it(`get survey ${i}`, surveyTests.getSurveyFn(i));
-    }
+    });
     it('logout as super', shared.logoutFn(store));
 
     const verifyStatusFn = function (surveyIndex, expectedStatus) {
         return function (done) {
             const surveyId = hxSurvey.id(surveyIndex);
             store.get(`/user-surveys/${surveyId}/status`, true, 200)
-                .expect(function (res) {
+                .expect((res) => {
                     const status = res.body.status;
                     expect(status).to.equal(expectedStatus);
                 })
@@ -91,7 +93,7 @@ describe('user survey integration', function () {
     const verifyUserSurveyListFn = function (statusList) {
         return function (done) {
             store.get('/user-surveys', true, 200)
-                .expect(function (res) {
+                .expect((res) => {
                     const userSurveys = res.body;
                     const expected = _.cloneDeep(hxSurvey.listServers());
                     expected.forEach((userSurvey, index) => {
@@ -117,10 +119,10 @@ describe('user survey integration', function () {
         return function (done) {
             const surveyId = hxSurvey.id(surveyIndex);
             store.get(`/user-surveys/${surveyId}`, true, 200)
-                .expect(function (res) {
+                .expect((res) => {
                     const userSurvey = res.body;
                     const survey = hxSurvey.server(surveyIndex);
-                    const key = _key(userIndex, surveyIndex);
+                    const key = getKey(userIndex, surveyIndex);
                     const answers = mapAnswers.get(key) || [];
                     expect(userSurvey.status).to.equal(status);
                     comparator.answeredSurvey(survey, answers, userSurvey.survey);
@@ -137,7 +139,7 @@ describe('user survey integration', function () {
                 query['include-survey'] = true;
             }
             store.get(`/user-surveys/${surveyId}/answers`, true, 200, query)
-                .expect(function (res) {
+                .expect((res) => {
                     const userSurveyAnswers = res.body;
                     if (includeSurvey) {
                         const survey = hxSurvey.server(surveyIndex);
@@ -145,7 +147,7 @@ describe('user survey integration', function () {
                     } else {
                         expect(userSurveyAnswers.survey).to.equal(undefined);
                     }
-                    const key = _key(userIndex, surveyIndex);
+                    const key = getKey(userIndex, surveyIndex);
                     const answers = mapAnswers.get(key) || [];
                     expect(userSurveyAnswers.status).to.equal(status);
                     comparator.answers(answers, userSurveyAnswers.answers);
@@ -160,11 +162,11 @@ describe('user survey integration', function () {
             const answers = generator.answerQuestions(survey.questions);
             const input = {
                 answers,
-                status
+                status,
             };
-            const key = _key(userIndex, surveyIndex);
+            const key = getKey(userIndex, surveyIndex);
             store.post(`/user-surveys/${survey.id}/answers`, input, 204)
-                .expect(function () {
+                .expect(() => {
                     mapAnswers.set(key, answers);
                     mapStatus.set(key, status);
                 })
@@ -181,11 +183,11 @@ describe('user survey integration', function () {
             const answers = generator.answerQuestions(questions);
             const input = {
                 answers,
-                status: 'in-progress'
+                status: 'in-progress',
             };
-            const key = _key(userIndex, surveyIndex);
+            const key = getKey(userIndex, surveyIndex);
             store.post(`/user-surveys/${survey.id}/answers`, input, 204)
-                .expect(function () {
+                .expect(() => {
                     mapAnswers.set(key, answers);
                     mapStatus.set(key, 'in-progress');
                 })
@@ -204,11 +206,11 @@ describe('user survey integration', function () {
             const answers = generator.answerQuestions(questions);
             const input = {
                 answers,
-                status: 'completed'
+                status: 'completed',
             };
-            const key = _key(userIndex, surveyIndex);
+            const key = getKey(userIndex, surveyIndex);
             store.post(`/user-surveys/${survey.id}/answers`, input, 204)
-                .expect(function () {
+                .expect(() => {
                     const qxIdsNewlyAnswered = new Set(answers.map(answer => answer.questionId));
                     const previousAnswers = mapAnswers.get(key, answers).filter(answer => !qxIdsNewlyAnswered.has(answer.questionId));
                     mapAnswers.set(key, [...previousAnswers, ...answers]);
@@ -227,16 +229,15 @@ describe('user survey integration', function () {
             const answers = generator.answerQuestions(questions);
             const input = {
                 answers,
-                status: 'completed'
+                status: 'completed',
             };
             store.post(`/user-surveys/${survey.id}/answers`, input, 400)
-                .expect(function (res) {
+                .expect((res) => {
                     const message = RRError.message('answerRequiredMissing');
                     expect(res.body.message).to.equal(message);
                 })
                 .end(done);
         };
-
     };
 
     it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
@@ -323,7 +324,7 @@ describe('user survey integration', function () {
     const verifyTranslatedUserSurveyListFn = function (userIndex, statusList, language, notTranslated) {
         return function (done) {
             store.get('/user-surveys', true, 200, { language })
-                .expect(function (res) {
+                .expect((res) => {
                     const userSurveys = res.body;
                     if (!notTranslated) {
                         translator.isSurveyListTranslated(userSurveys, language);
@@ -346,13 +347,13 @@ describe('user survey integration', function () {
         return function (done) {
             const surveyId = hxSurvey.id(surveyIndex);
             store.get(`/user-surveys/${surveyId}`, true, 200, { language })
-                .expect(function (res) {
+                .expect((res) => {
                     const userSurvey = res.body;
                     const survey = hxSurvey.translatedServer(surveyIndex, language);
                     if (!notTranslated) {
                         translator.isSurveyTranslated(userSurvey.survey, language);
                     }
-                    const key = _key(userIndex, surveyIndex);
+                    const key = getKey(userIndex, surveyIndex);
                     const answers = mapAnswers.get(key) || [];
                     expect(userSurvey.status).to.equal(status);
                     comparator.answeredSurvey(survey, answers, userSurvey.survey);
@@ -366,14 +367,14 @@ describe('user survey integration', function () {
             const surveyId = hxSurvey.id(surveyIndex);
             const query = { 'include-survey': true, language };
             store.get(`/user-surveys/${surveyId}/answers`, true, 200, query)
-                .expect(function (res) {
+                .expect((res) => {
                     const userSurveyAnswers = res.body;
                     const survey = hxSurvey.translatedServer(surveyIndex, language);
                     if (!notTranslated) {
                         translator.isSurveyTranslated(userSurveyAnswers.survey, language);
                     }
                     expect(userSurveyAnswers.survey).to.deep.equal(survey);
-                    const key = _key(userIndex, surveyIndex);
+                    const key = getKey(userIndex, surveyIndex);
                     const answers = mapAnswers.get(key) || [];
                     expect(userSurveyAnswers.status).to.equal(status);
                     comparator.answers(answers, userSurveyAnswers.answers);
@@ -399,7 +400,7 @@ describe('user survey integration', function () {
             const survey = hxSurvey.server(index);
             const translation = translator.translateSurvey(survey, language);
             store.patch(`/surveys/text/${language}`, translation, 204)
-                .expect(function () {
+                .expect(() => {
                     hxSurvey.translate(index, language, translation);
                 })
                 .end(done);
@@ -408,9 +409,9 @@ describe('user survey integration', function () {
 
     it('login as super', shared.loginFn(store, config.superUser));
 
-    for (let i = 0; i < surveyCount; ++i) {
+    _.range(surveyCount).forEach((i) => {
         it(`translate survey ${i}`, translateSurveyFn(i, 'es'));
-    }
+    });
 
     it('logout as super', shared.logoutFn(store));
 
@@ -431,14 +432,14 @@ describe('user survey integration', function () {
             const input = {
                 answers,
                 status,
-                language
+                language,
             };
-            const key = _key(userIndex, surveyIndex);
+            const key = getKey(userIndex, surveyIndex);
             store.post(`/user-surveys/${survey.id}/answers`, input, 204)
-                .expect(function () {
+                .expect(() => {
                     mapAnswers.set(key, answers);
                     mapStatus.set(key, status);
-                    answers.forEach(answer => answer.language = language);
+                    answers.forEach((answer) => { answer.language = language; });
                 })
                 .end(done);
         };

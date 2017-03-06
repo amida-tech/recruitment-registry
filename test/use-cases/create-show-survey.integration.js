@@ -1,5 +1,7 @@
 /* global describe,before,it*/
+
 'use strict';
+
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
@@ -14,7 +16,7 @@ const config = require('../../config');
 const expect = chai.expect;
 const shared = new SharedIntegration();
 
-describe('create-show-survey use case', function () {
+describe('create-show-survey use case', () => {
     const surveyExample = surveyExamples.Alzheimer.survey;
 
     // -------- set up system (syncAndLoadAlzheimer)
@@ -35,9 +37,9 @@ describe('create-show-survey use case', function () {
 
     // -------- see only Alzheimers in the survey list
 
-    it('list surveys to see Alzheimers for users profile', function (done) {
+    it('list surveys to see Alzheimers for users profile', (done) => {
         store.get('/surveys', true, 200)
-            .expect(function (res) {
+            .expect((res) => {
                 const surveys = res.body;
                 expect(surveys).to.have.length(1);
                 expect(surveys[0].name).to.equal(surveyExample.name);
@@ -45,17 +47,17 @@ describe('create-show-survey use case', function () {
             .end(done);
     });
 
-    //-------- create another survey
+    // -------- create another survey
 
-    it('create a new survey', function (done) {
+    it('create a new survey', (done) => {
         store.post('/surveys', surveyExamples.Example.survey, 201).end(done);
     });
 
-    //------- list surveys and select one to shoe
+    // ------- list surveys and select one to shoe
 
-    it('list surveys to see the new survey', function (done) {
+    it('list surveys to see the new survey', (done) => {
         store.get('/surveys', true, 200)
-            .expect(function (res) {
+            .expect((res) => {
                 const surveys = res.body;
                 expect(surveys).to.have.length(2);
                 expect(surveys[0].name).to.equal(surveyExample.name);
@@ -65,9 +67,9 @@ describe('create-show-survey use case', function () {
             .end(done);
     });
 
-    it('show the new survey', function (done) {
+    it('show the new survey', (done) => {
         store.get(`/surveys/${store.lastId}`, true, 200)
-            .expect(function (res) {
+            .expect((res) => {
                 comparator.survey(surveyExamples.Example.survey, res.body);
             })
             .end(done);

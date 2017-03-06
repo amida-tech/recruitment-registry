@@ -9,20 +9,20 @@ module.exports = function (sequelize, DataTypes) {
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'survey_status'
+                    tableName: 'survey_status',
                 },
-                key: 'name'
-            }
+                key: 'name',
+            },
         },
         version: {
-            type: DataTypes.INTEGER
+            type: DataTypes.INTEGER,
         },
         groupId: {
             type: DataTypes.INTEGER,
-            field: 'group_id'
+            field: 'group_id',
         },
         meta: {
-            type: DataTypes.JSON
+            type: DataTypes.JSON,
         },
         createdAt: {
             type: DataTypes.DATE,
@@ -35,13 +35,13 @@ module.exports = function (sequelize, DataTypes) {
         deletedAt: {
             type: DataTypes.DATE,
             field: 'deleted_at',
-        }
+        },
     }, {
         freezeTableName: true,
         schema: sequelize.options.schema,
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
         deletedAt: 'deletedAt',
-        paranoid: true
+        paranoid: true,
     });
 };

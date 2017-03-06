@@ -5,12 +5,12 @@ module.exports = function (sequelize, DataTypes) {
         type: {
             type: DataTypes.TEXT,
             allowNull: false,
-            unique: 'identifier'
+            unique: 'identifier',
         },
         identifier: {
             type: DataTypes.TEXT,
             allowNull: false,
-            unique: 'identifier'
+            unique: 'identifier',
         },
         questionId: {
             type: DataTypes.INTEGER,
@@ -19,10 +19,10 @@ module.exports = function (sequelize, DataTypes) {
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'question'
+                    tableName: 'question',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         questionChoiceId: {
             type: DataTypes.INTEGER,
@@ -30,17 +30,17 @@ module.exports = function (sequelize, DataTypes) {
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'question_choice'
+                    tableName: 'question_choice',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         multipleIndex: {
             type: DataTypes.INTEGER,
-            field: 'multiple_index'
+            field: 'multiple_index',
         },
         tag: {
-            type: DataTypes.INTEGER
+            type: DataTypes.INTEGER,
         },
         createdAt: {
             type: DataTypes.DATE,
@@ -48,13 +48,13 @@ module.exports = function (sequelize, DataTypes) {
         },
         updatedAt: {
             type: DataTypes.DATE,
-            field: 'updated_at'
-        }
+            field: 'updated_at',
+        },
     }, {
         freezeTableName: true,
         schema: sequelize.options.schema,
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
-        indexes: [{ fields: ['question_id', 'question_choice_id'] }]
+        indexes: [{ fields: ['question_id', 'question_choice_id'] }],
     });
 };

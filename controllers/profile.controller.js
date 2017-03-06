@@ -11,7 +11,7 @@ const profile = models.profile;
 exports.createProfile = function (req, res) {
     const { user, answers, signatures, language } = req.body;
     profile.createProfile({ user, answers, signatures }, language)
-        .then(user => {
+        .then((user) => {
             sendMail(user, 'new_contact', {});
 
             const token = tokener.createJWT(user);

@@ -13,13 +13,13 @@ const ConsentSignature = db.ConsentSignature;
 
 const fillSections = function (result) {
     return ConsentSection.findAll({
-            where: { consentId: result.id },
-            attributes: ['typeId'],
-            raw: true,
-            order: 'line'
-        })
+        where: { consentId: result.id },
+        attributes: ['typeId'],
+        raw: true,
+        order: 'line',
+    })
         .then(rawTypeIds => _.map(rawTypeIds, 'typeId'))
-        .then(typeIds => {
+        .then((typeIds) => {
             result.sections = typeIds;
             return result;
         });
@@ -31,16 +31,14 @@ module.exports = class ConsentDAO {
     }
 
     createConsent({ name, sections }) {
-        return sequelize.transaction(tx => {
-            return Consent.create({ name })
+        return sequelize.transaction(tx => Consent.create({ name })
                 .then(({ id }) => {
                     const consentId = id;
                     const records = sections.map((typeId, line) => ({ consentId, typeId, line }));
                     const pxs = records.map(record => ConsentSection.create(record)); // TODO: replace with bulkCreate when sequelize 4
                     return SPromise.all(pxs, { transaction: tx })
                         .then(() => ({ id }));
-                });
-        });
+                }));
     }
 
     getConsent(id) {
@@ -55,39 +53,33 @@ module.exports = class ConsentDAO {
 
     listConsents() {
         return Consent.findAll({ raw: true, attributes: ['id', 'name'], order: 'id' })
-            .then(consents => {
-                return ConsentSection.findAll({ raw: true, attributes: ['consentId', 'typeId', 'line'] })
+            .then(consents => ConsentSection.findAll({ raw: true, attributes: ['consentId', 'typeId', 'line'] })
                     .then(allSections => _.groupBy(allSections, 'consentId'))
-                    .then(allSections => {
-                        return consents.map(consent => {
-                            const sections = _.sortBy(allSections[consent.id], 'line');
-                            consent.sections = _.map(sections, 'typeId');
-                            return consent;
-                        });
-                    });
-            });
+                    .then(allSections => consents.map((consent) => {
+                        const sections = _.sortBy(allSections[consent.id], 'line');
+                        consent.sections = _.map(sections, 'typeId');
+                        return consent;
+                    })));
     }
 
     deleteConsent(id) {
-        return sequelize.transaction(transaction => {
-            return Consent.destroy({ where: { id }, transaction })
-                .then(() => ConsentSection.destroy({ where: { consentId: id }, transaction }));
-        });
+        return sequelize.transaction(transaction => Consent.destroy({ where: { id }, transaction })
+                .then(() => ConsentSection.destroy({ where: { consentId: id }, transaction })));
     }
 
     fillConsentDocuments(id, options = {}) {
         const consentDocument = this.consentDocument;
         return function (result) {
             return ConsentSection.findAll({ where: { consentId: id }, raw: true, attributes: ['typeId', 'line'], order: 'line' })
-                .then(sections => {
+                .then((sections) => {
                     const typeIds = _.map(sections, 'typeId');
-                    const _options = { typeIds, typeOrder: true };
+                    const opt = { typeIds, typeOrder: true };
                     if (options.language) {
-                        _options.language = options.language;
+                        opt.language = options.language;
                     }
-                    return consentDocument.listConsentDocuments(_options);
+                    return consentDocument.listConsentDocuments(opt);
                 })
-                .then(sections => {
+                .then((sections) => {
                     result.sections = sections;
                     return result;
                 });
@@ -101,7 +93,7 @@ module.exports = class ConsentDAO {
 
     getConsentDocumentsByName(name, options) {
         return Consent.findOne({ where: { name }, raw: true, attributes: ['id', 'name'] })
-            .then(result => {
+            .then((result) => {
                 const id = result.id;
                 return this.fillConsentDocuments(id, options)(result);
             });
@@ -110,13 +102,13 @@ module.exports = class ConsentDAO {
     fillUserConsentDocuments(userId) {
         return function (result) {
             return ConsentSignature.findAll({
-                    where: { userId },
-                    raw: true,
-                    attributes: ['consentDocumentId', 'language']
-                })
+                where: { userId },
+                raw: true,
+                attributes: ['consentDocumentId', 'language'],
+            })
                 .then(signatures => _.keyBy(signatures, 'consentDocumentId'))
-                .then(signatures => {
-                    result.sections.forEach(section => {
+                .then((signatures) => {
+                    result.sections.forEach((section) => {
                         section.signature = Boolean(signatures[section.id]);
                         if (section.signature) {
                             section.language = signatures[section.id].language;
