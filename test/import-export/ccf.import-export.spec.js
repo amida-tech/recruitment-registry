@@ -16,7 +16,7 @@ const SharedSpec = require('../util/shared-spec.js');
 const expect = chai.expect;
 const shared = new SharedSpec();
 
-describe('ccf import-export ccf', () => {
+describe('ccf import-export ccf', function ccfImportExportUnit() {
     const fixtureDir = path.join(__dirname, '../fixtures/import-export/ccf');
 
     const filenames = {
@@ -28,9 +28,9 @@ describe('ccf import-export ccf', () => {
 
     const filepaths = _.transform(filenames, (r, name, key) => {
         if (name.charAt(0) === '/') {
-            r[key] = name;
+            Object.assign(r, { [key]: name });
         } else {
-            r[key] = path.join(fixtureDir, name);
+            Object.assign(r, { [key]: path.join(fixtureDir, name) });
         }
         return r;
     }, {});
@@ -38,40 +38,54 @@ describe('ccf import-export ccf', () => {
     before(shared.setUpFn());
 
     let userIdMap;
-    it('import to database', () => ccfImport.importCCFFiles(filepaths)
-            .then((result) => { userIdMap = result; }));
+    it('import to database', function importToDb() {
+        return ccfImport.importCCFFiles(filepaths)
+            .then((result) => { userIdMap = result; });
+    });
 
-    it('export from database', () => ccfExport.exportSurveys()
+    it('export from database', function exportFromDb() {
+        return ccfExport.exportSurveys()
             .then(result => ccfImport.converters.surveys().fileToRecords(filepaths.surveys)
-                    .then((rawJson) => {
-                        expect(result.questions).to.deep.equal(rawJson.Questions);
-                        expect(result.pillars).to.deep.equal(rawJson.Pillars);
-                    })));
+                .then((rawJson) => {
+                    expect(result.questions).to.deep.equal(rawJson.Questions);
+                    expect(result.pillars).to.deep.equal(rawJson.Pillars);
+                }));
+    });
 
     let dbExport;
 
-    it('export assessments from database', () => {
+    it('export assessments from database', function exportAssessmentsFromDb() {
         const idMap = { 1: 10, 2: 36, 3: 62, 4: 87, 5: 113, 6: 139 };
         return ccfExport.exportAssessments()
             .then((result) => {
                 dbExport = result;
-                dbExport.assessments.forEach((record) => { record.id = idMap[record.id]; });
+                dbExport.assessments.forEach(r => Object.assign(r, { id: idMap[r.id] }));
             });
     });
 
-    it('compare db assessments', () => ccfImport.converters.assessments().fileToRecords(filepaths.assessments)
+    it('compare db assessments', function compareDbAssessments() {
+        return ccfImport.converters.assessments().fileToRecords(filepaths.assessments)
             .then((rawJson) => {
-                rawJson.forEach((assessment) => { assessment.hb_user_id = userIdMap.get(assessment.hb_user_id); });
+                rawJson.forEach((assessment) => {
+                    const userId = userIdMap.get(assessment.hb_user_id);
+                    Object.assign(assessment, { hb_user_id: userId });
+                });
                 const expected = _.sortBy(rawJson, ['hb_user_id', 'assessment_id']);
                 const actual = _.sortBy(dbExport.assessments, ['hb_user_id', 'assessment_id']);
                 expect(actual).to.deep.equal(expected);
-            }));
+            });
+    });
 
-    it('compare db answers', () => ccfImport.converters.answers().fileToRecords(filepaths.answers)
+    it('compare db answers', function compareDbAnswers() {
+        const fields = ['hb_user_id', 'hb_assessment_id', 'pillar_hash', 'answer_hash'];
+        return ccfImport.converters.answers().fileToRecords(filepaths.answers)
             .then((rawJson) => {
-                rawJson.forEach((answer) => { answer.hb_user_id = userIdMap.get(answer.hb_user_id); });
-                const expected = _.sortBy(rawJson, ['hb_user_id', 'hb_assessment_id', 'pillar_hash', 'answer_hash']);
-                const actual = _.sortBy(dbExport.answers, ['hb_user_id', 'hb_assessment_id', 'pillar_hash', 'answer_hash']);
+                rawJson.forEach((answer) => {
+                    const userId = userIdMap.get(answer.hb_user_id);
+                    Object.assign(answer, { hb_user_id: userId });
+                });
+                const expected = _.sortBy(rawJson, fields);
+                const actual = _.sortBy(dbExport.answers, fields);
                 const assessmentMap = new Map([
                     [1, 10],
                     [2, 36],
@@ -80,11 +94,13 @@ describe('ccf import-export ccf', () => {
                     [5, 113],
                     [6, 139],
                 ]);
+                /* eslint-disable no-param-reassign */
                 actual.forEach((answer) => {
-                    answer.hb_assessment_id = assessmentMap.get(answer.hb_assessment_id);
+                    const assessmentId = assessmentMap.get(answer.hb_assessment_id);
+                    Object.assign(answer, { hb_assessment_id: assessmentId });
                     delete answer.id;
                 });
-                expected.forEach((answer) => {
+                expected.forEach((answer) => { // eslint-disable-line no-param-reassign: 0
                     delete answer.id;
                     answer.string_value = answer.string_value.toString();
                     if (answer.answer_hash === 'answer_profile_birthday_month') {
@@ -93,6 +109,8 @@ describe('ccf import-export ccf', () => {
                         }
                     }
                 });
+                /* eslint-enable no-param-reassign */
                 expect(actual).to.deep.equal(expected);
-            }));
+            });
+    });
 });

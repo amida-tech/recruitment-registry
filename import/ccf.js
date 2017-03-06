@@ -461,9 +461,9 @@ const importUsers = function (filepath) {
 const importCCFFiles = function (filepaths) {
     return importUsers(filepaths.users)
         .then(userIdMap => importFiles(filepaths)
-                .then(ccfData => importToDb(ccfData)
-                        .then(() => importAnswersToDb(ccfData, userIdMap)))
-                .then(() => userIdMap));
+            .then(ccfData => importToDb(ccfData)
+                .then(() => importAnswersToDb(ccfData, userIdMap)))
+            .then(() => userIdMap));
 };
 
 module.exports = {
