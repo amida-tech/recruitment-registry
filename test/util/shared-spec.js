@@ -56,7 +56,7 @@ class SharedSpec {
     verifyProfileSurveyFn(hxSurvey, index) {
         return function () {
             return models.profileSurvey.getProfileSurvey()
-                .then(profileSurvey => {
+                .then((profileSurvey) => {
                     expect(profileSurvey.exists).to.equal(true);
                     const survey = profileSurvey.survey;
                     const id = hxSurvey.id(index);
@@ -122,7 +122,7 @@ class SharedSpec {
         return function () {
             const expected = hxConsent.server(index);
             return models.consent.getConsent(expected.id)
-                .then(consent => {
+                .then((consent) => {
                     const expected = hxConsent.server(index);
                     expect(consent).to.deep.equal(expected);
                 });
@@ -180,9 +180,9 @@ class SharedSpec {
             const userCount = hxUser.length();
             const counts = _.range(userCount).reduce((r, index) => {
                 if (hxUser.client(index).username) {
-                    ++r.username;
+                    r.username += 1;
                 } else {
-                    ++r.email;
+                    r.email += 1;
                 }
                 return r;
             }, { username: 0, email: 0 });
@@ -196,9 +196,8 @@ class SharedSpec {
             if (typeof opts === 'function') { callback = opts; }
             if (error) {
                 return callback(typeof error === 'function' ? error() : error, data);
-            } else {
-                return callback(null, typeof data === 'function' ? data() : data);
             }
+            return callback(null, typeof data === 'function' ? data() : data);
         });
     }
 }

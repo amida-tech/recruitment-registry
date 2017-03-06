@@ -7,12 +7,12 @@ module.exports = function (sequelize, DataTypes) {
         name: {
             type: DataTypes.TEXT,
             allowNull: false,
-            primaryKey: true
+            primaryKey: true,
         },
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',
-        }
+        },
     }, {
         freezeTableName: true,
         schema: sequelize.options.schema,
@@ -25,12 +25,13 @@ module.exports = function (sequelize, DataTypes) {
                         'equals',
                         'exists',
                         'not-equals',
-                        'not-exists'
+                        'not-exists',
                     ];
                     const ps = names.map(name => this.create({ name }));
                     return SPromise.all(ps);
                 }
-            }
-        }
+                return null;
+            },
+        },
     });
 };

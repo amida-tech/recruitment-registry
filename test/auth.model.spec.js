@@ -1,5 +1,7 @@
 /* global describe,before,it*/
+
 'use strict';
+
 process.env.NODE_ENV = 'test';
 
 const _ = require('lodash');
@@ -13,7 +15,7 @@ const testJsutil = require('./util/test-jsutil');
 const generator = new Generator();
 const shared = new SharedSpec(generator);
 
-describe('auth unit', function () {
+describe('auth unit', () => {
     const userCount = 4;
 
     const hxUser = new History();
@@ -24,7 +26,7 @@ describe('auth unit', function () {
         return function () {
             const client = hxUser.client(index);
             const username = client.username || client.email;
-            return models.auth.authenticateUser(username, client.password + 'a')
+            return models.auth.authenticateUser(username, `${client.password}a`)
                 .then(shared.throwingHandler, shared.expectedErrorHandler('authenticationError'));
         };
     };
@@ -36,6 +38,7 @@ describe('auth unit', function () {
                 const username = testJsutil.oppositeCase(client.email);
                 return models.auth.authenticateUser(username, client.password);
             }
+            return null;
         };
     };
 
@@ -47,26 +50,27 @@ describe('auth unit', function () {
                 return models.auth.authenticateUser(username, client.password)
                     .then(shared.throwingHandler, shared.expectedErrorHandler('authenticationError'));
             }
+            return null;
         };
     };
 
     const updateUserPasswordFn = function (index) {
         return function () {
             const client = hxUser.client(index);
-            const password = client.password + 'updated';
+            const password = `${client.password}updated`;
             const id = hxUser.id(index);
             return models.user.updateUser(id, { password })
-                .then(() => client.password = password);
+                .then(() => { client.password = password; });
         };
     };
 
     const updateUserFn = function (index) {
         return function () {
             const client = hxUser.client(index);
-            let { username, email, password } = client;
-            const updateFields = { email: 'u' + email, password: 'u' + password };
+            const { username, email, password } = client;
+            const updateFields = { email: `u${email}`, password: `u${password}` };
             if (username) {
-                updateFields.username = 'u' + username;
+                updateFields.username = `u${username}`;
             }
             const id = hxUser.id(index);
             return models.user.updateUser(id, updateFields)
@@ -80,7 +84,7 @@ describe('auth unit', function () {
         };
     };
 
-    _.range(userCount).forEach(index => {
+    _.range(userCount).forEach((index) => {
         it(`create user ${index}`, shared.createUserFn(hxUser));
         it(`authenticate user ${index}`, shared.authenticateUserFn(hxUser, index));
         it(`error: authenticate user ${index} with wrong password`, authenticateUserBadPWFn(index));
@@ -90,7 +94,7 @@ describe('auth unit', function () {
         it(`authenticate user ${index} with opposite case username (when email) `, authenticateOppositeCaseUserFn(index));
     });
 
-    _.range(userCount).forEach(index => {
+    _.range(userCount).forEach((index) => {
         it(`update user ${index}`, updateUserFn(index));
         it(`authenticate user ${index}`, shared.authenticateUserFn(hxUser, index));
     });

@@ -9,10 +9,10 @@ module.exports = function (sequelize, DataTypes) {
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'survey'
+                    tableName: 'survey',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         questionId: {
             type: DataTypes.INTEGER,
@@ -21,16 +21,16 @@ module.exports = function (sequelize, DataTypes) {
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'question'
+                    tableName: 'question',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         line: {
-            type: DataTypes.INTEGER
+            type: DataTypes.INTEGER,
         },
         required: {
-            type: DataTypes.BOOLEAN
+            type: DataTypes.BOOLEAN,
         },
         createdAt: {
             type: DataTypes.DATE,

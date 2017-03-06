@@ -10,7 +10,8 @@ module.exports = class ChoiceSetQuestionGenerator extends QuestionGenerator {
     }
 
     newQuestion() {
-        const index = ++this.choiceSetIndex;
+        this.choiceSetIndex += 1;
+        const index = this.choiceSetIndex;
         const choiceSetInfo = this.choiceSets[index % this.choiceSets.length];
         const layoutIndex = index % 2;
         if (layoutIndex === 0) {

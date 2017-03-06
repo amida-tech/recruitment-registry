@@ -15,23 +15,17 @@ module.exports = class ChoiceSetDAO {
 
     createChoiceSetTx({ reference, choices }, transaction) {
         return ChoiceSet.create({ reference }, { transaction })
-            .then(({ id }) => {
-                return this.questionChoice.createQuestionChoices(id, choices, transaction)
-                    .then(() => ({ id }));
-            });
+            .then(({ id }) => this.questionChoice.createQuestionChoices(id, choices, transaction)
+                    .then(() => ({ id })));
     }
 
     createChoiceSet(choiceSet) {
-        return sequelize.transaction(transaction => {
-            return this.createChoiceSetTx(choiceSet, transaction);
-        });
+        return sequelize.transaction(transaction => this.createChoiceSetTx(choiceSet, transaction));
     }
 
     createChoiceSets(choiceSets) {
-        return sequelize.transaction(transaction => {
-            const promises = choiceSets.map(choiceSet => {
-                return this.createChoiceSetTx(choiceSet, transaction);
-            });
+        return sequelize.transaction((transaction) => {
+            const promises = choiceSets.map(choiceSet => this.createChoiceSetTx(choiceSet, transaction));
             return SPromise.all(promises);
         });
     }
@@ -40,36 +34,31 @@ module.exports = class ChoiceSetDAO {
         return ChoiceSet.findAll({
             raw: true,
             attributes: ['id', 'reference'],
-            order: 'id'
+            order: 'id',
         });
     }
 
     deleteChoiceSet(id) {
-        return sequelize.transaction(transaction => {
-            return this.questionChoice.deleteAllQuestionChoices(id, transaction)
-                .then(() => ChoiceSet.destroy({ where: { id }, transaction }));
-        });
+        return sequelize.transaction(transaction => this.questionChoice.deleteAllQuestionChoices(id, transaction)
+                .then(() => ChoiceSet.destroy({ where: { id }, transaction })));
     }
 
     getChoiceSet(id, language) {
         return ChoiceSet.findById(id, { raw: true, attributes: ['id', 'reference'] })
-            .then(result => {
-                return this.questionChoice.listQuestionChoices(id, language)
-                    .then(choices => {
+            .then(result => this.questionChoice.listQuestionChoices(id, language)
+                    .then((choices) => {
                         result.choices = choices;
                         return result;
-                    });
-            });
+                    }));
     }
 
     getChoiceSetIdByReference(reference, transaction) {
         return ChoiceSet.findOne({ where: { reference }, raw: true, attributes: ['id'], transaction })
-            .then(record => {
+            .then((record) => {
                 if (record) {
                     return record.id;
                 }
                 return RRError.reject('choiceSetNotFound', reference);
-
             });
     }
 };

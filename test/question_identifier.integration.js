@@ -1,5 +1,7 @@
 /* global describe,before,it*/
+
 'use strict';
+
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
@@ -16,7 +18,7 @@ const expect = chai.expect;
 const generator = new Generator();
 const shared = new SharedIntegration(generator);
 
-describe('question identifier integration', function () {
+describe('question identifier integration', () => {
     const rrSuperTest = new RRSuperTest();
     const hxQuestion = new History();
     const tests = new questionCommon.SpecTests(generator, hxQuestion);
@@ -41,31 +43,31 @@ describe('question identifier integration', function () {
 
     it('login as super', shared.loginFn(rrSuperTest, config.superUser));
 
-    _.range(20).forEach(index => {
+    _.range(20).forEach((index) => {
         it(`create question ${index}`, tests.createQuestionFn());
         it(`get question ${index}`, tests.getQuestionFn(index));
         it(`add cc type id to question ${index}`, addIdentifierFn(index, 'cc'));
     });
 
-    it('reset identifier generator', function () {
+    it('reset identifier generator', () => {
         idGenerator.reset();
     });
 
-    it('error: cannot specify same type/value identifier', function (done) {
+    it('error: cannot specify same type/value identifier', (done) => {
         const question = hxQuestion.server(0);
         const allIdentifiers = idGenerator.newAllIdentifiers(question, 'cc');
         rrSuperTest.post(`/questions/${question.id}/identifiers`, allIdentifiers, 400).end(done);
     });
 
-    it('reset identifier generator', function () {
+    it('reset identifier generator', () => {
         idGenerator.reset();
     });
 
-    _.range(20).forEach(index => {
+    _.range(20).forEach((index) => {
         it(`add au type id to question ${index}`, addIdentifierFn(index, 'au'));
     });
 
-    _.range(20).forEach(index => {
+    _.range(20).forEach((index) => {
         it(`add ot type id to question ${index}`, addIdentifierFn(index, 'ot'));
     });
 
@@ -75,7 +77,7 @@ describe('question identifier integration', function () {
             const allIdentifiers = hxIdentifiers[type][id];
             const identifier = allIdentifiers.identifier;
             rrSuperTest.get(`/question-identifiers/${type}/${identifier}`, true, 200)
-                .expect(function (res) {
+                .expect((res) => {
                     const expected = { questionId: id };
                     expect(res.body).to.deep.equal(expected);
                 })
@@ -90,15 +92,15 @@ describe('question identifier integration', function () {
             const questionType = question.type;
             if (questionType === 'choice' || questionType === 'choices') {
                 let count = 0;
-                question.choices.map(({ id: questionChoiceId }, choiceIndex) => {
+                question.choices.forEach(({ id: questionChoiceId }, choiceIndex) => {
                     const identifier = allIdentifiers.choices[choiceIndex].answerIdentifier;
                     rrSuperTest.get(`/answer-identifiers/${type}/${identifier}`, true, 200)
-                        .expect(function (res) {
+                        .expect((res) => {
                             const expected = { questionId: question.id, questionChoiceId };
                             expect(res.body).to.deep.equal(expected);
                         })
-                        .end(function () {
-                            ++count;
+                        .end(() => {
+                            count += 1;
                             if (count === question.choices.length) {
                                 done();
                             }
@@ -107,7 +109,7 @@ describe('question identifier integration', function () {
             } else {
                 const identifier = allIdentifiers.answerIdentifier;
                 rrSuperTest.get(`/answer-identifiers/${type}/${identifier}`, allIdentifiers, 200)
-                    .expect(function (res) {
+                    .expect((res) => {
                         const expected = { questionId: question.id };
                         expect(res.body).to.deep.equal(expected);
                     })
@@ -116,13 +118,13 @@ describe('question identifier integration', function () {
         };
     };
 
-    _.range(20).forEach(index => {
+    _.range(20).forEach((index) => {
         it(`verify cc type id to question ${index}`, verifyQuestionIdentifiersFn(index, 'cc'));
         it(`verify ot type id to question ${index}`, verifyQuestionIdentifiersFn(index, 'ot'));
         it(`verify au type id to question ${index}`, verifyQuestionIdentifiersFn(index, 'au'));
     });
 
-    _.range(20).forEach(index => {
+    _.range(20).forEach((index) => {
         it(`verify cc type answer id to question ${index}`, verifyAnswerIdentifiersFn(index, 'cc'));
         it(`verify ot type answer id to question ${index}`, verifyAnswerIdentifiersFn(index, 'ot'));
         it(`verify au type answer id to question ${index}`, verifyAnswerIdentifiersFn(index, 'au'));

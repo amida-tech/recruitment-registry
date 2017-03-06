@@ -15,8 +15,8 @@ const QuestionChoice = db.QuestionChoice;
 const UserSurvey = db.UserSurvey;
 const User = db.User;
 
-const exportCSVConverter = require('../../export/csv-converter.js');
-const importCSVConverter = require('../../import/csv-converter.js');
+const ExportCSVConverter = require('../../export/csv-converter.js');
+const ImportCSVConverter = require('../../import/csv-converter.js');
 
 const answerValueToDBFormat = {
     boolValue(value) {
@@ -56,12 +56,12 @@ const answerValueToDBFormat = {
         const systolic = value.systolic || 0;
         const diastolic = value.diastolic || 0;
         return [{ value: `${systolic}-${diastolic}` }];
-    }
+    },
 };
 
 const choiceValueToDBFormat = {
     choices(value) {
-        return value.map(choice => {
+        return value.map((choice) => {
             const questionChoiceId = choice.id;
             choice = _.omit(choice, 'id');
             const keys = Object.keys(choice);
@@ -83,12 +83,12 @@ const choiceValueToDBFormat = {
     },
     choice(value) {
         return [{ questionChoiceId: value }];
-    }
+    },
 };
 
 const prepareAnswerForDB = function prepareAnswerForDB(answer) {
     if (Array.isArray(answer)) {
-        return answer.map(singleAnswer => {
+        return answer.map((singleAnswer) => {
             const multipleIndex = singleAnswer.multipleIndex;
             if (multipleIndex === undefined) {
                 throw new RRError('answerNoMultiQuestionIndex');
@@ -126,31 +126,30 @@ const fileAnswer = function ({ userId, surveyId, language, answers }, tx) {
             questionId,
             questionChoiceId: value.questionChoiceId || null,
             multipleIndex: (value.multipleIndex || value.multipleIndex === 0) ? value.multipleIndex : null,
-            value: value.hasOwnProperty('value') ? value.value : null
+            value: Object.prototype.hasOwnProperty.call(value, 'value') ? value.value : null,
         }));
         values.forEach(value => r.push(value));
         return r;
     }, []);
     // TODO: Switch to bulkCreate when Sequelize 4 arrives
-    return SPromise.all(answers.map(answer => {
-        return Answer.create(answer, { transaction: tx });
-    }));
+    return SPromise.all(answers.map(answer => Answer.create(answer, { transaction: tx })));
 };
 
 const updateStatus = function (userId, surveyId, status, transaction) {
     return UserSurvey.findOne({
-            where: { userId, surveyId },
-            raw: true,
-            attributes: ['status'],
-            transaction
-        })
-        .then(userSurvey => {
+        where: { userId, surveyId },
+        raw: true,
+        attributes: ['status'],
+        transaction,
+    })
+        .then((userSurvey) => {
             if (!userSurvey) {
                 return UserSurvey.create({ userId, surveyId, status }, { transaction });
             } else if (userSurvey.status !== status) {
                 return UserSurvey.destroy({ where: { userId, surveyId }, transaction })
                     .then(() => UserSurvey.create({ userId, surveyId, status }, { transaction }));
             }
+            return null;
         });
 };
 
@@ -186,7 +185,7 @@ const evaluateAnswerRule = function ({ logic, answer }, questionAnswer) {
 };
 
 const evaluateEnableWhen = function (rules, answersByQuestionId) {
-    return rules.some(rule => {
+    return rules.some((rule) => {
         const sourceQuestionId = rule.questionId;
         const sourceAnswer = answersByQuestionId[sourceQuestionId];
         return evaluateAnswerRule(rule, sourceAnswer);
@@ -204,16 +203,17 @@ module.exports = class AnswerDAO {
 
     validateConsent(userId, surveyId, action, transaction) {
         return this.surveyConsentDocument.listSurveyConsentDocuments({
-                userId,
-                surveyId,
-                action
-            }, transaction)
-            .then(consentDocuments => {
+            userId,
+            surveyId,
+            action,
+        }, transaction)
+            .then((consentDocuments) => {
                 if (consentDocuments && consentDocuments.length > 0) {
                     const err = new RRError('profileSignaturesMissing');
                     err.consentDocuments = consentDocuments;
                     return SPromise.reject(err);
                 }
+                return null;
             });
     }
 
@@ -221,9 +221,7 @@ module.exports = class AnswerDAO {
         const rules = questionAnswerRulesMap.get(questionId);
         if (rules && rules.length) {
             const enabled = evaluateEnableWhen(rules, answersByQuestionId);
-            if (!enabled) {
-                return false;
-            }
+            return enabled;
         }
         if (parents && parents.length) {
             const enabled = parents.every(({ sectionId, questionId }) => {
@@ -252,11 +250,11 @@ module.exports = class AnswerDAO {
 
     validateAnswers(userId, surveyId, answers, status) {
         return this.surveyQuestion.listSurveyQuestions(surveyId, true)
-            .then(surveyQuestions => {
+            .then((surveyQuestions) => {
                 const answersByQuestionId = _.keyBy(answers, 'questionId');
                 return this.answerRule.getQuestionExpandedSurveyAnswerRules(surveyId)
                     .then(({ sectionAnswerRulesMap, questionAnswerRulesMap }) => {
-                        surveyQuestions.forEach(surveyQuestion => {
+                        surveyQuestions.forEach((surveyQuestion) => {
                             const questionId = surveyQuestion.questionId;
                             const answer = answersByQuestionId[questionId];
                             if (sectionAnswerRulesMap || questionAnswerRulesMap) {
@@ -281,8 +279,8 @@ module.exports = class AnswerDAO {
                     });
             })
             .then(surveyQuestions => _.keyBy(surveyQuestions, 'questionId'))
-            .then(qxMap => {
-                answers.forEach(answer => {
+            .then((qxMap) => {
+                answers.forEach((answer) => {
                     const qx = qxMap[answer.questionId];
                     if (!qx) {
                         throw new RRError('answerQxNotInSurvey');
@@ -290,10 +288,10 @@ module.exports = class AnswerDAO {
                 });
                 return qxMap;
             })
-            .then(qxMap => {
+            .then((qxMap) => {
                 if (status === 'completed') {
                     const remainingRequired = new Set();
-                    _.values(qxMap).forEach(qx => {
+                    _.values(qxMap).forEach((qx) => {
                         if (qx.required) {
                             remainingRequired.add(qx.questionId);
                         }
@@ -301,11 +299,11 @@ module.exports = class AnswerDAO {
                     if (remainingRequired.size) {
                         const ids = [...remainingRequired];
                         return Answer.findAll({
-                                raw: true,
-                                where: { userId, surveyId, questionId: { $in: ids } },
-                                attributes: ['questionId']
-                            })
-                            .then(records => {
+                            raw: true,
+                            where: { userId, surveyId, questionId: { $in: ids } },
+                            attributes: ['questionId'],
+                        })
+                            .then((records) => {
                                 const questionIds = records.map(record => record.questionId);
                                 const existingRequired = new Set(questionIds);
                                 if (existingRequired.size !== remainingRequired.size) {
@@ -314,6 +312,7 @@ module.exports = class AnswerDAO {
                             });
                     }
                 }
+                return null;
             });
     }
 
@@ -336,13 +335,12 @@ module.exports = class AnswerDAO {
                 if (answers.length) {
                     return fileAnswer({ userId, surveyId, language, answers }, transaction);
                 }
+                return null;
             });
     }
 
     createAnswers(input) {
-        return sequelize.transaction(tx => {
-            return this.createAnswersTx(input, tx);
-        });
+        return sequelize.transaction(tx => this.createAnswersTx(input, tx));
     }
 
     listAnswers({ userId, scope, surveyId, history, ids }) {
@@ -363,11 +361,11 @@ module.exports = class AnswerDAO {
         }
         const include = [
             { model: Question, as: 'question', attributes: ['id', 'type', 'multiple'] },
-            { model: QuestionChoice, as: 'questionChoice', attributes: ['type'] }
+            { model: QuestionChoice, as: 'questionChoice', attributes: ['type'] },
         ];
         return Answer.findAll({ raw: true, where, attributes, include, paranoid: !history })
-            .then(result => {
-                result.forEach(answer => {
+            .then((result) => {
+                result.forEach((answer) => {
                     if (answer['question.type'] === 'choices') {
                         answer.choiceType = answer['questionChoice.type'];
                     }
@@ -375,9 +373,9 @@ module.exports = class AnswerDAO {
                 });
                 return result;
             })
-            .then(result => {
+            .then((result) => {
                 if (scope === 'export') {
-                    return result.map(answer => {
+                    return result.map((answer) => {
                         const r = { surveyId: answer.surveyId };
                         r.questionId = answer['question.id'];
                         r.questionType = answer['question.type'];
@@ -393,23 +391,23 @@ module.exports = class AnswerDAO {
                         return r;
                     });
                 }
-                const groupedResult = _.groupBy(result, function (r) {
-                    let surveyId = r.surveyId;
-                    let deletedAt = r.deletedAt;
+                const groupedResult = _.groupBy(result, (r) => {
+                    const surveyId = r.surveyId;
+                    const deletedAt = r.deletedAt;
                     let key = r['question.id'];
                     if (deletedAt) {
-                        key = deletedAt + ';' + key;
+                        key = `${deletedAt};${key}`;
                     }
                     if (surveyId) {
-                        key = surveyId + ';' + key;
+                        key = `${surveyId};${key}`;
                     }
                     return key;
                 });
-                return Object.keys(groupedResult).map(key => {
+                return Object.keys(groupedResult).map((key) => {
                     const v = groupedResult[key];
                     const r = {
                         questionId: v[0]['question.id'],
-                        language: v[0].language
+                        language: v[0].language,
                     };
                     if (v[0]['question.multiple']) {
                         r.answers = answerCommon.generateAnswer(v[0]['question.type'], v, true);
@@ -434,61 +432,51 @@ module.exports = class AnswerDAO {
 
     exportForUser(userId) {
         return this.listAnswers({ userId, scope: 'export' })
-            .then(answers => {
-                const converter = new exportCSVConverter({ fields: ['surveyId', 'questionId', 'questionChoiceId', 'questionType', 'choiceType', 'value'] });
+            .then((answers) => {
+                const converter = new ExportCSVConverter({ fields: ['surveyId', 'questionId', 'questionChoiceId', 'questionType', 'choiceType', 'value'] });
                 return converter.dataToCSV(answers);
             });
     }
 
     importForUser(userId, stream, surveyIdMap, questionIdMap) {
-        const converter = new importCSVConverter({ checkType: false });
+        const converter = new ImportCSVConverter({ checkType: false });
         return converter.streamToRecords(stream)
-            .then(records => {
-                return records.map(record => {
-                    record.surveyId = surveyIdMap[record.surveyId];
-                    const questionIdInfo = questionIdMap[record.questionId];
-                    record.questionId = questionIdInfo.questionId;
-                    if (record.questionChoiceId) {
-                        const choicesIds = questionIdInfo.choicesIds;
-                        record.questionChoiceId = choicesIds[record.questionChoiceId];
-                    } else {
-                        record.questionChoiceId = null;
+            .then(records => records.map((record) => {
+                record.surveyId = surveyIdMap[record.surveyId];
+                const questionIdInfo = questionIdMap[record.questionId];
+                record.questionId = questionIdInfo.questionId;
+                if (record.questionChoiceId) {
+                    const choicesIds = questionIdInfo.choicesIds;
+                    record.questionChoiceId = choicesIds[record.questionChoiceId];
+                } else {
+                    record.questionChoiceId = null;
+                }
+                if (record.value === '') {
+                    delete record.value;
+                } else {
+                    record.value = record.value.toString();
+                }
+                if (record.choiceType === 'month' || record.questionType === 'month') {
+                    if (record.value.length === 1) {
+                        record.value = `0${record.value}`;
                     }
-                    if (record.value === '') {
-                        delete record.value;
-                    } else {
-                        record.value = record.value.toString();
-                    }
-                    if (record.choiceType === 'month' || record.questionType === 'month') {
-                        if (record.value.length === 1) {
-                            record.value = '0' + record.value;
-                        }
-                    }
-                    delete record.questionType;
-                    delete record.choiceType;
-                    record.userId = userId;
-                    record.language = 'en';
-                    return record;
-                });
-            })
-            .then(records => {
-                return sequelize.transaction(transaction => {
+                }
+                delete record.questionType;
+                delete record.choiceType;
+                record.userId = userId;
+                record.language = 'en';
+                return record;
+            }))
+            .then(records => sequelize.transaction(transaction =>
                     // TODO: Switch to bulkCreate when Sequelize 4 arrives
-                    return SPromise.all(records.map(record => {
-                        return Answer.create(record, { transaction });
-                    }));
-                });
-            });
+                     SPromise.all(records.map(record => Answer.create(record, { transaction })))));
     }
 
     importRecords(records) {
-        return sequelize.transaction(transaction => {
+        return sequelize.transaction(transaction =>
             // TODO: Switch to bulkCreate when Sequelize 4 arrives
-            return SPromise.all(records.map(record => {
-                return Answer.create(record, { transaction })
-                    .then(({ id }) => id);
-            }));
-        });
+             SPromise.all(records.map(record => Answer.create(record, { transaction })
+                    .then(({ id }) => id))));
     }
 
     exportBulk(ids) {
@@ -498,10 +486,10 @@ module.exports = class AnswerDAO {
             attributes: ['id', 'userId', 'surveyId', 'questionId', 'questionChoiceId', 'value', createdAtColumn],
             include: [
                 { model: Question, as: 'question', attributes: ['id', 'type'] },
-                { model: QuestionChoice, as: 'questionChoice', attributes: ['type'] }
+                { model: QuestionChoice, as: 'questionChoice', attributes: ['type'] },
             ],
             raw: true,
-            paranoid: false
+            paranoid: false,
         });
     }
 
@@ -519,12 +507,12 @@ module.exports = class AnswerDAO {
 
         // find answers that match one of the search criteria
         const where = { $or: [] };
-        criteria.questions.forEach(question => {
-            prepareAnswerForDB(question.answer || question.answers).forEach(answer => {
+        criteria.questions.forEach((question) => {
+            prepareAnswerForDB(question.answer || question.answers).forEach((answer) => {
                 where.$or.push({
                     question_id: question.id,
                     value: ('value' in answer) ? answer.value.toString() : null,
-                    question_choice_id: ('questionChoiceId' in answer) ? answer.questionChoiceId : null
+                    question_choice_id: ('questionChoiceId' in answer) ? answer.questionChoiceId : null,
                 });
             });
         });

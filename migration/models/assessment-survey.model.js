@@ -9,10 +9,10 @@ module.exports = function (sequelize, DataTypes) {
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'assessment'
+                    tableName: 'assessment',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         surveyId: {
             type: DataTypes.INTEGER,
@@ -21,15 +21,15 @@ module.exports = function (sequelize, DataTypes) {
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'survey'
+                    tableName: 'survey',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         lookback: {
             type: DataTypes.BOOLEAN,
             allowNull: false,
-            defaultValue: false
+            defaultValue: false,
         },
         createdAt: {
             type: DataTypes.DATE,
@@ -42,13 +42,13 @@ module.exports = function (sequelize, DataTypes) {
         deletedAt: {
             type: DataTypes.DATE,
             field: 'deleted_at',
-        }
+        },
     }, {
         freezeTableName: true,
         schema: sequelize.options.schema,
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
         deletedAt: 'deletedAt',
-        paranoid: true
+        paranoid: true,
     });
 };

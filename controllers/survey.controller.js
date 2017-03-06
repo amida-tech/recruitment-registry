@@ -68,7 +68,7 @@ exports.getAnsweredSurvey = function (req, res) {
 
 exports.exportSurveys = function (req, res) {
     models.survey.export()
-        .then(csvContent => {
+        .then((csvContent) => {
             res.header('Content-disposition', 'attachment; filename=survey.csv');
             res.type('text/csv');
             res.status(200).send(csvContent);

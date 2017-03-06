@@ -4,7 +4,7 @@ const _ = require('lodash');
 
 exports.oppositeCase = function (input) {
     let result = '';
-    _.range(input.length).forEach(index => {
+    _.range(input.length).forEach((index) => {
         const ch = input.charAt(index);
         if (ch === ch.toLowerCase()) {
             result += ch.toUpperCase();
@@ -17,8 +17,8 @@ exports.oppositeCase = function (input) {
 
 exports.findStanding = function (selections) {
     const result = [];
-    selections.forEach(selection => {
-        const toBeRemoved = selection.map(r => r < 0 ? -r : r);
+    selections.forEach((selection) => {
+        const toBeRemoved = selection.map(r => (r < 0 ? -r : r));
         const toBeInserted = selection.filter(r => r >= 0);
         result.forEach(r => _.pullAll(r, toBeRemoved));
         result.push(_.sortBy(toBeInserted));
@@ -30,7 +30,7 @@ exports.findRemoved = function (selections) {
     const result = [];
     const actualResult = [];
     selections.forEach((selection, timeIndex) => {
-        const toBeRemoved = selection.map(r => r < 0 ? -r : r);
+        const toBeRemoved = selection.map(r => (r < 0 ? -r : r));
         const toBeInserted = selection.filter(r => r >= 0);
         result.forEach((r, index) => {
             const levelRemoved = _.intersection(r, toBeRemoved);

@@ -1,8 +1,11 @@
 /* global describe,before,it*/
+
 'use strict';
+
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
+const _ = require('lodash');
 
 const SharedIntegration = require('./util/shared-integration');
 const RRSuperTest = require('./util/rr-super-test');
@@ -14,7 +17,7 @@ const expect = chai.expect;
 const generator = new Generator();
 const shared = new SharedIntegration(generator);
 
-describe('consent section integration', function () {
+describe('consent section integration', () => {
     const typeCount = 12;
 
     const store = new RRSuperTest();
@@ -29,7 +32,7 @@ describe('consent section integration', function () {
         return function (done) {
             const cst = generator.newConsentType();
             store.post('/consent-types', cst, 201)
-                .expect(function (res) {
+                .expect((res) => {
                     hxType.pushWithId(cst, res.body.id);
                 })
                 .end(done);
@@ -40,7 +43,7 @@ describe('consent section integration', function () {
         return function (done) {
             const consentType = hxType.server(index);
             store.get(`/consent-types/${consentType.id}`, true, 200)
-                .expect(function (res) {
+                .expect((res) => {
                     expect(res.body).to.deep.equal(consentType);
                 })
                 .end(done);
@@ -50,7 +53,7 @@ describe('consent section integration', function () {
     const listConsentTypesFn = function () {
         return function (done) {
             store.get('/consent-types', true, 200)
-                .expect(function (res) {
+                .expect((res) => {
                     const expected = hxType.listServers();
                     expect(res.body).to.deep.equal(expected);
                 })
@@ -58,10 +61,10 @@ describe('consent section integration', function () {
         };
     };
 
-    for (let i = 0; i < typeCount; ++i) {
+    _.range(typeCount).forEach((i) => {
         it(`create consent type ${i}`, createConsentTypeFn(hxType));
         it(`get and verify consent type ${i}`, getConsentTypeFn(i));
-    }
+    });
 
     it('list consent types and verify', listConsentTypesFn());
 
@@ -69,7 +72,7 @@ describe('consent section integration', function () {
         return function (done) {
             const id = hxType.id(index);
             store.get(`/consent-types/${id}`, true, 200, { language })
-                .expect(function (res) {
+                .expect((res) => {
                     const expected = hxType.translatedServer(index, language);
                     expect(res.body).to.deep.equal(expected);
                 })
@@ -80,7 +83,7 @@ describe('consent section integration', function () {
     const listTranslatedConsentTypesFn = function (language) {
         return function (done) {
             store.get('/consent-types', true, 200, { language })
-                .expect(function (res) {
+                .expect((res) => {
                     const expected = hxType.listTranslatedServers(language);
                     expect(res.body).to.deep.equal(expected);
                 })
@@ -92,17 +95,17 @@ describe('consent section integration', function () {
 
     it('list consent types in spanish when no translation', listTranslatedConsentTypesFn('es'));
 
-    for (let i = 0; i < typeCount; ++i) {
+    _.range(typeCount).forEach((i) => {
         it(`add translated (es) consent type ${i}`, shared.translateConsentTypeFn(store, i, 'es', hxType));
         it(`get and verify tanslated consent type ${i}`, getTranslatedConsentTypeFn(i, 'es'));
-    }
+    });
 
     it('list and verify translated (es) consent types', listTranslatedConsentTypesFn('es'));
 
-    for (let i = 0; i < typeCount; i += 2) {
+    _.range(0, typeCount, 2).forEach((i) => {
         it(`add translated (fr) consent type ${i}`, shared.translateConsentTypeFn(store, i, 'fr', hxType));
         it(`get and verify tanslated (fr) consent type ${i}`, getTranslatedConsentTypeFn(i, 'fr'));
-    }
+    });
 
     it('list and verify translated (fr) consent types', listTranslatedConsentTypesFn('fr'));
 

@@ -3,5 +3,5 @@
 module.exports = [{
     code: 'aa',
     name: 'name',
-    nativeName: 'nativeName'
+    nativeName: 'nativeName',
 }];

@@ -1,8 +1,10 @@
 /* global it*/
+
 'use strict';
 
 const chai = require('chai');
 
+const app = require('../../app');
 const appgen = require('../../app-generator');
 const db = require('../../models/db');
 const Generator = require('./generator');
@@ -18,12 +20,12 @@ class SharedIntegration {
 
     setUpFn(store, options = {}) {
         return function (done) {
-            appgen.generate(options, function (err, app) {
+            appgen.initialize(app, options, (err, app) => {
                 if (err) {
                     return done(err);
                 }
                 store.initialize(app);
-                done();
+                return done();
             });
         };
     }
@@ -60,12 +62,12 @@ class SharedIntegration {
         return function (done) {
             const clientSurvey = generator.newSurvey();
             store.post('/profile-survey', clientSurvey, 201)
-                .end(function (err, res) {
+                .end((err, res) => {
                     if (err) {
                         return done(err);
                     }
                     hxSurvey.push(clientSurvey, res.body);
-                    done();
+                    return done();
                 });
         };
     }
@@ -73,7 +75,7 @@ class SharedIntegration {
     verifyProfileSurveyFn(store, hxSurvey, index) {
         return function (done) {
             store.get('/profile-survey', false, 200)
-                .expect(function (res) {
+                .expect((res) => {
                     expect(res.body.exists).to.equal(true);
                     const survey = res.body.survey;
                     const id = hxSurvey.id(index);
@@ -92,12 +94,12 @@ class SharedIntegration {
                 user = generator.newUser(override);
             }
             store.post('/users', user, 201)
-                .end(function (err, res) {
+                .end((err, res) => {
                     if (err) {
                         return done(err);
                     }
                     history.push(user, { id: res.body.id });
-                    done();
+                    return done();
                 });
         };
     }
@@ -110,16 +112,16 @@ class SharedIntegration {
             if (hxQuestion) {
                 inputSurvey.questions = qxIndices.map(index => ({
                     id: hxQuestion.server(index).id,
-                    required: false
+                    required: false,
                 }));
             }
             store.post('/surveys', inputSurvey, 201)
-                .end(function (err, res) {
+                .end((err, res) => {
                     if (err) {
                         return done(err);
                     }
                     hxSurvey.push(inputSurvey, res.body);
-                    done();
+                    return done();
                 });
         };
     }
@@ -127,7 +129,7 @@ class SharedIntegration {
     createSurveyProfileFn(store, survey) {
         return function (done) {
             store.post('/profile-survey', survey, 201)
-                .expect(function (res) {
+                .expect((res) => {
                     expect(!!res.body.id).to.equal(true);
                 })
                 .end(done);
@@ -139,12 +141,12 @@ class SharedIntegration {
         return function (done) {
             const cst = generator.newConsentType();
             store.post('/consent-types', cst, 201)
-                .end(function (err, res) {
+                .end((err, res) => {
                     if (err) {
                         return done(err);
                     }
                     history.pushType(cst, res.body);
-                    done();
+                    return done();
                 });
         };
     }
@@ -155,7 +157,7 @@ class SharedIntegration {
             const sections = typeIndices.map(typeIndex => hxConsentDocument.typeId(typeIndex));
             const clientConsent = generator.newConsent({ sections });
             store.post('/consents', clientConsent, 201)
-                .expect(function (res) {
+                .expect((res) => {
                     hxConsent.pushWithId(clientConsent, res.body.id);
                 })
                 .end(done);
@@ -166,7 +168,7 @@ class SharedIntegration {
         return function (done) {
             const id = hxConsent.id(index);
             store.get(`/consents/${id}`, true, 200)
-                .expect(function (res) {
+                .expect((res) => {
                     const expected = hxConsent.server(index);
                     expect(res.body).to.deep.equal(expected);
                 })
@@ -196,12 +198,12 @@ class SharedIntegration {
             const typeId = history.typeId(typeIndex);
             const cs = generator.newConsentDocument({ typeId });
             store.post('/consent-documents', cs, 201)
-                .end(function (err, res) {
+                .end((err, res) => {
                     if (err) {
                         return done(err);
                     }
                     history.push(typeIndex, cs, res.body);
-                    done();
+                    return done();
                 });
         };
     }
@@ -211,12 +213,12 @@ class SharedIntegration {
             const server = hxType.server(index);
             const translation = translator.translateConsentType(server, language);
             store.patch(`/consent-types/text/${language}`, translation, 204)
-                .end(function (err) {
+                .end((err) => {
                     if (err) {
                         return done(err);
                     }
                     hxType.translate(index, language, translation);
-                    done();
+                    return done();
                 });
         };
     }
@@ -226,32 +228,30 @@ class SharedIntegration {
             const server = history.server(index);
             const translation = translator.translateConsentDocument(server, language);
             store.patch(`/consent-documents/text/${language}`, translation, 204)
-                .end(function (err) {
+                .end((err) => {
                     if (err) {
                         return done(err);
                     }
                     history.hxDocument.translateWithServer(server, language, translation);
-                    done();
+                    return done();
                 });
         };
     }
 
     verifyUserAudit(store) {
-        it('verify user audit', function () {
+        it('verify user audit', () => {
             const userAudit = store.getUserAudit();
             return db.User.findAll({ raw: true, attributes: ['username', 'id'] })
                 .then(users => new Map(users.map(user => [user.username, user.id])))
                 .then(userMap => userAudit.map(({ username, operation, endpoint }) => ({ userId: userMap.get(username), operation, endpoint })))
-                .then(expected => {
-                    return db.UserAudit.findAll({
-                            raw: true,
-                            attributes: ['userId', 'endpoint', 'operation'],
-                            order: 'created_at'
-                        })
-                        .then(actual => {
+                .then(expected => db.UserAudit.findAll({
+                    raw: true,
+                    attributes: ['userId', 'endpoint', 'operation'],
+                    order: 'created_at',
+                })
+                        .then((actual) => {
                             expect(actual).to.deep.equal(expected);
-                        });
-                });
+                        }));
         });
     }
 }

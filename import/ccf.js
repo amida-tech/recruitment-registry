@@ -21,7 +21,7 @@ const headers2 = {
     answer: 'choice',
     'hash (Hash Tag Used for Answers)': 'answerKey',
     tag: 'tag',
-    toggle: 'toggle'
+    toggle: 'toggle',
 };
 
 const identifierType = 'ccf';
@@ -29,23 +29,23 @@ const identifierType = 'ccf';
 const converters = {
     answers() {
         return new XLSXConverter({
-            dateTimes: ['updated_at']
+            dateTimes: ['updated_at'],
         });
     },
     assessments() {
         return new XLSXConverter({
-            dateTimes: ['updated_at']
+            dateTimes: ['updated_at'],
         });
     },
     surveys() {
         return new XLSXConverter({
             sheets: [{
-                name: 'Questions'
+                name: 'Questions',
             }, {
-                name: 'Pillars'
-            }]
+                name: 'Pillars',
+            }],
         });
-    }
+    },
 };
 
 const answerUpdateSingle = function (line, question) {
@@ -59,7 +59,7 @@ const answerUpdateChoice = function (line, question, choices, pillarQuestion) {
     }
     const choice = {
         id: choices.length + 1,
-        value: line.choice
+        value: line.choice,
     };
     if (line.toggle) {
         choice.toggle = line.toggle;
@@ -82,7 +82,7 @@ const answerUpdate = {
     7: answerUpdateChoice,
     8: answerUpdateChoice,
     9: answerUpdateChoice,
-    10: answerUpdateChoice
+    10: answerUpdateChoice,
 };
 
 const questionTypes = {
@@ -97,16 +97,14 @@ const questionTypes = {
 };
 
 const surveysPost = function (result, key, lines) {
-    lines.Questions = lines.Questions.map(row => {
-        return Object.keys(row).reduce((r, key) => {
-            const newKey = headers2[key] || key;
-            const value = row[key];
-            r[newKey] = value;
-            return r;
-        }, {});
-    });
-    result[`surveysTitleIndex`] = _.keyBy(lines.Pillars, 'title');
-    lines.Pillars.forEach(pillar => pillar.isBHI = (pillar.isBHI === 'true'));
+    lines.Questions = lines.Questions.map(row => Object.keys(row).reduce((r, key) => {
+        const newKey = headers2[key] || key;
+        const value = row[key];
+        r[newKey] = value;
+        return r;
+    }, {}));
+    result.surveysTitleIndex = _.keyBy(lines.Pillars, 'title');
+    lines.Pillars.forEach((pillar) => { pillar.isBHI = (pillar.isBHI === 'true'); });
     if (!(lines.Pillars && result.surveysTitleIndex)) {
         throw new Error('Pillar records have to be read before questions.');
     }
@@ -115,7 +113,7 @@ const surveysPost = function (result, key, lines) {
     let pillarQuestion = null;
     const questions = [];
     const choices = [];
-    lines.Questions.forEach(line => {
+    lines.Questions.forEach((line) => {
         const objKeys = Object.keys(line);
         if ((objKeys.length === 1) && (objKeys[0] === 'id')) {
             const title = line.id;
@@ -135,9 +133,9 @@ const surveysPost = function (result, key, lines) {
                 key: line.key,
                 text: line.text,
                 instruction: line.instruction || '',
-                type: line.type
+                type: line.type,
             };
-            if (activeQuestion.hasOwnProperty('type')) {
+            if (Object.prototype.hasOwnProperty.call(activeQuestion, 'type')) {
                 activeQuestion.type = parseInt(activeQuestion.type, 10);
             }
             pillarQuestion = {
@@ -167,7 +165,7 @@ const surveysPost = function (result, key, lines) {
 };
 
 const answersPost = function (result, key, lines) {
-    lines.forEach(r => {
+    lines.forEach((r) => {
         if (r.string_value === 'null') {
             delete r.string_value;
         }
@@ -187,7 +185,7 @@ const answersPost = function (result, key, lines) {
             delete p.hb_assessment_id;
             const index = `${p.pillar_hash}\t${p.hb_user_id}\t${p.updated_at}`;
             if (assessmentIndex[index] !== undefined && assessmentIndex[index] !== assessIndex) {
-                let record = indexAnswers[index];
+                const record = indexAnswers[index];
                 record.assessments[assessment] = true;
                 return r;
             }
@@ -200,16 +198,16 @@ const answersPost = function (result, key, lines) {
                     updated_at: p.updated_at,
                     answers: [],
                     assessments: {
-                        [assessment]: true
-                    }
+                        [assessment]: true,
+                    },
                 };
                 answers.push(record);
                 indexAnswers[index] = record;
             }
             const answer = { answer_hash: p.answer_hash };
-            if (p.hasOwnProperty('string_value')) {
+            if (Object.prototype.hasOwnProperty.call(p, 'string_value')) {
                 answer.string_value = p.string_value;
-            } else if (p.hasOwnProperty('boolean_value')) {
+            } else if (Object.prototype.hasOwnProperty.call(p, 'boolean_value')) {
                 answer.boolean_value = p.boolean_value;
             }
             record.answers.push(answer);
@@ -222,14 +220,14 @@ const answersPost = function (result, key, lines) {
 
 const postAction = {
     answers: answersPost,
-    surveys: surveysPost
+    surveys: surveysPost,
 };
 
 const importFile = function (filepaths, result, key) {
     const filepath = filepaths[key];
     const converter = converters[key]();
     return converter.fileToRecords(filepath)
-        .then(json => {
+        .then((json) => {
             result[key] = json;
         });
 };
@@ -240,7 +238,7 @@ const importFiles = function (filepaths) {
     const pxs = keys.map(key => importFile(filepaths, result, key));
     return SPromise.all(pxs)
         .then(() => {
-            keys.forEach(key => {
+            keys.forEach((key) => {
                 const fn = postAction[key];
                 if (fn) {
                     fn(result, key, result[key]);
@@ -253,10 +251,10 @@ const importFiles = function (filepaths) {
 const importToDb = function (jsonDB) {
     const choiceMap = new Map(jsonDB.choices.map(choice => [choice.id, [choice.value, choice.toggle, choice.answerKey, choice.tag]]));
     const csv = jsonDB.questions.reduce((r, question) => {
-        let id = question.id;
+        const id = question.id;
         const type = questionTypes[question.type];
         let questionType = type;
-        let ccType = question.type;
+        const ccType = question.type;
         let text = question.text;
         let instruction = question.instruction || '';
         let key = question.key;
@@ -276,7 +274,10 @@ const importToDb = function (jsonDB) {
                 }
                 const line = `${id},${questionType},"${text}","${instruction}",${ccType},${key},${choiceId},"${choiceText}",${choiceType},${answerKey},${tag}`;
                 r.push(line);
-                questionType = text = instruction = key = '';
+                questionType = '';
+                text = '';
+                instruction = '';
+                key = '';
             });
             return r;
         }
@@ -287,15 +288,15 @@ const importToDb = function (jsonDB) {
     const options = { meta: [{ name: 'ccType', type: 'question' }], sourceType: identifierType };
     const stream = intoStream(csv.join('\n'));
     return models.question.import(stream, options)
-        .then(idMap => {
+        .then((idMap) => {
             const surveysCsv = jsonDB.pillars.reduce((r, pillar) => {
                 const id = pillar.id;
                 let name = pillar.title;
-                let isBHI = pillar.isBHI;
-                let maxScore = pillar.maxScore;
+                const isBHI = pillar.isBHI;
+                const maxScore = pillar.maxScore;
                 const description = '';
                 const required = 'true';
-                pillar.questions.forEach(question => {
+                pillar.questions.forEach((question) => {
                     const questionId = question.questionId;
                     const skipCount = question.skipCount || '';
                     const skipValue = question.skipValue || '';
@@ -321,7 +322,7 @@ const toDbFormat = function (userId, surveyId, createdAt, answersByQuestionId) {
             answer.answers.forEach(({ questionChoiceId, questionChoiceType, value }) => {
                 if (questionChoiceType === 'month') {
                     if (value.length === 1) {
-                        value = '0' + value;
+                        value = `0${value}`;
                     }
                 }
                 r.push({ userId, surveyId, createdAt, questionId, questionChoiceId, value });
@@ -357,12 +358,10 @@ const toDbFormat = function (userId, surveyId, createdAt, answersByQuestionId) {
 
 const importAnswersToDb = function (jsonDB, userIdMap) {
     return models.surveyIdentifier.getIdsBySurveyIdentifier(identifierType)
-        .then(surveyIdMap => {
-            return models.answerIdentifier.getTypeInformationByAnswerIdentifier(identifierType)
-                .then(answerIdMap => ({ surveyIdMap, answerIdMap }));
-        })
+        .then(surveyIdMap => models.answerIdentifier.getTypeInformationByAnswerIdentifier(identifierType)
+                .then(answerIdMap => ({ surveyIdMap, answerIdMap })))
         .then(({ surveyIdMap, answerIdMap }) => {
-            let records = jsonDB.answers.map(answer => {
+            let records = jsonDB.answers.map((answer) => {
                 const surveyIdentifier = answer.pillar_hash;
                 const surveyId = surveyIdMap.get(surveyIdentifier);
                 const answerIndex = new Map();
@@ -377,14 +376,14 @@ const importAnswersToDb = function (jsonDB, userIdMap) {
                         r.push(dbAnswer);
                         answerIndex.set(questionId, dbAnswer);
                     }
-                    let answer = {};
+                    const answer = {};
                     if (answerInfo.questionChoiceId) {
                         answer.questionChoiceId = answerInfo.questionChoiceId;
                         answer.questionChoiceType = answerInfo.questionChoiceType;
                     }
-                    if (record.hasOwnProperty('string_value')) {
+                    if (Object.prototype.hasOwnProperty.call(record, 'string_value')) {
                         answer.value = record.string_value.toString();
-                    } else if (record.hasOwnProperty('boolean_value')) {
+                    } else if (Object.prototype.hasOwnProperty.call(record, 'boolean_value')) {
                         answer.value = record.boolean_value;
                     }
                     dbAnswer.answers.push(answer);
@@ -398,13 +397,14 @@ const importAnswersToDb = function (jsonDB, userIdMap) {
             records.forEach((record, index) => {
                 const assessmentSet = jsonDB.answers[index].assessments;
                 const endIndex = overallIndex + record.length;
-                jsonDB.assessments.forEach(assessment => {
+                jsonDB.assessments.forEach((assessment) => {
                     if (assessmentSet[assessment.id]) {
                         let answerIndices = assessment.answerIndices;
                         if (!answerIndices) {
-                            assessment.answerIndices = (answerIndices = []);
+                            answerIndices = [];
+                            assessment.answerIndices = answerIndices;
                         }
-                        _.range(overallIndex, endIndex).forEach(answerIndex => {
+                        _.range(overallIndex, endIndex).forEach((answerIndex) => {
                             answerIndices.push(answerIndex);
                         });
                     }
@@ -412,11 +412,11 @@ const importAnswersToDb = function (jsonDB, userIdMap) {
                 overallIndex = endIndex;
             });
             records = _.flatten(records);
-            records.forEach(record => {
+            records.forEach((record) => {
                 record.language = 'en';
             });
             return models.answer.importRecords(records)
-                .then(ids => {
+                .then((ids) => {
                     const records = jsonDB.assessments.map((assessment, index, assessments) => {
                         const createdAt = assessment.updated_at;
                         const record = {
@@ -425,10 +425,10 @@ const importAnswersToDb = function (jsonDB, userIdMap) {
                             sequence: index,
                             status: 'collected',
                             meta: {
-                                key: assessment.assessment_id
+                                key: assessment.assessment_id,
                             },
                             createdAt,
-                            updatedAt: createdAt
+                            updatedAt: createdAt,
                         };
                         const nextIndex = index + 1;
                         if (nextIndex < assessments.length) {
@@ -445,9 +445,9 @@ const importAnswersToDb = function (jsonDB, userIdMap) {
 const importUsers = function (filepath) {
     const converter = new XLSXConverter();
     return converter.fileToRecords(filepath)
-        .then(users => {
+        .then((users) => {
             const userIdMap = new Map();
-            const promises = users.map(user => {
+            const promises = users.map((user) => {
                 const username = `username_${user.id}`;
                 const email = `${username}@dummy.com`;
                 const record = { username, email, password: 'pw' };
@@ -460,17 +460,13 @@ const importUsers = function (filepath) {
 
 const importCCFFiles = function (filepaths) {
     return importUsers(filepaths.users)
-        .then(userIdMap => {
-            return importFiles(filepaths)
-                .then(ccfData => {
-                    return importToDb(ccfData)
-                        .then(() => importAnswersToDb(ccfData, userIdMap));
-                })
-                .then(() => userIdMap);
-        });
+        .then(userIdMap => importFiles(filepaths)
+                .then(ccfData => importToDb(ccfData)
+                        .then(() => importAnswersToDb(ccfData, userIdMap)))
+                .then(() => userIdMap));
 };
 
 module.exports = {
     converters,
-    importCCFFiles
+    importCCFFiles,
 };

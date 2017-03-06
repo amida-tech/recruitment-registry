@@ -30,7 +30,7 @@ const SpecTests = class AssessmentSpecTests {
         return function () {
             const id = hxAssessment.id(index);
             return models.assessment.getAssessment(id)
-                .then(assessment => {
+                .then((assessment) => {
                     expect(assessment).to.deep.equal(hxAssessment.server(index));
                 });
         };
@@ -40,7 +40,7 @@ const SpecTests = class AssessmentSpecTests {
         const hxAssessment = this.hxAssessment;
         return function () {
             return models.assessment.listAssessments()
-                .then(list => {
+                .then((list) => {
                     expect(list).to.deep.equal(hxAssessment.listServers());
                 });
         };
@@ -64,7 +64,7 @@ const IntegrationTests = class AssessmentSpecTests {
             const surveyIds = indices.map(index => hxSurvey.id(index));
             const assessment = generator.newAssessment(surveyIds);
             rrSuperTest.post('/assessments', assessment, 201)
-                .expect(function (res) {
+                .expect((res) => {
                     hxAssessment.pushWithId(assessment, res.body.id);
                 })
                 .end(done);
@@ -77,7 +77,7 @@ const IntegrationTests = class AssessmentSpecTests {
         return function (done) {
             const id = hxAssessment.id(index);
             rrSuperTest.get(`/assessments/${id}`, true, 200)
-                .expect(function (res) {
+                .expect((res) => {
                     expect(res.body).to.deep.equal(hxAssessment.server(index));
                 })
                 .end(done);
@@ -89,7 +89,7 @@ const IntegrationTests = class AssessmentSpecTests {
         const hxAssessment = this.hxAssessment;
         return function (done) {
             rrSuperTest.get('/assessments', true, 200)
-                .expect(function (res) {
+                .expect((res) => {
                     expect(res.body).to.deep.equal(hxAssessment.listServers());
                 })
                 .end(done);
@@ -99,5 +99,5 @@ const IntegrationTests = class AssessmentSpecTests {
 
 module.exports = {
     SpecTests,
-    IntegrationTests
+    IntegrationTests,
 };

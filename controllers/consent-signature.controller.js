@@ -24,14 +24,13 @@ exports.bulkCreateSignatures = function (req, res) {
     const userAgent = _.get(req, 'headers.user-agent');
     const language = input.language;
     consentSignature.bulkCreateSignatures(input.consentDocumentIds, { userId, language, ip, userAgent })
-        .then((result) => res.status(201).json(result))
+        .then(result => res.status(201).json(result))
         .catch(shared.handleError(res));
 };
 
 exports.getSignatureHistory = function (req, res) {
     const userId = _.get(req, 'swagger.params.user-id.value');
     consentSignature.getSignatureHistory(userId)
-        .then((result) => res.status(200).json(result))
+        .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
-
 };

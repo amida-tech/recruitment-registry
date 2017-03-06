@@ -7,7 +7,7 @@ const travelSurvey = {
             text: 'Did you travel to Canada before?',
             required: true,
             type: 'choice-ref',
-            choiceSetReference: 'yes-no-1-2'
+            choiceSetReference: 'yes-no-1-2',
         }, { // 1
             text: 'Would you like to travel to Canada in the future?',
             required: true,
@@ -17,20 +17,20 @@ const travelSurvey = {
                 questionIndex: 0,
                 logic: 'equals',
                 answer: {
-                    code: '2'
-                }
-            }]
-        }]
+                    code: '2',
+                },
+            }],
+        }],
     }, {
         name: 'Canadian Experience',
         enableWhen: [{
             questionIndex: 0,
             logic: 'equals',
             answer: {
-                code: '1'
-            }
+                code: '1',
+            },
         }],
-        questions: [{ //2
+        questions: [{ // 2
             text: 'How do you rate your experience?',
             required: true,
             type: 'choice-ref',
@@ -44,16 +44,16 @@ const travelSurvey = {
                         questionIndex: 2,
                         logic: 'equals',
                         answer: {
-                            code: '1'
-                        }
+                            code: '1',
+                        },
                     }, {
                         questionIndex: 2,
                         logic: 'equals',
                         answer: {
-                            code: '2'
-                        }
-                    }]
-                }]
+                            code: '2',
+                        },
+                    }],
+                }],
             }, {
                 questions: [{ // 4
                     text: 'Please describe how could your experience be better?',
@@ -63,32 +63,32 @@ const travelSurvey = {
                         questionIndex: 2,
                         logic: 'equals',
                         answer: {
-                            code: '3'
-                        }
+                            code: '3',
+                        },
                     }, {
                         questionIndex: 2,
                         logic: 'equals',
                         answer: {
-                            code: '4'
-                        }
-                    }]
-                }]
-            }]
-        }]
+                            code: '4',
+                        },
+                    }],
+                }],
+            }],
+        }],
     }, {
         name: 'Canadian Offerings',
         enableWhen: [{
             questionIndex: 0,
             logic: 'equals',
             answer: {
-                code: '2'
-            }
+                code: '2',
+            },
         }, {
             questionIndex: 1,
             logic: 'equals',
             answer: {
-                code: '1'
-            }
+                code: '1',
+            },
         }],
         questions: [{ // 5
             text: 'What experience are you looking for?',
@@ -97,11 +97,11 @@ const travelSurvey = {
             choices: [{
                 text: 'Food',
             }, {
-                text: 'Architecture'
+                text: 'Architecture',
             }, {
-                text: 'Hiking'
+                text: 'Hiking',
             }, {
-                text: 'Water Sports'
+                text: 'Water Sports',
             }],
             sections: [{
                 questions: [{ // 6
@@ -112,17 +112,17 @@ const travelSurvey = {
                         questionIndex: 5,
                         logic: 'equals',
                         answer: {
-                            choiceText: 'Food'
-                        }
+                            choiceText: 'Food',
+                        },
                     }, {
                         questionIndex: 5,
                         logic: 'equals',
                         answer: {
-                            choiceText: 'Architecture'
-                        }
+                            choiceText: 'Architecture',
+                        },
                     }],
-                    oneOfChoices: ['Vancouver', 'Toronto', 'Montreal']
-                }]
+                    oneOfChoices: ['Vancouver', 'Toronto', 'Montreal'],
+                }],
             }, {
                 questions: [{ // 7
                     text: 'Select on the following cities?',
@@ -132,22 +132,22 @@ const travelSurvey = {
                         questionIndex: 5,
                         logic: 'equals',
                         answer: {
-                            choiceText: 'Hiking'
-                        }
+                            choiceText: 'Hiking',
+                        },
                     }, {
                         questionIndex: 5,
                         logic: 'equals',
                         answer: {
-                            choiceText: 'Water Sports'
-                        }
+                            choiceText: 'Water Sports',
+                        },
                     }],
-                    oneOfChoices: ['Edmonton', 'Calgary', 'Saskatoon']
-                }]
-            }]
-        }]
-    }]
+                    oneOfChoices: ['Edmonton', 'Calgary', 'Saskatoon'],
+                }],
+            }],
+        }],
+    }],
 };
 
 module.exports = {
-    travelSurvey
+    travelSurvey,
 };

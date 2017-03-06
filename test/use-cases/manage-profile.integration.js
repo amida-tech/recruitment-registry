@@ -1,5 +1,7 @@
 /* global describe,before,it*/
+
 'use strict';
+
 process.env.NODE_ENV = 'test';
 
 const _ = require('lodash');
@@ -17,7 +19,7 @@ const config = require('../../config');
 const expect = chai.expect;
 const shared = new SharedIntegration();
 
-describe('user set-up and login use-case', function () {
+describe('user set-up and login use-case', () => {
     const userExample = userExamples.Alzheimer;
     const surveyExample = surveyExamples.Alzheimer;
 
@@ -39,9 +41,9 @@ describe('user set-up and login use-case', function () {
 
     let survey;
 
-    it('get profile survey', function (done) {
+    it('get profile survey', (done) => {
         store.get('/profile-survey', false, 200)
-            .expect(function (res) {
+            .expect((res) => {
                 survey = res.body.survey;
             })
             .end(done);
@@ -51,7 +53,7 @@ describe('user set-up and login use-case', function () {
 
     let answers;
 
-    it('fill user profile and submit', function (done) {
+    it('fill user profile and submit', (done) => {
         answers = helper.formAnswersToPost(survey, surveyExample.answer);
         const user = userExample;
         store.authPost('/profiles', { user, answers }, 201).end(done);
@@ -59,9 +61,9 @@ describe('user set-up and login use-case', function () {
 
     // -------- verification
 
-    it('verify user profile', function (done) {
+    it('verify user profile', (done) => {
         store.get('/profiles', true, 200)
-            .expect(function (res) {
+            .expect((res) => {
                 const result = res.body;
 
                 const expectedUser = _.cloneDeep(userExample);
@@ -74,30 +76,29 @@ describe('user set-up and login use-case', function () {
                 const actualSurvey = result.survey;
                 const expectedSurvey = helper.formAnsweredSurvey(survey, answers);
                 expect(actualSurvey).to.deep.equal(expectedSurvey);
-
             })
             .end(done);
     });
 
     // --------
 
-    it('update user profile', function (done) {
+    it('update user profile', (done) => {
         answers = helper.formAnswersToPost(survey, surveyExample.answerUpdate);
         const userUpdates = {
-            email: 'updated@example.com'
+            email: 'updated@example.com',
         };
         const user = userUpdates;
         store.patch('/profiles', { user, answers }, 204)
             .send({
                 user: userUpdates,
-                answers
+                answers,
             })
             .end(done);
     });
 
-    it('verify user profile', function (done) {
+    it('verify user profile', (done) => {
         store.get('/profiles', true, 200)
-            .expect(function (res) {
+            .expect((res) => {
                 const result = res.body;
 
                 const expectedUser = _.cloneDeep(userExample);
@@ -111,7 +112,6 @@ describe('user set-up and login use-case', function () {
                 const actualSurvey = result.survey;
                 const expectedSurvey = helper.formAnsweredSurvey(survey, answers);
                 expect(actualSurvey).to.deep.equal(expectedSurvey);
-
             })
             .end(done);
     });

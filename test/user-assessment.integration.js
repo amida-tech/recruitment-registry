@@ -1,5 +1,7 @@
 /* global describe,before,it*/
+
 'use strict';
+
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
@@ -17,13 +19,14 @@ const MultiIndexHistory = require('./util/multi-index-history');
 const surveyCommon = require('./util/survey-common');
 const assessmentCommon = require('./util/assessment-common');
 const answerCommon = require('./util/answer-common');
+
 const expect = chai.expect;
 
 const generator = new Generator();
 
 const shared = new SharedIntegration(generator);
 
-describe('user assessment integration', function () {
+describe('user assessment integration', () => {
     const surveyCount = 6;
     const assessmentCount = 2;
 
@@ -42,16 +45,16 @@ describe('user assessment integration', function () {
 
     it('login as super', shared.loginFn(rrSuperTest, config.superUser));
 
-    _.range(2).forEach(index => {
+    _.range(2).forEach((index) => {
         it(`create user ${index}`, shared.createUserFn(rrSuperTest, hxUser));
     });
 
-    _.range(surveyCount).forEach(index => {
+    _.range(surveyCount).forEach((index) => {
         it(`create survey ${index}`, surveyTests.createSurveyFn({ noSection: true }));
         it(`get survey ${index}`, surveyTests.getSurveyFn(index));
     });
 
-    _.range(assessmentCount).forEach(index => {
+    _.range(assessmentCount).forEach((index) => {
         const indices = _.range(index * 3, (index + 1) * 3);
         it(`create assessment ${index}`, assessmentTests.createAssessmentFn(indices));
         it(`get assessment ${index}`, assessmentTests.getAssessmentFn(index));
@@ -63,7 +66,7 @@ describe('user assessment integration', function () {
             const assessmentId = hxAssessment.id(assessmentIndex);
             const userAssessment = { userId, assessmentId };
             rrSuperTest.post('/user-assessments', userAssessment, 201)
-                .expect(function (res) {
+                .expect((res) => {
                     hxUserAssessment.pushWithId([userIndex, assessmentIndex, timeIndex], userAssessment, res.body.id);
                 })
                 .end(done);
@@ -83,12 +86,12 @@ describe('user assessment integration', function () {
     it('open user 1 assessment 1 (0)', openUserAssessmentFn(1, 1, 0));
     it('logout as super', shared.logoutFn(rrSuperTest));
     it('login as user 0', shared.loginIndexFn(rrSuperTest, hxUser, 0));
-    _.range(0, 3).forEach(index => {
+    _.range(0, 3).forEach((index) => {
         it(`user 0 answers survey ${index}`, answerTests.answerSurveyFn(0, index));
     });
     it('logout as  user 0', shared.logoutFn(rrSuperTest));
     it('login as user 1', shared.loginIndexFn(rrSuperTest, hxUser, 1));
-    _.range(3, 6).forEach(index => {
+    _.range(3, 6).forEach((index) => {
         it(`user 1 answers survey ${index}`, answerTests.answerSurveyFn(1, index));
     });
     it('logout as  user 1', shared.logoutFn(rrSuperTest));
@@ -97,12 +100,12 @@ describe('user assessment integration', function () {
     it('open user 1 assessment 1 (1)', openUserAssessmentFn(1, 1, 1));
     it('logout as super', shared.logoutFn(rrSuperTest));
     it('login as user 0', shared.loginIndexFn(rrSuperTest, hxUser, 0));
-    _.range(0, 3).forEach(index => {
+    _.range(0, 3).forEach((index) => {
         it(`user 0 answers survey ${index}`, answerTests.answerSurveyFn(0, index));
     });
     it('logout as  user 0', shared.logoutFn(rrSuperTest));
     it('login as user 1', shared.loginIndexFn(rrSuperTest, hxUser, 1));
-    _.range(3, 6).forEach(index => {
+    _.range(3, 6).forEach((index) => {
         it(`user 1 answers survey ${index}`, answerTests.answerSurveyFn(1, index));
     });
     it('logout as  user 1', shared.logoutFn(rrSuperTest));
@@ -113,12 +116,12 @@ describe('user assessment integration', function () {
     it('open user 1 assessment 1 (2)', openUserAssessmentFn(1, 1, 2));
     it('logout as super', shared.logoutFn(rrSuperTest));
     it('login as user 0', shared.loginIndexFn(rrSuperTest, hxUser, 0));
-    _.range(0, 3).forEach(index => {
+    _.range(0, 3).forEach((index) => {
         it(`user 0 answers survey ${index}`, answerTests.answerSurveyFn(0, index));
     });
     it('logout as  user 0', shared.logoutFn(rrSuperTest));
     it('login as user 1', shared.loginIndexFn(rrSuperTest, hxUser, 1));
-    _.range(3, 6).forEach(index => {
+    _.range(3, 6).forEach((index) => {
         it(`user 1 answers survey ${index}`, answerTests.answerSurveyFn(1, index));
     });
     it('logout as  user 1', shared.logoutFn(rrSuperTest));
@@ -126,9 +129,9 @@ describe('user assessment integration', function () {
     it('close user 0 assessment 0', closeUserAssessmentFn(0, 0));
     it('close user 1 assessment 1', closeUserAssessmentFn(1, 1));
 
-    let answersForUser = [null, null];
+    const answersForUser = [null, null];
 
-    it('transfer expected answers', function () {
+    it('transfer expected answers', () => {
         answersForUser[0] = hxAnswer.listFlatForUser(0);
         answersForUser[1] = hxAnswer.listFlatForUser(1);
     });
@@ -139,13 +142,12 @@ describe('user assessment integration', function () {
             const assessmentId = hxAssessment.id(assessmentIndex);
             const query = { 'user-id': userId, 'assessment-id': assessmentId };
             rrSuperTest.get('/user-assessments', true, 200, query)
-                .expect(function (res) {
-                    const expected = _.range(3).map(index => {
+                .expect((res) => {
+                    const expected = _.range(3).map((index) => {
                         const id = hxUserAssessment.id([userIndex, assessmentIndex, index]);
                         return Object.assign({ sequence: index }, { id });
                     });
                     expect(res.body).to.deep.equal(expected);
-
                 })
                 .end(done);
         };
@@ -160,14 +162,15 @@ describe('user assessment integration', function () {
                 return r;
             }, {});
             rrSuperTest.get(`/user-assessments/${id}/answers`, true, 200)
-                .expect(function (res) {
+                .expect((res) => {
                     const expected = hxAnswer.store.reduce((r, record) => {
                         if (record.userIndex !== userIndex) {
                             return r;
                         }
                         const surveyTimeIndex = surveyTimeIndices[record.surveyIndex];
                         surveyTimeIndices[record.surveyIndex] = surveyTimeIndex + 1;
-                        let { surveyIndex, answers } = record;
+                        const surveyIndex = record.surveyIndex;
+                        let answers = record.answers;
                         if (surveyIndex >= minSurveyIndex && surveyIndex <= maxSurveyIndex && timeIndex === surveyTimeIndex) {
                             const surveyId = hxSurvey.id(surveyIndex);
                             answers = answers.map(answer => Object.assign({ surveyId }, answer));

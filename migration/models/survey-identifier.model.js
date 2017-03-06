@@ -5,12 +5,12 @@ module.exports = function (sequelize, DataTypes) {
         type: {
             type: DataTypes.TEXT,
             allowNull: false,
-            unique: 'identifier'
+            unique: 'identifier',
         },
         identifier: {
             type: DataTypes.TEXT,
             allowNull: false,
-            unique: 'identifier'
+            unique: 'identifier',
         },
         surveyId: {
             type: DataTypes.INTEGER,
@@ -19,10 +19,10 @@ module.exports = function (sequelize, DataTypes) {
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'survey'
+                    tableName: 'survey',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         createdAt: {
             type: DataTypes.DATE,
@@ -30,13 +30,13 @@ module.exports = function (sequelize, DataTypes) {
         },
         updatedAt: {
             type: DataTypes.DATE,
-            field: 'updated_at'
-        }
+            field: 'updated_at',
+        },
     }, {
         freezeTableName: true,
         schema: sequelize.options.schema,
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
-        indexes: [{ fields: ['survey_id'] }]
+        indexes: [{ fields: ['survey_id'] }],
     });
 };

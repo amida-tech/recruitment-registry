@@ -1,7 +1,6 @@
 'use strict';
 
 const db = require('../db');
-const sequelize = db.sequelize;
 
 const SPromise = require('../../lib/promise');
 const queryrize = require('../../lib/queryrize');
@@ -9,8 +8,8 @@ const RRError = require('../../lib/rr-error');
 
 const Translatable = require('./translatable');
 
+const sequelize = db.sequelize;
 const QuestionChoice = db.QuestionChoice;
-
 const idFromCodeQuery = queryrize.readQuerySync('question-choice-id-from-code.sql');
 
 module.exports = class QuestionChoiceDAO extends Translatable {
@@ -19,7 +18,7 @@ module.exports = class QuestionChoiceDAO extends Translatable {
     }
 
     deleteNullData(choices) {
-        choices.forEach(choice => {
+        choices.forEach((choice) => {
             if (!choice.meta) {
                 delete choice.meta;
             }
@@ -44,11 +43,11 @@ module.exports = class QuestionChoiceDAO extends Translatable {
 
     findChoicesPerQuestion(questionId, language) {
         return QuestionChoice.findAll({
-                raw: true,
-                where: { questionId },
-                attributes: ['id', 'type', 'meta', 'code'],
-                order: 'line'
-            })
+            raw: true,
+            where: { questionId },
+            attributes: ['id', 'type', 'meta', 'code'],
+            order: 'line',
+        })
             .then(choices => this.deleteNullData(choices))
             .then(choices => this.updateAllTexts(choices, language));
     }
@@ -57,7 +56,7 @@ module.exports = class QuestionChoiceDAO extends Translatable {
         const options = {
             raw: true,
             attributes: ['id', 'type', 'questionId', 'meta', 'code'],
-            order: 'line'
+            order: 'line',
         };
         if (questionIds) {
             options.where = { questionId: { $in: questionIds } };
@@ -74,16 +73,12 @@ module.exports = class QuestionChoiceDAO extends Translatable {
 
     createQuestionChoices(choiceSetId, choices, transaction) {
         const type = 'choice';
-        const promises = choices.map(({ code, text }, line) => {
-            return this.createQuestionChoiceTx({ choiceSetId, text, code, line, type }, transaction);
-        });
+        const promises = choices.map(({ code, text }, line) => this.createQuestionChoiceTx({ choiceSetId, text, code, line, type }, transaction));
         return SPromise.all(promises);
     }
 
     updateMultipleChoiceTexts(choices, language) {
-        return sequelize.transaction(transaction => {
-            return this.updateMultipleChoiceTextsTx(choices, language, transaction);
-        });
+        return sequelize.transaction(transaction => this.updateMultipleChoiceTextsTx(choices, language, transaction));
     }
 
     listQuestionChoices(choiceSetId, language) {
@@ -101,11 +96,11 @@ module.exports = class QuestionChoiceDAO extends Translatable {
 
     findQuestionChoiceIdForCode(questionId, code, transaction) {
         return sequelize.query(idFromCodeQuery, {
-                type: sequelize.QueryTypes.SELECT,
-                replacements: { question_id: questionId, code },
-                transaction
-            })
-            .then(result => {
+            type: sequelize.QueryTypes.SELECT,
+            replacements: { question_id: questionId, code },
+            transaction,
+        })
+            .then((result) => {
                 if (result && result.length) {
                     return result[0].id;
                 }

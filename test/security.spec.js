@@ -1,5 +1,7 @@
 /* global describe,before,it*/
+
 'use strict';
+
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
@@ -14,12 +16,12 @@ const SharedSpec = require('./util/shared-spec');
 const expect = chai.expect;
 const shared = new SharedSpec();
 
-describe('security unit', function () {
+describe('security unit', () => {
     const admin = {
         username: 'admin',
         password: 'admin',
         email: 'admin@test.com',
-        role: 'admin'
+        role: 'admin',
     };
 
     let adminJWT;
@@ -28,7 +30,7 @@ describe('security unit', function () {
         username: 'participant',
         password: 'participant',
         email: 'participant@test.com',
-        role: 'participant'
+        role: 'participant',
     };
 
     let participantJWT;
@@ -37,7 +39,7 @@ describe('security unit', function () {
         username: 'deleted',
         password: 'deleted',
         email: 'deleted@test.com',
-        role: 'participant'
+        role: 'participant',
     };
 
     let deletedJWT;
@@ -46,277 +48,266 @@ describe('security unit', function () {
         username: 'clinician',
         password: 'clinician',
         email: 'clinician@test.com',
-        role: 'clinician'
+        role: 'clinician',
     };
 
     let clinicianJWT;
 
     before(shared.setUpFn());
 
-    it('create users', function () {
-        return models.user.createUser(admin)
-            .then(user => {
+    it('create users', () => models.user.createUser(admin)
+            .then((user) => {
                 admin.id = user.id;
                 adminJWT = tokener.createJWT({
                     id: admin.id,
-                    originalUsername: admin.username
+                    originalUsername: admin.username,
                 });
             })
             .then(() => models.user.createUser(participant))
-            .then(user => {
+            .then((user) => {
                 participant.id = user.id;
                 participantJWT = tokener.createJWT({
                     id: participant.id,
-                    originalUsername: participant.username
+                    originalUsername: participant.username,
                 });
             })
             .then(() => models.user.createUser(clinician))
-            .then(user => {
+            .then((user) => {
                 clinician.id = user.id;
                 clinicianJWT = tokener.createJWT({
                     id: clinician.id,
-                    originalUsername: clinician.username
+                    originalUsername: clinician.username,
                 });
             })
             .then(() => models.user.createUser(deleted))
-            .then(user => {
+            .then((user) => {
                 deleted.id = user.id;
                 deletedJWT = tokener.createJWT({
                     id: deleted.id,
-                    originalUsername: deleted.username
+                    originalUsername: deleted.username,
                 });
                 return user.id;
             })
-            .then(id => models.user.deleteUser(id));
-    });
+            .then(id => models.user.deleteUser(id)));
 
-    it('valid admin for admin', function (done) {
+    it('valid admin for admin', (done) => {
         const req = {};
         const header = `Bearer ${adminJWT}`;
-        security.admin(req, undefined, header, function (err) {
+        security.admin(req, undefined, header, (err) => {
             if (err) {
                 return done(err);
             }
             const actual = _.pick(req.user, ['id', 'username', 'email', 'role']);
             const expected = _.omit(admin, 'password');
             expect(actual).to.deep.equal(expected);
-            done();
+            return done();
         });
     });
 
-    it('valid admin for clinician', function (done) {
+    it('valid admin for clinician', (done) => {
         const req = {};
         const header = `Bearer ${adminJWT}`;
         console.log('calling security.clinician');
-        security.clinician(req, undefined, header, function (err) {
+        security.clinician(req, undefined, header, (err) => {
             if (err) {
                 return done(err);
             }
             const actual = _.pick(req.user, ['id', 'username', 'email', 'role']);
             const expected = _.omit(admin, 'password');
             expect(actual).to.deep.equal(expected);
-            done();
+            return done();
         });
     });
 
-    it('valid admin for participant', function (done) {
+    it('valid admin for participant', (done) => {
         const req = {};
         const header = `Bearer ${adminJWT}`;
-        security.participant(req, undefined, header, function (err) {
+        security.participant(req, undefined, header, (err) => {
             if (err) {
                 return done(err);
             }
             const actual = _.pick(req.user, ['id', 'username', 'email', 'role']);
             const expected = _.omit(admin, 'password');
             expect(actual).to.deep.equal(expected);
-            done();
+            return done();
         });
     });
 
-    it('valid participant for participant', function (done) {
+    it('valid participant for participant', (done) => {
         const req = {};
         const header = `Bearer ${participantJWT}`;
-        security.participant(req, undefined, header, function (err) {
+        security.participant(req, undefined, header, (err) => {
             if (err) {
                 return done(err);
             }
             const actual = _.pick(req.user, ['id', 'username', 'email', 'role']);
             const expected = _.omit(participant, 'password');
             expect(actual).to.deep.equal(expected);
-            done();
+            return done();
         });
     });
 
-    it('valid clinician for clinician', function (done) {
+    it('valid clinician for clinician', (done) => {
         const req = {};
         const header = `Bearer ${clinicianJWT}`;
-        security.clinician(req, undefined, header, function (err) {
+        security.clinician(req, undefined, header, (err) => {
             if (err) {
                 return done(err);
             }
             const actual = _.pick(req.user, ['id', 'username', 'email', 'role']);
             const expected = _.omit(clinician, 'password');
             expect(actual).to.deep.equal(expected);
-            done();
+            return done();
         });
     });
 
-    it('valid admin for self', function (done) {
+    it('valid admin for self', (done) => {
         const req = {};
         const header = `Bearer ${adminJWT}`;
-        security.self(req, undefined, header, function (err) {
+        security.self(req, undefined, header, (err) => {
             if (err) {
                 return done(err);
             }
             const actual = _.pick(req.user, ['id', 'username', 'email', 'role']);
             const expected = _.omit(admin, 'password');
             expect(actual).to.deep.equal(expected);
-            done();
+            return done();
         });
     });
 
-    it('valid participant for self', function (done) {
+    it('valid participant for self', (done) => {
         const req = {};
         const header = `Bearer ${participantJWT}`;
-        security.self(req, undefined, header, function (err) {
+        security.self(req, undefined, header, (err) => {
             if (err) {
                 return done(err);
             }
             const actual = _.pick(req.user, ['id', 'username', 'email', 'role']);
             const expected = _.omit(participant, 'password');
             expect(actual).to.deep.equal(expected);
-            done();
+            return done();
         });
     });
 
-    it('valid clinician for self', function (done) {
+    it('valid clinician for self', (done) => {
         const req = {};
         const header = `Bearer ${clinicianJWT}`;
-        security.self(req, undefined, header, function (err) {
+        security.self(req, undefined, header, (err) => {
             if (err) {
                 return done(err);
             }
             const actual = _.pick(req.user, ['id', 'username', 'email', 'role']);
             const expected = _.omit(clinician, 'password');
             expect(actual).to.deep.equal(expected);
-            done();
+            return done();
         });
     });
 
-    it('error: no Bearer', function (done) {
+    it('error: no Bearer', (done) => {
         const req = {};
         const header = `${adminJWT}`;
-        security.admin(req, undefined, header, function (err) {
+        security.admin(req, undefined, header, (err) => {
             if (err) {
                 expect(err).to.deep.equal(security.invalidAuth);
                 return done();
-            } else {
-                done(new Error('unexpected no error'));
             }
+            return done(new Error('unexpected no error'));
         });
     });
 
-    it('error: no token', function (done) {
+    it('error: no token', (done) => {
         const req = {};
         const header = 'Bearer';
-        security.admin(req, undefined, header, function (err) {
+        security.admin(req, undefined, header, (err) => {
             if (err) {
                 expect(err).to.deep.equal(security.invalidAuth);
                 return done();
-            } else {
-                done(new Error('unexpected no error'));
             }
+            return done(new Error('unexpected no error'));
         });
     });
 
-    it('error: no header', function (done) {
+    it('error: no header', (done) => {
         const req = {};
         const header = '';
-        security.admin(req, undefined, header, function (err) {
+        security.admin(req, undefined, header, (err) => {
             if (err) {
                 expect(err).to.deep.equal(security.noAuth);
                 return done();
-            } else {
-                done(new Error('unexpected no error'));
             }
+            return done(new Error('unexpected no error'));
         });
     });
 
-    it('error: invalid token', function (done) {
+    it('error: invalid token', (done) => {
         const req = {};
         const header = 'Bearer xxx';
-        security.admin(req, undefined, header, function (err) {
+        security.admin(req, undefined, header, (err) => {
             if (err) {
                 expect(err).to.deep.equal(security.invalidAuth);
                 return done();
-            } else {
-                done(new Error('unexpected no error'));
             }
+            return done(new Error('unexpected no error'));
         });
     });
 
-    it('error: invalid user', function (done) {
+    it('error: invalid user', (done) => {
         const req = {};
         const header = `Bearer ${deletedJWT}`;
-        security.participant(req, undefined, header, function (err) {
+        security.participant(req, undefined, header, (err) => {
             if (err) {
                 expect(err).to.deep.equal(security.invalidUser);
                 return done();
-            } else {
-                done(new Error('unexpected no error'));
             }
+            return done(new Error('unexpected no error'));
         });
     });
 
-    it('error: participant for admin', function (done) {
+    it('error: participant for admin', (done) => {
         const req = {};
         const header = `Bearer ${participantJWT}`;
-        security.admin(req, undefined, header, function (err) {
+        security.admin(req, undefined, header, (err) => {
             if (err) {
                 expect(err).to.deep.equal(security.unauthorizedUser);
                 return done();
-            } else {
-                done(new Error('unexpected no error'));
             }
+            return done(new Error('unexpected no error'));
         });
     });
 
-    it('error: participant for clinician', function (done) {
+    it('error: participant for clinician', (done) => {
         const req = {};
         const header = `Bearer ${participantJWT}`;
-        security.clinician(req, undefined, header, function (err) {
+        security.clinician(req, undefined, header, (err) => {
             if (err) {
                 expect(err).to.deep.equal(security.unauthorizedUser);
                 return done();
-            } else {
-                done(new Error('unexpected no error'));
             }
+            return done(new Error('unexpected no error'));
         });
     });
 
-    it('error: clinician for admin', function (done) {
+    it('error: clinician for admin', (done) => {
         const req = {};
         const header = `Bearer ${clinicianJWT}`;
-        security.admin(req, undefined, header, function (err) {
+        security.admin(req, undefined, header, (err) => {
             if (err) {
                 expect(err).to.deep.equal(security.unauthorizedUser);
                 return done();
-            } else {
-                done(new Error('unexpected no error'));
             }
+            return done(new Error('unexpected no error'));
         });
     });
 
-    it('error: clinician for participant', function (done) {
+    it('error: clinician for participant', (done) => {
         const req = {};
         const header = `Bearer ${clinicianJWT}`;
-        security.participant(req, undefined, header, function (err) {
+        security.participant(req, undefined, header, (err) => {
             if (err) {
                 expect(err).to.deep.equal(security.unauthorizedUser);
                 return done();
-            } else {
-                done(new Error('unexpected no error'));
             }
+            return done(new Error('unexpected no error'));
         });
     });
 });

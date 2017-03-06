@@ -28,7 +28,7 @@ const comparator = {
                     delete answer.choiceText;
                 }
                 if (answer && answer.choices) {
-                    answer.choices.forEach(answerChoice => {
+                    answer.choices.forEach((answerChoice) => {
                         const enableWhenChoice = question.choices.find(choice => (choice.text === answerChoice.text));
                         answerChoice.id = enableWhenChoice.id;
                         delete answerChoice.text;
@@ -53,7 +53,7 @@ const comparator = {
         const id = server.id;
         const expected = _.cloneDeep(client);
         if (expected.type === 'choices') {
-            expected.choices.forEach((choice) => choice.type = choice.type || 'bool');
+            expected.choices.forEach((choice) => { choice.type = choice.type || 'bool'; });
         }
         if (expected.type === 'choice' && expected.oneOfChoices) {
             expected.choices = expected.oneOfChoices.map(choice => ({ text: choice }));
@@ -151,7 +151,7 @@ const comparator = {
         const answerMap = new Map();
         answers.forEach(({ questionId, answer, answers, language }) => answerMap.set(questionId, { answer, answers, language }));
         const surveyQuestions = models.survey.getQuestions(expected);
-        surveyQuestions.forEach(qx => {
+        surveyQuestions.forEach((qx) => {
             const clientAnswers = answerMap.get(qx.id);
             if (clientAnswers) {
                 if (qx.multiple) {
@@ -163,8 +163,8 @@ const comparator = {
                 if (qx.type === 'choices' && qx.answer.choices) {
                     qx.answer.choices.forEach((choice) => {
                         const numValues = ['textValue', 'code', 'monthValue', 'yearValue', 'dayValue', 'integerValue', 'boolValue'].reduce((r, p) => {
-                            if (choice.hasOwnProperty(p)) {
-                                ++r;
+                            if (Object.prototype.hasOwnProperty.call(choice, p)) {
+                                r += 1;
                             }
                             return r;
                         }, 0);
@@ -179,13 +179,13 @@ const comparator = {
     },
     answers(answers, serverAnswers, language) {
         const expected = _.cloneDeep(answers);
-        expected.forEach(answer => {
+        expected.forEach((answer) => {
             answer.language = answer.language || language || 'en';
             if (answer.answer && answer.answer.choices) {
                 answer.answer.choices.forEach((choice) => {
                     const numValues = ['textValue', 'code', 'monthValue', 'yearValue', 'dayValue', 'integerValue', 'boolValue', 'dateValue', 'numberValue', 'feetInchesValue', 'bloodPressureValue'].reduce((r, p) => {
-                        if (choice.hasOwnProperty(p)) {
-                            ++r;
+                        if (Object.prototype.hasOwnProperty.call(choice, p)) {
+                            r += 1;
                         }
                         return r;
                     }, 0);
@@ -203,7 +203,7 @@ const comparator = {
         const expected = _.cloneDeep(client);
         expected.id = server.id;
         delete expected.password;
-        if (!expected.hasOwnProperty('role')) {
+        if (!Object.prototype.hasOwnProperty.call(expected, 'role')) {
             expected.role = 'participant';
         }
         if (!expected.username) {
@@ -214,7 +214,7 @@ const comparator = {
     choiceSet(client, server) {
         const expected = _.cloneDeep(client);
         expected.id = server.id;
-        _.range(server.choices.length).forEach(index => {
+        _.range(server.choices.length).forEach((index) => {
             expected.choices[index].id = server.choices[index].id;
         });
         expect(server).to.deep.equal(expected);
@@ -239,7 +239,6 @@ const comparator = {
                 this.conditionalSurveyTwiceCreatedQuestions(section.questions, firstServerSections[index].questions);
             }
         });
-
     },
     conditionalSurveyTwiceCreatedQuestions(firstServerQuestions, secondServerQuestions) {
         secondServerQuestions.forEach((question, index) => {
@@ -268,7 +267,7 @@ const comparator = {
     },
     updateChoiceSetMap(choiceSets) {
         choiceSetMap = new Map();
-        choiceSets.forEach(choiceSet => {
+        choiceSets.forEach((choiceSet) => {
             const choices = choiceSet.choices.map(({ id, text, code }) => ({ id, text, code }));
             choiceSetMap.set(choiceSet.id, choices);
             choiceSetMap.set(choiceSet.reference, choices);
@@ -278,7 +277,7 @@ const comparator = {
         const expected = _.cloneDeep(client);
         expected.id = server.id;
         expect(server).to.deep.equal(expected);
-    }
+    },
 };
 
 module.exports = comparator;

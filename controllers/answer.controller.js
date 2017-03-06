@@ -25,7 +25,7 @@ exports.getAnswers = function (req, res) {
 exports.exportAnswers = function (req, res) {
     const userId = req.user.id;
     models.answer.exportForUser(userId)
-        .then(csvContent => {
+        .then((csvContent) => {
             res.header('Content-disposition', 'attachment; filename=answer.csv');
             res.type('text/csv');
             res.status(200).send(csvContent);

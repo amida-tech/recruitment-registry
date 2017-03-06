@@ -15,23 +15,20 @@ module.exports = class ProfileSurveyDAO {
 
     getProfileSurveyId() {
         return ProfileSurvey.findOne({
-                raw: true,
-                attributes: ['surveyId']
-            })
-            .then(record => {
+            raw: true,
+            attributes: ['surveyId'],
+        })
+            .then((record) => {
                 if (record) {
                     return record.surveyId;
-                } else {
-                    return 0;
                 }
+                return 0;
             });
     }
 
     createProfileSurveyIdTx(surveyId, transaction) {
         return ProfileSurvey.destroy({ where: {}, transaction })
-            .then(() => {
-                return ProfileSurvey.create({ surveyId }, { transaction });
-            });
+            .then(() => ProfileSurvey.create({ surveyId }, { transaction }));
     }
 
     createProfileSurveyId(surveyId) {
@@ -43,45 +40,39 @@ module.exports = class ProfileSurveyDAO {
     }
 
     createProfileSurvey(survey) {
-        return sequelize.transaction(transaction => {
-            return this.survey.createOrReplaceSurvey(survey)
-                .then(surveyId => {
-                    return this.createProfileSurveyIdTx(surveyId, transaction)
-                        .then(() => ({ id: surveyId }));
-                });
-        });
+        return sequelize.transaction(transaction => this.survey.createOrReplaceSurvey(survey)
+                .then(surveyId => this.createProfileSurveyIdTx(surveyId, transaction)
+                        .then(() => ({ id: surveyId }))));
     }
 
     getProfileSurvey(options = {}) {
         return this.getProfileSurveyId()
-            .then(profileSurveyId => {
+            .then((profileSurveyId) => {
                 if (profileSurveyId) {
                     return this.survey.getSurvey(profileSurveyId, options)
-                        .then(survey => {
+                        .then((survey) => {
                             const surveyId = survey.id;
                             const action = 'create';
                             return SurveyConsent.findAll({
-                                    where: { surveyId, action },
-                                    raw: true,
-                                    attributes: ['consentTypeId']
-                                })
+                                where: { surveyId, action },
+                                raw: true,
+                                attributes: ['consentTypeId'],
+                            })
                                 .then(rawTypeIds => _.map(rawTypeIds, 'consentTypeId'))
-                                .then(typeIds => {
+                                .then((typeIds) => {
                                     if (typeIds.length) {
                                         return this.consentDocument.listConsentDocuments({ summary: true, typeIds })
-                                            .then(consentDocuments => {
+                                            .then((consentDocuments) => {
                                                 survey.consentDocuments = consentDocuments;
                                                 return survey;
                                             });
-                                    } else {
-                                        return survey;
                                     }
+                                    return survey;
                                 })
                                 .then(survey => ({ exists: true, survey }));
                         });
-                } else {
-                    return { exists: false };
                 }
+                return { exists: false };
             });
     }
 };

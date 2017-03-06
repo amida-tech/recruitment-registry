@@ -24,7 +24,7 @@ module.exports = class UserConsentDocumentDAO {
         const consentDocOptions = Object.assign({ summary: true }, options);
         delete consentDocOptions.includeSigned;
         return this.consentDocument.listConsentDocuments(consentDocOptions)
-            .then(activeDocuments => {
+            .then((activeDocuments) => {
                 const attributes = ['consentDocumentId'];
                 if (includeSigned) {
                     attributes.push('language');
@@ -35,26 +35,25 @@ module.exports = class UserConsentDocumentDAO {
                 }
                 return ConsentSignature.findAll(query)
                     .then(signedDocuments => new Map(signedDocuments.map(signedDocument => [signedDocument.consentDocumentId, signedDocument])))
-                    .then(signedDocumentMap => {
+                    .then((signedDocumentMap) => {
                         if (includeSigned) {
-                            activeDocuments.forEach(activeDocument => {
+                            activeDocuments.forEach((activeDocument) => {
                                 const signature = signedDocumentMap.get(activeDocument.id);
                                 this.addSignatureInfo(activeDocument, signature);
                             });
                             return activeDocuments;
-                        } else {
-                            return activeDocuments.filter(activeDocument => !signedDocumentMap.has(activeDocument.id));
                         }
+                        return activeDocuments.filter(activeDocument => !signedDocumentMap.has(activeDocument.id));
                     });
             });
     }
 
     fillSignature(result, userId, id) {
         return ConsentSignature.findOne({
-                where: { userId, consentDocumentId: id },
-                raw: true,
-                attributes: ['language']
-            })
+            where: { userId, consentDocumentId: id },
+            raw: true,
+            attributes: ['language'],
+        })
             .then(signature => this.addSignatureInfo(result, signature));
     }
 

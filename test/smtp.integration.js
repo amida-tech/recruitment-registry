@@ -1,5 +1,7 @@
 /* global describe,before,it*/
+
 'use strict';
+
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
@@ -14,7 +16,7 @@ const expect = chai.expect;
 
 const shared = new SharedIntegration();
 
-describe('smtp integration', function () {
+describe('smtp integration', () => {
     const store = new RRSuperTest();
 
     before(shared.setUpFn(store));
@@ -25,7 +27,7 @@ describe('smtp integration', function () {
 
     const checkNull = function (done) {
         store.get('/smtp', true, 200)
-            .expect(function (res) {
+            .expect((res) => {
                 expect(res.body.exists).to.equal(false);
             })
             .end(done);
@@ -40,15 +42,16 @@ describe('smtp integration', function () {
             from: `from_${index}`,
             otherOptions: {
                 key1: `key1_${index}`,
-                key2: `key2_${index}`
-            }
+                key2: `key2_${index}`,
+            },
         };
     };
 
     const createNewSmtpText = function (index) {
+        const actualLink = '${link}'; // eslint-disable-line no-template-curly-in-string
         return {
             subject: `subject_${index}`,
-            content: `content_${index} with link:` + '${link}'
+            content: `content_${index} with link:${actualLink}`,
         };
     };
 
@@ -60,7 +63,7 @@ describe('smtp integration', function () {
                 Object.assign(newSmtp, newSmtpText);
             }
             store.post('/smtp', newSmtp, 204)
-                .expect(function () {
+                .expect(() => {
                     smtp = newSmtp;
                     if (withText) {
                         smtpText = newSmtpText;
@@ -76,7 +79,7 @@ describe('smtp integration', function () {
             const text = createNewSmtpText(index);
             language = language || 'en';
             store.patch(`/smtp/text/${language}`, text, 204)
-                .expect(function () {
+                .expect(() => {
                     smtpText = text;
                 })
                 .end(done);
@@ -86,8 +89,8 @@ describe('smtp integration', function () {
     const getSmtpFn = function () {
         return function (done) {
             store.get('/smtp', true, 200)
-                .expect(function (res) {
-                    let expected = _.cloneDeep(smtp);
+                .expect((res) => {
+                    const expected = _.cloneDeep(smtp);
                     if (smtpText) {
                         Object.assign(expected, smtpText);
                     }
@@ -101,7 +104,7 @@ describe('smtp integration', function () {
     const getTranslatedSmtpFn = function (language, checkFields) {
         return function (done) {
             store.get('/smtp', true, 200, { language })
-                .end(function (err, res) {
+                .end((err, res) => {
                     if (err) {
                         return done(err);
                     }
@@ -115,13 +118,13 @@ describe('smtp integration', function () {
                     const smtpr = res.body.smtp;
                     expect(smtpr).to.deep.equal(expected);
                     if (checkFields) { // sanity check
-                        ['subject', 'content'].forEach(property => {
+                        ['subject', 'content'].forEach((property) => {
                             const text = smtpr[property];
                             const location = text.indexOf(`(${language})`);
                             expect(location).to.be.above(0);
                         });
                     }
-                    done();
+                    return done();
                 });
         };
     };
@@ -129,8 +132,8 @@ describe('smtp integration', function () {
     const translateSmtpFn = (function () {
         const translateSmtp = function (server, language) {
             return {
-                subject: server.subject + ` (${language})`,
-                content: server.content + ` (${language})`
+                subject: `${server.subject} (${language})`,
+                content: `${server.content} (${language})`,
             };
         };
 
@@ -138,13 +141,13 @@ describe('smtp integration', function () {
             return function (done) {
                 const translation = translateSmtp(smtpText, language);
                 store.patch(`/smtp/text/${language}`, translation, 204)
-                    .expect(function () {
+                    .expect(() => {
                         smtpTextTranslation[language] = translation;
                     })
                     .end(done);
             };
         };
-    })();
+    }());
 
     const deleteSmtpFn = function () {
         return function (done) {

@@ -4,15 +4,15 @@ module.exports = {
     name: 'Rivermead',
     identifier: {
         type: 'bhr-gap',
-        value: 'rivermead'
+        value: 'rivermead',
     },
     sections: [{
         questions: [{
             text: 'Whether or not questions were asked based on TBI History',
             required: false,
             type: 'text',
-            answerIdentifier: { type: 'bhr-gap-rivermead-column', value: 'Applicable' }
-        }]
+            answerIdentifier: { type: 'bhr-gap-rivermead-column', value: 'Applicable' },
+        }],
     }, {
         name: 'After a head injury or accident some people experience symptoms that can cause worry or nuisance. We would like to know if you now suffer any of the symptoms given below. Because many of these symptoms occur normally, we would like you to compare yourself now with before your head injury/injuries. For each symptom listed below please select the choice that most closely represents your answer. Compared with before the accident, do you now (i.e., over the past week) suffer from:',
         questions: [{
@@ -127,12 +127,12 @@ module.exports = {
             text: 'Please describe other difficulty 1.',
             required: false,
             type: 'text',
-            answerIdentifier: { type: 'bhr-gap-rivermead-column', value: 'Other1Description' }
+            answerIdentifier: { type: 'bhr-gap-rivermead-column', value: 'Other1Description' },
         }, {
             text: 'Please describe other difficulty 1.',
             required: false,
             type: 'text',
-            answerIdentifier: { type: 'bhr-gap-rivermead-column', value: 'Other2Description' }
-        }]
-    }]
+            answerIdentifier: { type: 'bhr-gap-rivermead-column', value: 'Other2Description' },
+        }],
+    }],
 };

@@ -9,10 +9,10 @@ module.exports = function (sequelize, DataTypes) {
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'registry_user'
+                    tableName: 'registry_user',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         assessmentId: {
             type: DataTypes.INTEGER,
@@ -21,21 +21,21 @@ module.exports = function (sequelize, DataTypes) {
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'assessment'
+                    tableName: 'assessment',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         meta: {
-            type: DataTypes.JSON
+            type: DataTypes.JSON,
         },
         sequence: {
             type: DataTypes.INTEGER,
-            allowNull: false
+            allowNull: false,
         },
         status: {
             type: DataTypes.ENUM('scheduled', 'not-in-protocol', 'failed-to-collect', 'collected', 'started', 'refused', 'no-status', 'technical-difficulties', 'unable-to-perform'),
-            allowNull: false
+            allowNull: false,
         },
         createdAt: {
             type: DataTypes.DATE,
@@ -59,6 +59,6 @@ module.exports = function (sequelize, DataTypes) {
         indexes: [
             { fields: ['assessment_id'] },
             { fields: ['user_id'] },
-        ]
+        ],
     });
 };

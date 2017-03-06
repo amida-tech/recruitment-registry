@@ -31,17 +31,15 @@ const updateQuestionDependency = function updateQuestionDependency(question, que
 };
 
 module.exports = class SurveyQuestionsDAO {
-    constructor() {}
-
     listSurveyQuestions(surveyId, addDependency) {
         const options = {
             where: { surveyId },
             raw: true,
             attributes: ['questionId', 'required'],
-            order: 'line'
+            order: 'line',
         };
         return SurveyQuestion.findAll(options)
-            .then(questions => {
+            .then((questions) => {
                 if (addDependency) {
                     return this.addDependency(surveyId, questions);
                 }
@@ -51,23 +49,23 @@ module.exports = class SurveyQuestionsDAO {
 
     addDependency(surveyId, questions) {
         return SurveySection.findAll({
-                where: { surveyId },
-                raw: true,
-                order: 'line',
-                attributes: ['id', 'sectionId', 'parentId', 'parentQuestionId']
-            })
-            .then(sections => {
+            where: { surveyId },
+            raw: true,
+            order: 'line',
+            attributes: ['id', 'sectionId', 'parentId', 'parentQuestionId'],
+        })
+            .then((sections) => {
                 if (!sections.length) {
                     return questions;
                 }
                 const ids = sections.map(({ id }) => id);
                 return SurveySectionQuestion.findAll({
-                        where: { surveySectionId: { $in: ids } },
-                        raw: true,
-                        order: 'line',
-                        attributes: ['surveySectionId', 'questionId']
-                    })
-                    .then(sectionQuestions => {
+                    where: { surveySectionId: { $in: ids } },
+                    raw: true,
+                    order: 'line',
+                    attributes: ['surveySectionId', 'questionId'],
+                })
+                    .then((sectionQuestions) => {
                         const sectionParents = sections.reduce((r, section) => {
                             r.set(section.id, section);
                             return r;
@@ -76,7 +74,7 @@ module.exports = class SurveyQuestionsDAO {
                             r.set(sectionQuestion.questionId, sectionQuestion.surveySectionId);
                             return r;
                         }, new Map());
-                        questions.forEach(question => {
+                        questions.forEach((question) => {
                             updateQuestionDependency(question, questionParents, sectionParents);
                         });
                         return questions;

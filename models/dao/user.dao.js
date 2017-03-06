@@ -36,7 +36,7 @@ module.exports = class UserDAO {
     getUser(id) {
         return User.findById(id, {
             raw: true,
-            attributes: ['id', 'username', 'email', 'role']
+            attributes: ['id', 'username', 'email', 'role'],
         });
     }
 
@@ -47,7 +47,7 @@ module.exports = class UserDAO {
             raw: true,
             where,
             attributes: ['id', 'username', 'email', 'role'],
-            order: 'username'
+            order: 'username',
         });
     }
 
@@ -57,13 +57,13 @@ module.exports = class UserDAO {
 
     updateUser(id, fields) {
         return User.findById(id)
-            .then(user => {
+            .then((user) => {
                 fields = _.pick(fields, ['username', 'email', 'password']);
                 if (user.username === user.email.toLowerCase()) {
-                    if (fields.hasOwnProperty('username')) {
+                    if (Object.prototype.hasOwnProperty.call(fields, 'username')) {
                         return RRError.reject('userNoUsernameChange');
                     }
-                    if (fields.hasOwnProperty('email')) {
+                    if (Object.prototype.hasOwnProperty.call(fields, 'email')) {
                         fields.username = fields.email.toLowerCase();
                     }
                 }

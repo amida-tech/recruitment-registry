@@ -1,8 +1,11 @@
 /* global describe,before,it*/
+
 'use strict';
+
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
+const _ = require('lodash');
 
 const SharedSpec = require('./util/shared-spec');
 const Generator = require('./util/generator');
@@ -14,7 +17,7 @@ const generator = new Generator();
 
 const shared = new SharedSpec(generator);
 
-describe('consent unit', function () {
+describe('consent unit', () => {
     const typeCount = 12;
 
     const hxType = new History();
@@ -33,7 +36,7 @@ describe('consent unit', function () {
         return function () {
             const consentType = hxType.server(index);
             return models.consentType.getConsentType(consentType.id)
-                .then(result => {
+                .then((result) => {
                     expect(result).to.deep.equal(consentType);
                 });
         };
@@ -42,17 +45,17 @@ describe('consent unit', function () {
     const listConsentTypesFn = function () {
         return function () {
             return models.consentType.listConsentTypes()
-                .then(result => {
+                .then((result) => {
                     const expected = hxType.listServers();
                     expect(result).to.deep.equal(expected);
                 });
         };
     };
 
-    for (let i = 0; i < typeCount; ++i) {
+    _.range(typeCount).forEach((i) => {
         it(`create consent type ${i}`, createConsentTypeFn(hxType));
         it(`get and verify consent type ${i}`, getConsentTypeFn(i));
-    }
+    });
 
     it('list consent types and verify', listConsentTypesFn());
 
@@ -60,7 +63,7 @@ describe('consent unit', function () {
         return function () {
             const id = hxType.id(index);
             return models.consentType.getConsentType(id, { language })
-                .then(result => {
+                .then((result) => {
                     const expected = hxType.translatedServer(index, language);
                     expect(result).to.deep.equal(expected);
                 });
@@ -70,7 +73,7 @@ describe('consent unit', function () {
     const listTranslatedConsentTypesFn = function (language) {
         return function () {
             return models.consentType.listConsentTypes({ language })
-                .then(result => {
+                .then((result) => {
                     const expected = hxType.listTranslatedServers(language);
                     expect(result).to.deep.equal(expected);
                 });
@@ -81,17 +84,17 @@ describe('consent unit', function () {
 
     it('list consent types in spanish when no translation', listTranslatedConsentTypesFn('es'));
 
-    for (let i = 0; i < typeCount; ++i) {
+    _.range(typeCount).forEach((i) => {
         it(`add translated (es) consent type ${i}`, shared.translateConsentTypeFn(i, 'es', hxType));
         it(`get and verify tanslated consent type ${i}`, getTranslatedConsentTypeFn(i, 'es'));
-    }
+    });
 
     it('list and verify translated (es) consent types', listTranslatedConsentTypesFn('es'));
 
-    for (let i = 0; i < typeCount; i += 2) {
+    _.range(0, typeCount, 2).forEach((i) => {
         it(`add translated (fr) consent type ${i}`, shared.translateConsentTypeFn(i, 'fr', hxType));
         it(`get and verify tanslated (fr) consent type ${i}`, getTranslatedConsentTypeFn(i, 'fr'));
-    }
+    });
 
     it('list and verify translated (fr) consent types', listTranslatedConsentTypesFn('fr'));
 

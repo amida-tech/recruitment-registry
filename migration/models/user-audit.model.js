@@ -9,27 +9,27 @@ module.exports = function (sequelize, DataTypes) {
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'registry_user'
+                    tableName: 'registry_user',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         endpoint: {
             type: DataTypes.TEXT,
-            allowNull: false
+            allowNull: false,
         },
         operation: {
             type: DataTypes.TEXT,
-            allowNull: false
+            allowNull: false,
         },
         createdAt: {
             type: DataTypes.DATE,
             field: 'created_at',
-        }
+        },
     }, {
         freezeTableName: true,
         schema: sequelize.options.schema,
         createdAt: 'createdAt',
-        updatedAt: false
+        updatedAt: false,
     });
 };

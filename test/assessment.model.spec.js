@@ -1,5 +1,7 @@
 /* global describe,before,it*/
+
 'use strict';
+
 process.env.NODE_ENV = 'test';
 
 const _ = require('lodash');
@@ -15,7 +17,7 @@ const generator = new Generator();
 
 const shared = new SharedSpec(generator);
 
-describe('assessment unit', function () {
+describe('assessment unit', () => {
     const surveyCount = 12;
     const assessmentCount = 3;
     const hxSurvey = new SurveyHistory();
@@ -26,12 +28,12 @@ describe('assessment unit', function () {
 
     before(shared.setUpFn());
 
-    _.range(surveyCount).forEach(index => {
+    _.range(surveyCount).forEach((index) => {
         it(`create survey ${index}`, surveyTests.createSurveyFn());
         it(`get survey ${index}`, surveyTests.getSurveyFn(index));
     });
 
-    _.range(assessmentCount).forEach(index => {
+    _.range(assessmentCount).forEach((index) => {
         const indices = _.range(index * 4, (index + 1) * 4);
         it(`create assessment ${index}`, assessmentTests.createAssessmentFn(indices));
         it(`get assessment ${index}`, assessmentTests.getAssessmentFn(index));

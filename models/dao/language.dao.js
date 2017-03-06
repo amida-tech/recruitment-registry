@@ -5,8 +5,6 @@ const db = require('../db');
 const Language = db.Language;
 
 module.exports = class LanguageDAO {
-    constructor() {}
-
     createLanguage(language) {
         return Language.create(language)
             .then(({ id }) => ({ id }));
@@ -16,7 +14,7 @@ module.exports = class LanguageDAO {
         return Language.findAll({
             raw: true,
             attributes: ['code', 'name', 'nativeName'],
-            order: 'code'
+            order: 'code',
         });
     }
 
@@ -33,7 +31,7 @@ module.exports = class LanguageDAO {
         return Language.findOne({
             where: { code },
             raw: true,
-            attributes: ['code', 'name', 'nativeName']
+            attributes: ['code', 'name', 'nativeName'],
         });
     }
 };

@@ -1,5 +1,7 @@
 /* global describe,it*/
+
 'use strict';
+
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
@@ -11,24 +13,24 @@ const swaggerJson = require('../swagger.json');
 const expect = chai.expect;
 const spec = st.specs.v2;
 
-describe('swagger validations', function () {
+describe('swagger validations', () => {
     const objectTypes = [
-        'newSurvey', 'newQuestion', 'language'
+        'newSurvey', 'newQuestion', 'language',
     ];
 
     const testValidFn = function (objectType, data) {
         return function (done) {
-            spec.validateModel(swaggerJson, `#/definitions/${objectType}`, data, function (err, result) {
+            spec.validateModel(swaggerJson, `#/definitions/${objectType}`, data, (err, result) => {
                 if (err) {
                     return done(err);
                 }
                 expect(Boolean(result)).to.equal(false, JSON.stringify(result, undefined, 4));
-                done();
+                return done();
             });
         };
     };
 
-    //const testInvalidFn = function (objectType, data) {
+    // const testInvalidFn = function (objectType, data) {
     //    return function (done) {
     //        spec.validateModel(swaggerJson, `#/definitions/${objectType}`, data, function (err, result) {
     //            if (err) {
@@ -38,19 +40,19 @@ describe('swagger validations', function () {
     //            done();
     //        });
     //    };
-    //};
+    // };
 
-    for (let i = 0; i < objectTypes.length; ++i) {
-        const kebabObjectType = _.kebabCase(objectTypes[i]);
+    objectTypes.forEach((objectType) => {
+        const kebabObjectType = _.kebabCase(objectType);
 
-        const valids = require(`./fixtures/valids/${kebabObjectType}`);
-        for (let j = 0; j < valids.length; ++j) {
-            it(`valid ${objectTypes[i]} case ${j}`, testValidFn(objectTypes[i], valids[j]));
-        }
+        const valids = require(`./fixtures/valids/${kebabObjectType}`); // eslint-disable-line global-require, import/no-dynamic-require
+        valids.forEach((valid, index) => {
+            it(`valid ${objectType} case ${index}`, testValidFn(objectType, valid));
+        });
 
-        //const invalids = require(`./fixtures/swagger-invalid/${kebabObjectType}`);
-        //for (let j = 0; j < invalids.length; ++j) {
+        // const invalids = require(`./fixtures/swagger-invalid/${kebabObjectType}`);
+        // for (let j = 0; j < invalids.length; ++j) {
         //    it(`invalid ${objectTypes[i]} case ${j}`, testInvalidFn(objectTypes[i], invalids[j]));
-        //}
-    }
+        // }
+    });
 });

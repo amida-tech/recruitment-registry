@@ -6,12 +6,12 @@ const chai = require('chai');
 const expect = chai.expect;
 
 const translator = {
-    _translate(text, language) {
+    translate(text, language) {
         return `${text} (${language})`;
     },
     isTranslated(texts, language) {
         const languageText = `(${language})`;
-        texts.forEach(text => {
+        texts.forEach((text) => {
             if (text !== null) {
                 const location = text.indexOf(languageText);
                 expect(location).to.be.above(0, `is not translated to ${language}`);
@@ -20,18 +20,18 @@ const translator = {
     },
     translateQuestion(question, language) {
         const result = _.cloneDeep(question);
-        result.text = this._translate(result.text, language);
+        result.text = this.translate(result.text, language);
         delete result.type;
         delete result.meta;
         if (result.choices) {
-            result.choices.forEach(choice => {
-                choice.text = this._translate(choice.text, language);
+            result.choices.forEach((choice) => {
+                choice.text = this.translate(choice.text, language);
                 delete choice.type;
             });
         }
         if (result.actions) {
-            result.actions.forEach(action => {
-                action.text = this._translate(action.text, language);
+            result.actions.forEach((action) => {
+                action.text = this.translate(action.text, language);
                 delete action.type;
             });
         }
@@ -44,7 +44,7 @@ const translator = {
         surveySections.forEach(({ id, name, sections }) => {
             const translated = {
                 id,
-                name: this._translate(name, language)
+                name: this.translate(name, language),
             };
             result.push(translated);
             if (sections) {
@@ -55,9 +55,9 @@ const translator = {
     },
     translateSurvey(survey, language) {
         const result = _.cloneDeep(survey);
-        result.name = this._translate(result.name, language);
+        result.name = this.translate(result.name, language);
         if (result.description) {
-            result.description = this._translate(result.description, language);
+            result.description = this.translate(result.description, language);
         }
         delete result.meta;
         delete result.status;
@@ -69,8 +69,8 @@ const translator = {
     },
     translateChoiceSet(choiceSet, language) {
         const result = _.cloneDeep(choiceSet);
-        result.choices.forEach(choice => {
-            choice.text = this._translate(choice.text, language);
+        result.choices.forEach((choice) => {
+            choice.text = this.translate(choice.text, language);
         });
         return result;
     },
@@ -108,21 +108,21 @@ const translator = {
     },
     translateConsentType(consentType, language) {
         const result = _.pick(consentType, ['id', 'title']);
-        result.title = this._translate(result.title, language);
+        result.title = this.translate(result.title, language);
         return result;
     },
     translateConsentDocument(consentDocument, language) {
         const result = _.pick(consentDocument, ['id', 'content', 'updateComment']);
-        result.content = this._translate(result.content, language);
+        result.content = this.translate(result.content, language);
         if (result.updateComment) {
-            result.updateComment = this._translate(result.updateComment, language);
+            result.updateComment = this.translate(result.updateComment, language);
         }
         return result;
     },
     isConsentDocumentTranslated(consentDocument, language) {
         const languageText = `(${language})`;
-        consentDocument.sections.forEach(section => {
-            ['title', 'content', 'updateComment'].forEach(property => {
+        consentDocument.sections.forEach((section) => {
+            ['title', 'content', 'updateComment'].forEach((property) => {
                 const text = section[property];
                 if (text) {
                     const location = text.indexOf(languageText);
@@ -130,7 +130,7 @@ const translator = {
                 }
             });
         });
-    }
+    },
 };
 
 module.exports = translator;

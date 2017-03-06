@@ -10,16 +10,16 @@ const sequelizeOptions = {
     dialect: config.db.dialect,
     dialectOptions: {
         ssl: (config.env === 'production'),
-        prependSearchPath: config.db.schema !== 'public'
+        prependSearchPath: config.db.schema !== 'public',
     },
     port: config.db.port,
     pool: {
         max: config.db.poolMax,
         min: config.db.poolMin,
-        idle: config.db.poolIdle
+        idle: config.db.poolIdle,
     },
     logging: message => logger.info(message),
-    schema: config.db.schema
+    schema: config.db.schema,
 };
 
 if (config.db.schema !== 'public') {
@@ -81,9 +81,9 @@ const questionBelongsToArgument = {
         field: 'question_id',
         references: {
             model: 'question',
-            key: 'id'
-        }
-    }
+            key: 'id',
+        },
+    },
 };
 
 const questionChoiceBelongsToArgument = {
@@ -93,9 +93,9 @@ const questionChoiceBelongsToArgument = {
         field: 'question_choice_id',
         references: {
             model: 'question_choice',
-            key: 'id'
-        }
-    }
+            key: 'id',
+        },
+    },
 };
 
 const userBelongsToArgument = {
@@ -105,9 +105,9 @@ const userBelongsToArgument = {
         field: 'user_id',
         references: {
             model: 'user',
-            key: 'id'
-        }
-    }
+            key: 'id',
+        },
+    },
 };
 
 Answer.belongsTo(Question, questionBelongsToArgument);
@@ -129,9 +129,9 @@ AnswerRule.belongsTo(Question, {
         field: 'answer_question_id',
         references: {
             model: 'question',
-            key: 'id'
-        }
-    }
+            key: 'id',
+        },
+    },
 });
 
 SurveyQuestion.belongsTo(Question, questionBelongsToArgument);
@@ -144,9 +144,9 @@ UserAssessment.belongsTo(Assessment, {
         field: 'assessment_id',
         references: {
             model: 'assessment',
-            key: 'id'
-        }
-    }
+            key: 'id',
+        },
+    },
 });
 
 ResearchSiteVicinity.belongsTo(ResearchSite, {
@@ -157,9 +157,9 @@ ResearchSiteVicinity.belongsTo(ResearchSite, {
         field: 'research_site_id',
         references: {
             model: 'research_site',
-            key: 'id'
-        }
-    }
+            key: 'id',
+        },
+    },
 });
 
 module.exports = {
@@ -208,5 +208,5 @@ module.exports = {
     StagingBhrGap,
     UserAudit,
     ResearchSite,
-    ResearchSiteVicinity
+    ResearchSiteVicinity,
 };

@@ -11,8 +11,8 @@ exports.Example = {
                 { text: 'Football' },
                 { text: 'Basketball' },
                 { text: 'Soccer' },
-                { text: 'Tennis' }
-            ]
+                { text: 'Tennis' },
+            ],
         }, {
             text: 'What is your hair color?',
             required: true,
@@ -21,44 +21,44 @@ exports.Example = {
                 { text: 'Black' },
                 { text: 'Brown' },
                 { text: 'Blonde' },
-                { text: 'Other' }
-            ]
+                { text: 'Other' },
+            ],
         }, {
             text: 'Where were you born?',
             required: true,
-            type: 'text'
+            type: 'text',
         }, {
             text: 'Are you injured?',
             required: false,
-            type: 'bool'
+            type: 'bool',
         }, {
             text: 'Do you have a cat?',
             required: true,
-            type: 'bool'
-        }]
+            type: 'bool',
+        }],
     },
     answer: [{
-        choices: [{ index: 1 }, { index: 2 }]
+        choices: [{ index: 1 }, { index: 2 }],
     }, {
-        choice: 0
+        choice: 0,
     }, {
-        textValue: 'Washington, DC'
+        textValue: 'Washington, DC',
     }, {
-        boolValue: true
+        boolValue: true,
     }, {
-        boolValue: false
+        boolValue: false,
     }],
     answerUpdate: [{
-        choices: [{ index: 2 }, { index: 3 }]
+        choices: [{ index: 2 }, { index: 3 }],
     }, {
-        choice: 2
+        choice: 2,
     }, {
-        textValue: 'Boston, MA'
+        textValue: 'Boston, MA',
     }, {
-        boolValue: false
+        boolValue: false,
     }, {
-        boolValue: true
-    }]
+        boolValue: true,
+    }],
 };
 
 exports.Alzheimer = {
@@ -72,21 +72,21 @@ exports.Alzheimer = {
                 'Caucasian',
                 'Hispanic',
                 'African',
-                'Asian'
-            ]
+                'Asian',
+            ],
         }, {
             text: 'Gender',
             required: true,
             type: 'choice',
-            oneOfChoices: ['male', 'female', 'other']
+            oneOfChoices: ['male', 'female', 'other'],
         }, {
             text: 'Zip code',
             required: false,
-            type: 'text'
+            type: 'text',
         }, {
             text: 'Family history of memory disorders/AD/dementia?',
             required: true,
-            type: 'bool'
+            type: 'bool',
         }, {
             text: 'How did you hear about us?',
             required: false,
@@ -100,57 +100,57 @@ exports.Alzheimer = {
                 { text: 'Caregiver' },
                 { text: 'Friend/Family member' },
                 { text: 'Community Event' },
-                { text: 'Other source', type: 'text' }
-            ]
+                { text: 'Other source', type: 'text' },
+            ],
         }, {
             text: 'Are you interested in receiving email updates on any of the following?',
             required: true,
             type: 'choices',
             choices: [
                 { text: 'Brain Health' },
-                { text: 'Clinical Trials on Brain Health' }
+                { text: 'Clinical Trials on Brain Health' },
             ],
             actions: [{
                 type: 'true',
-                text: 'Subscribe'
+                text: 'Subscribe',
             }, {
                 type: 'false',
-                text: 'I don\'t want to receive emails'
-            }]
+                text: 'I don\'t want to receive emails',
+            }],
         }, {
             text: 'Are you interested in participating in clinical trials?',
             required: false,
-            type: 'bool'
-        }]
+            type: 'bool',
+        }],
     },
     answer: [{
-        choice: 1
+        choice: 1,
     }, {
-        choice: 1
+        choice: 1,
     }, {
-        textValue: '20850'
+        textValue: '20850',
     }, {
-        boolValue: true
+        boolValue: true,
     }, {
-        choices: [{ index: 0 }, { index: 5 }, { index: 8, textValue: 'Internet' }]
+        choices: [{ index: 0 }, { index: 5 }, { index: 8, textValue: 'Internet' }],
     }, {
-        choices: [{ index: 1 }]
+        choices: [{ index: 1 }],
     }, {
-        boolValue: true
+        boolValue: true,
     }],
     answerUpdate: [{
-        choice: 0
+        choice: 0,
     }, {
-        choice: 0
+        choice: 0,
     }, {
-        textValue: '20855'
+        textValue: '20855',
     }, {
-        boolValue: true
+        boolValue: true,
     }, {
-        choices: [{ index: 2 }, { index: 3 }, { index: 8, textValue: 'Metro Ad' }]
+        choices: [{ index: 2 }, { index: 3 }, { index: 8, textValue: 'Metro Ad' }],
     }, {
-        choices: [{ index: 0 }, { index: 1 }]
+        choices: [{ index: 0 }, { index: 1 }],
     }, {
-        boolValue: false
-    }]
+        boolValue: false,
+    }],
 };

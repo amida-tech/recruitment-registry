@@ -7,8 +7,8 @@ const RRError = require('../lib/rr-error');
 
 const sequelizeErrorMap = {
     SequelizeUniqueConstraintError: {
-        'lower(email)': 'uniqueEmail'
-    }
+        'lower(email)': 'uniqueEmail',
+    },
 };
 
 const transformSequelizeError = function (err) {
@@ -39,6 +39,6 @@ exports.handleError = function (res) {
         if (err instanceof Sequelize.Error) {
             return res.status(400).json(json);
         }
-        res.status(500).json(json);
+        return res.status(500).json(json);
     };
 };

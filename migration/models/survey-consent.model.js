@@ -9,10 +9,10 @@ module.exports = function (sequelize, DataTypes) {
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'survey'
+                    tableName: 'survey',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         consentId: {
             type: DataTypes.INTEGER,
@@ -20,10 +20,10 @@ module.exports = function (sequelize, DataTypes) {
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'consent'
+                    tableName: 'consent',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         consentTypeId: {
             type: DataTypes.INTEGER,
@@ -32,14 +32,14 @@ module.exports = function (sequelize, DataTypes) {
             references: {
                 model: {
                     schema: sequelize.options.schema,
-                    tableName: 'consent_type'
+                    tableName: 'consent_type',
                 },
-                key: 'id'
-            }
+                key: 'id',
+            },
         },
         action: {
             type: DataTypes.ENUM('read', 'create'),
-            allowNull: false
+            allowNull: false,
         },
         createdAt: {
             type: DataTypes.DATE,
@@ -48,7 +48,7 @@ module.exports = function (sequelize, DataTypes) {
         deletedAt: {
             type: DataTypes.DATE,
             field: 'deleted_at',
-        }
+        },
     }, {
         freezeTableName: true,
         schema: sequelize.options.schema,
@@ -58,7 +58,7 @@ module.exports = function (sequelize, DataTypes) {
         paranoid: true,
         indexes: [{
             unique: true,
-            fields: ['survey_id', 'consent_type_id', 'action']
-        }]
+            fields: ['survey_id', 'consent_type_id', 'action'],
+        }],
     });
 };
