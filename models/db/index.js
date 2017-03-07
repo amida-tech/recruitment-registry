@@ -1,6 +1,7 @@
 'use strict';
 
 const Sequelize = require('sequelize');
+const pg = require('pg');
 
 const config = require('../../config');
 const logger = require('../../logger');
@@ -25,6 +26,8 @@ const sequelizeOptions = {
 if (config.db.schema !== 'public') {
     sequelizeOptions.searchPath = config.db.schema;
 }
+
+pg.types.setTypeParser(1184, value => value);
 
 const sequelize = new Sequelize(config.db.name, config.db.user, config.db.pass, sequelizeOptions);
 

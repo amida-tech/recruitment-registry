@@ -8,7 +8,7 @@ const config = require('../../config');
 const SPromise = require('../../lib/promise');
 const RRError = require('../../lib/rr-error');
 
-module.exports = function (sequelize, DataTypes) {
+module.exports = function User(sequelize, DataTypes) {
     const bccompare = SPromise.promisify(bcrypt.compare, {
         context: bcrypt,
     });
@@ -47,6 +47,12 @@ module.exports = function (sequelize, DataTypes) {
         role: {
             type: DataTypes.ENUM('admin', 'participant', 'clinician', 'import'),
             allowNull: false,
+        },
+        firstname: {
+            type: DataTypes.TEXT,
+        },
+        lastname: {
+            type: DataTypes.TEXT,
         },
         originalUsername: {
             type: DataTypes.TEXT,
