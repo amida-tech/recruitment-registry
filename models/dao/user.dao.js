@@ -9,6 +9,8 @@ const RRError = require('../../lib/rr-error');
 const sequelize = db.sequelize;
 const User = db.User;
 
+const attributes = ['id', 'username', 'email', 'role', 'firstname', 'lastname'];
+
 module.exports = class UserDAO {
     constructor(dependencies) {
         Object.assign(this, dependencies);
@@ -34,21 +36,15 @@ module.exports = class UserDAO {
     }
 
     getUser(id) {
-        return User.findById(id, {
-            raw: true,
-            attributes: ['id', 'username', 'email', 'role'],
-        });
+        return User.findById(id, { raw: true, attributes })
+            .then(user => _.omitBy(user, _.isNil));
     }
 
     listUsers(options = {}) {
         const role = options.role ? options.role : { $in: ['clinician', 'participant'] };
         const where = { role };
-        return User.findAll({
-            raw: true,
-            where,
-            attributes: ['id', 'username', 'email', 'role'],
-            order: 'username',
-        });
+        return User.findAll({ raw: true, where, attributes, order: 'username' })
+            .then(users => users.map(user => _.omitBy(user, _.isNil)));
     }
 
     deleteUser(id) {

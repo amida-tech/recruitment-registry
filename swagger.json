@@ -162,7 +162,7 @@
                     "description": "User fields to be updated",
                     "required": true,
                     "schema": {
-                        "$ref": "#/definitions/userUpdate"
+                        "$ref": "#/definitions/userPatch"
                     }
                 }],
                 "responses": {
@@ -2922,6 +2922,10 @@
             },
             "additionalProperties": false
         },
+        "role": {
+            "type": "string",
+            "enum": ["participant", "clinician", "admin"]
+        },
         "newUser": {
             "type": "object",
             "required": ["password"],
@@ -2933,11 +2937,19 @@
                     "type": "string"
                 },
                 "role": {
-                    "type": "string"
+                    "$ref": "#/definitions/role"
                 },
                 "email": {
                     "type": "string",
                     "format": "email"
+                },
+                "firstname": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "lastname": {
+                    "type": "string",
+                    "minLength": 1
                 }
             },
             "additionalProperties": false,
@@ -2955,11 +2967,19 @@
                     "type": "string"
                 },
                 "role": {
-                    "type": "string"
+                    "$ref": "#/definitions/role"
                 },
                 "email": {
                     "type": "string",
                     "format": "email"
+                },
+                "firstname": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "lastname": {
+                    "type": "string",
+                    "minLength": 1
                 }
             },
             "additionalProperties": false,
@@ -2971,7 +2991,7 @@
                 "$ref": "#/definitions/user"
             }
         },
-        "userUpdate": {
+        "userPatch": {
             "type": "object",
             "properties": {
                 "password": {
@@ -2980,6 +3000,14 @@
                 "email": {
                     "type": "string",
                     "format": "email"
+                },
+                "firstname": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "lastname": {
+                    "type": "string",
+                    "minLength": 1
                 }
             },
             "additionalProperties": false
@@ -4055,7 +4083,7 @@
             "required": ["user"],
             "properties": {
                 "user": {
-                    "$ref": "#/definitions/userUpdate"
+                    "$ref": "#/definitions/userPatch"
                 },
                 "answers": {
                     "type": "array",
