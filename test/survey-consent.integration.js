@@ -238,6 +238,17 @@ describe('survey consent integration', () => {
                     const result = res.body;
                     const clientUser = Object.assign({ role: 'participant' }, hxUser.client(index));
                     comparator.user(clientUser, result.user);
+                    hxUser.updateServer(index, result.user);
+                })
+                .end(done);
+        };
+    };
+
+    const verifyProfileFn = function (index) {
+        return function (done) {
+            store.get('/profiles', true, 200)
+                .expect((res) => {
+                    expect(res.body.user).to.deep.equal(hxUser.server(index));
                 })
                 .end(done);
         };
@@ -289,7 +300,7 @@ describe('survey consent integration', () => {
     it('logout as user 3', shared.logoutFn(store));
 
     it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
-    it('read user profile 0 with signatures', getProfileFn(0));
+    it('read user profile 0 with signatures', verifyProfileFn(0));
     it('logout as user 0', shared.logoutFn(store));
     it('login as user 1', shared.loginIndexFn(store, hxUser, 1));
     it('error: read user profile 1 without signatures', readProfileWithoutSignaturesFn(1, [0, 1]));

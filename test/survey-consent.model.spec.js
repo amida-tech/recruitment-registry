@@ -208,6 +208,17 @@ describe('survey consent unit', () => {
             return models.profile.getProfile({ userId })
                 .then((result) => {
                     comparator.user(hxUser.client(index), result.user);
+                    hxUser.updateServer(index, result.user);
+                });
+        };
+    };
+
+    const verifyProfileFn = function (index) {
+        return function () {
+            const userId = hxConsentDocument.userId(index);
+            return models.profile.getProfile({ userId })
+                .then((result) => {
+                    expect(result.user).to.deep.equal(hxUser.server(index));
                 });
         };
     };
@@ -246,7 +257,7 @@ describe('survey consent unit', () => {
     it('user 2 signs consent document 0', shared.signConsentTypeFn(hxConsentDocument, 2, 0));
     it('user 3 signs consent document 1', shared.signConsentTypeFn(hxConsentDocument, 3, 1));
 
-    it('read user profile 0 with signatures', getProfileFn(0));
+    it('read user profile 0 with signatures', verifyProfileFn(0));
     it('error: read user profile 1 without signatures', readProfileWithoutSignaturesFn(1, [0, 1]));
     it('error: read user profile 2 without signatures', readProfileWithoutSignaturesFn(2, [1]));
     it('error: read user profile 3 without signatures', readProfileWithoutSignaturesFn(3, [0]));

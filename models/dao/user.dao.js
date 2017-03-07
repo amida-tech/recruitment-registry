@@ -9,7 +9,7 @@ const RRError = require('../../lib/rr-error');
 const sequelize = db.sequelize;
 const User = db.User;
 
-const attributes = ['id', 'username', 'email', 'role', 'firstname', 'lastname'];
+const attributes = ['id', 'username', 'email', 'role', 'firstname', 'lastname', 'createdAt'];
 
 module.exports = class UserDAO {
     constructor(dependencies) {
@@ -68,7 +68,8 @@ module.exports = class UserDAO {
     }
 
     resetPasswordToken(email) {
-        const where = sequelize.where(sequelize.fn('lower', sequelize.col('email')), sequelize.fn('lower', email));
+        const lowerEmailColumn = sequelize.fn('lower', sequelize.col('email'));
+        const where = sequelize.where(lowerEmailColumn, sequelize.fn('lower', email));
         return User.find({ where })
             .then((user) => {
                 if (!user) {

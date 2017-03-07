@@ -2980,6 +2980,10 @@
                 "lastname": {
                     "type": "string",
                     "minLength": 1
+                },
+                "createdAt": {
+                    "type": "string",
+                    "format": "dateTime"
                 }
             },
             "additionalProperties": false,
