@@ -27,6 +27,13 @@ exports.getUser = function (req, res) {
         .catch(shared.handleError(res));
 };
 
+exports.patchUser = function (req, res) {
+    const id = _.get(req, 'swagger.params.id.value');
+    models.user.updateUser(id, req.body)
+        .then(() => res.status(204).end())
+        .catch(shared.handleError(res));
+};
+
 exports.listUsers = function (req, res) {
     const role = _.get(req, 'swagger.params.role.value');
     const options = role ? { role } : {};

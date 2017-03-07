@@ -21,7 +21,7 @@ const generator = new Generator();
 const shared = new SharedSpec(generator);
 
 describe('user unit', () => {
-    const userCount = 8;
+    let userCount = 8;
 
     const hxUser = new History();
 
@@ -84,15 +84,18 @@ describe('user unit', () => {
 
     it('list all participant users', () => models.user.listUsers({ role: 'participant' })
             .then((users) => {
-                let expected = hxUser.listServers(undefined, _.range(userCount / 2)).slice();
+                const halfNumUsers = hxUser.length() / 2;
+                let expected = hxUser.listServers(undefined, _.range(halfNumUsers)).slice();
                 expected = _.sortBy(expected, 'username');
                 expect(users).to.deep.equal(expected);
             }));
 
     it('list all clinician users', () => models.user.listUsers({ role: 'clinician' })
             .then((users) => {
-                let expected = hxUser.listServers(undefined, _.range(userCount / 2, userCount)).slice();
-                expected = _.sortBy(expected, 'username');
+                const numUsers = hxUser.length();
+                const halfNumUsers = numUsers / 2;
+                let expected = hxUser.listServers(undefined, _.range(halfNumUsers, numUsers));
+                expected = _.sortBy(expected.slice(), 'username');
                 expect(users).to.deep.equal(expected);
             }));
 
@@ -351,4 +354,34 @@ describe('user unit', () => {
         config.crypt.resetExpires = resetExpires;
         config.crypt.resetExpiresUnit = resetExpiresUnit;
     });
+
+    const patchUserFn = function (index, userPatch) {
+        return function patchUser() {
+            const id = hxUser.id(index);
+            return models.user.updateUser(id, userPatch)
+                .then(() => {
+                    const server = hxUser.server(index);
+                    ['firstname', 'lastname'].forEach((key) => {
+                        if (userPatch[key]) {
+                            server[key] = userPatch[key];
+                        } else {
+                            delete server[key];
+                        }
+                    });
+                });
+        };
+    };
+
+    it(`create user ${userCount}`, shared.createUserFn(hxUser, {
+        lastname: 'lastname',
+        firstname: 'firstname',
+    }));
+    it(`get user ${userCount}`, getUserFn(userCount));
+    it(`patch user ${userCount}`, patchUserFn(userCount, { firstname: 'updfn', lastname: '' }));
+    it(`verify user ${userCount}`, verifyUserFn(userCount));
+    it(`patch user ${userCount}`, patchUserFn(userCount, { firstname: '', lastname: 'updln' }));
+
+    it(`verify user ${userCount}`, verifyUserFn(userCount));
+
+    userCount += 1;
 });

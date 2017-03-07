@@ -51,10 +51,10 @@ module.exports = class UserDAO {
         return User.destroy({ where: { id } });
     }
 
-    updateUser(id, fields) {
+    updateUser(id, userPatch) {
         return User.findById(id)
             .then((user) => {
-                fields = _.pick(fields, ['username', 'email', 'password']);
+                const fields = Object.assign({}, userPatch);
                 if (user.username === user.email.toLowerCase()) {
                     if (Object.prototype.hasOwnProperty.call(fields, 'username')) {
                         return RRError.reject('userNoUsernameChange');
@@ -63,6 +63,13 @@ module.exports = class UserDAO {
                         fields.username = fields.email.toLowerCase();
                     }
                 }
+                ['lastname', 'firstname'].forEach((key) => {
+                    if (Object.prototype.hasOwnProperty.call(fields, key)) {
+                        if (!fields[key]) {
+                            fields[key] = null;
+                        }
+                    }
+                });
                 return user.update(fields);
             });
     }

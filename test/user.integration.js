@@ -20,7 +20,7 @@ const generator = new Generator();
 const shared = new SharedIntegration(generator);
 
 describe('user integration', () => {
-    const userCount = 8;
+    let userCount = 8;
     const hxUser = new History();
     const store = new RRSuperTest();
 
@@ -81,25 +81,19 @@ describe('user integration', () => {
             .end(done);
     });
 
-    it('list all participant users', (done) => {
-        store.get('/users', true, 200, { role: 'participant' })
-            .expect((res) => {
-                let expected = hxUser.listServers(undefined, _.range(userCount / 2)).slice();
-                expected = _.sortBy(expected, 'username');
-                expect(res.body).to.deep.equal(expected);
-            })
-            .end(done);
-    });
+    const listUsersByRoleFn = function (role, range) {
+        return function listUsersByRole() {
+            return store.get('/users', true, 200, { role })
+                .expect((res) => {
+                    let expected = hxUser.listServers(undefined, range).slice();
+                    expected = _.sortBy(expected, 'username');
+                    expect(res.body).to.deep.equal(expected);
+                });
+        };
+    };
 
-    it('list all clinician users', (done) => {
-        store.get('/users', true, 200, { role: 'clinician' })
-            .expect((res) => {
-                let expected = hxUser.listServers(undefined, _.range(userCount / 2, userCount)).slice();
-                expected = _.sortBy(expected, 'username');
-                expect(res.body).to.deep.equal(expected);
-            })
-            .end(done);
-    });
+    it('list participant users', listUsersByRoleFn('participant', _.range(userCount / 2)));
+    it('list clinician users', listUsersByRoleFn('clinician', _.range(userCount / 2, userCount)));
 
     it('logout as super', shared.logoutFn(store));
 
@@ -194,6 +188,52 @@ describe('user integration', () => {
             })
             .end(done);
     });
+
+    it('logout as new user', shared.logoutFn(store));
+
+    const patchUserFn = function (index, userPatch) {
+        return function patchUser() {
+            const id = hxUser.id(index);
+            return store.patch(`/users/${id}`, userPatch, 204)
+                .then(() => {
+                    const server = hxUser.server(index);
+                    ['firstname', 'lastname'].forEach((key) => {
+                        if (userPatch[key]) {
+                            server[key] = userPatch[key];
+                        } else {
+                            delete server[key];
+                        }
+                    });
+                });
+        };
+    };
+
+    const verifyUserFn = function (index) {
+        return function () {
+            const id = hxUser.id(index);
+            return store.get(`/users/${id}`, true, 200)
+                .expect((res) => {
+                    expect(res.body).to.deep.equal(hxUser.server(index));
+                });
+        };
+    };
+
+    it('login as super', shared.loginFn(store, config.superUser));
+
+    it(`create user ${userCount}`, shared.createUserFn(store, hxUser, null, {
+        lastname: 'lastname',
+        firstname: 'firstname',
+    }));
+    it(`get user ${userCount}`, getUserFn(userCount));
+    it(`patch user ${userCount}`, patchUserFn(userCount, { firstname: 'updfn', lastname: '' }));
+    it(`verify user ${userCount}`, verifyUserFn(userCount));
+    it(`patch user ${userCount}`, patchUserFn(userCount, { firstname: '', lastname: 'updln' }));
+
+    it(`verify user ${userCount}`, verifyUserFn(userCount));
+
+    userCount += 1;
+
+    it('logout as super', shared.logoutFn(store));
 
     shared.verifyUserAudit(store);
 });
