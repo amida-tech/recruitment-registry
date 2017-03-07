@@ -10,7 +10,7 @@ const XLSXConverter = require('./xlsx-converter');
 
 const models = require('../models');
 
-const headers2 = {
+const headers = {
     number: 'id',
     'objectId (Hash Tag Used for Questions)': 'key',
     question: 'text',
@@ -98,7 +98,7 @@ const questionTypes = {
 
 const surveysPost = function (result, key, lines) {
     lines.Questions = lines.Questions.map(row => Object.keys(row).reduce((r, key) => {
-        const newKey = headers2[key] || key;
+        const newKey = headers[key] || key;
         const value = row[key];
         r[newKey] = value;
         return r;
@@ -218,28 +218,24 @@ const answersPost = function (result, key, lines) {
     result.assesmentAnswers = jsonByAssessment;
 };
 
-const postAction = {
+const postActions = {
     answers: answersPost,
     surveys: surveysPost,
-};
-
-const importFile = function (filepaths, result, key) {
-    const filepath = filepaths[key];
-    const converter = converters[key]();
-    return converter.fileToRecords(filepath)
-        .then((json) => {
-            result[key] = json;
-        });
 };
 
 const importFiles = function (filepaths) {
     const result = {};
     const keys = ['surveys', 'assessments', 'answers'];
-    const pxs = keys.map(key => importFile(filepaths, result, key));
-    return SPromise.all(pxs)
+    const promises = keys.map((key) => {
+        const filepath = filepaths[key];
+        const converter = converters[key]();
+        return converter.fileToRecords(filepath)
+            .then((json) => { result[key] = json; });
+    });
+    return SPromise.all(promises)
         .then(() => {
             keys.forEach((key) => {
-                const fn = postAction[key];
+                const fn = postActions[key];
                 if (fn) {
                     fn(result, key, result[key]);
                 }
@@ -447,10 +443,12 @@ const importUsers = function (filepath) {
     return converter.fileToRecords(filepath)
         .then((users) => {
             const userIdMap = new Map();
+            const password = 'pw';
+            const role = 'import';
             const promises = users.map((user) => {
                 const username = `username_${user.id}`;
                 const email = `${username}@dummy.com`;
-                const record = { username, email, password: 'pw' };
+                const record = { username, email, password, role };
                 return models.user.createUser(record)
                     .then(({ id }) => userIdMap.set(user.id, id));
             });
@@ -458,7 +456,7 @@ const importUsers = function (filepath) {
         });
 };
 
-const importCCFFiles = function (filepaths) {
+const ImportFiles = function (filepaths) {
     return importUsers(filepaths.users)
         .then(userIdMap => importFiles(filepaths)
             .then(ccfData => importToDb(ccfData)
@@ -468,5 +466,5 @@ const importCCFFiles = function (filepaths) {
 
 module.exports = {
     converters,
-    importCCFFiles,
+    ImportFiles,
 };

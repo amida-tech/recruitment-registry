@@ -26,20 +26,18 @@ describe('ccf import-export ccf', function ccfImportExportUnit() {
         surveys: 'ccf-questions.xlsx',
     };
 
-    const filepaths = _.transform(filenames, (r, name, key) => {
+    const filepaths = _.mapValues(filenames, (name) => {
         if (name.charAt(0) === '/') {
-            Object.assign(r, { [key]: name });
-        } else {
-            Object.assign(r, { [key]: path.join(fixtureDir, name) });
+            return name;
         }
-        return r;
-    }, {});
+        return path.join(fixtureDir, name);
+    });
 
     before(shared.setUpFn());
 
     let userIdMap;
     it('import to database', function importToDb() {
-        return ccfImport.importCCFFiles(filepaths)
+        return ccfImport.ImportFiles(filepaths)
             .then((result) => { userIdMap = result; });
     });
 
