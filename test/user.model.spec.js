@@ -28,7 +28,7 @@ describe('user unit', () => {
     before(shared.setUpFn());
 
     const getUserFn = function (index) {
-        return function () {
+        return function getUser() {
             const id = hxUser.id(index);
             return models.user.getUser(id)
                 .then((user) => {
@@ -40,7 +40,7 @@ describe('user unit', () => {
     };
 
     const verifyUserFn = function (index) {
-        return function () {
+        return function verifyUser() {
             const server = hxUser.server(index);
             return models.user.getUser(server.id)
                 .then(user => expect(user).to.deep.equal(server));
@@ -48,7 +48,7 @@ describe('user unit', () => {
     };
 
     const updateUserFn = function (index) {
-        return function () {
+        return function updateUser() {
             const { email, password } = generator.newUser();
             const id = hxUser.id(index);
             return models.user.updateUser(id, { email, password })
@@ -107,7 +107,7 @@ describe('user unit', () => {
     });
 
     const updateUsernameWhenEmailFn = function (index) {
-        return function () {
+        return function updateUsernameWhenEmail() {
             const client = hxUser.client(index);
             if (!client.username) {
                 const newUser = generator.newUser();
@@ -127,7 +127,7 @@ describe('user unit', () => {
     });
 
     const uniqUsernameErrorFn = function (index) {
-        return function () {
+        return function uniqUsernameError() {
             const client = hxUser.client(index);
             const user = generator.newUser();
             const username = client.username || client.email.toLowerCase();
@@ -138,7 +138,7 @@ describe('user unit', () => {
     };
 
     const uniqEmailErrorFn = function (index) {
-        return function () {
+        return function uniqEmailError() {
             const client = hxUser.client(index);
             const user = generator.newUser();
             user.email = client.email;
@@ -154,7 +154,7 @@ describe('user unit', () => {
     };
 
     const uniqOppCaseEmailErrorFn = function (index) {
-        return function () {
+        return function uniqOppCaseEmailError() {
             const client = hxUser.client(index);
             const user = generator.newUser();
             user.email = testJsutil.oppositeCase(client.email);
@@ -170,7 +170,7 @@ describe('user unit', () => {
     };
 
     const uniqUserErrorFn = function (index) {
-        return function () {
+        return function uniqUserError() {
             const client = hxUser.client(index);
             const username = client.username || client.email.toLowerCase();
             return models.user.createUser(client)
@@ -191,7 +191,7 @@ describe('user unit', () => {
     });
 
     const invalidPasswordErrorFn = function (value) {
-        return function () {
+        return function invalidPasswordError() {
             const user = generator.newUser();
             if (value === '--') {
                 delete user.password;
@@ -215,7 +215,7 @@ describe('user unit', () => {
     });
 
     const invalidPasswordUpdateErrorFn = function (value) {
-        return function () {
+        return function invalidPasswordUpdateError() {
             const id = hxUser.id(0);
             return models.user.updateUser(id, { password: value })
                 .then(shared.throwingHandler, (err) => {
@@ -233,7 +233,7 @@ describe('user unit', () => {
     });
 
     const invalidEmailErrorFn = function (value) {
-        return function () {
+        return function invalidEmailError() {
             const user = generator.newUser();
             if (value === '--') {
                 delete user.email;
@@ -258,7 +258,7 @@ describe('user unit', () => {
     });
 
     const invalidEmailUpdateErrorFn = function (value) {
-        return function () {
+        return function invalidEmailUpdateError() {
             const id = hxUser.id(0);
             return models.user.updateUser(id, { email: value })
                 .then(shared.throwingHandler, (err) => {
@@ -280,7 +280,7 @@ describe('user unit', () => {
     const tokens = new Array(userCount);
 
     const resetPasswordTokenFn = function (index) {
-        return function () {
+        return function resetPasswordToken() {
             const client = hxUser.client(index);
             oldPasswords[index] = client.password;
             let email = client.email;
@@ -296,7 +296,7 @@ describe('user unit', () => {
     };
 
     const authenticateUserOldPWFn = function (index) {
-        return function () {
+        return function authenticateUserOldPW() {
             const client = hxUser.client(index);
             const username = client.username || client.email;
             return models.auth.authenticateUser(username, oldPasswords[index])
@@ -305,7 +305,7 @@ describe('user unit', () => {
     };
 
     const resetPasswordWrongTokenFn = function (index) {
-        return function () {
+        return function resetPasswordWrongToken() {
             const token = tokens[index];
             const wrongToken = (token.charAt(0) === '1' ? '2' : '1') + token.slice(1);
             return models.user.resetPassword(wrongToken, 'newPassword')
@@ -314,7 +314,7 @@ describe('user unit', () => {
     };
 
     const resetPasswordFn = function (index) {
-        return function () {
+        return function resetPassword() {
             const token = tokens[index];
             const password = generator.newUser().password;
             hxUser.client(index).password = password;

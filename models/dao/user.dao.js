@@ -16,12 +16,12 @@ module.exports = class UserDAO {
         Object.assign(this, dependencies);
     }
 
-    createUser(user, transaction) {
+    createUser(newUser, transaction) {
         const options = transaction ? { transaction } : {};
-        if (user.username === user.email) {
+        if (newUser.username === newUser.email) {
             return RRError.reject('userIdenticalUsernameEmail');
         }
-        user = Object.assign({}, user);
+        const user = Object.assign({}, newUser);
         if (!user.username) {
             const email = user.email;
             if (email && (typeof email === 'string')) {
@@ -97,7 +97,7 @@ module.exports = class UserDAO {
                 if (moment.utc().isAfter(mExpires)) {
                     return RRError.reject('invalidOrExpiredPWToken');
                 }
-                user.password = password;
+                Object.assign(user, { password });
                 return user.save();
             });
     }
