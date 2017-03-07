@@ -71,6 +71,7 @@ describe('user set-up and login use-case', () => {
                 expectedUser.id = user.id;
                 expectedUser.role = 'participant';
                 delete expectedUser.password;
+                expectedUser.createdAt = user.createdAt;
                 expect(user).to.deep.equal(expectedUser);
 
                 const actualSurvey = result.survey;
@@ -107,6 +108,7 @@ describe('user set-up and login use-case', () => {
                 expectedUser.id = user.id;
                 expectedUser.role = 'participant';
                 delete expectedUser.password;
+                expectedUser.createdAt = user.createdAt;
                 expect(user).to.deep.equal(expectedUser);
 
                 const actualSurvey = result.survey;

@@ -60,6 +60,10 @@ class Generator {
         if (!user.role) {
             user.role = 'participant';
         }
+        if (userIndex % 2 === 1) {
+            user.firstname = `firstname_${userIndex}`;
+            user.lastname = `lastname_${userIndex}`;
+        }
         return user;
     }
 
