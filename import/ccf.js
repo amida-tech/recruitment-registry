@@ -96,16 +96,16 @@ const questionTypes = {
     9: ['integer', 'integer'],
 };
 
-const surveysPost = function (result, key, lines) {
-    lines.Questions = lines.Questions.map(row => Object.keys(row).reduce((r, key) => {
+const surveysPost = function (fileData) {
+    fileData.Questions = fileData.Questions.map(row => Object.keys(row).reduce((r, key) => {
         const newKey = headers[key] || key;
         const value = row[key];
         r[newKey] = value;
         return r;
     }, {}));
-    result.surveysTitleIndex = _.keyBy(lines.Pillars, 'title');
-    lines.Pillars.forEach((pillar) => { pillar.isBHI = (pillar.isBHI === 'true'); });
-    if (!(lines.Pillars && result.surveysTitleIndex)) {
+    const surveysTitleIndex = _.keyBy(fileData.Pillars, 'title');
+    fileData.Pillars.forEach((pillar) => { pillar.isBHI = (pillar.isBHI === 'true'); });
+    if (!(fileData.Pillars && surveysTitleIndex)) {
         throw new Error('Pillar records have to be read before questions.');
     }
     let activePillar = null;
@@ -113,11 +113,11 @@ const surveysPost = function (result, key, lines) {
     let pillarQuestion = null;
     const questions = [];
     const choices = [];
-    lines.Questions.forEach((line) => {
+    fileData.Questions.forEach((line) => {
         const objKeys = Object.keys(line);
         if ((objKeys.length === 1) && (objKeys[0] === 'id')) {
             const title = line.id;
-            activePillar = result.surveysTitleIndex[title];
+            activePillar = surveysTitleIndex[title];
             if (!activePillar) {
                 throw new Error(`Unknown pillar: ${title}`);
             }
@@ -158,14 +158,11 @@ const surveysPost = function (result, key, lines) {
         }
         throw new Error(`Unexpected line.  Unsupported type: ${activeQuestion.type}`);
     });
-    result[key].Questions = questions;
-    result.choices = choices;
-    result.pillars = result.surveys.Pillars;
-    result.questions = result.surveys.Questions;
+    return { choices, pillars: fileData.Pillars, questions };
 };
 
-const answersPost = function (result, key, lines) {
-    lines.forEach((r) => {
+const answersPost = function (fileData) {
+    fileData.forEach((r) => {
         if (r.string_value === 'null') {
             delete r.string_value;
         }
@@ -177,7 +174,7 @@ const answersPost = function (result, key, lines) {
     const answers = [];
     const indexAnswers = {};
     const assessmentIndex = {};
-    const jsonByAssessment = _.groupBy(lines, 'hb_assessment_id');
+    const jsonByAssessment = _.groupBy(fileData, 'hb_assessment_id');
     const assessments = Object.keys(jsonByAssessment);
     assessments.forEach((assessment, assessIndex) => {
         const current = jsonByAssessment[assessment];
@@ -214,8 +211,7 @@ const answersPost = function (result, key, lines) {
             return r;
         }, []);
     });
-    result.answers = answers;
-    result.assesmentAnswers = jsonByAssessment;
+    return { answers, assesmentAnswers: jsonByAssessment };
 };
 
 const postActions = {
@@ -230,18 +226,17 @@ const importFiles = function (filepaths) {
         const filepath = filepaths[key];
         const converter = converters[key]();
         return converter.fileToRecords(filepath)
-            .then((json) => { result[key] = json; });
-    });
-    return SPromise.all(promises)
-        .then(() => {
-            keys.forEach((key) => {
+            .then((json) => {
                 const fn = postActions[key];
                 if (fn) {
-                    fn(result, key, result[key]);
+                    Object.assign(result, fn(json));
+                } else {
+                    result[key] = json;
                 }
             });
-            return result;
-        });
+    });
+    return SPromise.all(promises)
+        .then(() => result);
 };
 
 const importToDb = function (jsonDB) {

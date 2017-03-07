@@ -18,18 +18,8 @@ const exportSurveys = function () {
                 .then(surveys => models.surveyIdentifier.updateSurveysWithIdentifier(surveys, identifierType)))
         .then((surveys) => {
             const ids = surveys.reduce((r, survey) => {
-                survey.questions.forEach((question) => {
-                    r.push(question.id);
-                    if (question.sections) {
-                        const sections = question.sections;
-                        if (sections.length > 1) {
-                            throw new Error('Multiple question sections is not supported');
-                        }
-                        sections.forEach((section) => {
-                            section.questions.forEach(({ id }) => r.push(id));
-                        });
-                    }
-                });
+                const questions = models.survey.getQuestions(survey);
+                r.push(...questions.map(({ id }) => id));
                 return r;
             }, []);
             return models.questionIdentifier.getInformationByQuestionId(identifierType, ids)
