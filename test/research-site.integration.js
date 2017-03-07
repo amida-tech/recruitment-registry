@@ -276,5 +276,35 @@ describe('research site integration', () => {
     //        })
     //        .end(done);
     // });
+    // // switch to manitoba, canada area
+    // it('update zip code for research site 0', function (done) {
+    //    const id = hxResearchSite.id(0);
+    //    const patch = { zip: 'R0B0E0' };
+    //    rrSuperTest.patch(`/research-sites/${id}`, patch, 204)
+    //        .expect(function () {
+    //            Object.assign(hxResearchSite.server(0), patch);
+    //        })
+    //        .end(done);
+    // });
+    // it('make sure to get for a nearby zip code with spaces', function (done) {
+    //    rrSuperTest.get('/research-sites', true, 200, { 'near-zip': 'R0B0K0' })
+    //        .expect(function (res) {
+    //            const nearResearchSiteSet = new Set(['R0B0E0']);
+    //            let expected = hxResearchSite.listServers().filter(({ zip }) => nearResearchSiteSet.has(zip));
+    //            expected = _.sortBy(expected, 'id');
+    //            expect(res.body).to.deep.equal(expected);
+    //        })
+    //        .end(done);
+    // });
+    // it('make sure to get for a nearby zip code without spaces', function (done) {
+    //    rrSuperTest.get('/research-sites', true, 200, { 'near-zip': 'R0B0K0' })
+    //        .expect(function (res) {
+    //            const nearResearchSiteSet = new Set(['R0B0E0']);
+    //            let expected = hxResearchSite.listServers().filter(({ zip }) => nearResearchSiteSet.has(zip));
+    //            expected = _.sortBy(expected, 'id');
+    //            expect(res.body).to.deep.equal(expected);
+    //        })
+    //        .end(done);
+    // });
     // it('logout as super', shared.logoutFn(rrSuperTest));
 });

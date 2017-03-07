@@ -276,6 +276,7 @@ const comparator = {
     researchSite(client, server) {
         const expected = _.cloneDeep(client);
         expected.id = server.id;
+        expected.zip = server.zip;
         expect(server).to.deep.equal(expected);
     },
 };

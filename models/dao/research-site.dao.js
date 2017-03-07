@@ -9,8 +9,17 @@ const ResearchSiteVicinity = db.ResearchSiteVicinity;
 
 const attributes = ['id', 'name', 'url', 'city', 'state', 'zip'];
 
+const formatZip = function formatZip(zip) {
+    return zip ? zip.replace(/ /g, '') : zip;
+};
+const formatResearchSite = function formatResearchSite(researchSite) {
+    if (researchSite.zip) { researchSite.zip = formatZip(researchSite.zip); }
+    return researchSite;
+};
+
 module.exports = class ResearchSiteDAO {
     createResearchSite(researchSite) {
+        formatResearchSite(researchSite);
         return db.sequelize.transaction(transaction => ResearchSite.create(researchSite, { transaction })
                 .then(({ id }) => zipUtil.findVicinity(researchSite.zip)
                         .then(vicinity => this.createResearchSiteVicinityTx(id, vicinity, transaction))
@@ -18,7 +27,7 @@ module.exports = class ResearchSiteDAO {
     }
 
     listResearchSites(options = {}) {
-        const zip = options.nearZip;
+        const zip = formatZip(options.nearZip);
         if (options.nearZip) {
             return ResearchSiteVicinity.findAll({
                 raw: true,
@@ -36,6 +45,7 @@ module.exports = class ResearchSiteDAO {
     }
 
     patchResearchSite(id, researchSiteUpdate) {
+        formatResearchSite(researchSiteUpdate);
         return db.sequelize.transaction(transaction => ResearchSite.update(researchSiteUpdate, { where: { id }, transaction })
                 .then(() => {
                     const zip = researchSiteUpdate.zip;
@@ -60,7 +70,9 @@ module.exports = class ResearchSiteDAO {
         return ResearchSiteVicinity.destroy({ where: { researchSiteId }, transaction })
             .then(() => {
                 if (vicinity.length) {
-                    const promises = vicinity.map(zip => ResearchSiteVicinity.create({ zip, researchSiteId }, { transaction }));
+                    const promises = vicinity
+                        .map(formatZip)
+                        .map(zip => ResearchSiteVicinity.create({ zip, researchSiteId }, { transaction }));
                     return SPromise.all(promises);
                 }
                 return null;

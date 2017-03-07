@@ -73,12 +73,18 @@ describe('research site unit', () => {
         };
     };
 
+    const trimSpaces = function trimSpaces(zip) {
+        return zip.replace(/ /g, '');
+    };
     const verifyResearchSiteFn = function (index) {
         return function () {
             const expected = hxResearchSite.server(index);
             return models.researchSite.getResearchSite(expected.id)
                 .then((researchSite) => {
-                    expect(researchSite).to.deep.equal(expected);
+                    // check stored zip code is correct zip code with no spaces
+                    expect(researchSite.zip).to.equal(trimSpaces(expected.zip));
+                    // check other properties are equal
+                    expect(Object.assign({}, researchSite, { zip: expected.zip })).to.deep.equal(expected);
                 });
         };
     };
@@ -156,6 +162,19 @@ describe('research site unit', () => {
     exampleZipCodes.forEach((zipCode) => {
         it(`find nearby research sites for ${zipCode} after update`, verifyNearbyFn(zipCode));
     });
+
+    it('update zip code for research site 1', () => {
+        const id = hxResearchSite.id(1);
+        const patch = { zip: 'M4B 1B4' };
+        return models.researchSite.patchResearchSite(id, patch)
+            .then(() => Object.assign(hxResearchSite.server(1), patch));
+    });
+
+    it('verify update was successfull', () => models.researchSite.listResearchSites({ nearZip: 'M4B1B5' })
+            .then((sites) => {
+                const expected = [hxResearchSite.server(1)];
+                expect(sites).to.deep.equal(expected);
+            }));
 
     const createResearchSiteVicinityFn = function (index, zipCodes) {
         return function () {

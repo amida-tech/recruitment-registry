@@ -2702,7 +2702,7 @@
                     "description": "Restrict list to nearby zips",
                     "required": false,
                     "type": "string",
-                    "pattern": "^[0-9]{5}$"
+                    "pattern": "^([0-9]{5})|([a-zA-Z0-9]{3} ?[a-zA-Z0-9]{3})$"
                 }],
                 "responses": {
                     "200": {
@@ -5037,7 +5037,7 @@
         },
         "zip": {
             "type": "string",
-            "pattern": "^[0-9]{5}$"
+            "pattern": "^([0-9]{5})|([a-zA-Z0-9]{3} ?[a-zA-Z0-9]{3})"
         },
         "newResearchSite": {
             "type": "object",
