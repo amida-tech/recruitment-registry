@@ -24,15 +24,16 @@ const zipCodeInformation = {
 
 const vicinityZipCodes = Object.keys(zipCodeInformation).reduce((r, vicinityZipCode) => {
     const zipCodes = zipCodeInformation[vicinityZipCode];
+    const vicinities = {};
     zipCodes.forEach((zipCode) => {
         let vicinity = r[zipCode];
         if (!vicinity) {
             vicinity = [];
-            r[zipCode] = vicinity;
+            vicinities[zipCode] = vicinity;
         }
         vicinity.push(vicinityZipCode);
     });
-    return r;
+    return Object.assign({}, vicinities, r);
 }, {});
 
 const getResearchSiteZips = function () {
