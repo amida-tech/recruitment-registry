@@ -533,29 +533,34 @@ module.exports = class SurveyDAO extends Translatable {
             .then(surveys => this.updateAllTexts(surveys, options.language))
             .then((surveys) => {
                 if (scope === 'export') {
-                    return SurveyQuestion.findAll({
-                        raw: true,
-                        attributes: ['surveyId', 'questionId', 'required'],
-                        order: 'line',
-                    })
-                        .then(surveyQuestions => surveyQuestions.reduce((r, qx) => {
-                            const p = r.get(qx.surveyId);
-                            if (!p) {
-                                r.set(qx.surveyId, [{ id: qx.questionId, required: qx.required }]);
-                                return r;
-                            }
-                            p.push({ id: qx.questionId, required: qx.required });
-                            return r;
-                        }, new Map()))
-                        .then((map) => {
-                            surveys.forEach((survey) => {
-                                survey.questions = map.get(survey.id);
-                            });
-                            return surveys;
-                        });
+                    return this.updateSurveyListExport(surveys);
                 }
                 return surveys;
             });
+    }
+
+    updateSurveyListExport(surveys) {
+        const surveyMap = new Map(surveys.map(survey => [survey.id, survey]));
+        return SurveyQuestion.findAll({
+            raw: true,
+            attributes: ['surveyId', 'questionId', 'required'],
+            order: 'line',
+        })
+            .then((surveyQuestions) => {
+                surveyQuestions.forEach(({ surveyId, questionId, required }) => {
+                    const survey = surveyMap.get(surveyId);
+                    const questions = survey.questions;
+                    const question = { id: questionId, required };
+                    if (questions) {
+                        questions.push(question);
+                    } else {
+                        survey.questions = [question];
+                    }
+                });
+                return surveys;
+            })
+            .then(() => this.surveySection.updateSurveyListExport(surveyMap))
+            .then(() => surveys);
     }
 
     getSurvey(id, options = {}) {

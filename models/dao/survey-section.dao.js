@@ -156,4 +156,63 @@ module.exports = class SectionDAO {
     deleteSurveySectionsTx(surveyId, transaction) {
         return SurveySection.destroy({ where: { surveyId }, transaction });
     }
+
+    updateSurveyListExport(surveyMap) {
+        return SurveySection.findAll({
+            raw: true,
+            attributes: ['id', 'surveyId', 'sectionId', 'parentId', 'parentQuestionId'],
+            order: ['surveyId', 'line'],
+        })
+            .then((surveySections) => {
+                if (surveySections.length === 0) {
+                    return null;
+                }
+                const ids = surveySections(({ id }) => id);
+                return this.surveySectionQuestion.groupSurveySectionQuestions(ids)
+                    .then((sectionQuestionMap) => {
+                        let currentSurveyId = null;
+                        let currentSurvey = null;
+                        const sectionMap = new Map();
+                        const questionMap = new Map();
+                        surveySections.forEach((surveySection) => {
+                            if (surveySection.surveyId !== currentSurveyId) {
+                                currentSurveyId = surveySection.surveyId;
+                                currentSurvey = surveyMap.get(currentSurveyId);
+                                currentSurvey.sections = [];
+                                currentSurvey.questions.forEach((question) => {
+                                    questionMap.set(question.id, question);
+                                });
+                                delete currentSurvey.questions;
+                            }
+                            const section = { surveyId: surveySection.sectionId };
+                            if (surveySection.parentId === null) {
+                                currentSurvey.sections.push(section);
+                            }
+                            const questionIds = sectionQuestionMap.get(surveySection.id);
+                            if (questionIds && questionIds.length) {
+                                section.questions = questionIds.map(id => questionMap.get(id));
+                            } else {
+                                section.sections = [];
+                                sectionMap.set(surveySection.id, section);
+                            }
+                        });
+                        surveySections.forEach(({ id, parentId, parentQuestionId }) => {
+                            if (parentId) {
+                                const section = sectionMap.get(id);
+                                const parentSection = sectionMap.get(parentId);
+                                parentSection.sections.push(section);
+                                return;
+                            }
+                            if (parentQuestionId) {
+                                const section = sectionMap.get(id);
+                                const parentQuestion = questionMap.get(parentQuestionId);
+                                if (!parentQuestion.sections) {
+                                    parentQuestion.sections = [];
+                                }
+                                parentQuestion.sections.push(section);
+                            }
+                        });
+                    });
+            });
+    }
 };

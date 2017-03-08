@@ -3,6 +3,7 @@
 const _ = require('lodash');
 
 const History = require('./history');
+const models = require('../../models');
 
 module.exports = class SurveyHistory extends History {
     constructor() {
@@ -41,9 +42,23 @@ module.exports = class SurveyHistory extends History {
             return this.listServers(undefined, undefined, options.status);
         }
         if (scope === 'export') {
-            const result = this.listServers(['id', 'name', 'description', 'questions', 'status']);
+            const result = this.listServers(['id', 'name', 'description', 'questions', 'sections', 'status']);
             result.forEach((survey) => {
-                survey.questions = survey.questions.map(question => ({ id: question.id, required: question.required }));
+                const { questions, sections } = models.survey.flattenHierarchy(survey);
+                const surveyUpdate = {};
+                surveyUpdate.questions = questions.map(({ id, required }) => ({ id, required }));
+                if (sections) {
+                    surveyUpdate.sections = sections.map((section) => {
+                        const r = _.pick(section, ['id', 'parentIndex', 'questionIndex']);
+                        if (section.indices) {
+                            r.indices = section.indices.join('~');
+                        }
+                        r.sectionId = r.id;
+                        delete r.id;
+                        return _.omitBy(r, _.isNil);
+                    });
+                }
+                Object.assign(survey, surveyUpdate);
             });
             return result;
         }
