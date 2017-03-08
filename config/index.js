@@ -92,7 +92,6 @@ const main = {
         baseUrl: process.env.RECREG_ZIP_BASE_URL,
         apiKey: process.env.RECREG_ZIP_API_KEY,
         distance: process.env.RECREG_ZIP_DISTANCE,
-        units: process.env.RECREG_ZIP_UNITS,
     },
 };
 
