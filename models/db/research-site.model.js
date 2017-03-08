@@ -12,7 +12,7 @@ module.exports = function (sequelize, DataTypes) {
         },
         street: {
             type: DataTypes.TEXT,
-            allowNull: false
+            allowNull: false,
         },
         city: {
             type: DataTypes.TEXT,

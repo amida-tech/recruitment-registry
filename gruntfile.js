@@ -118,7 +118,6 @@ module.exports = function (grunt) {
         },
     });
 
-    grunt.registerTask('beautify', ['jsbeautifier:beautify']);
     grunt.registerTask('mocha', ['env:test', 'mochaTest']);
     grunt.registerTask('coverage', ['shell:runIstanbul']);
     grunt.registerTask('swagger', 'Validates api definition', swaggerValidation);
