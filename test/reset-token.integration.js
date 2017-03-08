@@ -130,7 +130,9 @@ describe('reset-token integration', () => {
         password: 'pw',
         host: 'localhost',
         from: 'admin@rr.com',
-        otherOptions: {},
+        otherOptions: {
+            port: 9001,
+        },
     };
 
     it('setup server specifications', (done) => {
