@@ -2726,7 +2726,7 @@
                     "description": "Restrict list to nearby zips",
                     "required": false,
                     "type": "string",
-                    "pattern": "^[0-9]{5}$"
+                    "pattern": "^([0-9]{5})|([a-zA-Z0-9]{3} ?[a-zA-Z0-9]{3})$"
                 }],
                 "responses": {
                     "200": {
@@ -5091,11 +5091,11 @@
         },
         "zip": {
             "type": "string",
-            "pattern": "^[0-9]{5}$"
+            "pattern": "^([0-9]{5})|([a-zA-Z0-9]{3} ?[a-zA-Z0-9]{3})"
         },
         "newResearchSite": {
             "type": "object",
-            "required": ["name", "url", "city", "state", "zip"],
+            "required": ["name", "url", "street", "city", "state", "zip"],
             "properties": {
                 "name": {
                     "type": "string",
@@ -5104,6 +5104,10 @@
                 "url": {
                     "type": "string",
                     "format": "uri",
+                    "minLength": 1
+                },
+                "street": {
+                    "type": "string",
                     "minLength": 1
                 },
                 "city": {
@@ -5123,7 +5127,7 @@
         },
         "researchSite": {
             "type": "object",
-            "required": ["id", "name", "url", "city", "state", "zip"],
+            "required": ["id", "name", "url", "street", "city", "state", "zip"],
             "properties": {
                 "id": {
                     "type": "integer",
@@ -5136,6 +5140,10 @@
                 "url": {
                     "type": "string",
                     "format": "uri",
+                    "minLength": 1
+                },
+                "street": {
+                    "type": "string",
                     "minLength": 1
                 },
                 "city": {
@@ -5169,6 +5177,10 @@
                 "url": {
                     "type": "string",
                     "format": "uri",
+                    "minLength": 1
+                },
+                "street": {
+                    "type": "string",
                     "minLength": 1
                 },
                 "city": {

@@ -1,12 +1,16 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('research_site', {
+module.exports = (sequelize, DataTypes) => (
+    sequelize.define('research_site', {
         name: {
             type: DataTypes.TEXT,
             allowNull: false,
         },
         url: {
+            type: DataTypes.TEXT,
+            allowNull: false,
+        },
+        street: {
             type: DataTypes.TEXT,
             allowNull: false,
         },
@@ -41,5 +45,5 @@ module.exports = function (sequelize, DataTypes) {
         updatedAt: 'updatedAt',
         deletedAt: 'deletedAt',
         paranoid: true,
-    });
-};
+    })
+);

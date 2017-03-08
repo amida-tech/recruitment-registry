@@ -14,9 +14,15 @@ const getSampleData = function getSampleData(generator, index) {
     const zip = possibleZips[(index || 0) % possibleZips.length];
     const vicinity = exampleZips[zip];
     const apiResponse = {
-        zip_codes: vicinity.map(generator.newZipCodeApiObject.bind(generator)),
+        results: vicinity.map(generator.newZipCodeApiObject.bind(generator)),
     };
-    return { zip, vicinity, apiResponse };
+
+    // api response with 250 results
+    const fullZips = [...Array(250)].map((val, idx) => vicinity[idx % vicinity.length]);
+    const fullApiResponse = {
+        results: fullZips.map(generator.newZipCodeApiObject.bind(generator)),
+    };
+    return { zip, vicinity, apiResponse, fullApiResponse };
 };
 
 module.exports = {

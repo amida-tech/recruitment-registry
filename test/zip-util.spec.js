@@ -47,17 +47,54 @@ describe('zip-util unit', () => {
         });
     });
 
+    const NUM_PAGES = 5;
+    const stubRequestGetPaginated = function stubRequestGetPaginated() {
+        let page = 0;
+        return shared.stubRequestGet(null, () => {
+            page += 1;
+            return {
+                statusCode: 200,
+                body: (page === NUM_PAGES) ? sampleData.apiResponse : sampleData.fullApiResponse,
+            };
+        });
+    };
+    it('paginates if necessary', () => {
+        const requestStub = stubRequestGetPaginated();
+        return zipUtil.findVicinity(sampleData.zip)
+            .then(() => {
+                expect(requestStub.callCount).to.equal(NUM_PAGES);
+                [...Array(NUM_PAGES)].forEach((v, page) => {
+                    expect(requestStub.args[page][0].qs.page).to.equal(page);
+                });
+            });
+    });
+
+    it('trims spaces from canadian zip codes', () => {
+        const response = Object.assign({}, sampleData.apiResponse);
+        response.results[0].zip = 'M4B 1E1';
+        shared.stubRequestGet(null, {
+            statusCode: 200,
+            body: response,
+        });
+        return zipUtil.findVicinity(sampleData.zip)
+            .then((zips) => {
+                expect(zips).to.include('M4B1E1');
+                expect(zips).to.not.include('M4B 1E1');
+            });
+    });
+
     it('error: error in zip code api', () => {
         const errorMsg = 'Internal server error';
         shared.stubRequestGet(null, {
-            statusCode: 500,
+            statusCode: 200,
             body: {
-                error_code: 500,
-                error_msg: errorMsg,
+                results: {
+                    error: errorMsg,
+                },
             },
         });
         return zipUtil.findVicinity(sampleData.zip)
-            .then(shared.throwingHandler, shared.expectedErrorHandler('zipApiError', 500, errorMsg));
+            .then(shared.throwingHandler, shared.expectedErrorHandler('zipApiError', errorMsg));
     });
 
     it('error: timeout to API', () => {
@@ -67,7 +104,7 @@ describe('zip-util unit', () => {
             return e;
         });
         return zipUtil.findVicinity(sampleData.zip)
-            .then(shared.throwingHandler, shared.expectedErrorHandler('zipApiError', 'ETIMEDOUT', 'ETIMEDOUT'));
+            .then(shared.throwingHandler, shared.expectedErrorHandler('zipApiError', 'ETIMEDOUT'));
     });
 
     afterEach(() => {
