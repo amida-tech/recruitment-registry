@@ -26,7 +26,7 @@ describe('survey import-export unit', function surveyImportExportUnit() {
     const tests = new surveyCommon.SpecTests(generator, hxSurvey);
 
     _.range(8).forEach((index) => {
-        it(`create survey ${index}`, tests.createSurveyFn({ noSection: true }));
+        it(`create survey ${index}`, tests.createSurveyFn());
         it(`get survey ${index}`, tests.getSurveyFn(index));
     });
 
@@ -37,7 +37,7 @@ describe('survey import-export unit', function surveyImportExportUnit() {
     it('list all surveys (export)', tests.listSurveysFn({ scope: 'export' }));
 
     _.range(8, 14).forEach((index) => {
-        it(`create survey ${index}`, tests.createSurveyFn({ noSection: true }));
+        it(`create survey ${index}`, tests.createSurveyFn());
         it(`get survey ${index}`, tests.getSurveyFn(index));
     });
 
@@ -55,9 +55,11 @@ describe('survey import-export unit', function surveyImportExportUnit() {
             .then((result) => { questionCsvContent = result; });
     });
 
+    const fs = require('fs');
+
     it('export surveys to csv', function exportSurveysToCSV() {
         return models.survey.export()
-            .then((result) => { surveyCsvContent = result; });
+            .then((result) => { surveyCsvContent = result; console.log(surveyCsvContent); fs.writeFileSync('/Work/git/recruitment-registry/test/generated/xxx.csv', surveyCsvContent);});
     });
 
     it('reset database', shared.setUpFn());
@@ -72,7 +74,7 @@ describe('survey import-export unit', function surveyImportExportUnit() {
 
     let idMap;
 
-    it('import survey csv into db', function importSurveysToCSV() {
+    it('import survey csv into db', function importSurveysFromCSV() {
         const stream = intoStream(surveyCsvContent);
         return models.survey.import(stream, questionIdMap)
             .then((result) => { idMap = result; });

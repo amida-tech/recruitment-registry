@@ -173,7 +173,10 @@ const SpecTests = class SurveySpecTests {
                         expect(surveys).to.have.length(count);
                     }
                     const expected = hxSurvey.listServersByScope(options);
-                    expect(surveys).to.deep.equal(expected);
+                    expect(surveys.length).to.equal(expected.length);
+                    surveys.forEach((survey, index) => {
+                        expect(survey).to.deep.equal(expected[index]);
+                    });
                 });
         };
     }

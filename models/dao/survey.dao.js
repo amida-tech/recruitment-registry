@@ -14,6 +14,7 @@ const ImportCSVConverter = require('../../import/csv-converter.js');
 const sequelize = db.sequelize;
 const Survey = db.Survey;
 const SurveyQuestion = db.SurveyQuestion;
+const SurveySection = db.SurveySection;
 const ProfileSurvey = db.ProfileSurvey;
 const AnswerRule = db.AnswerRule;
 const AnswerRuleValue = db.AnswerRuleValue;
@@ -494,6 +495,7 @@ module.exports = class SurveyDAO extends Translatable {
     deleteSurvey(id) {
         return sequelize.transaction(transaction => Survey.destroy({ where: { id }, transaction })
                 .then(() => SurveyQuestion.destroy({ where: { surveyId: id }, transaction }))
+                .then(() => SurveySection.destroy({ where: { surveyId: id }, transaction }))
                 .then(() => ProfileSurvey.destroy({ where: { surveyId: id }, transaction })));
     }
 
@@ -693,23 +695,54 @@ module.exports = class SurveyDAO extends Translatable {
                     }));
     }
 
+    exportAppendQuestionLines(r, startBaseObject, baseObject, questions) {
+        questions.forEach(({ id, required, sections }, index) => {
+            const line = { questionId: id, required };
+            if (index === 0) {
+                Object.assign(line, startBaseObject);
+            } else {
+                Object.assign(line, baseObject);
+            }
+            r.push(line);
+            if (sections) {
+                const questionAsParent = Object.assign({ parentQuestionId: id }, baseObject);
+                this.exportAppendSectionLines(r, questionAsParent, questionAsParent, sections);
+            }
+        });
+    }
+
+    exportAppendSectionLines(r, startBaseObject, baseObject, parentSections) {
+        parentSections.forEach(({ id, sections, questions }, index) => {
+            const line = { sectionId: id };
+            if (index === 0) {
+                Object.assign(line, startBaseObject);
+            } else {
+                Object.assign(line, baseObject);
+            }
+            if (questions) {
+                const nextLines = Object.assign({ sectionId: id }, baseObject);
+                this.exportAppendQuestionLines(r, line, nextLines, questions);
+                return;
+            }
+            r.push(line);
+            const sectionAsParent = { id: baseObject.id, parentSectionId: id };
+            this.exportAppendSectionLines(r, sectionAsParent, sectionAsParent, sections);
+        });
+    }
+
     export() {
         return this.listSurveys({ scope: 'export' })
-            .then(surveys => surveys.reduce((r, { id, name, description, questions }) => {
+            .then(surveys => surveys.reduce((r, { id, name, description, questions, sections }) => {
                 const surveyLine = { id, name, description };
-                questions.forEach(({ id, required }, index) => {
-                    const line = { questionId: id, required };
-                    if (index === 0) {
-                        Object.assign(line, surveyLine);
-                    } else {
-                        line.id = surveyLine.id;
-                    }
-                    r.push(line);
-                });
+                if (questions) {
+                    this.exportAppendQuestionLines(r, surveyLine, { id }, questions);
+                    return r;
+                }
+                this.exportAppendSectionLines(r, surveyLine, { id }, sections);
                 return r;
             }, []))
             .then((lines) => {
-                const converter = new ExportCSVConverter({ fields: ['id', 'name', 'description', 'questionId', 'required'] });
+                const converter = new ExportCSVConverter({ fields: ['id', 'name', 'description', 'parentSectionId', 'parentQuestionId', 'sectionId', 'questionId', 'required'] });
                 return converter.dataToCSV(lines);
             });
     }

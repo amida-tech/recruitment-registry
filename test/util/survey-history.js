@@ -3,7 +3,6 @@
 const _ = require('lodash');
 
 const History = require('./history');
-const models = require('../../models');
 
 module.exports = class SurveyHistory extends History {
     constructor() {
@@ -36,6 +35,22 @@ module.exports = class SurveyHistory extends History {
         return this.filterListServersByStatus(result, status);
     }
 
+    makeSectionExportReady({ id, questions, sections }) {
+        const result = { id };
+        if (questions) {
+            result.questions = questions.map(({ id, required, sections: questionSections }) => {
+                const q = { id, required };
+                if (questionSections) {
+                    q.sections = questionSections.map(section => this.makeSectionExportReady(section));
+                }
+                return q;
+            });
+            return result;
+        }
+        result.sections = sections.map(section => this.makeSectionExportReady(section));
+        return result;
+    }
+
     listServersByScope(options = {}) {
         const scope = options.scope || 'summary';
         if (scope === 'summary') {
@@ -44,21 +59,19 @@ module.exports = class SurveyHistory extends History {
         if (scope === 'export') {
             const result = this.listServers(['id', 'name', 'description', 'questions', 'sections', 'status']);
             result.forEach((survey) => {
-                const { questions, sections } = models.survey.flattenHierarchy(survey);
-                const surveyUpdate = {};
-                surveyUpdate.questions = questions.map(({ id, required }) => ({ id, required }));
-                if (sections) {
-                    surveyUpdate.sections = sections.map((section) => {
-                        const r = _.pick(section, ['id', 'parentIndex', 'questionIndex']);
-                        if (section.indices) {
-                            r.indices = section.indices.join('~');
+                if (! survey.sections) {
+                    const questions = survey.questions.map(({ id, required, sections: questionSections }) => {
+                        const q = { id, required };
+                        if (questionSections) {
+                            q.sections = questionSections.map(section => this.makeSectionExportReady(section));
                         }
-                        r.sectionId = r.id;
-                        delete r.id;
-                        return _.omitBy(r, _.isNil);
+                        return q;
                     });
+                    Object.assign(survey, { questions });
+                    return;
                 }
-                Object.assign(survey, surveyUpdate);
+                const sections = survey.sections.map(section => this.makeSectionExportReady(section));
+                Object.assign(survey, { sections });
             });
             return result;
         }
