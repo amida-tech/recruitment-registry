@@ -9,17 +9,19 @@ const RRError = require('../../lib/rr-error');
 const sequelize = db.sequelize;
 const User = db.User;
 
+const attributes = ['id', 'username', 'email', 'role', 'firstname', 'lastname', 'createdAt'];
+
 module.exports = class UserDAO {
     constructor(dependencies) {
         Object.assign(this, dependencies);
     }
 
-    createUser(user, transaction) {
+    createUser(newUser, transaction) {
         const options = transaction ? { transaction } : {};
-        if (user.username === user.email) {
+        if (newUser.username === newUser.email) {
             return RRError.reject('userIdenticalUsernameEmail');
         }
-        user = Object.assign({}, user);
+        const user = Object.assign({}, newUser);
         if (!user.username) {
             const email = user.email;
             if (email && (typeof email === 'string')) {
@@ -34,31 +36,25 @@ module.exports = class UserDAO {
     }
 
     getUser(id) {
-        return User.findById(id, {
-            raw: true,
-            attributes: ['id', 'username', 'email', 'role'],
-        });
+        return User.findById(id, { raw: true, attributes })
+            .then(user => _.omitBy(user, _.isNil));
     }
 
     listUsers(options = {}) {
         const role = options.role ? options.role : { $in: ['clinician', 'participant'] };
         const where = { role };
-        return User.findAll({
-            raw: true,
-            where,
-            attributes: ['id', 'username', 'email', 'role'],
-            order: 'username',
-        });
+        return User.findAll({ raw: true, where, attributes, order: 'username' })
+            .then(users => users.map(user => _.omitBy(user, _.isNil)));
     }
 
     deleteUser(id) {
         return User.destroy({ where: { id } });
     }
 
-    updateUser(id, fields) {
+    updateUser(id, userPatch) {
         return User.findById(id)
             .then((user) => {
-                fields = _.pick(fields, ['username', 'email', 'password']);
+                const fields = Object.assign({}, userPatch);
                 if (user.username === user.email.toLowerCase()) {
                     if (Object.prototype.hasOwnProperty.call(fields, 'username')) {
                         return RRError.reject('userNoUsernameChange');
@@ -67,12 +63,20 @@ module.exports = class UserDAO {
                         fields.username = fields.email.toLowerCase();
                     }
                 }
+                ['lastname', 'firstname'].forEach((key) => {
+                    if (Object.prototype.hasOwnProperty.call(fields, key)) {
+                        if (!fields[key]) {
+                            fields[key] = null;
+                        }
+                    }
+                });
                 return user.update(fields);
             });
     }
 
     resetPasswordToken(email) {
-        const where = sequelize.where(sequelize.fn('lower', sequelize.col('email')), sequelize.fn('lower', email));
+        const lowerEmailColumn = sequelize.fn('lower', sequelize.col('email'));
+        const where = sequelize.where(lowerEmailColumn, sequelize.fn('lower', email));
         return User.find({ where })
             .then((user) => {
                 if (!user) {
@@ -93,7 +97,7 @@ module.exports = class UserDAO {
                 if (moment.utc().isAfter(mExpires)) {
                     return RRError.reject('invalidOrExpiredPWToken');
                 }
-                user.password = password;
+                Object.assign(user, { password });
                 return user.save();
             });
     }
