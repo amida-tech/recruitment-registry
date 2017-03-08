@@ -105,7 +105,7 @@ describe('research site unit', () => {
     _.range(10).forEach((index) => {
         it(`create research site ${index}`, createResearchSiteFn(index));
         it(`get research site ${index}`, getResearchSiteFn(index));
-        it(`update research site ${index}`, updateResearchSiteFn(index, ['name', 'url', 'street', 'city', 'state']));
+        it(`update all research site meta fields ${index}`, updateResearchSiteFn(index, ['name', 'url', 'street', 'city', 'state']));
         it(`verify research site ${index}`, verifyResearchSiteFn(index));
     });
 

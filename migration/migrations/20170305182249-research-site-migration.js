@@ -12,7 +12,7 @@ module.exports = {
     up(queryInterface, Sequelize) {
         return researchSite(queryInterface, Sequelize);
     },
-    down(queryInterface) {
+    down() {
 
     }
 };
