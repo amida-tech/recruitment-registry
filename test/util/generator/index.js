@@ -60,6 +60,10 @@ class Generator {
         if (!user.role) {
             user.role = 'participant';
         }
+        if (userIndex % 2 === 1) {
+            user.firstname = `firstname_${userIndex}`;
+            user.lastname = `lastname_${userIndex}`;
+        }
         return user;
     }
 
@@ -175,6 +179,7 @@ class Generator {
         return {
             name: `name_${index}`,
             url: `server_${index}@example.com`,
+            street: `street_${index}`,
             city: `city_${index}`,
             state: this.newState(index),
             zip,

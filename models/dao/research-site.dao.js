@@ -7,7 +7,7 @@ const zipUtil = require('../../lib/zip-util');
 const ResearchSite = db.ResearchSite;
 const ResearchSiteVicinity = db.ResearchSiteVicinity;
 
-const attributes = ['id', 'name', 'url', 'city', 'state', 'zip'];
+const attributes = ['id', 'name', 'url', 'street', 'city', 'state', 'zip'];
 
 const formatZip = function formatZip(zip) {
     return zip ? zip.replace(/ /g, '') : zip;

@@ -7,7 +7,7 @@ const shared = require('./shared.js');
 
 const sendMail = require('../lib/email');
 
-exports.createNewUser = function (req, res) {
+exports.createNewUser = function createNewUser(req, res) {
     const newUser = req.body;
     if (!newUser.role) {
         newUser.role = 'participant';
@@ -20,14 +20,21 @@ exports.createNewUser = function (req, res) {
         .catch(shared.handleError(res));
 };
 
-exports.getUser = function (req, res) {
+exports.getUser = function getUser(req, res) {
     const id = _.get(req, 'swagger.params.id.value');
     models.user.getUser(id)
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };
 
-exports.listUsers = function (req, res) {
+exports.patchUser = function patchUser(req, res) {
+    const id = _.get(req, 'swagger.params.id.value');
+    models.user.updateUser(id, req.body)
+        .then(() => res.status(204).end())
+        .catch(shared.handleError(res));
+};
+
+exports.listUsers = function listUsers(req, res) {
     const role = _.get(req, 'swagger.params.role.value');
     const options = role ? { role } : {};
     models.user.listUsers(options)
@@ -35,18 +42,18 @@ exports.listUsers = function (req, res) {
         .catch(shared.handleError(res));
 };
 
-exports.showCurrentUser = function (req, res) {
+exports.showCurrentUser = function showCurrentUser(req, res) {
     const currentUser = _.omitBy(req.user, _.isNil);
     res.status(200).json(currentUser);
 };
 
-exports.updateCurrentUser = function (req, res) {
+exports.updateCurrentUser = function updateCurrentUser(req, res) {
     models.user.updateUser(req.user.id, req.body)
         .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };
 
-exports.resetPassword = function (req, res) {
+exports.resetPassword = function resetPassword(req, res) {
     models.user.resetPassword(req.body.token, req.body.password)
         .then(() => res.status(204).end())
         .catch(shared.handleError(res));

@@ -2,6 +2,7 @@
 
 const chai = require('chai');
 const _ = require('lodash');
+const moment = require('moment');
 
 const models = require('../../models');
 
@@ -209,6 +210,10 @@ const comparator = {
         if (!expected.username) {
             expected.username = expected.email.toLowerCase();
         }
+        const compareDateTime = moment().subtract(2, 'second');
+        const createdDateTime = moment(server.createdAt);
+        expect(createdDateTime.isAfter(compareDateTime)).to.equal(true);
+        expected.createdAt = server.createdAt;
         expect(server).to.deep.equal(expected);
     },
     choiceSet(client, server) {
