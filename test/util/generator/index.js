@@ -179,6 +179,7 @@ class Generator {
         return {
             name: `name_${index}`,
             url: `server_${index}@example.com`,
+            street: `street_${index}`,
             city: `city_${index}`,
             state: this.newState(index),
             zip,
