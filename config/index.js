@@ -41,6 +41,10 @@ const all = {
         resetExpiresUnit: 'seconds',
     },
     tmpDirectory: '/tmp',
+    zipCodeApi: {
+        baseUrl: 'https://www.zipwise.com/webservices/radius.php',
+        distance: 50,
+    },
 };
 
 const main = {
