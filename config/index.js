@@ -41,6 +41,10 @@ const all = {
         resetExpiresUnit: 'seconds',
     },
     tmpDirectory: '/tmp',
+    zipCodeApi: {
+        baseUrl: 'https://www.zipwise.com/webservices/radius.php',
+        distance: 50,
+    },
 };
 
 const main = {
@@ -92,7 +96,6 @@ const main = {
         baseUrl: process.env.RECREG_ZIP_BASE_URL,
         apiKey: process.env.RECREG_ZIP_API_KEY,
         distance: process.env.RECREG_ZIP_DISTANCE,
-        units: process.env.RECREG_ZIP_UNITS,
     },
 };
 

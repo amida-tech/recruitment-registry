@@ -47,7 +47,7 @@ describe('research site integration', () => {
     });
 
     const createResearchSiteFn = function (index, actualZipCode) {
-        return function (done) {
+        return (done) => {
             const zip = actualZipCode || researchZipCodes[index];
             const researchSite = generator.newResearchSite(zip);
             rrSuperTest.post('/research-sites', researchSite, 201)
@@ -59,7 +59,7 @@ describe('research site integration', () => {
     };
 
     const getResearchSiteFn = function (index) {
-        return function (done) {
+        return (done) => {
             const id = hxResearchSite.id(index);
             rrSuperTest.get(`/research-sites/${id}`, true, 200)
                 .expect((res) => {
@@ -71,7 +71,7 @@ describe('research site integration', () => {
     };
 
     const updateResearchSiteFn = function (index, fields) {
-        return function (done) {
+        return (done) => {
             const id = hxResearchSite.id(index);
             if ('zip' in fields) {
                 throw new Error('Zip cannot be specified');
@@ -86,7 +86,7 @@ describe('research site integration', () => {
     };
 
     const verifyResearchSiteFn = function (index) {
-        return function (done) {
+        return (done) => {
             const expected = hxResearchSite.server(index);
             rrSuperTest.get(`/research-sites/${expected.id}`, true, 200)
                 .expect((res) => {
@@ -97,7 +97,7 @@ describe('research site integration', () => {
     };
 
     const listResearchSitesFn = function () {
-        return function (done) {
+        return (done) => {
             rrSuperTest.get('/research-sites', true, 200)
                 .expect((res) => {
                     let expected = _.cloneDeep(hxResearchSite.listServers());
@@ -109,7 +109,7 @@ describe('research site integration', () => {
     };
 
     const deleteResearchSiteFn = function (index) {
-        return function (done) {
+        return (done) => {
             const id = hxResearchSite.id(index);
             rrSuperTest.delete(`/research-sites/${id}`, 204)
                 .expect(() => {
@@ -134,12 +134,13 @@ describe('research site integration', () => {
     it('list research sites', listResearchSitesFn());
 
     const verifyNearbyFn = function (zipCode) {
-        return function (done) {
+        return (done) => {
             rrSuperTest.get('/research-sites', true, 200, { 'near-zip': zipCode })
                 .expect((res) => {
                     const nearbyZipCodes = researchSiteCommon.findNear(zipCode);
                     const nearResearchSiteSet = new Set(nearbyZipCodes);
-                    let expected = hxResearchSite.listServers().filter(({ zip }) => nearResearchSiteSet.has(zip));
+                    let expected = hxResearchSite.listServers()
+                        .filter(({ zip }) => nearResearchSiteSet.has(zip));
                     expected = _.sortBy(expected, 'id');
                     expect(res.body).to.deep.equal(expected);
                 })
@@ -191,7 +192,7 @@ describe('research site integration', () => {
     });
 
     const createResearchSiteVicinityFn = function (index, zipCodes) {
-        return function (done) {
+        return (done) => {
             const id = hxResearchSite.id(index);
             rrSuperTest.post(`/research-sites/${id}/vicinities`, { zipCodes }, 204).end(done);
         };
@@ -208,7 +209,7 @@ describe('research site integration', () => {
     it('logout as super', shared.logoutFn(rrSuperTest));
 
     const verifyNearbyIndicesFn = function (zipCode, indices) {
-        return function (done) {
+        return (done) => {
             rrSuperTest.get('/research-sites', true, 200, { 'near-zip': zipCode })
                 .expect((res) => {
                     let expected = hxResearchSite.listServers(undefined, indices);
@@ -232,50 +233,84 @@ describe('research site integration', () => {
         zipUtil.findVicinity.restore();
     });
 
-    // //++ to be run by real api key and real zip code (Boston area)
+    // // ++ to be run by real api key and real zip code (Boston area)
     // it('login as super', shared.loginFn(rrSuperTest, config.superUser));
-    // it('create research site with actual zip code 02118', createResearchSiteFn(undefined, '02118'));
+    // it('create research site with actual zip 02118', createResearchSiteFn(undefined, '02118'));
     // it('get research site with actual zip code 02118', getResearchSiteFn(10));
-    // it('create research site with actual zip code 02446', createResearchSiteFn(undefined, '02446'));
+    // it('create research site with actual zip 02446', createResearchSiteFn(undefined, '02446'));
     // it('get research site with actual zip code 02446', getResearchSiteFn(11));
-    // it('make sure to get for a nearby zip code', function (done) {
-    //    rrSuperTest.get('/research-sites', true, 200, { 'near-zip': '02151' })
-    //        .expect(function (res) {
-    //            const nearResearchSiteSet = new Set(['02118', '02446']);
-    //            let expected = hxResearchSite.listServers().filter(({ zip }) => nearResearchSiteSet.has(zip));
-    //            expected = _.sortBy(expected, 'id');
-    //            expect(res.body).to.deep.equal(expected);
-    //        })
-    //        .end(done);
+    // it('make sure to get for a nearby zip code', (done) => {
+    //     rrSuperTest.get('/research-sites', true, 200, { 'near-zip': '02151' })
+    //         .expect((res) => {
+    //             const nearResearchSiteSet = new Set(['02118', '02446']);
+    //             let expected = hxResearchSite.listServers()
+    //                 .filter(({ zip }) => nearResearchSiteSet.has(zip));
+    //             expected = _.sortBy(expected, 'id');
+    //             expect(res.body).to.deep.equal(expected);
+    //         })
+    //         .end(done);
     // });
     // // switch to washington area
-    // it('update zip code for research site 0', function (done) {
-    //    const id = hxResearchSite.id(10);
-    //    const patch = { zip: '20850' };
-    //    rrSuperTest.patch(`/research-sites/${id}`, patch, 204)
-    //        .expect(function () {
-    //            Object.assign(hxResearchSite.server(10), patch);
-    //        })
-    //        .end(done);
+    // it('update zip code for research site 0', (done) => {
+    //     const id = hxResearchSite.id(10);
+    //     const patch = { zip: '20850' };
+    //     rrSuperTest.patch(`/research-sites/${id}`, patch, 204)
+    //         .expect(() => {
+    //             Object.assign(hxResearchSite.server(10), patch);
+    //         })
+    //         .end(done);
     // });
-    // it('update zip code for research site 11', function (done) {
-    //    const id = hxResearchSite.id(11);
-    //    const patch = { zip: '20852' };
-    //    rrSuperTest.patch(`/research-sites/${id}`, patch, 204)
-    //        .expect(function () {
-    //            Object.assign(hxResearchSite.server(11), patch);
-    //        })
-    //        .end(done);
+    // it('update zip code for research site 11', (done) => {
+    //     const id = hxResearchSite.id(11);
+    //     const patch = { zip: '20852' };
+    //     rrSuperTest.patch(`/research-sites/${id}`, patch, 204)
+    //         .expect(() => {
+    //             Object.assign(hxResearchSite.server(11), patch);
+    //         })
+    //         .end(done);
     // });
-    // it('make sure to get for a nearby zip code', function (done) {
-    //    rrSuperTest.get('/research-sites', true, 200, { 'near-zip': '20816' })
-    //        .expect(function (res) {
-    //            const nearResearchSiteSet = new Set(['20852', '20850']);
-    //            let expected = hxResearchSite.listServers().filter(({ zip }) => nearResearchSiteSet.has(zip));
-    //            expected = _.sortBy(expected, 'id');
-    //            expect(res.body).to.deep.equal(expected);
-    //        })
-    //        .end(done);
+    // it('make sure to get for a nearby zip code', (done) => {
+    //     rrSuperTest.get('/research-sites', true, 200, { 'near-zip': '20816' })
+    //         .expect((res) => {
+    //             const nearResearchSiteSet = new Set(['20852', '20850']);
+    //             let expected = hxResearchSite.listServers()
+    //                 .filter(({ zip }) => nearResearchSiteSet.has(zip));
+    //             expected = _.sortBy(expected, 'id');
+    //             expect(res.body).to.deep.equal(expected);
+    //         })
+    //         .end(done);
+    // });
+    // // switch to manitoba, canada area
+    // it('update zip code for research site 0', (done) => {
+    //     const id = hxResearchSite.id(0);
+    //     const patch = { zip: 'R0B0E0' };
+    //     rrSuperTest.patch(`/research-sites/${id}`, patch, 204)
+    //         .expect(() => {
+    //             Object.assign(hxResearchSite.server(0), patch);
+    //         })
+    //         .end(done);
+    // });
+    // it('make sure to get for a nearby zip code with spaces', (done) => {
+    //     rrSuperTest.get('/research-sites', true, 200, { 'near-zip': 'R0B0K0' })
+    //         .expect((res) => {
+    //             const nearResearchSiteSet = new Set(['R0B0E0']);
+    //             let expected = hxResearchSite.listServers()
+    //                 .filter(({ zip }) => nearResearchSiteSet.has(zip));
+    //             expected = _.sortBy(expected, 'id');
+    //             expect(res.body).to.deep.equal(expected);
+    //         })
+    //         .end(done);
+    // });
+    // it('make sure to get for a nearby zip code without spaces', (done) => {
+    //     rrSuperTest.get('/research-sites', true, 200, { 'near-zip': 'R0B0K0' })
+    //         .expect((res) => {
+    //             const nearResearchSiteSet = new Set(['R0B0E0']);
+    //             let expected = hxResearchSite.listServers()
+    //                 .filter(({ zip }) => nearResearchSiteSet.has(zip));
+    //             expected = _.sortBy(expected, 'id');
+    //             expect(res.body).to.deep.equal(expected);
+    //         })
+    //         .end(done);
     // });
     // it('logout as super', shared.logoutFn(rrSuperTest));
 });

@@ -191,10 +191,10 @@ class Generator {
         this.zipCodeApiIndex += 1;
         const index = this.zipCodeApiIndex;
         return {
-            zip_code: zip,
-            distance: index + 1,
+            zip,
             city: `city_${index}`,
             state: this.newState(index),
+            distance: index + 1,
         };
     }
 
