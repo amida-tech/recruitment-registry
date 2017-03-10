@@ -27,6 +27,7 @@ class Generator {
         this.researchSiteIndex = 0;
         this.zipCodeApiIndex = 0;
         this.stateIndex = 0;
+        this.sectionIndex = -1;
     }
 
     updateSurveyGenerator(SurveyGenerator) {
@@ -204,6 +205,19 @@ class Generator {
             stateIndex = this.stateIndex;
         }
         return ['MA', 'MD', 'ID', 'VA', 'GA'][stateIndex % 5];
+    }
+
+    newSection() {
+        this.sectionIndex += 1;
+        const index = this.sectionIndex;
+        const type = index % 3;
+        if (type === 0) {
+            return { name: `name_${index}` };
+        }
+        if (type === 1) {
+            return {};
+        }
+        return { name: `name_${index}`, description: `description_${index}` };
     }
 }
 

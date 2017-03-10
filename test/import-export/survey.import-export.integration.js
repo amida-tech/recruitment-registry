@@ -32,7 +32,7 @@ describe('survey import-export integration', function surveyImportExportIntegrat
     it('login as super', shared.loginFn(rrSuperTest, config.superUser));
 
     _.range(8).forEach((index) => {
-        it(`create survey ${index}`, tests.createSurveyFn());
+        it(`create survey ${index}`, tests.createSurveyFn({ noSection: true }));
         it(`get survey ${index}`, tests.getSurveyFn(index));
     });
 
@@ -43,7 +43,7 @@ describe('survey import-export integration', function surveyImportExportIntegrat
     it('list all surveys (export)', tests.listSurveysFn({ scope: 'export' }));
 
     _.range(8, 14).forEach((index) => {
-        it(`create survey ${index}`, tests.createSurveyFn());
+        it(`create survey ${index}`, tests.createSurveyFn({ noSection: true }));
         it(`get survey ${index}`, tests.getSurveyFn(index));
     });
 
@@ -91,7 +91,7 @@ describe('survey import-export integration', function surveyImportExportIntegrat
 
     let idMap;
 
-    it('import survey csv into db',  function importSurveysFromCSV() {
+    it('import survey csv into db', function importSurveysFromCSV() {
         const filepath = path.join(generatedDirectory, 'survey.csv');
         const questionidmap = JSON.stringify(questionIdMap);
         return rrSuperTest.postFile('/surveys/csv', 'surveycsv', filepath, { questionidmap }, 201)
@@ -101,8 +101,6 @@ describe('survey import-export integration', function surveyImportExportIntegrat
     });
 
     it('list imported surveys and verify', function listImportedAndVerify() {
-        const rrSuperTest = this.rrSuperTest;
-        const hxSurvey = this.hxSurvey;
         const query = { scope: 'export' };
         return rrSuperTest.get('/surveys', true, 200, query)
             .expect((res) => {

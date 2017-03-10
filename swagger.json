@@ -3511,6 +3511,53 @@
             },
             "additionalProperties": false
         },
+        "surveyInfoSection": {
+            "type": "object",
+            "required": ["id"],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "sections": {
+                    "$ref": "#/definitions/surveyInfoSections"
+                },
+                "questions": {
+                    "$ref": "#/definitions/surveyInfoQuestions"
+                }
+            },
+            "additionalProperties": false,
+            "minProperties": 2
+        },
+        "surveyInfoQuestion": {
+            "type": "object",
+            "required": ["id", "required"],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "sections": {
+                    "$ref": "#/definitions/surveyInfoSections"
+                }
+            },
+            "additionalProperties": false
+        },
+        "surveyInfoQuestions": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/surveyInfoQuestion"
+            }
+        },
+        "surveyInfoSections": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/surveyInfoSection"
+            }
+        },
         "surveyInfo": {
             "type": "object",
             "required": ["id", "name"],
@@ -3528,21 +3575,10 @@
                     "$ref": "#/definitions/surveyStatus"
                 },
                 "questions": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "required": ["id", "required"],
-                        "properties": {
-                            "id": {
-                                "type": "integer",
-                                "minimum": 1
-                            },
-                            "required": {
-                                "type": "boolean"
-                            }
-                        },
-                        "additionalProperties": false
-                    }
+                    "$ref": "#/definitions/surveyInfoQuestions"
+                },
+                "sections": {
+                    "$ref": "#/definitions/surveyInfoSections"
                 }
             },
             "additionalProperties": false

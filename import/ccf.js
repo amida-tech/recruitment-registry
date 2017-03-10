@@ -299,7 +299,7 @@ const importToDb = function (jsonDB) {
             }, ['id,name,description,isBHI,maxScore,questionId,required,skipCount,skipValue']);
             const stream = intoStream(surveysCsv.join('\n'));
             const options = { meta: [{ name: 'isBHI' }, { name: 'maxScore' }], sourceType: identifierType };
-            return models.survey.import(stream, idMap, options)
+            return models.survey.import(stream, { questionIdMap: idMap }, options)
                 .then(surveys => _.values(surveys).map(survey => ({ id: survey })))
                 .then(surveys => models.assessment.createAssessment({ name: 'BHI', surveys }));
         });

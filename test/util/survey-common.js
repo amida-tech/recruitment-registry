@@ -58,20 +58,52 @@ const formAnsweredSurvey = function (survey, answers) {
     return result;
 };
 
-const updateIds = function (surveys, idMap, questionIdMap) {
+let updateQuestionIds = null;
+
+const updateSectionIds = function (sections, questionIdMap, sectionIdMap) {
+    sections.forEach((section) => {
+        const sectionId = sectionIdMap[section.id];
+        if (!sectionId) {
+            throw new Error(`updateIds: section id '${sectionId}' does not exist in the map`);
+        }
+        section.id = sectionId;
+        if (section.sections) {
+            return updateSectionIds(section.sections, questionIdMap, sectionIdMap);
+        }
+        if (section.questions) {
+            return updateQuestionIds(section.questions, questionIdMap, sectionIdMap);
+        }
+        return null;
+    });
+};
+
+updateQuestionIds = function (questions, questionIdMap, sectionIdMap) {
+    questions.forEach((question) => {
+        const questionIdObj = questionIdMap[question.id];
+        if (!questionIdObj) {
+            throw new Error(`updateIds: question id '${question.id}' does not exist in the map`);
+        }
+        question.id = questionIdObj.questionId;
+        if (question.sections) {
+            updateSectionIds(question.sections, questionIdMap, sectionIdMap);
+        }
+    });
+};
+
+const updateIds = function (surveys, idMap, questionIdMap, sectionIdMap) {
     surveys.forEach((survey) => {
         const surveyId = idMap[survey.id];
         if (!surveyId) {
             throw new Error(`updateIds: id for '${survey.name}' does not exist in the map`);
         }
         survey.id = surveyId;
-        survey.questions.forEach((question) => {
-            const questionIdObj = questionIdMap[question.id];
-            if (!questionIdObj) {
-                throw new Error(`updateIds: choice id does not exist for for '${survey.name}' in '${question.id}'`);
-            }
-            question.id = questionIdObj.questionId;
-        });
+        const { sections, questions } = survey;
+        if (sections) {
+            updateSectionIds(sections, questionIdMap, sectionIdMap);
+        }
+        if (questions) {
+            updateQuestionIds(questions, questionIdMap, sectionIdMap);
+        }
     });
 };
 

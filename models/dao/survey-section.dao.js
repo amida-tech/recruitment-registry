@@ -1,5 +1,7 @@
 'use strict';
 
+const _ = require('lodash');
+
 const db = require('../db');
 
 const SPromise = require('../../lib/promise');
@@ -188,7 +190,7 @@ module.exports = class SectionDAO {
                             }
                             const section = { id: surveySection.sectionId };
                             if (surveySection.parentId === null && surveySection.parentQuestionId === null) {
-                                if (! currentSurvey.sections) {
+                                if (!currentSurvey.sections) {
                                     currentSurvey.sections = [section];
                                     delete currentSurvey.questions;
                                 } else {
@@ -222,5 +224,34 @@ module.exports = class SectionDAO {
                         });
                     });
             });
+    }
+
+    importSurveySectionsTx(surveySections, surveySectionQuestions, transaction) {
+        let promise = SPromise.resolve([]);
+        surveySections.forEach((surveySection) => {
+            promise = promise.then((ids) => {
+                const record = _.omit(surveySection, 'parentIndex');
+                const parentIndex = surveySection.parentIndex;
+                if (parentIndex !== undefined) {
+                    record.parentId = ids[parentIndex];
+                }
+                return SurveySection.create(record, { transaction })
+                    .then(({ id }) => {
+                        ids.push(id);
+                        return ids;
+                    });
+            });
+        });
+        return promise.then((ids) => {
+            const promises = surveySectionQuestions.map((surveySectionQuestion) => {
+                const record = _.omit(surveySectionQuestion, 'parentIndex');
+                const sectionIndex = surveySectionQuestion.sectionIndex;
+                if (sectionIndex !== undefined) {
+                    record.surveySectionId = ids[sectionIndex];
+                }
+                return SurveySectionQuestion.create(record, { transaction });
+            });
+            return SPromise.all(promises);
+        });
     }
 };

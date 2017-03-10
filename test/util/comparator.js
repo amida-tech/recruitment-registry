@@ -284,6 +284,11 @@ const comparator = {
         expected.zip = expected.zip.replace(/ /g, '');
         expect(server).to.deep.equal(expected);
     },
+    section(client, server) {
+        const expected = _.cloneDeep(client);
+        expected.id = server.id;
+        expect(server).to.deep.equal(expected);
+    },
 };
 
 module.exports = comparator;
