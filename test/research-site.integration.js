@@ -126,7 +126,7 @@ describe('research site integration', () => {
         it(`get research site ${index}`, getResearchSiteFn(index));
         it('login as super', shared.loginFn(rrSuperTest, config.superUser));
         it(`update some research site meta fields ${index}`, updateResearchSiteFn(index, ['name', 'state']));
-        it(`update all research site meta fields ${index}`, updateResearchSiteFn(index, ['name', 'url', 'street', 'city', 'state']));
+        it(`update all research site meta fields ${index}`, updateResearchSiteFn(index, ['name', 'url', 'street', 'street2', 'city', 'state']));
         it('logout as super', shared.logoutFn(rrSuperTest));
         it(`verify research site ${index}`, verifyResearchSiteFn(index));
     });

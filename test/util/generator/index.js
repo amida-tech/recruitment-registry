@@ -180,6 +180,20 @@ class Generator {
             name: `name_${index}`,
             url: `server_${index}@example.com`,
             street: `street_${index}`,
+            street2: `suite_${index}`,
+            city: `city_${index}`,
+            state: this.newState(index),
+            zip,
+        };
+    }
+
+    newResearchSiteWithoutStreet2(zip) {
+        this.researchSiteIndex += 1;
+        const index = this.researchSiteIndex;
+        return {
+            name: `name_${index}`,
+            url: `server_${index}@example.com`,
+            street: `street_${index}`,
             city: `city_${index}`,
             state: this.newState(index),
             zip,
