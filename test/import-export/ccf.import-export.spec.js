@@ -45,11 +45,7 @@ describe('ccf import-export ccf', function ccfImportExportUnit() {
         return ccfExport.exportSurveys()
             .then(result => ccfImport.converters.surveys().fileToRecords(filepaths.surveys)
                 .then((rawJson) => {
-                    let expected = rawJson.Questions;
-                    expected = expected.map((r) => {
-                        delete r['conditional (Answer Hash Tag used with skipCount to skip next question if certain answer is picked)'];
-                        return r;
-                    });
+                    const expected = rawJson.Questions;
                     expect(result.questions).to.deep.equal(expected);
                     expect(result.pillars).to.deep.equal(rawJson.Pillars);
                 }));

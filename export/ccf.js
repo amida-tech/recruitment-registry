@@ -6,7 +6,7 @@ const models = require('../models');
 const SPromise = require('../lib/promise');
 
 const cHash = 'objectId (Hash Tag Used for Questions)';
-// const cConditional = 'conditional (Answer Hash Tag used with skipCount to skip next question if certain answer is picked)';
+const cConditional = 'conditional (Answer Hash Tag used with skipCount to skip next question if certain answer is picked)';
 const cAnswerHash = 'hash (Hash Tag Used for Answers)';
 const cSkipCount = 'skipCount (Number of Questions Skipped if Contitional answer is picked)';
 
@@ -26,7 +26,7 @@ const updateExportSurveyQuestion = function (r, question, index, questionIdentif
     const section = question.sections && question.sections[0];
     if (section) {
         line[cSkipCount] = section.questions.length;
-        // line[cConditional] = answerIdentifierMap[`${question.id}:${section.enableWhen[0].answer.choice}`].identifier;
+        line[cConditional] = answerIdentifierMap[`${question.id}:${section.enableWhen[0].answer.choice}`].identifier;
     }
     const meta = question.meta;
     if (meta) {
