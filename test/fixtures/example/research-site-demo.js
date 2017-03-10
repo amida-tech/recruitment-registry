@@ -23,7 +23,7 @@ const researchSiteExamples = [
     {
         name: 'Banner Sun Health Research Institute',
         url: tempUrl,
-        street: '10515 W. Santa Fe Drive',
+        street: '10515 W. Santa Fe Dr',
         city: 'Sun City',
         state: 'AZ',
         zip: '85351',
@@ -73,7 +73,7 @@ const researchSiteExamples = [
     {
         name: 'Clinical Research Associates',
         url: tempUrl,
-        street: '1500 Church Street',
+        street: '1500 Church St',
         street2: 'Suite 100',
         city: 'Nashville',
         state: 'TN',
@@ -82,7 +82,7 @@ const researchSiteExamples = [
     {
         name: 'Compass Research (Melbourne)',
         url: tempUrl,
-        street: '6300  N. Wickham Road',
+        street: '6300  N. Wickham Rd',
         treet2: 'Suite 110',
         city: 'Melbourne',
         state: 'FL',
@@ -91,7 +91,7 @@ const researchSiteExamples = [
     {
         name: 'Compass Research (Orlando)',
         url: tempUrl,
-        street: '100 West Gore St.',
+        street: '100 West Gore St',
         street2: 'Suite 202',
         city: 'Orlando',
         state: 'FL',
@@ -100,7 +100,7 @@ const researchSiteExamples = [
     {
         name: 'Compass Research (The Villages)',
         url: tempUrl,
-        street: '3201 Wedgewood Lane ',
+        street: '3201 Wedgewood Lane',
         city: 'The Villages',
         state: 'FL',
         zip: '32162',
@@ -108,7 +108,7 @@ const researchSiteExamples = [
     {
         name: 'Emory University',
         url: tempUrl,
-        street: '12 Executive Park Drive',
+        street: '12 Executive Park Dr',
         city: 'Atlanta',
         state: 'GA',
         zip: '30329',
@@ -142,7 +142,7 @@ const researchSiteExamples = [
     {
         name: 'Lou Ruvo Center for Brain Health (Cleveland)',
         url: tempUrl,
-        street: '9500 Euclid Avenue',
+        street: '9500 Euclid Ave',
         city: 'Cleveland',
         state: 'OH',
         zip: '44195',
@@ -158,7 +158,7 @@ const researchSiteExamples = [
     {
         name: 'Mayo Clinic (Rochester)',
         url: tempUrl,
-        street: '200 First Street SW',
+        street: '200 First St SW',
         city: 'Rochester',
         state: 'MN',
         zip: '55905',
@@ -174,16 +174,15 @@ const researchSiteExamples = [
     {
         name: 'Neurosearch Developments',
         url: tempUrl,
-        street: '4892 Boulevard Taschereau',
+        street: '4892 Blvd Taschereau',
         city: 'Greenfield Park',
         state: 'QC',
-        // zip: 'J4V 2J2',
-        zip: '99999',
+        zip: 'J4V 2J2',
     },
     {
         name: 'NeuroStudies.net',
         url: tempUrl,
-        street: '2665 N Decatur Road',
+        street: '2665 N Decatur Rd',
         street2: 'Suite 740',
         city: 'Decatur',
         state: 'GA',
@@ -196,8 +195,7 @@ const researchSiteExamples = [
         street2: 'Suite 204',
         city: 'Kelowna',
         state: 'BC',
-        // zip: 'V1Y 1Z9',
-        zip: '99999',
+        zip: 'V1Y 1Z9',
     },
     {
         name: 'Premiere Research Institute',
@@ -210,7 +208,7 @@ const researchSiteExamples = [
     {
         name: 'Princeton Medical Institute',
         url: tempUrl,
-        street: '256 Bunn Drive ',
+        street: '256 Bunn Dr',
         street2: 'Suite 6',
         city: 'Princeton',
         state: 'NJ',
@@ -227,7 +225,7 @@ const researchSiteExamples = [
     {
         name: 'Raleigh Neurology Associates',
         url: tempUrl,
-        street: '1540 Sunday Drive',
+        street: '1540 Sunday Dr',
         city: 'Raleigh',
         state: 'NC',
         zip: '27607',
@@ -235,7 +233,7 @@ const researchSiteExamples = [
     {
         name: 'Rhode Island Hospital',
         url: tempUrl,
-        street: '593 Eddy Street',
+        street: '593 Eddy St',
         street2: 'APC 7th Floor',
         city: 'Providence',
         state: 'RI',
@@ -252,7 +250,7 @@ const researchSiteExamples = [
     {
         name: 'Roper St Francis Healthcare',
         url: tempUrl,
-        street: '316 Calhoun Street',
+        street: '316 Calhoun St',
         street2: '5th Floor CBRI',
         city: 'Charleston',
         state: 'SC',
@@ -261,7 +259,7 @@ const researchSiteExamples = [
     {
         name: 'Stedman Clinical Trials',
         url: tempUrl,
-        street: '3212 Cove Bend Drive',
+        street: '3212 Cove Bend Dr',
         city: 'Tampa',
         state: 'FL',
         zip: '33613',
@@ -269,12 +267,11 @@ const researchSiteExamples = [
     {
         name: 'Toronto Memory Program',
         url: tempUrl,
-        street: '1 Valleybrook Drive',
+        street: '1 Valleybrook Dr',
         street2: 'Suite 400',
         city: 'North York',
         state: 'ON',
-        // zip: 'M3B 2S7',
-        zip: '99999',
+        zip: 'M3B 2S7',
     },
     {
         name: 'University Hospitals (Case Western Reserve)',
@@ -330,7 +327,7 @@ const researchSiteExamples = [
     {
         name: 'University of Rochester',
         url: tempUrl,
-        street: '435 East Henrietta Road',
+        street: '435 East Henrietta Rd',
         city: 'Rochester',
         state: 'NY',
         zip: '14620',
@@ -371,7 +368,7 @@ const researchSiteExamples = [
     {
         name: 'Yale University, School of Medicine',
         url: tempUrl,
-        street: 'One Church Street',
+        street: 'One Church St',
         city: 'New Haven',
         state: 'CT',
         zip: '06510',
