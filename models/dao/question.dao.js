@@ -289,7 +289,7 @@ module.exports = class QuestionDAO extends Translatable {
                                         const q = map.get(choice.questionId);
                                         if (q) {
                                             delete choice.questionId;
-                                            if (q.type === 'choice') {
+                                            if (q.type === 'choice' || q.type === 'choice-ref') {
                                                 delete choice.type;
                                             }
                                             if (q.choices) {

@@ -201,6 +201,7 @@ module.exports = class SectionDAO {
                             if (questionIds && questionIds.length) {
                                 section.questions = questionIds.map(id => questionMap.get(id));
                                 questionIds.forEach(id => sectionQuestionSet.add(id));
+                                questionIds.forEach(id => sectionQuestionSet.add(id));
                             } else {
                                 section.sections = [];
                             }
@@ -222,6 +223,9 @@ module.exports = class SectionDAO {
                                 parentQuestion.sections.push(section);
                             }
                         });
+                        if (currentSurvey && currentSurvey.questions) {
+                            currentSurvey.questions = currentSurvey.questions.filter(q => !sectionQuestionSet.has(q.id));
+                        }
                     });
             });
     }

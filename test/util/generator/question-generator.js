@@ -16,16 +16,17 @@ const virtualQuestionTypes = [
 const questionTypes = ['choices', ...singleQuestionTypes, ...virtualQuestionTypes];
 
 module.exports = class QuestionGenerator {
-    constructor(predecessor) {
+    constructor(predecessor, options = {}) {
         if (predecessor) {
-            const { index, choiceIndex, typeChoiceIndex, typeChoicesIndex } = predecessor;
-            Object.assign(this, { index, choiceIndex, typeChoiceIndex, typeChoicesIndex });
+            const { index, choiceIndex, typeChoiceIndex, typeChoicesIndex, noMeta } = predecessor;
+            Object.assign(this, { index, choiceIndex, typeChoiceIndex, typeChoicesIndex, noMeta });
         } else {
             this.index = -1;
             this.choiceIndex = 0;
             this.typeChoiceIndex = -1;
             this.typeChoicesIndex = -1;
             this.choicesCode = false;
+            this.noMeta = options.noMeta;
         }
     }
 
@@ -45,7 +46,7 @@ module.exports = class QuestionGenerator {
             result.instruction = `instruction_${index}`;
         }
         const metaIndex = index % 3;
-        if (metaIndex > 0) {
+        if (metaIndex > 0 && !this.noMeta) {
             result.meta = {
                 someBool: metaIndex === 1,
                 someOtherBool: metaIndex === 2,
@@ -79,7 +80,13 @@ module.exports = class QuestionGenerator {
     choiceMeta() {
         const question = this.body('choice');
         const choices = this.newChoices();
-        question.choices = choices.map((choice, index) => ({ text: choice, meta: { tag: (index * 10) + 10 } }));
+        question.choices = choices.map((choice, index) => {
+            const r = { text: choice };
+            if (!this.noMeta) {
+                r.meta = { tag: (index * 10) + 10 };
+            }
+            return r;
+        });
         return question;
     }
 
@@ -110,7 +117,13 @@ module.exports = class QuestionGenerator {
 
     choicesMeta() {
         const question = this.body('choices');
-        const choices = this.newChoices().map((choice, index) => ({ text: choice, type: 'bool', meta: { tag: (index * 10) + 10 } }));
+        const choices = this.newChoices().map((choice, index) => {
+            const r = { text: choice, type: 'bool' };
+            if (!this.noMeta) {
+                r.meta = { tag: (index * 10) + 10 };
+            }
+            return r;
+        });
         question.choices = choices;
         return question;
     }

@@ -58,39 +58,61 @@ const formAnsweredSurvey = function (survey, answers) {
     return result;
 };
 
+const updateEnableWhenIds = function (enableWhen, questionIdMap, sectionIdMap, ruleIdMap) {
+    enableWhen.forEach((rule) => {
+        rule.id = ruleIdMap[rule.id];
+        if (rule.questionId) {
+            rule.questionId = questionIdMap[rule.questionId].questionId;
+        }
+        if (rule.sectionId) {
+            rule.sectionId = sectionIdMap[rule.sectionId];
+        }
+    });
+};
+
 let updateQuestionIds = null;
 
-const updateSectionIds = function (sections, questionIdMap, sectionIdMap) {
+const updateSectionIds = function (sections, questionIdMap, sectionIdMap, ruleIdMap) {
     sections.forEach((section) => {
         const sectionId = sectionIdMap[section.id];
         if (!sectionId) {
             throw new Error(`updateIds: section id '${sectionId}' does not exist in the map`);
         }
         section.id = sectionId;
+        if (section.enableWhen) {
+            updateEnableWhenIds(section.enableWhen, questionIdMap, sectionIdMap, ruleIdMap);
+        }
         if (section.sections) {
-            return updateSectionIds(section.sections, questionIdMap, sectionIdMap);
+            return updateSectionIds(section.sections, questionIdMap, sectionIdMap, ruleIdMap);
         }
         if (section.questions) {
-            return updateQuestionIds(section.questions, questionIdMap, sectionIdMap);
+            return updateQuestionIds(section.questions, questionIdMap, sectionIdMap, ruleIdMap);
         }
         return null;
     });
 };
 
-updateQuestionIds = function (questions, questionIdMap, sectionIdMap) {
+updateQuestionIds = function (questions, questionIdMap, sectionIdMap, ruleIdMap) {
     questions.forEach((question) => {
         const questionIdObj = questionIdMap[question.id];
         if (!questionIdObj) {
             throw new Error(`updateIds: question id '${question.id}' does not exist in the map`);
         }
         question.id = questionIdObj.questionId;
+        if (question.choices) {
+            const choicesIds = questionIdObj.choicesIds;
+            question.choices.forEach((choice) => { choice.id = choicesIds[choice.id]; });
+        }
+        if (question.enableWhen) {
+            updateEnableWhenIds(question.enableWhen, questionIdMap, sectionIdMap, ruleIdMap);
+        }
         if (question.sections) {
-            updateSectionIds(question.sections, questionIdMap, sectionIdMap);
+            updateSectionIds(question.sections, questionIdMap, sectionIdMap, ruleIdMap);
         }
     });
 };
 
-const updateIds = function (surveys, idMap, questionIdMap, sectionIdMap) {
+const updateIds = function (surveys, idMap, questionIdMap, sectionIdMap, ruleIdMap) {
     surveys.forEach((survey) => {
         const surveyId = idMap[survey.id];
         if (!surveyId) {
@@ -99,10 +121,10 @@ const updateIds = function (surveys, idMap, questionIdMap, sectionIdMap) {
         survey.id = surveyId;
         const { sections, questions } = survey;
         if (sections) {
-            updateSectionIds(sections, questionIdMap, sectionIdMap);
+            updateSectionIds(sections, questionIdMap, sectionIdMap, ruleIdMap);
         }
         if (questions) {
-            updateQuestionIds(questions, questionIdMap, sectionIdMap);
+            updateQuestionIds(questions, questionIdMap, sectionIdMap, ruleIdMap);
         }
     });
 };

@@ -581,7 +581,7 @@ module.exports = class SurveyDAO extends Translatable {
                 if (options.override) {
                     return survey;
                 }
-                return this.answerRule.getSurveyAnswerRules(survey.id)
+                return this.answerRule.getSurveyAnswerRules({ surveyId: survey.id })
                     .then(answerRuleInfos => this.updateText(survey, options.language)
                             .then(() => this.surveyQuestion.listSurveyQuestions(survey.id))
                             .then((surveyQuestions) => {
