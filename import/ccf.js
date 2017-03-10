@@ -140,6 +140,7 @@ const surveysPost = function (fileData) {
             }
             pillarQuestion = {
                 questionId: activeQuestion.id,
+                type: activeQuestion.type
             };
             if (line.condition) {
                 pillarQuestion.condition = line.condition;
@@ -281,24 +282,31 @@ const importToDb = function (jsonDB) {
     const rules = ['surveyId,logic,sectionId,answerQuestionId,questionChoiceId'];
     return models.question.import(stream, options)
         .then((questionIdMap) => {
+            const sectionQuestionMap = new Map();
             const innerQuestionSectionMap = new Map();
+            let sectionId = 0;
             const sectionCsv = jsonDB.pillars.reduce((r, pillar) => {
                 let skipCountIndex = 0;
-                let sectionId = 0;
                 let parentQuestionId = null;
                 pillar.questions.forEach((question) => {
                     if (skipCountIndex) {
                         innerQuestionSectionMap.set(question.questionId, { sectionId, parentQuestionId });
                         skipCountIndex -= 1;
-                    } else if (question.skipCount) {
-                        parentQuestionId = question.questionId;
-                        skipCountIndex = question.skipCount;
+                    } else {
                         sectionId += 1;
                         const line = `${sectionId}`;
                         r.push(line);
-                        const questionChoiceId = question.skipValue;
-                        const rule = `${pillar.id},not-equals,${sectionId},${parentQuestionId},${questionChoiceId}`;
-                        rules.push(rule);
+                        sectionQuestionMap.set(question.questionId, sectionId);
+                        if (question.skipCount) {
+                            parentQuestionId = question.questionId;
+                            skipCountIndex = question.skipCount;
+                            sectionId += 1;
+                            const line = `${sectionId}`;
+                            r.push(line);
+                            const questionChoiceId = question.skipValue;
+                            const rule = `${pillar.id},not-equals,${sectionId},${parentQuestionId},${questionChoiceId}`;
+                            rules.push(rule);
+                        }
                     }
                 });
                 return r;
@@ -315,9 +323,15 @@ const importToDb = function (jsonDB) {
                         const required = 'true';
                         pillar.questions.forEach((question) => {
                             const questionId = question.questionId;
+                            let sectionId = '';
+                            let parentQuestionId = '';
                             const info = innerQuestionSectionMap.get(questionId);
-                            const sectionId = (info && info.sectionId) || '';
-                            const parentQuestionId = (info && info.parentQuestionId) || '';
+                            if (info) {
+                                sectionId = info.sectionId;
+                                parentQuestionId = info.parentQuestionId;
+                            } else {
+                                sectionId = sectionQuestionMap.get(questionId);
+                            }
                             const line = `${id},${name},${description},${isBHI},${maxScore},${parentQuestionId},${sectionId},${questionId},${required}`;
                             r.push(line);
                             name = '';
