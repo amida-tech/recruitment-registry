@@ -187,19 +187,6 @@ class Generator {
         };
     }
 
-    newResearchSiteWithoutStreet2(zip) {
-        this.researchSiteIndex += 1;
-        const index = this.researchSiteIndex;
-        return {
-            name: `name_${index}`,
-            url: `server_${index}@example.com`,
-            street: `street_${index}`,
-            city: `city_${index}`,
-            state: this.newState(index),
-            zip,
-        };
-    }
-
     newZipCodeApiObject(zip) {
         this.zipCodeApiIndex += 1;
         const index = this.zipCodeApiIndex;
