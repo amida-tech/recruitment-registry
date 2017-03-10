@@ -16,7 +16,7 @@ const userLastnameColumn = function (queryInterface, Sequelize) {
 module.exports = {
     up(queryInterface, Sequelize) {
         return userFirstnameColumn(queryInterface, Sequelize)
-            .then(() => userLastnameColumn);
+            .then(() => userLastnameColumn(queryInterface, Sequelize));
     },
     down(queryInterface) {
         return queryInterface.removeColumn('registry_user', 'lastname')

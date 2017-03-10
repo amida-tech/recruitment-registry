@@ -5,6 +5,8 @@ const Sequelize = require('sequelize');
 const config = require('../../config');
 const logger = require('../../logger');
 
+const dbName = process.env.RECREG_DB_NAME_OVERRIDE || config.db.name;
+
 const sequelizeOptions = {
     host: config.db.host,
     dialect: config.db.dialect,
@@ -26,7 +28,7 @@ if (config.db.schema !== 'public') {
     sequelizeOptions.searchPath = config.db.schema;
 }
 
-const sequelize = new Sequelize(config.db.name, config.db.user, config.db.pass, sequelizeOptions);
+const sequelize = new Sequelize(dbName, config.db.user, config.db.pass, sequelizeOptions);
 
 const SurveyStatus = sequelize.import('./survey-status.model');
 const User = sequelize.import('./user.model');

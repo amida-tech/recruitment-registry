@@ -20,10 +20,12 @@ const foreignKeysQuery = queryrize.readQuerySync('foreign-keys.sql');
 const checkData = function (query) {
     const options = { type: db.sequelize.QueryTypes.SELECT };
     return db.sequelize.query(query, options)
-        .then(result => dbMigrate.sequelize.query(query, options)
-                .then((resultMigrated) => {
-                    expect(resultMigrated).to.deep.equal(result);
-                }));
+        .then((result) => {
+            const p = dbMigrate.sequelize.query(query, options);
+            return p.then((resultMigrated) => {
+                expect(resultMigrated).to.deep.equal(result);
+            });
+        });
 };
 
 const checkBootstrapData = function (tableName) {
@@ -45,7 +47,7 @@ describe('migration spec', () => {
 
         it('sync migration bootstrap schema', () => dbMigrate.sequelize.sync({ force: true }));
 
-        it('apply all migrations', () => {
+        it('apply all migrations', function appluAllMigrations() {
             const queryInterface = dbMigrate.sequelize.getQueryInterface();
             const Sequelize = dbMigrate.Sequelize;
             const migrateDirectory = path.join(__dirname, '../migration/migrations');
@@ -60,7 +62,9 @@ describe('migration spec', () => {
         });
 
         let tables;
-        it('get/compare table list', () => db.sequelize.getQueryInterface().showAllTables()
+        it('get/compare table list', function getCompareTableList() {
+            const p = db.sequelize.getQueryInterface().showAllTables();
+            return p
                 .then((dbTables) => {
                     tables = dbTables;
                     tables.sort();
@@ -70,7 +74,8 @@ describe('migration spec', () => {
                 .then((dbMigrateTables) => {
                     dbMigrateTables.sort();
                     expect(dbMigrateTables).to.deep.equal(tables);
-                }));
+                });
+        });
 
         it('get/compare foreign keys', () => db.sequelize.query(foreignKeysQuery, { type: db.sequelize.QueryTypes.SELECT })
                 .then(foreignKeys => dbMigrate.sequelize.query(foreignKeysQuery, { type: db.sequelize.QueryTypes.SELECT })
@@ -88,14 +93,19 @@ describe('migration spec', () => {
             });
         };
 
-        it('compare table descriptions', () => {
-            const pxs = tables.map(tableName => db.sequelize.getQueryInterface().describeTable(tableName)
-                    .then(tableDescription => dbMigrate.sequelize.getQueryInterface().describeTable(tableName)
-                            .then((migrateTableDescription) => {
-                                normalizeDescription(tableDescription);
-                                normalizeDescription(migrateTableDescription);
-                                expect(migrateTableDescription).to.deep.equal(tableDescription);
-                            })));
+        it('compare table descriptions', function compareTableDescriptions() {
+            const pxs = tables.map(tableName => {
+                const qi = db.sequelize.getQueryInterface();
+                const qiMigrate = dbMigrate.sequelize.getQueryInterface();
+                const px = qi.describeTable(tableName);
+                return px
+                    .then(tableDescription => qiMigrate.describeTable(tableName)
+                        .then((migrateTableDescription) => {
+                            normalizeDescription(tableDescription);
+                            normalizeDescription(migrateTableDescription);
+                            expect(migrateTableDescription).to.deep.equal(tableDescription);
+                        }));
+                });
             return db.sequelize.Promise.all(pxs);
         });
 
