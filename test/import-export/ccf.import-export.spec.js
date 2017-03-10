@@ -48,7 +48,6 @@ describe('ccf import-export ccf', function ccfImportExportUnit() {
                     let expected = rawJson.Questions;
                     expected = expected.map((r) => {
                         delete r['conditional (Answer Hash Tag used with skipCount to skip next question if certain answer is picked)'];
-                        delete r['skipCount (Number of Questions Skipped if Contitional answer is picked)'];
                         return r;
                     });
                     expect(result.questions).to.deep.equal(expected);

@@ -6,11 +6,63 @@ const models = require('../models');
 const SPromise = require('../lib/promise');
 
 const cHash = 'objectId (Hash Tag Used for Questions)';
-const cConditional = 'conditional (Answer Hash Tag used with skipCount to skip next question if certain answer is picked)';
+// const cConditional = 'conditional (Answer Hash Tag used with skipCount to skip next question if certain answer is picked)';
 const cAnswerHash = 'hash (Hash Tag Used for Answers)';
 const cSkipCount = 'skipCount (Number of Questions Skipped if Contitional answer is picked)';
 
 const identifierType = 'ccf';
+
+
+const updateExportSurveyQuestion = function (r, question, index, questionIdentifierMap, answerIdentifierMap) {
+    let line = {
+        number: index.toString(),
+        question: question.text,
+        [cHash]: questionIdentifierMap[question.id].identifier,
+    };
+    const instruction = question.instruction;
+    if (instruction) {
+        line.instruction = instruction;
+    }
+    const section = question.sections && question.sections[0];
+    if (section) {
+        line[cSkipCount] = section.questions.length;
+        // line[cConditional] = answerIdentifierMap[`${question.id}:${section.enableWhen[0].answer.choice}`].identifier;
+    }
+    const meta = question.meta;
+    if (meta) {
+        const answerType = meta.ccType;
+        if (answerType) {
+            line.answerType = answerType.toString();
+        }
+    }
+    const choices = question.choices;
+    if (!choices) {
+        const { identifier, tag } = answerIdentifierMap[question.id];
+        line[cAnswerHash] = identifier;
+        line.tag = tag;
+        r.push(line);
+    } else {
+        const toggleQuestion = choices.find(({ type }) => (type === 'bool-sole'));
+        choices.forEach((choice) => {
+            line.answer = choice.text;
+            const { identifier, tag } = answerIdentifierMap[`${question.id}:${choice.id}`];
+            line[cAnswerHash] = identifier;
+            line.tag = tag;
+            if (toggleQuestion) {
+                line.toggle = (choice.type === 'bool-sole' ? 'checkalloff' : 'checkthis');
+            }
+            r.push(line);
+            line = {};
+        });
+    }
+    index += 1;
+    if (section) {
+        section.questions.forEach((question) => {
+            index = updateExportSurveyQuestion(r, question, index, questionIdentifierMap, answerIdentifierMap);
+        });
+    }
+    return index;
+};
 
 const exportSurveys = function () {
     return models.survey.listSurveys({ scope: 'id-only' })
@@ -27,53 +79,12 @@ const exportSurveys = function () {
                         .then(answerIdentifierMap => ({ surveys, questionIdentifierMap, answerIdentifierMap })));
         })
         .then(({ surveys, questionIdentifierMap, answerIdentifierMap }) => {
-            let index = 0;
+            let index = 1;
             const exportedQuestions = surveys.reduce((r, survey) => {
                 r.push({ number: survey.name });
-                const questions = models.survey.getQuestions(survey);
+                const questions = survey.questions;
                 questions.forEach((question) => {
-                    index += 1;
-                    let line = {
-                        number: index.toString(),
-                        question: question.text,
-                        [cHash]: questionIdentifierMap[question.id].identifier,
-                    };
-                    const instruction = question.instruction;
-                    if (instruction) {
-                        line.instruction = instruction;
-                    }
-                    const section = question.sections && question.sections[0];
-                    if (section) {
-                        line[cSkipCount] = section.questions.length;
-                        line[cConditional] = answerIdentifierMap[`${question.id}:${section.enableWhen[0].answer.choice}`].identifier;
-                    }
-                    const meta = question.meta;
-                    if (meta) {
-                        const answerType = meta.ccType;
-                        if (answerType) {
-                            line.answerType = answerType.toString();
-                        }
-                    }
-                    const choices = question.choices;
-                    if (!choices) {
-                        const { identifier, tag } = answerIdentifierMap[question.id];
-                        line[cAnswerHash] = identifier;
-                        line.tag = tag;
-                        r.push(line);
-                        return;
-                    }
-                    const toggleQuestion = choices.find(({ type }) => (type === 'bool-sole'));
-                    choices.forEach((choice) => {
-                        line.answer = choice.text;
-                        const { identifier, tag } = answerIdentifierMap[`${question.id}:${choice.id}`];
-                        line[cAnswerHash] = identifier;
-                        line.tag = tag;
-                        if (toggleQuestion) {
-                            line.toggle = (choice.type === 'bool-sole' ? 'checkalloff' : 'checkthis');
-                        }
-                        r.push(line);
-                        line = {};
-                    });
+                    index = updateExportSurveyQuestion(r, question, index, questionIdentifierMap, answerIdentifierMap);
                 });
                 return r;
             }, []);

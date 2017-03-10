@@ -280,28 +280,53 @@ const importToDb = function (jsonDB) {
     const stream = intoStream(csv.join('\n'));
     return models.question.import(stream, options)
         .then((idMap) => {
-            const surveysCsv = jsonDB.pillars.reduce((r, pillar) => {
-                const id = pillar.id;
-                let name = pillar.title;
-                const isBHI = pillar.isBHI;
-                const maxScore = pillar.maxScore;
-                const description = '';
-                const required = 'true';
+            const innerQuestionSectionMap = new Map();
+            const sectionCsv = jsonDB.pillars.reduce((r, pillar) => {
+                let skipCountIndex = 0;
+                let sectionId = 0;
+                let parentQuestionId = null;
                 pillar.questions.forEach((question) => {
-                    const questionId = question.questionId;
-                    const skipCount = question.skipCount || '';
-                    const skipValue = question.skipValue || '';
-                    const line = `${id},${name},${description},${isBHI},${maxScore},${questionId},${required},${skipCount},${skipValue}`;
-                    r.push(line);
-                    name = '';
+                    if (skipCountIndex) {
+                        innerQuestionSectionMap.set(question.questionId, { sectionId, parentQuestionId });
+                        skipCountIndex -= 1;
+                    } else if (question.skipCount) {
+                        parentQuestionId = question.questionId;
+                        skipCountIndex = question.skipCount;
+                        sectionId += 1;
+                        const line = `${sectionId}`;
+                        r.push(line);
+                        // const skipValue = question.skipValue;
+                    }
                 });
                 return r;
-            }, ['id,name,description,isBHI,maxScore,questionId,required,skipCount,skipValue']);
-            const stream = intoStream(surveysCsv.join('\n'));
-            const options = { meta: [{ name: 'isBHI' }, { name: 'maxScore' }], sourceType: identifierType };
-            return models.survey.import(stream, { questionIdMap: idMap }, options)
-                .then(surveys => _.values(surveys).map(survey => ({ id: survey })))
-                .then(surveys => models.assessment.createAssessment({ name: 'BHI', surveys }));
+            }, ['id']);
+            const sectionStream = intoStream(sectionCsv.join('\n'));
+            return models.section.importSections(sectionStream)
+                .then((sectionIdMap) => {
+                    const surveysCsv = jsonDB.pillars.reduce((r, pillar) => {
+                        const id = pillar.id;
+                        let name = pillar.title;
+                        const isBHI = pillar.isBHI;
+                        const maxScore = pillar.maxScore;
+                        const description = '';
+                        const required = 'true';
+                        pillar.questions.forEach((question) => {
+                            const questionId = question.questionId;
+                            const info = innerQuestionSectionMap.get(questionId);
+                            const sectionId = (info && info.sectionId) || '';
+                            const parentQuestionId = (info && info.parentQuestionId) || '';
+                            const line = `${id},${name},${description},${isBHI},${maxScore},${parentQuestionId},${sectionId},${questionId},${required}`;
+                            r.push(line);
+                            name = '';
+                        });
+                        return r;
+                    }, ['id,name,description,isBHI,maxScore,parentQuestionId,sectionId,questionId,required']);
+                    const stream = intoStream(surveysCsv.join('\n'));
+                    const options = { meta: [{ name: 'isBHI' }, { name: 'maxScore' }], sourceType: identifierType };
+                    return models.survey.import(stream, { questionIdMap: idMap, sectionIdMap }, options)
+                        .then(surveys => _.values(surveys).map(survey => ({ id: survey })))
+                        .then(surveys => models.assessment.createAssessment({ name: 'BHI', surveys }));
+                });
         });
 };
 
