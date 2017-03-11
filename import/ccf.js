@@ -140,7 +140,7 @@ const surveysPost = function (fileData) {
             }
             pillarQuestion = {
                 questionId: activeQuestion.id,
-                type: activeQuestion.type
+                type: activeQuestion.type,
             };
             if (line.condition) {
                 pillarQuestion.condition = line.condition;
@@ -294,7 +294,7 @@ const importToDb = function (jsonDB) {
                         skipCountIndex -= 1;
                     } else {
                         sectionId += 1;
-                        const line = `${sectionId}`;
+                        const line = `${sectionId},${question.type}`;
                         r.push(line);
                         sectionQuestionMap.set(question.questionId, sectionId);
                         if (question.skipCount) {
@@ -310,9 +310,10 @@ const importToDb = function (jsonDB) {
                     }
                 });
                 return r;
-            }, ['id']);
+            }, ['id,type']);
             const sectionStream = intoStream(sectionCsv.join('\n'));
-            return models.section.importSections(sectionStream)
+            const sectionImportOptions = { meta: [{ name: 'type' }] };
+            return models.section.importSections(sectionStream, sectionImportOptions)
                 .then((sectionIdMap) => {
                     const surveysCsv = jsonDB.pillars.reduce((r, pillar) => {
                         const id = pillar.id;

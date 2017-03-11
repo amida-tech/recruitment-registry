@@ -37,5 +37,6 @@ describe('section unit', function sectionUnit() {
         it(`verify section ${index}`, tests.verifySectionFn(index));
     });
 
-    it('list sections', tests.listSectionsFn());
+    it('list sections', tests.listSectionsFn(['id', 'name', 'description']));
+    it('list sections (export)', tests.listSectionsFn(null, { scope: 'export' }));
 });

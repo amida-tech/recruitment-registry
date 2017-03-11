@@ -7,6 +7,7 @@ const db = require('../db');
 const RRError = require('../../lib/rr-error');
 const SPromise = require('../../lib/promise');
 const queryrize = require('../../lib/queryrize');
+const importUtil = require('../../import/import-util');
 const Translatable = require('./translatable');
 const ExportCSVConverter = require('../../export/csv-converter.js');
 const ImportCSVConverter = require('../../import/csv-converter.js');
@@ -747,17 +748,6 @@ module.exports = class SurveyDAO extends Translatable {
             });
     }
 
-    importMetaProperties(record, metaOptions) {
-        return metaOptions.reduce((r, propertyInfo) => {
-            const name = propertyInfo.name;
-            const value = record[name];
-            if (value !== undefined && value !== null) {
-                r[name] = value;
-            }
-            return r;
-        }, {});
-    }
-
     importToDb(surveys, surveyQuestions, surveySections, surveySectionQuestions, options = {}) {
         return sequelize.transaction((transaction) => {
             const idMap = {};
@@ -848,12 +838,7 @@ module.exports = class SurveyDAO extends Translatable {
                     const id = record.id;
                     if (id !== currentId) {
                         const survey = { id, name: record.name };
-                        if (options.meta) {
-                            const meta = this.importMetaProperties(record, options.meta);
-                            if (Object.keys(meta).length > 0) {
-                                survey.meta = meta;
-                            }
-                        }
+                        importUtil.updateMeta(survey, record, options);
                         if (record.description) {
                             survey.description = record.description;
                         }

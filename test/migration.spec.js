@@ -94,7 +94,7 @@ describe('migration spec', () => {
         };
 
         it('compare table descriptions', function compareTableDescriptions() {
-            const pxs = tables.map(tableName => {
+            const pxs = tables.map((tableName) => {
                 const qi = db.sequelize.getQueryInterface();
                 const qiMigrate = dbMigrate.sequelize.getQueryInterface();
                 const px = qi.describeTable(tableName);
@@ -105,7 +105,7 @@ describe('migration spec', () => {
                             normalizeDescription(migrateTableDescription);
                             expect(migrateTableDescription).to.deep.equal(tableDescription);
                         }));
-                });
+            });
             return db.sequelize.Promise.all(pxs);
         });
 

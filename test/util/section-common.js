@@ -57,12 +57,12 @@ const SpecTests = class SectionSpecTests {
         };
     }
 
-    listSectionsFn() {
+    listSectionsFn(fields, options) {
         const hxSection = this.hxSection;
         return function () {
-            return models.section.listSections()
+            return models.section.listSections(options)
                 .then((sections) => {
-                    const expected = hxSection.listServers();
+                    const expected = hxSection.listServers(fields);
                     expect(sections).to.deep.equal(expected);
                 });
         };

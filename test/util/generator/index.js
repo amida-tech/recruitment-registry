@@ -211,13 +211,14 @@ class Generator {
         this.sectionIndex += 1;
         const index = this.sectionIndex;
         const type = index % 3;
+        const result = (index % 2) ? { meta: { type: index } } : {};
         if (type === 0) {
-            return { name: `name_${index}` };
+            Object.assign(result, { name: `name_${index}` });
+        } else if (type === 2) {
+            const description = `description_${index}`;
+            Object.assign(result, { name: `name_${index}`, description });
         }
-        if (type === 1) {
-            return {};
-        }
-        return { name: `name_${index}`, description: `description_${index}` };
+        return result;
     }
 }
 

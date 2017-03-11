@@ -82,7 +82,7 @@ const exportSurveys = function () {
             let index = 1;
             const exportedQuestions = surveys.reduce((r, survey) => {
                 r.push({ number: survey.name });
-                survey.sections.forEach(section => {
+                survey.sections.forEach((section) => {
                     const questions = section.questions;
                     questions.forEach((question) => {
                         index = updateExportSurveyQuestion(r, question, index, questionIdentifierMap, answerIdentifierMap);
