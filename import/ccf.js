@@ -299,7 +299,7 @@ const importQuestionsToDB = function ({ questions, choices }) {
     return models.question.import(stream, options);
 };
 
-const importSectionsToDB = function (jsonDB, rules) {
+const importSectionsToDB = function (jsonDB, rules, questionIdMap) {
     const sectionQuestionMap = new Map();
     const innerQuestionSectionMap = new Map();
     let sectionId = 0;
@@ -332,49 +332,52 @@ const importSectionsToDB = function (jsonDB, rules) {
     const sectionStream = intoStream(sectionCsv.join('\n'));
     const sectionImportOptions = { meta: [{ name: 'type' }] };
     return models.section.importSections(sectionStream, sectionImportOptions)
-        .then(sectionIdMap => ({ sectionIdMap, innerQuestionSectionMap, sectionQuestionMap }));
+        .then(sectionIdMap => ({ questionIdMap, sectionIdMap, innerQuestionSectionMap, sectionQuestionMap }));
+};
+
+const importSurveysToDb = function (jsonDB, rules, spec) {
+    const { questionIdMap, sectionIdMap, innerQuestionSectionMap, sectionQuestionMap } = spec;
+    const surveysCsv = jsonDB.pillars.reduce((r, pillar) => {
+        const id = pillar.id;
+        let name = pillar.title;
+        const isBHI = pillar.isBHI;
+        const maxScore = pillar.maxScore;
+        const description = '';
+        const required = 'true';
+        pillar.questions.forEach((question) => {
+            const questionId = question.questionId;
+            let sectionId = '';
+            let parentQuestionId = '';
+            const info = innerQuestionSectionMap.get(questionId);
+            if (info) {
+                sectionId = info.sectionId;
+                parentQuestionId = info.parentQuestionId;
+            } else {
+                sectionId = sectionQuestionMap.get(questionId);
+            }
+            const line = `${id},${name},${description},${isBHI},${maxScore},${parentQuestionId},${sectionId},${questionId},${required}`;
+            r.push(line);
+            name = '';
+        });
+        return r;
+    }, ['id,name,description,isBHI,maxScore,parentQuestionId,sectionId,questionId,required']);
+    const stream = intoStream(surveysCsv.join('\n'));
+    const options = { meta: [{ name: 'isBHI' }, { name: 'maxScore' }], sourceType: identifierType };
+    return models.survey.import(stream, { questionIdMap, sectionIdMap }, options)
+        .then((surveyIdMap) => {
+            const ruleStream = intoStream(rules.join('\n'));
+            return models.answerRule.importAnswerRules(ruleStream, { sectionIdMap, questionIdMap, surveyIdMap })
+                .then(() => surveyIdMap);
+        });
 };
 
 const importToDb = function (jsonDB) {
     const rules = ['surveyId,logic,sectionId,answerQuestionId,questionChoiceId'];
     return importQuestionsToDB(jsonDB)
-        .then(questionIdMap => importSectionsToDB(jsonDB, rules)
-                .then(({ sectionIdMap, innerQuestionSectionMap, sectionQuestionMap }) => {
-                    const surveysCsv = jsonDB.pillars.reduce((r, pillar) => {
-                        const id = pillar.id;
-                        let name = pillar.title;
-                        const isBHI = pillar.isBHI;
-                        const maxScore = pillar.maxScore;
-                        const description = '';
-                        const required = 'true';
-                        pillar.questions.forEach((question) => {
-                            const questionId = question.questionId;
-                            let sectionId = '';
-                            let parentQuestionId = '';
-                            const info = innerQuestionSectionMap.get(questionId);
-                            if (info) {
-                                sectionId = info.sectionId;
-                                parentQuestionId = info.parentQuestionId;
-                            } else {
-                                sectionId = sectionQuestionMap.get(questionId);
-                            }
-                            const line = `${id},${name},${description},${isBHI},${maxScore},${parentQuestionId},${sectionId},${questionId},${required}`;
-                            r.push(line);
-                            name = '';
-                        });
-                        return r;
-                    }, ['id,name,description,isBHI,maxScore,parentQuestionId,sectionId,questionId,required']);
-                    const stream = intoStream(surveysCsv.join('\n'));
-                    const options = { meta: [{ name: 'isBHI' }, { name: 'maxScore' }], sourceType: identifierType };
-                    return models.survey.import(stream, { questionIdMap, sectionIdMap }, options)
-                        .then((surveys) => {
-                            const ruleStream = intoStream(rules.join('\n'));
-                            return models.answerRule.importAnswerRules(ruleStream, { sectionIdMap, questionIdMap, surveyIdMap: surveys })
-                                .then(() => surveys);
-                        })
-                        .then(surveys => _.values(surveys).map(survey => ({ id: survey })))
-                        .then(surveys => models.assessment.createAssessment({ name: 'BHI', surveys }));
-                }));
+        .then(questionIdMap => importSectionsToDB(jsonDB, rules, questionIdMap))
+        .then(spec => importSurveysToDb(jsonDB, rules, spec))
+        .then(surveyIdMap => _.values(surveyIdMap).map(survey => ({ id: survey })))
+        .then(surveys => models.assessment.createAssessment({ name: 'BHI', surveys }));
 };
 
 const toDbFormat = function (userId, surveyId, createdAt, answersByQuestionId) {
