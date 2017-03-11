@@ -274,10 +274,17 @@ const updateMultiQuestionLines = function (lines, question, questionType, choice
     });
 };
 
+const updateSingleQuestionLine = function (lines, question, questionType) {
+    const { id, type, text, instruction = '', key, answerKey, tag } = question;
+    const questionInfo = `${questionType},"${text}","${instruction}",${type},${key}`;
+    const answerInfo = `${answerKey},${tag}`;
+    const line = `${id},${questionInfo},,,,${answerInfo}`;
+    lines.push(line);
+};
+
 const importQuestionsToDB = function ({ questions, choices }) {
     const choiceMap = new Map(choices.map(choice => [choice.id, choice]));
     const csv = questions.reduce((r, question) => {
-        const id = question.id;
         const questionType = questionTypes[question.type];
         if (questionType === 'choice' || questionType === 'choices') {
             updateChoiceLines(r, question, questionType, choiceMap);
@@ -287,11 +294,7 @@ const importQuestionsToDB = function ({ questions, choices }) {
             updateMultiQuestionLines(r, question, questionType, choiceMap);
             return r;
         }
-        const { type, text, instruction = '', key, answerKey, tag } = question;
-        const questionInfo = `${questionType},"${text}","${instruction}",${type},${key}`;
-        const answerInfo = `${answerKey},${tag}`;
-        const line = `${id},${questionInfo},,,,${answerInfo}`;
-        r.push(line);
+        updateSingleQuestionLine(r, question, questionType);
         return r;
     }, ['id,type,text,instruction,ccType,key,choiceId,choiceText,choiceType,answerKey,tag']);
     const options = { meta: [{ name: 'ccType', type: 'question' }], sourceType: identifierType };
@@ -338,11 +341,8 @@ const importSectionsToDB = function (jsonDB, rules, questionIdMap) {
 const importSurveysToDb = function (jsonDB, rules, spec) {
     const { questionIdMap, sectionIdMap, innerQuestionSectionMap, sectionQuestionMap } = spec;
     const surveysCsv = jsonDB.pillars.reduce((r, pillar) => {
-        const id = pillar.id;
-        let name = pillar.title;
-        const isBHI = pillar.isBHI;
-        const maxScore = pillar.maxScore;
-        const description = '';
+        const { id, title, isBHI, maxScore, description }= pillar;
+        let surveyInfo = `${title},${description},${isBHI},${maxScore}`;
         const required = 'true';
         pillar.questions.forEach((question) => {
             const questionId = question.questionId;
@@ -355,9 +355,9 @@ const importSurveysToDb = function (jsonDB, rules, spec) {
             } else {
                 sectionId = sectionQuestionMap.get(questionId);
             }
-            const line = `${id},${name},${description},${isBHI},${maxScore},${parentQuestionId},${sectionId},${questionId},${required}`;
+            const line = `${id},${surveyInfo},${parentQuestionId},${sectionId},${questionId},${required}`;
             r.push(line);
-            name = '';
+            surveyInfo = ',,,';
         });
         return r;
     }, ['id,name,description,isBHI,maxScore,parentQuestionId,sectionId,questionId,required']);
