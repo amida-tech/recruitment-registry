@@ -240,81 +240,106 @@ const importFiles = function (filepaths) {
         .then(() => result);
 };
 
-const importToDb = function (jsonDB) {
-    const choiceMap = new Map(jsonDB.choices.map(choice => [choice.id, [choice.value, choice.toggle, choice.answerKey, choice.tag]]));
-    const csv = jsonDB.questions.reduce((r, question) => {
+const updateChoiceLines = function (lines, question, questionType, choiceMap) {
+    const id = question.id;
+    const { type, text, instruction = '', key } = question;
+    let questionInfo = `${questionType},"${text}","${instruction}",${type},${key}`;
+    question.choices.forEach((choiceId) => {
+        const { value, toggle, answerKey, tag } = choiceMap.get(choiceId);
+        let choiceType = '';
+        if (questionType === 'choices') {
+            choiceType = 'bool';
+            if (toggle && (toggle === 'checkalloff')) {
+                choiceType = 'bool-sole';
+            }
+        }
+        const choiceInfo = `${choiceId},"${value}",${choiceType},${answerKey},${tag}`;
+        const line = `${id},${questionInfo},${choiceInfo}`;
+        lines.push(line);
+        questionInfo = ',,,,';
+    });
+};
+
+const updateMultiQuestionLines = function (lines, question, questionType, choiceMap) {
+    const id = question.id;
+    const { type, text, instruction = '', key } = question;
+    let questionInfo = `choices,"${text}","${instruction}",${type},${key}`;
+    question.choices.forEach((choiceId, index) => {
+        const { value, answerKey, tag } = choiceMap.get(choiceId);
+        const choiceType = questionType[index];
+        const choiceInfo = `${choiceId},"${value}",${choiceType},${answerKey},${tag}`;
+        const line = `${id},${questionInfo},${choiceInfo}`;
+        lines.push(line);
+        questionInfo = ',,,,';
+    });
+};
+
+const importQuestionsToDB = function ({ questions, choices }) {
+    const choiceMap = new Map(choices.map(choice => [choice.id, choice]));
+    const csv = questions.reduce((r, question) => {
         const id = question.id;
-        const type = questionTypes[question.type];
-        let questionType = type;
-        const ccType = question.type;
-        let text = question.text;
-        let instruction = question.instruction || '';
-        let key = question.key;
-        if (type === 'choice' || type === 'choices' || Array.isArray(type)) {
-            question.choices.forEach((choiceId, index) => {
-                const [choiceText, choiceToggle, answerKey, tag] = choiceMap.get(choiceId);
-                let choiceType = '';
-                if (type === 'choices') {
-                    choiceType = 'bool';
-                    if (choiceToggle && (choiceToggle === 'checkalloff')) {
-                        choiceType = 'bool-sole';
-                    }
-                }
-                if (Array.isArray(type)) {
-                    questionType = 'choices';
-                    choiceType = type[index];
-                }
-                const line = `${id},${questionType},"${text}","${instruction}",${ccType},${key},${choiceId},"${choiceText}",${choiceType},${answerKey},${tag}`;
-                r.push(line);
-                questionType = '';
-                text = '';
-                instruction = '';
-                key = '';
-            });
+        const questionType = questionTypes[question.type];
+        if (questionType === 'choice' || questionType === 'choices') {
+            updateChoiceLines(r, question, questionType, choiceMap);
             return r;
         }
-        const line = [id, questionType, text, instruction, ccType, key, '', '', '', question.answerKey, question.tag].join(',');
+        if (Array.isArray(questionType)) {
+            updateMultiQuestionLines(r, question, questionType, choiceMap);
+            return r;
+        }
+        const { type, text, instruction = '', key, answerKey, tag } = question;
+        const questionInfo = `${questionType},"${text}","${instruction}",${type},${key}`;
+        const answerInfo = `${answerKey},${tag}`;
+        const line = `${id},${questionInfo},,,,${answerInfo}`;
         r.push(line);
         return r;
     }, ['id,type,text,instruction,ccType,key,choiceId,choiceText,choiceType,answerKey,tag']);
     const options = { meta: [{ name: 'ccType', type: 'question' }], sourceType: identifierType };
     const stream = intoStream(csv.join('\n'));
+    return models.question.import(stream, options);
+};
+
+const importSectionsToDB = function (jsonDB, rules) {
+    const sectionQuestionMap = new Map();
+    const innerQuestionSectionMap = new Map();
+    let sectionId = 0;
+    const sectionCsv = jsonDB.pillars.reduce((r, pillar) => {
+        let skipCountIndex = 0;
+        let parentQuestionId = null;
+        pillar.questions.forEach((question) => {
+            if (skipCountIndex) {
+                innerQuestionSectionMap.set(question.questionId, { sectionId, parentQuestionId });
+                skipCountIndex -= 1;
+            } else {
+                sectionId += 1;
+                const line = `${sectionId},${question.type}`;
+                r.push(line);
+                sectionQuestionMap.set(question.questionId, sectionId);
+                if (question.skipCount) {
+                    parentQuestionId = question.questionId;
+                    skipCountIndex = question.skipCount;
+                    sectionId += 1;
+                    const line = `${sectionId}`;
+                    r.push(line);
+                    const questionChoiceId = question.skipValue;
+                    const rule = `${pillar.id},not-equals,${sectionId},${parentQuestionId},${questionChoiceId}`;
+                    rules.push(rule);
+                }
+            }
+        });
+        return r;
+    }, ['id,type']);
+    const sectionStream = intoStream(sectionCsv.join('\n'));
+    const sectionImportOptions = { meta: [{ name: 'type' }] };
+    return models.section.importSections(sectionStream, sectionImportOptions)
+        .then(sectionIdMap => ({ sectionIdMap, innerQuestionSectionMap, sectionQuestionMap }));
+};
+
+const importToDb = function (jsonDB) {
     const rules = ['surveyId,logic,sectionId,answerQuestionId,questionChoiceId'];
-    return models.question.import(stream, options)
-        .then((questionIdMap) => {
-            const sectionQuestionMap = new Map();
-            const innerQuestionSectionMap = new Map();
-            let sectionId = 0;
-            const sectionCsv = jsonDB.pillars.reduce((r, pillar) => {
-                let skipCountIndex = 0;
-                let parentQuestionId = null;
-                pillar.questions.forEach((question) => {
-                    if (skipCountIndex) {
-                        innerQuestionSectionMap.set(question.questionId, { sectionId, parentQuestionId });
-                        skipCountIndex -= 1;
-                    } else {
-                        sectionId += 1;
-                        const line = `${sectionId},${question.type}`;
-                        r.push(line);
-                        sectionQuestionMap.set(question.questionId, sectionId);
-                        if (question.skipCount) {
-                            parentQuestionId = question.questionId;
-                            skipCountIndex = question.skipCount;
-                            sectionId += 1;
-                            const line = `${sectionId}`;
-                            r.push(line);
-                            const questionChoiceId = question.skipValue;
-                            const rule = `${pillar.id},not-equals,${sectionId},${parentQuestionId},${questionChoiceId}`;
-                            rules.push(rule);
-                        }
-                    }
-                });
-                return r;
-            }, ['id,type']);
-            const sectionStream = intoStream(sectionCsv.join('\n'));
-            const sectionImportOptions = { meta: [{ name: 'type' }] };
-            return models.section.importSections(sectionStream, sectionImportOptions)
-                .then((sectionIdMap) => {
+    return importQuestionsToDB(jsonDB)
+        .then(questionIdMap => importSectionsToDB(jsonDB, rules)
+                .then(({ sectionIdMap, innerQuestionSectionMap, sectionQuestionMap }) => {
                     const surveysCsv = jsonDB.pillars.reduce((r, pillar) => {
                         const id = pillar.id;
                         let name = pillar.title;
@@ -349,8 +374,7 @@ const importToDb = function (jsonDB) {
                         })
                         .then(surveys => _.values(surveys).map(survey => ({ id: survey })))
                         .then(surveys => models.assessment.createAssessment({ name: 'BHI', surveys }));
-                });
-        });
+                }));
 };
 
 const toDbFormat = function (userId, surveyId, createdAt, answersByQuestionId) {
