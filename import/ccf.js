@@ -141,6 +141,7 @@ const surveysPost = function (fileData) {
             pillarQuestion = {
                 questionId: activeQuestion.id,
                 type: activeQuestion.type,
+                key: activeQuestion.key,
             };
             if (line.condition) {
                 pillarQuestion.condition = line.condition;
@@ -242,8 +243,8 @@ const importFiles = function (filepaths) {
 
 const updateChoiceLines = function (lines, question, questionType, choiceMap) {
     const id = question.id;
-    const { type, text, instruction = '', key } = question;
-    let questionInfo = `${questionType},"${text}","${instruction}",${type},${key}`;
+    const { text, instruction = '', key } = question;
+    let questionInfo = `${questionType},"${text}","${instruction}",${key}`;
     question.choices.forEach((choiceId) => {
         const { value, toggle, answerKey, tag } = choiceMap.get(choiceId);
         let choiceType = '';
@@ -256,27 +257,27 @@ const updateChoiceLines = function (lines, question, questionType, choiceMap) {
         const choiceInfo = `${choiceId},"${value}",${choiceType},${answerKey},${tag}`;
         const line = `${id},${questionInfo},${choiceInfo}`;
         lines.push(line);
-        questionInfo = ',,,,';
+        questionInfo = ',,,';
     });
 };
 
 const updateMultiQuestionLines = function (lines, question, questionType, choiceMap) {
     const id = question.id;
-    const { type, text, instruction = '', key } = question;
-    let questionInfo = `choices,"${text}","${instruction}",${type},${key}`;
+    const { text, instruction = '', key } = question;
+    let questionInfo = `choices,"${text}","${instruction}",${key}`;
     question.choices.forEach((choiceId, index) => {
         const { value, answerKey, tag } = choiceMap.get(choiceId);
         const choiceType = questionType[index];
         const choiceInfo = `${choiceId},"${value}",${choiceType},${answerKey},${tag}`;
         const line = `${id},${questionInfo},${choiceInfo}`;
         lines.push(line);
-        questionInfo = ',,,,';
+        questionInfo = ',,,';
     });
 };
 
 const updateSingleQuestionLine = function (lines, question, questionType) {
-    const { id, type, text, instruction = '', key, answerKey, tag } = question;
-    const questionInfo = `${questionType},"${text}","${instruction}",${type},${key}`;
+    const { id, text, instruction = '', key, answerKey, tag } = question;
+    const questionInfo = `${questionType},"${text}","${instruction}",${key}`;
     const answerInfo = `${answerKey},${tag}`;
     const line = `${id},${questionInfo},,,,${answerInfo}`;
     lines.push(line);
@@ -296,7 +297,7 @@ const importQuestionsToDB = function ({ questions, choices }) {
         }
         updateSingleQuestionLine(r, question, questionType);
         return r;
-    }, ['id,type,text,instruction,ccType,key,choiceId,choiceText,choiceType,answerKey,tag']);
+    }, ['id,type,text,instruction,key,choiceId,choiceText,choiceType,answerKey,tag']);
     const options = { meta: [{ name: 'ccType', type: 'question' }], sourceType: identifierType };
     const stream = intoStream(csv.join('\n'));
     return models.question.import(stream, options);
@@ -313,11 +314,11 @@ const importSectionsToDB = function (jsonDB, rules, questionIdMap) {
             if (skipCountIndex) {
                 skipCountIndex -= 1;
             }
-            if (! skipCountIndex) {
+            if (!skipCountIndex) {
                 parentSectionId = '';
             }
             sectionId += 1;
-            const line = `${sectionId},${question.type}`;
+            const line = `${sectionId},${question.type},${question.key}`;
             r.push(line);
             sectionQuestionMap.set(question.questionId, { sectionId, parentSectionId });
             if (question.skipCount) {
@@ -333,9 +334,9 @@ const importSectionsToDB = function (jsonDB, rules, questionIdMap) {
             }
         });
         return r;
-    }, ['id,type']);
+    }, ['id,type,key']);
     const sectionStream = intoStream(sectionCsv.join('\n'));
-    const sectionImportOptions = { meta: [{ name: 'type' }] };
+    const sectionImportOptions = { meta: [{ name: 'type' }, { name: 'key' }] };
     return models.section.importSections(sectionStream, sectionImportOptions)
         .then(sectionIdMap => ({ questionIdMap, sectionIdMap, parentQuestionMap, sectionQuestionMap }));
 };
@@ -343,12 +344,12 @@ const importSectionsToDB = function (jsonDB, rules, questionIdMap) {
 const importSurveysToDb = function (jsonDB, rules, spec) {
     const { questionIdMap, sectionIdMap, parentQuestionMap, sectionQuestionMap } = spec;
     const surveysCsv = jsonDB.pillars.reduce((r, pillar) => {
-        const { id, title, isBHI, maxScore, description }= pillar;
+        const { id, title, isBHI, maxScore, description } = pillar;
         let surveyInfo = `${title},${description},${isBHI},${maxScore}`;
         const required = 'true';
         pillar.questions.forEach((question) => {
             const questionId = question.questionId;
-            const  { sectionId, parentSectionId } = sectionQuestionMap.get(questionId);
+            const { sectionId, parentSectionId } = sectionQuestionMap.get(questionId);
             const line = `${id},${surveyInfo},,${parentSectionId},${sectionId},${questionId},${required}`;
             r.push(line);
             const conditionSectionId = parentQuestionMap.get(questionId);

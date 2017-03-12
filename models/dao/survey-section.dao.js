@@ -6,6 +6,7 @@ const db = require('../db');
 
 const SPromise = require('../../lib/promise');
 
+const Section = db.Section;
 const SurveySection = db.SurveySection;
 const SurveySectionQuestion = db.SurveySectionQuestion;
 
@@ -72,6 +73,7 @@ module.exports = class SectionDAO {
             raw: true,
             order: 'line',
             attributes: ['id', 'sectionId', 'parentId', 'parentQuestionId'],
+            include: [{ model: Section, as: 'section', attributes: ['meta'] }],
         })
             .then((surveySections) => {
                 if (!surveySections.length) {
@@ -141,7 +143,12 @@ module.exports = class SectionDAO {
                                         delete section.parentId;
                                     }
                                     section.id = section.sectionId;
+                                    const meta = section['section.meta'];
+                                    if (meta) {
+                                        section.meta = meta;
+                                    }
                                     delete section.sectionId;
+                                    delete section['section.meta'];
                                     return r;
                                 }, []);
                                 return result;
