@@ -53,7 +53,7 @@ const answerUpdateSingle = function (line, question) {
     question.tag = line.tag;
 };
 
-const answerUpdateChoice = function (line, question, choices, pillarQuestion) {
+const answerUpdateChoice = function (line, question, choices) {
     if (!question.choices) {
         question.choices = [];
     }
@@ -65,8 +65,8 @@ const answerUpdateChoice = function (line, question, choices, pillarQuestion) {
         choice.toggle = line.toggle;
     }
     choice.answerKey = line.answerKey;
-    if (pillarQuestion.condition === choice.answerKey) {
-        pillarQuestion.skipValue = choice.id;
+    if (question.condition === choice.answerKey) {
+        question.skipValue = choice.id;
     }
     choice.tag = line.tag;
     question.choices.push(choice.id);
@@ -110,7 +110,6 @@ const surveysPost = function (fileData) {
     }
     let activePillar = null;
     let activeQuestion = null;
-    let pillarQuestion = null;
     const questions = [];
     const choices = [];
     fileData.Questions.forEach((line) => {
@@ -138,16 +137,11 @@ const surveysPost = function (fileData) {
             if (Object.prototype.hasOwnProperty.call(activeQuestion, 'type')) {
                 activeQuestion.type = parseInt(activeQuestion.type, 10);
             }
-            pillarQuestion = {
-                questionId: activeQuestion.id,
-                type: activeQuestion.type,
-                key: activeQuestion.key,
-            };
             if (line.condition) {
-                pillarQuestion.condition = line.condition;
-                pillarQuestion.skipCount = line.skipCount;
+                activeQuestion.condition = line.condition;
+                activeQuestion.skipCount = line.skipCount;
             }
-            activePillar.questions.push(pillarQuestion);
+            activePillar.questions.push(activeQuestion);
             questions.push(activeQuestion);
         }
         if (!activeQuestion) {
@@ -155,7 +149,7 @@ const surveysPost = function (fileData) {
         }
         const fnAnswer = answerUpdate[activeQuestion.type];
         if (fnAnswer) {
-            fnAnswer(line, activeQuestion, choices, pillarQuestion);
+            fnAnswer(line, activeQuestion, choices);
             return;
         }
         throw new Error(`Unexpected line.  Unsupported type: ${activeQuestion.type}`);
@@ -320,16 +314,16 @@ const importSectionsToDB = function (jsonDB, rules, questionIdMap) {
             sectionId += 1;
             const line = `${sectionId},${question.type},${question.key}`;
             r.push(line);
-            sectionQuestionMap.set(question.questionId, { sectionId, parentSectionId });
+            sectionQuestionMap.set(question.id, { sectionId, parentSectionId });
             if (question.skipCount) {
                 sectionId += 1;
                 const line = `${sectionId}`;
                 r.push(line);
-                parentQuestionMap.set(question.questionId, sectionId);
+                parentQuestionMap.set(question.id, sectionId);
                 parentSectionId = sectionId;
                 skipCountIndex = question.skipCount + 1;
                 const questionChoiceId = question.skipValue;
-                const rule = `${pillar.id},not-equals,${sectionId},${question.questionId},${questionChoiceId}`;
+                const rule = `${pillar.id},not-equals,${sectionId},${question.id},${questionChoiceId}`;
                 rules.push(rule);
             }
         });
@@ -348,7 +342,7 @@ const importSurveysToDb = function (jsonDB, rules, spec) {
         let surveyInfo = `${title},${description},${isBHI},${maxScore}`;
         const required = 'true';
         pillar.questions.forEach((question) => {
-            const questionId = question.questionId;
+            const questionId = question.id;
             const { sectionId, parentSectionId } = sectionQuestionMap.get(questionId);
             const line = `${id},${surveyInfo},,${parentSectionId},${sectionId},${questionId},${required}`;
             r.push(line);
