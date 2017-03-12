@@ -304,30 +304,32 @@ const importQuestionsToDB = function ({ questions, choices }) {
 
 const importSectionsToDB = function (jsonDB, rules, questionIdMap) {
     const sectionQuestionMap = new Map();
-    const innerQuestionSectionMap = new Map();
+    const parentQuestionMap = new Map();
     let sectionId = 0;
+    let parentSectionId;
     const sectionCsv = jsonDB.pillars.reduce((r, pillar) => {
         let skipCountIndex = 0;
-        let parentQuestionId = null;
         pillar.questions.forEach((question) => {
             if (skipCountIndex) {
-                innerQuestionSectionMap.set(question.questionId, { sectionId, parentQuestionId });
                 skipCountIndex -= 1;
-            } else {
+            }
+            if (! skipCountIndex) {
+                parentSectionId = '';
+            }
+            sectionId += 1;
+            const line = `${sectionId},${question.type}`;
+            r.push(line);
+            sectionQuestionMap.set(question.questionId, { sectionId, parentSectionId });
+            if (question.skipCount) {
                 sectionId += 1;
-                const line = `${sectionId},${question.type}`;
+                const line = `${sectionId}`;
                 r.push(line);
-                sectionQuestionMap.set(question.questionId, sectionId);
-                if (question.skipCount) {
-                    parentQuestionId = question.questionId;
-                    skipCountIndex = question.skipCount;
-                    sectionId += 1;
-                    const line = `${sectionId}`;
-                    r.push(line);
-                    const questionChoiceId = question.skipValue;
-                    const rule = `${pillar.id},not-equals,${sectionId},${parentQuestionId},${questionChoiceId}`;
-                    rules.push(rule);
-                }
+                parentQuestionMap.set(question.questionId, sectionId);
+                parentSectionId = sectionId;
+                skipCountIndex = question.skipCount + 1;
+                const questionChoiceId = question.skipValue;
+                const rule = `${pillar.id},not-equals,${sectionId},${question.questionId},${questionChoiceId}`;
+                rules.push(rule);
             }
         });
         return r;
@@ -335,32 +337,29 @@ const importSectionsToDB = function (jsonDB, rules, questionIdMap) {
     const sectionStream = intoStream(sectionCsv.join('\n'));
     const sectionImportOptions = { meta: [{ name: 'type' }] };
     return models.section.importSections(sectionStream, sectionImportOptions)
-        .then(sectionIdMap => ({ questionIdMap, sectionIdMap, innerQuestionSectionMap, sectionQuestionMap }));
+        .then(sectionIdMap => ({ questionIdMap, sectionIdMap, parentQuestionMap, sectionQuestionMap }));
 };
 
 const importSurveysToDb = function (jsonDB, rules, spec) {
-    const { questionIdMap, sectionIdMap, innerQuestionSectionMap, sectionQuestionMap } = spec;
+    const { questionIdMap, sectionIdMap, parentQuestionMap, sectionQuestionMap } = spec;
     const surveysCsv = jsonDB.pillars.reduce((r, pillar) => {
         const { id, title, isBHI, maxScore, description }= pillar;
         let surveyInfo = `${title},${description},${isBHI},${maxScore}`;
         const required = 'true';
         pillar.questions.forEach((question) => {
             const questionId = question.questionId;
-            let sectionId = '';
-            let parentQuestionId = '';
-            const info = innerQuestionSectionMap.get(questionId);
-            if (info) {
-                sectionId = info.sectionId;
-                parentQuestionId = info.parentQuestionId;
-            } else {
-                sectionId = sectionQuestionMap.get(questionId);
-            }
-            const line = `${id},${surveyInfo},${parentQuestionId},${sectionId},${questionId},${required}`;
+            const  { sectionId, parentSectionId } = sectionQuestionMap.get(questionId);
+            const line = `${id},${surveyInfo},,${parentSectionId},${sectionId},${questionId},${required}`;
             r.push(line);
+            const conditionSectionId = parentQuestionMap.get(questionId);
+            if (conditionSectionId) {
+                const line = `${id},${surveyInfo},${questionId},,${conditionSectionId},,`;
+                r.push(line);
+            }
             surveyInfo = ',,,';
         });
         return r;
-    }, ['id,name,description,isBHI,maxScore,parentQuestionId,sectionId,questionId,required']);
+    }, ['id,name,description,isBHI,maxScore,parentQuestionId,parentSectionId,sectionId,questionId,required']);
     const stream = intoStream(surveysCsv.join('\n'));
     const options = { meta: [{ name: 'isBHI' }, { name: 'maxScore' }], sourceType: identifierType };
     return models.survey.import(stream, { questionIdMap, sectionIdMap }, options)

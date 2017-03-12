@@ -25,7 +25,7 @@ const updateExportSurveyQuestion = function (r, question, index, questionIdentif
     }
     const section = question.sections && question.sections[0];
     if (section) {
-        line[cSkipCount] = section.questions.length;
+        line[cSkipCount] = section.sections.length;
         line[cConditional] = answerIdentifierMap[`${question.id}:${section.enableWhen[0].answer.choice}`].identifier;
     }
     const meta = question.meta;
@@ -57,8 +57,10 @@ const updateExportSurveyQuestion = function (r, question, index, questionIdentif
     }
     index += 1;
     if (section) {
-        section.questions.forEach((question) => {
-            index = updateExportSurveyQuestion(r, question, index, questionIdentifierMap, answerIdentifierMap);
+        section.sections.forEach(innerSection => {
+            innerSection.questions.forEach((question) => {
+                index = updateExportSurveyQuestion(r, question, index, questionIdentifierMap, answerIdentifierMap);
+            });
         });
     }
     return index;
