@@ -2,6 +2,11 @@
 
 const _ = require('lodash');
 
+const oldAnswerChoices = [
+    'zip', 'date', 'year', 'month', 'day', 'bool-sole',
+    'integer', 'float', 'pounds', 'feet-inches', 'blood-pressure',
+];
+
 const sectionMetaColumn = function (queryInterface, Sequelize) {
     return queryInterface.addColumn('section', 'meta', {
         type: Sequelize.JSON,
@@ -18,7 +23,7 @@ module.exports = {
             })
             .then(() => {
                 const AnswerType = _.get(queryInterface, 'sequelize.models.answer_type');
-                const types = ['bool-sole'].map(type => ({ name: type }));
+                const types = oldAnswerChoices.map(type => ({ name: type }));
                 return AnswerType.destroy({ where: { $or: types } });
             });
     },

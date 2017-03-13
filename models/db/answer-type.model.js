@@ -21,13 +21,7 @@ module.exports = function (sequelize, DataTypes) {
         hooks: {
             afterSync(options) {
                 if (options.force) {
-                    const names = [
-                        'choice', 'text', 'zip',
-                        'bool',
-                        'date', 'year', 'month', 'day',
-                        'integer', 'float',
-                        'pounds', 'feet-inches', 'blood-pressure',
-                    ];
+                    const names = ['choice', 'text', 'bool'];
                     const ps = names.map(name => this.create({ name }));
                     return SPromise.all(ps);
                 }
