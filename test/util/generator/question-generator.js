@@ -10,7 +10,7 @@ const singleQuestionTypes = [
 ];
 
 const virtualQuestionTypes = [
-    'dateChoices', 'integerChoices', 'choicesMeta', 'choiceMeta',
+    'choicesMeta', 'choiceMeta',
 ];
 
 const questionTypes = ['choices', ...singleQuestionTypes, ...virtualQuestionTypes];
@@ -132,33 +132,6 @@ module.exports = class QuestionGenerator {
             return r;
         });
         question.choices = choices;
-        return question;
-    }
-
-    dateChoices() {
-        const question = this.body('choices');
-        question.choices = [{
-            text: 'year text',
-            type: 'year',
-        }, {
-            text: 'month text',
-            type: 'month',
-        }, {
-            text: 'day text',
-            type: 'day',
-        }];
-        return question;
-    }
-
-    integerChoices() {
-        const question = this.body('choices');
-        question.choices = [{
-            text: 'feet',
-            type: 'integer',
-        }, {
-            text: 'inches',
-            type: 'integer',
-        }];
         return question;
     }
 

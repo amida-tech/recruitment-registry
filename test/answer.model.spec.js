@@ -218,10 +218,12 @@ describe('answer unit', () => {
     const searchCases = [{
         surveyIdx: 10,
         qxIndices: [43, 44, 28, 45],
+        expectedCount: 3,
     },
     {
         surveyIdx: 13,
         qxIndices: [52, 53, 54, 55, 56],
+        expectedCount: 2,
     },
     ];
     const searchCountUsers = function searchCountUsers(query) {
@@ -241,7 +243,7 @@ describe('answer unit', () => {
         };
     };
 
-    searchCases.forEach(({ surveyIdx, qxIndices }) => {
+    searchCases.forEach(({ surveyIdx, qxIndices, expectedCount }) => {
         let searchAnswersOne;
         let searchAnswersTwo;
         const generateAnswers = generateAnswersFn(surveyIdx, qxIndices);
@@ -269,9 +271,9 @@ describe('answer unit', () => {
 
         it(`search survey ${surveyIdx} to find a single user`, () => searchCountFromAnswers(searchAnswersOne).then(count => expect(count).to.equal(1)));
 
-        // assumes there is a nonzero intersection in the two answer sets
+        // assumes there is a nonzero intersection in the two answer sets TODO build an independent test  for these
         it(`search survey ${surveyIdx} to find both user`, () => searchCountFromAnswers(_.intersectionWith(searchAnswersOne, searchAnswersTwo, _.isEqual))
-                .then(count => expect(count).to.equal(2)));
+                .then(count => expect(count).to.equal(expectedCount)));
 
         it(`search survey ${surveyIdx} to find no users`, () => {
             // find questions answered differently by the two users
