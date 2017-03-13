@@ -387,7 +387,7 @@ module.exports = class QuestionDAO extends Translatable {
     }
 
     import(stream, options = {}) {
-        const converter = new ImportCSVConverter();
+        const converter = new ImportCSVConverter({ checkType: false });
         return converter.streamToRecords(stream)
             .then((records) => {
                 const numRecords = records.length;
@@ -450,17 +450,10 @@ module.exports = class QuestionDAO extends Translatable {
                         return this.createQuestionTx(questionProper, transaction)
                             .then(({ id: questionId }) => {
                                 const type = options.sourceType;
-                                const identifier = question.key;
-                                if (type && identifier) {
-                                    return QuestionIdentifier.create({ type, identifier, questionId }, { transaction })
-                                        .then(() => {
-                                            if (!question.choices) {
-                                                const identifier = question.answerKey;
-                                                const tag = parseInt(question.tag, 10);
-                                                return AnswerIdentifier.create({ type, identifier, questionId, tag }, { transaction });
-                                            }
-                                            return null;
-                                        })
+                                if (type && !question.choices) {
+                                    const identifier = question.answerKey;
+                                    const tag = parseInt(question.tag, 10);
+                                    return AnswerIdentifier.create({ type, identifier, questionId, tag }, { transaction })
                                         .then(() => questionId);
                                 }
                                 return questionId;

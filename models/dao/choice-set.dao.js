@@ -1,5 +1,6 @@
 'use strict';
 
+// const _ = require('lodash');
 const db = require('../db');
 
 const RRError = require('../../lib/rr-error');
@@ -7,6 +8,9 @@ const RRError = require('../../lib/rr-error');
 const sequelize = db.sequelize;
 const ChoiceSet = db.ChoiceSet;
 const SPromise = require('../../lib/promise');
+// const ExportCSVConverter = require('../../export/csv-converter.js');
+// const ImportCSVConverter = require('../../import/csv-converter.js');
+// const importUtil = require('../../import/import-util');
 
 module.exports = class ChoiceSetDAO {
     constructor(dependencies) {
@@ -61,4 +65,55 @@ module.exports = class ChoiceSetDAO {
                 return RRError.reject('choiceSetNotFound', reference);
             });
     }
+
+    // exportChoiceSets() {
+    //    return this.listChoiceSets()
+    //        .then((choiceSets) => {
+    //            const choiceSetMap = new Map(choiceSets.map(choiceSet => [choiceSet.id, choiceSet.reference]));
+    //            return this.questionChoice.getAllChoiceSetChoices()
+    //                .then(choices => {
+    //                    choices.forEach(choice => {
+    //                        choice.reference = choiceSetMap.get(choice.choiceSetId);
+    //                        choice.choiceId = choice.id;
+    //                        choice.id = choice.choiceSetId;
+    //                        delete choice.choiceSetId;
+    //                        const converter = new ExportCSVConverter();
+    //                        return converter.dataToCSV(choices);
+    //                    });
+    //                });
+    //        });
+    // }
+
+    // importChoiceSets(stream) {
+    //    const converter = new ImportCSVConverter();
+    //    return converter.streamToRecords(stream)
+    //        .then((records) => {
+    //            if (!records.length) {
+    //                return {};
+    //            }
+    //            let id = null;
+    //            let activeChoiceSet;
+    //            const choiceSets = records.reduce((r, record) => {
+    //                if (record.id !== id) {
+    //                    id = record.id;
+    //                    const reference = record.reference;
+    //                    activeChoiceSet = {id, reference, choices: []};
+    //                    r.push(activeChoiceSet);
+    //                }
+    //                const { text, code } = record;
+    //                activeChoiceSet.choices.push({text, code});
+    //                return r;
+    //            }, []);
+    //            return db.sequelize.transaction((transaction) => {
+    //                const idMap = {};
+    //                const promises = choiceSets.map((choiceSet) => {
+    //                    const recordId = choiceSet.id;
+    //                    const record = _.omit(choiceSet, 'id');
+    //                    return this.ccreateChoiceSetTx(record, transaction)
+    //                        .then(({ id }) => { idMap[recordId] = id; });
+    //                });
+    //                return SPromise.all(promises).then(() => idMap);
+    //            });
+    //        });
+    // }
 };

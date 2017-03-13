@@ -22,7 +22,7 @@ const intoStream = require('into-stream');
 
 const expect = chai.expect;
 
-describe('survey import-export unit', function surveyImportExportUnit() {
+describe('survey import-export conditional unit', function surveyImportExportUnit() {
     const answerer = new Answerer();
     const questionGenerator = new QuestionGenerator(null, { noMeta: true });
     const surveyGenerator = new ConditionalSurveyGenerator({ questionGenerator });
@@ -126,20 +126,20 @@ describe('survey import-export unit', function surveyImportExportUnit() {
             });
     });
 
-    const verifySurveyFn = function (index) {
-        return function verifySurvey() {
-            const survey = hxSurvey.server(index);
-            const id = parseInt(idMap[survey.id], 10);
-            return models.survey.getSurvey(id)
-               .then((actual) => {
-                   surveyCommon.updateIds([survey], idMap, questionIdMap, sectionIdMap, ruleIdMap);
-                   delete survey.meta;
-                   expect(actual).to.deep.equal(survey);
-               });
-        };
-    };
+    // const verifySurveyFn = function (index) {
+    //    return function verifySurvey() {
+    //        const survey = hxSurvey.server(index);
+    //        const id = parseInt(idMap[survey.id], 10);
+    //        return models.survey.getSurvey(id)
+    //           .then((actual) => {
+    //               surveyCommon.updateIds([survey], idMap, questionIdMap, sectionIdMap, ruleIdMap);
+    //               delete survey.meta;
+    //               expect(actual).to.deep.equal(survey);
+    //           });
+    //    };
+    // };
 
-    _.range(surveyCount).forEach((index) => {
-        it(`verify survey ${index}`, verifySurveyFn(index));
-    });
+    // _.range(surveyCount).forEach((index) => {
+    //    it(`verify survey ${index}`, verifySurveyFn(index));
+    // });
 });

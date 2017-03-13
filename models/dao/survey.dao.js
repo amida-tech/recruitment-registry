@@ -797,7 +797,7 @@ module.exports = class SurveyDAO extends Translatable {
             r[pair[0]] = pair[1].questionId;
             return r;
         }, {});
-        const converter = new ImportCSVConverter();
+        const converter = new ImportCSVConverter({ checkType: false });
         return converter.streamToRecords(stream)
             .then(records => records.map((record) => {
                 const idFields = ['sectionId', 'questionId', 'parentSectionId', 'parentQuestionId'];
@@ -861,11 +861,7 @@ module.exports = class SurveyDAO extends Translatable {
                                 section.parentIndex = parentIndex;
                             }
                             if (parentQuestionId) {
-                                const questionId = questionIdMap[parentQuestionId];
-                                if (questionId === undefined) {
-                                    throw new RRError('surveyImportMissingParentQuestionId', parentQuestionId);
-                                }
-                                section.parentQuestionId = questionId;
+                                section.parentQuestionId = parentQuestionId;
                             }
                         }
                         if (record.questionId) {

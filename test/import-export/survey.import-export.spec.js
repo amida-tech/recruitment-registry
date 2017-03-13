@@ -106,20 +106,20 @@ describe('survey import-export unit', function surveyImportExportUnit() {
     });
 
     // const verifySurveyFn = function (index) {
-    //    return function verifySurvey() {
-    //        const survey = hxSurvey.server(index);
-    //        const id = parseInt(idMap[survey.id], 10);
-    //        return models.survey.getSurvey(id)
-    //            .then((actual) => {
-    //                expect(actual).to.deep.equal(survey);
-    //            });
-    //    };
+    //   return function verifySurvey() {
+    //       const survey = hxSurvey.server(index);
+    //       const id = parseInt(idMap[survey.id], 10);
+    //       return models.survey.getSurvey(id)
+    //           .then((actual) => {
+    //               expect(actual).to.deep.equal(survey);
+    //           });
+    //   };
     // };
 
 
     // const allIndices = _.range(14);
     // [11, 6, 3, 2].forEach(index => allIndices.splice(index, 1));
     // allIndices.forEach((index) => {
-    //    it(`verify survey ${index}`, verifySurveyFn(index));
+    //   it(`verify survey ${index}`, verifySurveyFn(index));
     // });
 });

@@ -7,7 +7,14 @@ const extractMeta = function (record, metaOptions) {
         const name = propertyInfo.name;
         const value = record[name];
         if (!_.isNil(value)) {
-            r[name] = value;
+            const type = propertyInfo.type;
+            if (type === 'boolean') {
+                r[name] = value.toLowerCase() === 'true';
+            } else if (type === 'integer') {
+                r[name] = parseInt(value, 10);
+            } else {
+                r[name] = value;
+            }
         }
         return r;
     }, {});

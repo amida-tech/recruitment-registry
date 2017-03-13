@@ -257,13 +257,12 @@ const updateChoiceLines = function (lines, question, questionType, choiceMap) {
 
 const updateMultiQuestionLines = function (lines, question, questionType, choiceMap) {
     const id = question.id;
-    const { text, instruction = '', key } = question;
-    let questionInfo = `choices,"${text}","${instruction}",${key}`;
     question.choices.forEach((choiceId, index) => {
         const { value, answerKey, tag } = choiceMap.get(choiceId);
         const choiceType = questionType[index];
-        const choiceInfo = `${choiceId},"${value}",${choiceType},${answerKey},${tag}`;
-        const line = `${id},${questionInfo},${choiceInfo}`;
+        let questionInfo = `${choiceType},"${value}",,`;
+        const answerInfo = `${answerKey},${tag}`;
+        const line = `${id}-${choiceId},${questionInfo},,,,${answerInfo}`;
         lines.push(line);
         questionInfo = ',,,';
     });
@@ -312,8 +311,13 @@ const importSectionsToDB = function (jsonDB, rules, questionIdMap) {
                 parentSectionId = '';
             }
             sectionId += 1;
-            const line = `${sectionId},${question.type},${question.key}`;
-            r.push(line);
+            if (question.type >= 8) {
+                const line = `${sectionId},${question.text},${question.instruction},${question.type},${question.key}`;
+                r.push(line);
+            } else {
+                const line = `${sectionId},,,${question.type},${question.key}`;
+                r.push(line);
+            }
             sectionQuestionMap.set(question.id, { sectionId, parentSectionId });
             if (question.skipCount) {
                 sectionId += 1;
@@ -323,12 +327,13 @@ const importSectionsToDB = function (jsonDB, rules, questionIdMap) {
                 parentSectionId = sectionId;
                 skipCountIndex = question.skipCount + 1;
                 const questionChoiceId = question.skipValue;
-                const rule = `${pillar.id},not-equals,${sectionId},${question.id},${questionChoiceId}`;
+                const ruleId = rules.length;
+                const rule = `${ruleId},${pillar.id},not-equals,${sectionId},${question.id},${questionChoiceId}`;
                 rules.push(rule);
             }
         });
         return r;
-    }, ['id,type,key']);
+    }, ['id,name,description,type,key']);
     const sectionStream = intoStream(sectionCsv.join('\n'));
     const sectionImportOptions = { meta: [{ name: 'type' }, { name: 'key' }] };
     return models.section.importSections(sectionStream, sectionImportOptions)
@@ -343,9 +348,17 @@ const importSurveysToDb = function (jsonDB, rules, spec) {
         const required = 'true';
         pillar.questions.forEach((question) => {
             const questionId = question.id;
-            const { sectionId, parentSectionId } = sectionQuestionMap.get(questionId);
-            const line = `${id},${surveyInfo},,${parentSectionId},${sectionId},${questionId},${required}`;
-            r.push(line);
+            const { sectionId, parentSectionId = '' } = sectionQuestionMap.get(questionId);
+            if (question.type >= 8) {
+                question.choices.forEach((choiceId) => {
+                    const multiQuestionId = `${questionId}-${choiceId}`;
+                    const line = `${id},${surveyInfo},,${parentSectionId},${sectionId},${multiQuestionId},${required}`;
+                    r.push(line);
+                });
+            } else {
+                const line = `${id},${surveyInfo},,${parentSectionId},${sectionId},${questionId},${required}`;
+                r.push(line);
+            }
             const conditionSectionId = parentQuestionMap.get(questionId);
             if (conditionSectionId) {
                 const line = `${id},${surveyInfo},${questionId},,${conditionSectionId},,`;
@@ -356,7 +369,8 @@ const importSurveysToDb = function (jsonDB, rules, spec) {
         return r;
     }, ['id,name,description,isBHI,maxScore,parentQuestionId,parentSectionId,sectionId,questionId,required']);
     const stream = intoStream(surveysCsv.join('\n'));
-    const options = { meta: [{ name: 'isBHI' }, { name: 'maxScore' }], sourceType: identifierType };
+    const meta = [{ name: 'isBHI', type: 'boolean' }, { name: 'maxScore', type: 'integer' }];
+    const options = { meta, sourceType: identifierType };
     return models.survey.import(stream, { questionIdMap, sectionIdMap }, options)
         .then((surveyIdMap) => {
             const ruleStream = intoStream(rules.join('\n'));
@@ -366,7 +380,7 @@ const importSurveysToDb = function (jsonDB, rules, spec) {
 };
 
 const importToDb = function (jsonDB) {
-    const rules = ['surveyId,logic,sectionId,answerQuestionId,questionChoiceId'];
+    const rules = ['id,surveyId,logic,sectionId,answerQuestionId,questionChoiceId'];
     return importQuestionsToDB(jsonDB)
         .then(questionIdMap => importSectionsToDB(jsonDB, rules, questionIdMap))
         .then(spec => importSurveysToDb(jsonDB, rules, spec))
@@ -409,7 +423,12 @@ const toDbFormat = function (userId, surveyId, createdAt, answersByQuestionId) {
             r.push({ userId, surveyId, createdAt, questionId, questionChoiceId });
             return r;
         }
-        const value = answer.answers[0].value;
+        let value = answer.answers[0].value;
+        if (questionType === 'month') {
+            if (value.length === 1) {
+                value = `0${value}`;
+            }
+        }
         r.push({ userId, surveyId, createdAt, questionId, value });
         return r;
     }, []);

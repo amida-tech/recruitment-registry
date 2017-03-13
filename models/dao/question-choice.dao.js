@@ -66,6 +66,20 @@ module.exports = class QuestionChoiceDAO extends Translatable {
             .then(choices => this.updateAllTexts(choices, language));
     }
 
+    getAllChoiceSetChoices(choiceSetIds, language) {
+        const options = {
+            raw: true,
+            attributes: ['id', 'type', 'choiceSetId', 'meta', 'code'],
+            order: ['choiceSetId', 'line'],
+        };
+        if (choiceSetIds) {
+            options.where = { questionId: { $in: choiceSetIds } };
+        }
+        return QuestionChoice.findAll(options)
+            .then(choices => this.deleteNullData(choices))
+            .then(choices => this.updateAllTexts(choices, language));
+    }
+
     updateMultipleChoiceTextsTx(choices, language, transaction) {
         const inputs = choices.map(({ id, text }) => ({ id, text, language }));
         return this.createMultipleTextsTx(inputs, transaction);

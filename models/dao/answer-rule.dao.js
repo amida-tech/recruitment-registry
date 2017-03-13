@@ -143,7 +143,7 @@ module.exports = class AnswerRuleDAO {
     }
 
     importAnswerRules(stream, { sectionIdMap, questionIdMap, surveyIdMap }) {
-        const converter = new ImportCSVConverter();
+        const converter = new ImportCSVConverter({ checkType: false });
         return converter.streamToRecords(stream)
             .then((records) => {
                 const ruleIdMap = new Map();
@@ -166,9 +166,17 @@ module.exports = class AnswerRuleDAO {
                     return r;
                 }, []);
                 const ruleValues = records.reduce((r, record, line) => {
-                    const { id, value, questionChoiceId } = record;
+                    const { id, value, questionChoiceId, answerQuestionId } = record;
                     if (value || questionChoiceId) {
-                        r.push({ id, value, questionChoiceId, line });
+                        const ruleValue = { id, line };
+                        if (value) {
+                            ruleValue.value = value;
+                        }
+                        if (questionChoiceId) {
+                            const choicesIds = questionIdMap[answerQuestionId].choicesIds;
+                            ruleValue.questionChoiceId = choicesIds[questionChoiceId];
+                        }
+                        r.push(ruleValue);
                     }
                     return r;
                 }, []);

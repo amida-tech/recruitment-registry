@@ -13,11 +13,32 @@ const cSkipCount = 'skipCount (Number of Questions Skipped if Contitional answer
 const identifierType = 'ccf';
 
 
-const updateExportSurveyQuestion = function (r, wrapSection, question, index, answerIdentifierMap) {
+const updateExportSurveyQuestion = function (r, wrapSection, index, answerIdentifierMap) {
+    const meta = wrapSection.meta;
+    const { type, key } = meta;
     let line = {
         number: index.toString(),
-        question: question.text,
+        answerType: type.toString(),
+        [cHash]: key,
     };
+    if (type >= 8) {
+        line.question = wrapSection.name;
+        if (wrapSection.description) {
+            line.instruction = wrapSection.description;
+        }
+        wrapSection.questions.forEach((question) => {
+            line.answer = question.text;
+            const { identifier, tag } = answerIdentifierMap[question.id];
+            line[cAnswerHash] = identifier;
+            line.tag = tag;
+            r.push(line);
+            line = {};
+        });
+        index += 1;
+        return index;
+    }
+    const question = wrapSection.questions[0];
+    line.question = question.text;
     const instruction = question.instruction;
     if (instruction) {
         line.instruction = instruction;
@@ -26,12 +47,6 @@ const updateExportSurveyQuestion = function (r, wrapSection, question, index, an
     if (section) {
         line[cSkipCount] = section.sections.length;
         line[cConditional] = answerIdentifierMap[`${question.id}:${section.enableWhen[0].answer.choice}`].identifier;
-    }
-    const meta = wrapSection.meta;
-    if (meta) {
-        const { type, key } = meta;
-        line.answerType = type.toString();
-        line[cHash] = key;
     }
     const choices = question.choices;
     if (!choices) {
@@ -56,9 +71,7 @@ const updateExportSurveyQuestion = function (r, wrapSection, question, index, an
     index += 1;
     if (section) {
         section.sections.forEach((innerSection) => {
-            innerSection.questions.forEach((question) => {
-                index = updateExportSurveyQuestion(r, innerSection, question, index, answerIdentifierMap);
-            });
+            index = updateExportSurveyQuestion(r, innerSection, index, answerIdentifierMap);
         });
     }
     return index;
@@ -83,10 +96,7 @@ const exportSurveys = function () {
             const exportedQuestions = surveys.reduce((r, survey) => {
                 r.push({ number: survey.name });
                 survey.sections.forEach((section) => {
-                    const questions = section.questions;
-                    questions.forEach((question) => {
-                        index = updateExportSurveyQuestion(r, section, question, index, answerIdentifierMap);
-                    });
+                    index = updateExportSurveyQuestion(r, section, index, answerIdentifierMap);
                 });
                 return r;
             }, []);
