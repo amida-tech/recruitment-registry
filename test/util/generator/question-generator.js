@@ -207,14 +207,6 @@ module.exports = class QuestionGenerator {
         return question;
     }
 
-    boolSoleChoices() {
-        const question = this.body('choices');
-        const choices = this.newChoices().map(choice => ({ text: choice, type: 'bool' }));
-        choices[choices.length - 1].type = 'bool-sole';
-        question.choices = choices;
-        return question;
-    }
-
     newBody(type) {
         const key = _.camelCase(type);
         return this[key] ? this[key]() : this.body(type);

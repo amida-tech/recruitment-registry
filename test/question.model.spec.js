@@ -328,18 +328,12 @@ describe('question unit', () => {
     });
     it('get question 26', tests.getQuestionFn());
 
-    it('create question 27 (choices with bool-sole)', () => {
-        const question = generator.questionGenerator.boolSoleChoices();
-        return tests.createQuestionFn(question)();
-    });
-    it('get question 27', tests.getQuestionFn());
-
     it('replace generator to multiple question generator', () => {
         const multiGenerator = new MultiQuestionGenerator(generator.questionGenerator);
         generator.questionGenerator = multiGenerator;
     });
 
-    _.range(28, 40).forEach((index) => {
+    _.range(27, 40).forEach((index) => {
         it(`create question ${index}`, tests.createQuestionFn());
         it(`get question ${index}`, tests.getQuestionFn(index));
     });

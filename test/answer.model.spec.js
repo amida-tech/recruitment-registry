@@ -157,15 +157,9 @@ describe('answer unit', () => {
     it('user 3 answers survey 5', tests.answerSurveyFn(3, 5, [20]));
     it('user 3 gets answers to survey 5', tests.getAnswersFn(3, 5));
 
-    it('create question 21 (choices with bool-sole)', () => {
-        const question = generator.questionGenerator.boolSoleChoices();
-        return questionTests.createQuestionFn(question)();
-    });
+    it('create question 21', questionTests.createQuestionFn());
     it('get question 21', questionTests.getQuestionFn());
     it(`create survey ${testQuestions.length + 1}`, createSurveyFn([21]));
-    it('replace choices type answer generator to answer with bool-sole', () => {
-        generator.updateAnswererClass(answerCommon.BoolSoleChoicesAnswerer);
-    });
     it('user 3 answers survey 6', tests.answerSurveyFn(3, 6, [21]));
     it('user 3 gets answers to survey 6', tests.getAnswersFn(3, 6));
 

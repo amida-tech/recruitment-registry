@@ -23,7 +23,7 @@ module.exports = function (sequelize, DataTypes) {
                 if (options.force) {
                     const names = [
                         'choice', 'text', 'zip',
-                        'bool', 'bool-sole',
+                        'bool',
                         'date', 'year', 'month', 'day',
                         'integer', 'float',
                         'pounds', 'feet-inches', 'blood-pressure',

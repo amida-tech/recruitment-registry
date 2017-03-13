@@ -3649,7 +3649,7 @@
         },
         "choiceType": {
             "type": "string",
-            "enum": ["bool", "bool-sole", "text", "year", "month", "day", "integer", "float", "date", "pounds", "zip", "feet-inches", "blood-pressure"]
+            "enum": ["bool", "text", "year", "month", "day", "integer", "float", "date", "pounds", "zip", "feet-inches", "blood-pressure"]
         },
         "surveyStatus": {
             "type": "string",

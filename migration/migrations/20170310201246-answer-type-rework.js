@@ -15,6 +15,11 @@ module.exports = {
             .then(() => {
                 const QuestionType = _.get(queryInterface, 'sequelize.models.question_type');
                 return QuestionType.create({ name: 'open-choice' });
+            })
+            .then(() => {
+                const AnswerType = _.get(queryInterface, 'sequelize.models.answer_type');
+                const types = ['bool-sole'].map(type => ({ name: type }));
+                return AnswerType.destroy({ where: { $or: types } });
             });
     },
     down(queryInterface) {

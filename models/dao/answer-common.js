@@ -10,7 +10,6 @@ const generateAnswerSingleFn = {
     month: value => ({ monthValue: value }),
     day: value => ({ dayValue: value }),
     bool: value => ({ boolValue: value === 'true' }),
-    'bool-sole': value => ({ boolValue: value === 'true' }),
     pounds: value => ({ numberValue: parseInt(value, 10) }),
     integer: value => ({ integerValue: parseInt(value, 10) }),
     float: value => ({ integerValue: parseFloat(value) }),

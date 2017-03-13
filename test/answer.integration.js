@@ -98,15 +98,10 @@ describe('answer integration', () => {
     it('logout as  user 3', shared.logoutFn(store));
 
     it('login as super', shared.loginFn(store, config.superUser));
-    it('create question 21 (choices with bool-sole)', (done) => {
-        const question = generator.questionGenerator.boolSoleChoices();
-        return questionTests.createQuestionFn(question)(done);
-    });
-    it('get question 21', questionTests.getQuestionFn());
+
+    it('create question 21', questionTests.createQuestionFn());
+    it('get question 21', questionTests.getQuestionFn(21));
     it(`create survey ${testQuestions.length + 1}`, shared.createSurveyFn(store, hxSurvey, hxQuestion, [21]));
-    it('replace choices type answer generator to answer with bool-sole', () => {
-        generator.updateAnswererClass(answerCommon.BoolSoleChoicesAnswerer);
-    });
     it('logout as super', shared.logoutFn(store));
     it('login as user 3', shared.loginIndexFn(store, hxUser, 3));
 

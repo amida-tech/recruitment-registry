@@ -129,13 +129,6 @@ const AllChoicesAnswerer = class AllChoicesAnswerer extends Answerer {
     }
 };
 
-const BoolSoleChoicesAnswerer = class BoolSoleChoicesAnswerer extends Answerer {
-    choices(question) {
-        const choice = question.choices.find(choice => choice.type === 'bool-sole');
-        return { choices: [{ id: choice.id, boolValue: true }] };
-    }
-};
-
 const SpecTests = class AnswerSpecTests {
     constructor(generator, hxUser, hxSurvey, hxQuestion) {
         this.generator = generator;
@@ -302,5 +295,4 @@ module.exports = {
     SpecTests,
     IntegrationTests,
     AllChoicesAnswerer,
-    BoolSoleChoicesAnswerer,
 };
