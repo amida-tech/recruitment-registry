@@ -55,14 +55,14 @@ const updateExportSurveyQuestion = function (r, wrapSection, index, answerIdenti
         line.tag = tag;
         r.push(line);
     } else {
-        const toggleQuestion = choices.find(({ type }) => (type === 'bool-sole'));
         choices.forEach((choice) => {
             line.answer = choice.text;
             const { identifier, tag } = answerIdentifierMap[`${question.id}:${choice.id}`];
             line[cAnswerHash] = identifier;
             line.tag = tag;
-            if (toggleQuestion) {
-                line.toggle = (choice.type === 'bool-sole' ? 'checkalloff' : 'checkthis');
+            const meta = choice.meta;
+            if (meta && meta.toggle) {
+                line.toggle = meta.toggle;
             }
             r.push(line);
             line = {};

@@ -240,15 +240,9 @@ const updateChoiceLines = function (lines, question, questionType, choiceMap) {
     const { text, instruction = '', key } = question;
     let questionInfo = `${questionType},"${text}","${instruction}",${key}`;
     question.choices.forEach((choiceId) => {
-        const { value, toggle, answerKey, tag } = choiceMap.get(choiceId);
+        const { value, toggle = '', answerKey, tag } = choiceMap.get(choiceId);
         let choiceType = '';
-        if (questionType === 'choices') {
-            choiceType = 'bool';
-            if (toggle && (toggle === 'checkalloff')) {
-                choiceType = 'bool-sole';
-            }
-        }
-        const choiceInfo = `${choiceId},"${value}",${choiceType},${answerKey},${tag}`;
+        const choiceInfo = `${choiceId},"${value}",${choiceType},${answerKey},${tag},${toggle}`;
         const line = `${id},${questionInfo},${choiceInfo}`;
         lines.push(line);
         questionInfo = ',,,';
@@ -290,8 +284,8 @@ const importQuestionsToDB = function ({ questions, choices }) {
         }
         updateSingleQuestionLine(r, question, questionType);
         return r;
-    }, ['id,type,text,instruction,key,choiceId,choiceText,choiceType,answerKey,tag']);
-    const options = { meta: [{ name: 'ccType', type: 'question' }], sourceType: identifierType };
+    }, ['id,type,text,instruction,key,choiceId,choiceText,choiceType,answerKey,tag,toggle']);
+    const options = { meta: [{ name: 'ccType', type: 'question' }, {name: 'toggle', type: 'choice'}], sourceType: identifierType };
     const stream = intoStream(csv.join('\n'));
     return models.question.import(stream, options);
 };
