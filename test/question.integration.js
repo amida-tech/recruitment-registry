@@ -358,18 +358,12 @@ describe('question integration', () => {
         it('list questions (complete)', tests.listQuestionsFn('complete'));
     });
 
-    it('create question 26 (choices of all types)', (done) => {
-        const question = generator.questionGenerator.allChoices();
-        return tests.createQuestionFn(question)(done);
-    });
-    it('get question 26', tests.getQuestionFn());
-
     it('replace generator to multiple question generator', () => {
         const multiGenerator = new MultiQuestionGenerator(generator.questionGenerator);
         generator.questionGenerator = multiGenerator;
     });
 
-    _.range(27, 40).forEach((index) => {
+    _.range(26, 40).forEach((index) => {
         it(`create question ${index}`, tests.createQuestionFn());
         it(`get question ${index}`, tests.getQuestionFn(index));
     });

@@ -162,51 +162,6 @@ module.exports = class QuestionGenerator {
         return question;
     }
 
-    allChoices() {
-        const question = this.body('choices');
-        question.choices = [{
-            text: 'feet',
-            type: 'integer',
-        }, {
-            text: 'inches',
-            type: 'integer',
-        }, {
-            text: 'year text',
-            type: 'year',
-        }, {
-            text: 'month text',
-            type: 'month',
-        }, {
-            text: 'day text',
-            type: 'day',
-        }, {
-            text: 'text text',
-            type: 'text',
-        }, {
-            text: 'bool text',
-            type: 'bool',
-        }, {
-            text: 'zip text',
-            type: 'zip',
-        }, {
-            text: 'date text',
-            type: 'date',
-        }, {
-            text: 'pounds text',
-            type: 'pounds',
-        }, {
-            text: 'zip text',
-            type: 'zip',
-        }, {
-            text: 'feet-inches text',
-            type: 'feet-inches',
-        }, {
-            text: 'blood-pressure text',
-            type: 'blood-pressure',
-        }];
-        return question;
-    }
-
     newBody(type) {
         const key = _.camelCase(type);
         return this[key] ? this[key]() : this.body(type);

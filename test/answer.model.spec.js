@@ -145,23 +145,13 @@ describe('answer unit', () => {
         });
     });
 
-    it('create question 20 (choices of all types)', () => {
-        const question = generator.questionGenerator.allChoices();
-        return questionTests.createQuestionFn(question)();
+    [0, 1].forEach((index) => {
+        it(`create question ${20 + index}`, questionTests.createQuestionFn());
+        it(`get question ${20 + index}`, questionTests.getQuestionFn());
+        it(`create survey ${testQuestions.length + 1}`, createSurveyFn([20 + index]));
+        it(`user 3 answers survey ${5 + index}`, tests.answerSurveyFn(3, 5 + index, [20 + index]));
+        it(`user 3 gets answers to survey ${5 + index}`, tests.getAnswersFn(3, 5 + index));
     });
-    it('get question 20', questionTests.getQuestionFn(20));
-    it(`create survey ${testQuestions.length}`, createSurveyFn([20]));
-    it('replace choices type answer generator to answer all choices', () => {
-        generator.updateAnswererClass(answerCommon.AllChoicesAnswerer);
-    });
-    it('user 3 answers survey 5', tests.answerSurveyFn(3, 5, [20]));
-    it('user 3 gets answers to survey 5', tests.getAnswersFn(3, 5));
-
-    it('create question 21', questionTests.createQuestionFn());
-    it('get question 21', questionTests.getQuestionFn());
-    it(`create survey ${testQuestions.length + 1}`, createSurveyFn([21]));
-    it('user 3 answers survey 6', tests.answerSurveyFn(3, 6, [21]));
-    it('user 3 gets answers to survey 6', tests.getAnswersFn(3, 6));
 
     _.range(22, 34).forEach((index) => {
         it(`create question ${index} (multi)`, () => {

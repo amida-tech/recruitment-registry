@@ -81,33 +81,19 @@ describe('answer integration', () => {
         });
     });
 
-    it('login as super', shared.loginFn(store, config.superUser));
-    it('create question 20 (choices of all types)', (done) => {
-        const question = generator.questionGenerator.allChoices();
-        return questionTests.createQuestionFn(question)(done);
+    [0, 1].forEach((index) => {
+        it('login as super', shared.loginFn(store, config.superUser));
+
+        it(`create question ${20 + index}`, questionTests.createQuestionFn());
+        it(`get question ${20 + index}`, questionTests.getQuestionFn(20 + index));
+        it(`create survey ${testQuestions.length + 1 + index}`, shared.createSurveyFn(store, hxSurvey, hxQuestion, [20 + index]));
+        it('logout as super', shared.logoutFn(store));
+        it('login as user 3', shared.loginIndexFn(store, hxUser, 3));
+
+        it(`user 3 answers survey ${5 + index}`, tests.answerSurveyFn(3, 5 + index, [20 + index]));
+        it(`user 3 gets answers to survey ${5 + index}`, tests.getAnswersFn(3, 5 + index));
+        it('logout as  user 3', shared.logoutFn(store));
     });
-    it('get question 20', questionTests.getQuestionFn(20));
-    it(`create survey ${testQuestions.length}`, shared.createSurveyFn(store, hxSurvey, hxQuestion, [20]));
-    it('replace choices type answer generator to answer all choices', () => {
-        generator.updateAnswererClass(answerCommon.AllChoicesAnswerer);
-    });
-    it('logout as super', shared.logoutFn(store));
-    it('login as user 3', shared.loginIndexFn(store, hxUser, 3));
-    it('user 3 answers survey 5', tests.answerSurveyFn(3, 5, [20]));
-    it('user 3 gets answers to survey 5', tests.getAnswersFn(3, 5));
-    it('logout as  user 3', shared.logoutFn(store));
-
-    it('login as super', shared.loginFn(store, config.superUser));
-
-    it('create question 21', questionTests.createQuestionFn());
-    it('get question 21', questionTests.getQuestionFn(21));
-    it(`create survey ${testQuestions.length + 1}`, shared.createSurveyFn(store, hxSurvey, hxQuestion, [21]));
-    it('logout as super', shared.logoutFn(store));
-    it('login as user 3', shared.loginIndexFn(store, hxUser, 3));
-
-    it('user 3 answers survey 6', tests.answerSurveyFn(3, 6, [21]));
-    it('user 3 gets answers to survey 6', tests.getAnswersFn(3, 6));
-    it('logout as  user 3', shared.logoutFn(store));
 
     it('login as super', shared.loginFn(store, config.superUser));
 

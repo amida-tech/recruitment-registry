@@ -322,18 +322,12 @@ describe('question unit', () => {
     it('verify versioning for question 6', verifyDeletedVersioningFn(6, null));
     it('verify versioning for question 14', verifyDeletedVersioningFn(14, 1));
 
-    it('create question 26 (choices of all types)', () => {
-        const question = generator.questionGenerator.allChoices();
-        return tests.createQuestionFn(question)();
-    });
-    it('get question 26', tests.getQuestionFn());
-
     it('replace generator to multiple question generator', () => {
         const multiGenerator = new MultiQuestionGenerator(generator.questionGenerator);
         generator.questionGenerator = multiGenerator;
     });
 
-    _.range(27, 40).forEach((index) => {
+    _.range(26, 40).forEach((index) => {
         it(`create question ${index}`, tests.createQuestionFn());
         it(`get question ${index}`, tests.getQuestionFn(index));
     });
