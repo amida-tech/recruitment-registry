@@ -80,7 +80,7 @@ describe('answer import-export unit', () => {
 
     it('import survey csv into db', () => {
         const stream = intoStream(surveyCsvContent);
-        return models.survey.import(stream, questionIdMap)
+        return models.survey.import(stream, { questionIdMap })
             .then((result) => { idMap = result; });
     });
 

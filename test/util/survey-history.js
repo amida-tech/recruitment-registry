@@ -35,15 +35,43 @@ module.exports = class SurveyHistory extends History {
         return this.filterListServersByStatus(result, status);
     }
 
+    makeSectionExportReady({ id, questions, sections }) {
+        const result = { id };
+        if (questions) {
+            result.questions = questions.map(({ id, required, sections: questionSections }) => {
+                const q = { id, required };
+                if (questionSections) {
+                    q.sections = questionSections.map(section => this.makeSectionExportReady(section));
+                }
+                return q;
+            });
+            return result;
+        }
+        result.sections = sections.map(section => this.makeSectionExportReady(section));
+        return result;
+    }
+
     listServersByScope(options = {}) {
         const scope = options.scope || 'summary';
         if (scope === 'summary') {
             return this.listServers(undefined, undefined, options.status);
         }
         if (scope === 'export') {
-            const result = this.listServers(['id', 'name', 'description', 'questions', 'status']);
+            const result = this.listServers(['id', 'name', 'description', 'questions', 'sections', 'status']);
             result.forEach((survey) => {
-                survey.questions = survey.questions.map(question => ({ id: question.id, required: question.required }));
+                if (!survey.sections) {
+                    const questions = survey.questions.map(({ id, required, sections: questionSections }) => {
+                        const q = { id, required };
+                        if (questionSections) {
+                            q.sections = questionSections.map(section => this.makeSectionExportReady(section));
+                        }
+                        return q;
+                    });
+                    Object.assign(survey, { questions });
+                    return;
+                }
+                const sections = survey.sections.map(section => this.makeSectionExportReady(section));
+                Object.assign(survey, { sections });
             });
             return result;
         }

@@ -1,9 +1,12 @@
 'use strict';
 
+const _ = require('lodash');
+
 const db = require('../db');
 
 const SPromise = require('../../lib/promise');
 
+const Section = db.Section;
 const SurveySection = db.SurveySection;
 const SurveySectionQuestion = db.SurveySectionQuestion;
 
@@ -51,8 +54,8 @@ module.exports = class SectionDAO {
                     const questionIds = indices.map(index => surveyQuestionIds[index]);
                     if (questionIds) {
                         const surveySectionId = sectionIds[line].id;
-                        questionIds.forEach((questionId) => {
-                            const record = { surveySectionId, questionId, line };
+                        questionIds.forEach((questionId, questionLine) => {
+                            const record = { surveySectionId, questionId, line: questionLine };
                             const promise = SurveySectionQuestion.create(record, { transaction });
                             r.push(promise);
                         });
@@ -70,6 +73,7 @@ module.exports = class SectionDAO {
             raw: true,
             order: 'line',
             attributes: ['id', 'sectionId', 'parentId', 'parentQuestionId'],
+            include: [{ model: Section, as: 'section', attributes: ['meta'] }],
         })
             .then((surveySections) => {
                 if (!surveySections.length) {
@@ -139,7 +143,12 @@ module.exports = class SectionDAO {
                                         delete section.parentId;
                                     }
                                     section.id = section.sectionId;
+                                    const meta = section['section.meta'];
+                                    if (meta) {
+                                        section.meta = meta;
+                                    }
                                     delete section.sectionId;
+                                    delete section['section.meta'];
                                     return r;
                                 }, []);
                                 return result;
@@ -155,5 +164,105 @@ module.exports = class SectionDAO {
 
     deleteSurveySectionsTx(surveyId, transaction) {
         return SurveySection.destroy({ where: { surveyId }, transaction });
+    }
+
+    updateSurveyListExport(surveyMap) {
+        return SurveySection.findAll({
+            raw: true,
+            attributes: ['id', 'surveyId', 'sectionId', 'parentId', 'parentQuestionId'],
+            order: ['surveyId', 'line'],
+        })
+            .then((surveySections) => {
+                if (surveySections.length === 0) {
+                    return null;
+                }
+                const ids = surveySections.map(({ id }) => id);
+                return this.surveySectionQuestion.groupSurveySectionQuestions(ids)
+                    .then((sectionQuestionMap) => {
+                        let currentSurveyId = null;
+                        let currentSurvey = null;
+                        const sectionMap = new Map();
+                        const questionMap = new Map();
+                        const sectionQuestionSet = new Set();
+                        surveySections.forEach((surveySection) => {
+                            if (surveySection.surveyId !== currentSurveyId) {
+                                if (currentSurvey && currentSurvey.questions) {
+                                    currentSurvey.questions = currentSurvey.questions.filter(q => !sectionQuestionSet.has(q.id));
+                                }
+                                currentSurveyId = surveySection.surveyId;
+                                currentSurvey = surveyMap.get(currentSurveyId);
+                                currentSurvey.questions.forEach((question) => {
+                                    questionMap.set(question.id, question);
+                                });
+                            }
+                            const section = { id: surveySection.sectionId };
+                            if (surveySection.parentId === null && surveySection.parentQuestionId === null) {
+                                if (!currentSurvey.sections) {
+                                    currentSurvey.sections = [section];
+                                    delete currentSurvey.questions;
+                                } else {
+                                    currentSurvey.sections.push(section);
+                                }
+                            }
+                            const questionIds = sectionQuestionMap.get(surveySection.id);
+                            if (questionIds && questionIds.length) {
+                                section.questions = questionIds.map(id => questionMap.get(id));
+                                questionIds.forEach(id => sectionQuestionSet.add(id));
+                                questionIds.forEach(id => sectionQuestionSet.add(id));
+                            } else {
+                                section.sections = [];
+                            }
+                            sectionMap.set(surveySection.id, section);
+                        });
+                        surveySections.forEach(({ id, parentId, parentQuestionId }) => {
+                            if (parentId) {
+                                const section = sectionMap.get(id);
+                                const parentSection = sectionMap.get(parentId);
+                                parentSection.sections.push(section);
+                                return;
+                            }
+                            if (parentQuestionId) {
+                                const section = sectionMap.get(id);
+                                const parentQuestion = questionMap.get(parentQuestionId);
+                                if (!parentQuestion.sections) {
+                                    parentQuestion.sections = [];
+                                }
+                                parentQuestion.sections.push(section);
+                            }
+                        });
+                        if (currentSurvey && currentSurvey.questions) {
+                            currentSurvey.questions = currentSurvey.questions.filter(q => !sectionQuestionSet.has(q.id));
+                        }
+                    });
+            });
+    }
+
+    importSurveySectionsTx(surveySections, surveySectionQuestions, transaction) {
+        let promise = SPromise.resolve([]);
+        surveySections.forEach((surveySection) => {
+            promise = promise.then((ids) => {
+                const record = _.omit(surveySection, 'parentIndex');
+                const parentIndex = surveySection.parentIndex;
+                if (parentIndex !== undefined) {
+                    record.parentId = ids[parentIndex];
+                }
+                return SurveySection.create(record, { transaction })
+                    .then(({ id }) => {
+                        ids.push(id);
+                        return ids;
+                    });
+            });
+        });
+        return promise.then((ids) => {
+            const promises = surveySectionQuestions.map((surveySectionQuestion) => {
+                const record = _.omit(surveySectionQuestion, 'parentIndex');
+                const sectionIndex = surveySectionQuestion.sectionIndex;
+                if (sectionIndex !== undefined) {
+                    record.surveySectionId = ids[sectionIndex];
+                }
+                return SurveySectionQuestion.create(record, { transaction });
+            });
+            return SPromise.all(promises);
+        });
     }
 };

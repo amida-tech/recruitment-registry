@@ -34,7 +34,7 @@ module.exports = {
             { text: 'Native American' },
             { text: 'Pacific Islander' },
             { text: 'Other' },
-            { text: 'Declined To State', type: 'bool-sole' },
+            { text: 'Declined To State' },
         ],
     }, {
         text: 'Years of Education',

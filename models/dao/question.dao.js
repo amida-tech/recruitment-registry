@@ -183,13 +183,20 @@ module.exports = class QuestionDAO extends Translatable {
             })
             .then(question => this.updateText(question, language))
             .then((question) => {
-                if (['choice', 'choices'].indexOf(question.type) < 0) {
+                if (['choice', 'open-choice', 'choices'].indexOf(question.type) < 0) {
                     return question;
                 }
                 return this.questionChoice.findChoicesPerQuestion(question.id, options.language)
                     .then((choices) => {
                         if (question.type === 'choice') {
                             choices.forEach(choice => delete choice.type);
+                        }
+                        if (question.type === 'open-choice') {
+                            choices.forEach((choice) => {
+                                if (choice.type === 'bool') {
+                                    delete choice.type;
+                                }
+                            });
                         }
                         question.choices = choices;
                         return question;
@@ -289,8 +296,13 @@ module.exports = class QuestionDAO extends Translatable {
                                         const q = map.get(choice.questionId);
                                         if (q) {
                                             delete choice.questionId;
-                                            if (q.type === 'choice') {
+                                            if (q.type === 'choice' || q.type === 'choice-ref') {
                                                 delete choice.type;
+                                            }
+                                            if (q.type === 'open-choice') {
+                                                if (choice.type === 'bool') {
+                                                    delete choice.type;
+                                                }
                                             }
                                             if (q.choices) {
                                                 q.choices.push(choice);
@@ -387,7 +399,7 @@ module.exports = class QuestionDAO extends Translatable {
     }
 
     import(stream, options = {}) {
-        const converter = new ImportCSVConverter();
+        const converter = new ImportCSVConverter({ checkType: false });
         return converter.streamToRecords(stream)
             .then((records) => {
                 const numRecords = records.length;
@@ -450,17 +462,10 @@ module.exports = class QuestionDAO extends Translatable {
                         return this.createQuestionTx(questionProper, transaction)
                             .then(({ id: questionId }) => {
                                 const type = options.sourceType;
-                                const identifier = question.key;
-                                if (type && identifier) {
-                                    return QuestionIdentifier.create({ type, identifier, questionId }, { transaction })
-                                        .then(() => {
-                                            if (!question.choices) {
-                                                const identifier = question.answerKey;
-                                                const tag = parseInt(question.tag, 10);
-                                                return AnswerIdentifier.create({ type, identifier, questionId, tag }, { transaction });
-                                            }
-                                            return null;
-                                        })
+                                if (type && !question.choices) {
+                                    const identifier = question.answerKey;
+                                    const tag = parseInt(question.tag, 10);
+                                    return AnswerIdentifier.create({ type, identifier, questionId, tag }, { transaction })
                                         .then(() => questionId);
                                 }
                                 return questionId;

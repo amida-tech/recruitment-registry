@@ -14,6 +14,9 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.DATE,
             field: 'deleted_at',
         },
+        meta: {
+            type: DataTypes.JSON,
+        },
     }, {
         freezeTableName: true,
         schema: sequelize.options.schema,
