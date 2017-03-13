@@ -3,7 +3,7 @@
 const _ = require('lodash');
 
 const singleQuestionTypes = [
-    'text', 'choice', 'bool',
+    'text', 'choice', 'open-choice', 'bool',
     'integer', 'zip', 'pounds',
     'date', 'year', 'month', 'day',
     'feet-inches', 'blood-pressure',
@@ -62,18 +62,25 @@ module.exports = class QuestionGenerator {
         return _.range(startIndex, endIndex).map(i => `choice_${i}`);
     }
 
-    choice() {
+    choice(noOneOf) {
         this.typeChoiceIndex += 1;
         const typeChoiceIndex = this.typeChoiceIndex;
         const question = this.body('choice');
         const choices = this.newChoices();
-        if ((typeChoiceIndex % 3) === 0) {
+        if (((typeChoiceIndex % 3) === 0) && !noOneOf) {
             question.oneOfChoices = choices;
         } else if ((typeChoiceIndex % 3) === 1) {
             question.choices = choices.map(choice => ({ text: choice, code: `code_${choice}` }));
         } else {
             question.choices = choices.map(choice => ({ text: choice }));
         }
+        return question;
+    }
+
+    openChoice() {
+        const question = this.choice(true);
+        question.choices.push({ text: 'free text', type: 'text' });
+        question.type = 'open-choice';
         return question;
     }
 
@@ -209,7 +216,8 @@ module.exports = class QuestionGenerator {
     }
 
     newBody(type) {
-        return this[type] ? this[type]() : this.body(type);
+        const key = _.camelCase(type);
+        return this[key] ? this[key]() : this.body(type);
     }
 
     newQuestion(type) {

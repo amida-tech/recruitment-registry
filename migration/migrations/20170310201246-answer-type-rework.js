@@ -1,5 +1,7 @@
 'use strict';
 
+const _ = require('lodash');
+
 const sectionMetaColumn = function (queryInterface, Sequelize) {
     return queryInterface.addColumn('section', 'meta', {
         type: Sequelize.JSON,
@@ -9,7 +11,11 @@ const sectionMetaColumn = function (queryInterface, Sequelize) {
 
 module.exports = {
     up(queryInterface, Sequelize) {
-        return sectionMetaColumn(queryInterface, Sequelize);
+        return sectionMetaColumn(queryInterface, Sequelize)
+            .then(() => {
+                const QuestionType = _.get(queryInterface, 'sequelize.models.question_type');
+                return QuestionType.create({ name: 'open-choice' });
+            });
     },
     down(queryInterface) {
         return queryInterface.removeColumn('section', 'meta');

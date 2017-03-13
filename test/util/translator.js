@@ -27,12 +27,7 @@ const translator = {
             result.choices.forEach((choice) => {
                 choice.text = this.translate(choice.text, language);
                 delete choice.type;
-            });
-        }
-        if (result.actions) {
-            result.actions.forEach((action) => {
-                action.text = this.translate(action.text, language);
-                delete action.type;
+                delete choice.code;
             });
         }
         return result;

@@ -183,13 +183,20 @@ module.exports = class QuestionDAO extends Translatable {
             })
             .then(question => this.updateText(question, language))
             .then((question) => {
-                if (['choice', 'choices'].indexOf(question.type) < 0) {
+                if (['choice', 'open-choice', 'choices'].indexOf(question.type) < 0) {
                     return question;
                 }
                 return this.questionChoice.findChoicesPerQuestion(question.id, options.language)
                     .then((choices) => {
                         if (question.type === 'choice') {
                             choices.forEach(choice => delete choice.type);
+                        }
+                        if (question.type === 'open-choice') {
+                            choices.forEach((choice) => {
+                                if (choice.type === 'bool') {
+                                    delete choice.type;
+                                }
+                            });
                         }
                         question.choices = choices;
                         return question;
@@ -291,6 +298,11 @@ module.exports = class QuestionDAO extends Translatable {
                                             delete choice.questionId;
                                             if (q.type === 'choice' || q.type === 'choice-ref') {
                                                 delete choice.type;
+                                            }
+                                            if (q.type === 'open-choice') {
+                                                if (choice.type === 'bool') {
+                                                    delete choice.type;
+                                                }
                                             }
                                             if (q.choices) {
                                                 q.choices.push(choice);

@@ -241,7 +241,7 @@ const updateChoiceLines = function (lines, question, questionType, choiceMap) {
     let questionInfo = `${questionType},"${text}","${instruction}",${key}`;
     question.choices.forEach((choiceId) => {
         const { value, toggle = '', answerKey, tag } = choiceMap.get(choiceId);
-        let choiceType = '';
+        const choiceType = '';
         const choiceInfo = `${choiceId},"${value}",${choiceType},${answerKey},${tag},${toggle}`;
         const line = `${id},${questionInfo},${choiceInfo}`;
         lines.push(line);
@@ -285,7 +285,7 @@ const importQuestionsToDB = function ({ questions, choices }) {
         updateSingleQuestionLine(r, question, questionType);
         return r;
     }, ['id,type,text,instruction,key,choiceId,choiceText,choiceType,answerKey,tag,toggle']);
-    const options = { meta: [{ name: 'ccType', type: 'question' }, {name: 'toggle', type: 'choice'}], sourceType: identifierType };
+    const options = { meta: [{ name: 'ccType', type: 'question' }, { name: 'toggle', type: 'choice' }], sourceType: identifierType };
     const stream = intoStream(csv.join('\n'));
     return models.question.import(stream, options);
 };
