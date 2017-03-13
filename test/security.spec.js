@@ -107,7 +107,6 @@ describe('security unit', () => {
     it('valid admin for clinician', (done) => {
         const req = {};
         const header = `Bearer ${adminJWT}`;
-        console.log('calling security.clinician');
         security.clinician(req, undefined, header, (err) => {
             if (err) {
                 return done(err);

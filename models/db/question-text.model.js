@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
+module.exports = function questionText(sequelize, DataTypes) {
     return sequelize.define('question_text', {
         questionId: {
             type: DataTypes.INTEGER,

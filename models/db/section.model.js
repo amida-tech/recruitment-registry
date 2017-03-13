@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
+module.exports = function section(sequelize, DataTypes) {
     return sequelize.define('section', {
         createdAt: {
             type: DataTypes.DATE,

@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
+module.exports = function assessment(sequelize, DataTypes) {
     return sequelize.define('assessment', {
         name: {
             type: DataTypes.TEXT,

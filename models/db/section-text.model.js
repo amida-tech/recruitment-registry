@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
+module.exports = function sectionText(sequelize, DataTypes) {
     return sequelize.define('section_text', {
         sectionId: {
             type: DataTypes.INTEGER,

@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
+module.exports = function staginBHRGap(sequelize, DataTypes) {
     return sequelize.define('staging_bhr_gap', {
         username: {
             type: DataTypes.TEXT,

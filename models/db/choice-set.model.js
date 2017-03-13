@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
+module.exports = function choiceSet(sequelize, DataTypes) {
     return sequelize.define('choice_set', {
         reference: {
             type: DataTypes.TEXT,

@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
+module.exports = function consentSection(sequelize, DataTypes) {
     return sequelize.define('consent_section', {
         consentId: {
             type: DataTypes.INTEGER,

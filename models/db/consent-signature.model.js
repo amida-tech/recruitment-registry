@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
+module.exports = function consentSignature(sequelize, DataTypes) {
     return sequelize.define('consent_signature', {
         consentDocumentId: {
             type: DataTypes.INTEGER,

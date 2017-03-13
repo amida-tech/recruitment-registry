@@ -2,7 +2,7 @@
 
 const SPromise = require('../../lib/promise');
 
-module.exports = function (sequelize, DataTypes) {
+module.exports = function surveyStatus(sequelize, DataTypes) {
     return sequelize.define('survey_status', {
         name: {
             type: DataTypes.TEXT,

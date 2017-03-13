@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
+module.exports = function profileSurvey(sequelize, DataTypes) {
     return sequelize.define('profile_survey', {
         surveyId: {
             type: DataTypes.INTEGER,

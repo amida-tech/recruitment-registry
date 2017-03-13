@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
+module.exports = function consent(sequelize, DataTypes) {
     return sequelize.define('consent', {
         name: {
             type: DataTypes.TEXT,

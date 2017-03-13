@@ -2,7 +2,7 @@
 
 const SPromise = require('../../lib/promise');
 
-module.exports = function (sequelize, DataTypes) {
+module.exports = function answerRuleLogic(sequelize, DataTypes) {
     return sequelize.define('answer_rule_logic', {
         name: {
             type: DataTypes.TEXT,

@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
+module.exports = function smtpText(sequelize, DataTypes) {
     return sequelize.define('smtp_text', {
         language: {
             type: DataTypes.TEXT,

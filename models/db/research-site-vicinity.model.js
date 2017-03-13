@@ -1,7 +1,7 @@
 'use strict';
 
-module.exports = (sequelize, DataTypes) => (
-    sequelize.define('research_site_vicinity', {
+module.exports = function researchSiteVicinity(sequelize, DataTypes) {
+    return sequelize.define('research_site_vicinity', {
         researchSiteId: {
             type: DataTypes.INTEGER,
             allowNull: false,
@@ -34,5 +34,5 @@ module.exports = (sequelize, DataTypes) => (
         deletedAt: 'deletedAt',
         paranoid: true,
         indexes: [{ unique: true, fields: ['zip', 'research_site_id'], where: { deleted_at: { $eq: null } } }],
-    })
-);
+    });
+};
