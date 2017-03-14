@@ -1,57 +1,57 @@
 'use strict';
 
-module.exports = function surveyConsent(sequelize, DataTypes) {
+module.exports = function surveyConsent(sequelize, Sequelize, schema) {
     return sequelize.define('survey_consent', {
         surveyId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             allowNull: false,
             field: 'survey_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
+                    schema,
                     tableName: 'survey',
                 },
                 key: 'id',
             },
         },
         consentId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             field: 'consent_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
+                    schema,
                     tableName: 'consent',
                 },
                 key: 'id',
             },
         },
         consentTypeId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             allowNull: false,
             field: 'consent_type_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
+                    schema,
                     tableName: 'consent_type',
                 },
                 key: 'id',
             },
         },
         action: {
-            type: DataTypes.ENUM('read', 'create'),
+            type: Sequelize.ENUM('read', 'create'),
             allowNull: false,
         },
         createdAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'created_at',
         },
         deletedAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'deleted_at',
         },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        schema,
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',

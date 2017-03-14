@@ -1,46 +1,46 @@
 'use strict';
 
-module.exports = function userSurvey(sequelize, DataTypes) {
+module.exports = function userSurvey(sequelize, Sequelize, schema) {
     return sequelize.define('user_survey', {
         userId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             allowNull: false,
             field: 'user_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
+                    schema,
                     tableName: 'registry_user',
                 },
                 key: 'id',
             },
         },
         surveyId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             allowNull: false,
             field: 'survey_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
+                    schema,
                     tableName: 'survey',
                 },
                 key: 'id',
             },
         },
         status: {
-            type: DataTypes.ENUM('new', 'in-progress', 'completed'),
+            type: Sequelize.ENUM('new', 'in-progress', 'completed'),
             allowNull: false,
         },
         createdAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'created_at',
         },
         deletedAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'deleted_at',
         },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        schema,
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',

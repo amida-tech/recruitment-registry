@@ -1,25 +1,25 @@
 'use strict';
 
-module.exports = function section(sequelize, DataTypes) {
+module.exports = function section(sequelize, Sequelize, schema) {
     return sequelize.define('section', {
         createdAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'created_at',
         },
         updatedAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'updated_at',
         },
         deletedAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'deleted_at',
         },
         meta: {
-            type: DataTypes.JSON,
+            type: Sequelize.JSON,
         },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        schema,
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
         deletedAt: 'deletedAt',

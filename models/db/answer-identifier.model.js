@@ -1,58 +1,58 @@
 'use strict';
 
-module.exports = function answerIdentifier(sequelize, DataTypes) {
+module.exports = function answerIdentifier(sequelize, Sequelize, schema) {
     return sequelize.define('answer_identifier', {
         type: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             allowNull: false,
             unique: 'identifier',
         },
         identifier: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             allowNull: false,
             unique: 'identifier',
         },
         questionId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             allowNull: false,
             field: 'question_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
+                    schema,
                     tableName: 'question',
                 },
                 key: 'id',
             },
         },
         questionChoiceId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             field: 'question_choice_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
+                    schema,
                     tableName: 'question_choice',
                 },
                 key: 'id',
             },
         },
         multipleIndex: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             field: 'multiple_index',
         },
         tag: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
         },
         createdAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'created_at',
         },
         updatedAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'updated_at',
         },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        schema,
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
         indexes: [{ fields: ['question_id', 'question_choice_id'] }],

@@ -1,48 +1,48 @@
 'use strict';
 
-module.exports = function surveyQuestion(sequelize, DataTypes) {
+module.exports = function surveyQuestion(sequelize, Sequelize, schema) {
     return sequelize.define('survey_question', {
         surveyId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             allowNull: false,
             field: 'survey_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
+                    schema,
                     tableName: 'survey',
                 },
                 key: 'id',
             },
         },
         questionId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             allowNull: false,
             field: 'question_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
+                    schema,
                     tableName: 'question',
                 },
                 key: 'id',
             },
         },
         line: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
         },
         required: {
-            type: DataTypes.BOOLEAN,
+            type: Sequelize.BOOLEAN,
         },
         createdAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'created_at',
         },
         deletedAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'deleted_at',
         },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        schema,
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',

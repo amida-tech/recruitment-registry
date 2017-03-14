@@ -2,20 +2,20 @@
 
 const SPromise = require('../../lib/promise');
 
-module.exports = function answerType(sequelize, DataTypes) {
+module.exports = function answerType(sequelize, Sequelize, schema) {
     return sequelize.define('answer_type', {
         name: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             allowNull: false,
             primaryKey: true,
         },
         createdAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'created_at',
         },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        schema,
         createdAt: 'createdAt',
         updatedAt: false,
         hooks: {

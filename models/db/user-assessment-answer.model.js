@@ -1,38 +1,38 @@
 'use strict';
 
-module.exports = function userAssessmentAnswer(sequelize, DataTypes) {
+module.exports = function userAssessmentAnswer(sequelize, Sequelize, schema) {
     return sequelize.define('user_assessment_answer', {
         answerId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             allowNull: false,
             field: 'answer_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
+                    schema,
                     tableName: 'answer',
                 },
                 key: 'id',
             },
         },
         userAssessmentId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             allowNull: false,
             field: 'user_assessment_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
+                    schema,
                     tableName: 'user_assessment',
                 },
                 key: 'id',
             },
         },
         createdAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'created_at',
         },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        schema,
         createdAt: 'createdAt',
         updatedAt: false,
     });

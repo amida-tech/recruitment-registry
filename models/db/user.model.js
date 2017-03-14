@@ -8,7 +8,7 @@ const config = require('../../config');
 const SPromise = require('../../lib/promise');
 const RRError = require('../../lib/rr-error');
 
-module.exports = function User(sequelize, DataTypes) {
+module.exports = function User(sequelize, Sequelize, schema) {
     const bccompare = SPromise.promisify(bcrypt.compare, {
         context: bcrypt,
     });
@@ -21,7 +21,7 @@ module.exports = function User(sequelize, DataTypes) {
 
     return sequelize.define('registry_user', {
         username: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             unique: {
                 msg: RRError.message('uniqueUsername'),
             },
@@ -31,59 +31,59 @@ module.exports = function User(sequelize, DataTypes) {
             allowNull: false,
         },
         email: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             validate: {
                 isEmail: true,
             },
             allowNull: false,
         },
         password: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             validate: {
                 notEmpty: true,
             },
             allowNull: false,
         },
         role: {
-            type: DataTypes.ENUM('admin', 'participant', 'clinician', 'import'),
+            type: Sequelize.ENUM('admin', 'participant', 'clinician', 'import'),
             allowNull: false,
         },
         originalUsername: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             field: 'original_username',
             allowNull: true,
         },
         resetPasswordToken: {
             unique: true,
-            type: DataTypes.STRING,
+            type: Sequelize.STRING,
             field: 'reset_password_token',
         },
         resetPasswordExpires: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'reset_password_expires',
         },
         createdAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'created_at',
             defaultValue: sequelize.literal('NOW()'),
         },
         updatedAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'updated_at',
         },
         deletedAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'deleted_at',
         },
         firstname: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
         },
         lastname: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
         },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        schema,
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
         deletedAt: 'deletedAt',

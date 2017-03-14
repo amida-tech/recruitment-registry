@@ -1,42 +1,42 @@
 'use strict';
 
-module.exports = function surveySectionQuestion(sequelize, DataTypes) {
+module.exports = function surveySectionQuestion(sequelize, Sequelize, schema) {
     return sequelize.define('survey_section_question', {
         surveySectionId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             field: 'survey_section_id',
             allowNull: false,
             references: {
                 model: {
-                    schema: sequelize.options.schema,
+                    schema,
                     tableName: 'survey_section',
                 },
                 key: 'id',
             },
         },
         questionId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             field: 'question_id',
             allowNull: false,
             references: {
                 model: {
-                    schema: sequelize.options.schema,
+                    schema,
                     tableName: 'question',
                 },
                 key: 'id',
             },
         },
         line: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             allowNull: false,
         },
         createdAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'created_at',
         },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        schema,
         createdAt: 'createdAt',
         updatedAt: false,
         indexes: [{ fields: ['survey_section_id'] }],
