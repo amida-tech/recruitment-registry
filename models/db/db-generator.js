@@ -50,6 +50,7 @@ const stagingBhrGap = require('./staging-bhr-gap.model');
 const userAudit = require('./user-audit.model');
 const researchSite = require('./research-site.model');
 const researchSiteVicinity = require('./research-site-vicinity.model');
+const registry = require('./registry.model');
 
 pg.types.setTypeParser(1184, value => value);
 
@@ -122,6 +123,7 @@ module.exports = function dbGenerator(inputSchema) {
     const UserAudit = userAudit(sequelize, Sequelize, schema);
     const ResearchSite = researchSite(sequelize, Sequelize, schema);
     const ResearchSiteVicinity = researchSiteVicinity(sequelize, Sequelize, schema);
+    const Registry = registry(sequelize, Sequelize, schema);
 
     const questionBelongsToArgument = {
         as: 'question',
@@ -272,5 +274,6 @@ module.exports = function dbGenerator(inputSchema) {
         UserAudit,
         ResearchSite,
         ResearchSiteVicinity,
+        Registry,
     };
 };
