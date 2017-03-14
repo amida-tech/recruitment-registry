@@ -5095,7 +5095,7 @@
         },
         "newResearchSite": {
             "type": "object",
-            "required": ["name", "url", "street", "street2", "city", "state", "zip"],
+            "required": ["name", "url", "street", "city", "state", "zip"],
             "properties": {
                 "name": {
                     "type": "string",
@@ -5131,7 +5131,7 @@
         },
         "researchSite": {
             "type": "object",
-            "required": ["id", "name", "url", "street", "street2", "city", "state", "zip"],
+            "required": ["id", "name", "url", "street", "city", "state", "zip"],
             "properties": {
                 "id": {
                     "type": "integer",

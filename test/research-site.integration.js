@@ -49,7 +49,7 @@ describe('research site integration', () => {
     const createResearchSiteFn = function (index, actualZipCode) {
         return (done) => {
             const zip = actualZipCode || researchZipCodes[index];
-            const researchSite = generator.newResearchSite(zip);
+            const researchSite = generator.newResearchSite(zip, true);
             rrSuperTest.post('/research-sites', researchSite, 201)
                 .expect((res) => {
                     hxResearchSite.push(researchSite, res.body);
@@ -76,7 +76,7 @@ describe('research site integration', () => {
             if ('zip' in fields) {
                 throw new Error('Zip cannot be specified');
             }
-            const patch = _.pick(generator.newResearchSite('00000'), fields);
+            const patch = _.pick(generator.newResearchSite('00000', true), fields);
             rrSuperTest.patch(`/research-sites/${id}`, patch, 204)
                 .expect(() => {
                     Object.assign(hxResearchSite.server(index), patch);

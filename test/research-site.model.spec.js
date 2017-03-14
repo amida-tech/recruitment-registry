@@ -44,7 +44,7 @@ describe('research site unit', () => {
     const createResearchSiteFn = function (index) {
         return () => {
             const zip = researchZipCodes[index];
-            const researchSite = generator.newResearchSite(zip);
+            const researchSite = generator.newResearchSite(zip, true);
             return models.researchSite.createResearchSite(researchSite)
                 .then(({ id }) => hxResearchSite.push(researchSite, { id }));
         };
@@ -67,7 +67,7 @@ describe('research site unit', () => {
             if ('zip' in fields) {
                 throw new Error('Zip cannot be specified');
             }
-            const patch = _.pick(generator.newResearchSite('00000'), fields);
+            const patch = _.pick(generator.newResearchSite('00000', true), fields);
             return models.researchSite.patchResearchSite(id, patch)
                 .then(() => Object.assign(hxResearchSite.server(index), patch));
         };
