@@ -2,19 +2,14 @@
 
 const _ = require('lodash');
 
-const db = require('../db');
-
-const sequelize = db.sequelize;
-const ProfileSurvey = db.ProfileSurvey;
-const SurveyConsent = db.SurveyConsent;
-
 module.exports = class ProfileSurveyDAO {
-    constructor(dependencies) {
+    constructor(db, dependencies) {
         Object.assign(this, dependencies);
+        this.db = db;
     }
 
     getProfileSurveyId() {
-        return ProfileSurvey.findOne({
+        return this.db.ProfileSurvey.findOne({
             raw: true,
             attributes: ['surveyId'],
         })
@@ -27,19 +22,22 @@ module.exports = class ProfileSurveyDAO {
     }
 
     createProfileSurveyIdTx(surveyId, transaction) {
+        const ProfileSurvey = this.db.ProfileSurvey;
         return ProfileSurvey.destroy({ where: {}, transaction })
             .then(() => ProfileSurvey.create({ surveyId }, { transaction }));
     }
 
     createProfileSurveyId(surveyId) {
+        const sequelize = this.db.sequelize;
         return sequelize.transaction(transaction => this.createProfileSurveyIdTx(surveyId, transaction));
     }
 
     deleteProfileSurveyId() {
-        return ProfileSurvey.destroy({ where: {} });
+        return this.db.ProfileSurvey.destroy({ where: {} });
     }
 
     createProfileSurvey(survey) {
+        const sequelize = this.db.sequelize;
         return sequelize.transaction(transaction => this.survey.createOrReplaceSurvey(survey)
                 .then(surveyId => this.createProfileSurveyIdTx(surveyId, transaction)
                         .then(() => ({ id: surveyId }))));
@@ -53,7 +51,7 @@ module.exports = class ProfileSurveyDAO {
                         .then((survey) => {
                             const surveyId = survey.id;
                             const action = 'create';
-                            return SurveyConsent.findAll({
+                            return this.db.SurveyConsent.findAll({
                                 where: { surveyId, action },
                                 raw: true,
                                 attributes: ['consentTypeId'],

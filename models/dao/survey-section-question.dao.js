@@ -1,12 +1,12 @@
 'use strict';
 
-const db = require('../db');
-
-const SurveySectionQuestion = db.SurveySectionQuestion;
-
 module.exports = class SectionDAO {
+    constructor(db) {
+        this.db = db;
+    }
+
     listSurveySectionQuestions(surveySectionIds) {
-        return SurveySectionQuestion.findAll({
+        return this.db.SurveySectionQuestion.findAll({
             where: { surveySectionId: { $in: surveySectionIds } },
             attributes: ['surveySectionId', 'questionId'],
             raw: true,

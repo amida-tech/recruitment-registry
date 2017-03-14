@@ -2,14 +2,14 @@
 
 const _ = require('lodash');
 
-const db = require('../db');
-
-const sequelize = db.sequelize;
-const Smtp = db.Smtp;
-const SmtpText = db.SmtpText;
-
 module.exports = class SMTPDAO {
+    constructor(db) {
+        this.db = db;
+    }
+
     createSmtpTx(smtp, transaction) {
+        const Smtp = this.db.Smtp;
+        const SmtpText = this.db.SmtpText;
         return Smtp.destroy({ where: { deletedAt: null }, transaction })
             .then(() => {
                 const fields = _.omit(smtp, ['subject', 'content']);
@@ -26,20 +26,25 @@ module.exports = class SMTPDAO {
     }
 
     createSmtp(smtp) {
+        const sequelize = this.db.sequelize;
         return sequelize.transaction(tx => this.createSmtpTx(smtp, tx));
     }
 
     updateSmtpTextTx({ subject, content }, language, transaction) {
+        const SmtpText = this.db.SmtpText;
         return SmtpText.destroy({ where: { language }, transaction })
             .then(() => SmtpText.create({ subject, content, language }, { transaction }));
     }
 
     updateSmtpText(smtpText, language) {
+        const sequelize = this.db.sequelize;
         language = language || 'en';
         return sequelize.transaction(tx => this.updateSmtpTextTx(smtpText, language, tx));
     }
 
     getSmtp(options = {}) {
+        const Smtp = this.db.Smtp;
+        const SmtpText = this.db.SmtpText;
         const attributes = {
             exclude: ['id', 'createdAt', 'deletedAt'],
         };
@@ -74,6 +79,6 @@ module.exports = class SMTPDAO {
     }
 
     deleteSmtp() {
-        return Smtp.destroy({ where: { deletedAt: null } });
+        return this.db.Smtp.destroy({ where: { deletedAt: null } });
     }
 };

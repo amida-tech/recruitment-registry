@@ -1,11 +1,7 @@
 'use strict';
 
-const db = require('../db');
 const SPromise = require('../../lib/promise');
 const zipUtil = require('../../lib/zip-util');
-
-const ResearchSite = db.ResearchSite;
-const ResearchSiteVicinity = db.ResearchSiteVicinity;
 
 const attributes = ['id', 'name', 'url', 'street', 'city', 'state', 'zip'];
 
@@ -21,9 +17,14 @@ const formatResearchSite = function formatResearchSite(researchSite) {
 };
 
 module.exports = class ResearchSiteDAO {
+    constructor(db) {
+        this.db = db;
+    }
+
     createResearchSite(researchSite) {
+        const ResearchSite = this.db.ResearchSite;
         formatResearchSite(researchSite);
-        return db.sequelize
+        return this.db.sequelize
                 .transaction(transaction => ResearchSite.create(researchSite, { transaction })
                 .then(({ id }) => zipUtil.findVicinity(researchSite.zip)
                         .then(vicinity => (
@@ -34,6 +35,8 @@ module.exports = class ResearchSiteDAO {
 
     listResearchSites(options = {}) {
         const zip = formatZip(options.nearZip);
+        const ResearchSite = this.db.ResearchSite;
+        const ResearchSiteVicinity = this.db.ResearchSiteVicinity;
         if (options.nearZip) {
             return ResearchSiteVicinity.findAll({
                 raw: true,
@@ -53,7 +56,8 @@ module.exports = class ResearchSiteDAO {
 
     patchResearchSite(id, researchSiteUpdate) {
         formatResearchSite(researchSiteUpdate);
-        return db.sequelize.transaction(transaction => (
+        const ResearchSite = this.db.ResearchSite;
+        return this.db.sequelize.transaction(transaction => (
                     ResearchSite.update(researchSiteUpdate, { where: { id }, transaction })
                 )
                 .then(() => {
@@ -68,7 +72,9 @@ module.exports = class ResearchSiteDAO {
     }
 
     deleteResearchSite(id) {
-        return db.sequelize.transaction(transaction => (
+        const ResearchSite = this.db.ResearchSite;
+        const ResearchSiteVicinity = this.db.ResearchSiteVicinity;
+        return this.db.sequelize.transaction(transaction => (
             ResearchSite
                 .destroy({ where: { id }, transaction })
                 .then(() => (
@@ -78,10 +84,12 @@ module.exports = class ResearchSiteDAO {
     }
 
     getResearchSite(id) {
+        const ResearchSite = this.db.ResearchSite;
         return ResearchSite.findById(id, { raw: true, attributes });
     }
 
     createResearchSiteVicinityTx(researchSiteId, vicinity, transaction) {
+        const ResearchSiteVicinity = this.db.ResearchSiteVicinity;
         return ResearchSiteVicinity.destroy({ where: { researchSiteId }, transaction })
             .then(() => {
                 if (vicinity.length) {
@@ -97,7 +105,7 @@ module.exports = class ResearchSiteDAO {
     }
 
     createResearchSiteVicinity(researchSiteId, vicinity) {
-        return db.sequelize.transaction(transaction => (
+        return this.db.sequelize.transaction(transaction => (
             this.createResearchSiteVicinityTx(researchSiteId, vicinity, transaction)
         ));
     }

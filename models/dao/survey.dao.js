@@ -2,8 +2,6 @@
 
 const _ = require('lodash');
 
-const db = require('../db');
-
 const RRError = require('../../lib/rr-error');
 const SPromise = require('../../lib/promise');
 const queryrize = require('../../lib/queryrize');
@@ -11,15 +9,6 @@ const importUtil = require('../../import/import-util');
 const Translatable = require('./translatable');
 const ExportCSVConverter = require('../../export/csv-converter.js');
 const ImportCSVConverter = require('../../import/csv-converter.js');
-
-const sequelize = db.sequelize;
-const Survey = db.Survey;
-const SurveyQuestion = db.SurveyQuestion;
-const SurveySection = db.SurveySection;
-const ProfileSurvey = db.ProfileSurvey;
-const AnswerRule = db.AnswerRule;
-const AnswerRuleValue = db.AnswerRuleValue;
-const Answer = db.Answer;
 
 const surveyPatchInfoQuery = queryrize.readQuerySync('survey-patch-info.sql');
 
@@ -54,9 +43,10 @@ const translateRuleChoices = function (ruleParent, choices) {
 };
 
 module.exports = class SurveyDAO extends Translatable {
-    constructor(dependencies) {
+    constructor(db, dependencies) {
         super('survey_text', 'surveyId', ['name', 'description'], { description: true });
         Object.assign(this, dependencies);
+        this.db = db;
     }
 
     flattenSectionsHieararchy(sections, result, parentIndex) {
@@ -133,6 +123,7 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     createRuleAnswerValue(ruleParent, transaction) {
+        const AnswerRuleValue = this.db.AnswerRuleValue;
         if (!ruleParent) {
             return null;
         }
@@ -176,6 +167,7 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     createRulesForQuestions(surveyId, questions, transaction) {
+        const AnswerRule = this.db.AnswerRule;
         const questionsWithRule = questions.filter(question => question.enableWhen);
         if (questionsWithRule.length) {
             const promises = questionsWithRule.reduce((r, question) => {
@@ -217,7 +209,7 @@ module.exports = class SurveyDAO extends Translatable {
                 section.enableWhen.forEach((rule, line) => {
                     const answerRule = { surveyId, sectionId, logic: rule.logic, line };
                     answerRule.answerQuestionId = rule.questionId;
-                    const promise = AnswerRule.create(answerRule, { transaction })
+                    const promise = this.db.AnswerRule.create(answerRule, { transaction })
                         .then(({ id }) => {
                             const code = rule.answer && rule.answer.code;
                             if ((code !== null) && (code !== undefined)) {
@@ -275,7 +267,7 @@ module.exports = class SurveyDAO extends Translatable {
             .then(questions => this.createRulesForQuestions(surveyId, questions, transaction))
             .then(questions => SPromise.all(questions.map((qx, line) => {
                 const record = { questionId: qx.id, surveyId, line, required: Boolean(qx.required) };
-                return SurveyQuestion.create(record, { transaction });
+                return this.db.SurveyQuestion.create(record, { transaction });
             }))
                     .then(() => questions));
     }
@@ -311,11 +303,11 @@ module.exports = class SurveyDAO extends Translatable {
 
     createSurveyTx(survey, transaction) {
         const fields = _.omit(survey, ['name', 'description', 'sections', 'questions', 'identifier']);
-        return Survey.create(fields, { transaction }).then(({ id }) => this.updateSurveyTx(id, survey, transaction));
+        return this.db.Survey.create(fields, { transaction }).then(({ id }) => this.updateSurveyTx(id, survey, transaction));
     }
 
     createSurvey(survey) {
-        return sequelize.transaction(transaction => this.createSurveyTx(survey, transaction));
+        return this.db.sequelize.transaction(transaction => this.createSurveyTx(survey, transaction));
     }
 
     patchSurveyTextTx({ id, name, description, sections }, language, transaction) {
@@ -329,7 +321,7 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     patchSurveyText({ id, name, description, sections }, language) {
-        return sequelize.transaction(transaction => this.patchSurveyTextTx({ id, name, description, sections }, language, transaction));
+        return this.db.sequelize.transaction(transaction => this.patchSurveyTextTx({ id, name, description, sections }, language, transaction));
     }
 
     patchSurveyInformationTx(surveyId, { name, description, sections, questions }, transaction) {
@@ -339,10 +331,10 @@ module.exports = class SurveyDAO extends Translatable {
             sections_needed: Boolean(questions && !sections),
             survey_id: surveyId,
         };
-        return sequelize.query(surveyPatchInfoQuery, {
+        return this.db.sequelize.query(surveyPatchInfoQuery, {
             transaction,
             replacements,
-            type: sequelize.QueryTypes.SELECT,
+            type: this.db.sequelize.QueryTypes.SELECT,
         })
             .then((surveys) => {
                 if (!surveys.length) {
@@ -380,7 +372,7 @@ module.exports = class SurveyDAO extends Translatable {
                                 }
                             }
                             if (!_.isEmpty(fields)) {
-                                return Survey.update(fields, { where: { id: surveyId }, transaction });
+                                return this.db.Survey.update(fields, { where: { id: surveyId }, transaction });
                             }
                         }
                         return null;
@@ -424,10 +416,10 @@ module.exports = class SurveyDAO extends Translatable {
                                 return RRError.reject('surveyChangeQuestionWhenPublished');
                             }
                         }
-                        return SurveyQuestion.destroy({ where: { surveyId }, transaction })
+                        return this.db.SurveyQuestion.destroy({ where: { surveyId }, transaction })
                             .then(() => {
                                 if (removedQuestionIds.length) {
-                                    return Answer.destroy({ where: { surveyId, questionId: { $in: removedQuestionIds } }, transaction });
+                                    return this.db.Answer.destroy({ where: { surveyId, questionId: { $in: removedQuestionIds } }, transaction });
                                 }
                                 return null;
                             })
@@ -447,11 +439,11 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     patchSurvey(id, surveyPatch) {
-        return sequelize.transaction(transaction => this.patchSurveyTx(id, surveyPatch, transaction));
+        return this.db.sequelize.transaction(transaction => this.patchSurveyTx(id, surveyPatch, transaction));
     }
 
     replaceSurveyTx(id, replacement, transaction) {
-        return Survey.findById(id)
+        return this.db.Survey.findById(id)
             .then((survey) => {
                 if (!survey) {
                     return RRError.reject('surveyNotFound');
@@ -473,15 +465,15 @@ module.exports = class SurveyDAO extends Translatable {
                         return id;
                     })
                     .then(id => survey.destroy({ transaction })
-                            .then(() => SurveyQuestion.destroy({ where: { surveyId: survey.id }, transaction }))
-                            .then(() => ProfileSurvey.destroy({ where: { surveyId: survey.id }, transaction }))
-                            .then(() => ProfileSurvey.create({ surveyId: id }, { transaction }))
+                            .then(() => this.db.SurveyQuestion.destroy({ where: { surveyId: survey.id }, transaction }))
+                            .then(() => this.db.ProfileSurvey.destroy({ where: { surveyId: survey.id }, transaction }))
+                            .then(() => this.db.ProfileSurvey.create({ surveyId: id }, { transaction }))
                             .then(() => id));
             });
     }
 
     replaceSurvey(id, replacement) {
-        return sequelize.transaction(tx => this.replaceSurveyTx(id, replacement, tx));
+        return this.db.sequelize.transaction(tx => this.replaceSurveyTx(id, replacement, tx));
     }
 
     createOrReplaceSurvey(input) {
@@ -494,6 +486,11 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     deleteSurvey(id) {
+        const sequelize = this.db.sequelize;
+        const Survey = this.db.Survey;
+        const SurveyQuestion = this.db.SurveyQuestion;
+        const SurveySection = this.db.SurveySection;
+        const ProfileSurvey = this.db.ProfileSurvey;
         return sequelize.transaction(transaction => Survey.destroy({ where: { id }, transaction })
                 .then(() => SurveyQuestion.destroy({ where: { surveyId: id }, transaction }))
                 .then(() => SurveySection.destroy({ where: { surveyId: id }, transaction }))
@@ -526,13 +523,13 @@ module.exports = class SurveyDAO extends Translatable {
             options.language = language;
         }
         if (scope === 'version-only') {
-            return Survey.findAll(options);
+            return this.db.Survey.findAll(options);
         }
         if (scope === 'id-only') {
-            return Survey.findAll(options)
+            return this.db.Survey.findAll(options)
                 .then(surveys => surveys.map(survey => survey.id));
         }
-        return Survey.findAll(options)
+        return this.db.Survey.findAll(options)
             .then(surveys => this.updateAllTexts(surveys, options.language))
             .then((surveys) => {
                 if (scope === 'export') {
@@ -544,7 +541,7 @@ module.exports = class SurveyDAO extends Translatable {
 
     updateSurveyListExport(surveys) {
         const surveyMap = new Map(surveys.map(survey => [survey.id, survey]));
-        return SurveyQuestion.findAll({
+        return this.db.SurveyQuestion.findAll({
             raw: true,
             attributes: ['surveyId', 'questionId', 'required'],
             order: 'line',
@@ -571,7 +568,7 @@ module.exports = class SurveyDAO extends Translatable {
         if (options.override) {
             opt = _.assign({}, opt, options.override);
         }
-        return Survey.findOne(opt)
+        return this.db.Survey.findOne(opt)
             .then((survey) => {
                 if (!survey) {
                     return RRError.reject('surveyNotFound');
@@ -749,13 +746,13 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     importToDb(surveys, surveyQuestions, surveySections, surveySectionQuestions, options = {}) {
-        return sequelize.transaction((transaction) => {
+        return this.db.sequelize.transaction((transaction) => {
             const idMap = {};
             const promises = surveys.map((survey) => {
                 const { id: importId, name, description, meta } = survey;
                 const record = meta ? { meta } : {};
                 const fields = _.omit(record, ['name', 'description', 'id']);
-                return Survey.create(fields, { transaction })
+                return this.db.Survey.create(fields, { transaction })
                     .then(({ id }) => this.createTextTx({ id, name, description }, transaction))
                     .then(({ id }) => { idMap[importId] = id; });
             });

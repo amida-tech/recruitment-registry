@@ -1,17 +1,17 @@
 'use strict';
 
-const db = require('../db');
-
-const Language = db.Language;
-
 module.exports = class LanguageDAO {
+    constructor(db) {
+        this.db = db;
+    }
+
     createLanguage(language) {
-        return Language.create(language)
+        return this.db.Language.create(language)
             .then(({ id }) => ({ id }));
     }
 
     listLanguages() {
-        return Language.findAll({
+        return this.db.Language.findAll({
             raw: true,
             attributes: ['code', 'name', 'nativeName'],
             order: 'code',
@@ -19,16 +19,16 @@ module.exports = class LanguageDAO {
     }
 
     patchLanguage(code, languageUpdate) {
-        return Language.update(languageUpdate, { where: { code } })
+        return this.db.Language.update(languageUpdate, { where: { code } })
             .then(() => ({}));
     }
 
     deleteLanguage(code) {
-        return Language.destroy({ where: { code } });
+        return this.db.Language.destroy({ where: { code } });
     }
 
     getLanguage(code) {
-        return Language.findOne({
+        return this.db.Language.findOne({
             where: { code },
             raw: true,
             attributes: ['code', 'name', 'nativeName'],

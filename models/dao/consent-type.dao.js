@@ -1,22 +1,17 @@
 'use strict';
 
-const db = require('../db');
-
 const RRError = require('../../lib/rr-error');
 
 const Translatable = require('./translatable');
 
-const sequelize = db.sequelize;
-const ConsentType = db.ConsentType;
-const ConsentSection = db.ConsentSection;
-const ConsentDocument = db.ConsentDocument;
-
 module.exports = class ConsentTypeDAO extends Translatable {
-    constructor() {
+    constructor(db) {
         super('consent_type_text', 'consentTypeId', ['title']);
+        this.db = db;
     }
 
     getConsentType(id, options = {}) {
+        const ConsentType = this.db.ConsentType;
         const opt = {
             raw: true,
             attributes: ['id', 'name', 'type'],
@@ -41,17 +36,23 @@ module.exports = class ConsentTypeDAO extends Translatable {
         if (options.transaction) {
             query.transaction = options.transaction;
         }
+        const ConsentType = this.db.ConsentType;
         return ConsentType.findAll(query)
             .then(types => this.updateAllTexts(types, options.language));
     }
 
     createConsentType({ name, title, type }) {
+        const ConsentType = this.db.ConsentType;
         return ConsentType.create({ name, type })
             .then(({ id }) => this.createText({ id, title }))
             .then(({ id }) => ({ id }));
     }
 
     deleteConsentType(id) {
+        const sequelize = this.db.sequelize;
+        const ConsentType = this.db.ConsentType;
+        const ConsentSection = this.db.ConsentSection;
+        const ConsentDocument = this.db.ConsentDocument;
         return ConsentSection.count({ where: { typeId: id } })
             .then((count) => {
                 if (count) {

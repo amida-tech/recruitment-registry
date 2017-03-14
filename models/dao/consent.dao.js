@@ -2,35 +2,33 @@
 
 const _ = require('lodash');
 
-const db = require('../db');
-
 const SPromise = require('../../lib/promise');
 
-const sequelize = db.sequelize;
-const Consent = db.Consent;
-const ConsentSection = db.ConsentSection;
-const ConsentSignature = db.ConsentSignature;
-
-const fillSections = function (result) {
-    return ConsentSection.findAll({
-        where: { consentId: result.id },
-        attributes: ['typeId'],
-        raw: true,
-        order: 'line',
-    })
-        .then(rawTypeIds => _.map(rawTypeIds, 'typeId'))
-        .then((typeIds) => {
-            result.sections = typeIds;
-            return result;
-        });
-};
-
 module.exports = class ConsentDAO {
-    constructor(dependencies) {
+    constructor(db, dependencies) {
         Object.assign(this, dependencies);
+        this.db = db;
+    }
+
+    fillSections(result) {
+        const ConsentSection = this.db.ConsentSection;
+        return ConsentSection.findAll({
+            where: { consentId: result.id },
+            attributes: ['typeId'],
+            raw: true,
+            order: 'line',
+        })
+            .then(rawTypeIds => _.map(rawTypeIds, 'typeId'))
+            .then((typeIds) => {
+                result.sections = typeIds;
+                return result;
+            });
     }
 
     createConsent({ name, sections }) {
+        const sequelize = this.db.sequelize;
+        const Consent = this.db.Consent;
+        const ConsentSection = this.db.ConsentSection;
         return sequelize.transaction(tx => Consent.create({ name })
                 .then(({ id }) => {
                     const consentId = id;
@@ -42,16 +40,20 @@ module.exports = class ConsentDAO {
     }
 
     getConsent(id) {
+        const Consent = this.db.Consent;
         return Consent.findById(id, { raw: true, attributes: ['id', 'name'] })
-            .then(result => fillSections(result));
+            .then(result => this.fillSections(result));
     }
 
     getConsentByName(name) {
+        const Consent = this.db.Consent;
         return Consent.findOne({ where: { name }, raw: true, attributes: ['id', 'name'] })
-            .then(result => fillSections(result));
+            .then(result => this.fillSections(result));
     }
 
     listConsents() {
+        const Consent = this.db.Consent;
+        const ConsentSection = this.db.ConsentSection;
         return Consent.findAll({ raw: true, attributes: ['id', 'name'], order: 'id' })
             .then(consents => ConsentSection.findAll({ raw: true, attributes: ['consentId', 'typeId', 'line'] })
                     .then(allSections => _.groupBy(allSections, 'consentId'))
@@ -63,11 +65,15 @@ module.exports = class ConsentDAO {
     }
 
     deleteConsent(id) {
+        const sequelize = this.db.sequelize;
+        const Consent = this.db.Consent;
+        const ConsentSection = this.db.ConsentSection;
         return sequelize.transaction(transaction => Consent.destroy({ where: { id }, transaction })
                 .then(() => ConsentSection.destroy({ where: { consentId: id }, transaction })));
     }
 
     fillConsentDocuments(id, options = {}) {
+        const ConsentSection = this.db.ConsentSection;
         const consentDocument = this.consentDocument;
         return function (result) {
             return ConsentSection.findAll({ where: { consentId: id }, raw: true, attributes: ['typeId', 'line'], order: 'line' })
@@ -87,11 +93,13 @@ module.exports = class ConsentDAO {
     }
 
     getConsentDocuments(id, options) {
+        const Consent = this.db.Consent;
         return Consent.findById(id, { raw: true, attributes: ['id', 'name'] })
             .then(this.fillConsentDocuments(id, options));
     }
 
     getConsentDocumentsByName(name, options) {
+        const Consent = this.db.Consent;
         return Consent.findOne({ where: { name }, raw: true, attributes: ['id', 'name'] })
             .then((result) => {
                 const id = result.id;
@@ -100,6 +108,7 @@ module.exports = class ConsentDAO {
     }
 
     fillUserConsentDocuments(userId) {
+        const ConsentSignature = this.db.ConsentSignature;
         return function (result) {
             return ConsentSignature.findAll({
                 where: { userId },

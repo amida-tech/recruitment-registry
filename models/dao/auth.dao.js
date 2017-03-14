@@ -1,13 +1,14 @@
 'use strict';
 
-const db = require('../db');
 const RRError = require('../../lib/rr-error');
 
-const sequelize = db.sequelize;
-const User = db.User;
-
 module.exports = class UserDAO {
+    constructor(db) {
+        this.db = db;
+    }
+
     getUser({ id, username }) {
+        const User = this.db.User;
         return User.findOne({
             raw: true,
             where: { id, originalUsername: username },
@@ -16,6 +17,8 @@ module.exports = class UserDAO {
     }
 
     authenticateUser(username, password) {
+        const User = this.db.User;
+        const sequelize = this.db.sequelize;
         return User.findOne({
             where: {
                 $or: [

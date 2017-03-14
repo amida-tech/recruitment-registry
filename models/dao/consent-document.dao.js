@@ -2,20 +2,15 @@
 
 const _ = require('lodash');
 
-const db = require('../db');
-
 const RRError = require('../../lib/rr-error');
 
 const Translatable = require('./translatable');
 
-const sequelize = db.sequelize;
-const ConsentType = db.ConsentType;
-const ConsentDocument = db.ConsentDocument;
-
 module.exports = class ConsentDocumentDAO extends Translatable {
-    constructor(dependencies) {
+    constructor(db, dependencies) {
         super('consent_document_text', 'consentDocumentId', ['content', 'updateComment']);
         Object.assign(this, dependencies);
+        this.db = db;
     }
 
     static finalizeDocumentFields(document, fields, options) {
@@ -28,6 +23,8 @@ module.exports = class ConsentDocumentDAO extends Translatable {
     }
 
     listConsentDocuments(options = {}) {
+        const ConsentDocument = this.db.ConsentDocument;
+
         const typeIds = options.typeIds;
         const query = {
             raw: true,
@@ -93,6 +90,8 @@ module.exports = class ConsentDocumentDAO extends Translatable {
     }
 
     createConsentDocument(input) {
+        const sequelize = this.db.sequelize;
+        const ConsentDocument = this.db.ConsentDocument;
         return sequelize.transaction((transaction) => {
             const typeId = input.typeId;
             return ConsentDocument.destroy({ where: { typeId }, transaction })
@@ -114,11 +113,14 @@ module.exports = class ConsentDocumentDAO extends Translatable {
     }
 
     getConsentDocument(id, options = {}) {
+        const ConsentDocument = this.db.ConsentDocument;
         return ConsentDocument.findById(id, { raw: true, attributes: ['id', 'typeId'] })
             .then(result => this.updateText(result, options.language));
     }
 
     getConsentDocumentByTypeName(typeName, options = {}) {
+        const ConsentType = this.db.ConsentType;
+        const ConsentDocument = this.db.ConsentDocument;
         return ConsentType.findOne({
             raw: true,
             where: { name: typeName },
@@ -139,6 +141,7 @@ module.exports = class ConsentDocumentDAO extends Translatable {
     }
 
     getUpdateCommentHistory(typeId, language) {
+        const ConsentDocument = this.db.ConsentDocument;
         return ConsentDocument.findAll({
             raw: true,
             attributes: ['id'],

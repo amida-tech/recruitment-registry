@@ -2,17 +2,12 @@
 
 const _ = require('lodash');
 
-const db = require('../db');
-
 const SPromise = require('../../lib/promise');
 
-const Section = db.Section;
-const SurveySection = db.SurveySection;
-const SurveySectionQuestion = db.SurveySectionQuestion;
-
 module.exports = class SectionDAO {
-    constructor(dependencies) {
+    constructor(db, dependencies) {
         Object.assign(this, dependencies);
+        this.db = db;
     }
 
     createSurveySectionTx({ name, description, surveyId, parentQuestionId, line, parentIndex }, ids, transaction) {
@@ -23,7 +18,7 @@ module.exports = class SectionDAO {
                 if (parentQuestionId) {
                     record.parentQuestionId = parentQuestionId;
                 }
-                return SurveySection.create(record, { transaction })
+                return this.db.SurveySection.create(record, { transaction })
                     .then(({ id }) => {
                         ids.push({ id, sectionId });
                         return ids;
@@ -33,9 +28,9 @@ module.exports = class SectionDAO {
 
     bulkCreateFlattenedSectionsForSurveyTx(surveyId, surveyQuestionIds, flattenedSections, transaction) { // TODO: Use sequelize bulkCreate with 4.0
         if (!flattenedSections.length) {
-            return SurveySection.destroy({ where: { surveyId }, transaction });
+            return this.db.SurveySection.destroy({ where: { surveyId }, transaction });
         }
-        return SurveySection.destroy({ where: { surveyId }, transaction })
+        return this.db.SurveySection.destroy({ where: { surveyId }, transaction })
             .then(() => flattenedSections.reduce((r, { parentIndex, questionIndex, line, name }) => {
                 const record = { name, surveyId, line, parentIndex };
                 if (questionIndex !== undefined) {
@@ -56,7 +51,7 @@ module.exports = class SectionDAO {
                         const surveySectionId = sectionIds[line].id;
                         questionIds.forEach((questionId, questionLine) => {
                             const record = { surveySectionId, questionId, line: questionLine };
-                            const promise = SurveySectionQuestion.create(record, { transaction });
+                            const promise = this.db.SurveySectionQuestion.create(record, { transaction });
                             r.push(promise);
                         });
                     }
@@ -68,12 +63,12 @@ module.exports = class SectionDAO {
 
     getSectionsForSurveyTx(surveyId, questions, answerRuleInfos, language) {
         const questionMap = new Map(questions.map(question => [question.id, question]));
-        return SurveySection.findAll({
+        return this.db.SurveySection.findAll({
             where: { surveyId },
             raw: true,
             order: 'line',
             attributes: ['id', 'sectionId', 'parentId', 'parentQuestionId'],
-            include: [{ model: Section, as: 'section', attributes: ['meta'] }],
+            include: [{ model: this.db.Section, as: 'section', attributes: ['meta'] }],
         })
             .then((surveySections) => {
                 if (!surveySections.length) {
@@ -96,7 +91,7 @@ module.exports = class SectionDAO {
                             }
                             return r;
                         }, []);
-                        return SurveySectionQuestion.findAll({
+                        return this.db.SurveySectionQuestion.findAll({
                             where: { surveySectionId: { $in: ids } },
                             raw: true,
                             order: 'line',
@@ -163,11 +158,11 @@ module.exports = class SectionDAO {
     }
 
     deleteSurveySectionsTx(surveyId, transaction) {
-        return SurveySection.destroy({ where: { surveyId }, transaction });
+        return this.db.SurveySection.destroy({ where: { surveyId }, transaction });
     }
 
     updateSurveyListExport(surveyMap) {
-        return SurveySection.findAll({
+        return this.db.SurveySection.findAll({
             raw: true,
             attributes: ['id', 'surveyId', 'sectionId', 'parentId', 'parentQuestionId'],
             order: ['surveyId', 'line'],
@@ -246,7 +241,7 @@ module.exports = class SectionDAO {
                 if (parentIndex !== undefined) {
                     record.parentId = ids[parentIndex];
                 }
-                return SurveySection.create(record, { transaction })
+                return this.db.SurveySection.create(record, { transaction })
                     .then(({ id }) => {
                         ids.push(id);
                         return ids;
@@ -260,7 +255,7 @@ module.exports = class SectionDAO {
                 if (sectionIndex !== undefined) {
                     record.surveySectionId = ids[sectionIndex];
                 }
-                return SurveySectionQuestion.create(record, { transaction });
+                return this.db.SurveySectionQuestion.create(record, { transaction });
             });
             return SPromise.all(promises);
         });

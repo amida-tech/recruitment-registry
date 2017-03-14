@@ -1,5 +1,7 @@
 'use strict';
 
+const db = require('../db');
+
 const UserDAO = require('./user.dao');
 const AuthDAO = require('./auth.dao');
 const QuestionChoiceDAO = require('./question-choice.dao');
@@ -29,38 +31,38 @@ const AnswerIdentifierDAO = require('./answer-identifier.dao');
 const AnswerRuleDAO = require('./answer-rule.dao');
 const SurveyIdentifierDAO = require('./survey-identifier.dao');
 const ChoiceSetDAO = require('./choice-set.dao');
-const ResearchSite = require('./research-site.dao');
+const ResearchSiteDAO = require('./research-site.dao');
 
-const questionIdentifier = new QuestionIdentifierDAO();
-const answerIdentifier = new AnswerIdentifierDAO();
-const surveyIdentifier = new SurveyIdentifierDAO();
-const consentType = new ConsentTypeDAO();
-const consentDocument = new ConsentDocumentDAO({ consentType });
-const consentSignature = new ConsentSignatureDAO();
-const userConsentDocument = new UserConsentDocumentDAO({ consentDocument });
-const user = new UserDAO({ consentDocument });
-const auth = new AuthDAO();
-const surveyConsent = new SurveyConsentDAO({ consentType });
-const surveyConsentDocument = new SurveyConsentDocumentDAO({ surveyConsent, userConsentDocument });
-const section = new SectionDAO();
-const surveySectionQuestion = new SurveySectionQuestionDAO();
-const surveySection = new SurveySectionDAO({ section, surveySectionQuestion });
-const questionChoice = new QuestionChoiceDAO();
-const choiceSet = new ChoiceSetDAO({ questionChoice });
-const question = new QuestionDAO({ questionChoice, choiceSet, questionIdentifier, answerIdentifier });
-const surveyQuestion = new SurveyQuestionDAO();
-const answerRule = new AnswerRuleDAO();
-const answer = new AnswerDAO({ surveyConsentDocument, surveyQuestion, answerRule });
-const survey = new SurveyDAO({ answer, answerRule, surveySection, question, questionChoice, surveyIdentifier, surveyQuestion });
-const userSurvey = new UserSurveyDAO({ survey, answer });
-const consent = new ConsentDAO({ consentDocument });
-const profileSurvey = new ProfileSurveyDAO({ survey, consentDocument, answer });
-const profile = new ProfileDAO({ profileSurvey, survey, answer, user, consentSignature });
-const language = new LanguageDAO();
-const smtp = new SmtpDAO();
-const assessment = new AssessmentDAO();
-const userAssessment = new UserAssessmentDAO({ answer });
-const researchSite = new ResearchSite();
+const questionIdentifier = new QuestionIdentifierDAO(db);
+const answerIdentifier = new AnswerIdentifierDAO(db);
+const surveyIdentifier = new SurveyIdentifierDAO(db);
+const consentType = new ConsentTypeDAO(db);
+const consentDocument = new ConsentDocumentDAO(db, { consentType });
+const consentSignature = new ConsentSignatureDAO(db);
+const userConsentDocument = new UserConsentDocumentDAO(db, { consentDocument });
+const user = new UserDAO(db, { consentDocument });
+const auth = new AuthDAO(db);
+const surveyConsent = new SurveyConsentDAO(db, { consentType });
+const surveyConsentDocument = new SurveyConsentDocumentDAO(db, { surveyConsent, userConsentDocument });
+const section = new SectionDAO(db);
+const surveySectionQuestion = new SurveySectionQuestionDAO(db);
+const surveySection = new SurveySectionDAO(db, { section, surveySectionQuestion });
+const questionChoice = new QuestionChoiceDAO(db);
+const choiceSet = new ChoiceSetDAO(db, { questionChoice });
+const question = new QuestionDAO(db, { questionChoice, choiceSet, questionIdentifier, answerIdentifier });
+const surveyQuestion = new SurveyQuestionDAO(db);
+const answerRule = new AnswerRuleDAO(db);
+const answer = new AnswerDAO(db, { surveyConsentDocument, surveyQuestion, answerRule });
+const survey = new SurveyDAO(db, { answer, answerRule, surveySection, question, questionChoice, surveyIdentifier, surveyQuestion });
+const userSurvey = new UserSurveyDAO(db, { survey, answer });
+const consent = new ConsentDAO(db, { consentDocument });
+const profileSurvey = new ProfileSurveyDAO(db, { survey, consentDocument, answer });
+const profile = new ProfileDAO(db, { profileSurvey, survey, answer, user, consentSignature });
+const language = new LanguageDAO(db);
+const smtp = new SmtpDAO(db);
+const assessment = new AssessmentDAO(db);
+const userAssessment = new UserAssessmentDAO(db, { answer });
+const researchSite = new ResearchSiteDAO(db);
 
 module.exports = {
     user,

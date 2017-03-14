@@ -1,19 +1,22 @@
 'use strict';
 
 const _ = require('lodash');
-const db = require('../db');
 const answerCommon = require('./answer-common');
 const SPromise = require('../../lib/promise');
 
-const AnswerRule = db.AnswerRule;
-const AnswerRuleValue = db.AnswerRuleValue;
-const Question = db.Question;
-const QuestionChoice = db.QuestionChoice;
 const ExportCSVConverter = require('../../export/csv-converter.js');
 const ImportCSVConverter = require('../../import/csv-converter.js');
 
 module.exports = class AnswerRuleDAO {
+    constructor(db) {
+        this.db = db;
+    }
+
     getSurveyAnswerRules({ surveyId }) {
+        const AnswerRule = this.db.AnswerRule;
+        const AnswerRuleValue = this.db.AnswerRuleValue;
+        const Question = this.db.Question;
+        const QuestionChoice = this.db.QuestionChoice;
         const where = { surveyId };
         const attributes = ['id', 'logic', 'questionId', 'answerQuestionId', 'sectionId'];
         const include = [
@@ -101,6 +104,8 @@ module.exports = class AnswerRuleDAO {
     }
 
     exportAnswerRules() {
+        const AnswerRule = this.db.AnswerRule;
+        const AnswerRuleValue = this.db.AnswerRuleValue;
         const attributes = ['id', 'surveyId', 'logic', 'questionId', 'answerQuestionId', 'sectionId'];
         return AnswerRule.findAll({ raw: true, attributes, order: ['surveyId', 'line'] })
             .then((answerRules) => {
@@ -143,6 +148,8 @@ module.exports = class AnswerRuleDAO {
     }
 
     importAnswerRules(stream, { sectionIdMap, questionIdMap, surveyIdMap }) {
+        const AnswerRule = this.db.AnswerRule;
+        const AnswerRuleValue = this.db.AnswerRuleValue;
         const converter = new ImportCSVConverter({ checkType: false });
         return converter.streamToRecords(stream)
             .then((records) => {
@@ -186,7 +193,7 @@ module.exports = class AnswerRuleDAO {
                 if (!rules.length) {
                     return null;
                 }
-                return db.sequelize.transaction((transaction) => {
+                return this.db.sequelize.transaction((transaction) => {
                     const ruleIdMap = new Map();
                     const promises = rules.map((rule) => {
                         const record = _.omit(rule, 'id');

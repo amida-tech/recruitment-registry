@@ -2,18 +2,10 @@
 
 const _ = require('lodash');
 
-const db = require('../db');
 const RRError = require('../../lib/rr-error');
 const SPromise = require('../../lib/promise');
 
 const answerCommon = require('./answer-common');
-
-const sequelize = db.sequelize;
-const Answer = db.Answer;
-const Question = db.Question;
-const QuestionChoice = db.QuestionChoice;
-const UserSurvey = db.UserSurvey;
-const User = db.User;
 
 const ExportCSVConverter = require('../../export/csv-converter.js');
 const ImportCSVConverter = require('../../import/csv-converter.js');
@@ -116,43 +108,6 @@ const prepareAnswerForDB = function prepareAnswerForDB(answer) {
     return fn(answer[key]);
 };
 
-const fileAnswer = function ({ userId, surveyId, language, answers }, tx) {
-    answers = answers.reduce((r, q) => {
-        const questionId = q.questionId;
-        const values = prepareAnswerForDB(q.answer || q.answers).map(value => ({
-            userId,
-            surveyId,
-            language,
-            questionId,
-            questionChoiceId: value.questionChoiceId || null,
-            multipleIndex: (value.multipleIndex || value.multipleIndex === 0) ? value.multipleIndex : null,
-            value: Object.prototype.hasOwnProperty.call(value, 'value') ? value.value : null,
-        }));
-        values.forEach(value => r.push(value));
-        return r;
-    }, []);
-    // TODO: Switch to bulkCreate when Sequelize 4 arrives
-    return SPromise.all(answers.map(answer => Answer.create(answer, { transaction: tx })));
-};
-
-const updateStatus = function (userId, surveyId, status, transaction) {
-    return UserSurvey.findOne({
-        where: { userId, surveyId },
-        raw: true,
-        attributes: ['status'],
-        transaction,
-    })
-        .then((userSurvey) => {
-            if (!userSurvey) {
-                return UserSurvey.create({ userId, surveyId, status }, { transaction });
-            } else if (userSurvey.status !== status) {
-                return UserSurvey.destroy({ where: { userId, surveyId }, transaction })
-                    .then(() => UserSurvey.create({ userId, surveyId, status }, { transaction }));
-            }
-            return null;
-        });
-};
-
 const evaluateAnswerRule = function ({ logic, answer }, questionAnswer) {
     if (logic === 'exists') {
         if (questionAnswer && (questionAnswer.answer || questionAnswer.answers)) {
@@ -193,8 +148,48 @@ const evaluateEnableWhen = function (rules, answersByQuestionId) {
 };
 
 module.exports = class AnswerDAO {
-    constructor(dependencies) {
+    constructor(db, dependencies) {
+        this.db = db;
         Object.assign(this, dependencies);
+    }
+
+    fileAnswer({ userId, surveyId, language, answers }, tx) {
+        const Answer = this.db.Answer;
+        answers = answers.reduce((r, q) => {
+            const questionId = q.questionId;
+            const values = prepareAnswerForDB(q.answer || q.answers).map(value => ({
+                userId,
+                surveyId,
+                language,
+                questionId,
+                questionChoiceId: value.questionChoiceId || null,
+                multipleIndex: (value.multipleIndex || value.multipleIndex === 0) ? value.multipleIndex : null,
+                value: Object.prototype.hasOwnProperty.call(value, 'value') ? value.value : null,
+            }));
+            values.forEach(value => r.push(value));
+            return r;
+        }, []);
+        // TODO: Switch to bulkCreate when Sequelize 4 arrives
+        return SPromise.all(answers.map(answer => Answer.create(answer, { transaction: tx })));
+    }
+
+    updateStatus(userId, surveyId, status, transaction) {
+        const UserSurvey = this.db.UserSurvey;
+        return UserSurvey.findOne({
+            where: { userId, surveyId },
+            raw: true,
+            attributes: ['status'],
+            transaction,
+        })
+            .then((userSurvey) => {
+                if (!userSurvey) {
+                    return UserSurvey.create({ userId, surveyId, status }, { transaction });
+                } else if (userSurvey.status !== status) {
+                    return UserSurvey.destroy({ where: { userId, surveyId }, transaction })
+                        .then(() => UserSurvey.create({ userId, surveyId, status }, { transaction }));
+                }
+                return null;
+            });
     }
 
     toDbAnswer(answer) {
@@ -249,6 +244,7 @@ module.exports = class AnswerDAO {
     }
 
     validateAnswers(userId, surveyId, answers, status) {
+        const Answer = this.db.Answer;
         return this.surveyQuestion.listSurveyQuestions(surveyId, true)
             .then((surveyQuestions) => {
                 const answersByQuestionId = _.keyBy(answers, 'questionId');
@@ -322,9 +318,10 @@ module.exports = class AnswerDAO {
     }
 
     createAnswersTx({ userId, surveyId, answers, language = 'en', status = 'completed' }, transaction) {
+        const Answer = this.db.Answer;
         answers = _.cloneDeep(answers);
         return this.validateCreate(userId, surveyId, answers, status, transaction)
-            .then(() => updateStatus(userId, surveyId, status, transaction))
+            .then(() => this.updateStatus(userId, surveyId, status, transaction))
             .then(() => {
                 const ids = _.map(answers, 'questionId');
                 const where = { questionId: { $in: ids }, surveyId, userId };
@@ -333,17 +330,20 @@ module.exports = class AnswerDAO {
             .then(() => {
                 answers = _.filter(answers, answer => answer.answer || answer.answers);
                 if (answers.length) {
-                    return fileAnswer({ userId, surveyId, language, answers }, transaction);
+                    return this.fileAnswer({ userId, surveyId, language, answers }, transaction);
                 }
                 return null;
             });
     }
 
     createAnswers(input) {
-        return sequelize.transaction(tx => this.createAnswersTx(input, tx));
+        return this.db.sequelize.transaction(tx => this.createAnswersTx(input, tx));
     }
 
     listAnswers({ userId, scope, surveyId, history, ids }) {
+        const Answer = this.db.Answer;
+        const Question = this.db.Question;
+        const QuestionChoice = this.db.QuestionChoice;
         scope = scope || 'survey';
         const where = ids ? { id: { $in: ids } } : { userId };
         if (surveyId) {
@@ -357,7 +357,7 @@ module.exports = class AnswerDAO {
             attributes.push('surveyId');
         }
         if (scope === 'history-only') {
-            attributes.push([sequelize.fn('to_char', sequelize.col('answer.deleted_at'), 'SSSS.MS'), 'deletedAt']);
+            attributes.push([this.db.sequelize.fn('to_char', this.db.sequelize.col('answer.deleted_at'), 'SSSS.MS'), 'deletedAt']);
         }
         const include = [
             { model: Question, as: 'question', attributes: ['id', 'type', 'multiple'] },
@@ -439,6 +439,7 @@ module.exports = class AnswerDAO {
     }
 
     importForUser(userId, stream, surveyIdMap, questionIdMap) {
+        const Answer = this.db.Answer;
         const converter = new ImportCSVConverter({ checkType: false });
         return converter.streamToRecords(stream)
             .then(records => records.map((record) => {
@@ -467,20 +468,24 @@ module.exports = class AnswerDAO {
                 record.language = 'en';
                 return record;
             }))
-            .then(records => sequelize.transaction(transaction =>
+            .then(records => this.db.sequelize.transaction(transaction =>
                     // TODO: Switch to bulkCreate when Sequelize 4 arrives
                      SPromise.all(records.map(record => Answer.create(record, { transaction })))));
     }
 
     importRecords(records) {
-        return sequelize.transaction(transaction =>
+        const Answer = this.db.Answer;
+        return this.db.sequelize.transaction(transaction =>
             // TODO: Switch to bulkCreate when Sequelize 4 arrives
              SPromise.all(records.map(record => Answer.create(record, { transaction })
                     .then(({ id }) => id))));
     }
 
     exportBulk(ids) {
-        const createdAtColumn = [sequelize.fn('to_char', sequelize.col('answer.created_at'), 'YYYY-MM-DD"T"HH24:MI:SS"Z"'), 'createdAt'];
+        const Answer = this.db.Answer;
+        const Question = this.db.Question;
+        const QuestionChoice = this.db.QuestionChoice;
+        const createdAtColumn = [this.db.sequelize.fn('to_char', this.db.sequelize.col('answer.created_at'), 'YYYY-MM-DD"T"HH24:MI:SS"Z"'), 'createdAt'];
         return Answer.findAll({
             where: { id: { $in: ids } },
             attributes: ['id', 'userId', 'surveyId', 'questionId', 'questionChoiceId', 'value', createdAtColumn],
@@ -499,6 +504,9 @@ module.exports = class AnswerDAO {
      * @returns {integer}
      */
     searchCountUsers(criteria) {
+        const Answer = this.db.Answer;
+        const User = this.db.User;
+
         // if criteria is empty, return count of all users
         if (!criteria || !criteria.questions || !criteria.questions.length) { return User.count(); }
 
@@ -519,11 +527,11 @@ module.exports = class AnswerDAO {
 
         // find users with a matching answer for each question (i.e., users who match all criteria)
         const include = [{ model: User, as: 'user', attributes: [] }];
-        const having = sequelize.where(sequelize.literal('COUNT(DISTINCT(question_id))'), criteria.questions.length);
+        const having = this.db.sequelize.where(this.db.sequelize.literal('COUNT(DISTINCT(question_id))'), criteria.questions.length);
         const group = ['user_id'];
 
         // count resulting users
-        const attributes = [sequelize.literal('\'1\'')];
+        const attributes = [this.db.sequelize.literal('\'1\'')];
         return Answer.findAll({ raw: true, where, attributes, include, having, group })
             .then(results => results.length);
     }

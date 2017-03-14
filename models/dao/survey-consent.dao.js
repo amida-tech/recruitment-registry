@@ -1,19 +1,16 @@
 'use strict';
 
-const db = require('../db');
-
 const RRError = require('../../lib/rr-error');
 
-const SurveyConsent = db.SurveyConsent;
-const ConsentSection = db.ConsentSection;
-const Consent = db.Consent;
-
 module.exports = class SurveyConsentDAO {
-    constructor(dependencies) {
+    constructor(db, dependencies) {
         Object.assign(this, dependencies);
+        this.db = db;
     }
 
     createSurveyConsent({ surveyId, consentId, consentTypeId, action }) {
+        const SurveyConsent = this.db.SurveyConsent;
+        const ConsentSection = this.db.ConsentSection;
         if (!consentId) {
             return SurveyConsent.create({ surveyId, consentTypeId, action })
                 .then(({ id }) => ({ id }));
@@ -38,6 +35,7 @@ module.exports = class SurveyConsentDAO {
             }
             return r;
         }, []);
+        const Consent = this.db.Consent;
         return Consent.findAll({ raw: true, id: { $in: consentIds }, attributes: ['id', 'name'] })
             .then(consents => new Map(consents.map(consent => [consent.id, consent.name])))
             .then((consentMap) => {
@@ -53,6 +51,7 @@ module.exports = class SurveyConsentDAO {
     }
 
     listSurveyConsents(surveyId, options) {
+        const SurveyConsent = this.db.SurveyConsent;
         return SurveyConsent.findAll({ surveyId, raw: true, attributes: ['id', 'consentId', 'consentTypeId', 'action'] })
             .then((surveyConsents) => {
                 if (surveyConsents.length < 1) {
@@ -77,6 +76,7 @@ module.exports = class SurveyConsentDAO {
     }
 
     deleteSurveyConsent(id) {
+        const SurveyConsent = this.db.SurveyConsent;
         return SurveyConsent.destroy({ where: { id } });
     }
 };
