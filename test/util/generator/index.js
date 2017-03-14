@@ -174,26 +174,28 @@ class Generator {
     }
 
     newResearchSite(zip, hasOptionalFields) {
-        if(hasOptionalFields === undefined) hasOptionalFields = false;
+        if (hasOptionalFields === undefined) {
+            hasOptionalFields = false;
+        }
         this.researchSiteIndex += 1;
         const index = this.researchSiteIndex;
         const withOptionalFields = {
-          name: `name_${index}`,
-          url: `server_${index}@example.com`,
-          street: `street_${index}`,
-          street2: `suite_${index}`,
-          city: `city_${index}`,
-          state: this.newState(index),
-          zip,
+            name: `name_${index}`,
+            url: `server_${index}@example.com`,
+            street: `street_${index}`,
+            street2: `suite_${index}`,
+            city: `city_${index}`,
+            state: this.newState(index),
+            zip,
         };
         const withoutOptionalFields = {
-          name: `name_${index}`,
-          url: `server_${index}@example.com`,
-          street: `street_${index}`,
-          city: `city_${index}`,
-          state: this.newState(index),
-          zip,
-        }
+            name: `name_${index}`,
+            url: `server_${index}@example.com`,
+            street: `street_${index}`,
+            city: `city_${index}`,
+            state: this.newState(index),
+            zip,
+        };
         return (hasOptionalFields ? withOptionalFields : withoutOptionalFields);
     }
 
