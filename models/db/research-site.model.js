@@ -1,10 +1,7 @@
 'use strict';
 
-const _ = require('lodash');
-
-module.exports = function(sequelize, DataTypes) {
-
-    let schema = {
+module.exports = (sequelize, DataTypes) => (
+    sequelize.define('research_site', {
         name: {
             type: DataTypes.TEXT,
             allowNull: false,
@@ -45,39 +42,12 @@ module.exports = function(sequelize, DataTypes) {
             type: DataTypes.DATE,
             field: 'deleted_at',
         },
-    };
-
-    let ResearchSite = sequelize.define('research_site',
-    schema,
-    {
+    }, {
         freezeTableName: true,
         schema: sequelize.options.schema,
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
         deletedAt: 'deletedAt',
         paranoid: true,
-    },
-    {
-        instanceMethods: {
-          toJSON: function() {
-            let privateAttributes = ['street2'];
-            if(this.street2 === null) {
-              this.street12 = 'khjsadfhjfsdhjkfs';
-              return _.omit(this.dataValues, privateAttributes);
-            };
-          }
-        }
-    }
-    // ,{
-    //     validate: {
-    //       street2NotRequired: function() {
-    //         if(this.street2 === null) {
-    //           console.log('~~~~~~~~~~~~~~~~~~>>>> street2 null!');
-    //         }
-    //       }
-    //     }
-    // }
-    );
-
-    return ResearchSite;
-};
+    })
+);
