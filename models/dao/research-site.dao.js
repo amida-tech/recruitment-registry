@@ -3,6 +3,7 @@
 const db = require('../db');
 const SPromise = require('../../lib/promise');
 const zipUtil = require('../../lib/zip-util');
+const _ = require('lodash');
 
 const ResearchSite = db.ResearchSite;
 const ResearchSiteVicinity = db.ResearchSiteVicinity;
@@ -78,7 +79,8 @@ module.exports = class ResearchSiteDAO {
     }
 
     getResearchSite(id) {
-        return ResearchSite.findById(id, { raw: true, attributes });
+        return ResearchSite.findById(id, { raw: true, attributes })
+            .then(researchSite => _.omitBy(researchSite, _.isNil));
     }
 
     createResearchSiteVicinityTx(researchSiteId, vicinity, transaction) {
