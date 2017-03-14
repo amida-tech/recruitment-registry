@@ -20,10 +20,6 @@ const formatResearchSite = function formatResearchSite(researchSite) {
     return researchSite;
 };
 
-const getResearchSiteFn = function getResearchSiteFn(id) {
-  return ResearchSite.findById(id, { raw: true, attributes });
-};
-
 module.exports = class ResearchSiteDAO {
     createResearchSite(researchSite) {
         formatResearchSite(researchSite);
