@@ -7,55 +7,60 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 const _ = require('lodash');
 
-const models = require('../models');
+const config = require('../config');
 
-const SharedSpec = require('./util/shared-spec.js');
+const RRError = require('../lib/rr-error');
+const RRSuperTest = require('./util/rr-super-test');
+const SharedIntegration = require('./util/shared-integration.js');
 const Generator = require('./util/generator');
 const comparator = require('./util/comparator');
 const History = require('./util/history');
 
 const expect = chai.expect;
 const generator = new Generator();
-const shared = new SharedSpec(generator);
+const shared = new SharedIntegration(generator);
 
-describe('registry unit', function registryUnit() {
+describe('registry integration', function registryIntegration() {
+    const rrSuperTest = new RRSuperTest();
     const hxRegistry = new History();
 
-    before(shared.setUpFn());
+    before(shared.setUpFn(rrSuperTest));
+
+    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
 
     it('list all registries when none', function listRegistriesWhenNone() {
-        return models.registry.listRegistries()
-            .then((registries) => {
-                expect(registries).to.have.length(0);
+        return rrSuperTest.get('/registries', true, 200)
+            .expect((res) => {
+                expect(res.body).to.have.length(0);
             });
     });
 
     const createRegistryFn = function (newRegistry) {
         return function createRegistry() {
             const registry = newRegistry || generator.newRegistry();
-            return models.registry.createRegistry(registry)
-                .then(({ id }) => hxRegistry.push(registry, { id }));
+            return rrSuperTest.post('/registries', registry, 201)
+                .expect(res => hxRegistry.push(registry, res.body));
         };
     };
 
     const getRegistryFn = function (index) {
         return function getRegistry() {
             const id = hxRegistry.id(index);
-            return models.registry.getRegistry(id)
-                .then((registry) => {
-                    hxRegistry.updateServer(index, registry);
-                    comparator.registry(hxRegistry.client(index), registry);
+            return rrSuperTest.get(`/registries/${id}`, true, 200)
+                .expect((res) => {
+                    hxRegistry.updateServer(index, res.body);
+                    comparator.registry(hxRegistry.client(index), res.body);
                 });
         };
     };
 
     const listRegistriesFn = function () {
         return function listRegistry() {
-            return models.registry.listRegistries()
-                .then((registries) => {
+            return rrSuperTest.get('/registries', true, 200)
+                .expect((res) => {
                     let expected = _.cloneDeep(hxRegistry.listServers(['id', 'name']));
                     expected = _.sortBy(expected, 'name');
-                    expect(registries).to.deep.equal(expected);
+                    expect(res.body).to.deep.equal(expected);
                 });
         };
     };
@@ -63,7 +68,7 @@ describe('registry unit', function registryUnit() {
     const deleteRegistryFn = function (index) {
         return function deleteRegistry() {
             const id = hxRegistry.id(index);
-            return models.registry.deleteRegistry(id)
+            return rrSuperTest.delete(`/registries/${id}`, 204)
                 .then(() => hxRegistry.remove(index));
         };
     };
@@ -78,36 +83,40 @@ describe('registry unit', function registryUnit() {
     it('error: create registry with url and schema', function createRegistryURLSchema() {
         const name = 'example';
         const registry = { name, url: 'https://example.com', schema: 'schema' };
-        return models.registry.createRegistry(registry)
-            .then(shared.throwingHandler)
-            .catch(shared.expectedErrorHandler('registryBothURLSchema', name));
+        return rrSuperTest.post('/registries', registry, 400);
     });
 
     it('error: create registry with same name', function errorSameName() {
         const registry = generator.newRegistry();
         const name = hxRegistry.server(1).name;
         registry.name = name;
-        return models.registry.createRegistry(registry)
-            .then(shared.throwingHandler)
-            .catch(shared.expectedSeqErrorHandler('SequelizeUniqueConstraintError', { name }));
+        return rrSuperTest.post('/registries', registry, 400)
+            .expect((res) => {
+                const message = RRError.message('genericUnique', 'name', name);
+                expect(res.body.message).to.equal(message);
+            });
     });
 
     it('error: create registry with same url', function errorSameUrl() {
         const registry = generator.newRegistry();
         const url = hxRegistry.server(1).url || hxRegistry.server(2).url;
         registry.url = url;
-        return models.registry.createRegistry(registry)
-            .then(shared.throwingHandler)
-            .catch(shared.expectedSeqErrorHandler('SequelizeUniqueConstraintError', { url }));
+        return rrSuperTest.post('/registries', registry, 400)
+            .expect((res) => {
+                const message = RRError.message('genericUnique', 'url', url);
+                expect(res.body.message).to.equal(message);
+            });
     });
 
     it('error: create registry with same schema', function errorSameSchema() {
         const registry = generator.newRegistry();
         const schema = hxRegistry.server(1).schema || hxRegistry.server(2).schema;
         registry.schema = schema;
-        return models.registry.createRegistry(registry)
-            .then(shared.throwingHandler)
-            .catch(shared.expectedSeqErrorHandler('SequelizeUniqueConstraintError', { schema }));
+        return rrSuperTest.post('/registries', registry, 400)
+            .expect((res) => {
+                const message = RRError.message('genericUnique', 'schema', schema);
+                expect(res.body.message).to.equal(message);
+            });
     });
 
     [1, 2, 5].forEach((index) => {
@@ -135,4 +144,6 @@ describe('registry unit', function registryUnit() {
     });
 
     it('list registries', listRegistriesFn());
+
+    it('logout as super', shared.logoutFn(rrSuperTest));
 });

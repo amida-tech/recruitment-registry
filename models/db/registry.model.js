@@ -1,9 +1,5 @@
 'use strict';
 
-const index = function (field) {
-
-};
-
 module.exports = function registry(sequelize, Sequelize, schema) {
     return sequelize.define('registry', {
         name: {

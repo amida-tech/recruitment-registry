@@ -2860,6 +2860,93 @@
                     }
                 }
             }
+        },
+       "/registries": {
+            "x-swagger-router-controller": "registry.controller",
+            "get": {
+                "operationId": "listRegistries",
+                "summary": "List registries",
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/registries"
+                        }
+                     },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "createRegistry",
+                "summary": "Creates new registry",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "registry",
+                    "in": "body",
+                    "description": "Registry specification",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/newRegistry"
+                    }
+                }],
+                "responses": {
+                    "201": {
+                        "$ref": "#/responses/idSuccess"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/registries/{id}": {
+            "x-swagger-router-controller": "registry.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
+            "get": {
+                "operationId": "getRegistry",
+                "summary": "Gets registry",
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successul response",
+                        "schema": {
+                            "$ref": "#/definitions/registry"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "deleteRegistry",
+                "summary": "Deletes registry",
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successul response"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
         }
     },
     "securityDefinitions": {
@@ -5247,6 +5334,58 @@
                 }
             },
             "additionalProperties": false
+        },
+        "newRegistry": {
+            "type": "object",
+            "required": ["name"],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "url": {
+                    "type": "string",
+                    "format": "uri",
+                    "minLength": 1
+                },
+                "schema": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "additionalProperties": false,
+            "minProperties": 2,
+            "maxProperties": 2
+        },
+        "registry": {
+            "type": "object",
+            "required": ["id", "name"],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "url": {
+                    "type": "string",
+                    "format": "uri",
+                    "minLength": 1
+                },
+                "schema": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "registries": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/registries"
+            }
         }
     }
 }

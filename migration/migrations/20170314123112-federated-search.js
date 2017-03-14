@@ -16,12 +16,10 @@ const registry = function registry(queryInterface, Sequelize) {
         url: {
             type: Sequelize.TEXT,
             allowNull: true,
-            unique: true,
         },
         schema: {
             type: Sequelize.TEXT,
             allowNull: true,
-            unique: true,
         },
         createdAt: {
             type: Sequelize.DATE,
@@ -43,7 +41,22 @@ const registry = function registry(queryInterface, Sequelize) {
 
 module.exports = {
     up(queryInterface, Sequelize) {
-        return registry(queryInterface, Sequelize);
+        return registry(queryInterface, Sequelize)
+        .then(() => queryInterface.addIndex('registry', ['name'], {
+            indexName: 'registry_name',
+            unique: true,
+            where: { deleted_at: { $eq: null } },
+        }))
+        .then(() => queryInterface.addIndex('registry', ['url'], {
+            indexName: 'registry_url',
+            unique: true,
+            where: { deleted_at: { $eq: null } },
+        }))
+        .then(() => queryInterface.addIndex('registry', ['schema'], {
+            indexName: 'registry_schema',
+            unique: true,
+            where: { deleted_at: { $eq: null } },
+        }));
     },
 
     down(queryInterface) {
