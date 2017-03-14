@@ -30,6 +30,7 @@ const AnswerRuleDAO = require('./answer-rule.dao');
 const SurveyIdentifierDAO = require('./survey-identifier.dao');
 const ChoiceSetDAO = require('./choice-set.dao');
 const ResearchSiteDAO = require('./research-site.dao');
+const Registry = require('./registry.dao');
 const Macro = require('./macro');
 
 module.exports = function (db) {
@@ -63,6 +64,7 @@ module.exports = function (db) {
     const assessment = new AssessmentDAO(db);
     const userAssessment = new UserAssessmentDAO(db, { answer });
     const researchSite = new ResearchSiteDAO(db);
+    const registry = new Registry(db);
     const macro = new Macro(db, { survey, profileSurvey });
 
     return {
@@ -96,6 +98,7 @@ module.exports = function (db) {
         surveyQuestion,
         answerRule,
         researchSite,
+        registry,
         macro,
     };
 };
