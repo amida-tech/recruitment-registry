@@ -46,10 +46,10 @@ describe('research site integration', () => {
             .end(done);
     });
 
-    const createResearchSiteFn = function (index, actualZipCode) {
+    const createResearchSiteFn = function (index, actualZipCode, hasOptionalFields) {
         return (done) => {
             const zip = actualZipCode || researchZipCodes[index];
-            const researchSite = generator.newResearchSite(zip, true);
+            const researchSite = generator.newResearchSite(zip, hasOptionalFields);
             rrSuperTest.post('/research-sites', researchSite, 201)
                 .expect((res) => {
                     hxResearchSite.push(researchSite, res.body);
@@ -70,13 +70,13 @@ describe('research site integration', () => {
         };
     };
 
-    const updateResearchSiteFn = function (index, fields) {
+    const updateResearchSiteFn = function (index, fields, hasOptionalFields) {
         return (done) => {
             const id = hxResearchSite.id(index);
             if ('zip' in fields) {
                 throw new Error('Zip cannot be specified');
             }
-            const patch = _.pick(generator.newResearchSite('00000', true), fields);
+            const patch = _.pick(generator.newResearchSite('00000', hasOptionalFields), fields);
             rrSuperTest.patch(`/research-sites/${id}`, patch, 204)
                 .expect(() => {
                     Object.assign(hxResearchSite.server(index), patch);
@@ -120,15 +120,28 @@ describe('research site integration', () => {
     };
 
     _.range(10).forEach((index) => {
+      if(index % 2 === 0) {
         it('login as super', shared.loginFn(rrSuperTest, config.superUser));
-        it(`create research site ${index}`, createResearchSiteFn(index));
+        it(`create research site ${index}`, createResearchSiteFn(index, undefined, true));
         it('logout as super', shared.logoutFn(rrSuperTest));
         it(`get research site ${index}`, getResearchSiteFn(index));
         it('login as super', shared.loginFn(rrSuperTest, config.superUser));
-        it(`update some research site meta fields ${index}`, updateResearchSiteFn(index, ['name', 'state']));
-        it(`update all research site meta fields ${index}`, updateResearchSiteFn(index, ['name', 'url', 'street', 'street2', 'city', 'state']));
+        // it(`update some research site meta fields ${index}`, updateResearchSiteFn(index, ['name', 'state']));
+        it(`update all research site meta fields ${index}`, updateResearchSiteFn(index, ['name', 'url', 'street', 'street2', 'city', 'state'], true));
         it('logout as super', shared.logoutFn(rrSuperTest));
         it(`verify research site ${index}`, verifyResearchSiteFn(index));
+      }
+      else {
+        it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+        it(`create research site ${index}`, createResearchSiteFn(index, undefined, false));
+        it('logout as super', shared.logoutFn(rrSuperTest));
+        it(`get research site ${index}`, getResearchSiteFn(index));
+        it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+        // it(`update some research site meta fields ${index}`, updateResearchSiteFn(index, ['name', 'state']));
+        it(`update all research site meta fields ${index}`, updateResearchSiteFn(index, ['name', 'url', 'street', 'city', 'state'], false));
+        it('logout as super', shared.logoutFn(rrSuperTest));
+        it(`verify research site ${index}`, verifyResearchSiteFn(index));
+      }
     });
 
     it('list research sites', listResearchSitesFn());

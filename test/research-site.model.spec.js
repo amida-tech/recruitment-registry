@@ -41,10 +41,10 @@ describe('research site unit', () => {
                 expect(researchSites).to.have.length(0);
             }));
 
-    const createResearchSiteFn = function (index) {
+    const createResearchSiteFn = function (index, hasOptionalFields) {
         return () => {
             const zip = researchZipCodes[index];
-            const researchSite = generator.newResearchSite(zip, true);
+            const researchSite = generator.newResearchSite(zip, hasOptionalFields);
             return models.researchSite.createResearchSite(researchSite)
                 .then(({ id }) => hxResearchSite.push(researchSite, { id }));
         };
@@ -61,13 +61,13 @@ describe('research site unit', () => {
         };
     };
 
-    const updateResearchSiteFn = function (index, fields) {
+    const updateResearchSiteFn = function (index, fields, hasOptionalFields) {
         return () => {
             const id = hxResearchSite.id(index);
             if ('zip' in fields) {
                 throw new Error('Zip cannot be specified');
             }
-            const patch = _.pick(generator.newResearchSite('00000', true), fields);
+            const patch = _.pick(generator.newResearchSite('00000', hasOptionalFields), fields);
             return models.researchSite.patchResearchSite(id, patch)
                 .then(() => Object.assign(hxResearchSite.server(index), patch));
         };
@@ -111,11 +111,20 @@ describe('research site unit', () => {
     };
 
     _.range(10).forEach((index) => {
-        it(`create research site ${index}`, createResearchSiteFn(index));
+      if(index % 2 === 0) {
+        it(`create research site ${index}`, createResearchSiteFn(index, true));
         it(`get research site ${index}`, getResearchSiteFn(index));
-        it(`update some research site meta fields ${index}`, updateResearchSiteFn(index, ['name', 'state']));
-        it(`update all research site meta fields ${index}`, updateResearchSiteFn(index, ['name', 'url', 'street', 'street2', 'city', 'state']));
+        // it(`update some research site meta fields ${index}`, updateResearchSiteFn(index, ['name', 'state']));
+        it(`update all research site meta fields ${index}`, updateResearchSiteFn(index, ['name', 'url', 'street', 'street2', 'city', 'state'], true));
         it(`verify research site ${index}`, verifyResearchSiteFn(index));
+      }
+      else {
+        it(`create research site ${index}`, createResearchSiteFn(index, false));
+        it(`get research site ${index}`, getResearchSiteFn(index));
+        // it(`update some research site meta fields ${index}`, updateResearchSiteFn(index, ['name', 'state']));
+        it(`update all research site meta fields ${index}`, updateResearchSiteFn(index, ['name', 'url', 'street', 'city', 'state'], false));
+        it(`verify research site ${index}`, verifyResearchSiteFn(index));
+      }
     });
 
     it('list research sites', listResearchSitesFn());

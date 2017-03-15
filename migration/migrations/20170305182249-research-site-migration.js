@@ -9,7 +9,7 @@ const researchSiteStreet = function (queryInterface, Sequelize) {
 };
 
 const researchSiteStreet2 = function (queryInterface, Sequelize) {
-    return queryInterface.addColumn('research_site', 'street', {
+    return queryInterface.addColumn('research_site', 'street2', {
         type: Sequelize.TEXT,
         allowNull: true,
         field: 'street2',
@@ -19,7 +19,7 @@ const researchSiteStreet2 = function (queryInterface, Sequelize) {
 module.exports = {
     up(queryInterface, Sequelize) {
         return researchSiteStreet(queryInterface, Sequelize)
-        .then(() => researchSiteStreet2);
+        .then(() => researchSiteStreet2(queryInterface, Sequelize));
     },
     down() {
 
