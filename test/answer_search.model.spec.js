@@ -158,10 +158,10 @@ describe('answer search unit', function answerSearchUnit() {
             const fn = (index, multipleIndex) => ({ choice: choiceIds[index], multipleIndex });
             const answers = spec.choiceIndices.map(fn);
             return { answers };
-        }
+        },
     };
 
-    const answerInfoToObject = function(surveyIndex, answerInfo, idProperty = 'questionId') {
+    const answerInfoToObject = function (surveyIndex, answerInfo, idProperty = 'questionId') {
         return answerInfo.map((info) => {
             const questionType = info.questionType;
             const questionIndex = typeIndexMap.get(questionType)[surveyIndex];
@@ -172,7 +172,7 @@ describe('answer search unit', function answerSearchUnit() {
         });
     };
 
-    const createAnswersFn = function(userIndex, surveyIndex, answerInfo) {
+    const createAnswersFn = function (userIndex, surveyIndex, answerInfo) {
         return function createAnswers() {
             const userId = hxUser.id(userIndex);
             const surveyId = hxSurvey.id(surveyIndex);
@@ -188,165 +188,165 @@ describe('answer search unit', function answerSearchUnit() {
         surveyIndex: 0,
         answerInfo: [{
             questionType: 'text',
-            value: 'textvalue_00'
+            value: 'textvalue_00',
         }, {
             questionType: 'bool',
-            value: true
+            value: true,
         }, {
             questionType: 'choice',
-            choiceIndex: 4
+            choiceIndex: 4,
         }, {
             questionType: 'multitext',
-            values: ['mtv_1', 'mtv_2']
-        }]
+            values: ['mtv_1', 'mtv_2'],
+        }],
     }, {                      // user 0, survey 1
         userIndex: 0,
         surveyIndex: 1,
         answerInfo: [{
             questionType: 'text',
-            value: 'textvalue_10'
+            value: 'textvalue_10',
         }, {
             questionType: 'bool',
-            value: false
+            value: false,
         }, {
             questionType: 'choice',
-            choiceIndex: 3
+            choiceIndex: 3,
         }, {
             questionType: 'multichoice',
-            choiceIndices: [2, 3, 4]
-        }]
+            choiceIndices: [2, 3, 4],
+        }],
     }, {                      // user 0, survey 2
         userIndex: 0,
         surveyIndex: 2,
         answerInfo: [{
             questionType: 'multichoice',
-            choiceIndices: [1, 3, 5]
+            choiceIndices: [1, 3, 5],
         }, {
             questionType: 'choices',
-            choiceIndices: [0, 2, 4]
-        }]
+            choiceIndices: [0, 2, 4],
+        }],
     }, {                      // user 1, survey 0
         userIndex: 1,
         surveyIndex: 0,
         answerInfo: [{
             questionType: 'text',
-            value: 'textvalue_00'
+            value: 'textvalue_00',
         }, {
             questionType: 'bool',
-            value: false
+            value: false,
         }, {
             questionType: 'choice',
-            choiceIndex: 2
+            choiceIndex: 2,
         }, {
             questionType: 'multitext',
-            values: ['mtv_1']
-        }]
+            values: ['mtv_1'],
+        }],
     }, {                      // user 1, survey 1
         userIndex: 1,
         surveyIndex: 1,
         answerInfo: [{
             questionType: 'text',
-            value: 'textvalue_102'
+            value: 'textvalue_102',
         }, {
             questionType: 'bool',
-            value: false
+            value: false,
         }, {
             questionType: 'choice',
-            choiceIndex: 3
+            choiceIndex: 3,
         }, {
             questionType: 'multichoice',
-            choiceIndices: [1, 3]
-        }]
+            choiceIndices: [1, 3],
+        }],
     }, {                      // user 1, survey 2
         userIndex: 1,
         surveyIndex: 2,
         answerInfo: [{
             questionType: 'text',
-            value: 'rm2'
+            value: 'rm2',
         }, {
             questionType: 'choices',
-            choiceIndices: [0, 2, 3]
+            choiceIndices: [0, 2, 3],
         }, {
             questionType: 'multichoice',
-            choiceIndices: [1, 2]
-        }]
+            choiceIndices: [1, 2],
+        }],
     }, {                      // user 2, survey 0
         userIndex: 2,
         surveyIndex: 0,
         answerInfo: [{
             questionType: 'text',
-            value: 'textvalue_00'
+            value: 'textvalue_00',
         }, {
             questionType: 'bool',
-            value: false
+            value: false,
         }, {
             questionType: 'choice',
-            choiceIndex: 5
+            choiceIndex: 5,
         }, {
             questionType: 'multitext',
-            values: ['mtv_42', 'mtv_33', 'mtv_5']
-        }]
+            values: ['mtv_42', 'mtv_33', 'mtv_5'],
+        }],
     }, {                      // user 2, survey 1
         userIndex: 2,
         surveyIndex: 1,
         answerInfo: [{
             questionType: 'text',
-            value: 'textvalue_102'
+            value: 'textvalue_102',
         }, {
             questionType: 'bool',
-            value: true
+            value: true,
         }, {
             questionType: 'choice',
-            choiceIndex: 0
+            choiceIndex: 0,
         }, {
             questionType: 'multichoice',
-            choiceIndices: [1, 2, 4]
-        }]
+            choiceIndices: [1, 2, 4],
+        }],
     }, {                      // user 2, survey 2
         userIndex: 2,
         surveyIndex: 2,
         answerInfo: [{
             questionType: 'text',
-            value: 'rm4'
+            value: 'rm4',
         }, {
             questionType: 'choices',
-            choiceIndices: [0, 1]
+            choiceIndices: [0, 1],
         }, {
             questionType: 'multichoice',
-            choiceIndices: [2, 5]
-        }]
+            choiceIndices: [2, 5],
+        }],
     }, {                      // user 3, survey 1
         userIndex: 3,
         surveyIndex: 1,
         answerInfo: [{
             questionType: 'text',
-            value: 'textvalue_102'
+            value: 'textvalue_102',
         }, {
             questionType: 'bool',
-            value: true
+            value: true,
         }, {
             questionType: 'choice',
-            choiceIndex: 0
+            choiceIndex: 0,
         }, {
             questionType: 'multichoice',
-            choiceIndices: [1, 4, 5]
-        }]
+            choiceIndices: [1, 4, 5],
+        }],
     }, {                      // user 3, survey 2
         userIndex: 3,
         surveyIndex: 2,
         answerInfo: [{
             questionType: 'text',
-            value: 'rm4'
+            value: 'rm4',
         }, {
             questionType: 'choices',
-            choiceIndices: [1, 4, 5]
+            choiceIndices: [1, 4, 5],
         }, {
             questionType: 'multichoice',
-            choiceIndices: [2, 4]
-        }]
+            choiceIndices: [2, 4],
+        }],
     }];
 
-    answerSequence.forEach(({ userIndex, surveyIndex, answerInfo}) => {
+    answerSequence.forEach(({ userIndex, surveyIndex, answerInfo }) => {
         const msg = `user ${userIndex} answers survey ${surveyIndex}`;
         it(msg, createAnswersFn(userIndex, surveyIndex, answerInfo));
     });
@@ -357,45 +357,45 @@ describe('answer search unit', function answerSearchUnit() {
             surveyIndex: 0,
             answerInfo: [{
                 questionType: 'text',
-                value: 'textvalue_00'
+                value: 'textvalue_00',
             }],
         }, {
             surveyIndex: 1,
             answerInfo: [{
                 questionType: 'multichoice',
-                choiceIndices: [2, 3]
-            }]
-        }]
+                choiceIndices: [2, 3],
+            }],
+        }],
     }, {
         count: 2,
         answers: [{
             surveyIndex: 0,
             answerInfo: [{
                 questionType: 'text',
-                value: 'textvalue_00'
+                value: 'textvalue_00',
             }],
         }, {
             surveyIndex: 1,
             answerInfo: [{
                 questionType: 'multichoice',
-                choiceIndices: [2]
-            }]
-        }]
+                choiceIndices: [2],
+            }],
+        }],
     }, {
         count: 0,
         answers: [{
             surveyIndex: 0,
             answerInfo: [{
                 questionType: 'text',
-                value: 'notanexistinganswer'
+                value: 'notanexistinganswer',
             }],
         }, {
             surveyIndex: 1,
             answerInfo: [{
                 questionType: 'multichoice',
-                choiceIndices: [2, 3]
-            }]
-        }]
+                choiceIndices: [2, 3],
+            }],
+        }],
     }];
 
     const searchAnswersFn = function ({ count, answers }) {
@@ -407,7 +407,7 @@ describe('answer search unit', function answerSearchUnit() {
             }, []);
             const criteria = { questions };
             return models.answer.searchCountUsers(criteria)
-                .then((actual) => expect(actual).to.equal(count));
+                .then(actual => expect(actual).to.equal(count));
         };
     };
 

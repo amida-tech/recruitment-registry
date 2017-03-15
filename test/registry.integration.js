@@ -13,16 +13,16 @@ const RRError = require('../lib/rr-error');
 const RRSuperTest = require('./util/rr-super-test');
 const SharedIntegration = require('./util/shared-integration.js');
 const Generator = require('./util/generator');
-const comparator = require('./util/comparator');
 const History = require('./util/history');
-
-const expect = chai.expect;
-const generator = new Generator();
-const shared = new SharedIntegration(generator);
+const registryCommon = require('./util/registry-common');
 
 describe('registry integration', function registryIntegration() {
+    const expect = chai.expect;
+    const generator = new Generator();
+    const shared = new SharedIntegration(generator);
     const rrSuperTest = new RRSuperTest();
     const hxRegistry = new History();
+    const tests = new registryCommon.IntegrationTests(rrSuperTest, generator, hxRegistry);
 
     before(shared.setUpFn(rrSuperTest));
 
@@ -35,50 +35,12 @@ describe('registry integration', function registryIntegration() {
             });
     });
 
-    const createRegistryFn = function (newRegistry) {
-        return function createRegistry() {
-            const registry = newRegistry || generator.newRegistry();
-            return rrSuperTest.post('/registries', registry, 201)
-                .expect(res => hxRegistry.push(registry, res.body));
-        };
-    };
-
-    const getRegistryFn = function (index) {
-        return function getRegistry() {
-            const id = hxRegistry.id(index);
-            return rrSuperTest.get(`/registries/${id}`, true, 200)
-                .expect((res) => {
-                    hxRegistry.updateServer(index, res.body);
-                    comparator.registry(hxRegistry.client(index), res.body);
-                });
-        };
-    };
-
-    const listRegistriesFn = function () {
-        return function listRegistry() {
-            return rrSuperTest.get('/registries', true, 200)
-                .expect((res) => {
-                    let expected = _.cloneDeep(hxRegistry.listServers(['id', 'name']));
-                    expected = _.sortBy(expected, 'name');
-                    expect(res.body).to.deep.equal(expected);
-                });
-        };
-    };
-
-    const deleteRegistryFn = function (index) {
-        return function deleteRegistry() {
-            const id = hxRegistry.id(index);
-            return rrSuperTest.delete(`/registries/${id}`, 204)
-                .then(() => hxRegistry.remove(index));
-        };
-    };
-
     _.range(8).forEach((index) => {
-        it(`create registry ${index}`, createRegistryFn());
-        it(`get registry ${index}`, getRegistryFn(index));
+        it(`create registry ${index}`, tests.createRegistryFn());
+        it(`get registry ${index}`, tests.getRegistryFn(index));
     });
 
-    it('list registries', listRegistriesFn());
+    it('list registries', tests.listRegistriesFn());
 
     it('error: create registry with url and schema', function createRegistryURLSchema() {
         const name = 'example';
@@ -120,19 +82,19 @@ describe('registry integration', function registryIntegration() {
     });
 
     [1, 2, 5].forEach((index) => {
-        it(`delete registry ${index}`, deleteRegistryFn(index));
+        it(`delete registry ${index}`, tests.deleteRegistryFn(index));
     });
 
     _.range(8, 10).forEach((index) => {
-        it(`create registry ${index}`, createRegistryFn());
-        it(`get registry ${index}`, getRegistryFn(index));
+        it(`create registry ${index}`, tests.createRegistryFn());
+        it(`get registry ${index}`, tests.getRegistryFn(index));
     });
 
     const createRegistryFromDeletedFn = function (deletedIndex) {
         return function createRegistryFromDeleted() {
             const server = hxRegistry.server(deletedIndex);
             delete server.id;
-            return createRegistryFn(server)();
+            return tests.createRegistryFn(server)();
         };
     };
 
@@ -140,10 +102,10 @@ describe('registry integration', function registryIntegration() {
         const newIndex = 10 + index;
         const msg = `create registry ${newIndex} from deleted ${deletedIndex}`;
         it(msg, createRegistryFromDeletedFn(deletedIndex));
-        it(`get registry ${newIndex}`, getRegistryFn(newIndex));
+        it(`get registry ${newIndex}`, tests.getRegistryFn(newIndex));
     });
 
-    it('list registries', listRegistriesFn());
+    it('list registries', tests.listRegistriesFn());
 
     it('logout as super', shared.logoutFn(rrSuperTest));
 });

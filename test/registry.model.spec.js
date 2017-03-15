@@ -11,15 +11,15 @@ const models = require('../models');
 
 const SharedSpec = require('./util/shared-spec.js');
 const Generator = require('./util/generator');
-const comparator = require('./util/comparator');
 const History = require('./util/history');
-
-const expect = chai.expect;
-const generator = new Generator();
-const shared = new SharedSpec(generator);
+const registryCommon = require('./util/registry-common');
 
 describe('registry unit', function registryUnit() {
+    const expect = chai.expect;
+    const generator = new Generator();
+    const shared = new SharedSpec(generator);
     const hxRegistry = new History();
+    const tests = new registryCommon.SpecTests(generator, hxRegistry);
 
     before(shared.setUpFn());
 
@@ -30,50 +30,12 @@ describe('registry unit', function registryUnit() {
             });
     });
 
-    const createRegistryFn = function (newRegistry) {
-        return function createRegistry() {
-            const registry = newRegistry || generator.newRegistry();
-            return models.registry.createRegistry(registry)
-                .then(({ id }) => hxRegistry.push(registry, { id }));
-        };
-    };
-
-    const getRegistryFn = function (index) {
-        return function getRegistry() {
-            const id = hxRegistry.id(index);
-            return models.registry.getRegistry(id)
-                .then((registry) => {
-                    hxRegistry.updateServer(index, registry);
-                    comparator.registry(hxRegistry.client(index), registry);
-                });
-        };
-    };
-
-    const listRegistriesFn = function () {
-        return function listRegistry() {
-            return models.registry.listRegistries()
-                .then((registries) => {
-                    let expected = _.cloneDeep(hxRegistry.listServers(['id', 'name']));
-                    expected = _.sortBy(expected, 'name');
-                    expect(registries).to.deep.equal(expected);
-                });
-        };
-    };
-
-    const deleteRegistryFn = function (index) {
-        return function deleteRegistry() {
-            const id = hxRegistry.id(index);
-            return models.registry.deleteRegistry(id)
-                .then(() => hxRegistry.remove(index));
-        };
-    };
-
     _.range(8).forEach((index) => {
-        it(`create registry ${index}`, createRegistryFn());
-        it(`get registry ${index}`, getRegistryFn(index));
+        it(`create registry ${index}`, tests.createRegistryFn());
+        it(`get registry ${index}`, tests.getRegistryFn(index));
     });
 
-    it('list registries', listRegistriesFn());
+    it('list registries', tests.listRegistriesFn());
 
     it('error: create registry with url and schema', function createRegistryURLSchema() {
         const name = 'example';
@@ -111,19 +73,19 @@ describe('registry unit', function registryUnit() {
     });
 
     [1, 2, 5].forEach((index) => {
-        it(`delete registry ${index}`, deleteRegistryFn(index));
+        it(`delete registry ${index}`, tests.deleteRegistryFn(index));
     });
 
     _.range(8, 10).forEach((index) => {
-        it(`create registry ${index}`, createRegistryFn());
-        it(`get registry ${index}`, getRegistryFn(index));
+        it(`create registry ${index}`, tests.createRegistryFn());
+        it(`get registry ${index}`, tests.getRegistryFn(index));
     });
 
     const createRegistryFromDeletedFn = function (deletedIndex) {
         return function createRegistryFromDeleted() {
             const server = hxRegistry.server(deletedIndex);
             delete server.id;
-            return createRegistryFn(server)();
+            return tests.createRegistryFn(server)();
         };
     };
 
@@ -131,8 +93,8 @@ describe('registry unit', function registryUnit() {
         const newIndex = 10 + index;
         const msg = `create registry ${newIndex} from deleted ${deletedIndex}`;
         it(msg, createRegistryFromDeletedFn(deletedIndex));
-        it(`get registry ${newIndex}`, getRegistryFn(newIndex));
+        it(`get registry ${newIndex}`, tests.getRegistryFn(newIndex));
     });
 
-    it('list registries', listRegistriesFn());
+    it('list registries', tests.listRegistriesFn());
 });
