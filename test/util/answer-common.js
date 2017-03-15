@@ -1,12 +1,10 @@
 'use strict';
 
 const chai = require('chai');
-const _ = require('lodash');
 
 const models = require('../../models');
 const comparator = require('./comparator');
 const AnswerHistory = require('./answer-history');
-const Answerer = require('./generator/answerer');
 
 const expect = chai.expect;
 
@@ -114,26 +112,6 @@ const answersToSearchQuery = function (answers) {
         answers: answer.answers,
     }));
     return { questions };
-};
-
-const AllChoicesAnswerer = class AllChoicesAnswerer extends Answerer {
-    choices(question) {
-        const choices = question.choices.map((choice) => {
-            this.answerIndex += 1;
-            const answer = { id: choice.id };
-            const type = _.camelCase(choice.type || 'bool');
-            Object.assign(answer, this[type]());
-            return answer;
-        });
-        return { choices };
-    }
-};
-
-const BoolSoleChoicesAnswerer = class BoolSoleChoicesAnswerer extends Answerer {
-    choices(question) {
-        const choice = question.choices.find(choice => choice.type === 'bool-sole');
-        return { choices: [{ id: choice.id, boolValue: true }] };
-    }
 };
 
 const SpecTests = class AnswerSpecTests {
@@ -301,6 +279,4 @@ module.exports = {
     generateAnswers,
     SpecTests,
     IntegrationTests,
-    AllChoicesAnswerer,
-    BoolSoleChoicesAnswerer,
 };

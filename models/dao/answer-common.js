@@ -10,7 +10,6 @@ const generateAnswerSingleFn = {
     month: value => ({ monthValue: value }),
     day: value => ({ dayValue: value }),
     bool: value => ({ boolValue: value === 'true' }),
-    'bool-sole': value => ({ boolValue: value === 'true' }),
     pounds: value => ({ numberValue: parseInt(value, 10) }),
     integer: value => ({ integerValue: parseInt(value, 10) }),
     float: value => ({ integerValue: parseFloat(value) }),
@@ -36,6 +35,13 @@ const generateAnswerSingleFn = {
 
 const generateAnswerChoices = {
     choice: entries => ({ choice: entries[0].questionChoiceId }),
+    'open-choice': (entries) => {
+        const choice = entries[0].questionChoiceId;
+        if (choice) {
+            return { choice };
+        }
+        return { textValue: entries[0].value };
+    },
     'choice-ref': entries => ({ choice: entries[0].questionChoiceId }),
     choices: (entries) => {
         let choices = entries.map((r) => {
@@ -53,8 +59,8 @@ const generateAnswer = function (type, entries, multiple) {
         const fn = generateAnswerSingleFn[type];
         const result = entries.map((entry) => {
             const answer = { multipleIndex: entry.multipleIndex };
-            if (type === 'choice') {
-                Object.assign(answer, generateAnswerChoices.choice([entry]));
+            if (type === 'choice' || type === 'open-choice') {
+                Object.assign(answer, generateAnswerChoices[type]([entry]));
             } else {
                 Object.assign(answer, fn(entry.value));
             }

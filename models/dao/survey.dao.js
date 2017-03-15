@@ -7,6 +7,7 @@ const db = require('../db');
 const RRError = require('../../lib/rr-error');
 const SPromise = require('../../lib/promise');
 const queryrize = require('../../lib/queryrize');
+const importUtil = require('../../import/import-util');
 const Translatable = require('./translatable');
 const ExportCSVConverter = require('../../export/csv-converter.js');
 const ImportCSVConverter = require('../../import/csv-converter.js');
@@ -14,6 +15,7 @@ const ImportCSVConverter = require('../../import/csv-converter.js');
 const sequelize = db.sequelize;
 const Survey = db.Survey;
 const SurveyQuestion = db.SurveyQuestion;
+const SurveySection = db.SurveySection;
 const ProfileSurvey = db.ProfileSurvey;
 const AnswerRule = db.AnswerRule;
 const AnswerRuleValue = db.AnswerRuleValue;
@@ -494,6 +496,7 @@ module.exports = class SurveyDAO extends Translatable {
     deleteSurvey(id) {
         return sequelize.transaction(transaction => Survey.destroy({ where: { id }, transaction })
                 .then(() => SurveyQuestion.destroy({ where: { surveyId: id }, transaction }))
+                .then(() => SurveySection.destroy({ where: { surveyId: id }, transaction }))
                 .then(() => ProfileSurvey.destroy({ where: { surveyId: id }, transaction })));
     }
 
@@ -533,29 +536,34 @@ module.exports = class SurveyDAO extends Translatable {
             .then(surveys => this.updateAllTexts(surveys, options.language))
             .then((surveys) => {
                 if (scope === 'export') {
-                    return SurveyQuestion.findAll({
-                        raw: true,
-                        attributes: ['surveyId', 'questionId', 'required'],
-                        order: 'line',
-                    })
-                        .then(surveyQuestions => surveyQuestions.reduce((r, qx) => {
-                            const p = r.get(qx.surveyId);
-                            if (!p) {
-                                r.set(qx.surveyId, [{ id: qx.questionId, required: qx.required }]);
-                                return r;
-                            }
-                            p.push({ id: qx.questionId, required: qx.required });
-                            return r;
-                        }, new Map()))
-                        .then((map) => {
-                            surveys.forEach((survey) => {
-                                survey.questions = map.get(survey.id);
-                            });
-                            return surveys;
-                        });
+                    return this.updateSurveyListExport(surveys);
                 }
                 return surveys;
             });
+    }
+
+    updateSurveyListExport(surveys) {
+        const surveyMap = new Map(surveys.map(survey => [survey.id, survey]));
+        return SurveyQuestion.findAll({
+            raw: true,
+            attributes: ['surveyId', 'questionId', 'required'],
+            order: 'line',
+        })
+            .then((surveyQuestions) => {
+                surveyQuestions.forEach(({ surveyId, questionId, required }) => {
+                    const survey = surveyMap.get(surveyId);
+                    const questions = survey.questions;
+                    const question = { id: questionId, required };
+                    if (questions) {
+                        questions.push(question);
+                    } else {
+                        survey.questions = [question];
+                    }
+                });
+                return surveys;
+            })
+            .then(() => this.surveySection.updateSurveyListExport(surveyMap))
+            .then(() => surveys);
     }
 
     getSurvey(id, options = {}) {
@@ -574,7 +582,7 @@ module.exports = class SurveyDAO extends Translatable {
                 if (options.override) {
                     return survey;
                 }
-                return this.answerRule.getSurveyAnswerRules(survey.id)
+                return this.answerRule.getSurveyAnswerRules({ surveyId: survey.id })
                     .then(answerRuleInfos => this.updateText(survey, options.language)
                             .then(() => this.surveyQuestion.listSurveyQuestions(survey.id))
                             .then((surveyQuestions) => {
@@ -688,125 +696,193 @@ module.exports = class SurveyDAO extends Translatable {
                     }));
     }
 
+    exportAppendQuestionLines(r, startBaseObject, baseObject, questions) {
+        questions.forEach(({ id, required, sections }, index) => {
+            const line = { questionId: id, required };
+            if (index === 0) {
+                Object.assign(line, startBaseObject);
+            } else {
+                Object.assign(line, baseObject);
+            }
+            r.push(line);
+            if (sections) {
+                const questionAsParent = Object.assign({ id: baseObject.id, parentQuestionId: id });
+                this.exportAppendSectionLines(r, questionAsParent, questionAsParent, sections);
+            }
+        });
+    }
+
+    exportAppendSectionLines(r, startBaseObject, baseObject, parentSections) {
+        parentSections.forEach(({ id, sections, questions }, index) => {
+            const line = { sectionId: id };
+            if (index === 0) {
+                Object.assign(line, startBaseObject);
+            } else {
+                Object.assign(line, baseObject);
+            }
+            if (questions) {
+                const nextLines = Object.assign({ sectionId: id }, baseObject);
+                this.exportAppendQuestionLines(r, line, nextLines, questions);
+                return;
+            }
+            r.push(line);
+            const sectionAsParent = { id: baseObject.id, parentSectionId: id };
+            this.exportAppendSectionLines(r, sectionAsParent, sectionAsParent, sections);
+        });
+    }
+
     export() {
         return this.listSurveys({ scope: 'export' })
-            .then(surveys => surveys.reduce((r, { id, name, description, questions }) => {
+            .then(surveys => surveys.reduce((r, { id, name, description, questions, sections }) => {
                 const surveyLine = { id, name, description };
-                questions.forEach(({ id, required }, index) => {
-                    const line = { questionId: id, required };
-                    if (index === 0) {
-                        Object.assign(line, surveyLine);
-                    } else {
-                        line.id = surveyLine.id;
-                    }
-                    r.push(line);
-                });
+                if (questions) {
+                    this.exportAppendQuestionLines(r, surveyLine, { id }, questions);
+                    return r;
+                }
+                this.exportAppendSectionLines(r, surveyLine, { id }, sections);
                 return r;
             }, []))
             .then((lines) => {
-                const converter = new ExportCSVConverter({ fields: ['id', 'name', 'description', 'questionId', 'required'] });
+                const converter = new ExportCSVConverter({ fields: ['id', 'name', 'description', 'parentSectionId', 'parentQuestionId', 'sectionId', 'questionId', 'required'] });
                 return converter.dataToCSV(lines);
             });
     }
 
-    importMetaProperties(record, metaOptions) {
-        return metaOptions.reduce((r, propertyInfo) => {
-            const name = propertyInfo.name;
-            const value = record[name];
-            if (value !== undefined && value !== null) {
-                r[name] = value;
-            }
-            return r;
-        }, {});
+    importToDb(surveys, surveyQuestions, surveySections, surveySectionQuestions, options = {}) {
+        return sequelize.transaction((transaction) => {
+            const idMap = {};
+            const promises = surveys.map((survey) => {
+                const { id: importId, name, description, meta } = survey;
+                const record = meta ? { meta } : {};
+                const fields = _.omit(record, ['name', 'description', 'id']);
+                return Survey.create(fields, { transaction })
+                    .then(({ id }) => this.createTextTx({ id, name, description }, transaction))
+                    .then(({ id }) => { idMap[importId] = id; });
+            });
+            return SPromise.all(promises).then(() => idMap)
+                .then((idMap) => {
+                    surveyQuestions.forEach((surveyQuestion) => {
+                        const newSurveyId = idMap[surveyQuestion.surveyId];
+                        Object.assign(surveyQuestion, { surveyId: newSurveyId });
+                    });
+                    return this.surveyQuestion.importSurveyQuestionsTx(surveyQuestions, transaction)
+                        .then(() => idMap);
+                })
+                .then((idMap) => {
+                    surveySections.forEach((surveySection) => {
+                        const newSurveyId = idMap[surveySection.surveyId];
+                        Object.assign(surveySection, { surveyId: newSurveyId });
+                    });
+                    return this.surveySection.importSurveySectionsTx(surveySections, surveySectionQuestions, transaction)
+                        .then(() => idMap);
+                })
+                .then((idMap) => {
+                    if (options.sourceType) {
+                        const type = options.sourceType;
+                        const promises = _.transform(idMap, (r, surveyId, identifier) => {
+                            const record = { type, identifier, surveyId };
+                            const promise = this.surveyIdentifier.createSurveyIdentifier(record, transaction);
+                            r.push(promise);
+                            return r;
+                        }, []);
+                        return SPromise.all(promises).then(() => idMap);
+                    }
+                    return idMap;
+                });
+        });
     }
 
-    import(stream, questionIdMap, options = {}) {
-        const choicesIdMap = _.values(questionIdMap).reduce((r, { choicesIds }) => {
-            Object.assign(r, choicesIds);
-            return r;
-        }, {});
+    import(stream, { questionIdMap, sectionIdMap }, options = {}) {
         questionIdMap = _.toPairs(questionIdMap).reduce((r, pair) => {
             r[pair[0]] = pair[1].questionId;
             return r;
         }, {});
-        const converter = new ImportCSVConverter();
+        const converter = new ImportCSVConverter({ checkType: false });
         return converter.streamToRecords(stream)
-            .then((records) => {
-                const numRecords = records.length;
-                if (!numRecords) {
-                    return [];
-                }
-                let skip = 0;
-                const map = records.reduce((r, record) => {
-                    const id = record.id;
-                    let { survey } = r.get(id) || {};
-                    if (!survey) {
-                        survey = { name: record.name };
-                        if (options.meta) {
-                            const meta = this.importMetaProperties(record, options.meta);
-                            if (Object.keys(meta).length > 0) {
-                                survey.meta = meta;
-                            }
+            .then(records => records.map((record) => {
+                const idFields = ['sectionId', 'questionId', 'parentSectionId', 'parentQuestionId'];
+                const newRecord = _.omit(record, idFields);
+                ['sectionId', 'parentSectionId'].forEach((field) => {
+                    const value = record[field];
+                    if (value) {
+                        const newValue = sectionIdMap[value];
+                        if (!newValue) {
+                            throw new RRError('surveyImportMissingSectionId', value);
                         }
-                        if (record.description) {
-                            survey.description = record.description;
+                        newRecord[field] = newValue;
+                    }
+                });
+                ['questionId', 'parentQuestionId'].forEach((field) => {
+                    const value = record[field];
+                    if (value) {
+                        const newValue = questionIdMap[value];
+                        if (!newValue) {
+                            throw new RRError('surveyImportMissingQuestionId', value);
                         }
-                        r.set(id, { id, survey });
+                        newRecord[field] = newValue;
                     }
-                    if (!survey.questions) {
-                        survey.questions = [];
-                    }
-                    const question = {
-                        id: questionIdMap[record.questionId],
-                        required: record.required,
-                    };
-                    if (record.skipCount) {
-                        skip = record.skipCount;
-                        question.sections = [{
-                            enableWhen: [{
-                                questionId: questionIdMap[record.questionId],
-                                answer: { choice: choicesIdMap[record.skipValue] },
-                                logic: 'not-equals',
-                            }],
-                            questions: [],
-                        }];
-                        survey.questions.push(question);
-                        return r;
-                    }
-                    if (skip) {
-                        const questions = survey.questions;
-                        questions[questions.length - 1].sections[0].questions.push(question);
-                        skip -= 1;
-                    } else {
-                        survey.questions.push(question);
-                    }
-                    return r;
-                }, new Map());
-                return [...map.values()];
-            })
+                });
+                return newRecord;
+            }))
             .then((records) => {
                 if (!records.length) {
                     return {};
                 }
-                return sequelize.transaction((transaction) => {
-                    const mapIds = {};
-                    const pxs = records.map(({ id, survey }) => this.createSurveyTx(survey, transaction)
-                            .then((surveyId) => { mapIds[id] = surveyId; }));
-                    return SPromise.all(pxs)
-                        .then(() => {
-                            if (options.sourceType) {
-                                const type = options.sourceType;
-                                const promises = _.transform(mapIds, (r, surveyId, identifier) => {
-                                    const record = { type, identifier, surveyId };
-                                    const promise = this.surveyIdentifier.createSurveyIdentifier(record, transaction);
-                                    r.push(promise);
-                                    return r;
-                                }, []);
-                                return SPromise.all(promises).then(() => mapIds);
+                let currentId = null;
+                const sectionMap = new Map();
+                const surveys = [];
+                const surveyQuestions = [];
+                const surveySections = [];
+                const surveySectionQuestions = [];
+                records.forEach((record) => {
+                    const id = record.id;
+                    if (id !== currentId) {
+                        const survey = { id, name: record.name };
+                        importUtil.updateMeta(survey, record, options);
+                        if (record.description) {
+                            survey.description = record.description;
+                        }
+                        surveys.push(survey);
+                        currentId = id;
+                    }
+                    if (record.sectionId) {
+                        let index = sectionMap.get(record.sectionId);
+                        if (index === undefined) {
+                            index = surveySections.length;
+                            const section = { surveyId: id, sectionId: record.sectionId, line: index };
+                            surveySections.push(section);
+                            sectionMap.set(record.sectionId, index);
+                            const { parentSectionId, parentQuestionId } = record;
+                            if (parentSectionId) {
+                                const parentIndex = sectionMap.get(parentSectionId);
+                                if (parentIndex === undefined) {
+                                    throw new RRError('surveyImportMissingParentSectionId', parentSectionId);
+                                }
+                                section.parentIndex = parentIndex;
                             }
-                            return mapIds;
-                        });
+                            if (parentQuestionId) {
+                                section.parentQuestionId = parentQuestionId;
+                            }
+                        }
+                        if (record.questionId) {
+                            surveySectionQuestions.push({
+                                sectionIndex: index,
+                                questionId: record.questionId,
+                                line: surveySectionQuestions.length,
+                            });
+                        }
+                    }
+                    if (record.questionId) {
+                        const question = {
+                            surveyId: id,
+                            questionId: record.questionId,
+                            required: record.required,
+                            line: surveyQuestions.length,
+                        };
+                        surveyQuestions.push(question);
+                    }
                 });
+                return this.importToDb(surveys, surveyQuestions, surveySections, surveySectionQuestions, options);
             });
     }
 };

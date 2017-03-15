@@ -1,6 +1,7 @@
 'use strict';
 
 const db = require('../db');
+const SPromise = require('../../lib/promise');
 
 const SurveyQuestion = db.SurveyQuestion;
 const SurveySection = db.SurveySection;
@@ -80,5 +81,10 @@ module.exports = class SurveyQuestionsDAO {
                         return questions;
                     });
             });
+    }
+
+    importSurveyQuestionsTx(surveyQuestions, transaction) {
+        const promises = surveyQuestions.map(surveyQuestion => SurveyQuestion.create(surveyQuestion, { transaction }));
+        return SPromise.all(promises);
     }
 };

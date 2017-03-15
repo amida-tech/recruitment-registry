@@ -81,7 +81,7 @@ exports.importSurveys = function (req, res) {
     const idMapAsString = _.get(req, 'swagger.params.questionidmap.value');
     const idMap = JSON.parse(idMapAsString);
     const stream = intoStream(csvFile.buffer);
-    models.survey.import(stream, idMap)
+    models.survey.import(stream, { questionIdMap: idMap })
         .then(result => res.status(201).json(result))
         .catch(shared.handleError(res));
 };

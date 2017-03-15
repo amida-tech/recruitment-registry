@@ -48,12 +48,6 @@ module.exports = function User(sequelize, DataTypes) {
             type: DataTypes.ENUM('admin', 'participant', 'clinician', 'import'),
             allowNull: false,
         },
-        firstname: {
-            type: DataTypes.TEXT,
-        },
-        lastname: {
-            type: DataTypes.TEXT,
-        },
         originalUsername: {
             type: DataTypes.TEXT,
             field: 'original_username',
@@ -80,6 +74,12 @@ module.exports = function User(sequelize, DataTypes) {
         deletedAt: {
             type: DataTypes.DATE,
             field: 'deleted_at',
+        },
+        firstname: {
+            type: DataTypes.TEXT,
+        },
+        lastname: {
+            type: DataTypes.TEXT,
         },
     }, {
         freezeTableName: true,

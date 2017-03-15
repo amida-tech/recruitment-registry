@@ -80,7 +80,7 @@ const comparator = {
             delete expected.answerIdentifiers;
         }
         expect(server.type).to.equal(expected.type);
-        if (expected.type === 'choice' || expected.type === 'choices' || expected.type === 'choice-ref') {
+        if (expected.type === 'choice' || expected.type === 'open-choice' || expected.type === 'choices' || expected.type === 'choice-ref') {
             expected.choices.forEach((choice, index) => {
                 choice.id = server.choices[index].id;
                 if (options.ignoreAnswerIdentifier) {
@@ -282,6 +282,11 @@ const comparator = {
         const expected = _.cloneDeep(client);
         expected.id = server.id;
         expected.zip = expected.zip.replace(/ /g, '');
+        expect(server).to.deep.equal(expected);
+    },
+    section(client, server) {
+        const expected = _.cloneDeep(client);
+        expected.id = server.id;
         expect(server).to.deep.equal(expected);
     },
 };

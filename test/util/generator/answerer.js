@@ -97,6 +97,14 @@ module.exports = class Answerer {
         return { choice: choice.id };
     }
 
+    openChoice(question) {
+        if (this.answerIndex % 2) {
+            const choice = this.selectChoice(question.choices);
+            return { choice: choice.id };
+        }
+        return { textValue: `text_${this.answerIndex}` };
+    }
+
     choiceRef(question) {
         const choice = this.selectChoice(question.choices);
         return { choice: choice.id };
