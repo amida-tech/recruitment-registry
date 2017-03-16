@@ -1,11 +1,6 @@
 'use strict';
 
-const Sequelize = require('sequelize');
-const pg = require('pg');
-
-const config = require('../../config');
-const logger = require('../../logger');
-
+const sequelizeGenerator = require('./sequelize-generator');
 const surveyStatus = require('./survey-status.model');
 const user = require('./user.model');
 const questionType = require('./question-type.model');
@@ -52,32 +47,8 @@ const researchSite = require('./research-site.model');
 const researchSiteVicinity = require('./research-site-vicinity.model');
 const registry = require('./registry.model');
 
-pg.types.setTypeParser(1184, value => value);
-
 module.exports = function dbGenerator(inputSchema) {
-    const schema = inputSchema || config.db.schema;
-
-    const sequelizeOptions = {
-        host: config.db.host,
-        dialect: config.db.dialect,
-        dialectOptions: {
-            ssl: (config.env === 'production'),
-            prependSearchPath: schema !== 'public',
-        },
-        port: config.db.port,
-        pool: {
-            max: config.db.poolMax,
-            min: config.db.poolMin,
-            idle: config.db.poolIdle,
-        },
-        logging: message => logger.info(message),
-    };
-
-    if (config.db.schema !== 'public') {
-        sequelizeOptions.searchPath = schema;
-    }
-
-    const sequelize = new Sequelize(config.db.name, config.db.user, config.db.pass, sequelizeOptions);
+    const { Sequelize, sequelize, schema } = sequelizeGenerator(inputSchema);
 
     const SurveyStatus = surveyStatus(sequelize, Sequelize, schema);
     const User = user(sequelize, Sequelize, schema);
