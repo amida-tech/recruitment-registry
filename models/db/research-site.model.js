@@ -14,6 +14,10 @@ module.exports = function researchSite(sequelize, Sequelize, schema) {
             type: Sequelize.TEXT,
             allowNull: false,
         },
+        street2: {
+            type: Sequelize.TEXT,
+            allowNull: true,
+        },
         city: {
             type: Sequelize.TEXT,
             allowNull: false,

@@ -5,6 +5,9 @@ const models = require('./models');
 const consentSeed = require('./test/util/consent-seed');
 const consentExample = require('./test/fixtures/example/consent-demo');
 
+const researchSiteSeed = require('./test/util/research-site-seed');
+const researchSiteExamples = require('./test/fixtures/example/research-site-demo');
+
 const survey = {
     name: 'Alzheimer',
     questions: [{
@@ -28,12 +31,13 @@ const survey = {
     ],
 };
 
-models.sequelize.query('SELECT COUNT(*) AS count FROM information_schema.tables WHERE  table_schema = \'public\' AND table_name = \'registry_user\'', { type: models.sequelize.QueryTypes.SELECT })
+models.sequelize.query('SELECT COUNT(*) AS count FROM information_schema.tables WHERE table_schema = \'public\' AND table_name = \'registry_user\'', { type: models.sequelize.QueryTypes.SELECT })
     .then((result) => {
         if (result[0].count === '0') {
             return models.sequelize.sync({ force: true })
                 .then(() => models.profileSurvey.createProfileSurvey(survey))
                 .then(() => consentSeed(consentExample))
+                .then(() => researchSiteSeed(researchSiteExamples))
                 .then(() => console.log('success'));
         }
         console.log('already initialized');

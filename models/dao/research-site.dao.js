@@ -2,8 +2,9 @@
 
 const SPromise = require('../../lib/promise');
 const zipUtil = require('../../lib/zip-util');
+const _ = require('lodash');
 
-const attributes = ['id', 'name', 'url', 'street', 'city', 'state', 'zip'];
+const attributes = ['id', 'name', 'url', 'street', 'street2', 'city', 'state', 'zip'];
 
 const formatZip = function formatZip(zip) {
     return zip ? zip.replace(/ /g, '') : zip;
@@ -22,10 +23,9 @@ module.exports = class ResearchSiteDAO {
     }
 
     createResearchSite(researchSite) {
-        const ResearchSite = this.db.ResearchSite;
         formatResearchSite(researchSite);
         return this.db.sequelize
-                .transaction(transaction => ResearchSite.create(researchSite, { transaction })
+                .transaction(transaction => this.db.ResearchSite.create(researchSite, { transaction })
                 .then(({ id }) => zipUtil.findVicinity(researchSite.zip)
                         .then(vicinity => (
                             this.createResearchSiteVicinityTx(id, vicinity, transaction)
@@ -33,17 +33,15 @@ module.exports = class ResearchSiteDAO {
                         .then(() => ({ id }))));
     }
 
-    listResearchSites(options = {}) {
+    listResearchSitesWithNulls(options = {}) {
         const zip = formatZip(options.nearZip);
-        const ResearchSite = this.db.ResearchSite;
-        const ResearchSiteVicinity = this.db.ResearchSiteVicinity;
         if (options.nearZip) {
-            return ResearchSiteVicinity.findAll({
+            return this.db.ResearchSiteVicinity.findAll({
                 raw: true,
                 where: { zip },
                 attributes: [],
                 order: 'research_site_id',
-                include: [{ model: ResearchSite, as: 'vicinity', attributes }],
+                include: [{ model: this.db.ResearchSite, as: 'vicinity', attributes }],
             })
                 .then(sites => sites.map(site => attributes.reduce((r, attribute) => {
                     const patch = {};
@@ -51,14 +49,18 @@ module.exports = class ResearchSiteDAO {
                     return Object.assign({}, patch, r);
                 }, {})));
         }
-        return ResearchSite.findAll({ raw: true, attributes, order: 'id' });
+        return this.db.ResearchSite.findAll({ raw: true, attributes, order: 'id' });
+    }
+
+    listResearchSites(options = {}) {
+        return this.listResearchSitesWithNulls(options)
+          .then(sites => sites.map(site => _.omitBy(site, _.isNil)));
     }
 
     patchResearchSite(id, researchSiteUpdate) {
         formatResearchSite(researchSiteUpdate);
-        const ResearchSite = this.db.ResearchSite;
         return this.db.sequelize.transaction(transaction => (
-                    ResearchSite.update(researchSiteUpdate, { where: { id }, transaction })
+                    this.db.ResearchSite.update(researchSiteUpdate, { where: { id }, transaction })
                 )
                 .then(() => {
                     const zip = researchSiteUpdate.zip;
@@ -72,31 +74,28 @@ module.exports = class ResearchSiteDAO {
     }
 
     deleteResearchSite(id) {
-        const ResearchSite = this.db.ResearchSite;
-        const ResearchSiteVicinity = this.db.ResearchSiteVicinity;
         return this.db.sequelize.transaction(transaction => (
-            ResearchSite
+            this.db.ResearchSite
                 .destroy({ where: { id }, transaction })
                 .then(() => (
-                    ResearchSiteVicinity.destroy({ where: { researchSiteId: id }, transaction })
+                    this.db.ResearchSiteVicinity.destroy({ where: { researchSiteId: id }, transaction })
                 ))
         ));
     }
 
     getResearchSite(id) {
-        const ResearchSite = this.db.ResearchSite;
-        return ResearchSite.findById(id, { raw: true, attributes });
+        return this.db.ResearchSite.findById(id, { raw: true, attributes })
+            .then(researchSite => _.omitBy(researchSite, _.isNil));
     }
 
     createResearchSiteVicinityTx(researchSiteId, vicinity, transaction) {
-        const ResearchSiteVicinity = this.db.ResearchSiteVicinity;
-        return ResearchSiteVicinity.destroy({ where: { researchSiteId }, transaction })
+        return this.db.ResearchSiteVicinity.destroy({ where: { researchSiteId }, transaction })
             .then(() => {
                 if (vicinity.length) {
                     const promises = vicinity
                         .map(formatZip)
                         .map(zip => (
-                            ResearchSiteVicinity.create({ zip, researchSiteId }, { transaction })
+                            this.db.ResearchSiteVicinity.create({ zip, researchSiteId }, { transaction })
                         ));
                     return SPromise.all(promises);
                 }
