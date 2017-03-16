@@ -3,11 +3,12 @@
 const db = require('../db');
 const SPromise = require('../../lib/promise');
 const zipUtil = require('../../lib/zip-util');
+const _ = require('lodash');
 
 const ResearchSite = db.ResearchSite;
 const ResearchSiteVicinity = db.ResearchSiteVicinity;
 
-const attributes = ['id', 'name', 'url', 'street', 'city', 'state', 'zip'];
+const attributes = ['id', 'name', 'url', 'street', 'street2', 'city', 'state', 'zip'];
 
 const formatZip = function formatZip(zip) {
     return zip ? zip.replace(/ /g, '') : zip;
@@ -32,7 +33,7 @@ module.exports = class ResearchSiteDAO {
                         .then(() => ({ id }))));
     }
 
-    listResearchSites(options = {}) {
+    listResearchSitesWithNulls(options = {}) {
         const zip = formatZip(options.nearZip);
         if (options.nearZip) {
             return ResearchSiteVicinity.findAll({
@@ -49,6 +50,11 @@ module.exports = class ResearchSiteDAO {
                 }, {})));
         }
         return ResearchSite.findAll({ raw: true, attributes, order: 'id' });
+    }
+
+    listResearchSites(options = {}) {
+        return this.listResearchSitesWithNulls(options)
+          .then(sites => sites.map(site => _.omitBy(site, _.isNil)));
     }
 
     patchResearchSite(id, researchSiteUpdate) {
@@ -78,7 +84,8 @@ module.exports = class ResearchSiteDAO {
     }
 
     getResearchSite(id) {
-        return ResearchSite.findById(id, { raw: true, attributes });
+        return ResearchSite.findById(id, { raw: true, attributes })
+            .then(researchSite => _.omitBy(researchSite, _.isNil));
     }
 
     createResearchSiteVicinityTx(researchSiteId, vicinity, transaction) {

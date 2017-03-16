@@ -18,3 +18,6 @@ env.production.user
 env.production.head
 test/generated
 migration/sequelize-meta.json
+
+# OS specifics
+*.DS_Store

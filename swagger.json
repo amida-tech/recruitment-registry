@@ -5146,6 +5146,10 @@
                     "type": "string",
                     "minLength": 1
                 },
+                "street2": {
+                    "type": "string",
+                    "minLength": 1
+                },
                 "city": {
                     "type": "string",
                     "minLength": 1
@@ -5179,6 +5183,10 @@
                     "minLength": 1
                 },
                 "street": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "street2": {
                     "type": "string",
                     "minLength": 1
                 },
@@ -5216,6 +5224,10 @@
                     "minLength": 1
                 },
                 "street": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "street2": {
                     "type": "string",
                     "minLength": 1
                 },
