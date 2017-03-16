@@ -27,7 +27,7 @@ const answerSequence = [{ // user 0, survey 0
         value: false,
     }, {
         questionType: 'choice',
-        choiceIndex: 3,
+        choiceIndex: 4,
     }, {
         questionType: 'multichoice',
         choiceIndices: [2, 3, 4],
@@ -191,6 +191,15 @@ const searchCases = [{
         answerInfo: [{
             questionType: 'multichoice',
             choiceIndices: [2],
+        }],
+    }],
+}, {
+    count: 1,
+    answers: [{
+        surveyIndex: 1,
+        answerInfo: [{
+            questionType: 'choice',
+            choiceIndex: 3,
         }],
     }],
 }, {

@@ -172,16 +172,30 @@ const SpecTests = class SurveySpecTests {
         });
     }
 
+    getCase(index) {
+        return testCase0.searchCases[index];
+    }
+
+    formCriteria(inputAnswers) {
+        const questions = inputAnswers.reduce((r, { surveyIndex, answerInfo }) => {
+            const answers = this.answerInfoToObject(surveyIndex, answerInfo, 'id');
+            r.push(...answers);
+            return r;
+        }, []);
+        return { questions };
+    }
+
+    getCriteria(index) {
+        const { count, answers } = this.getCase(index);
+        const criteria = this.formCriteria(answers);
+        return { count, criteria };
+    }
+
     searchAnswersFn({ count, answers }) {
         const m = this.models;
         const self = this;
         return function searchAnswers() {
-            const questions = answers.reduce((r, { surveyIndex, answerInfo }) => {
-                const answers = self.answerInfoToObject(surveyIndex, answerInfo, 'id');
-                r.push(...answers);
-                return r;
-            }, []);
-            const criteria = { questions };
+            const criteria = self.formCriteria(answers);
             return m.answer.searchCountUsers(criteria)
                 .then(actual => expect(actual).to.equal(count));
         };

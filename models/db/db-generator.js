@@ -246,5 +246,6 @@ module.exports = function dbGenerator(inputSchema) {
         ResearchSite,
         ResearchSiteVicinity,
         Registry,
+        generator: dbGenerator,
     };
 };

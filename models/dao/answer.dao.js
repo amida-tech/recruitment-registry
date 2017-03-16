@@ -151,6 +151,7 @@ module.exports = class AnswerDAO {
     constructor(db, dependencies) {
         this.db = db;
         Object.assign(this, dependencies);
+        this.schemaModels = new Map();
     }
 
     fileAnswer({ userId, surveyId, language, answers }, tx) {
@@ -534,5 +535,54 @@ module.exports = class AnswerDAO {
         const attributes = [this.db.sequelize.literal('\'1\'')];
         return Answer.findAll({ raw: true, where, attributes, include, having, group })
             .then(results => results.length);
+    }
+
+    federalSearchCountUsers(federalCriteria) {
+        const federals = federalCriteria.federal || [];
+        const attributes = ['id', 'url', 'schema'];
+        return this.db.Registry.findAll({ raw: true, attributes })
+            .then((registries) => {
+                if (!registries.length) {
+                    return RRError.reject('registryNoneFound');
+                }
+                const registryMap = new Map(registries.map(registry => [registry.id, registry]));
+                federals.forEach(({ registryId }) => {
+                    if (!registryMap.has(registryId)) {
+                        throw new RRError('registryIdNotFound', registryId);
+                    }
+                });
+                return registries;
+            })
+            .then((registries) => {
+                const toBeSyncModels = registries.filter(({ id }) => !this.schemaModels.has(id));
+                if (toBeSyncModels.length) {
+                    const promises = toBeSyncModels.map(({ id, schema }) => {
+                        const schemaDb = this.db.generator(schema);
+                        const models = this.generator(schemaDb);
+                        return models.sequelize.sync({ force: false })
+                            .then(this.schemaModels.set(id, models));
+                    });
+                    return SPromise.all(promises).then(() => registries);
+                }
+                return registries;
+            })
+            .then((registries) => {
+                const criteriaMapInput = federals.map(({ registryId, criteria }) => [registryId, criteria]);
+                const criteriaMap = new Map(criteriaMapInput);
+                const promises = registries.map(({ id }) => {
+                    const models = this.schemaModels.get(id);
+                    const criteria = criteriaMap.get(id);
+                    return models.answer.searchCountUsers(criteria).then(count => ({ count }));
+                });
+                return SPromise.all(promises);
+            })
+            .then(federal => this.searchCountUsers(federalCriteria.local.criteria)
+                    .then(count => ({ count }))
+                    .then((local) => {
+                        const result = { local, federal };
+                        const totalCount = federal.reduce((r, { count }) => r + count, local.count);
+                        result.total = { count: totalCount };
+                        return result;
+                    }));
     }
 };

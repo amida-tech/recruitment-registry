@@ -33,7 +33,8 @@ const ResearchSiteDAO = require('./research-site.dao');
 const Registry = require('./registry.dao');
 const Macro = require('./macro');
 
-module.exports = function (db) {
+module.exports = function daosGenerator(db) {
+    const registry = new Registry(db);
     const questionIdentifier = new QuestionIdentifierDAO(db);
     const answerIdentifier = new AnswerIdentifierDAO(db);
     const surveyIdentifier = new SurveyIdentifierDAO(db);
@@ -53,7 +54,7 @@ module.exports = function (db) {
     const question = new QuestionDAO(db, { questionChoice, choiceSet, questionIdentifier, answerIdentifier });
     const surveyQuestion = new SurveyQuestionDAO(db);
     const answerRule = new AnswerRuleDAO(db);
-    const answer = new AnswerDAO(db, { surveyConsentDocument, surveyQuestion, answerRule });
+    const answer = new AnswerDAO(db, { surveyConsentDocument, surveyQuestion, answerRule, generator: daosGenerator });
     const survey = new SurveyDAO(db, { answer, answerRule, surveySection, question, questionChoice, surveyIdentifier, surveyQuestion });
     const userSurvey = new UserSurveyDAO(db, { survey, answer });
     const consent = new ConsentDAO(db, { consentDocument });
@@ -64,7 +65,6 @@ module.exports = function (db) {
     const assessment = new AssessmentDAO(db);
     const userAssessment = new UserAssessmentDAO(db, { answer });
     const researchSite = new ResearchSiteDAO(db);
-    const registry = new Registry(db);
     const macro = new Macro(db, { survey, profileSurvey });
 
     return {
@@ -100,5 +100,6 @@ module.exports = function (db) {
         researchSite,
         registry,
         macro,
+        generator: daosGenerator,
     };
 };
