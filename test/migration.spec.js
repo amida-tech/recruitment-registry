@@ -35,6 +35,10 @@ const checkBootstrapData = function (tableName) {
 
 describe('migration spec', () => {
     if (!config.db.schema || config.db.schema === 'public') {
+        it('drop all schemas', function dropAllSchemas() {
+            return db.sequelize.dropAllSchemas();
+        });
+
         it('sync current schema', () => {
             const queryInterface = db.sequelize.getQueryInterface();
             return queryInterface.dropAllTables()

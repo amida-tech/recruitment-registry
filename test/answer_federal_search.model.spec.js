@@ -1,4 +1,4 @@
-/* global xdescribe,before,it*/
+/* global describe,it*/
 
 'use strict';
 
@@ -12,8 +12,9 @@ const History = require('./util/history');
 const registryCommon = require('./util/registry-common');
 const sequelizeGenerator = require('../models/db/sequelize-generator');
 const modelsGenerator = require('../models/generator');
+const searchCommon = require('./util/search/search-common');
 
-xdescribe('federal search unit', function federalSearchUnit() {
+describe('federal search unit', function federalSearchUnit() {
     const { sequelize: publicSequelize } = sequelizeGenerator();
     const generator = new Generator();
     const shared = new SharedSpec(generator);
@@ -26,24 +27,27 @@ xdescribe('federal search unit', function federalSearchUnit() {
         return publicSequelize.dropAllSchemas();
     });
 
-    const schemaModels = {};
-
     registries.forEach(({ schema }) => {
         it(`create schema ${schema}`, function createSchema() {
             return publicSequelize.createSchema(schema);
         });
 
-        it(`sync registry for schema ${schema}`, function syncRegistry() {
-            const models = modelsGenerator(schema);
-            schemaModels[schema] = models;
-            return models.sequelize.sync({ force: true });
-        });
+        it(`start running search tests for ${schema}`, function startSchemaRun() {});
+
+        const models = modelsGenerator(schema);
+        const searchTests = new searchCommon.SpecTests(models);
+        searchTests.runAnswerSearchUnit();
+
+        it(`end running search tests for ${schema}`, function endSchemaRun() {});
     });
 
-    before(shared.setUpFn());
+    it('sync models', shared.setUpFn());
 
     registries.forEach((registry, index) => {
         it(`create registry ${index}`, registryTests.createRegistryFn(registry));
         it(`get registry ${index}`, registryTests.getRegistryFn(index));
     });
+
+    const searchTests = new searchCommon.SpecTests();
+    searchTests.runAnswerSearchUnit();
 });

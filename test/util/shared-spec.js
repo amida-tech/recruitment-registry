@@ -15,21 +15,24 @@ const comparator = require('./comparator');
 const expect = chai.expect;
 
 class SharedSpec {
-    constructor(generator) {
+    constructor(generator, inputModels) {
+        this.models = inputModels || models;
         this.generator = generator || new Generator();
     }
 
     setUpFn(force = true) {
+        const m = this.models;
         return function () {
-            return models.sequelize.sync({ force });
+            return m.sequelize.sync({ force });
         };
     }
 
     createUserFn(hxUser, override) {
+        const m = this.models;
         const generator = this.generator;
         return function () {
             const user = generator.newUser(override);
-            return models.user.createUser(user)
+            return m.user.createUser(user)
                 .then(({ id }) => {
                     hxUser.push(user, { id });
                 });
@@ -37,25 +40,28 @@ class SharedSpec {
     }
 
     authenticateUserFn(hxUser, index) {
+        const m = this.models;
         return function () {
             const client = hxUser.client(index);
             const username = client.username || client.email;
-            return models.auth.authenticateUser(username, client.password);
+            return m.auth.authenticateUser(username, client.password);
         };
     }
 
     createProfileSurveyFn(hxSurvey) {
+        const m = this.models;
         const generator = this.generator;
         return function () {
             const survey = generator.newSurvey();
-            return models.profileSurvey.createProfileSurvey(survey)
+            return m.profileSurvey.createProfileSurvey(survey)
                 .then(({ id }) => hxSurvey.push(survey, { id }));
         };
     }
 
     verifyProfileSurveyFn(hxSurvey, index) {
+        const m = this.models;
         return function () {
-            return models.profileSurvey.getProfileSurvey()
+            return m.profileSurvey.getProfileSurvey()
                 .then((profileSurvey) => {
                     expect(profileSurvey.exists).to.equal(true);
                     const survey = profileSurvey.survey;
@@ -68,19 +74,21 @@ class SharedSpec {
     }
 
     createConsentTypeFn(history) {
+        const m = this.models;
         const generator = this.generator;
         return function () {
             const cst = generator.newConsentType();
-            return models.consentType.createConsentType(cst)
+            return m.consentType.createConsentType(cst)
                 .then(server => history.pushType(cst, server));
         };
     }
 
     translateConsentTypeFn(index, language, hxType) {
+        const m = this.models;
         return function () {
             const server = hxType.server(index);
             const translation = translator.translateConsentType(server, language);
-            return models.consentType.updateConsentTypeText(translation, language)
+            return m.consentType.updateConsentTypeText(translation, language)
                 .then(() => {
                     hxType.translate(index, language, translation);
                 });
@@ -88,10 +96,11 @@ class SharedSpec {
     }
 
     translateConsentDocumentFn(index, language, history) {
+        const m = this.models;
         return function () {
             const server = history.server(index);
             const translation = translator.translateConsentDocument(server, language);
-            return models.consentDocument.updateConsentDocumentText(translation, language)
+            return m.consentDocument.updateConsentDocumentText(translation, language)
                 .then(() => {
                     history.hxDocument.translateWithServer(server, language, translation);
                 });
@@ -99,29 +108,32 @@ class SharedSpec {
     }
 
     createConsentDocumentFn(history, typeIndex) {
+        const m = this.models;
         const generator = this.generator;
         return function () {
             const typeId = history.typeId(typeIndex);
             const cs = generator.newConsentDocument({ typeId });
-            return models.consentDocument.createConsentDocument(cs)
+            return m.consentDocument.createConsentDocument(cs)
                 .then(server => history.push(typeIndex, cs, server));
         };
     }
 
     createConsentFn(hxConsent, hxConsentDocument, typeIndices) {
+        const m = this.models;
         const generator = this.generator;
         return function () {
             const sections = typeIndices.map(typeIndex => hxConsentDocument.typeId(typeIndex));
             const clientConsent = generator.newConsent({ sections });
-            return models.consent.createConsent(clientConsent)
+            return m.consent.createConsent(clientConsent)
                 .then(result => hxConsent.pushWithId(clientConsent, result.id));
         };
     }
 
     verifyConsentFn(hxConsent, index) {
+        const m = this.models;
         return function () {
             const expected = hxConsent.server(index);
-            return models.consent.getConsent(expected.id)
+            return m.consent.getConsent(expected.id)
                 .then((consent) => {
                     const expected = hxConsent.server(index);
                     expect(consent).to.deep.equal(expected);
@@ -130,20 +142,22 @@ class SharedSpec {
     }
 
     signConsentTypeFn(history, userIndex, typeIndex) {
+        const m = this.models;
         return function () {
             const consentDocumentId = history.id(typeIndex);
             const userId = history.userId(userIndex);
             history.sign(typeIndex, userIndex);
-            return models.consentSignature.createSignature({ userId, consentDocumentId });
+            return m.consentSignature.createSignature({ userId, consentDocumentId });
         };
     }
 
     bulkSignConsentTypeFn(history, userIndex, typeIndices) {
+        const m = this.models;
         return function () {
             const consentDocumentIds = typeIndices.map(typeIndex => history.id(typeIndex));
             const userId = history.userId(userIndex);
             typeIndices.forEach(typeIndex => history.sign(typeIndex, userIndex));
-            return models.consentSignature.bulkCreateSignatures(consentDocumentIds, { userId });
+            return m.consentSignature.bulkCreateSignatures(consentDocumentIds, { userId });
         };
     }
 

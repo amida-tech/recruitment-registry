@@ -1,4 +1,4 @@
-/* global before,it*/
+/* global it*/
 
 'use strict';
 
@@ -59,12 +59,13 @@ const answerGenerators = {
 };
 
 const SpecTests = class SurveySpecTests {
-    constructor(offset = 5, surveyCount = 4) {
+    constructor(inputModels, offset = 5, surveyCount = 4) {
+        this.models = inputModels || models;
         this.offset = offset;
         this.surveyCount = surveyCount;
 
         const generator = new Generator();
-        this.shared = new SharedSpec(generator);
+        this.shared = new SharedSpec(generator, this.models);
 
         const hxUser = new History();
         const hxSurvey = new SurveyHistory();
@@ -75,7 +76,7 @@ const SpecTests = class SurveySpecTests {
         this.hxQuestion = hxQuestion;
 
         this.answerTests = new answerCommon.SpecTests(generator, hxUser, hxSurvey, hxQuestion);
-        this.questionTests = new questionCommon.SpecTests(generator, hxQuestion);
+        this.questionTests = new questionCommon.SpecTests(generator, hxQuestion, this.models);
         this.hxAnswers = this.answerTests.hxAnswer;
 
         const questionGenerator = new QuestionGenerator();
@@ -146,13 +147,14 @@ const SpecTests = class SurveySpecTests {
         const hxSurvey = this.hxSurvey;
         const hxQuestion = this.hxQuestion;
         const surveyGenerator = this.surveyGenerator;
+        const m = this.models;
         return function createSurvey() {
             const survey = surveyGenerator.newBody();
             survey.questions = qxIndices.map(index => ({
                 id: hxQuestion.server(index).id,
                 required: false,
             }));
-            return models.survey.createSurvey(survey)
+            return m.survey.createSurvey(survey)
                 .then((id) => {
                     hxSurvey.push(survey, { id });
                 });
@@ -171,6 +173,7 @@ const SpecTests = class SurveySpecTests {
     }
 
     searchAnswersFn({ count, answers }) {
+        const m = this.models;
         const self = this;
         return function searchAnswers() {
             const questions = answers.reduce((r, { surveyIndex, answerInfo }) => {
@@ -179,7 +182,7 @@ const SpecTests = class SurveySpecTests {
                 return r;
             }, []);
             const criteria = { questions };
-            return models.answer.searchCountUsers(criteria)
+            return m.answer.searchCountUsers(criteria)
                 .then(actual => expect(actual).to.equal(count));
         };
     }
@@ -189,18 +192,19 @@ const SpecTests = class SurveySpecTests {
         const hxUser = this.hxUser;
         const hxSurvey = this.hxSurvey;
         const hxAnswers = this.hxAnswers;
+        const m = this.models;
         return function createAnswers() {
             const userId = hxUser.id(userIndex);
             const surveyId = hxSurvey.id(surveyIndex);
             const answers = self.answerInfoToObject(surveyIndex, answerInfo);
             const input = { userId, surveyId, answers };
-            return models.answer.createAnswers(input)
+            return m.answer.createAnswers(input)
                 .then(() => hxAnswers.push(userIndex, surveyIndex, answers));
         };
     }
 
     runAnswerSearchUnit() {
-        before(this.shared.setUpFn());
+        it('sync models', this.shared.setUpFn());
 
         _.range(5).forEach((index) => {
             it(`create user ${index}`, this.shared.createUserFn(this.hxUser));

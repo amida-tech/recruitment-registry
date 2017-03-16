@@ -71,27 +71,30 @@ const IdentifierGenerator = class identifierGenerator {
 };
 
 const SpecTests = class QuestionSpecTests {
-    constructor(generator, hxQuestion) {
+    constructor(generator, hxQuestion, inputModels) {
         this.generator = generator;
         this.hxQuestion = hxQuestion;
+        this.models = inputModels || models;
     }
 
     createQuestionFn(question) {
         const generator = this.generator;
         const hxQuestion = this.hxQuestion;
+        const m = this.models;
         return function () {
             question = question || generator.newQuestion();
-            return models.question.createQuestion(question)
+            return m.question.createQuestion(question)
                 .then(({ id }) => hxQuestion.push(question, { id }));
         };
     }
 
     getQuestionFn(index) {
         const hxQuestion = this.hxQuestion;
+        const m = this.models;
         return function () {
             index = (index === undefined) ? hxQuestion.lastIndex() : index;
             const id = hxQuestion.id(index);
-            return models.question.getQuestion(id)
+            return m.question.getQuestion(id)
                 .then((question) => {
                     hxQuestion.updateServer(index, question);
                     comparator.question(hxQuestion.client(index), question);
@@ -101,8 +104,9 @@ const SpecTests = class QuestionSpecTests {
 
     deleteQuestionFn(index) {
         const hxQuestion = this.hxQuestion;
+        const m = this.models;
         return function () {
-            return models.question.deleteQuestion(hxQuestion.id(index))
+            return m.question.deleteQuestion(hxQuestion.id(index))
                 .then(() => {
                     hxQuestion.remove(index);
                 });
@@ -111,12 +115,13 @@ const SpecTests = class QuestionSpecTests {
 
     listQuestionsFn(scope) {
         const hxQuestion = this.hxQuestion;
+        const m = this.models;
         return function () {
             const options = scope ? {} : undefined;
             if (scope) {
                 options.scope = scope;
             }
-            return models.question.listQuestions(options)
+            return m.question.listQuestions(options)
                 .then((questions) => {
                     const fields = getFieldsForList(scope);
                     const expected = hxQuestion.listServers(fields);
