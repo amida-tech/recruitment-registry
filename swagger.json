@@ -656,6 +656,37 @@
                 }
             }
         },
+        "/answers/federal-queries": {
+            "x-swagger-router-controller": "answer.controller",
+            "post": {
+                "summary": "Federa; searches all answers and returns count of matching users",
+                "operationId": "federalSearchAnswers",
+                "security": [{
+                    "admin": []
+                }, {
+                    "clinician": []
+                }],
+                "parameters": [{
+                    "name": "query",
+                    "in": "body",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/federalAnswersQuery"
+                    }
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response.",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                   "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
         "/profile-survey": {
             "x-swagger-router-controller": "profile-survey.controller",
             "post": {
@@ -3704,6 +3735,36 @@
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/answer"
+                    }
+                }
+            }
+        },
+        "federalAnswersQuery": {
+            "type": "object",
+            "required": ["local", "federal"],
+            "properties": {
+                "local": {
+                    "type": "object",
+                    "properties": {
+                        "criteria": {
+                            "$ref": "#/definitions/answersQuery"
+                        }
+                    }
+                },
+                "federal": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "required": ["registryId", "criteria"],
+                        "properties": {
+                            "registryId": {
+                                "type": "integer",
+                                "minimum": 1
+                            },
+                            "criteria": {
+                                "$ref": "#/definitions/answersQuery"
+                            }
+                        }
                     }
                 }
             }

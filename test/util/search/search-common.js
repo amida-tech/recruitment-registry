@@ -5,8 +5,11 @@
 const chai = require('chai');
 const _ = require('lodash');
 
+const config = require('../../../config');
+
 const models = require('../../../models');
 const SharedSpec = require('../shared-spec');
+const SharedIntegration = require('../shared-integration');
 const Generator = require('../generator');
 const History = require('../history');
 const SurveyHistory = require('../survey-history');
@@ -35,7 +38,7 @@ const answerGenerators = {
     },
     choices(questionId, spec, choiceIdMap) {
         const choiceIds = choiceIdMap.get(questionId);
-        const choices = spec.choiceIndices.map(choiceIndex => choiceIds[choiceIndex]);
+        const choices = spec.choiceIndices.map(choiceIndex => ({ id: choiceIds[choiceIndex] }));
         return { answer: { choices } };
     },
     multitext(questionId, spec) {
@@ -64,9 +67,6 @@ const Tests = class BaseTests {
         this.offset = offset;
         this.surveyCount = surveyCount;
 
-        const generator = new Generator();
-        this.shared = new SharedSpec(generator, this.models);
-
         const hxUser = new History();
         const hxSurvey = new SurveyHistory();
         const hxQuestion = new History();
@@ -74,10 +74,6 @@ const Tests = class BaseTests {
         this.hxUser = hxUser;
         this.hxSurvey = hxSurvey;
         this.hxQuestion = hxQuestion;
-
-        this.answerTests = new answerCommon.SpecTests(generator, hxUser, hxSurvey, hxQuestion);
-        this.questionTests = new questionCommon.SpecTests(generator, hxQuestion, this.models);
-        this.hxAnswers = this.answerTests.hxAnswer;
 
         const questionGenerator = new QuestionGenerator();
         const multiQuestionGenerator = new MultiQuestionGenerator();
@@ -175,6 +171,16 @@ const Tests = class BaseTests {
 };
 
 const SpecTests = class SearchSpecTests extends Tests {
+    constructor(inputModels, offset = 5, surveyCount = 4) {
+        super(inputModels, offset, surveyCount);
+        const generator = new Generator();
+
+        this.shared = new SharedSpec(generator, this.models);
+        this.answerTests = new answerCommon.SpecTests(generator, this.hxUser, this.hxSurvey, this.hxQuestion);
+        this.questionTests = new questionCommon.SpecTests(generator, this.hxQuestion, this.models);
+        this.hxAnswers = this.answerTests.hxAnswer;
+    }
+
     createSurveyFn(qxIndices) {
         const hxSurvey = this.hxSurvey;
         const hxQuestion = this.hxQuestion;
@@ -259,6 +265,112 @@ const SpecTests = class SearchSpecTests extends Tests {
     }
 };
 
+const IntegrationTests = class SearchIntegrationTests extends Tests {
+    constructor(rrSuperTest, inputModels, offset = 5, surveyCount = 4) {
+        super(inputModels, offset, surveyCount);
+        this.rrSuperTest = rrSuperTest;
+        const generator = new Generator();
+
+        this.shared = new SharedIntegration(generator, this.models);
+        this.answerTests = new answerCommon.IntegrationTests(rrSuperTest, generator, this.hxUser, this.hxSurvey, this.hxQuestion);
+        this.questionTests = new questionCommon.IntegrationTests(rrSuperTest, generator, this.hxQuestion, this.models);
+        this.hxAnswers = this.answerTests.hxAnswer;
+    }
+
+    createSurveyFn(qxIndices) {
+        const hxSurvey = this.hxSurvey;
+        const hxQuestion = this.hxQuestion;
+        const surveyGenerator = this.surveyGenerator;
+        // const m = this.models;
+        const rrSuperTest = this.rrSuperTest;
+        return function createSurvey() {
+            const survey = surveyGenerator.newBody();
+            survey.questions = qxIndices.map(index => ({
+                id: hxQuestion.server(index).id,
+                required: false,
+            }));
+            return rrSuperTest.post('/surveys', survey, 201)
+                .expect((res) => {
+                    hxSurvey.push(survey, res.body);
+                });
+        };
+    }
+
+    searchAnswersFn({ count, answers }) {
+        // const m = this.models;
+        const rrSuperTest = this.rrSuperTest;
+        const self = this;
+        return function searchAnswers() {
+            const criteria = self.formCriteria(answers);
+            return rrSuperTest.post('/answers/queries', criteria, 200)
+                .expect(res => expect(res.body.count).to.equal(count));
+        };
+    }
+
+    createAnswersFn(userIndex, surveyIndex, answerInfo) {
+        const self = this;
+        const hxSurvey = this.hxSurvey;
+        const hxAnswers = this.hxAnswers;
+        // const m = this.models;
+        const rrSuperTest = this.rrSuperTest;
+        return function createAnswers() {
+            const surveyId = hxSurvey.id(surveyIndex);
+            const answers = self.answerInfoToObject(surveyIndex, answerInfo);
+            const input = { surveyId, answers, language: 'en' };
+            return rrSuperTest.post('/answers', input, 204)
+                .expect(() => hxAnswers.push(userIndex, surveyIndex, answers));
+        };
+    }
+
+    runAnswerSearchIntegration() {
+        it('sync models', this.shared.setUpFn(this.rrSuperTest));
+
+        it('login as super', this.shared.loginFn(this.rrSuperTest, config.superUser));
+
+        _.range(5).forEach((index) => {
+            it(`create user ${index}`, this.shared.createUserFn(this.rrSuperTest, this.hxUser));
+        });
+
+        _.range(this.offset).forEach((index) => {
+            it(`create question ${index}`, this.questionTests.createQuestionFn());
+            it(`get question ${index}`, this.questionTests.getQuestionFn(index));
+        });
+
+        this.questions.forEach((question, index) => {
+            const actualIndex = this.offset + index;
+            it(`create question ${actualIndex}`, this.questionTests.createQuestionFn(question));
+            it(`get question ${actualIndex}`, this.questionTests.getQuestionFn(actualIndex));
+        });
+
+        it('create a map of all choice/choice question choices', this.generateChoiceMapFn());
+
+        _.range(this.surveyCount).forEach((index) => {
+            const qxIndices = this.types.map(type => this.typeIndexMap.get(type)[index]);
+            it(`create survey ${index}`, this.createSurveyFn(qxIndices));
+        });
+
+        it('logout as super', this.shared.logoutFn(this.rrSuperTest));
+
+        const answerSequence = testCase0.answerSequence;
+
+        answerSequence.forEach(({ userIndex, surveyIndex, answerInfo }) => {
+            it(`login as user ${userIndex}`, this.shared.loginIndexFn(this.rrSuperTest, this.hxUser, userIndex));
+            const msg = `user ${userIndex} answers survey ${surveyIndex}`;
+            it(msg, this.createAnswersFn(userIndex, surveyIndex, answerInfo));
+            it(`logout as user ${userIndex}`, this.shared.logoutFn(this.rrSuperTest));
+        });
+
+        const searchCases = testCase0.searchCases;
+
+        it('login as super', this.shared.loginFn(this.rrSuperTest, config.superUser));
+        searchCases.forEach((searchCase, index) => {
+            it(`search case ${index}`, this.searchAnswersFn(searchCase));
+        });
+        it('logout as super', this.shared.logoutFn(this.rrSuperTest));
+    }
+};
+
 module.exports = {
     SpecTests,
+    IntegrationTests,
 };

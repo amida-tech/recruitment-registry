@@ -8,7 +8,6 @@ const _ = require('lodash');
 const chai = require('chai');
 
 const models = require('../models');
-const SharedSpec = require('./util/shared-spec.js');
 const Generator = require('./util/generator');
 const History = require('./util/history');
 const registryCommon = require('./util/registry-common');
