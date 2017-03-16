@@ -1,10 +1,11 @@
+/* global before,it*/
+
 'use strict';
 
 const chai = require('chai');
 const _ = require('lodash');
 
 const models = require('../../../models');
-
 const SharedSpec = require('../shared-spec');
 const Generator = require('../generator');
 const History = require('../history');
@@ -15,6 +16,8 @@ const questionCommon = require('../question-common');
 const QuestionGenerator = require('../generator/question-generator');
 const MultiQuestionGenerator = require('../generator/multi-question-generator');
 const SurveyGenerator = require('../generator/survey-generator');
+
+const testCase0 = require('./test-case-0');
 
 const expect = chai.expect;
 
@@ -57,92 +60,92 @@ const answerGenerators = {
 
 const SpecTests = class SurveySpecTests {
     constructor(offset = 5, surveyCount = 4) {
-    	this.offset = offset;
-    	this.surveyCount = surveyCount;
+        this.offset = offset;
+        this.surveyCount = surveyCount;
 
-    	const generator = new Generator();
-    	this.shared = new SharedSpec(generator);
+        const generator = new Generator();
+        this.shared = new SharedSpec(generator);
 
-    	const hxUser = new History();
-    	const hxSurvey = new SurveyHistory();
-    	const hxQuestion = new History();
+        const hxUser = new History();
+        const hxSurvey = new SurveyHistory();
+        const hxQuestion = new History();
 
-    	this.hxUser = hxUser;
-    	this.hxSurvey = hxSurvey;
-    	this.hxQuestion = hxQuestion;
+        this.hxUser = hxUser;
+        this.hxSurvey = hxSurvey;
+        this.hxQuestion = hxQuestion;
 
-    	this.answerTests = new answerCommon.SpecTests(generator, hxUser, hxSurvey, hxQuestion);
-    	this.questionTests = new questionCommon.SpecTests(generator, hxQuestion);
-    	this.hxAnswers = this.answerTests.hxAnswer;
+        this.answerTests = new answerCommon.SpecTests(generator, hxUser, hxSurvey, hxQuestion);
+        this.questionTests = new questionCommon.SpecTests(generator, hxQuestion);
+        this.hxAnswers = this.answerTests.hxAnswer;
 
-    	const questionGenerator = new QuestionGenerator();
-    	const multiQuestionGenerator = new MultiQuestionGenerator();
-    	this.surveyGenerator = new SurveyGenerator();
+        const questionGenerator = new QuestionGenerator();
+        const multiQuestionGenerator = new MultiQuestionGenerator();
+        this.surveyGenerator = new SurveyGenerator();
 
-    	const typeIndexMap = new Map();
-    	const types = [];
-    	const questions = [];
-    	['choice', 'choices', 'text', 'bool'].forEach((type) => {
-    	    const options = { choiceCount: 6, noText: true, noOneOf: true };
-    	    types.push(type);
-    	    const indices = [];
-    	    typeIndexMap.set(type, indices);
-    	    _.range(surveyCount).forEach(() => {
-    	        indices.push(offset + questions.length);
-    	        const question = questionGenerator.newQuestion(type, options);
-    	        questions.push(question);
-    	    });
-    	});
-    	['choice', 'text', 'bool'].forEach((type) => {
-    	    const options = { choiceCount: 6, noOneOf: true, max: 5 };
-    	    const multiType = `multi${type}`;
-    	    types.push(multiType);
-    	    const indices = [];
-    	    typeIndexMap.set(multiType, indices);
-    	    _.range(surveyCount).forEach(() => {
-    	        indices.push(offset + questions.length);
-    	        const question = multiQuestionGenerator.newMultiQuestion(type, options);
-    	        questions.push(question);
-    	    });
-    	});
+        const typeIndexMap = new Map();
+        const types = [];
+        const questions = [];
+        ['choice', 'choices', 'text', 'bool'].forEach((type) => {
+            const options = { choiceCount: 6, noText: true, noOneOf: true };
+            types.push(type);
+            const indices = [];
+            typeIndexMap.set(type, indices);
+            _.range(surveyCount).forEach(() => {
+                indices.push(offset + questions.length);
+                const question = questionGenerator.newQuestion(type, options);
+                questions.push(question);
+            });
+        });
+        ['choice', 'text', 'bool'].forEach((type) => {
+            const options = { choiceCount: 6, noOneOf: true, max: 5 };
+            const multiType = `multi${type}`;
+            types.push(multiType);
+            const indices = [];
+            typeIndexMap.set(multiType, indices);
+            _.range(surveyCount).forEach(() => {
+                indices.push(offset + questions.length);
+                const question = multiQuestionGenerator.newMultiQuestion(type, options);
+                questions.push(question);
+            });
+        });
 
-    	this.typeIndexMap = typeIndexMap;
-    	this.types = types;
-    	this.questions = questions;
+        this.typeIndexMap = typeIndexMap;
+        this.types = types;
+        this.questions = questions;
 
-    	this.choiceIdMap = new Map();
+        this.choiceIdMap = new Map();
     }
 
     generateChoiceMapFn() {
-    	const typeIndexMap = this.typeIndexMap;
-    	const hxQuestion = this.hxQuestion;
-    	const choiceIdMap = this.choiceIdMap;
-		return function generateChoiceMap() {
-		    ['choice', 'choices', 'multichoice'].forEach((type) => {
-		        const questionIndices = typeIndexMap.get(type);
-		        questionIndices.forEach((questionIndex) => {
-		            const question = hxQuestion.server(questionIndex);
-		            const choices = question.choices;
-		            expect(choices).to.have.length.above(0);
-		            const questionChoiceIds = [];
-		            choiceIdMap.set(question.id, questionChoiceIds);
-		            choices.forEach((choice) => {
-		                const choiceType = choice.type;
-		                if (choiceType !== 'text') {
-		                    const choiceId = choice.id;
-		                    questionChoiceIds.push(choiceId);
-		                }
-		            });
-		            expect(questionChoiceIds).to.have.length.above(5);
-		        });
-		    });
-		};
-	}
+        const typeIndexMap = this.typeIndexMap;
+        const hxQuestion = this.hxQuestion;
+        const choiceIdMap = this.choiceIdMap;
+        return function generateChoiceMap() {
+            ['choice', 'choices', 'multichoice'].forEach((type) => {
+                const questionIndices = typeIndexMap.get(type);
+                questionIndices.forEach((questionIndex) => {
+                    const question = hxQuestion.server(questionIndex);
+                    const choices = question.choices;
+                    expect(choices).to.have.length.above(0);
+                    const questionChoiceIds = [];
+                    choiceIdMap.set(question.id, questionChoiceIds);
+                    choices.forEach((choice) => {
+                        const choiceType = choice.type;
+                        if (choiceType !== 'text') {
+                            const choiceId = choice.id;
+                            questionChoiceIds.push(choiceId);
+                        }
+                    });
+                    expect(questionChoiceIds).to.have.length.above(5);
+                });
+            });
+        };
+    }
 
     createSurveyFn(qxIndices) {
-    	const hxSurvey = this.hxSurvey;
-    	const hxQuestion = this.hxQuestion;
-    	const surveyGenerator = this.surveyGenerator;
+        const hxSurvey = this.hxSurvey;
+        const hxQuestion = this.hxQuestion;
+        const surveyGenerator = this.surveyGenerator;
         return function createSurvey() {
             const survey = surveyGenerator.newBody();
             survey.questions = qxIndices.map(index => ({
@@ -168,7 +171,7 @@ const SpecTests = class SurveySpecTests {
     }
 
     searchAnswersFn({ count, answers }) {
-    	const self = this;
+        const self = this;
         return function searchAnswers() {
             const questions = answers.reduce((r, { surveyIndex, answerInfo }) => {
                 const answers = self.answerInfoToObject(surveyIndex, answerInfo, 'id');
@@ -182,10 +185,10 @@ const SpecTests = class SurveySpecTests {
     }
 
     createAnswersFn(userIndex, surveyIndex, answerInfo) {
-    	const self = this;
-    	const hxUser = this.hxUser;
-    	const hxSurvey = this.hxSurvey;
-    	const hxAnswers = this.hxAnswers;
+        const self = this;
+        const hxUser = this.hxUser;
+        const hxSurvey = this.hxSurvey;
+        const hxAnswers = this.hxAnswers;
         return function createAnswers() {
             const userId = hxUser.id(userIndex);
             const surveyId = hxSurvey.id(surveyIndex);
@@ -194,6 +197,45 @@ const SpecTests = class SurveySpecTests {
             return models.answer.createAnswers(input)
                 .then(() => hxAnswers.push(userIndex, surveyIndex, answers));
         };
+    }
+
+    runAnswerSearchUnit() {
+        before(this.shared.setUpFn());
+
+        _.range(5).forEach((index) => {
+            it(`create user ${index}`, this.shared.createUserFn(this.hxUser));
+        });
+
+        _.range(this.offset).forEach((index) => {
+            it(`create question ${index}`, this.questionTests.createQuestionFn());
+            it(`get question ${index}`, this.questionTests.getQuestionFn(index));
+        });
+
+        this.questions.forEach((question, index) => {
+            const actualIndex = this.offset + index;
+            it(`create question ${actualIndex}`, this.questionTests.createQuestionFn(question));
+            it(`get question ${actualIndex}`, this.questionTests.getQuestionFn(actualIndex));
+        });
+
+        it('create a map of all choice/choice question choices', this.generateChoiceMapFn());
+
+        _.range(this.surveyCount).forEach((index) => {
+            const qxIndices = this.types.map(type => this.typeIndexMap.get(type)[index]);
+            it(`create survey ${index}`, this.createSurveyFn(qxIndices));
+        });
+
+        const answerSequence = testCase0.answerSequence;
+
+        answerSequence.forEach(({ userIndex, surveyIndex, answerInfo }) => {
+            const msg = `user ${userIndex} answers survey ${surveyIndex}`;
+            it(msg, this.createAnswersFn(userIndex, surveyIndex, answerInfo));
+        });
+
+        const searchCases = testCase0.searchCases;
+
+        searchCases.forEach((searchCase, index) => {
+            it(`search case ${index}`, this.searchAnswersFn(searchCase));
+        });
     }
 };
 
