@@ -58,7 +58,7 @@ const answerGenerators = {
     },
 };
 
-const SpecTests = class SurveySpecTests {
+const Tests = class BaseTests {
     constructor(inputModels, offset = 5, surveyCount = 4) {
         this.models = inputModels || models;
         this.offset = offset;
@@ -143,24 +143,6 @@ const SpecTests = class SurveySpecTests {
         };
     }
 
-    createSurveyFn(qxIndices) {
-        const hxSurvey = this.hxSurvey;
-        const hxQuestion = this.hxQuestion;
-        const surveyGenerator = this.surveyGenerator;
-        const m = this.models;
-        return function createSurvey() {
-            const survey = surveyGenerator.newBody();
-            survey.questions = qxIndices.map(index => ({
-                id: hxQuestion.server(index).id,
-                required: false,
-            }));
-            return m.survey.createSurvey(survey)
-                .then((id) => {
-                    hxSurvey.push(survey, { id });
-                });
-        };
-    }
-
     answerInfoToObject(surveyIndex, answerInfo, idProperty = 'questionId') {
         return answerInfo.map((info) => {
             const questionType = info.questionType;
@@ -189,6 +171,26 @@ const SpecTests = class SurveySpecTests {
         const { count, answers } = this.getCase(index);
         const criteria = this.formCriteria(answers);
         return { count, criteria };
+    }
+};
+
+const SpecTests = class SearchSpecTests extends Tests {
+    createSurveyFn(qxIndices) {
+        const hxSurvey = this.hxSurvey;
+        const hxQuestion = this.hxQuestion;
+        const surveyGenerator = this.surveyGenerator;
+        const m = this.models;
+        return function createSurvey() {
+            const survey = surveyGenerator.newBody();
+            survey.questions = qxIndices.map(index => ({
+                id: hxQuestion.server(index).id,
+                required: false,
+            }));
+            return m.survey.createSurvey(survey)
+                .then((id) => {
+                    hxSurvey.push(survey, { id });
+                });
+        };
     }
 
     searchAnswersFn({ count, answers }) {

@@ -21,7 +21,6 @@ const expect = chai.expect;
 describe('federal search unit', function federalSearchUnit() {
     const { sequelize: publicSequelize } = sequelizeGenerator();
     const generator = new Generator();
-    const shared = new SharedSpec(generator);
     const hxRegistry = new History();
     const registryTests = new registryCommon.SpecTests(generator, hxRegistry);
 
@@ -47,8 +46,6 @@ describe('federal search unit', function federalSearchUnit() {
 
         it(`end running search tests for ${schema}`, function endSchemaRun() {});
     });
-
-    it('sync models', shared.setUpFn());
 
     const searchTests = new searchCommon.SpecTests();
     searchTests.runAnswerSearchUnit();
