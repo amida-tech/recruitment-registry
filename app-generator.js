@@ -42,6 +42,14 @@ const userAudit = function (req, res, next) {
     next();
 };
 
+/* jshint unused:false*/
+const modelsSupplyFn = function (inputModels) {
+    return function modelsSupply(req, res, next) { // eslint-disable-line no-unused-vars
+        req.models = inputModels;
+        next();
+    };
+};
+
 exports.initialize = function (app, options, callback) {
     const swaggerObject = options.swaggerJson || swaggerJson;
     swaggerTools.initializeMiddleware(swaggerObject, (middleware) => {
@@ -50,6 +58,8 @@ exports.initialize = function (app, options, callback) {
         app.use(middleware.swaggerValidator({
             validateResponse: true,
         }));
+
+        app.use(modelsSupplyFn(models));
 
         app.use(middleware.swaggerSecurity(security));
 
