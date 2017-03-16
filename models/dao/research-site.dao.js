@@ -33,7 +33,7 @@ module.exports = class ResearchSiteDAO {
                         .then(() => ({ id }))));
     }
 
-    listResearchSites(options = {}) {
+    listResearchSitesWithNulls(options = {}) {
         const zip = formatZip(options.nearZip);
         if (options.nearZip) {
             return ResearchSiteVicinity.findAll({
@@ -44,16 +44,17 @@ module.exports = class ResearchSiteDAO {
                 include: [{ model: ResearchSite, as: 'vicinity', attributes }],
             })
                 .then(sites => sites.map(site => attributes.reduce((r, attribute) => {
-                    site = _.omitBy(site, _.isNil);
-                    // if(undefined === site.street2) {
-                      // console.log('------> site: ', site);
-                    // }
                     const patch = {};
                     patch[attribute] = site[`vicinity.${attribute}`];
                     return Object.assign({}, patch, r);
                 }, {})));
         }
         return ResearchSite.findAll({ raw: true, attributes, order: 'id' });
+    }
+
+    listResearchSites(options = {}) {
+        return this.listResearchSitesWithNulls(options)
+          .then(sites => sites.map(site => _.omitBy(site, _.isNil)));
     }
 
     patchResearchSite(id, researchSiteUpdate) {
