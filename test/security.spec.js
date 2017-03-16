@@ -91,7 +91,7 @@ describe('security unit', () => {
             .then(id => models.user.deleteUser(id)));
 
     it('valid admin for admin', (done) => {
-        const req = {};
+        const req = { models };
         const header = `Bearer ${adminJWT}`;
         security.admin(req, undefined, header, (err) => {
             if (err) {
@@ -105,7 +105,7 @@ describe('security unit', () => {
     });
 
     it('valid admin for clinician', (done) => {
-        const req = {};
+        const req = { models };
         const header = `Bearer ${adminJWT}`;
         security.clinician(req, undefined, header, (err) => {
             if (err) {
@@ -119,7 +119,7 @@ describe('security unit', () => {
     });
 
     it('valid admin for participant', (done) => {
-        const req = {};
+        const req = { models };
         const header = `Bearer ${adminJWT}`;
         security.participant(req, undefined, header, (err) => {
             if (err) {
@@ -133,7 +133,7 @@ describe('security unit', () => {
     });
 
     it('valid participant for participant', (done) => {
-        const req = {};
+        const req = { models };
         const header = `Bearer ${participantJWT}`;
         security.participant(req, undefined, header, (err) => {
             if (err) {
@@ -147,7 +147,7 @@ describe('security unit', () => {
     });
 
     it('valid clinician for clinician', (done) => {
-        const req = {};
+        const req = { models };
         const header = `Bearer ${clinicianJWT}`;
         security.clinician(req, undefined, header, (err) => {
             if (err) {
@@ -161,7 +161,7 @@ describe('security unit', () => {
     });
 
     it('valid admin for self', (done) => {
-        const req = {};
+        const req = { models };
         const header = `Bearer ${adminJWT}`;
         security.self(req, undefined, header, (err) => {
             if (err) {
@@ -175,7 +175,7 @@ describe('security unit', () => {
     });
 
     it('valid participant for self', (done) => {
-        const req = {};
+        const req = { models };
         const header = `Bearer ${participantJWT}`;
         security.self(req, undefined, header, (err) => {
             if (err) {
@@ -189,7 +189,7 @@ describe('security unit', () => {
     });
 
     it('valid clinician for self', (done) => {
-        const req = {};
+        const req = { models };
         const header = `Bearer ${clinicianJWT}`;
         security.self(req, undefined, header, (err) => {
             if (err) {
@@ -203,7 +203,7 @@ describe('security unit', () => {
     });
 
     it('error: no Bearer', (done) => {
-        const req = {};
+        const req = { models };
         const header = `${adminJWT}`;
         security.admin(req, undefined, header, (err) => {
             if (err) {
@@ -215,7 +215,7 @@ describe('security unit', () => {
     });
 
     it('error: no token', (done) => {
-        const req = {};
+        const req = { models };
         const header = 'Bearer';
         security.admin(req, undefined, header, (err) => {
             if (err) {
@@ -227,7 +227,7 @@ describe('security unit', () => {
     });
 
     it('error: no header', (done) => {
-        const req = {};
+        const req = { models };
         const header = '';
         security.admin(req, undefined, header, (err) => {
             if (err) {
@@ -239,7 +239,7 @@ describe('security unit', () => {
     });
 
     it('error: invalid token', (done) => {
-        const req = {};
+        const req = { models };
         const header = 'Bearer xxx';
         security.admin(req, undefined, header, (err) => {
             if (err) {
@@ -251,7 +251,7 @@ describe('security unit', () => {
     });
 
     it('error: invalid user', (done) => {
-        const req = {};
+        const req = { models };
         const header = `Bearer ${deletedJWT}`;
         security.participant(req, undefined, header, (err) => {
             if (err) {
@@ -263,7 +263,7 @@ describe('security unit', () => {
     });
 
     it('error: participant for admin', (done) => {
-        const req = {};
+        const req = { models };
         const header = `Bearer ${participantJWT}`;
         security.admin(req, undefined, header, (err) => {
             if (err) {
@@ -275,7 +275,7 @@ describe('security unit', () => {
     });
 
     it('error: participant for clinician', (done) => {
-        const req = {};
+        const req = { models };
         const header = `Bearer ${participantJWT}`;
         security.clinician(req, undefined, header, (err) => {
             if (err) {
@@ -287,7 +287,7 @@ describe('security unit', () => {
     });
 
     it('error: clinician for admin', (done) => {
-        const req = {};
+        const req = { models };
         const header = `Bearer ${clinicianJWT}`;
         security.admin(req, undefined, header, (err) => {
             if (err) {
@@ -299,7 +299,7 @@ describe('security unit', () => {
     });
 
     it('error: clinician for participant', (done) => {
-        const req = {};
+        const req = { models };
         const header = `Bearer ${clinicianJWT}`;
         security.participant(req, undefined, header, (err) => {
             if (err) {

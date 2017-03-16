@@ -323,7 +323,8 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
     }
 
     runAnswerSearchIntegration() {
-        it('sync models', this.shared.setUpFn(this.rrSuperTest));
+        const options = this.models ? { models: this.models } : {};
+        it('sync models', this.shared.setUpFn(this.rrSuperTest, options));
 
         it('login as super', this.shared.loginFn(this.rrSuperTest, config.superUser));
 

@@ -5,8 +5,6 @@ const config = require('../config');
 const jwt = require('jsonwebtoken');
 const _ = require('lodash');
 
-const models = require('../models');
-
 const invalidAuth = {
     message: 'Invalid authorization',
     code: 'invalid_auth',
@@ -40,7 +38,7 @@ const jwtAuth = function (req, header, verifyUserFn, callback) {
                 if (err) {
                     return callback(invalidAuth);
                 }
-                return models.auth.getUser(payload)
+                return req.models.auth.getUser(payload)
                     .then((user) => {
                         if (user) {
                             const err = verifyUserFn(user);

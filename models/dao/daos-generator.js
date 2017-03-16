@@ -31,6 +31,7 @@ const SurveyIdentifierDAO = require('./survey-identifier.dao');
 const ChoiceSetDAO = require('./choice-set.dao');
 const ResearchSiteDAO = require('./research-site.dao');
 const Registry = require('./registry.dao');
+const UserAuditDAO = require('./user-audit');
 const Macro = require('./macro');
 
 module.exports = function daosGenerator(db) {
@@ -65,6 +66,7 @@ module.exports = function daosGenerator(db) {
     const assessment = new AssessmentDAO(db);
     const userAssessment = new UserAssessmentDAO(db, { answer });
     const researchSite = new ResearchSiteDAO(db);
+    const userAudit = new UserAuditDAO(db);
     const macro = new Macro(db, { survey, profileSurvey });
 
     return {
@@ -99,6 +101,7 @@ module.exports = function daosGenerator(db) {
         answerRule,
         researchSite,
         registry,
+        userAudit,
         macro,
         generator: daosGenerator,
     };

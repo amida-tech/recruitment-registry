@@ -7,7 +7,9 @@ process.env.NODE_ENV = 'test';
 const _ = require('lodash');
 const chai = require('chai');
 
-const models = require('../models');
+const config = require('../config');
+
+const RRSuperTest = require('./util/rr-super-test');
 const Generator = require('./util/generator');
 const History = require('./util/history');
 const registryCommon = require('./util/registry-common');
@@ -17,7 +19,7 @@ const searchCommon = require('./util/search/search-common');
 
 const expect = chai.expect;
 
-describe('federal search unit', function federalSearchUnit() {
+describe('federal search integration', function federalSearchIntegration() {
     const { sequelize: publicSequelize } = sequelizeGenerator();
 
     const registries = _.range(2).map(index => ({ name: `name_${index}`, schema: `schema_${index}` }));
@@ -36,18 +38,22 @@ describe('federal search unit', function federalSearchUnit() {
         it(`start running search tests for ${schema}`, function startSchemaRun() {});
 
         const m = modelsGenerator(schema);
-        const searchTests = new searchCommon.SpecTests(m, index * 7);
+        const rrSuperTest = new RRSuperTest();
+        const searchTests = new searchCommon.IntegrationTests(rrSuperTest, m, index * 7);
         searchTestsMap.set(schema, searchTests);
-        searchTests.runAnswerSearchUnit();
+        searchTests.runAnswerSearchIntegration();
 
         it(`end running search tests for ${schema}`, function endSchemaRun() {});
     });
 
     const generator = new Generator();
     const hxRegistry = new History();
-    const registryTests = new registryCommon.SpecTests(generator, hxRegistry);
-    const searchTests = new searchCommon.SpecTests();
-    searchTests.runAnswerSearchUnit();
+    const rrSuperTest = new RRSuperTest();
+    const registryTests = new registryCommon.IntegrationTests(rrSuperTest, generator, hxRegistry);
+    const searchTests = new searchCommon.IntegrationTests(rrSuperTest);
+    searchTests.runAnswerSearchIntegration();
+
+    it('login as super', searchTests.shared.loginFn(rrSuperTest, config.superUser));
 
     registries.forEach((registry, index) => {
         it(`create registry ${index}`, registryTests.createRegistryFn(registry));
@@ -70,8 +76,8 @@ describe('federal search unit', function federalSearchUnit() {
                 criteria: criteria1,
             }],
         };
-        return models.answer.federalSearchCountUsers(federalCriteria)
-            .then((result) => {
+        return rrSuperTest.post('/answers/federal-queries', federalCriteria, 200)
+            .expect((res) => {
                 const expected = {
                     local: { count },
                     federal: [{
@@ -81,7 +87,9 @@ describe('federal search unit', function federalSearchUnit() {
                     }],
                     total: { count: count + count0 + count1 },
                 };
-                expect(result).to.deep.equal(expected);
+                expect(res.body).to.deep.equal(expected);
             });
     });
+
+    it('logout as super', searchTests.shared.logoutFn(rrSuperTest));
 });
