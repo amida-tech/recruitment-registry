@@ -1,32 +1,32 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
+module.exports = function assessment(sequelize, Sequelize, schema) {
     return sequelize.define('assessment', {
         name: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             allowNull: false,
             unique: true,
         },
         sequenceType: {
-            type: DataTypes.ENUM('ondemand', 'biyearly'),
+            type: Sequelize.ENUM('ondemand', 'biyearly'),
             field: 'sequence_type',
             allowNull: false,
         },
         createdAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'created_at',
         },
         updatedAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'updated_at',
         },
         deletedAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'deleted_at',
         },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        schema,
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
         deletedAt: 'deletedAt',

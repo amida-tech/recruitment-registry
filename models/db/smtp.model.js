@@ -1,44 +1,44 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
+module.exports = function smtp(sequelize, Sequelize, schema) {
     return sequelize.define('smtp', {
         protocol: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             allowNull: false,
         },
         username: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             allowNull: false,
         },
         password: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             allowNull: false,
         },
         host: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             allowNull: false,
         },
         from: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             allowNull: false,
             field: 'email_from',
         },
         otherOptions: {
-            type: DataTypes.JSON,
+            type: Sequelize.JSON,
             allowNull: false,
             field: 'other_options',
         },
         createdAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'created_at',
         },
         deletedAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'deleted_at',
         },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        schema,
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',

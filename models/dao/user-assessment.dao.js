@@ -2,23 +2,19 @@
 
 const _ = require('lodash');
 
-const db = require('../db');
-
-const sequelize = db.sequelize;
 const SPromise = require('../../lib/promise');
 
-const UserAssessment = db.UserAssessment;
-const AssessmentSurvey = db.AssessmentSurvey;
-const Answer = db.Answer;
-const UserAssessmentAnswer = db.UserAssessmentAnswer;
-const Assessment = db.Assessment;
-
 module.exports = class AssessmentDAO {
-    constructor(dependencies) {
+    constructor(db, dependencies) {
         Object.assign(this, dependencies);
+        this.db = db;
     }
 
     closeUserAssessmentById(id, { userId, assessmentId, status = 'collected' }, transaction) {
+        const UserAssessment = this.db.UserAssessment;
+        const AssessmentSurvey = this.db.AssessmentSurvey;
+        const Answer = this.db.Answer;
+        const UserAssessmentAnswer = this.db.UserAssessmentAnswer;
         return UserAssessment.update({ status }, { where: { id }, transaction })
             .then(() => UserAssessment.destroy({ where: { id }, transaction }))
             .then(() => {
@@ -47,6 +43,8 @@ module.exports = class AssessmentDAO {
     }
 
     openUserAssessment({ userId, assessmentId }) {
+        const sequelize = this.db.sequelize;
+        const UserAssessment = this.db.UserAssessment;
         return sequelize.transaction(transaction => UserAssessment.findAll({
             where: { userId, assessmentId },
             attributes: ['id', 'sequence', 'deletedAt'],
@@ -75,12 +73,14 @@ module.exports = class AssessmentDAO {
     }
 
     closeUserAssessment({ userId, assessmentId, status }) {
+        const sequelize = this.db.sequelize;
+        const UserAssessment = this.db.UserAssessment;
         return sequelize.transaction(transaction => UserAssessment.findOne({ where: { userId, assessmentId }, attributes: ['id'], transaction })
                 .then(({ id }) => this.closeUserAssessmentById(id, { userId, assessmentId, status }, transaction)));
     }
 
     listUserAssessments(userId, assessmentId) {
-        return UserAssessment.findAll({
+        return this.db.UserAssessment.findAll({
             where: { userId, assessmentId },
             attributes: ['id', 'sequence'],
             order: 'sequence',
@@ -90,7 +90,7 @@ module.exports = class AssessmentDAO {
     }
 
     listUserAssessmentAnswers(id) {
-        return UserAssessmentAnswer.findAll({
+        return this.db.UserAssessmentAnswer.findAll({
             where: { userAssessmentId: id },
             raw: true,
         })
@@ -101,10 +101,10 @@ module.exports = class AssessmentDAO {
     }
 
     importBulk(records) {
-        return sequelize.transaction((transaction) => {
+        return this.db.sequelize.transaction((transaction) => {
             const promises = records.map((record) => {
                 const dbRecord = _.omit(record, 'answerIds');
-                return UserAssessment.create(dbRecord, { transaction })
+                return this.db.UserAssessment.create(dbRecord, { transaction })
                     .then(({ id }) => id);
             });
             return SPromise.all(promises)
@@ -114,7 +114,7 @@ module.exports = class AssessmentDAO {
                         answerIds.forEach(answerId => r.push({ userAssessmentId, answerId }));
                         return r;
                     }, []);
-                    const promises = answerRecords.map(answerRecord => UserAssessmentAnswer.create(answerRecord, { transaction })
+                    const promises = answerRecords.map(answerRecord => this.db.UserAssessmentAnswer.create(answerRecord, { transaction })
                             .then(({ id }) => id));
                     return SPromise.all(promises);
                 });
@@ -122,6 +122,9 @@ module.exports = class AssessmentDAO {
     }
 
     exportBulk() {
+        const sequelize = this.db.sequelize;
+        const UserAssessment = this.db.UserAssessment;
+        const Assessment = this.db.Assessment;
         const createdAtColumn = [sequelize.fn('to_char', sequelize.col('user_assessment.created_at'), 'YYYY-MM-DD"T"HH24:MI:SS"Z"'), 'createdAt'];
         const attributes = ['id', 'userId', 'assessmentId', 'meta', createdAtColumn];
         return UserAssessment.findAll({
@@ -134,7 +137,7 @@ module.exports = class AssessmentDAO {
     }
 
     exportBulkAnswers(ids) {
-        return UserAssessmentAnswer.findAll({
+        return this.db.UserAssessmentAnswer.findAll({
             where: { userAssessmentId: { $in: ids } },
             attributes: ['answerId', 'userAssessmentId'],
             order: ['userAssessmentId', 'answerId'],

@@ -1,45 +1,45 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
+module.exports = function consentSection(sequelize, Sequelize, schema) {
     return sequelize.define('consent_section', {
         consentId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             allowNull: false,
             field: 'consent_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
+                    schema,
                     tableName: 'consent',
                 },
                 key: 'id',
             },
         },
         typeId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             allowNull: false,
             field: 'type_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
+                    schema,
                     tableName: 'consent_type',
                 },
                 key: 'id',
             },
         },
         line: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
         },
         createdAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'created_at',
         },
         deletedAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'deleted_at',
         },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        schema,
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',

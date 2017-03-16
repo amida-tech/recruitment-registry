@@ -1,38 +1,38 @@
 'use strict';
 
-module.exports = (sequelize, DataTypes) => (
-    sequelize.define('research_site_vicinity', {
+module.exports = function researchSiteVicinity(sequelize, Sequelize, schema) {
+    return sequelize.define('research_site_vicinity', {
         researchSiteId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             allowNull: false,
             field: 'research_site_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
+                    schema,
                     tableName: 'research_site',
                 },
                 key: 'id',
             },
         },
         zip: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             allowNull: false,
         },
         createdAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'created_at',
         },
         deletedAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'deleted_at',
         },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        schema,
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',
         paranoid: true,
         indexes: [{ unique: true, fields: ['zip', 'research_site_id'], where: { deleted_at: { $eq: null } } }],
-    })
-);
+    });
+};

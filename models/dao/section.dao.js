@@ -2,7 +2,6 @@
 
 const _ = require('lodash');
 
-const db = require('../db');
 const RRError = require('../../lib/rr-error');
 const SPromise = require('../../lib/promise');
 const importUtil = require('../../import/import-util');
@@ -11,8 +10,9 @@ const ExportCSVConverter = require('../../export/csv-converter.js');
 const ImportCSVConverter = require('../../import/csv-converter.js');
 
 module.exports = class SectionDAO extends Translatable {
-    constructor() {
+    constructor(db) {
         super('section_text', 'sectionId', ['name', 'description'], { name: true, description: true });
+        this.db = db;
     }
 
     createSectionTx(section, transaction) {
@@ -21,7 +21,7 @@ module.exports = class SectionDAO extends Translatable {
         if (meta) {
             Object.assign(fields, { meta });
         }
-        return db.Section.create(fields, { transaction })
+        return this.db.Section.create(fields, { transaction })
             .then(({ id }) => {
                 if (name) {
                     return this.createTextTx({ name, description, id }, transaction);
@@ -31,11 +31,11 @@ module.exports = class SectionDAO extends Translatable {
     }
 
     createSection(section) {
-        return db.sequelize.transaction(transaction => this.createSectionTx(section, transaction));
+        return this.db.sequelize.transaction(transaction => this.createSectionTx(section, transaction));
     }
 
     getSection(id, options = {}) {
-        return db.Section.findById(id, { raw: true, attributes: ['id', 'meta'] })
+        return this.db.Section.findById(id, { raw: true, attributes: ['id', 'meta'] })
             .then((section) => {
                 if (!section) {
                     return RRError.reject('sectionNotFound');
@@ -46,7 +46,7 @@ module.exports = class SectionDAO extends Translatable {
     }
 
     deleteSection(id) {
-        return db.Section.destroy({ where: { id } });
+        return this.db.Section.destroy({ where: { id } });
     }
 
     listSections(options = {}) {
@@ -54,7 +54,7 @@ module.exports = class SectionDAO extends Translatable {
         if (options.scope === 'export') {
             attributes.push('meta');
         }
-        return db.Section.findAll({ raw: true, attributes })
+        return this.db.Section.findAll({ raw: true, attributes })
             .then(sections => sections.map(section => _.omitBy(section, _.isNil)))
             .then(sections => this.updateAllTexts(sections, options.language));
     }
@@ -74,7 +74,7 @@ module.exports = class SectionDAO extends Translatable {
                 if (!records.length) {
                     return {};
                 }
-                return db.sequelize.transaction((transaction) => {
+                return this.db.sequelize.transaction((transaction) => {
                     const idMap = {};
                     const promises = records.map((record) => {
                         const recordId = record.id;

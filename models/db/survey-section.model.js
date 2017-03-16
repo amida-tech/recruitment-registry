@@ -1,68 +1,68 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
+module.exports = function surveySection(sequelize, Sequelize, schema) {
     return sequelize.define('survey_section', {
         surveyId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             allowNull: false,
             field: 'survey_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
+                    schema,
                     tableName: 'survey',
                 },
                 key: 'id',
             },
         },
         sectionId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             allowNull: false,
             field: 'section_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
+                    schema,
                     tableName: 'section',
                 },
                 key: 'id',
             },
         },
         parentId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             field: 'parent_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
+                    schema,
                     tableName: 'survey_section',
                 },
                 key: 'id',
             },
         },
         parentQuestionId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             field: 'parent_question_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
+                    schema,
                     tableName: 'question',
                 },
                 key: 'id',
             },
         },
         line: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             allowNull: false,
         },
         createdAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'created_at',
         },
         deletedAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'deleted_at',
         },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        schema,
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',

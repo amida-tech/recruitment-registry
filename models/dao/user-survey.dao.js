@@ -1,16 +1,13 @@
 'use strict';
 
-const db = require('../db');
-
-const UserSurvey = db.UserSurvey;
-
 module.exports = class UserSurveyDAO {
-    constructor(dependencies) {
+    constructor(db, dependencies) {
         Object.assign(this, dependencies);
+        this.db = db;
     }
 
     getUserSurveyStatus(userId, surveyId) {
-        return UserSurvey.findOne({
+        return this.db.UserSurvey.findOne({
             where: { userId, surveyId },
             raw: true,
             attributes: ['status'],
@@ -50,7 +47,7 @@ module.exports = class UserSurveyDAO {
             .then((surveys) => {
                 if (surveys.length) {
                     const ids = surveys.map(survey => survey.id);
-                    return UserSurvey.findAll({
+                    return this.db.UserSurvey.findAll({
                         where: { userId, surveyId: { $in: ids } },
                         raw: true,
                         attributes: ['surveyId', 'status'],

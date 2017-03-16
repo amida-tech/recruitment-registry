@@ -1,33 +1,34 @@
 'use strict';
 
 // const _ = require('lodash');
-const db = require('../db');
 
 const RRError = require('../../lib/rr-error');
 
-const sequelize = db.sequelize;
-const ChoiceSet = db.ChoiceSet;
 const SPromise = require('../../lib/promise');
 // const ExportCSVConverter = require('../../export/csv-converter.js');
 // const ImportCSVConverter = require('../../import/csv-converter.js');
 // const importUtil = require('../../import/import-util');
 
 module.exports = class ChoiceSetDAO {
-    constructor(dependencies) {
+    constructor(db, dependencies) {
+        this.db = db;
         Object.assign(this, dependencies);
     }
 
     createChoiceSetTx({ reference, choices }, transaction) {
+        const ChoiceSet = this.db.ChoiceSet;
         return ChoiceSet.create({ reference }, { transaction })
             .then(({ id }) => this.questionChoice.createQuestionChoices(id, choices, transaction)
                     .then(() => ({ id })));
     }
 
     createChoiceSet(choiceSet) {
+        const sequelize = this.db.sequelize;
         return sequelize.transaction(transaction => this.createChoiceSetTx(choiceSet, transaction));
     }
 
     createChoiceSets(choiceSets) {
+        const sequelize = this.db.sequelize;
         return sequelize.transaction((transaction) => {
             const promises = choiceSets.map(choiceSet => this.createChoiceSetTx(choiceSet, transaction));
             return SPromise.all(promises);
@@ -35,6 +36,7 @@ module.exports = class ChoiceSetDAO {
     }
 
     listChoiceSets() {
+        const ChoiceSet = this.db.ChoiceSet;
         return ChoiceSet.findAll({
             raw: true,
             attributes: ['id', 'reference'],
@@ -43,11 +45,14 @@ module.exports = class ChoiceSetDAO {
     }
 
     deleteChoiceSet(id) {
+        const ChoiceSet = this.db.ChoiceSet;
+        const sequelize = this.db.sequelize;
         return sequelize.transaction(transaction => this.questionChoice.deleteAllQuestionChoices(id, transaction)
                 .then(() => ChoiceSet.destroy({ where: { id }, transaction })));
     }
 
     getChoiceSet(id, language) {
+        const ChoiceSet = this.db.ChoiceSet;
         return ChoiceSet.findById(id, { raw: true, attributes: ['id', 'reference'] })
             .then(result => this.questionChoice.listQuestionChoices(id, language)
                     .then((choices) => {
@@ -57,6 +62,7 @@ module.exports = class ChoiceSetDAO {
     }
 
     getChoiceSetIdByReference(reference, transaction) {
+        const ChoiceSet = this.db.ChoiceSet;
         return ChoiceSet.findOne({ where: { reference }, raw: true, attributes: ['id'], transaction })
             .then((record) => {
                 if (record) {

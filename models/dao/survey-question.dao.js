@@ -1,11 +1,6 @@
 'use strict';
 
-const db = require('../db');
 const SPromise = require('../../lib/promise');
-
-const SurveyQuestion = db.SurveyQuestion;
-const SurveySection = db.SurveySection;
-const SurveySectionQuestion = db.SurveySectionQuestion;
 
 const updateQuestionSectionDependency = function updateQuestionSectionDependency(parents, id, questionParents, sectionParents) {
     const { sectionId, parentId, questionParentId } = sectionParents.get(id);
@@ -32,6 +27,10 @@ const updateQuestionDependency = function updateQuestionDependency(question, que
 };
 
 module.exports = class SurveyQuestionsDAO {
+    constructor(db) {
+        this.db = db;
+    }
+
     listSurveyQuestions(surveyId, addDependency) {
         const options = {
             where: { surveyId },
@@ -39,7 +38,7 @@ module.exports = class SurveyQuestionsDAO {
             attributes: ['questionId', 'required'],
             order: 'line',
         };
-        return SurveyQuestion.findAll(options)
+        return this.db.SurveyQuestion.findAll(options)
             .then((questions) => {
                 if (addDependency) {
                     return this.addDependency(surveyId, questions);
@@ -49,7 +48,7 @@ module.exports = class SurveyQuestionsDAO {
     }
 
     addDependency(surveyId, questions) {
-        return SurveySection.findAll({
+        return this.db.SurveySection.findAll({
             where: { surveyId },
             raw: true,
             order: 'line',
@@ -60,7 +59,7 @@ module.exports = class SurveyQuestionsDAO {
                     return questions;
                 }
                 const ids = sections.map(({ id }) => id);
-                return SurveySectionQuestion.findAll({
+                return this.db.SurveySectionQuestion.findAll({
                     where: { surveySectionId: { $in: ids } },
                     raw: true,
                     order: 'line',
@@ -84,7 +83,7 @@ module.exports = class SurveyQuestionsDAO {
     }
 
     importSurveyQuestionsTx(surveyQuestions, transaction) {
-        const promises = surveyQuestions.map(surveyQuestion => SurveyQuestion.create(surveyQuestion, { transaction }));
+        const promises = surveyQuestions.map(surveyQuestion => this.db.SurveyQuestion.create(surveyQuestion, { transaction }));
         return SPromise.all(promises);
     }
 };

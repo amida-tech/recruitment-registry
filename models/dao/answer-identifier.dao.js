@@ -1,19 +1,20 @@
 'use strict';
 
-const db = require('../db');
 const RRError = require('../../lib/rr-error');
 
-const AnswerIdentifier = db.AnswerIdentifier;
-const Question = db.Question;
-const QuestionChoice = db.QuestionChoice;
-
 module.exports = class QuestionIdentifierDAO {
+    constructor(db) {
+        this.db = db;
+    }
+
     createAnswerIdentifier(answerIdentifier, transaction) {
+        const AnswerIdentifier = this.db.AnswerIdentifier;
         return AnswerIdentifier.create(answerIdentifier, { transaction })
             .then(({ id }) => ({ id }));
     }
 
     getIdsByAnswerIdentifier(type, identifier) {
+        const AnswerIdentifier = this.db.AnswerIdentifier;
         return AnswerIdentifier.findOne({
             where: { type, identifier },
             attributes: ['questionId', 'questionChoiceId'],
@@ -31,6 +32,7 @@ module.exports = class QuestionIdentifierDAO {
     }
 
     getAnswerIdsToIdentifierMap(type) {
+        const AnswerIdentifier = this.db.AnswerIdentifier;
         return AnswerIdentifier.findAll({
             where: { type },
             attributes: ['identifier', 'questionId', 'questionChoiceId', 'tag'],
@@ -45,6 +47,9 @@ module.exports = class QuestionIdentifierDAO {
     }
 
     getTypeInformationByAnswerIdentifier(type) {
+        const AnswerIdentifier = this.db.AnswerIdentifier;
+        const Question = this.db.Question;
+        const QuestionChoice = this.db.QuestionChoice;
         return AnswerIdentifier.findAll({
             where: { type },
             attributes: ['identifier', 'questionId', 'multipleIndex', 'questionChoiceId'],
@@ -73,6 +78,9 @@ module.exports = class QuestionIdentifierDAO {
     }
 
     getIdentifiersByAnswerIds(type) {
+        const AnswerIdentifier = this.db.AnswerIdentifier;
+        const Question = this.db.Question;
+        const QuestionChoice = this.db.QuestionChoice;
         return AnswerIdentifier.findAll({
             where: { type },
             attributes: ['identifier', 'questionId', 'multipleIndex', 'questionChoiceId'],
@@ -113,6 +121,8 @@ module.exports = class QuestionIdentifierDAO {
     }
 
     getMapByQuestionId(type, ids) {
+        const AnswerIdentifier = this.db.AnswerIdentifier;
+        const Question = this.db.Question;
         return AnswerIdentifier.findAll({
             where: { type, questionId: { $in: ids } },
             attributes: ['identifier', 'questionId', 'questionChoiceId'],

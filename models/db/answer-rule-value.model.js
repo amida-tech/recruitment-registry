@@ -1,44 +1,44 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
+module.exports = function answerRuleValue(sequelize, Sequelize, schema) {
     return sequelize.define('answer_rule_value', {
         ruleId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             allowNull: false,
             field: 'answer_rule_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
+                    schema,
                     tableName: 'answer_rule',
                 },
                 key: 'id',
             },
         },
         questionChoiceId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             field: 'question_choice_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
+                    schema,
                     tableName: 'question_choice',
                 },
                 key: 'id',
             },
         },
         value: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
         },
         createdAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'created_at',
         },
         deletedAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'deleted_at',
         },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        schema,
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',

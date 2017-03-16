@@ -55,18 +55,20 @@ module.exports = class QuestionGenerator {
         return result;
     }
 
-    newChoices() {
+    newChoices(count) {
+        const choiceCount = count || 5;
         const startIndex = this.choiceIndex;
-        const endIndex = this.choiceIndex + 5;
+        const endIndex = this.choiceIndex + choiceCount;
         this.choiceIndex = endIndex;
         return _.range(startIndex, endIndex).map(i => `choice_${i}`);
     }
 
-    choice(noOneOf) {
+    choice(options = {}) {
+        const noOneOf = options.noOneOf;
         this.typeChoiceIndex += 1;
         const typeChoiceIndex = this.typeChoiceIndex;
         const question = this.body('choice');
-        const choices = this.newChoices();
+        const choices = this.newChoices(options.choiceCount);
         if (((typeChoiceIndex % 3) === 0) && !noOneOf) {
             question.oneOfChoices = choices;
         } else if ((typeChoiceIndex % 3) === 1) {
@@ -78,7 +80,7 @@ module.exports = class QuestionGenerator {
     }
 
     openChoice() {
-        const question = this.choice(true);
+        const question = this.choice({ noOneOf: true });
         question.choices.push({ text: 'free text', type: 'text' });
         question.type = 'open-choice';
         return question;
@@ -97,27 +99,31 @@ module.exports = class QuestionGenerator {
         return question;
     }
 
-    choices() {
+    choices(options = {}) {
         const question = this.body('choices');
         let choices;
+        const choiceCount = options.choiceCount;
+        const newChoices = this.newChoices(choiceCount);
         if (this.choicesCode) {
             this.choicesCode = false;
-            choices = this.newChoices().map(choice => ({ text: choice, code: `code_${choice}` }));
+            choices = newChoices.map(choice => ({ text: choice, code: `code_${choice}` }));
         } else {
             this.choicesCode = true;
-            choices = this.newChoices().map(choice => ({ text: choice }));
+            choices = newChoices.map(choice => ({ text: choice }));
         }
-        choices.forEach((choice) => {
-            this.typeChoicesIndex += 1;
-            const choiceType = this.typeChoicesIndex % 4;
-            switch (choiceType) {
-            case 3:
-                choice.type = 'text';
-                break;
-            default:
-                choice.type = 'bool';
-            }
-        });
+        if (!options.noText) {
+            choices.forEach((choice) => {
+                this.typeChoicesIndex += 1;
+                const choiceType = this.typeChoicesIndex % 4;
+                switch (choiceType) {
+                case 3:
+                    choice.type = 'text';
+                    break;
+                default:
+                    choice.type = 'bool';
+                }
+            });
+        }
         question.choices = choices;
         return question;
     }
@@ -135,25 +141,25 @@ module.exports = class QuestionGenerator {
         return question;
     }
 
-    newBody(type) {
+    newBody(type, options) {
         const key = _.camelCase(type);
-        return this[key] ? this[key]() : this.body(type);
+        return this[key] ? this[key](options) : this.body(type);
     }
 
-    newQuestion(type) {
+    newQuestion(type, options) {
         type = type || questionTypes[(this.index + 1) % questionTypes.length];
-        const result = this.newBody(type);
+        const result = this.newBody(type, options);
         return result;
     }
 
-    newMultiQuestion(type, max) {
+    newMultiQuestion(type, options = {}) {
         if (!type) {
             const types = QuestionGenerator.singleQuestionTypes();
             type = types[(this.index + 1) % types.length];
         }
-        const result = this.newBody(type);
+        const result = this.newBody(type, options);
         result.multiple = true;
-        max = max || this.index % 5;
+        const max = options.max || this.index % 5;
         if (max < 3) {
             result.maxCount = 8 - max;
         }

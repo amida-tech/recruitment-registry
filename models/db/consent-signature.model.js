@@ -1,60 +1,60 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
+module.exports = function consentSignature(sequelize, Sequelize, schema) {
     return sequelize.define('consent_signature', {
         consentDocumentId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             allowNull: false,
             field: 'consent_document_id',
             unique: 'signature',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
+                    schema,
                     tableName: 'consent_document',
                 },
                 key: 'id',
             },
         },
         userId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             allowNull: false,
             field: 'user_id',
             unique: 'signature',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
+                    schema,
                     tableName: 'registry_user',
                 },
                 key: 'id',
             },
         },
         language: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             allowNull: false,
             field: 'language_code',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
+                    schema,
                     tableName: 'language',
                 },
                 key: 'code',
             },
         },
         ip: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
         },
         userAgent: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             field: 'user_agent',
         },
         createdAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'created_at',
         },
     }, {
         updatedAt: false,
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        schema,
         createdAt: 'createdAt',
     });
 };

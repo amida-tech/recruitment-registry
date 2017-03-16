@@ -8,6 +8,7 @@ const RRError = require('../lib/rr-error');
 const sequelizeErrorMap = {
     SequelizeUniqueConstraintError: {
         'lower(email)': 'uniqueEmail',
+        generic: 'genericUnique',
     },
 };
 
@@ -20,6 +21,11 @@ const transformSequelizeError = function (err) {
             const code = topSpecification[key];
             if (code) {
                 return new RRError(code);
+            }
+            const genericCode = topSpecification.generic;
+            if (genericCode) {
+                const value = fields[key];
+                return new RRError(genericCode, key, value);
             }
         }
     }

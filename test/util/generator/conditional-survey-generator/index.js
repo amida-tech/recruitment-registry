@@ -38,7 +38,8 @@ const conditionalQuestionMap = conditionalQuestions.reduce((r, questionInfo) => 
 
 const specialQuestionGenerator = {
     multipleSupport(surveyGenerator, questionInfo) {
-        return surveyGenerator.questionGenerator.newMultiQuestion('text', questionInfo.selectionCount);
+        const options = { max: questionInfo.selectionCount };
+        return surveyGenerator.questionGenerator.newMultiQuestion('text', options);
     },
     type(surveyGenerator, questionInfo) {
         return surveyGenerator.questionGenerator.newQuestion(questionInfo.type);

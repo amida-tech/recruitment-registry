@@ -1,50 +1,50 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
+module.exports = function consentDocuemntText(sequelize, Sequelize, schema) {
     return sequelize.define('consent_document_text', {
         consentDocumentId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             allowNull: false,
             field: 'consent_document_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
+                    schema,
                     tableName: 'consent_document',
                 },
                 key: 'id',
             },
         },
         content: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             allowNull: false,
         },
         updateComment: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             field: 'update_comment',
         },
         language: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             allowNull: false,
             field: 'language_code',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
+                    schema,
                     tableName: 'language',
                 },
                 key: 'code',
             },
         },
         createdAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'created_at',
         },
         deletedAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'deleted_at',
         },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        schema,
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',

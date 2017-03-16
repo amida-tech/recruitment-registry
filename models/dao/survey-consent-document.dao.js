@@ -2,13 +2,11 @@
 
 const _ = require('lodash');
 
-const db = require('../db');
-
-const SurveyConsent = db.SurveyConsent;
 
 module.exports = class SurveyConsentDocumentDAO {
-    constructor(dependencies) {
+    constructor(db, dependencies) {
         Object.assign(this, dependencies);
+        this.db = db;
     }
 
     listSurveyConsentDocuments({ userId, surveyId, action }, tx) {
@@ -20,7 +18,7 @@ module.exports = class SurveyConsentDocumentDAO {
         if (tx) {
             query.transaction = tx;
         }
-        return SurveyConsent.findAll(query)
+        return this.db.SurveyConsent.findAll(query)
             .then(surveyConsents => this.surveyConsent.updateConsentsInSurveyConsents(surveyConsents))
             .then((surveyConsents) => {
                 if (surveyConsents.length < 1) {

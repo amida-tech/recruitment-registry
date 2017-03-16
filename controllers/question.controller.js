@@ -3,7 +3,6 @@
 const _ = require('lodash');
 const intoStream = require('into-stream');
 
-const models = require('../models');
 const shared = require('./shared.js');
 const jsonSchema = require('../lib/json-schema');
 
@@ -14,11 +13,11 @@ exports.createQuestion = function (req, res) {
     const question = _.omit(req.body, 'parentId');
     const parentId = req.body.parentId;
     if (parentId) {
-        models.question.replaceQuestion(parentId, question)
+        req.models.question.replaceQuestion(parentId, question)
             .then(result => res.status(201).json(result))
             .catch(shared.handleError(res));
     } else {
-        models.question.createQuestion(question)
+        req.models.question.createQuestion(question)
             .then(({ id }) => res.status(201).json({ id }))
             .catch(shared.handleError(res));
     }
@@ -26,14 +25,14 @@ exports.createQuestion = function (req, res) {
 
 exports.updateQuestionText = function (req, res) {
     const language = _.get(req, 'swagger.params.language.value');
-    models.question.updateQuestionText(req.body, language)
+    req.models.question.updateQuestionText(req.body, language)
         .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };
 
 exports.deleteQuestion = function (req, res) {
     const id = _.get(req, 'swagger.params.id.value');
-    models.question.deleteQuestion(id)
+    req.models.question.deleteQuestion(id)
         .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };
@@ -42,7 +41,7 @@ exports.getQuestion = function (req, res) {
     const id = _.get(req, 'swagger.params.id.value');
     const language = _.get(req, 'swagger.params.language.value');
     const options = language ? { language } : {};
-    models.question.getQuestion(id, options)
+    req.models.question.getQuestion(id, options)
         .then(question => res.status(200).json(question))
         .catch(shared.handleError(res));
 };
@@ -51,20 +50,20 @@ exports.listQuestions = function (req, res) {
     const scope = _.get(req, 'swagger.params.scope.value');
     const language = _.get(req, 'swagger.params.language.value');
     const options = { scope, language };
-    models.question.listQuestions(options)
+    req.models.question.listQuestions(options)
         .then(questions => res.status(200).json(questions))
         .catch(shared.handleError(res));
 };
 
 exports.addQuestionIdentifiers = function (req, res) {
     const id = _.get(req, 'swagger.params.id.value');
-    models.question.addQuestionIdentifiers(id, req.body)
+    req.models.question.addQuestionIdentifiers(id, req.body)
         .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };
 
 exports.exportQuestions = function (req, res) {
-    models.question.export()
+    req.models.question.export()
         .then((csvContent) => {
             res.header('Content-disposition', 'attachment; filename=question.csv');
             res.type('text/csv');
@@ -76,7 +75,7 @@ exports.exportQuestions = function (req, res) {
 exports.importQuestions = function (req, res) {
     const csvFile = _.get(req, 'swagger.params.questioncsv.value');
     const stream = intoStream(csvFile.buffer);
-    models.question.import(stream)
+    req.models.question.import(stream)
         .then(result => res.status(201).json(result))
         .catch(shared.handleError(res));
 };

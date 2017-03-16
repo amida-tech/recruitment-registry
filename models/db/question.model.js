@@ -1,61 +1,61 @@
 'use strict';
 
-module.exports = function (sequelize, DataTypes) {
+module.exports = function question(sequelize, Sequelize, schema) {
     return sequelize.define('question', {
         type: {
-            type: DataTypes.TEXT,
+            type: Sequelize.TEXT,
             allowNull: false,
             references: {
                 model: {
-                    schema: sequelize.options.schema,
+                    schema,
                     tableName: 'question_type',
                 },
                 key: 'name',
             },
         },
         choiceSetId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             field: 'choice_set_id',
             references: {
                 model: {
-                    schema: sequelize.options.schema,
+                    schema,
                     tableName: 'choice_set',
                 },
                 key: 'id',
             },
         },
         version: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
         },
         groupId: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             field: 'group_id',
         },
         meta: {
-            type: DataTypes.JSON,
+            type: Sequelize.JSON,
         },
         multiple: {
-            type: DataTypes.BOOLEAN,
+            type: Sequelize.BOOLEAN,
         },
         maxCount: {
-            type: DataTypes.INTEGER,
+            type: Sequelize.INTEGER,
             field: 'max_count',
         },
         createdAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'created_at',
         },
         updatedAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'updated_at',
         },
         deletedAt: {
-            type: DataTypes.DATE,
+            type: Sequelize.DATE,
             field: 'deleted_at',
         },
     }, {
         freezeTableName: true,
-        schema: sequelize.options.schema,
+        schema,
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',
         deletedAt: 'deletedAt',

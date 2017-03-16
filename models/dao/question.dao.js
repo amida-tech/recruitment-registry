@@ -2,24 +2,17 @@
 
 const _ = require('lodash');
 
-const db = require('../db');
-
 const RRError = require('../../lib/rr-error');
 const SPromise = require('../../lib/promise');
 const Translatable = require('./translatable');
 const ExportCSVConverter = require('../../export/csv-converter.js');
 const ImportCSVConverter = require('../../import/csv-converter.js');
 
-const sequelize = db.sequelize;
-const SurveyQuestion = db.SurveyQuestion;
-const Question = db.Question;
-const QuestionIdentifier = db.QuestionIdentifier;
-const AnswerIdentifier = db.AnswerIdentifier;
-
 module.exports = class QuestionDAO extends Translatable {
-    constructor(dependencies) {
+    constructor(db, dependencies) {
         super('question_text', 'questionId', ['text', 'instruction'], { instruction: true });
         Object.assign(this, dependencies);
+        this.db = db;
     }
 
     createChoicesTx(questionId, choices, transaction) {
@@ -64,6 +57,7 @@ module.exports = class QuestionDAO extends Translatable {
     }
 
     createQuestionTx(question, transaction) {
+        const Question = this.db.Question;
         return this.updateChoiceSetReference(question.choiceSetReference, transaction)
             .then((choiceSetId) => {
                 const baseFields = _.omit(question, ['oneOfChoices', 'choices', 'actions']);
@@ -115,10 +109,14 @@ module.exports = class QuestionDAO extends Translatable {
     }
 
     createQuestion(question) {
+        const sequelize = this.db.sequelize;
         return sequelize.transaction(transaction => this.createQuestionTx(question, transaction));
     }
 
     replaceQuestion(id, replacement) {
+        const sequelize = this.db.sequelize;
+        const SurveyQuestion = this.db.SurveyQuestion;
+        const Question = this.db.Question;
         return SurveyQuestion.count({ where: { questionId: id } })
             .then((count) => {
                 if (count) {
@@ -150,6 +148,7 @@ module.exports = class QuestionDAO extends Translatable {
     }
 
     getQuestion(id, options = {}) {
+        const Question = this.db.Question;
         const language = options.language;
         return Question.findById(id, { raw: true, attributes: ['id', 'type', 'meta', 'multiple', 'maxCount', 'choiceSetId'] })
             .then((question) => {
@@ -223,10 +222,13 @@ module.exports = class QuestionDAO extends Translatable {
     }
 
     updateQuestionText(translation, language) {
+        const sequelize = this.db.sequelize;
         return sequelize.transaction(tx => this.updateQuestionTextTx(translation, language, tx));
     }
 
     deleteQuestion(id) {
+        const SurveyQuestion = this.db.SurveyQuestion;
+        const Question = this.db.Question;
         return SurveyQuestion.count({ where: { questionId: id } })
             .then((count) => {
                 if (count) {
@@ -247,6 +249,7 @@ module.exports = class QuestionDAO extends Translatable {
         if (ids) {
             options.where = { id: { $in: ids } };
         }
+        const Question = this.db.Question;
         return Question.findAll(options)
             .then((questions) => {
                 if (ids && (questions.length !== ids.length)) {
@@ -320,6 +323,8 @@ module.exports = class QuestionDAO extends Translatable {
     }
 
     addQuestionIdentifiersTx(questionId, allIdentifiers, transaction) {
+        const QuestionIdentifier = this.db.QuestionIdentifier;
+        const AnswerIdentifier = this.db.AnswerIdentifier;
         const { type, identifier, answerIdentifier, choices } = allIdentifiers;
         return QuestionIdentifier.create({ type, identifier, questionId }, { transaction })
             .then(() => {
@@ -332,6 +337,7 @@ module.exports = class QuestionDAO extends Translatable {
     }
 
     addQuestionIdentifiers(questionId, allIdentifiers) {
+        const sequelize = this.db.sequelize;
         return sequelize.transaction(transaction => this.addQuestionIdentifiersTx(questionId, allIdentifiers, transaction));
     }
 
@@ -399,6 +405,8 @@ module.exports = class QuestionDAO extends Translatable {
     }
 
     import(stream, options = {}) {
+        const AnswerIdentifier = this.db.AnswerIdentifier;
+        const sequelize = this.db.sequelize;
         const converter = new ImportCSVConverter({ checkType: false });
         return converter.streamToRecords(stream)
             .then((records) => {

@@ -1,19 +1,19 @@
 'use strict';
 
-const db = require('../db');
 const RRError = require('../../lib/rr-error');
 
-const QuestionIdentifier = db.QuestionIdentifier;
-const Question = db.Question;
-
 module.exports = class QuestionIdentifierDAO {
+    constructor(db) {
+        this.db = db;
+    }
+
     createQuestionIdentifier(questionIdentifier, transaction) {
-        return QuestionIdentifier.create(questionIdentifier, { transaction })
+        return this.db.QuestionIdentifier.create(questionIdentifier, { transaction })
             .then(({ id }) => ({ id }));
     }
 
     getQuestionIdByIdentifier(type, identifier) {
-        return QuestionIdentifier.findOne({
+        return this.db.QuestionIdentifier.findOne({
             where: { type, identifier },
             attributes: ['questionId'],
             raw: true,
@@ -27,7 +27,8 @@ module.exports = class QuestionIdentifierDAO {
     }
 
     getInformationByQuestionIdentifier(type) {
-        return QuestionIdentifier.findAll({
+        const Question = this.db.Question;
+        return this.db.QuestionIdentifier.findAll({
             where: { type },
             attributes: ['questionId', 'identifier'],
             include: [{ model: Question, as: 'question', attributes: ['id', 'type'] }],
@@ -43,6 +44,7 @@ module.exports = class QuestionIdentifierDAO {
     }
 
     getInformationByQuestionId(type, ids) {
+        const Question = this.db.Question;
         const options = {
             where: { type },
             attributes: ['identifier', 'questionId'],
@@ -52,7 +54,7 @@ module.exports = class QuestionIdentifierDAO {
         if (ids) {
             options.where.questionId = { $in: ids };
         }
-        return QuestionIdentifier.findAll(options)
+        return this.db.QuestionIdentifier.findAll(options)
             .then(records => records.reduce((r, record) => {
                 r[record.questionId] = {
                     identifier: record.identifier,

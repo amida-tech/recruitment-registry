@@ -118,7 +118,7 @@ describe('user integration', () => {
         const user = hxUser.client(0);
         return rrSuperTest.post('/users', user, 400)
             .expect((res) => {
-                expect(res.body.message).to.equal(RRError.message('uniqueUsername'));
+                expect(res.body.message).to.equal(RRError.message('genericUnique', 'username', user.username));
             });
     });
 

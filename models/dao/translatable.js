@@ -2,10 +2,7 @@
 
 const _ = require('lodash');
 
-const db = require('../db');
 const SPromise = require('../../lib/promise');
-
-const sequelize = db.sequelize;
 
 module.exports = class Translatable {
     constructor(tableName, parentIdField, textFields = ['text'], optionals = {}) {
@@ -16,7 +13,7 @@ module.exports = class Translatable {
     }
 
     createTextTx(input, transaction) {
-        const Table = sequelize.models[this.tableName];
+        const Table = this.db.sequelize.models[this.tableName];
         const parentIdField = this.parentIdField;
         const language = input.language || 'en';
         const where = { language };
@@ -38,7 +35,7 @@ module.exports = class Translatable {
     }
 
     deleteTextTx(parentId, transaction) {
-        const Table = sequelize.models[this.tableName];
+        const Table = this.db.sequelize.models[this.tableName];
         const parentIdField = this.parentIdField;
         const where = {
             [parentIdField]: parentId,
@@ -52,15 +49,15 @@ module.exports = class Translatable {
     }
 
     createText(input) {
-        return sequelize.transaction(transaction => this.createTextTx(input, transaction));
+        return this.db.sequelize.transaction(transaction => this.createTextTx(input, transaction));
     }
 
     createMultipleTexts(input) {
-        return sequelize.transaction(transaction => this.createMultipleTextsTx(input, transaction));
+        return this.db.sequelize.transaction(transaction => this.createMultipleTextsTx(input, transaction));
     }
 
     getText(parentId, language = 'en') {
-        const Table = sequelize.models[this.tableName];
+        const Table = this.db.sequelize.models[this.tableName];
         const where = { language };
         where[this.parentIdField] = parentId;
         const query = { where, raw: true, attributes: this.textFields };
@@ -94,7 +91,7 @@ module.exports = class Translatable {
     }
 
     getAllTexts(ids, language = 'en') {
-        const Table = sequelize.models[this.tableName];
+        const Table = this.db.sequelize.models[this.tableName];
         const parentIdField = this.parentIdField;
         const options = { raw: true, attributes: [parentIdField, 'language', ...this.textFields] };
         if (language === 'en') {

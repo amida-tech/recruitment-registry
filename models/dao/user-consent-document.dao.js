@@ -1,12 +1,9 @@
 'use strict';
 
-const db = require('../db');
-
-const ConsentSignature = db.ConsentSignature;
-
 module.exports = class UserConsentDocumentDAO {
-    constructor(dependencies) {
+    constructor(db, dependencies) {
         Object.assign(this, dependencies);
+        this.db = db;
     }
 
     addSignatureInfo(consentDocument, signature) {
@@ -33,7 +30,7 @@ module.exports = class UserConsentDocumentDAO {
                 if (options.transaction) {
                     query.transaction = options.transaction;
                 }
-                return ConsentSignature.findAll(query)
+                return this.db.ConsentSignature.findAll(query)
                     .then(signedDocuments => new Map(signedDocuments.map(signedDocument => [signedDocument.consentDocumentId, signedDocument])))
                     .then((signedDocumentMap) => {
                         if (includeSigned) {
@@ -49,7 +46,7 @@ module.exports = class UserConsentDocumentDAO {
     }
 
     fillSignature(result, userId, id) {
-        return ConsentSignature.findOne({
+        return this.db.ConsentSignature.findOne({
             where: { userId, consentDocumentId: id },
             raw: true,
             attributes: ['language'],

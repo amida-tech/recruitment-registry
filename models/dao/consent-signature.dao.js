@@ -1,14 +1,15 @@
 'use strict';
 
-const db = require('../db');
-
 const SPromise = require('../../lib/promise');
 
-const sequelize = db.sequelize;
-const ConsentSignature = db.ConsentSignature;
-
 module.exports = class ConsentSignatureDAO {
+    constructor(db) {
+        this.db = db;
+    }
+
     createSignature(input, tx) {
+        const ConsentSignature = this.db.ConsentSignature;
+
         const options = tx ? { transaction: tx } : {};
         const record = Object.assign({}, input);
         record.language = record.language || 'en';
@@ -19,6 +20,7 @@ module.exports = class ConsentSignatureDAO {
     }
 
     bulkCreateSignatures(consentDocumentsIds, commonProperties) {
+        const sequelize = this.db.sequelize;
         return sequelize.transaction((tx) => {
             const pxs = consentDocumentsIds.map((consentDocumentId) => {
                 const input = Object.assign({ consentDocumentId }, commonProperties);
@@ -29,6 +31,7 @@ module.exports = class ConsentSignatureDAO {
     }
 
     getSignatureHistory(userId) {
+        const ConsentSignature = this.db.ConsentSignature;
         return ConsentSignature.findAll({
             where: { userId },
             raw: true,

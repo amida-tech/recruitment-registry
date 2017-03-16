@@ -289,6 +289,12 @@ const comparator = {
         expected.id = server.id;
         expect(server).to.deep.equal(expected);
     },
+    registry(client, server) {
+        const expected = _.cloneDeep(client);
+        expected.id = server.id;
+        expect(server).to.deep.equal(expected);
+    },
+
 };
 
 module.exports = comparator;
