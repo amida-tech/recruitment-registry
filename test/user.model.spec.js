@@ -133,7 +133,7 @@ describe('user unit', () => {
             const username = client.username || client.email.toLowerCase();
             user.username = username;
             return models.user.createUser(user)
-                .then(shared.throwingHandler, shared.expectedSeqErrorHandler('SequelizeUniqueConstraintError', { username }, 'uniqueUsername'));
+                .then(shared.throwingHandler, shared.expectedSeqErrorHandler('SequelizeUniqueConstraintError', { username }));
         };
     };
 
@@ -174,7 +174,7 @@ describe('user unit', () => {
             const client = hxUser.client(index);
             const username = client.username || client.email.toLowerCase();
             return models.user.createUser(client)
-                .then(shared.throwingHandler, shared.expectedSeqErrorHandler('SequelizeUniqueConstraintError', { username }, 'uniqueUsername'));
+                .then(shared.throwingHandler, shared.expectedSeqErrorHandler('SequelizeUniqueConstraintError', { username }));
         };
     };
 

@@ -12,6 +12,8 @@ const translator = require('./translator');
 const comparator = require('./comparator');
 
 const expect = chai.expect;
+const unknownError = new RRError('unknown');
+
 
 class SharedIntegration {
     constructor(generator) {
@@ -257,8 +259,9 @@ class SharedIntegration {
     }
 
     verifyErrorMessage(res, code, ...params) {
-        const expected = RRError.message(code, ...params);
-        expect(expected).to.not.equal(RRError.message('unknown'));
+        const expected = (new RRError(code, ...params)).getMessage();
+        expect(expected).to.not.equal(code);
+        expect(expected).to.not.equal(unknownError.getMessage());
         expect(res.body.message).to.equal(expected);
     }
 }

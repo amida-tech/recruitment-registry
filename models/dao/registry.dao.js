@@ -11,7 +11,7 @@ module.exports = class RegistryDAO {
 
     createRegistry(registry) {
         if (registry.url && registry.schema) {
-            return RRError.reject('registryBothURLSchema');
+            return RRError.reject('registryBothURLSchema', registry.name);
         }
         return this.db.Registry.create(registry).then(({ id }) => ({ id }));
     }
