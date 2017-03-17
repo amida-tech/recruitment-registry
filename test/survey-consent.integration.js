@@ -9,7 +9,6 @@ const _ = require('lodash');
 
 const SharedIntegration = require('./util/shared-integration');
 const RRSuperTest = require('./util/rr-super-test');
-const RRError = require('../lib/rr-error');
 const config = require('../config');
 const Generator = require('./util/generator');
 const History = require('./util/history');
@@ -119,9 +118,7 @@ describe('survey consent integration', () => {
         const consentId = hxConsent.id(0);
         const surveyConsent = { surveyId, consentId, consentTypeId, action: 'read' };
         store.post('/survey-consents', surveyConsent, 400)
-            .expect((res) => {
-                expect(res.body.message).to.equal(RRError.message('surveyConsentInvalidTypeForConsent'));
-            })
+            .expect(res => shared.verifyErrorMessage(res, 'surveyConsentInvalidTypeForConsent'))
             .end(done);
     });
 
@@ -152,9 +149,7 @@ describe('survey consent integration', () => {
 
     it('error: get profile survey with no consent documents of existing types', (done) => {
         store.get('/profile-survey', false, 400)
-            .expect((res) => {
-                expect(res.body.message).to.equal(RRError.message('noSystemConsentDocuments'));
-            })
+            .expect(res => shared.verifyErrorMessage(res, 'noSystemConsentDocuments'))
             .end(done);
     });
 
@@ -208,7 +203,7 @@ describe('survey consent integration', () => {
             }
             store.authPost('/profiles', response, 400)
                 .expect((res) => {
-                    expect(res.body.message).to.equal(RRError.message('profileSignaturesMissing'));
+                    shared.verifyErrorMessage(res, 'profileSignaturesMissing');
                     const expected = hxConsentDocument.serversInList(documentIndices);
                     expect(res.body.consentDocuments).to.deep.equal(expected);
                 })
@@ -258,7 +253,7 @@ describe('survey consent integration', () => {
         return function (done) {
             store.get('/profiles', true, 400)
                 .expect((res) => {
-                    expect(res.body.message).to.equal(RRError.message('profileSignaturesMissing'));
+                    shared.verifyErrorMessage(res, 'profileSignaturesMissing');
                     const expected = hxConsentDocument.serversInList(documentIndices);
                     expect(res.body.consentDocuments).to.deep.equal(expected);
                 })
@@ -322,7 +317,7 @@ describe('survey consent integration', () => {
             };
             store.post('/answers', input, 400)
                 .expect((res) => {
-                    expect(res.body.message).to.equal(RRError.message('profileSignaturesMissing'));
+                    shared.verifyErrorMessage(res, 'profileSignaturesMissing');
                     const expected = consentCommon.getSurveyConsentDocuments(expectedInfo);
                     expect(res.body.consentDocuments).to.deep.equal(expected);
                 })
@@ -586,7 +581,7 @@ describe('survey consent integration', () => {
             const survey = hxSurvey.server(surveyIndex);
             store.get(`/answered-surveys/${survey.id}`, true, 400)
                 .expect((res) => {
-                    expect(res.body.message).to.equal(RRError.message('profileSignaturesMissing'));
+                    shared.verifyErrorMessage(res, 'profileSignaturesMissing');
                     const expected = consentCommon.getSurveyConsentDocuments(expectedInfo);
                     expect(res.body.consentDocuments).to.deep.equal(expected);
                 })

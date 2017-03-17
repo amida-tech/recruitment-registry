@@ -11,7 +11,6 @@ const config = require('../config');
 const SharedIntegration = require('./util/shared-integration');
 const History = require('./util/history');
 const RRSuperTest = require('./util/rr-super-test');
-const RRError = require('../lib/rr-error');
 const Generator = require('./util/generator');
 const comparator = require('./util/comparator');
 
@@ -117,9 +116,7 @@ describe('user integration', () => {
     it('error: create the same user', () => {
         const user = hxUser.client(0);
         return rrSuperTest.post('/users', user, 400)
-            .expect((res) => {
-                expect(res.body.message).to.equal(RRError.message('genericUnique', 'username', user.username));
-            });
+            .expect(res => shared.verifyErrorMessage(res, 'genericUnique', 'username', user.username));
     });
 
     it('error: create user with the same email', () => {
@@ -127,9 +124,7 @@ describe('user integration', () => {
         const newUser = Object.assign({}, user);
         newUser.username = 'anotherusername';
         return rrSuperTest.post('/users', newUser, 400)
-            .expect((res) => {
-                expect(res.body.message).to.equal(RRError.message('uniqueEmail'));
-            });
+            .expect(res => shared.verifyErrorMessage(res, 'uniqueEmail'));
     });
 
     it('logout as super', shared.logoutFn(rrSuperTest));

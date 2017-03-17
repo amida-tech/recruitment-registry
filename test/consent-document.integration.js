@@ -12,7 +12,6 @@ const RRSuperTest = require('./util/rr-super-test');
 const Generator = require('./util/generator');
 const ConsentDocumentHistory = require('./util/consent-document-history');
 const config = require('../config');
-const RRError = require('../lib/rr-error');
 const models = require('../models');
 
 const expect = chai.expect;
@@ -55,9 +54,7 @@ describe('consent document integration', () => {
     it('login as user 0', shared.loginIndexFn(store, history.hxUser, 0));
     it('error: no consent documents of existing types', (done) => {
         store.get('/user-consent-documents', true, 400)
-            .expect((res) => {
-                expect(res.body.message).to.equal(RRError.message('noSystemConsentDocuments'));
-            })
+            .expect(res => shared.verifyErrorMessage(res, 'noSystemConsentDocuments'))
             .end(done);
     });
     it('logout as user 0', shared.logoutFn(store));

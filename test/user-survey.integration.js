@@ -14,7 +14,6 @@ const Generator = require('./util/generator');
 const History = require('./util/history');
 const SurveyHistory = require('./util/survey-history');
 const Shared = require('./util/shared-integration');
-const RRError = require('../lib/rr-error');
 const comparator = require('./util/comparator');
 const translator = require('./util/translator');
 const surveyCommon = require('./util/survey-common');
@@ -232,10 +231,7 @@ describe('user survey integration', () => {
                 status: 'completed',
             };
             store.post(`/user-surveys/${survey.id}/answers`, input, 400)
-                .expect((res) => {
-                    const message = RRError.message('answerRequiredMissing');
-                    expect(res.body.message).to.equal(message);
-                })
+                .expect(res => shared.verifyErrorMessage(res, 'answerRequiredMissing'))
                 .end(done);
         };
     };

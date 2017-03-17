@@ -24,8 +24,6 @@ const choiceSetCommon = require('./util/choice-set-common');
 // const invalidSurveysJSON = require('./fixtures/json-schema-invalid/new-survey');
 const invalidSurveysSwagger = require('./fixtures/swagger-invalid/new-survey');
 
-const RRError = require('../lib/rr-error');
-
 const expect = chai.expect;
 const generator = new Generator();
 const shared = new SharedIntegration(generator);
@@ -148,9 +146,7 @@ describe('survey integration', () => {
     //    return function (done) {
     //        const survey = invalidSurveysJSON[index];
     //        store.post('/surveys', survey, 400)
-    //            .expect(function (res) {
-    //                expect(res.body.message).to.equal(RRError.message('jsonSchemaFailed', 'newSurvey'));
-    //            })
+    //            .expect(res => shared.verifyErrorMessage(res, 'jsonSchemaFailed', 'newSurvey'))
     //            .end(done);
     //    };
     // };
@@ -211,9 +207,7 @@ describe('survey integration', () => {
         return function (done) {
             const id = hxSurvey.id(index);
             store.patch(`/surveys/${id}`, { status: 'draft' }, 409)
-                .expect((res) => {
-                    expect(res.body.message).to.equal(RRError.message('surveyPublishedToDraftUpdate'));
-                })
+                .expect(res => shared.verifyErrorMessage(res, 'surveyPublishedToDraftUpdate'))
                 .end(done);
         };
     }(surveyCount - 4)));
@@ -222,9 +216,7 @@ describe('survey integration', () => {
         return function (done) {
             const id = hxSurvey.id(index);
             store.patch(`/surveys/${id}`, { status: 'retired' }, 403)
-                .expect((res) => {
-                    expect(res.body.message).to.equal(RRError.message('surveyDraftToRetiredUpdate'));
-                })
+                .expect(res => shared.verifyErrorMessage(res, 'surveyDraftToRetiredUpdate'))
                 .end(done);
         };
     }(surveyCount - 7)));
@@ -233,9 +225,7 @@ describe('survey integration', () => {
         return function (done) {
             const id = hxSurvey.id(index);
             store.patch(`/surveys/${id}`, { status: 'retired' }, 409)
-                .expect((res) => {
-                    expect(res.body.message).to.equal(RRError.message('surveyRetiredStatusUpdate'));
-                })
+                .expect(res => shared.verifyErrorMessage(res, 'surveyRetiredStatusUpdate'))
                 .end(done);
         };
     }(surveyCount - 2)));

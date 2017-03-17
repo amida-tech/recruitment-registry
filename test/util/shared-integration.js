@@ -6,6 +6,7 @@ const chai = require('chai');
 
 const appgen = require('../../app-generator');
 const db = require('../../models/db');
+const RRError = require('../../lib/rr-error');
 const Generator = require('./generator');
 const translator = require('./translator');
 const comparator = require('./comparator');
@@ -253,6 +254,12 @@ class SharedIntegration {
                             expect(actual).to.deep.equal(expected);
                         }));
         });
+    }
+
+    verifyErrorMessage(res, code, ...params) {
+        const expected = RRError.message(code, ...params);
+        expect(expected).to.not.equal(RRError.message('unknown'));
+        expect(res.body.message).to.equal(expected);
     }
 }
 
