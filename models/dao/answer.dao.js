@@ -154,7 +154,7 @@ module.exports = class AnswerDAO {
         this.schemaModels = new Map();
     }
 
-    fileAnswer({ userId, surveyId, language, answers }, tx) {
+    fileAnswer({ userId, surveyId, language, answers }, transaction) {
         const Answer = this.db.Answer;
         answers = answers.reduce((r, q) => {
             const questionId = q.questionId;
@@ -170,8 +170,7 @@ module.exports = class AnswerDAO {
             values.forEach(value => r.push(value));
             return r;
         }, []);
-        // TODO: Switch to bulkCreate when Sequelize 4 arrives
-        return SPromise.all(answers.map(answer => Answer.create(answer, { transaction: tx })));
+        return Answer.bulkCreate(answers, { transaction });
     }
 
     updateStatus(userId, surveyId, status, transaction) {
@@ -469,17 +468,12 @@ module.exports = class AnswerDAO {
                 record.language = 'en';
                 return record;
             }))
-            .then(records => this.db.sequelize.transaction(transaction =>
-                    // TODO: Switch to bulkCreate when Sequelize 4 arrives
-                     SPromise.all(records.map(record => Answer.create(record, { transaction })))));
+            .then(records => Answer.bulkCreate(records));
     }
 
     importRecords(records) {
-        const Answer = this.db.Answer;
-        return this.db.sequelize.transaction(transaction =>
-            // TODO: Switch to bulkCreate when Sequelize 4 arrives
-             SPromise.all(records.map(record => Answer.create(record, { transaction })
-                    .then(({ id }) => id))));
+        const fn = r => r.map(({ id }) => id);
+        return this.db.Answer.bulkCreate(records, { returning: true }).then(fn);
     }
 
     exportBulk(ids) {

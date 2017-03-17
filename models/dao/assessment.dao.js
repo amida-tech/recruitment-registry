@@ -1,16 +1,14 @@
 'use strict';
 
-const SPromise = require('../../lib/promise');
-
 module.exports = class AssessmentDAO {
     constructor(db) {
         this.db = db;
     }
 
     createAssessmentSurveys(assessmentId, surveys, transaction) {
-        const AssessmentSurvey = this.db.AssessmentSurvey;
-        const promises = surveys.map(({ id, lookback = false }) => AssessmentSurvey.create({ assessmentId, surveyId: id, lookback }, { transaction }));
-        return SPromise.all(promises); // TODO: BulkCreate when Sequelize 4.
+        const fn = ({ id, lookback = false }) => ({ assessmentId, surveyId: id, lookback });
+        const records = surveys.map(fn);
+        return this.db.AssessmentSurvey.bulkCreate(records, { transaction });
     }
 
     createAssessment({ name, sequenceType = 'ondemand', surveys }) {

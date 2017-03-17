@@ -2,7 +2,6 @@
 
 const _ = require('lodash');
 const answerCommon = require('./answer-common');
-const SPromise = require('../../lib/promise');
 
 const ExportCSVConverter = require('../../export/csv-converter.js');
 const ImportCSVConverter = require('../../import/csv-converter.js');
@@ -195,14 +194,12 @@ module.exports = class AnswerRuleDAO {
                 }
                 return this.db.sequelize.transaction((transaction) => {
                     const ruleIdMap = new Map();
-                    const promises = rules.map((rule) => {
-                        const record = _.omit(rule, 'id');
-                        return AnswerRule.create(record, { transaction })
-                            .then(({ id }) => ruleIdMap.set(rule.id, id));
-                    });
-                    return SPromise.all(promises)
+                    const records = rules.map(rule => _.omit(rule, 'id'));
+                    const fnIdMap = ({ id }, index) => ruleIdMap.set(rules[index].id, id);
+                    return AnswerRule.bulkCreate(records, { transaction, returning: true })
+                        .then(result => result.forEach(fnIdMap))
                         .then(() => {
-                            const promises2 = ruleValues.map((ruleValue) => {
+                            const records = ruleValues.map((ruleValue) => {
                                 const record = { line: ruleValue.line };
                                 if (ruleValue.value || ruleValue.value === 0) {
                                     record.value = ruleValue.value;
@@ -211,13 +208,14 @@ module.exports = class AnswerRuleDAO {
                                     record.questionChoiceId = ruleValue.questionChoiceId;
                                 }
                                 record.ruleId = ruleIdMap.get(ruleValue.id);
-                                return AnswerRuleValue.create(record, { transaction });
+                                return record;
                             });
-                            return SPromise.all(promises2).then(() => ruleIdMap)
-                                .then(ruleIdMap => [...ruleIdMap].reduce((r, [key, value]) => {
-                                    r[key] = value;
-                                    return r;
-                                }, {}));
+                            return AnswerRuleValue.bulkCreate(records, { transaction })
+                                .then(() => {
+                                    const ruleIdObj = {};
+                                    ruleIdMap.forEach((value, key) => { ruleIdObj[key] = value; });
+                                    return ruleIdObj;
+                                });
                         });
                 });
             });
