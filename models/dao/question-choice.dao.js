@@ -31,9 +31,6 @@ module.exports = class QuestionChoiceDAO extends Translatable {
         return QuestionChoice.create(choice, { transaction })
             .then(({ id }) => {
                 const input = { id, text: choice.text };
-                if (choice.code) {
-                    input.code = choice.code;
-                }
                 return this.createTextTx(input, transaction)
                     .then(() => ({ id }));
             });

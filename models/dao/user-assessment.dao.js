@@ -2,8 +2,6 @@
 
 const _ = require('lodash');
 
-const SPromise = require('../../lib/promise');
-
 module.exports = class AssessmentDAO {
     constructor(db, dependencies) {
         Object.assign(this, dependencies);
@@ -34,8 +32,7 @@ module.exports = class AssessmentDAO {
                         }))
                         .then((answers) => {
                             const records = answers.map(answer => ({ answerId: answer.id, userAssessmentId: id }));
-                            const promises = records.map(record => UserAssessmentAnswer.create(record, { transaction }));
-                            return SPromise.all(promises);
+                            return UserAssessmentAnswer.bulkCreate(records, { transaction });
                         });
                 }
                 return null;
@@ -102,21 +99,16 @@ module.exports = class AssessmentDAO {
 
     importBulk(records) {
         return this.db.sequelize.transaction((transaction) => {
-            const promises = records.map((record) => {
-                const dbRecord = _.omit(record, 'answerIds');
-                return this.db.UserAssessment.create(dbRecord, { transaction })
-                    .then(({ id }) => id);
-            });
-            return SPromise.all(promises)
+            const dbRecords = records.map(record => _.omit(record, 'answerIds'));
+            return this.db.UserAssessment.bulkCreate(dbRecords, { transaction, returning: true })
+                .then(result => result.map(({ id }) => id))
                 .then((ids) => {
                     const answerRecords = records.reduce((r, { answerIds }, index) => {
                         const userAssessmentId = ids[index];
                         answerIds.forEach(answerId => r.push({ userAssessmentId, answerId }));
                         return r;
                     }, []);
-                    const promises = answerRecords.map(answerRecord => this.db.UserAssessmentAnswer.create(answerRecord, { transaction })
-                            .then(({ id }) => id));
-                    return SPromise.all(promises);
+                    return this.db.UserAssessmentAnswer.bulkCreate(answerRecords, { transaction });
                 });
         });
     }
