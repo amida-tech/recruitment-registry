@@ -1,6 +1,5 @@
 'use strict';
 
-const SPromise = require('../../lib/promise');
 const zipUtil = require('../../lib/zip-util');
 const _ = require('lodash');
 
@@ -92,12 +91,8 @@ module.exports = class ResearchSiteDAO {
         return this.db.ResearchSiteVicinity.destroy({ where: { researchSiteId }, transaction })
             .then(() => {
                 if (vicinity.length) {
-                    const promises = vicinity
-                        .map(formatZip)
-                        .map(zip => (
-                            this.db.ResearchSiteVicinity.create({ zip, researchSiteId }, { transaction })
-                        ));
-                    return SPromise.all(promises);
+                    const records = vicinity.map(formatZip).map(zip => ({ zip, researchSiteId }));
+                    return this.db.ResearchSiteVicinity.bulkCreate(records, { transaction });
                 }
                 return null;
             });

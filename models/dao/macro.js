@@ -10,10 +10,15 @@ module.exports = class Macro {
 
     createSurveys(surveys) {
         return this.db.sequelize.transaction((transaction) => {
-            const promises = surveys.map(survey => this.survey.createSurveyTx(survey, transaction));
-            return SPromise.all(promises)
-                .then(ids => this.profileSurvey.createProfileSurveyIdTx(ids[0], transaction)
-                        .then(() => ids));
+            const pxs = surveys.map((survey) => {
+                const px = this.survey.createSurveyTx(survey, transaction);
+                return px;
+            });
+            pxs[0] = pxs[0].then((id) => {
+                const px = this.profileSurvey.createProfileSurveyIdTx(id, transaction);
+                return px.then(() => id);
+            });
+            return SPromise.all(pxs);
         });
     }
 };

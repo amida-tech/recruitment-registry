@@ -1,7 +1,5 @@
 'use strict';
 
-const SPromise = require('../../lib/promise');
-
 const updateQuestionSectionDependency = function updateQuestionSectionDependency(parents, id, questionParents, sectionParents) {
     const { sectionId, parentId, questionParentId } = sectionParents.get(id);
     parents.push({ sectionId });
@@ -83,7 +81,6 @@ module.exports = class SurveyQuestionsDAO {
     }
 
     importSurveyQuestionsTx(surveyQuestions, transaction) {
-        const promises = surveyQuestions.map(surveyQuestion => this.db.SurveyQuestion.create(surveyQuestion, { transaction }));
-        return SPromise.all(promises);
+        return this.db.SurveyQuestion.bulkCreate(surveyQuestions, { transaction });
     }
 };

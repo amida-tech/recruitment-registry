@@ -26,7 +26,7 @@ module.exports = class SectionDAO {
             });
     }
 
-    bulkCreateFlattenedSectionsForSurveyTx(surveyId, surveyQuestionIds, flattenedSections, transaction) { // TODO: Use sequelize bulkCreate with 4.0
+    bulkCreateFlattenedSectionsForSurveyTx(surveyId, surveyQuestionIds, flattenedSections, transaction) {
         if (!flattenedSections.length) {
             return this.db.SurveySection.destroy({ where: { surveyId }, transaction });
         }
@@ -42,7 +42,7 @@ module.exports = class SectionDAO {
                 return r.then(ids => this.createSurveySectionTx(record, ids, transaction));
             }, null))
             .then(((sectionIds) => {
-                const promises = flattenedSections.reduce((r, { indices }, line) => {
+                const records = flattenedSections.reduce((r, { indices }, line) => {
                     if (!indices) {
                         return r;
                     }
@@ -51,13 +51,13 @@ module.exports = class SectionDAO {
                         const surveySectionId = sectionIds[line].id;
                         questionIds.forEach((questionId, questionLine) => {
                             const record = { surveySectionId, questionId, line: questionLine };
-                            const promise = this.db.SurveySectionQuestion.create(record, { transaction });
-                            r.push(promise);
+                            r.push(record);
                         });
                     }
                     return r;
                 }, []);
-                return SPromise.all(promises).then(() => sectionIds.map(sectionId => sectionId.sectionId));
+                return this.db.SurveySectionQuestion.bulkCreate(records, { transaction })
+                    .then(() => sectionIds.map(sectionId => sectionId.sectionId));
             }));
     }
 

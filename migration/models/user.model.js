@@ -19,7 +19,7 @@ module.exports = function (sequelize, DataTypes) {
         context: crypto,
     });
 
-    return sequelize.define('registry_user', {
+    const result = sequelize.define('registry_user', {
         username: {
             type: DataTypes.TEXT,
             unique: {
@@ -106,39 +106,44 @@ module.exports = function (sequelize, DataTypes) {
                 return null;
             },
         },
-        instanceMethods: {
-            authenticate(password) {
-                return bccompare(password, this.password)
-                    .then((result) => {
-                        if (!result) {
-                            throw new RRError('authenticationError');
-                        }
-                    });
-            },
-            updatePassword() {
-                return bchash(this.password, config.crypt.hashrounds)
-                    .then((hash) => {
-                        this.password = hash;
-                    });
-            },
-            updateResetPWToken() {
-                return randomBytes(config.crypt.resetTokenLength)
-                    .then(buf => buf.toString('hex'))
-                    .then(token => randomBytes(config.crypt.resetPasswordLength)
-                            .then(passwordBuf => ({
-                                token,
-                                password: passwordBuf.toString('hex'),
-                            })))
-                    .then((result) => {
-                        this.resetPasswordToken = result.token;
-                        this.password = result.password;
-                        const m = moment.utc();
-                        m.add(config.crypt.resetExpires, config.crypt.resetExpiresUnit);
-                        this.resetPasswordExpires = m.toISOString();
-                        return this.save()
-                            .then(() => result.token);
-                    });
-            },
-        },
     });
+
+    result.prototype.authenticate = function authenticate(password) {
+        return bccompare(password, this.password)
+            .then((result) => {
+                if (!result) {
+                    throw new RRError('authenticationError');
+                }
+            });
+    };
+
+
+    result.prototype.updatePassword = function updatePassword() {
+        return bchash(this.password, config.crypt.hashrounds)
+            .then((hash) => {
+                this.password = hash;
+            });
+    };
+
+    result.prototype.updateResetPWToken = function updateResetPWToken() {
+        return randomBytes(config.crypt.resetTokenLength)
+            .then(buf => buf.toString('hex'))
+            .then(token => randomBytes(config.crypt.resetPasswordLength)
+                    .then(passwordBuf => ({
+                        token,
+                        password: passwordBuf.toString('hex'),
+                    })))
+            .then((result) => {
+                this.resetPasswordToken = result.token;
+                this.password = result.password;
+                const m = moment.utc();
+                m.add(config.crypt.resetExpires, config.crypt.resetExpiresUnit);
+                this.resetPasswordExpires = m.toISOString();
+                return this.save()
+                    .then(() => result.token);
+            });
+    };
+
+
+    return result;
 };
