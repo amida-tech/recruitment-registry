@@ -52,6 +52,8 @@ describe('rr-error unit', () => {
             }));
 
     it('message for unknown', () => {
-        expect(RRError.message('not-existing')).to.equal(RRError.message('unknown'));
+        const actual = RRError.message('not-existing');
+        const expected = RRError.message('unknown');
+        expect(actual).to.equal(expected);
     });
 });
