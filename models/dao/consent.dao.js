@@ -2,8 +2,6 @@
 
 const _ = require('lodash');
 
-const SPromise = require('../../lib/promise');
-
 module.exports = class ConsentDAO {
     constructor(db, dependencies) {
         Object.assign(this, dependencies);
@@ -26,17 +24,15 @@ module.exports = class ConsentDAO {
     }
 
     createConsent({ name, sections }) {
-        const sequelize = this.db.sequelize;
-        const Consent = this.db.Consent;
-        const ConsentSection = this.db.ConsentSection;
-        return sequelize.transaction(tx => Consent.create({ name })
-                .then(({ id }) => {
-                    const consentId = id;
-                    const records = sections.map((typeId, line) => ({ consentId, typeId, line }));
-                    const pxs = records.map(record => ConsentSection.create(record)); // TODO: replace with bulkCreate when sequelize 4
-                    return SPromise.all(pxs, { transaction: tx })
-                        .then(() => ({ id }));
-                }));
+        return this.db.sequelize.transaction((transaction) => {
+            const px = this.db.Consent.create({ name }, { transaction });
+            return px.then(({ id }) => {
+                const consentId = id;
+                const records = sections.map((typeId, line) => ({ consentId, typeId, line }));
+                return this.db.ConsentSection.bulkCreate(records, { transaction })
+                    .then(() => ({ id }));
+            });
+        });
     }
 
     getConsent(id) {
