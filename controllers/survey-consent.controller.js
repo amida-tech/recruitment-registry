@@ -18,10 +18,9 @@ exports.deleteSurveyConsent = function (req, res) {
 };
 
 exports.listSurveyConsents = function (req, res) {
-    const surveyId = _.get(req, 'swagger.params.survey-id.value');
     const language = _.get(req, 'swagger.params.language.value');
     const options = { language };
-    req.models.surveyConsent.listSurveyConsents(surveyId, options)
+    req.models.surveyConsent.listSurveyConsents(options)
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };

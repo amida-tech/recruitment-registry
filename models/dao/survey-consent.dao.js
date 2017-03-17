@@ -36,7 +36,7 @@ module.exports = class SurveyConsentDAO {
             return r;
         }, []);
         const Consent = this.db.Consent;
-        return Consent.findAll({ raw: true, id: { $in: consentIds }, attributes: ['id', 'name'] })
+        return Consent.findAll({ raw: true, where: { id: { $in: consentIds } }, attributes: ['id', 'name'] })
             .then(consents => new Map(consents.map(consent => [consent.id, consent.name])))
             .then((consentMap) => {
                 surveyConsents.forEach((surveyConsent) => {
@@ -50,9 +50,9 @@ module.exports = class SurveyConsentDAO {
             });
     }
 
-    listSurveyConsents(surveyId, options) {
+    listSurveyConsents(options) {
         const SurveyConsent = this.db.SurveyConsent;
-        return SurveyConsent.findAll({ surveyId, raw: true, attributes: ['id', 'consentId', 'consentTypeId', 'action'] })
+        return SurveyConsent.findAll({ raw: true, attributes: ['id', 'consentId', 'consentTypeId', 'action'] })
             .then((surveyConsents) => {
                 if (surveyConsents.length < 1) {
                     return surveyConsents;
