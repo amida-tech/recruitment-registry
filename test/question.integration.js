@@ -99,6 +99,17 @@ describe('question integration', () => {
         it(`get question ${i}`, tests.getQuestionFn(i));
     });
 
+
+    it('error: get with non-existent id', function getNonExistant() {
+        return store.get('/questions/9999', true, 400)
+            .expect(res => shared.verifyErrorMessage(res, 'qxNotFound'));
+    });
+
+    it('error: get with non-existent id in spanish', function getNonExistantSpanish() {
+        return store.get('/questions/9999', true, 400, { language: 'es' })
+            .expect(res => shared.verifyErrorMessageLang(res, 'es', 'qxNotFound'));
+    });
+
     const updateQxFn = function (index) {
         return function (done) {
             const id = hxQuestion.id(index);
