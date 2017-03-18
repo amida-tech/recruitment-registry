@@ -15,7 +15,6 @@ const tokener = require('../lib/tokener');
 const SharedIntegration = require('./util/shared-integration');
 const SharedSpec = require('./util/shared-spec');
 const RRSuperTest = require('./util/rr-super-test');
-const RRError = require('../lib/rr-error');
 const History = require('./util/history');
 const Generator = require('./util/generator');
 
@@ -76,9 +75,7 @@ describe('auth integration', () => {
             }
             username += `u${username}`;
             store.authBasic({ username, password }, 401)
-                .expect((res) => {
-                    expect(res.body.message).to.equal(RRError.message('authenticationError'));
-                })
+                .expect(res => shared.verifyErrorMessage(res, 'authenticationError'))
                 .end(done);
         };
     };
@@ -94,9 +91,7 @@ describe('auth integration', () => {
             }
             password += 'a';
             store.authBasic({ username, password }, 401)
-                .expect((res) => {
-                    expect(res.body.message).to.equal(RRError.message('authenticationError'));
-                })
+                .expect(res => shared.verifyErrorMessage(res, 'authenticationError'))
                 .end(done);
         };
     };

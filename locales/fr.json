@@ -1,0 +1,7 @@
+{
+	"unknown": "Erreur interne inconnue.",
+	"test": "Essai.",
+	"testParams1": "Essai {{$0}}.",
+	"testParams2": "Essai {{$1}} et {{$0}} et {{$1}}.",
+	"qxNotFound": "Aucune question."
+}

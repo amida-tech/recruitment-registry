@@ -4,7 +4,6 @@
 
 process.env.NODE_ENV = 'test';
 
-const chai = require('chai');
 const _ = require('lodash');
 
 const config = require('../config');
@@ -20,9 +19,6 @@ const History = require('./util/history');
 const SharedIntegration = require('./util/shared-integration');
 const surveyCommon = require('./util/survey-common');
 const choiceSetCommon = require('./util/choice-set-common');
-const RRError = require('../lib/rr-error');
-
-const expect = chai.expect;
 
 describe('survey (conditional questions) integration', () => {
     const answerer = new Answerer();
@@ -106,10 +102,7 @@ describe('survey (conditional questions) integration', () => {
                 answers,
             };
             rrSuperTest.post('/answers', input, 400)
-                .expect((res) => {
-                    const message = RRError.message(error);
-                    expect(res.body.message).to.equal(message);
-                })
+                .expect(res => shared.verifyErrorMessage(res, error))
                 .end(done);
         });
     });

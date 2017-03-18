@@ -6,11 +6,14 @@ const chai = require('chai');
 
 const appgen = require('../../app-generator');
 const db = require('../../models/db');
+const RRError = require('../../lib/rr-error');
 const Generator = require('./generator');
 const translator = require('./translator');
 const comparator = require('./comparator');
 
 const expect = chai.expect;
+const unknownError = new RRError('unknown');
+const i18n = require('../../i18n');
 
 class SharedIntegration {
     constructor(generator) {
@@ -253,6 +256,26 @@ class SharedIntegration {
                             expect(actual).to.deep.equal(expected);
                         }));
         });
+    }
+
+    verifyErrorMessage(res, code, ...params) {
+        const req = {};
+        const response = {};
+        i18n.init(req, response);
+        const expected = (new RRError(code, ...params)).getMessage(response);
+        expect(expected).to.not.equal(code);
+        expect(expected).to.not.equal(unknownError.getMessage(response));
+        expect(res.body.message).to.equal(expected);
+    }
+
+    verifyErrorMessageLang(res, language, code, ...params) {
+        const req = { url: `http://aaa.com/anything?language=${language}` };
+        const response = {};
+        i18n.init(req, response);
+        const expected = (new RRError(code, ...params)).getMessage(response);
+        expect(expected).to.not.equal(code);
+        expect(expected).to.not.equal(unknownError.getMessage(response));
+        expect(res.body.message).to.equal(expected);
     }
 }
 

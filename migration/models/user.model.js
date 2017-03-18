@@ -22,9 +22,7 @@ module.exports = function (sequelize, DataTypes) {
     const result = sequelize.define('registry_user', {
         username: {
             type: DataTypes.TEXT,
-            unique: {
-                msg: RRError.message('uniqueUsername'),
-            },
+            unique: true,
             validate: {
                 notEmpty: true,
             },

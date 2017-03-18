@@ -16,7 +16,6 @@ const MultiQuestionGenerator = require('./util/generator/multi-question-generato
 const ChoiceSetQuestionGenerator = require('./util/generator/choice-set-question-generator');
 const comparator = require('./util/comparator');
 const History = require('./util/history');
-const RRError = require('../lib/rr-error');
 const translator = require('./util/translator');
 const questionCommon = require('./util/question-common');
 const choiceSetCommon = require('./util/choice-set-common');
@@ -62,9 +61,7 @@ describe('question integration', () => {
         return function (done) {
             const question = invalidQuestionsJSON[index];
             store.post('/questions', question, 400)
-                .expect((res) => {
-                    expect(res.body.message).to.equal(RRError.message('jsonSchemaFailed', 'newQuestion'));
-                })
+                .expect(res => shared.verifyErrorMessage(res, 'jsonSchemaFailed', 'newQuestion'))
                 .end(done);
         };
     };
@@ -100,6 +97,17 @@ describe('question integration', () => {
 
     _.range(10).forEach((i) => {
         it(`get question ${i}`, tests.getQuestionFn(i));
+    });
+
+
+    it('error: get with non-existent id', function getNonExistant() {
+        return store.get('/questions/9999', true, 400)
+            .expect(res => shared.verifyErrorMessage(res, 'qxNotFound'));
+    });
+
+    it('error: get with non-existent id in spanish', function getNonExistantSpanish() {
+        return store.get('/questions/9999', true, 400, { language: 'es' })
+            .expect(res => shared.verifyErrorMessageLang(res, 'es', 'qxNotFound'));
     });
 
     const updateQxFn = function (index) {
@@ -256,10 +264,7 @@ describe('question integration', () => {
         return function (done) {
             const id = hxQuestion.id(index);
             store.delete(`/questions/${id}`, 400)
-                .expect((res) => {
-                    const message = RRError.message('qxReplaceWhenActiveSurveys');
-                    expect(res.body.message).to.equal(message);
-                })
+                .expect(res => shared.verifyErrorMessage(res, 'qxReplaceWhenActiveSurveys'))
                 .end(done);
         };
     };
@@ -299,10 +304,7 @@ describe('question integration', () => {
         const replacement = generator.newQuestion();
         replacement.parentId = 999;
         store.post('/questions', replacement, 400)
-            .expect((res) => {
-                const message = RRError.message('qxNotFound');
-                expect(res.body.message).to.equal(message);
-            })
+            .expect(res => shared.verifyErrorMessage(res, 'qxNotFound'))
             .end(done);
     });
 
@@ -319,10 +321,7 @@ describe('question integration', () => {
             const parentId = hxQuestion.id(questionIndex);
             replacement.parentId = parentId;
             store.post('/questions', replacement, 400)
-                .expect((res) => {
-                    const message = RRError.message('qxReplaceWhenActiveSurveys');
-                    expect(res.body.message).to.equal(message);
-                })
+                .expect(res => shared.verifyErrorMessage(res, 'qxReplaceWhenActiveSurveys'))
                 .end(done);
         };
     };

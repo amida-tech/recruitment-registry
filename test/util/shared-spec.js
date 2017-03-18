@@ -172,19 +172,15 @@ class SharedSpec {
             }
             expect(err).to.be.instanceof(RRError);
             expect(err.code).to.equal(code);
-            const expected = new RRError(code, ...params);
-            expect(err.message).to.equal(expected.message);
+            expect(err.params).to.deep.equal(params);
             return err;
         };
     }
 
-    expectedSeqErrorHandler(name, fields, code) {
+    expectedSeqErrorHandler(name, fields) {
         return function (err) {
             expect(err.name).to.equal(name);
             expect(err.fields).to.deep.equal(fields);
-            if (code) {
-                expect(err.message).to.equal(RRError.message(code));
-            }
             return err;
         };
     }

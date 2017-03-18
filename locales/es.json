@@ -1,0 +1,7 @@
+{
+	"unknown": "Error interno desconocido.",
+	"test": "Pruebas.",
+	"testParams1": "Pruebas {{$0}}.",
+	"testParams2": "Pruebas {{$1}} y {{$0}} y {{$1}}.",
+	"qxNotFound": "Ninguna pregunta semejante."
+}

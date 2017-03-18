@@ -22,9 +22,7 @@ module.exports = function User(sequelize, Sequelize, schema) {
     const result = sequelize.define('registry_user', {
         username: {
             type: Sequelize.TEXT,
-            unique: {
-                msg: RRError.message('uniqueUsername'),
-            },
+            unique: true,
             validate: {
                 notEmpty: true,
             },

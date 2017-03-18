@@ -15,7 +15,6 @@ const RRSuperTest = require('./util/rr-super-test');
 const Generator = require('./util/generator');
 
 const config = require('../config');
-const RRError = require('../lib/rr-error');
 
 const expect = chai.expect;
 const generator = new Generator();
@@ -116,9 +115,7 @@ describe('reset-token integration', () => {
     it('error: no smtp settings is specified', (done) => {
         const email = userExample.email;
         store.post('/reset-tokens', { email }, 400)
-            .expect((res) => {
-                expect(res.body.message).to.equal(RRError.message('smtpNotSpecified'));
-            })
+            .expect(res => shared.verifyErrorMessage(res, 'smtpNotSpecified'))
             .end(done);
     });
 
@@ -144,10 +141,7 @@ describe('reset-token integration', () => {
     it('error: no email subject/content is specified', (done) => {
         const email = userExample.email;
         store.post('/reset-tokens', { email }, 400)
-            .expect((res) => {
-                expect(res.body.message).to.not.equal(RRError.message('unknown'));
-                expect(res.body.message).to.equal(RRError.message('smtpTextNotSpecified'));
-            })
+            .expect(res => shared.verifyErrorMessage(res, 'smtpTextNotSpecified'))
             .end(done);
     });
 

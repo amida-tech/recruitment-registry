@@ -10,6 +10,7 @@ const _ = require('lodash');
 const expect = chai.expect;
 
 const js = require('../lib/json-schema');
+const i18n = require('../i18n');
 
 describe('json schema validations', () => {
     const objectTypes = [
@@ -22,6 +23,7 @@ describe('json schema validations', () => {
         status(statusCode) { lastStatusCode = statusCode; return this; },
         json(err) { lastErr = err; },
     };
+    i18n.init({}, res);
 
     it('invalid object key', () => {
         const r = js('newSurveyXXX', { a: 1 }, res);
