@@ -3,6 +3,7 @@
 	"test": "Testing.",
 	"testParams1": "Testing {{$0}}.",
 	"testParams2": "Testing {{$1}} and {{$0}} and {{$1}}.",
+	"testEnglishOnly": "Should show for language {{$0}} as well",
 	"qxNotFound": "No such question.",
 	"surveyNotFound": "No such survey.",
 	"surveyNoQuestions": "Surveys without questions are not accepted.",

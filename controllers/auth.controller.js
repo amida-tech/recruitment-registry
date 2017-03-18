@@ -22,7 +22,7 @@ const authenticate = passport.authenticate('basic', {
 exports.authenticateBasic = function (req, res) {
     authenticate(req, res, (err) => {
         if (err) {
-            const json = shared.errToJSON(err);
+            const json = shared.errToJSON(err, res);
             return res.status(401).json(json);
         }
         const token = tokener.createJWT(req.user);

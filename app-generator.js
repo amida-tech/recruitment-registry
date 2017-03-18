@@ -16,6 +16,7 @@ const swaggerJson = require('./swagger.json');
 const security = require('./security');
 const logger = require('./logger');
 const jsutil = require('./lib/jsutil');
+const i18n = require('./i18n');
 
 /* jshint unused:false*/
 const errHandler = function (err, req, res, next) { // eslint-disable-line no-unused-vars
@@ -56,6 +57,7 @@ const modelsSupplyFn = function (inputModels) {
 
 exports.initialize = function initialize(app, options, callback) {
     const swaggerObject = options.swaggerJson || swaggerJson;
+    app.use(i18n.init);
     swaggerTools.initializeMiddleware(swaggerObject, (middleware) => {
         app.use(middleware.swaggerMetadata());
 
