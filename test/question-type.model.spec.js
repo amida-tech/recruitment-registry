@@ -8,19 +8,18 @@ const chai = require('chai');
 const _ = require('lodash');
 
 const models = require('../models');
-const db = require('../models/db');
 
 const expect = chai.expect;
-
-const QuestionType = db.QuestionType;
 
 describe('question-type unit', () => {
     before(() => models.sequelize.sync({ force: true }));
 
-    it('verify unforced sync keeps existing types', () => QuestionType.findAll({
-        raw: true,
-        attributes: ['name'],
-    })
+    it('verify unforced sync keeps existing types', function verifyUnforcedSyncQuestionTypes() {
+        const QuestionType = models.question.db.QuestionType;
+        QuestionType.findAll({
+            raw: true,
+            attributes: ['name'],
+        })
             .then(result => _.map(result, 'name').sort())
             .then((types) => {
                 const rmName = types.splice(1, 1);
@@ -34,5 +33,6 @@ describe('question-type unit', () => {
                     .then((newTypes) => {
                         expect(newTypes).to.deep.equal(types);
                     });
-            }));
+            });
+    });
 });
