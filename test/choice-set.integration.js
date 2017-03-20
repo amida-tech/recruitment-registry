@@ -25,9 +25,9 @@ describe('choice set integration', () => {
     const shared = new SharedIntegration(rrSuperTest, generator);
     const tests = new choiceSetCommon.IntegrationTests(rrSuperTest, generator, hxChoiceSet);
 
-    before(shared.setUpFn(rrSuperTest));
+    before(shared.setUpFn());
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     _.range(8).forEach((index) => {
         it(`create choice set ${index}`, tests.createChoiceSetFn());
@@ -91,5 +91,5 @@ describe('choice set integration', () => {
         it(`get choice set ${index}`, tests.getChoiceSetFn(index));
     });
 
-    shared.verifyUserAudit(rrSuperTest);
+    shared.verifyUserAudit();
 });

@@ -29,9 +29,9 @@ describe('assessment integration', () => {
     const surveyTests = new surveyCommon.IntegrationTests(rrSuperTest, generator, hxSurvey);
     const assessmentTests = new assessmentCommon.IntegrationTests(rrSuperTest, generator, hxSurvey, hxAssessment);
 
-    before(shared.setUpFn(rrSuperTest));
+    before(shared.setUpFn());
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     _.range(surveyCount).forEach((index) => {
         it(`create survey ${index}`, surveyTests.createSurveyFn());
@@ -46,7 +46,7 @@ describe('assessment integration', () => {
 
     it('list assessments', assessmentTests.listAssessmentFn());
 
-    it('logout as super', shared.logoutFn(rrSuperTest));
+    it('logout as super', shared.logoutFn());
 
-    shared.verifyUserAudit(rrSuperTest);
+    shared.verifyUserAudit();
 });

@@ -17,7 +17,7 @@ const expect = chai.expect;
 describe('language integration', () => {
     const rrSuperTest = new RRSuperTest();
     const shared = new SharedIntegration(rrSuperTest);
-    before(shared.setUpFn(rrSuperTest));
+    before(shared.setUpFn());
 
     let languages;
 
@@ -29,7 +29,7 @@ describe('language integration', () => {
             .end(done);
     };
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     it('list existing languages', (done) => {
         rrSuperTest.get('/languages', true, 200)
@@ -87,5 +87,5 @@ describe('language integration', () => {
 
     it('list existing languages', listLanguagesFn);
 
-    shared.verifyUserAudit(rrSuperTest);
+    shared.verifyUserAudit();
 });

@@ -40,14 +40,14 @@ describe('survey integration', () => {
     const choceSetTests = new choiceSetCommon.SpecTests(generator, hxChoiceSet);
     let surveyTemp = null;
 
-    before(shared.setUpFn(rrSuperTest));
+    before(shared.setUpFn());
 
     it('error: create survey unauthorized', (done) => {
         const survey = generator.newSurvey();
         rrSuperTest.post('/surveys', survey, 401).end(done);
     });
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     const verifySurveyFn = function (index, { noSectionId } = {}) {
         return function (done) {
@@ -327,16 +327,16 @@ describe('survey integration', () => {
     });
     it('list surveys and verify', tests.listSurveysFn());
 
-    it('create a new user', shared.createUserFn(rrSuperTest, hxUser, user));
+    it('create a new user', shared.createUserFn(hxUser, user));
 
-    it('login as user', shared.loginFn(rrSuperTest, user));
+    it('login as user', shared.loginFn(user));
 
     it('error: create survey as non admin', (done) => {
         const survey = generator.newSurvey();
         rrSuperTest.post('/surveys', survey, 403).end(done);
     });
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     it('create survey', tests.createSurveyFn());
     it('verify survey', tests.getSurveyFn());
@@ -352,7 +352,7 @@ describe('survey integration', () => {
 
     let answers;
 
-    it('login as user', shared.loginFn(rrSuperTest, user));
+    it('login as user', shared.loginFn(user));
 
     it('answer survey', (done) => {
         answers = generator.answerSurvey(hxSurvey.lastServer());
@@ -386,7 +386,7 @@ describe('survey integration', () => {
         generator.updateSurveyGenerator(MultiQuestionSurveyGenerator);
     });
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     _.range(surveyCount, surveyCount + 7).forEach((index) => {
         it(`create survey ${index}`, tests.createSurveyFn());
@@ -415,9 +415,9 @@ describe('survey integration', () => {
 
     surveyCount += 3;
 
-    it('logout as super', shared.logoutFn(rrSuperTest));
+    it('logout as super', shared.logoutFn());
 
-    it('login as user', shared.loginFn(rrSuperTest, user));
+    it('login as user', shared.loginFn(user));
     _.range(surveyCount - 10, surveyCount - 3).forEach((index) => {
         it('answer survey', (done) => {
             const survey = hxSurvey.server(index);

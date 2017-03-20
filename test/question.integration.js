@@ -33,29 +33,29 @@ describe('question integration', () => {
     const hxUser = new History();
 
 
-    before(shared.setUpFn(rrSuperTest));
+    before(shared.setUpFn());
 
     it('error: create question unauthorized', (done) => {
         const question = generator.newQuestion();
         rrSuperTest.post('/questions', question, 401).end(done);
     });
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
-    it('create a new user', shared.createUserFn(rrSuperTest, hxUser, user));
+    it('create a new user', shared.createUserFn(hxUser, user));
 
-    it('logout as super', shared.logoutFn(rrSuperTest));
+    it('logout as super', shared.logoutFn());
 
-    it('login as user', shared.loginFn(rrSuperTest, user));
+    it('login as user', shared.loginFn(user));
 
     it('error: create question as non admin', (done) => {
         const question = generator.newQuestion();
         rrSuperTest.post('/questions', question, 403).end(done);
     });
 
-    it('logout as user', shared.logoutFn(rrSuperTest));
+    it('logout as user', shared.logoutFn());
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     const invalidQuestionJSONFn = function (index) {
         return function (done) {
@@ -384,5 +384,5 @@ describe('question integration', () => {
         it(`get question ${index}`, tests.getQuestionFn(index));
     });
 
-    shared.verifyUserAudit(rrSuperTest);
+    shared.verifyUserAudit();
 });

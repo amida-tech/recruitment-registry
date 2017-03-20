@@ -41,24 +41,24 @@ describe('answer integration', () => {
     const questionTests = new questionCommon.IntegrationTests(rrSuperTest, generator, hxQuestion);
     const choceSetTests = new choiceSetCommon.SpecTests(generator, hxChoiceSet);
 
-    before(shared.setUpFn(rrSuperTest));
+    before(shared.setUpFn());
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     _.range(4).forEach((i) => {
-        it(`create user ${i}`, shared.createUserFn(rrSuperTest, hxUser));
+        it(`create user ${i}`, shared.createUserFn(hxUser));
     });
 
-    it('create clinician', shared.createUserFn(rrSuperTest, hxClinician, null, { role: 'clinician' }));
+    it('create clinician', shared.createUserFn(hxClinician, null, { role: 'clinician' }));
 
     _.range(20).forEach((i) => {
         it(`create question ${i}`, questionTests.createQuestionFn());
         it(`get question ${i}`, questionTests.getQuestionFn(i));
     });
 
-    _.map(testQuestions, 'survey').forEach((surveyQuestion, index) => it(`create survey ${index}`, shared.createSurveyFn(rrSuperTest, hxSurvey, hxQuestion, surveyQuestion)));
+    _.map(testQuestions, 'survey').forEach((surveyQuestion, index) => it(`create survey ${index}`, shared.createSurveyFn(hxSurvey, hxQuestion, surveyQuestion)));
 
-    it('logout as super', shared.logoutFn(rrSuperTest));
+    it('logout as super', shared.logoutFn());
 
     const cases = [
         { userIndex: 0, surveyIndex: 0, seqIndex: 0 },
@@ -73,28 +73,28 @@ describe('answer integration', () => {
         _.range(cases.length).forEach((i) => {
             const { userIndex, surveyIndex, seqIndex } = cases[i];
             const questionIndices = testQuestions[surveyIndex].answerSequences[seqIndex][j];
-            it(`login as user ${userIndex}`, shared.loginIndexFn(rrSuperTest, hxUser, userIndex));
+            it(`login as user ${userIndex}`, shared.loginIndexFn(hxUser, userIndex));
             it(`user ${userIndex} answers survey ${surveyIndex} (step ${j})`, tests.answerSurveyFn(userIndex, surveyIndex, questionIndices));
             it(`user ${userIndex} gets answers to survey ${surveyIndex} (step ${j})`, tests.getAnswersFn(userIndex, surveyIndex));
-            it(`logout as  user ${userIndex}`, shared.logoutFn(rrSuperTest));
+            it(`logout as  user ${userIndex}`, shared.logoutFn());
         });
     });
 
     [0, 1].forEach((index) => {
-        it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+        it('login as super', shared.loginFn(config.superUser));
 
         it(`create question ${20 + index}`, questionTests.createQuestionFn());
         it(`get question ${20 + index}`, questionTests.getQuestionFn(20 + index));
-        it(`create survey ${testQuestions.length + 1 + index}`, shared.createSurveyFn(rrSuperTest, hxSurvey, hxQuestion, [20 + index]));
-        it('logout as super', shared.logoutFn(rrSuperTest));
-        it('login as user 3', shared.loginIndexFn(rrSuperTest, hxUser, 3));
+        it(`create survey ${testQuestions.length + 1 + index}`, shared.createSurveyFn(hxSurvey, hxQuestion, [20 + index]));
+        it('logout as super', shared.logoutFn());
+        it('login as user 3', shared.loginIndexFn(hxUser, 3));
 
         it(`user 3 answers survey ${5 + index}`, tests.answerSurveyFn(3, 5 + index, [20 + index]));
         it(`user 3 gets answers to survey ${5 + index}`, tests.getAnswersFn(3, 5 + index));
-        it('logout as  user 3', shared.logoutFn(rrSuperTest));
+        it('logout as  user 3', shared.logoutFn());
     });
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     _.range(22, 34).forEach((index) => {
         it(`create question ${index} (multi)`, (done) => {
@@ -108,45 +108,45 @@ describe('answer integration', () => {
         it(`get question ${index}`, questionTests.getQuestionFn(index));
     });
 
-    it('create survey 7 (1 multi)', shared.createSurveyFn(rrSuperTest, hxSurvey, hxQuestion, [22, 34, 35, 36]));
-    it('create survey 8 (2 multi)', shared.createSurveyFn(rrSuperTest, hxSurvey, hxQuestion, [37, 23, 38, 39, 24]));
-    it('create survey 9 (3 multi)', shared.createSurveyFn(rrSuperTest, hxSurvey, hxQuestion, [25, 40, 41, 42, 26, 27]));
-    it('create survey 10 (1 multi)', shared.createSurveyFn(rrSuperTest, hxSurvey, hxQuestion, [43, 44, 28, 45]));
-    it('create survey 11 (2 multi)', shared.createSurveyFn(rrSuperTest, hxSurvey, hxQuestion, [46, 29, 30, 47, 48]));
-    it('create survey 12 (3 multi)', shared.createSurveyFn(rrSuperTest, hxSurvey, hxQuestion, [31, 49, 32, 50, 33, 51]));
+    it('create survey 7 (1 multi)', shared.createSurveyFn(hxSurvey, hxQuestion, [22, 34, 35, 36]));
+    it('create survey 8 (2 multi)', shared.createSurveyFn(hxSurvey, hxQuestion, [37, 23, 38, 39, 24]));
+    it('create survey 9 (3 multi)', shared.createSurveyFn(hxSurvey, hxQuestion, [25, 40, 41, 42, 26, 27]));
+    it('create survey 10 (1 multi)', shared.createSurveyFn(hxSurvey, hxQuestion, [43, 44, 28, 45]));
+    it('create survey 11 (2 multi)', shared.createSurveyFn(hxSurvey, hxQuestion, [46, 29, 30, 47, 48]));
+    it('create survey 12 (3 multi)', shared.createSurveyFn(hxSurvey, hxQuestion, [31, 49, 32, 50, 33, 51]));
 
-    it('logout as super', shared.logoutFn(rrSuperTest));
+    it('logout as super', shared.logoutFn());
 
     it('switch back to generic answerer', () => {
         generator.updateAnswererClass(Answerer);
     });
 
-    it('login as user 3', shared.loginIndexFn(rrSuperTest, hxUser, 3));
+    it('login as user 3', shared.loginIndexFn(hxUser, 3));
     it('user 3 answers survey 7', tests.answerSurveyFn(3, 7, [22, 34, 35, 36]));
     it('user 3 gets answers to survey 7', tests.getAnswersFn(3, 7));
-    it('logout as  user 3', shared.logoutFn(rrSuperTest));
+    it('logout as  user 3', shared.logoutFn());
 
-    it('login as user 2', shared.loginIndexFn(rrSuperTest, hxUser, 2));
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
     it('user 2 answers survey 8', tests.answerSurveyFn(2, 8, [37, 23, 38, 39, 24]));
     it('user 2 gets answers to survey 8', tests.getAnswersFn(2, 8));
-    it('logout as  user 2', shared.logoutFn(rrSuperTest));
+    it('logout as  user 2', shared.logoutFn());
 
-    it('login as user 1', shared.loginIndexFn(rrSuperTest, hxUser, 1));
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
     it('user 1 answers survey 9', tests.answerSurveyFn(1, 9, [25, 40, 41, 42, 26, 27]));
     it('user 1 gets answers to survey 9', tests.getAnswersFn(1, 9));
-    it('logout as  user 1', shared.logoutFn(rrSuperTest));
+    it('logout as  user 1', shared.logoutFn());
 
-    it('login as user 0', shared.loginIndexFn(rrSuperTest, hxUser, 0));
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
     it('user 0 answers survey 10', tests.answerSurveyFn(0, 10, [43, 44, 28, 45]));
     it('user 0 gets answers to survey 10', tests.getAnswersFn(0, 10));
-    it('logout as  user 0', shared.logoutFn(rrSuperTest));
+    it('logout as  user 0', shared.logoutFn());
 
-    it('login as user 1', shared.loginIndexFn(rrSuperTest, hxUser, 1));
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
     it('user 1 answers survey 11', tests.answerSurveyFn(1, 11, [46, 29, 30, 47, 48]));
     it('user 1 gets answers to survey 11', tests.getAnswersFn(1, 11));
-    it('logout as user 1', shared.logoutFn(rrSuperTest));
+    it('logout as user 1', shared.logoutFn());
 
-    it('login as user 2', shared.loginIndexFn(rrSuperTest, hxUser, 2));
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
     let answers;
     it('user 2 answers survey 12', () => tests.answerSurveyFn(2, 12, [31, 49, 32, 50, 33, 51])()
             .then((ans) => { answers = ans; }));
@@ -154,7 +154,7 @@ describe('answer integration', () => {
     it('error: search as user 2', (done) => {
         rrSuperTest.post('/answers/queries', answerCommon.answersToSearchQuery(answers), 403).end(done);
     });
-    it('logout as user 2', shared.logoutFn(rrSuperTest));
+    it('logout as user 2', shared.logoutFn());
 
     const verifySearch = function verifySearch(done) {
         rrSuperTest.post('/answers/queries', answerCommon.answersToSearchQuery(answers), 200)
@@ -164,11 +164,11 @@ describe('answer integration', () => {
             })
             .end(done);
     };
-    it('login as clinician 0', shared.loginIndexFn(rrSuperTest, hxClinician, 0));
+    it('login as clinician 0', shared.loginIndexFn(hxClinician, 0));
     it('search as clinician', verifySearch);
-    it('logout as clinician', shared.logoutFn(rrSuperTest));
+    it('logout as clinician', shared.logoutFn());
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
     it('search as super', verifySearch);
 
     _.range(8).forEach((index) => {
@@ -188,20 +188,20 @@ describe('answer integration', () => {
         it(`get question ${index}`, questionTests.getQuestionFn(index));
     });
 
-    it('create survey 13 (5 choice sets)', shared.createSurveyFn(rrSuperTest, hxSurvey, hxQuestion, [52, 53, 54, 55, 56]));
-    it('create survey 14 (5 choice sets)', shared.createSurveyFn(rrSuperTest, hxSurvey, hxQuestion, [57, 58, 59, 60, 61]));
+    it('create survey 13 (5 choice sets)', shared.createSurveyFn(hxSurvey, hxQuestion, [52, 53, 54, 55, 56]));
+    it('create survey 14 (5 choice sets)', shared.createSurveyFn(hxSurvey, hxQuestion, [57, 58, 59, 60, 61]));
 
-    it('logout as super', shared.logoutFn(rrSuperTest));
+    it('logout as super', shared.logoutFn());
 
-    it('login as user 3', shared.loginIndexFn(rrSuperTest, hxUser, 3));
+    it('login as user 3', shared.loginIndexFn(hxUser, 3));
     it('user 3 answers survey 13', tests.answerSurveyFn(3, 13, [52, 53, 54, 55, 56]));
     it('user 3 gets answers to survey 13', tests.getAnswersFn(3, 13));
-    it('logout as  user 3', shared.logoutFn(rrSuperTest));
+    it('logout as  user 3', shared.logoutFn());
 
-    it('login as user 2', shared.loginIndexFn(rrSuperTest, hxUser, 2));
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
     it('user 2 answers survey 14', tests.answerSurveyFn(2, 14, [57, 58, 59, 60, 61]));
     it('user 2 gets answers to survey 14', tests.getAnswersFn(2, 14));
-    it('logout as  user 2', shared.logoutFn(rrSuperTest));
+    it('logout as  user 2', shared.logoutFn());
 
-    shared.verifyUserAudit(rrSuperTest);
+    shared.verifyUserAudit();
 });

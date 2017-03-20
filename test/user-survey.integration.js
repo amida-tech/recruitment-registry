@@ -33,17 +33,17 @@ describe('user survey integration', () => {
     const shared = new SharedIntegration(rrSuperTest, generator);
     const surveyTests = new surveyCommon.SpecTests(generator, hxSurvey);
 
-    before(shared.setUpFn(rrSuperTest));
+    before(shared.setUpFn());
 
     const getKey = function (userIndex, surveyIndex) {
         return `${userIndex}:${surveyIndex}`;
     };
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
     _.range(userCount).forEach((i) => {
-        it(`create user ${i}`, shared.createUserFn(rrSuperTest, hxUser));
+        it(`create user ${i}`, shared.createUserFn(hxUser));
     });
-    it('logout as super', shared.logoutFn(rrSuperTest));
+    it('logout as super', shared.logoutFn());
 
     const verifyNoUserSurveys = function (done) {
         rrSuperTest.get('/user-surveys', true, 200)
@@ -55,17 +55,17 @@ describe('user survey integration', () => {
     };
 
     _.range(userCount).forEach((i) => {
-        it(`login as user ${i}`, shared.loginIndexFn(rrSuperTest, hxUser, i));
+        it(`login as user ${i}`, shared.loginIndexFn(hxUser, i));
         it(`verify no surveys for user ${i}`, verifyNoUserSurveys);
-        it(`logout as user ${i}`, shared.logoutFn(rrSuperTest));
+        it(`logout as user ${i}`, shared.logoutFn());
     });
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
     _.range(surveyCount).forEach((i) => {
         it(`create survey ${i}`, surveyTests.createSurveyFn({ noSection: true }));
         it(`get survey ${i}`, surveyTests.getSurveyFn(i));
     });
-    it('logout as super', shared.logoutFn(rrSuperTest));
+    it('logout as super', shared.logoutFn());
 
     const verifyStatusFn = function (surveyIndex, expectedStatus) {
         return function (done) {
@@ -79,14 +79,14 @@ describe('user survey integration', () => {
         };
     };
 
-    it('login as user 0', shared.loginIndexFn(rrSuperTest, hxUser, 0));
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
     it('verify user 0 survey 0 status', verifyStatusFn(0, 'new'));
     it('verify user 0 survey 1 status', verifyStatusFn(1, 'new'));
-    it('logout as user 0', shared.logoutFn(rrSuperTest));
-    it('login as user 1', shared.loginIndexFn(rrSuperTest, hxUser, 1));
+    it('logout as user 0', shared.logoutFn());
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
     it('verify user 1 survey 0 status', verifyStatusFn(0, 'new'));
     it('verify user 1 survey 1 status', verifyStatusFn(1, 'new'));
-    it('logout as user 1', shared.logoutFn(rrSuperTest));
+    it('logout as user 1', shared.logoutFn());
 
     const verifyUserSurveyListFn = function (statusList) {
         return function (done) {
@@ -106,12 +106,12 @@ describe('user survey integration', () => {
         };
     };
 
-    it('login as user 0', shared.loginIndexFn(rrSuperTest, hxUser, 0));
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
     it('verify user 0 user survey list', verifyUserSurveyListFn(['new', 'new', 'new']));
-    it('logout as user 0', shared.logoutFn(rrSuperTest));
-    it('login as user 1', shared.loginIndexFn(rrSuperTest, hxUser, 1));
+    it('logout as user 0', shared.logoutFn());
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
     it('verify user 1 user survey list', verifyUserSurveyListFn(['new', 'new', 'new']));
-    it('logout as user 1', shared.logoutFn(rrSuperTest));
+    it('logout as user 1', shared.logoutFn());
 
     const verifyUserSurveyFn = function (userIndex, surveyIndex, status) {
         return function (done) {
@@ -235,86 +235,86 @@ describe('user survey integration', () => {
         };
     };
 
-    it('login as user 0', shared.loginIndexFn(rrSuperTest, hxUser, 0));
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
     it('verify user 0 survey 0', verifyUserSurveyFn(0, 0, 'new'));
     it('verify user 0 survey 1', verifyUserSurveyFn(0, 1, 'new'));
-    it('logout as user 0', shared.logoutFn(rrSuperTest));
-    it('login as user 1', shared.loginIndexFn(rrSuperTest, hxUser, 1));
+    it('logout as user 0', shared.logoutFn());
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
     it('verify user 1 survey 0', verifyUserSurveyFn(1, 0, 'new'));
     it('verify user 1 survey 1', verifyUserSurveyFn(1, 1, 'new'));
-    it('logout as user 1', shared.logoutFn(rrSuperTest));
+    it('logout as user 1', shared.logoutFn());
 
-    it('login as user 0', shared.loginIndexFn(rrSuperTest, hxUser, 0));
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
     it('verify user 0 survey 0 answers', verifyUserSurveyAnswersFn(0, 0, 'new'));
     it('verify user 0 survey 1 answers', verifyUserSurveyAnswersFn(0, 1, 'new'));
-    it('logout as user 0', shared.logoutFn(rrSuperTest));
-    it('login as user 1', shared.loginIndexFn(rrSuperTest, hxUser, 1));
+    it('logout as user 0', shared.logoutFn());
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
     it('verify user 1 survey 0 answers', verifyUserSurveyAnswersFn(1, 0, 'new'));
     it('verify user 1 survey 1 answers', verifyUserSurveyAnswersFn(1, 1, 'new'));
-    it('logout as user 1', shared.logoutFn(rrSuperTest));
+    it('logout as user 1', shared.logoutFn());
 
-    it('login as user 0', shared.loginIndexFn(rrSuperTest, hxUser, 0));
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
     it('verify user 0 survey 0 answers (with survey)', verifyUserSurveyAnswersFn(0, 0, 'new', true));
     it('verify user 0 survey 1 answers (with survey)', verifyUserSurveyAnswersFn(0, 1, 'new', true));
-    it('logout as user 0', shared.logoutFn(rrSuperTest));
-    it('login as user 1', shared.loginIndexFn(rrSuperTest, hxUser, 1));
+    it('logout as user 0', shared.logoutFn());
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
     it('verify user 1 survey 0 answers (with survey)', verifyUserSurveyAnswersFn(1, 0, 'new', true));
     it('verify user 1 survey 1 answers (with survey)', verifyUserSurveyAnswersFn(1, 1, 'new', true));
-    it('logout as user 1', shared.logoutFn(rrSuperTest));
+    it('logout as user 1', shared.logoutFn());
 
-    it('login as user 0', shared.loginIndexFn(rrSuperTest, hxUser, 0));
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
     it('user 0 answers survey 0 all completed', answerSurveyFullFn(0, 0, 'completed'));
     it('verify user 0 survey 0', verifyUserSurveyFn(0, 0, 'completed'));
     it('verify user 0 survey 0 status', verifyStatusFn(0, 'completed'));
     it('verify user 0 survey 0 answers', verifyUserSurveyAnswersFn(0, 0, 'completed'));
     it('verify user 0 survey 0 answers (with survey)', verifyUserSurveyAnswersFn(0, 0, 'completed', true));
     it('verify user 0 user survey list', verifyUserSurveyListFn(['completed', 'new', 'new']));
-    it('logout as user 0', shared.logoutFn(rrSuperTest));
+    it('logout as user 0', shared.logoutFn());
 
-    it('login as user 1', shared.loginIndexFn(rrSuperTest, hxUser, 1));
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
     it('user 1 answers survey 1 all in-progress', answerSurveyFullFn(1, 1, 'in-progress'));
     it('verify user 1 survey 1', verifyUserSurveyFn(1, 1, 'in-progress'));
     it('verify user 1 survey 1 status', verifyStatusFn(1, 'in-progress'));
     it('verify user 1 survey 1 answers', verifyUserSurveyAnswersFn(1, 1, 'in-progress'));
     it('verify user 1 survey 1 answers (with survey)', verifyUserSurveyAnswersFn(1, 1, 'in-progress', true));
     it('verify user 1 user survey list', verifyUserSurveyListFn(['new', 'in-progress', 'new']));
-    it('logout as user 1', shared.logoutFn(rrSuperTest));
+    it('logout as user 1', shared.logoutFn());
 
-    it('login as user 1', shared.loginIndexFn(rrSuperTest, hxUser, 1));
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
     it('user 1 reanswers survey 1 all in-progress', answerSurveyFullFn(1, 1, 'in-progress'));
     it('verify user 1 survey 1', verifyUserSurveyFn(1, 1, 'in-progress'));
     it('verify user 1 survey 1 status', verifyStatusFn(1, 'in-progress'));
     it('verify user 1 survey 1 answers', verifyUserSurveyAnswersFn(1, 1, 'in-progress'));
     it('verify user 1 survey 1 answers (with survey)', verifyUserSurveyAnswersFn(1, 1, 'in-progress', true));
     it('verify user 1 user survey list', verifyUserSurveyListFn(['new', 'in-progress', 'new']));
-    it('logout as user 1', shared.logoutFn(rrSuperTest));
+    it('logout as user 1', shared.logoutFn());
 
-    it('login as user 0', shared.loginIndexFn(rrSuperTest, hxUser, 0));
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
     it('user 0 answers survey 1 partial in-progress', answerSurveyPartialFn(0, 1));
     it('verify user 0 survey 1', verifyUserSurveyFn(0, 1, 'in-progress'));
     it('verify user 0 survey 1 status', verifyStatusFn(1, 'in-progress'));
     it('verify user 0 survey 1 answers', verifyUserSurveyAnswersFn(0, 1, 'in-progress'));
     it('verify user 0 survey 1 answers (with survey)', verifyUserSurveyAnswersFn(0, 1, 'in-progress', true));
     it('verify user 0 user survey list', verifyUserSurveyListFn(['completed', 'in-progress', 'new']));
-    it('logout as user 0', shared.logoutFn(rrSuperTest));
+    it('logout as user 0', shared.logoutFn());
 
-    it('login as user 1', shared.loginIndexFn(rrSuperTest, hxUser, 1));
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
     it('user 1 answers survey 0 partial completed', answerSurveyPartialCompletedFn(1, 0));
     it('verify user 1 survey 0', verifyUserSurveyFn(1, 0, 'new'));
     it('verify user 1 survey 0 status', verifyStatusFn(0, 'new'));
     it('verify user 1 survey 0 answers', verifyUserSurveyAnswersFn(1, 0, 'new'));
     it('verify user 1 survey 0 answers (with survey)', verifyUserSurveyAnswersFn(1, 0, 'new', true));
     it('verify user 1 user survey list', verifyUserSurveyListFn(['new', 'in-progress', 'new']));
-    it('logout as user 1', shared.logoutFn(rrSuperTest));
+    it('logout as user 1', shared.logoutFn());
 
-    it('login as user 0', shared.loginIndexFn(rrSuperTest, hxUser, 0));
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
     it('user 0 reanswers survey 1 required plus completed', answerSurveyMissingPlusCompletedFn(0, 1));
     it('verify user 0 survey 1', verifyUserSurveyFn(0, 1, 'completed'));
     it('verify user 0 survey 1 status', verifyStatusFn(1, 'completed'));
     it('verify user 0 survey 1 answers', verifyUserSurveyAnswersFn(0, 1, 'completed'));
     it('verify user 0 survey 1 answers (with survey)', verifyUserSurveyAnswersFn(0, 1, 'completed', true));
     it('verify user 0 user survey list', verifyUserSurveyListFn(['completed', 'completed', 'new']));
-    it('logout as user 0', shared.logoutFn(rrSuperTest));
+    it('logout as user 0', shared.logoutFn());
 
     const verifyTranslatedUserSurveyListFn = function (userIndex, statusList, language, notTranslated) {
         return function (done) {
@@ -378,7 +378,7 @@ describe('user survey integration', () => {
         };
     };
 
-    it('login as user 2', shared.loginIndexFn(rrSuperTest, hxUser, 2));
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
 
     it('verify user 2 user survey list in spanish (no translation)', verifyTranslatedUserSurveyListFn(2, ['new', 'new', 'new'], 'es', true));
 
@@ -388,7 +388,7 @@ describe('user survey integration', () => {
     it('verify user 2 survey 0 answers in spanish (no translation)', verifyTranslatedUserSurveyAnswersFn(2, 0, 'new', 'es', true));
     it('verify user 2 survey 1 answers in spanish (no transaltion)', verifyTranslatedUserSurveyAnswersFn(2, 1, 'new', 'es', true));
 
-    it('logout as user 2', shared.logoutFn(rrSuperTest));
+    it('logout as user 2', shared.logoutFn());
 
     const translateSurveyFn = function (index, language) {
         return function (done) {
@@ -402,15 +402,15 @@ describe('user survey integration', () => {
         };
     };
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     _.range(surveyCount).forEach((i) => {
         it(`translate survey ${i}`, translateSurveyFn(i, 'es'));
     });
 
-    it('logout as super', shared.logoutFn(rrSuperTest));
+    it('logout as super', shared.logoutFn());
 
-    it('login as user 2', shared.loginIndexFn(rrSuperTest, hxUser, 2));
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
 
     it('verify user 2 user survey list in spanish', verifyTranslatedUserSurveyListFn(2, ['new', 'new', 'new'], 'es'));
 
@@ -449,7 +449,7 @@ describe('user survey integration', () => {
     it('verify user 2 survey 0 answers in spanish', verifyTranslatedUserSurveyAnswersFn(2, 0, 'completed', 'es'));
     it('verify user 2 survey 1 answers in spanish', verifyTranslatedUserSurveyAnswersFn(2, 1, 'in-progress', 'es'));
 
-    it('logout as user 0', shared.logoutFn(rrSuperTest));
+    it('logout as user 0', shared.logoutFn());
 
-    shared.verifyUserAudit(rrSuperTest);
+    shared.verifyUserAudit();
 });

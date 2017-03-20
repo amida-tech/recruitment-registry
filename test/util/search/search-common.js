@@ -324,12 +324,12 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
 
     runAnswerSearchIntegration() {
         const options = this.models ? { models: this.models } : {};
-        it('sync models', this.shared.setUpFn(this.rrSuperTest, options));
+        it('sync models', this.shared.setUpFn(options));
 
-        it('login as super', this.shared.loginFn(this.rrSuperTest, config.superUser));
+        it('login as super', this.shared.loginFn(config.superUser));
 
         _.range(5).forEach((index) => {
-            it(`create user ${index}`, this.shared.createUserFn(this.rrSuperTest, this.hxUser));
+            it(`create user ${index}`, this.shared.createUserFn(this.hxUser));
         });
 
         _.range(this.offset).forEach((index) => {
@@ -350,24 +350,24 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
             it(`create survey ${index}`, this.createSurveyFn(qxIndices));
         });
 
-        it('logout as super', this.shared.logoutFn(this.rrSuperTest));
+        it('logout as super', this.shared.logoutFn());
 
         const answerSequence = testCase0.answerSequence;
 
         answerSequence.forEach(({ userIndex, surveyIndex, answerInfo }) => {
-            it(`login as user ${userIndex}`, this.shared.loginIndexFn(this.rrSuperTest, this.hxUser, userIndex));
+            it(`login as user ${userIndex}`, this.shared.loginIndexFn(this.hxUser, userIndex));
             const msg = `user ${userIndex} answers survey ${surveyIndex}`;
             it(msg, this.createAnswersFn(userIndex, surveyIndex, answerInfo));
-            it(`logout as user ${userIndex}`, this.shared.logoutFn(this.rrSuperTest));
+            it(`logout as user ${userIndex}`, this.shared.logoutFn());
         });
 
         const searchCases = testCase0.searchCases;
 
-        it('login as super', this.shared.loginFn(this.rrSuperTest, config.superUser));
+        it('login as super', this.shared.loginFn(config.superUser));
         searchCases.forEach((searchCase, index) => {
             it(`search case ${index}`, this.searchAnswersFn(searchCase));
         });
-        it('logout as super', this.shared.logoutFn(this.rrSuperTest));
+        it('logout as super', this.shared.logoutFn());
     }
 };
 

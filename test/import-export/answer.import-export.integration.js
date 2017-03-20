@@ -32,12 +32,12 @@ describe('answer import-export integration', () => {
     const answerTests = new answerCommon.IntegrationTests(rrSuperTest, generator, hxUser, hxSurvey);
     const hxAnswer = answerTests.hxAnswer;
 
-    before(shared.setUpFn(rrSuperTest));
+    before(shared.setUpFn());
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     _.range(4).forEach((i) => {
-        it(`create user ${i}`, shared.createUserFn(rrSuperTest, hxUser));
+        it(`create user ${i}`, shared.createUserFn(hxUser));
     });
 
     _.range(4).forEach((index) => {
@@ -45,13 +45,13 @@ describe('answer import-export integration', () => {
         it(`get survey ${index}`, surveyTests.getSurveyFn(index));
     });
 
-    it('logout as super', shared.logoutFn(rrSuperTest));
+    it('logout as super', shared.logoutFn());
 
     _.range(4).forEach((index) => {
-        it('login as user 0', shared.loginIndexFn(rrSuperTest, hxUser, 0));
+        it('login as user 0', shared.loginIndexFn(hxUser, 0));
         it(`user 0 answers survey ${index}`, answerTests.answerSurveyFn(0, index));
         it(`user 0 gets answered survey ${index}`, answerTests.verifyAnsweredSurveyFn(0, index));
-        it('logout as user 0', shared.logoutFn(rrSuperTest));
+        it('logout as user 0', shared.logoutFn());
     });
 
     const generatedDirectory = path.join(__dirname, '../generated');
@@ -60,7 +60,7 @@ describe('answer import-export integration', () => {
         mkdirp(generatedDirectory, done);
     });
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     it('export questions to csv', (done) => {
         rrSuperTest.get('/questions/csv', true, 200)
@@ -80,9 +80,9 @@ describe('answer import-export integration', () => {
             .end(done);
     });
 
-    it('logout as super', shared.logoutFn(rrSuperTest));
+    it('logout as super', shared.logoutFn());
 
-    it('login as user 0', shared.loginIndexFn(rrSuperTest, hxUser, 0));
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
 
     it('list user 0 answers', answerTests.listAnswersForUserFn(0));
 
@@ -95,9 +95,9 @@ describe('answer import-export integration', () => {
             .end(done);
     });
 
-    it('logout as  user 0', shared.logoutFn(rrSuperTest));
+    it('logout as  user 0', shared.logoutFn());
 
-    it('reset database', shared.setUpFn(rrSuperTest));
+    it('reset database', shared.setUpFn());
 
     it('reset user history', () => {
         hxUser.reset();
@@ -105,7 +105,7 @@ describe('answer import-export integration', () => {
 
     let questionIdMap;
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     it('import question csv into db', (done) => {
         const filepath = path.join(generatedDirectory, 'question.csv');
@@ -129,12 +129,12 @@ describe('answer import-export integration', () => {
     });
 
     _.range(4).forEach((i) => {
-        it(`create user ${i}`, shared.createUserFn(rrSuperTest, hxUser));
+        it(`create user ${i}`, shared.createUserFn(hxUser));
     });
 
-    it('logout as super', shared.logoutFn(rrSuperTest));
+    it('logout as super', shared.logoutFn());
 
-    it('login as user 0', shared.loginIndexFn(rrSuperTest, hxUser, 0));
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
 
     it('import answer csv into db', (done) => {
         const filepath = path.join(generatedDirectory, 'answer.csv');
@@ -161,5 +161,5 @@ describe('answer import-export integration', () => {
             .end(done);
     });
 
-    it('logout as user 0', shared.logoutFn(rrSuperTest));
+    it('logout as user 0', shared.logoutFn());
 });

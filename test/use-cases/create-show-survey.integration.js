@@ -23,17 +23,17 @@ describe('create-show-survey use case', () => {
     const rrSuperTest = new RRSuperTest();
     const shared = new SharedIntegration(rrSuperTest);
 
-    before(shared.setUpFn(rrSuperTest));
+    before(shared.setUpFn());
 
-    it('login as super user', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super user', shared.loginFn(config.superUser));
 
-    it('create registry', shared.createSurveyProfileFn(rrSuperTest, surveyExample));
+    it('create registry', shared.createSurveyProfileFn(surveyExample));
 
-    it('logout as super user', shared.logoutFn(rrSuperTest));
+    it('logout as super user', shared.logoutFn());
 
     // -------- only admin's create surveys
 
-    it('login as super user', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super user', shared.loginFn(config.superUser));
 
     // -------- see only Alzheimers in the survey list
 

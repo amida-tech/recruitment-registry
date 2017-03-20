@@ -18,7 +18,7 @@ describe('smtp integration', () => {
     const rrSuperTest = new RRSuperTest();
     const shared = new SharedIntegration(rrSuperTest);
 
-    before(shared.setUpFn(rrSuperTest));
+    before(shared.setUpFn());
 
     let smtp;
     let smtpText;
@@ -154,7 +154,7 @@ describe('smtp integration', () => {
         };
     };
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     it('get null when no smtp server ever specified', checkNull);
 
@@ -200,7 +200,7 @@ describe('smtp integration', () => {
 
     it('get/verify smtp settings in spanish', getTranslatedSmtpFn('es', true));
 
-    it('logout as super', shared.logoutFn(rrSuperTest));
+    it('logout as super', shared.logoutFn());
 
-    shared.verifyUserAudit(rrSuperTest);
+    shared.verifyUserAudit();
 });

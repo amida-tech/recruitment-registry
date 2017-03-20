@@ -23,13 +23,13 @@ describe('user integration', () => {
     const generator = new Generator();
     const shared = new SharedIntegration(rrSuperTest, generator);
 
-    before(shared.setUpFn(rrSuperTest));
+    before(shared.setUpFn());
 
     it('error: get user without previous authentication', (done) => {
         rrSuperTest.get('/users/me', true, 401).end(done);
     });
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     // it('error: get user with wrong jwt token', function (done) {
     //    const jwt = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
@@ -60,12 +60,12 @@ describe('user integration', () => {
     };
 
     _.range(userCount / 2).forEach((index) => {
-        it(`create user ${index}`, shared.createUserFn(rrSuperTest, hxUser));
+        it(`create user ${index}`, shared.createUserFn(hxUser));
         it(`get user ${index}`, getUserFn(index));
     });
 
     _.range(userCount / 2, userCount).forEach((index) => {
-        it(`create user ${index}`, shared.createUserFn(rrSuperTest, hxUser, undefined, { role: 'clinician' }));
+        it(`create user ${index}`, shared.createUserFn(hxUser, undefined, { role: 'clinician' }));
         it(`get user ${index}`, getUserFn(index));
     });
 
@@ -90,9 +90,9 @@ describe('user integration', () => {
     it('list participant users', listUsersByRoleFn('participant', _.range(userCount / 2)));
     it('list clinician users', listUsersByRoleFn('clinician', _.range(userCount / 2, userCount)));
 
-    it('logout as super', shared.logoutFn(rrSuperTest));
+    it('logout as super', shared.logoutFn());
 
-    it('login as new user', shared.loginIndexFn(rrSuperTest, hxUser, 0));
+    it('login as new user', shared.loginIndexFn(hxUser, 0));
 
     it('get new user', () => rrSuperTest.get('/users/me', true, 200)
             .expect((res) => {
@@ -103,7 +103,7 @@ describe('user integration', () => {
                 expect(res.body).to.deep.equal(expectedUser);
             }));
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     it('error: create user with bad email', () => {
         const user = hxUser.client(0);
@@ -127,9 +127,9 @@ describe('user integration', () => {
             .expect(res => shared.verifyErrorMessage(res, 'uniqueEmail'));
     });
 
-    it('logout as super', shared.logoutFn(rrSuperTest));
+    it('logout as super', shared.logoutFn());
 
-    it('login as new user', shared.loginIndexFn(rrSuperTest, hxUser, 0));
+    it('login as new user', shared.loginIndexFn(hxUser, 0));
 
     const userUpdate = {
         email: 'newone@example.com',
@@ -138,14 +138,14 @@ describe('user integration', () => {
 
     it('update all user fields including password', () => rrSuperTest.patch('/users/me', userUpdate, 204));
 
-    it('logout as new user', shared.logoutFn(rrSuperTest));
+    it('logout as new user', shared.logoutFn());
 
     it('error: bad login with old password', () => rrSuperTest.authBasic(hxUser.client(0), 401)
             .expect(() => {
                 Object.assign(hxUser.client(0), userUpdate);
             }));
 
-    it('login with updated password', shared.loginIndexFn(rrSuperTest, hxUser, 0));
+    it('login with updated password', shared.loginIndexFn(hxUser, 0));
 
     it('verify updated user fields', () => rrSuperTest.get('/users/me', true, 200)
             .expect((res) => {
@@ -164,7 +164,7 @@ describe('user integration', () => {
                 expect(actual).to.deep.equal(expected);
             }));
 
-    it('logout as new user', shared.logoutFn(rrSuperTest));
+    it('logout as new user', shared.logoutFn());
 
     const patchUserFn = function (index, userPatch) {
         return function patchUser() {
@@ -193,9 +193,9 @@ describe('user integration', () => {
         };
     };
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
-    it(`create user ${userCount}`, shared.createUserFn(rrSuperTest, hxUser, null, {
+    it(`create user ${userCount}`, shared.createUserFn(hxUser, null, {
         lastname: 'lastname',
         firstname: 'firstname',
     }));
@@ -208,7 +208,7 @@ describe('user integration', () => {
 
     userCount += 1;
 
-    it('logout as super', shared.logoutFn(rrSuperTest));
+    it('logout as super', shared.logoutFn());
 
-    shared.verifyUserAudit(rrSuperTest);
+    shared.verifyUserAudit();
 });

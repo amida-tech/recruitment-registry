@@ -27,13 +27,13 @@ describe('user set-up and login use-case', () => {
     const rrSuperTest = new RRSuperTest();
     const shared = new SharedIntegration(rrSuperTest);
 
-    before(shared.setUpFn(rrSuperTest));
+    before(shared.setUpFn());
 
-    it('login as super user', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super user', shared.loginFn(config.superUser));
 
-    it('create registry', shared.createSurveyProfileFn(rrSuperTest, surveyExample.survey));
+    it('create registry', shared.createSurveyProfileFn(surveyExample.survey));
 
-    it('logout as super user', shared.logoutFn(rrSuperTest));
+    it('logout as super user', shared.logoutFn());
 
     // --------
 

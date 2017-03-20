@@ -35,7 +35,7 @@ describe('consent demo simpler', () => {
     // This also adds a profile survey.
     //* ****** START 1
 
-    before(shared.setUpFn(rrSuperTest));
+    before(shared.setUpFn());
 
     it('create Terms of Use and Consent Form records', () => models.profileSurvey.createProfileSurvey(surveyExample.survey));
 
@@ -98,7 +98,7 @@ describe('consent demo simpler', () => {
     // New signature will be needed if a new Terms of Use document is posted.
     //* ***** START 4
 
-    it('login as user', shared.loginFn(rrSuperTest, userExample));
+    it('login as user', shared.loginFn(userExample));
 
     it('get the Terms of Use document with signature', (done) => {
         rrSuperTest.get('/user-consent-documents/type-name/terms-of-use', true, 200)
@@ -158,5 +158,5 @@ describe('consent demo simpler', () => {
 
     //* ***** END 7
 
-    it('logout as user', shared.logoutFn(rrSuperTest));
+    it('logout as user', shared.logoutFn());
 });

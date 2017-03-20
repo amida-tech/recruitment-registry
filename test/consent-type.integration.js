@@ -24,9 +24,9 @@ describe('consent section integration', () => {
 
     const hxType = new History();
 
-    before(shared.setUpFn(rrSuperTest));
+    before(shared.setUpFn());
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     const createConsentTypeFn = function () {
         return function (done) {
@@ -96,14 +96,14 @@ describe('consent section integration', () => {
     it('list consent types in spanish when no translation', listTranslatedConsentTypesFn('es'));
 
     _.range(typeCount).forEach((i) => {
-        it(`add translated (es) consent type ${i}`, shared.translateConsentTypeFn(rrSuperTest, i, 'es', hxType));
+        it(`add translated (es) consent type ${i}`, shared.translateConsentTypeFn(i, 'es', hxType));
         it(`get and verify tanslated consent type ${i}`, getTranslatedConsentTypeFn(i, 'es'));
     });
 
     it('list and verify translated (es) consent types', listTranslatedConsentTypesFn('es'));
 
     _.range(0, typeCount, 2).forEach((i) => {
-        it(`add translated (fr) consent type ${i}`, shared.translateConsentTypeFn(rrSuperTest, i, 'fr', hxType));
+        it(`add translated (fr) consent type ${i}`, shared.translateConsentTypeFn(i, 'fr', hxType));
         it(`get and verify tanslated (fr) consent type ${i}`, getTranslatedConsentTypeFn(i, 'fr'));
     });
 
@@ -111,7 +111,7 @@ describe('consent section integration', () => {
 
     it('list consent types in english (original)', listTranslatedConsentTypesFn('en'));
 
-    it('logout as super', shared.logoutFn(rrSuperTest));
+    it('logout as super', shared.logoutFn());
 
-    shared.verifyUserAudit(rrSuperTest);
+    shared.verifyUserAudit();
 });

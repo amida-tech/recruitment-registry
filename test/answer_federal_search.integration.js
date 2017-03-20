@@ -53,7 +53,7 @@ describe('federal search integration', function federalSearchIntegration() {
     const searchTests = new searchCommon.IntegrationTests(rrSuperTest);
     searchTests.runAnswerSearchIntegration();
 
-    it('login as super', searchTests.shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', searchTests.shared.loginFn(config.superUser));
 
     registries.forEach((registry, index) => {
         it(`create registry ${index}`, registryTests.createRegistryFn(registry));
@@ -91,5 +91,5 @@ describe('federal search integration', function federalSearchIntegration() {
             });
     });
 
-    it('logout as super', searchTests.shared.logoutFn(rrSuperTest));
+    it('logout as super', searchTests.shared.logoutFn());
 });

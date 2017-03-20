@@ -28,7 +28,7 @@ describe('consent demo', () => {
     // The document contents themselves are in test/fixtures/example/consent-demo.  Change the content however you wish.
     //* ****** START 1
 
-    before(shared.setUpFn(rrSuperTest));
+    before(shared.setUpFn());
 
     it('create Terms of Use and Consent Form records', () => consentSeed(consentExample));
 
@@ -60,14 +60,14 @@ describe('consent demo', () => {
     // down the signatures.  User creation below simulates the registration.
     //* ***** START 3
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     const user = generator.newUser();
-    it('create a user', shared.createUserFn(rrSuperTest, hxUser, user));
+    it('create a user', shared.createUserFn(hxUser, user));
 
-    it('logout as super', shared.logoutFn(rrSuperTest));
+    it('logout as super', shared.logoutFn());
 
-    it('login as user', shared.loginFn(rrSuperTest, user));
+    it('login as user', shared.loginFn(user));
 
     // This us the actual signing of the terms of use document
 
@@ -146,5 +146,5 @@ describe('consent demo', () => {
 
     //* ***** END 7
 
-    it('logout as user', shared.logoutFn(rrSuperTest));
+    it('logout as user', shared.logoutFn());
 });

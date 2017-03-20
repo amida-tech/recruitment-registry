@@ -22,51 +22,56 @@ class SharedIntegration {
         this.rrSuperTest = rrSuperTest;
     }
 
-    setUpFn(store, options = {}) {
-        return function (done) {
+    setUpFn(options = {}) {
+        const rrSuperTest = this.rrSuperTest;
+        return function setup(done) {
             const app = appgen.newExpress();
             appgen.initialize(app, options, (err, app) => {
                 if (err) {
                     return done(err);
                 }
-                store.initialize(app);
+                rrSuperTest.initialize(app);
                 return done();
             });
         };
     }
 
-    loginFn(store, login) {
-        return function (done) {
-            store.authBasic(login).end(done);
+    loginFn(login) {
+        const rrSuperTest = this.rrSuperTest;
+        return function loginfn(done) {
+            rrSuperTest.authBasic(login).end(done);
         };
     }
 
-    loginIndexFn(store, history, index) {
+    loginIndexFn(history, index) {
         const shared = this;
-        return function (done) {
+        return function loginIndex(done) {
             const login = history.client(index);
             login.username = login.username || login.email.toLowerCase();
-            shared.loginFn(store, login)(done);
+            shared.loginFn(login)(done);
         };
     }
 
-    logoutFn(store) {
-        return function () {
-            store.resetAuth();
+    logoutFn() {
+        const rrSuperTest = this.rrSuperTest;
+        return function logout() {
+            rrSuperTest.resetAuth();
         };
     }
 
-    badLoginFn(store, login) {
-        return function (done) {
-            store.authBasic(login, 401).end(done);
+    badLoginFn(login) {
+        const rrSuperTest = this.rrSuperTest;
+        return function badLogin() {
+            return rrSuperTest.authBasic(login, 401);
         };
     }
 
-    createProfileSurveyFn(store, hxSurvey) {
+    createProfileSurveyFn(hxSurvey) {
         const generator = this.generator;
-        return function (done) {
+        const rrSuperTest = this.rrSuperTest;
+        return function createProfileSurvey(done) {
             const clientSurvey = generator.newSurvey();
-            store.post('/profile-survey', clientSurvey, 201)
+            rrSuperTest.post('/profile-survey', clientSurvey, 201)
                 .end((err, res) => {
                     if (err) {
                         return done(err);
@@ -77,9 +82,10 @@ class SharedIntegration {
         };
     }
 
-    verifyProfileSurveyFn(store, hxSurvey, index) {
-        return function (done) {
-            store.get('/profile-survey', false, 200)
+    verifyProfileSurveyFn(hxSurvey, index) {
+        const rrSuperTest = this.rrSuperTest;
+        return function verifyProfileSurvey(done) {
+            rrSuperTest.get('/profile-survey', false, 200)
                 .expect((res) => {
                     expect(res.body.exists).to.equal(true);
                     const survey = res.body.survey;
@@ -92,13 +98,14 @@ class SharedIntegration {
         };
     }
 
-    createUserFn(store, history, user, override) {
+    createUserFn(history, user, override) {
         const generator = this.generator;
-        return function (done) {
+        const rrSuperTest = this.rrSuperTest;
+        return function createUser(done) {
             if (!user) {
                 user = generator.newUser(override);
             }
-            store.post('/users', user, 201)
+            rrSuperTest.post('/users', user, 201)
                 .end((err, res) => {
                     if (err) {
                         return done(err);
@@ -109,9 +116,10 @@ class SharedIntegration {
         };
     }
 
-    createSurveyFn(store, hxSurvey, hxQuestion, qxIndices) {
+    createSurveyFn(hxSurvey, hxQuestion, qxIndices) {
         const generator = this.generator;
-        return function (done) {
+        const rrSuperTest = this.rrSuperTest;
+        return function createSurvey(done) {
             const inputSurvey = generator.newSurvey();
             delete inputSurvey.sections;
             if (hxQuestion) {
@@ -120,7 +128,7 @@ class SharedIntegration {
                     required: false,
                 }));
             }
-            store.post('/surveys', inputSurvey, 201)
+            rrSuperTest.post('/surveys', inputSurvey, 201)
                 .end((err, res) => {
                     if (err) {
                         return done(err);
@@ -131,9 +139,10 @@ class SharedIntegration {
         };
     }
 
-    createSurveyProfileFn(store, survey) {
-        return function (done) {
-            store.post('/profile-survey', survey, 201)
+    createSurveyProfileFn(survey) {
+        const rrSuperTest = this.rrSuperTest;
+        return function createSurveyProfile(done) {
+            rrSuperTest.post('/profile-survey', survey, 201)
                 .expect((res) => {
                     expect(!!res.body.id).to.equal(true);
                 })
@@ -141,11 +150,12 @@ class SharedIntegration {
         };
     }
 
-    createConsentTypeFn(store, history) {
+    createConsentTypeFn(history) {
+        const rrSuperTest = this.rrSuperTest;
         const generator = this.generator;
-        return function (done) {
+        return function createConsentType(done) {
             const cst = generator.newConsentType();
-            store.post('/consent-types', cst, 201)
+            rrSuperTest.post('/consent-types', cst, 201)
                 .end((err, res) => {
                     if (err) {
                         return done(err);
@@ -156,12 +166,13 @@ class SharedIntegration {
         };
     }
 
-    createConsentFn(store, hxConsent, hxConsentDocument, typeIndices) {
+    createConsentFn(hxConsent, hxConsentDocument, typeIndices) {
+        const rrSuperTest = this.rrSuperTest;
         const generator = this.generator;
-        return function (done) {
+        return function createConsent(done) {
             const sections = typeIndices.map(typeIndex => hxConsentDocument.typeId(typeIndex));
             const clientConsent = generator.newConsent({ sections });
-            store.post('/consents', clientConsent, 201)
+            rrSuperTest.post('/consents', clientConsent, 201)
                 .expect((res) => {
                     hxConsent.pushWithId(clientConsent, res.body.id);
                 })
@@ -169,10 +180,11 @@ class SharedIntegration {
         };
     }
 
-    verifyConsentFn(store, hxConsent, index) {
-        return function (done) {
+    verifyConsentFn(hxConsent, index) {
+        const rrSuperTest = this.rrSuperTest;
+        return function verifyConsent(done) {
             const id = hxConsent.id(index);
-            store.get(`/consents/${id}`, true, 200)
+            rrSuperTest.get(`/consents/${id}`, true, 200)
                 .expect((res) => {
                     const expected = hxConsent.server(index);
                     expect(res.body).to.deep.equal(expected);
@@ -181,28 +193,31 @@ class SharedIntegration {
         };
     }
 
-    signConsentTypeFn(store, hxConsentDocument, userIndex, typeIndex) {
-        return function (done) {
+    signConsentTypeFn(hxConsentDocument, userIndex, typeIndex) {
+        const rrSuperTest = this.rrSuperTest;
+        return function signConsentType(done) {
             const consentDocumentId = hxConsentDocument.id(typeIndex);
             hxConsentDocument.sign(typeIndex, userIndex);
-            store.post('/consent-signatures', { consentDocumentId }, 201).end(done);
+            rrSuperTest.post('/consent-signatures', { consentDocumentId }, 201).end(done);
         };
     }
 
-    bulkSignConsentTypeFn(store, hxConsentDocument, userIndex, typeIndices) {
-        return function (done) {
+    bulkSignConsentTypeFn(hxConsentDocument, userIndex, typeIndices) {
+        const rrSuperTest = this.rrSuperTest;
+        return function bulkSignConsentType(done) {
             const consentDocumentIds = typeIndices.map(typeIndex => hxConsentDocument.id(typeIndex));
             typeIndices.forEach(typeIndex => hxConsentDocument.sign(typeIndex, userIndex));
-            store.post('/consent-signatures/bulk', { consentDocumentIds }, 201).end(done);
+            rrSuperTest.post('/consent-signatures/bulk', { consentDocumentIds }, 201).end(done);
         };
     }
 
-    createConsentDocumentFn(store, history, typeIndex) {
+    createConsentDocumentFn(history, typeIndex) {
+        const rrSuperTest = this.rrSuperTest;
         const generator = this.generator;
-        return function (done) {
+        return function createConsentDocument(done) {
             const typeId = history.typeId(typeIndex);
             const cs = generator.newConsentDocument({ typeId });
-            store.post('/consent-documents', cs, 201)
+            rrSuperTest.post('/consent-documents', cs, 201)
                 .end((err, res) => {
                     if (err) {
                         return done(err);
@@ -213,11 +228,12 @@ class SharedIntegration {
         };
     }
 
-    translateConsentTypeFn(store, index, language, hxType) {
-        return function (done) {
+    translateConsentTypeFn(index, language, hxType) {
+        const rrSuperTest = this.rrSuperTest;
+        return function translateConsentType(done) {
             const server = hxType.server(index);
             const translation = translator.translateConsentType(server, language);
-            store.patch(`/consent-types/text/${language}`, translation, 204)
+            rrSuperTest.patch(`/consent-types/text/${language}`, translation, 204)
                 .end((err) => {
                     if (err) {
                         return done(err);
@@ -228,11 +244,12 @@ class SharedIntegration {
         };
     }
 
-    translateConsentDocumentFn(store, index, language, history) {
-        return function (done) {
+    translateConsentDocumentFn(index, language, history) {
+        const rrSuperTest = this.rrSuperTest;
+        return function translateConsentDocument(done) {
             const server = history.server(index);
             const translation = translator.translateConsentDocument(server, language);
-            store.patch(`/consent-documents/text/${language}`, translation, 204)
+            rrSuperTest.patch(`/consent-documents/text/${language}`, translation, 204)
                 .end((err) => {
                     if (err) {
                         return done(err);
@@ -243,25 +260,26 @@ class SharedIntegration {
         };
     }
 
-    verifyUserAudit(store) {
-        it('login as super', this.loginFn(store, config.superUser));
+    verifyUserAudit() {
+        const rrSuperTest = this.rrSuperTest;
+        it('login as super', this.loginFn(config.superUser));
 
         it('verify user audit', function vua() {
-            const userAudit = store.getUserAudit();
-            return store.get('/users', true, 200, { role: 'all' })
+            const userAudit = rrSuperTest.getUserAudit();
+            return rrSuperTest.get('/users', true, 200, { role: 'all' })
                 .then(res => new Map(res.body.map(user => [user.username, user.id])))
                 .then(userMap => userAudit.map(({ username, operation, endpoint }) => {
                     const userId = userMap.get(username);
                     return { userId, operation, endpoint };
                 }))
                 .then((expected) => {
-                    const px = store.get('/user-audits', true, 200);
+                    const px = rrSuperTest.get('/user-audits', true, 200);
                     px.then(resAudit => expect(resAudit.body).to.deep.equal(expected));
                     return px;
                 });
         });
 
-        it('logout as super', this.logoutFn(store));
+        it('logout as super', this.logoutFn());
     }
 
     verifyErrorMessage(res, code, ...params) {

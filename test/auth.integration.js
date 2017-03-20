@@ -29,7 +29,7 @@ describe('auth integration', () => {
     const sharedSpec = new SharedSpec(generator);
     const hxUser = new History();
 
-    before(shared.setUpFn(rrSuperTest));
+    before(shared.setUpFn());
 
     _.range(userCount).forEach((index) => {
         it(`create user ${index} using model`, sharedSpec.createUserFn(hxUser));

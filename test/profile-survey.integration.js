@@ -23,7 +23,7 @@ describe('profile survey integration', () => {
     const shared = new SharedIntegration(rrSuperTest, generator);
     const hxSurvey = new SurveyHistory();
 
-    before(shared.setUpFn(rrSuperTest));
+    before(shared.setUpFn());
 
     it('error: create profile survey unauthorized', (done) => {
         const clientSurvey = generator.newSurvey();
@@ -149,13 +149,13 @@ describe('profile survey integration', () => {
         };
     };
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     it('create survey 0', createSurvey);
 
     it('create profile survey 0 using id', createProfileSurveyIdFn(0));
 
-    it('logout as super', shared.logoutFn(rrSuperTest));
+    it('logout as super', shared.logoutFn());
 
     it('get/verify profile survey 0', verifyProfileSurveyFn(0));
 
@@ -163,19 +163,19 @@ describe('profile survey integration', () => {
 
     it('get profile survey 0 in spanish when no translation', verifyNotTranslatedProfileSurveyFn(0, 'es'));
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     it('translate profile survey 0 to spanish', translateSurveyFn(0, 'es'));
 
-    it('logout as super', shared.logoutFn(rrSuperTest));
+    it('logout as super', shared.logoutFn());
 
     it('get/verify translated profile survey 0 in spanish', verifyTranslatedProfileSurveyFn(0, 'es'));
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     it('create profile survey 1', createProfileSurveyFn());
 
-    it('logout as super', shared.logoutFn(rrSuperTest));
+    it('logout as super', shared.logoutFn());
 
     it('get/verify profile survey 1 id', verifyProfileSurveyIdFn(1));
 
@@ -183,19 +183,19 @@ describe('profile survey integration', () => {
 
     it('get profile survey 1 in spanish when no translation', verifyNotTranslatedProfileSurveyFn(1, 'es'));
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     it('translate profile survey 1 to spanish', translateSurveyFn(1, 'es'));
 
-    it('logout as super', shared.logoutFn(rrSuperTest));
+    it('logout as super', shared.logoutFn());
 
     it('get/verify translated profile survey 1 in spanish', verifyTranslatedProfileSurveyFn(1, 'es'));
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     it('create profile survey 2', createProfileSurveyFn());
 
-    it('logout as super', shared.logoutFn(rrSuperTest));
+    it('logout as super', shared.logoutFn());
 
     it('get/verify profile survey 2 id', verifyProfileSurveyIdFn(2));
 
@@ -207,17 +207,17 @@ describe('profile survey integration', () => {
 
     it('verify empty profile survey id', emptyProfileSurveyId);
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     it('create profile survey 3', createProfileSurveyFn());
 
-    it('logout as super', shared.logoutFn(rrSuperTest));
+    it('logout as super', shared.logoutFn());
 
     it('get/verify profile survey 3', verifyProfileSurveyFn(3));
 
     it('get/verify profile survey 3 id', verifyProfileSurveyIdFn(3));
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     it('delete survey 3', (done) => {
         const id = hxSurvey.id(3);
@@ -225,23 +225,23 @@ describe('profile survey integration', () => {
             .end(done);
     });
 
-    it('logout as super', shared.logoutFn(rrSuperTest));
+    it('logout as super', shared.logoutFn());
 
     it('verify empty profile survey', emptyProfileSurvey);
 
     it('verify empty profile survey id', emptyProfileSurveyId);
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     it('create profile survey 4', createProfileSurveyFn());
 
-    it('logout as super', shared.logoutFn(rrSuperTest));
+    it('logout as super', shared.logoutFn());
 
     it('get/verify profile survey 4', verifyProfileSurveyFn(4));
 
     it('get/verify profile survey 4 id', verifyProfileSurveyIdFn(4));
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     it('replace survey 4', (done) => {
         const id = hxSurvey.id(4);
@@ -255,11 +255,11 @@ describe('profile survey integration', () => {
             .end(done);
     });
 
-    it('logout as super', shared.logoutFn(rrSuperTest));
+    it('logout as super', shared.logoutFn());
 
     it('get/verify profile survey 5 (replaced 4)', verifyProfileSurveyFn(5));
 
     it('get/verify profile survey 5 (replaced 4) id', verifyProfileSurveyIdFn(5));
 
-    shared.verifyUserAudit(rrSuperTest);
+    shared.verifyUserAudit();
 });

@@ -36,9 +36,9 @@ describe('survey (conditional questions) integration', () => {
     const tests = new surveyCommon.IntegrationTests(rrSuperTest, generator, hxSurvey);
     const choceSetTests = new choiceSetCommon.SpecTests(generator, hxChoiceSet);
 
-    before(shared.setUpFn(rrSuperTest));
+    before(shared.setUpFn());
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     const choiceSets = ConditionalSurveyGenerator.getChoiceSets();
     choiceSets.forEach((choiceSet, index) => {
@@ -85,12 +85,12 @@ describe('survey (conditional questions) integration', () => {
     });
 
     _.range(3).forEach((index) => {
-        it(`create user ${index}`, shared.createUserFn(rrSuperTest, hxUser));
+        it(`create user ${index}`, shared.createUserFn(hxUser));
     });
 
-    it('logout as super', shared.logoutFn(rrSuperTest));
+    it('logout as super', shared.logoutFn());
 
-    it('login as user 0', shared.loginIndexFn(rrSuperTest, hxUser, 0));
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
 
     ConditionalSurveyGenerator.conditionalErrorSetup().forEach((errorSetup) => {
         it(`error: survey ${errorSetup.surveyIndex} validation ${errorSetup.caseIndex}`, (done) => {
@@ -107,7 +107,7 @@ describe('survey (conditional questions) integration', () => {
         });
     });
 
-    it('logout as user 0', shared.logoutFn(rrSuperTest));
+    it('logout as user 0', shared.logoutFn());
 
-    shared.verifyUserAudit(rrSuperTest);
+    shared.verifyUserAudit();
 });

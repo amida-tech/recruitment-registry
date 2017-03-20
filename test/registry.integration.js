@@ -23,9 +23,9 @@ describe('registry integration', function registryIntegration() {
     const hxRegistry = new History();
     const tests = new registryCommon.IntegrationTests(rrSuperTest, generator, hxRegistry);
 
-    before(shared.setUpFn(rrSuperTest));
+    before(shared.setUpFn());
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     it('list all registries when none', function listRegistriesWhenNone() {
         return rrSuperTest.get('/registries', true, 200)
@@ -97,5 +97,5 @@ describe('registry integration', function registryIntegration() {
 
     it('list registries', tests.listRegistriesFn());
 
-    it('logout as super', shared.logoutFn(rrSuperTest));
+    it('logout as super', shared.logoutFn());
 });
