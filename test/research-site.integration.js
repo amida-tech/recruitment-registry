@@ -20,12 +20,12 @@ const researchSiteCommon = require('./util/research-site-common');
 const config = require('../config');
 
 const expect = chai.expect;
-const generator = new Generator();
-const shared = new SharedIntegration(generator);
 
 describe('research site integration', () => {
     const rrSuperTest = new RRSuperTest();
     const hxResearchSite = new History();
+    const generator = new Generator();
+    const shared = new SharedIntegration(rrSuperTest, generator);
 
     before(shared.setUpFn(rrSuperTest));
 

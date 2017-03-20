@@ -15,11 +15,11 @@ const History = require('./util/history');
 const questionCommon = require('./util/question-common');
 
 const expect = chai.expect;
-const generator = new Generator();
-const shared = new SharedIntegration(generator);
 
 describe('question identifier integration', () => {
     const rrSuperTest = new RRSuperTest();
+    const generator = new Generator();
+    const shared = new SharedIntegration(rrSuperTest, generator);
     const hxQuestion = new History();
     const tests = new questionCommon.SpecTests(generator, hxQuestion);
     const idGenerator = new questionCommon.IdentifierGenerator();

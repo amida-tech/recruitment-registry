@@ -25,11 +25,11 @@ describe('survey (conditional questions) integration', () => {
     const questionGenerator = new QuestionGenerator();
     const surveyGenerator = new ConditionalSurveyGenerator({ questionGenerator, answerer });
     const generator = new Generator({ surveyGenerator, questionGenerator, answerer });
-    const shared = new SharedIntegration(generator);
 
     const surveyCount = surveyGenerator.numOfCases();
 
     const rrSuperTest = new RRSuperTest();
+    const shared = new SharedIntegration(rrSuperTest, generator);
     const hxUser = new History();
     const hxSurvey = new SurveyHistory();
     const hxChoiceSet = new History();

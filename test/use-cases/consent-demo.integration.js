@@ -16,11 +16,11 @@ const consentSeed = require('../util/consent-seed');
 const consentExample = require('../fixtures/example/consent-demo');
 
 const expect = chai.expect;
-const generator = new Generator();
-const shared = new SharedIntegration(generator);
 
 describe('consent demo', () => {
-    const store = new RRSuperTest();
+    const rrSuperTest = new RRSuperTest();
+    const generator = new Generator();
+    const shared = new SharedIntegration(rrSuperTest, generator);
     const hxUser = new History();
 
     //* ******
@@ -28,7 +28,7 @@ describe('consent demo', () => {
     // The document contents themselves are in test/fixtures/example/consent-demo.  Change the content however you wish.
     //* ****** START 1
 
-    before(shared.setUpFn(store));
+    before(shared.setUpFn(rrSuperTest));
 
     it('create Terms of Use and Consent Form records', () => consentSeed(consentExample));
 
@@ -41,7 +41,7 @@ describe('consent demo', () => {
     //* ***** START 2
 
     it('get Terms of Use before registration', (done) => {
-        store.get('/consents/name/terms-of-use/documents', false, 200)
+        rrSuperTest.get('/consents/name/terms-of-use/documents', false, 200)
             .expect((res) => {
                 const result = res.body;
                 expect(result.name).to.equal('terms-of-use');
@@ -60,19 +60,19 @@ describe('consent demo', () => {
     // down the signatures.  User creation below simulates the registration.
     //* ***** START 3
 
-    it('login as super', shared.loginFn(store, config.superUser));
+    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
 
     const user = generator.newUser();
-    it('create a user', shared.createUserFn(store, hxUser, user));
+    it('create a user', shared.createUserFn(rrSuperTest, hxUser, user));
 
-    it('logout as super', shared.logoutFn(store));
+    it('logout as super', shared.logoutFn(rrSuperTest));
 
-    it('login as user', shared.loginFn(store, user));
+    it('login as user', shared.loginFn(rrSuperTest, user));
 
     // This us the actual signing of the terms of use document
 
     it('sign the Terms of Use document', (done) => {
-        store.post('/consent-signatures', { consentDocumentId: termsOfUse.sections[0].id }, 201)
+        rrSuperTest.post('/consent-signatures', { consentDocumentId: termsOfUse.sections[0].id }, 201)
             .expect(() => {})
             .end(done);
     });
@@ -85,7 +85,7 @@ describe('consent demo', () => {
     //* ***** START 4
 
     it('get the Terms of Use document with signature', (done) => {
-        store.get('/consents/name/terms-of-use/user-documents', true, 200)
+        rrSuperTest.get('/consents/name/terms-of-use/user-documents', true, 200)
             .expect((res) => {
                 expect(res.body.name).to.equal('terms-of-use');
                 expect(res.body.sections[0].signature).to.equal(true);
@@ -104,7 +104,7 @@ describe('consent demo', () => {
     //* ***** START 5
 
     it('get the Consents document', (done) => {
-        store.get('/consents/name/consent/user-documents', true, 200)
+        rrSuperTest.get('/consents/name/consent/user-documents', true, 200)
             .expect((res) => {
                 consents = res.body;
                 expect(res.body.name).to.equal('consent');
@@ -121,7 +121,7 @@ describe('consent demo', () => {
     //* ***** START 6
 
     it('sign the Consents document', (done) => {
-        store.post('/consent-signatures', { consentDocumentId: consents.sections[0].id }, 201)
+        rrSuperTest.post('/consent-signatures', { consentDocumentId: consents.sections[0].id }, 201)
             .expect(() => {})
             .end(done);
     });
@@ -134,7 +134,7 @@ describe('consent demo', () => {
     //* ***** START 7
 
     it('get the Consents document', (done) => {
-        store.get('/consents/name/consent/user-documents', true, 200)
+        rrSuperTest.get('/consents/name/consent/user-documents', true, 200)
             .expect((res) => {
                 consents = res.body;
                 expect(res.body.name).to.equal('consent');
@@ -146,5 +146,5 @@ describe('consent demo', () => {
 
     //* ***** END 7
 
-    it('logout as user', shared.logoutFn(store));
+    it('logout as user', shared.logoutFn(rrSuperTest));
 });

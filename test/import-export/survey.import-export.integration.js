@@ -19,11 +19,11 @@ const SurveyHistory = require('../util/survey-history');
 const surveyCommon = require('../util/survey-common');
 
 const expect = chai.expect;
-const generator = new Generator();
-const shared = new SharedIntegration(generator);
 
 describe('survey import-export integration', function surveyImportExportIntegration() {
     const rrSuperTest = new RRSuperTest();
+    const generator = new Generator();
+    const shared = new SharedIntegration(rrSuperTest, generator);
     const hxSurvey = new SurveyHistory();
     const tests = new surveyCommon.IntegrationTests(rrSuperTest, generator, hxSurvey);
 

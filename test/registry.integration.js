@@ -18,8 +18,8 @@ const registryCommon = require('./util/registry-common');
 describe('registry integration', function registryIntegration() {
     const expect = chai.expect;
     const generator = new Generator();
-    const shared = new SharedIntegration(generator);
     const rrSuperTest = new RRSuperTest();
+    const shared = new SharedIntegration(rrSuperTest, generator);
     const hxRegistry = new History();
     const tests = new registryCommon.IntegrationTests(rrSuperTest, generator, hxRegistry);
 

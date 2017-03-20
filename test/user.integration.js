@@ -15,13 +15,13 @@ const Generator = require('./util/generator');
 const comparator = require('./util/comparator');
 
 const expect = chai.expect;
-const generator = new Generator();
-const shared = new SharedIntegration(generator);
 
 describe('user integration', () => {
     let userCount = 8;
     const hxUser = new History();
     const rrSuperTest = new RRSuperTest();
+    const generator = new Generator();
+    const shared = new SharedIntegration(rrSuperTest, generator);
 
     before(shared.setUpFn(rrSuperTest));
 

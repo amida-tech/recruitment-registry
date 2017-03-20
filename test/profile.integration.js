@@ -18,24 +18,24 @@ const comparator = require('./util/comparator');
 const ConsentDocumentHistory = require('./util/consent-document-history');
 
 const expect = chai.expect;
-const generator = new Generator();
-const shared = new SharedIntegration(generator);
 
 describe('profile integration', () => {
-    const store = new RRSuperTest();
+    const rrSuperTest = new RRSuperTest();
+    const generator = new Generator();
+    const shared = new SharedIntegration(rrSuperTest, generator);
 
     const hxSurvey = new SurveyHistory();
     const hxUser = new History();
     const hxAnswers = [];
     const hxConsentDoc = new ConsentDocumentHistory(2);
 
-    before(shared.setUpFn(store));
+    before(shared.setUpFn(rrSuperTest));
 
     const createProfileFn = function () {
         return function (done) {
             const user = generator.newUser();
             const input = { user };
-            store.authPost('/profiles', input, 201)
+            rrSuperTest.authPost('/profiles', input, 201)
                 .expect(() => {
                     hxUser.push(user, {});
                     hxAnswers.push(null);
@@ -46,7 +46,7 @@ describe('profile integration', () => {
 
     const verifyProfileFn = function (userIndex) {
         return function (done) {
-            store.get('/profiles', true, 200)
+            rrSuperTest.get('/profiles', true, 200)
                 .expect((res) => {
                     const result = res.body;
                     comparator.user(hxUser.client(userIndex), result.user);
@@ -64,7 +64,7 @@ describe('profile integration', () => {
             const updateObj = {
                 user: userUpdates,
             };
-            store.patch('/profiles', updateObj, 204)
+            rrSuperTest.patch('/profiles', updateObj, 204)
                 .end(done);
         };
     };
@@ -74,20 +74,20 @@ describe('profile integration', () => {
         it(`verify user ${index} profile`, verifyProfileFn(index));
         it(`update user ${index} profile`, updateProfileFn(index));
         it(`verify user ${index} profile`, verifyProfileFn(index));
-        it(`logout as user ${index}`, shared.logoutFn(store));
+        it(`logout as user ${index}`, shared.logoutFn(rrSuperTest));
     });
 
-    it('login as super', shared.loginFn(store, config.superUser));
+    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
     _.range(2).forEach((i) => {
-        it(`create consent type ${i}`, shared.createConsentTypeFn(store, hxConsentDoc));
+        it(`create consent type ${i}`, shared.createConsentTypeFn(rrSuperTest, hxConsentDoc));
     });
     _.range(2).forEach((i) => {
-        it(`create consent document of type ${i}`, shared.createConsentDocumentFn(store, hxConsentDoc, i));
+        it(`create consent document of type ${i}`, shared.createConsentDocumentFn(rrSuperTest, hxConsentDoc, i));
     });
-    it('create profile survey', shared.createProfileSurveyFn(store, hxSurvey));
-    it('logout as super', shared.logoutFn(store));
+    it('create profile survey', shared.createProfileSurveyFn(rrSuperTest, hxSurvey));
+    it('logout as super', shared.logoutFn(rrSuperTest));
 
-    it('get/verify profile survey', shared.verifyProfileSurveyFn(store, hxSurvey, 0));
+    it('get/verify profile survey', shared.verifyProfileSurveyFn(rrSuperTest, hxSurvey, 0));
 
     const createProfileWithSurveyFn = function (surveyIndex, signatures) {
         return function (done) {
@@ -99,7 +99,7 @@ describe('profile integration', () => {
             if (signatures) {
                 input.signatures = signatures.map(sign => hxConsentDoc.id(sign));
             }
-            store.authPost('/profiles', input, 201)
+            rrSuperTest.authPost('/profiles', input, 201)
                 .expect(() => {
                     hxUser.push(clientUser, {});
                 })
@@ -120,7 +120,7 @@ describe('profile integration', () => {
             if (language) {
                 input.language = language;
             }
-            store.authPost('/profiles', input, 201)
+            rrSuperTest.authPost('/profiles', input, 201)
                 .expect(() => {
                     hxUser.push(clientUser, {});
                 })
@@ -130,7 +130,7 @@ describe('profile integration', () => {
 
     const verifyProfileWithSurveyFn = function (surveyIndex, userIndex, language) {
         return function (done) {
-            store.get('/profiles', true, 200)
+            rrSuperTest.get('/profiles', true, 200)
                 .expect((res) => {
                     const result = res.body;
                     const survey = hxSurvey.server(surveyIndex);
@@ -155,14 +155,14 @@ describe('profile integration', () => {
                 answers,
             };
             hxAnswers[userIndex] = answers;
-            store.patch('/profiles', updateObj, 204).end(done);
+            rrSuperTest.patch('/profiles', updateObj, 204).end(done);
         };
     };
 
     const verifySignedDocumentFn = function (expected, language) {
         return function (done) {
             const server = hxConsentDoc.server(0);
-            store.get(`/user-consent-documents/${server.id}`, true, 200)
+            rrSuperTest.get(`/user-consent-documents/${server.id}`, true, 200)
                 .expect((res) => {
                     const result = res.body;
                     expect(result.content).to.equal(server.content);
@@ -179,7 +179,7 @@ describe('profile integration', () => {
         return function (done) {
             const server = hxConsentDoc.server(0);
             const typeName = hxConsentDoc.type(0).name;
-            store.get(`/user-consent-documents/type-name/${typeName}`, true, 200)
+            rrSuperTest.get(`/user-consent-documents/type-name/${typeName}`, true, 200)
                 .expect((res) => {
                     const result = res.body;
                     expect(result.content).to.equal(server.content);
@@ -217,7 +217,7 @@ describe('profile integration', () => {
                 return hxAnswer;
             });
             hxAnswers[userIndex] = newAnswers;
-            store.patch('/profiles', updateObj, 204).end(done);
+            rrSuperTest.patch('/profiles', updateObj, 204).end(done);
         };
     };
 
@@ -228,7 +228,7 @@ describe('profile integration', () => {
         it(`verify document 0 is not signed by user ${index} (type name)`, verifySignedDocumentByTypeNameFn(false));
         it(`update user ${index} profile`, updateProfileWithSurveyFn(0, index));
         it(`verify user ${index} profile`, verifyProfileWithSurveyFn(0, index));
-        it(`logout as user ${index}`, shared.logoutFn(store));
+        it(`logout as user ${index}`, shared.logoutFn(rrSuperTest));
     });
 
     _.range(4, 6).forEach((index) => {
@@ -236,14 +236,14 @@ describe('profile integration', () => {
         it(`verify user ${index} profile`, verifyProfileWithSurveyFn(0, index));
         it(`verify document 0 is signed by user ${index}`, verifySignedDocumentFn(true));
         it(`verify document 0 is not signed by user ${index} (type name)`, verifySignedDocumentByTypeNameFn(true));
-        it(`logout as user ${index}`, shared.logoutFn(store));
+        it(`logout as user ${index}`, shared.logoutFn(rrSuperTest));
     });
 
     _.range(6, 8).forEach((index) => {
         it(`register user ${index} with profile survey 1 and doc 0 signature in spanish`, createProfileWithSurveyLanguageFn(0, [0], 'es'));
         it(`verify user ${index} profile`, verifyProfileWithSurveyFn(0, index, 'es'));
         it(`verify document 0 is signed by user ${index} in spanish`, verifySignedDocumentFn(true, 'es'));
-        it(`logout as user ${index}`, shared.logoutFn(store));
+        it(`logout as user ${index}`, shared.logoutFn(rrSuperTest));
     });
 
     _.range(8, 10).forEach((index) => {
@@ -252,6 +252,6 @@ describe('profile integration', () => {
         it(`verify document 0 is signed by user ${index} in english`, verifySignedDocumentFn(true, 'en'));
         it(`update user ${index} profile`, patchProfileFn(0, index, 'es'));
         it(`verify user ${index} profile`, verifyProfileWithSurveyFn(0, index));
-        it(`logout as user ${index}`, shared.logoutFn(store));
+        it(`logout as user ${index}`, shared.logoutFn(rrSuperTest));
     });
 });

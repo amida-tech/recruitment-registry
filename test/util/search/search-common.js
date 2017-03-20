@@ -271,7 +271,7 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
         this.rrSuperTest = rrSuperTest;
         const generator = new Generator();
 
-        this.shared = new SharedIntegration(generator, this.models);
+        this.shared = new SharedIntegration(rrSuperTest, generator, this.models);
         this.answerTests = new answerCommon.IntegrationTests(rrSuperTest, generator, this.hxUser, this.hxSurvey, this.hxQuestion);
         this.questionTests = new questionCommon.IntegrationTests(rrSuperTest, generator, this.hxQuestion, this.models);
         this.hxAnswers = this.answerTests.hxAnswer;

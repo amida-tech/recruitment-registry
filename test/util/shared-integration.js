@@ -17,8 +17,9 @@ const unknownError = new RRError('unknown');
 const i18n = require('../../i18n');
 
 class SharedIntegration {
-    constructor(generator) {
+    constructor(rrSuperTest, generator) {
         this.generator = generator || new Generator();
+        this.rrSuperTest = rrSuperTest;
     }
 
     setUpFn(store, options = {}) {

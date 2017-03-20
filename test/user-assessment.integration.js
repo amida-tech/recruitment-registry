@@ -24,8 +24,6 @@ const expect = chai.expect;
 
 const generator = new Generator();
 
-const shared = new SharedIntegration(generator);
-
 describe('user assessment integration', () => {
     const surveyCount = 6;
     const assessmentCount = 2;
@@ -36,6 +34,7 @@ describe('user assessment integration', () => {
     const hxUserAssessment = new MultiIndexHistory();
 
     const rrSuperTest = new RRSuperTest();
+    const shared = new SharedIntegration(rrSuperTest, generator);
     const surveyTests = new surveyCommon.IntegrationTests(rrSuperTest, generator, hxSurvey);
     const assessmentTests = new assessmentCommon.IntegrationTests(rrSuperTest, generator, hxSurvey, hxAssessment);
     const answerTests = new answerCommon.IntegrationTests(rrSuperTest, generator, hxUser, hxSurvey);

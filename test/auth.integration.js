@@ -19,18 +19,17 @@ const History = require('./util/history');
 const Generator = require('./util/generator');
 
 const expect = chai.expect;
-const generator = new Generator();
-const shared = new SharedIntegration(generator);
-const sharedSpec = new SharedSpec(generator);
 
 describe('auth integration', () => {
     const userCount = 4;
 
-    const store = new RRSuperTest();
-
+    const rrSuperTest = new RRSuperTest();
+    const generator = new Generator();
+    const shared = new SharedIntegration(rrSuperTest, generator);
+    const sharedSpec = new SharedSpec(generator);
     const hxUser = new History();
 
-    before(shared.setUpFn(store));
+    before(shared.setUpFn(rrSuperTest));
 
     _.range(userCount).forEach((index) => {
         it(`create user ${index} using model`, sharedSpec.createUserFn(hxUser));
@@ -45,12 +44,12 @@ describe('auth integration', () => {
             if (!username) {
                 username = email;
             }
-            store.authBasic({ username, password })
+            rrSuperTest.authBasic({ username, password })
                 .end((err) => {
                     if (err) {
                         return done(err);
                     }
-                    const jwtCookie = store.getJWT();
+                    const jwtCookie = rrSuperTest.getJWT();
                     return jwt.verify(jwtCookie.value, config.jwt.secret, {}, (err, jwtObject) => {
                         if (err) {
                             return done(err);
@@ -74,7 +73,7 @@ describe('auth integration', () => {
                 username = email;
             }
             username += `u${username}`;
-            store.authBasic({ username, password }, 401)
+            rrSuperTest.authBasic({ username, password }, 401)
                 .expect(res => shared.verifyErrorMessage(res, 'authenticationError'))
                 .end(done);
         };
@@ -90,7 +89,7 @@ describe('auth integration', () => {
                 username = email;
             }
             password += 'a';
-            store.authBasic({ username, password }, 401)
+            rrSuperTest.authBasic({ username, password }, 401)
                 .expect(res => shared.verifyErrorMessage(res, 'authenticationError'))
                 .end(done);
         };
@@ -99,7 +98,7 @@ describe('auth integration', () => {
     _.range(userCount).forEach((index) => {
         it(`user ${index} successfull login`, successfullLoginFn(index));
         it(`log out user ${index}`, () => {
-            store.resetAuth();
+            rrSuperTest.resetAuth();
         });
         it(`user ${index} wrong username`, wrongUsernameFn(index));
         it(`user ${index} wrong password`, wrongPasswordFn(index));
@@ -111,7 +110,7 @@ describe('auth integration', () => {
         });
         const { username, password } = hxUser.client(0);
 
-        store.authBasic({ username, password }, 401)
+        rrSuperTest.authBasic({ username, password }, 401)
             .end((err, res) => {
                 tokener.createJWT.restore();
                 if (err) {
