@@ -38,7 +38,10 @@ module.exports = class UserDAO {
     }
 
     listUsers(options = {}) {
-        const role = options.role ? options.role : { $in: ['clinician', 'participant'] };
+        let role = options.role ? options.role : { $in: ['clinician', 'participant'] };
+        if (role === 'all') {
+            role = { $in: ['admin', 'clinician', 'participant'] };
+        }
         const where = { role };
         return this.db.User.findAll({ raw: true, where, attributes, order: 'username' })
             .then(users => users.map(user => _.omitBy(user, _.isNil)));

@@ -31,7 +31,7 @@ const SurveyIdentifierDAO = require('./survey-identifier.dao');
 const ChoiceSetDAO = require('./choice-set.dao');
 const ResearchSiteDAO = require('./research-site.dao');
 const Registry = require('./registry.dao');
-const UserAuditDAO = require('./user-audit');
+const UserAuditDAO = require('./user-audit.dao');
 const Macro = require('./macro');
 
 module.exports = function daosGenerator(db) {

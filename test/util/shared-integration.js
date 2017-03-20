@@ -4,8 +4,9 @@
 
 const chai = require('chai');
 
+const config = require('../../config');
+
 const appgen = require('../../app-generator');
-const db = require('../../models/db');
 const RRError = require('../../lib/rr-error');
 const Generator = require('./generator');
 const translator = require('./translator');
@@ -242,20 +243,24 @@ class SharedIntegration {
     }
 
     verifyUserAudit(store) {
-        it('verify user audit', () => {
+        it('login as super', this.loginFn(store, config.superUser));
+
+        it('verify user audit', function vua() {
             const userAudit = store.getUserAudit();
-            return db.User.findAll({ raw: true, attributes: ['username', 'id'] })
-                .then(users => new Map(users.map(user => [user.username, user.id])))
-                .then(userMap => userAudit.map(({ username, operation, endpoint }) => ({ userId: userMap.get(username), operation, endpoint })))
-                .then(expected => db.UserAudit.findAll({
-                    raw: true,
-                    attributes: ['userId', 'endpoint', 'operation'],
-                    order: 'created_at',
-                })
-                        .then((actual) => {
-                            expect(actual).to.deep.equal(expected);
-                        }));
+            return store.get('/users', true, 200, { role: 'all' })
+                .then(res => new Map(res.body.map(user => [user.username, user.id])))
+                .then(userMap => userAudit.map(({ username, operation, endpoint }) => {
+                    const userId = userMap.get(username);
+                    return { userId, operation, endpoint };
+                }))
+                .then((expected) => {
+                    const px = store.get('/user-audits', true, 200);
+                    px.then(resAudit => expect(resAudit.body).to.deep.equal(expected));
+                    return px;
+                });
         });
+
+        it('logout as super', this.logoutFn(store));
     }
 
     verifyErrorMessage(res, code, ...params) {

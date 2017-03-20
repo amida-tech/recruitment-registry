@@ -42,7 +42,9 @@ const userAudit = function (req, res, next) {
                 }
             });
         }
-        req.models.userAudit.createUserAudit({ userId, endpoint, operation });
+        if (endpoint !== '/user-audits') {
+            req.models.userAudit.createUserAudit({ userId, endpoint, operation });
+        }
     }
     next();
 };
