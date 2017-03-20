@@ -25,8 +25,7 @@ class SharedIntegration {
     setUpFn(options = {}) {
         const rrSuperTest = this.rrSuperTest;
         return function setup(done) {
-            const app = appgen.newExpress();
-            appgen.initialize(app, options, (err, app) => {
+            appgen.generate(options, (err, app) => {
                 if (err) {
                     return done(err);
                 }

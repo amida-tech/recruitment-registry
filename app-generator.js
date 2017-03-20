@@ -84,32 +84,34 @@ exports.initialize = function initialize(app, options, callback) {
 
         app.use(errHandler);
 
+        const effectiveConfig = options.config || config;
         m.sequelize.sync({
-            force: config.env === 'test',
+            force: effectiveConfig.env === 'test',
         }).then(() => {
             callback(null, app);
         });
     });
 };
 
-exports.newExpress = function newExpress() {
+const determineOrigin = function (origin) {
+    if (origin === '*') {
+        return '*';
+    }
+    const corsWhitelist = origin.split(' ');
+    return function dofn(requestOrigin, callback) {
+        const originStatus = corsWhitelist.indexOf(requestOrigin) > -1;
+        const errorMsg = originStatus ? null : 'CORS Error';
+        callback(errorMsg, originStatus);
+    };
+};
+
+exports.newExpress = function newExpress(options = {}) {
     const app = express();
 
     const jsonParser = bodyParser.json();
 
-    const origin = config.cors.origin;
-
-    function determineOrigin(origin) {
-        if (origin === '*') {
-            return '*';
-        }
-        const corsWhitelist = origin.split(' ');
-        return function (requestOrigin, callback) {
-            const originStatus = corsWhitelist.indexOf(requestOrigin) > -1;
-            const errorMsg = originStatus ? null : 'CORS Error';
-            callback(errorMsg, originStatus);
-        };
-    }
+    const effectiveConfig = options.config || config;
+    const origin = effectiveConfig.cors.origin;
 
     const corsOptions = {
         credentials: true,
@@ -150,4 +152,9 @@ exports.newExpress = function newExpress() {
     });
 
     return app;
+};
+
+exports.generate = function (options, callback) {
+    const app = this.newExpress();
+    this.initialize(app, options, callback);
 };
