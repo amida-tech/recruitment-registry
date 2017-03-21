@@ -12,6 +12,7 @@ const swaggerTools = require('swagger-tools');
 
 const models = require('./models');
 const modelsGenerator = require('./models/generator');
+const swaggerUtil = require('./lib/swagger-util');
 
 const swaggerJson = require('./swagger.json');
 const security = require('./security');
@@ -58,8 +59,27 @@ const modelsSupplyFn = function (inputModels) {
     };
 };
 
+const formSwaggerObject = function (effectiveConfig, effectiveSwaggerJson) {
+    const schema = effectiveConfig.db.schema;
+    if (schema !== 'public') {
+        const schemaCount = schema.split('~').length;
+        if (schemaCount > 1) {
+            const result = _.cloneDeep(effectiveSwaggerJson);
+            swaggerUtil.updateSchema(result);
+            return result;
+        }
+        if (effectiveConfig.db.addSchemaPath) {
+            const result = _.cloneDeep(effectiveSwaggerJson);
+            swaggerUtil.updateSchemaConst(result, schema);
+            return result;
+        }
+    }
+    return effectiveSwaggerJson;
+};
+
 exports.initialize = function initialize(app, options, callback) {
-    const swaggerObject = options.swaggerJson || swaggerJson;
+    const effectiveConfig = options.config || config;
+    const swaggerObject = formSwaggerObject(effectiveConfig, options.swaggerJson || swaggerJson);
     app.use(i18n.init);
     swaggerTools.initializeMiddleware(swaggerObject, (middleware) => {
         app.use(middleware.swaggerMetadata());
@@ -68,7 +88,6 @@ exports.initialize = function initialize(app, options, callback) {
             validateResponse: true,
         }));
 
-        const effectiveConfig = options.config || config;
         const schema = effectiveConfig.db.schema;
         const m = options.models || (options.generatedb ? modelsGenerator(schema) : models);
         app.use(modelsSupplyFn(m));

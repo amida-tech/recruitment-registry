@@ -6,9 +6,12 @@ const session = require('supertest-session');
 const _ = require('lodash');
 
 module.exports = class RRSupertest {
-    constructor() {
+    constructor(addlPath) {
         this.server = null;
         this.baseUrl = '/api/v1.0';
+        if (addlPath) {
+            this.baseUrl += addlPath;
+        }
         this.userAudit = [];
         this.username = null;
     }

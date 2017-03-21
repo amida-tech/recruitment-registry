@@ -11,7 +11,6 @@ module.exports = {
     },
     db: {
         name: 'recregtest',
-        poolIdle: 2000,
     },
     tmpDirectory: path.join(__dirname, '../test/generated'),
 };
