@@ -54,7 +54,7 @@ describe('tenant single schema named', function tenantNamed() {
         generator.questionGenerator = multiGenerator;
     });
 
-    _.range(3, 7).forEach((index) => {
+    _.range(3, 8).forEach((index) => {
         it(`create question ${index}`, tests.createQuestionFn());
         it(`get question ${index}`, tests.getQuestionFn(index));
     });

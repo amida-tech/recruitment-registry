@@ -41,7 +41,7 @@ describe('tenant single schema public', function tenantPublic() {
         generator.questionGenerator = multiGenerator;
     });
 
-    _.range(3, 6).forEach((index) => {
+    _.range(3, 4).forEach((index) => {
         it(`create question ${index}`, tests.createQuestionFn());
         it(`get question ${index}`, tests.getQuestionFn(index));
     });

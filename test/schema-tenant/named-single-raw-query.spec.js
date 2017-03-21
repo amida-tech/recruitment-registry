@@ -82,7 +82,7 @@ describe('tenant single schema named (for raw query)', function tenantNamed4Raw(
         generator.questionGenerator = multiGenerator;
     });
 
-    _.range(3, 7).forEach((index) => {
+    _.range(3, 9).forEach((index) => {
         it(`create question ${index}`, tests.createQuestionFn());
         it(`get question ${index}`, tests.getQuestionFn(index));
     });
@@ -91,7 +91,7 @@ describe('tenant single schema named (for raw query)', function tenantNamed4Raw(
 
     const multiCount = function () {
         return rrSuperTest.get('/questions-multi-count', true, 200)
-            .then(res => expect(res.body.count).to.equal('4'));
+            .then(res => expect(res.body.count).to.equal('6'));
     };
 
     it('raw query multi count', multiCount);

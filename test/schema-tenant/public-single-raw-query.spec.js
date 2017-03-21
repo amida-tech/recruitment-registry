@@ -70,7 +70,7 @@ describe('tenant single schema public (for raw query)', function tenantPublic4Ra
         generator.questionGenerator = multiGenerator;
     });
 
-    _.range(3, 6).forEach((index) => {
+    _.range(3, 5).forEach((index) => {
         it(`create question ${index}`, tests.createQuestionFn());
         it(`get question ${index}`, tests.getQuestionFn(index));
     });
@@ -79,7 +79,7 @@ describe('tenant single schema public (for raw query)', function tenantPublic4Ra
 
     const multiCount = function () {
         return rrSuperTest.get('/questions-multi-count', true, 200)
-            .then(res => expect(res.body.count).to.equal('3'));
+            .then(res => expect(res.body.count).to.equal('2'));
     };
 
     it('raw query multi count', multiCount);
