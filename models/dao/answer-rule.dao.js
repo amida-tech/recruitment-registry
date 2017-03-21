@@ -189,7 +189,7 @@ module.exports = class AnswerRuleDAO extends Base {
                 if (!rules.length) {
                     return null;
                 }
-                return this.db.sequelize.transaction((transaction) => {
+                return this.transaction((transaction) => {
                     const ruleIdMap = new Map();
                     const records = rules.map(rule => _.omit(rule, 'id'));
                     const fnIdMap = ({ id }, index) => ruleIdMap.set(rules[index].id, id);

@@ -51,11 +51,11 @@ module.exports = class Translatable extends Base {
     }
 
     createText(input) {
-        return this.db.sequelize.transaction(transaction => this.createTextTx(input, transaction));
+        return this.transaction(transaction => this.createTextTx(input, transaction));
     }
 
     createMultipleTexts(input) {
-        return this.db.sequelize.transaction(transaction => this.createMultipleTextsTx(input, transaction));
+        return this.transaction(transaction => this.createMultipleTextsTx(input, transaction));
     }
 
     getText(parentId, language = 'en') {

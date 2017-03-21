@@ -31,7 +31,7 @@ module.exports = class SectionDAO extends Translatable {
     }
 
     createSection(section) {
-        return this.db.sequelize.transaction(transaction => this.createSectionTx(section, transaction));
+        return this.transaction(transaction => this.createSectionTx(section, transaction));
     }
 
     getSection(id, options = {}) {
@@ -74,7 +74,7 @@ module.exports = class SectionDAO extends Translatable {
                 if (!records.length) {
                     return {};
                 }
-                return this.db.sequelize.transaction((transaction) => {
+                return this.transaction((transaction) => {
                     const idMap = {};
                     const promises = records.map((record) => {
                         const recordId = record.id;

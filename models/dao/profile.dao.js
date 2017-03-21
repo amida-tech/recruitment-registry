@@ -42,11 +42,10 @@ module.exports = class ProfileDAO extends Base {
     }
 
     updateProfile(id, input, language) {
-        const sequelize = this.db.sequelize;
         return this.profileSurvey.getProfileSurveyId()
             .then((profileSurveyId) => {
                 if (profileSurveyId) {
-                    return sequelize.transaction(tx => this.user.updateUser(id, input.user, {
+                    return this.transaction(tx => this.user.updateUser(id, input.user, {
                         transaction: tx,
                     })
                             .then(() => {

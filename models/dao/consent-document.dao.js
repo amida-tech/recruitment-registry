@@ -89,9 +89,8 @@ module.exports = class ConsentDocumentDAO extends Translatable {
     }
 
     createConsentDocument(input) {
-        const sequelize = this.db.sequelize;
         const ConsentDocument = this.db.ConsentDocument;
-        return sequelize.transaction((transaction) => {
+        return this.transaction((transaction) => {
             const typeId = input.typeId;
             return ConsentDocument.destroy({ where: { typeId }, transaction })
                 .then(() => ConsentDocument.create(input, { transaction }))

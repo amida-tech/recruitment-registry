@@ -10,7 +10,7 @@ module.exports = class Macro extends Base {
     }
 
     createSurveys(surveys) {
-        return this.db.sequelize.transaction((transaction) => {
+        return this.transaction((transaction) => {
             const pxs = surveys.map((survey) => {
                 const px = this.survey.createSurveyTx(survey, transaction);
                 return px;

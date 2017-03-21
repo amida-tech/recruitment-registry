@@ -89,8 +89,7 @@ module.exports = class QuestionChoiceDAO extends Translatable {
     }
 
     updateMultipleChoiceTexts(choices, language) {
-        const sequelize = this.db.sequelize;
-        return sequelize.transaction(transaction => this.updateMultipleChoiceTextsTx(choices, language, transaction));
+        return this.transaction(transaction => this.updateMultipleChoiceTextsTx(choices, language, transaction));
     }
 
     listQuestionChoices(choiceSetId, language) {

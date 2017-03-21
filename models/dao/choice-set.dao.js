@@ -24,13 +24,11 @@ module.exports = class ChoiceSetDAO extends Base {
     }
 
     createChoiceSet(choiceSet) {
-        const sequelize = this.db.sequelize;
-        return sequelize.transaction(transaction => this.createChoiceSetTx(choiceSet, transaction));
+        return this.transaction(transaction => this.createChoiceSetTx(choiceSet, transaction));
     }
 
     createChoiceSets(choiceSets) {
-        const sequelize = this.db.sequelize;
-        return sequelize.transaction((transaction) => {
+        return this.transaction((transaction) => {
             const promises = choiceSets.map(choiceSet => this.createChoiceSetTx(choiceSet, transaction));
             return SPromise.all(promises);
         });
@@ -47,8 +45,7 @@ module.exports = class ChoiceSetDAO extends Base {
 
     deleteChoiceSet(id) {
         const ChoiceSet = this.db.ChoiceSet;
-        const sequelize = this.db.sequelize;
-        return sequelize.transaction(transaction => this.questionChoice.deleteAllQuestionChoices(id, transaction)
+        return this.transaction(transaction => this.questionChoice.deleteAllQuestionChoices(id, transaction)
                 .then(() => ChoiceSet.destroy({ where: { id }, transaction })));
     }
 
@@ -111,7 +108,7 @@ module.exports = class ChoiceSetDAO extends Base {
     //                activeChoiceSet.choices.push({text, code});
     //                return r;
     //            }, []);
-    //            return db.sequelize.transaction((transaction) => {
+    //            return this.transaction((transaction) => {
     //                const idMap = {};
     //                const promises = choiceSets.map((choiceSet) => {
     //                    const recordId = choiceSet.id;

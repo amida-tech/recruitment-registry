@@ -30,8 +30,7 @@ module.exports = class ProfileSurveyDAO extends Base {
     }
 
     createProfileSurveyId(surveyId) {
-        const sequelize = this.db.sequelize;
-        return sequelize.transaction(transaction => this.createProfileSurveyIdTx(surveyId, transaction));
+        return this.transaction(transaction => this.createProfileSurveyIdTx(surveyId, transaction));
     }
 
     deleteProfileSurveyId() {
@@ -39,8 +38,7 @@ module.exports = class ProfileSurveyDAO extends Base {
     }
 
     createProfileSurvey(survey) {
-        const sequelize = this.db.sequelize;
-        return sequelize.transaction(transaction => this.survey.createOrReplaceSurvey(survey)
+        return this.transaction(transaction => this.survey.createOrReplaceSurvey(survey)
                 .then(surveyId => this.createProfileSurveyIdTx(surveyId, transaction)
                         .then(() => ({ id: surveyId }))));
     }

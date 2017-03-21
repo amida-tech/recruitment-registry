@@ -21,8 +21,7 @@ const formatResearchSite = function formatResearchSite(researchSite) {
 module.exports = class ResearchSiteDAO extends Base {
     createResearchSite(researchSite) {
         formatResearchSite(researchSite);
-        return this.db.sequelize
-                .transaction(transaction => this.db.ResearchSite.create(researchSite, { transaction })
+        return this.transaction(transaction => this.db.ResearchSite.create(researchSite, { transaction })
                 .then(({ id }) => zipUtil.findVicinity(researchSite.zip)
                         .then(vicinity => (
                             this.createResearchSiteVicinityTx(id, vicinity, transaction)
@@ -56,7 +55,7 @@ module.exports = class ResearchSiteDAO extends Base {
 
     patchResearchSite(id, researchSiteUpdate) {
         formatResearchSite(researchSiteUpdate);
-        return this.db.sequelize.transaction(transaction => (
+        return this.transaction(transaction => (
                     this.db.ResearchSite.update(researchSiteUpdate, { where: { id }, transaction })
                 )
                 .then(() => {
@@ -71,7 +70,7 @@ module.exports = class ResearchSiteDAO extends Base {
     }
 
     deleteResearchSite(id) {
-        return this.db.sequelize.transaction(transaction => (
+        return this.transaction(transaction => (
             this.db.ResearchSite
                 .destroy({ where: { id }, transaction })
                 .then(() => (
@@ -97,7 +96,7 @@ module.exports = class ResearchSiteDAO extends Base {
     }
 
     createResearchSiteVicinity(researchSiteId, vicinity) {
-        return this.db.sequelize.transaction(transaction => (
+        return this.transaction(transaction => (
             this.createResearchSiteVicinityTx(researchSiteId, vicinity, transaction)
         ));
     }

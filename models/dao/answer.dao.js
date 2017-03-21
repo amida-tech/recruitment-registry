@@ -338,7 +338,7 @@ module.exports = class AnswerDAO extends Base {
     }
 
     createAnswers(input) {
-        return this.db.sequelize.transaction(tx => this.createAnswersTx(input, tx));
+        return this.transaction(tx => this.createAnswersTx(input, tx));
     }
 
     listAnswers({ userId, scope, surveyId, history, ids }) {

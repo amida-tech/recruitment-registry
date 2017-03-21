@@ -26,7 +26,7 @@ module.exports = class ConsentDAO extends Base {
     }
 
     createConsent({ name, sections }) {
-        return this.db.sequelize.transaction((transaction) => {
+        return this.transaction((transaction) => {
             const px = this.db.Consent.create({ name }, { transaction });
             return px.then(({ id }) => {
                 const consentId = id;
@@ -63,10 +63,9 @@ module.exports = class ConsentDAO extends Base {
     }
 
     deleteConsent(id) {
-        const sequelize = this.db.sequelize;
         const Consent = this.db.Consent;
         const ConsentSection = this.db.ConsentSection;
-        return sequelize.transaction(transaction => Consent.destroy({ where: { id }, transaction })
+        return this.transaction(transaction => Consent.destroy({ where: { id }, transaction })
                 .then(() => ConsentSection.destroy({ where: { consentId: id }, transaction })));
     }
 

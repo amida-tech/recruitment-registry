@@ -11,7 +11,7 @@ module.exports = class AssessmentDAO extends Base {
 
     createAssessment({ name, sequenceType = 'ondemand', surveys }) {
         const Assessment = this.db.Assessment;
-        return this.db.sequelize.transaction(transaction => Assessment.create({ name, sequenceType }, { transaction })
+        return this.transaction(transaction => Assessment.create({ name, sequenceType }, { transaction })
                 .then(({ id }) => this.createAssessmentSurveys(id, surveys, transaction)
                         .then(() => ({ id }))));
     }

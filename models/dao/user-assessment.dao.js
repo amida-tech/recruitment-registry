@@ -42,9 +42,8 @@ module.exports = class AssessmentDAO extends Base {
     }
 
     openUserAssessment({ userId, assessmentId }) {
-        const sequelize = this.db.sequelize;
         const UserAssessment = this.db.UserAssessment;
-        return sequelize.transaction(transaction => UserAssessment.findAll({
+        return this.transaction(transaction => UserAssessment.findAll({
             where: { userId, assessmentId },
             attributes: ['id', 'sequence', 'deletedAt'],
             order: 'sequence',
@@ -72,9 +71,8 @@ module.exports = class AssessmentDAO extends Base {
     }
 
     closeUserAssessment({ userId, assessmentId, status }) {
-        const sequelize = this.db.sequelize;
         const UserAssessment = this.db.UserAssessment;
-        return sequelize.transaction(transaction => UserAssessment.findOne({ where: { userId, assessmentId }, attributes: ['id'], transaction })
+        return this.transaction(transaction => UserAssessment.findOne({ where: { userId, assessmentId }, attributes: ['id'], transaction })
                 .then(({ id }) => this.closeUserAssessmentById(id, { userId, assessmentId, status }, transaction)));
     }
 
@@ -100,7 +98,7 @@ module.exports = class AssessmentDAO extends Base {
     }
 
     importBulk(records) {
-        return this.db.sequelize.transaction((transaction) => {
+        return this.transaction((transaction) => {
             const dbRecords = records.map(record => _.omit(record, 'answerIds'));
             return this.db.UserAssessment.bulkCreate(dbRecords, { transaction, returning: true })
                 .then(result => result.map(({ id }) => id))
