@@ -10,7 +10,7 @@ const ImportCSVConverter = require('../../import/csv-converter.js');
 
 module.exports = class QuestionDAO extends Translatable {
     constructor(db, dependencies) {
-        super(db, 'question_text', 'questionId', ['text', 'instruction'], { instruction: true });
+        super(db, 'QuestionText', 'questionId', ['text', 'instruction'], { instruction: true });
         Object.assign(this, dependencies);
         this.db = db;
     }
@@ -109,8 +109,7 @@ module.exports = class QuestionDAO extends Translatable {
     }
 
     createQuestion(question) {
-        const sequelize = this.db.sequelize;
-        return sequelize.transaction(transaction => this.createQuestionTx(question, transaction));
+        return this.transaction(transaction => this.createQuestionTx(question, transaction));
     }
 
     replaceQuestion(id, replacement) {

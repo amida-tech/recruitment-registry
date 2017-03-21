@@ -358,7 +358,7 @@ module.exports = class AnswerDAO extends Base {
             attributes.push('surveyId');
         }
         if (scope === 'history-only') {
-            attributes.push([this.db.sequelize.fn('to_char', this.db.sequelize.col('answer.deleted_at'), 'SSSS.MS'), 'deletedAt']);
+            attributes.push(this.timestampColumn('answer', 'deleted', 'SSSS.MS'));
         }
         const include = [
             { model: Question, as: 'question', attributes: ['id', 'type', 'multiple'] },
@@ -481,7 +481,7 @@ module.exports = class AnswerDAO extends Base {
         const Answer = this.db.Answer;
         const Question = this.db.Question;
         const QuestionChoice = this.db.QuestionChoice;
-        const createdAtColumn = [this.db.sequelize.fn('to_char', this.db.sequelize.col('answer.created_at'), 'YYYY-MM-DD"T"HH24:MI:SS"Z"'), 'createdAt'];
+        const createdAtColumn = this.timestampColumn('answer', 'created');
         return Answer.findAll({
             where: { id: { $in: ids } },
             attributes: ['id', 'userId', 'surveyId', 'questionId', 'questionChoiceId', 'value', createdAtColumn],

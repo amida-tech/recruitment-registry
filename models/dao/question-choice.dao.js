@@ -10,7 +10,7 @@ const idFromCodeQuery = queryrize.readQuerySync('question-choice-id-from-code.sq
 
 module.exports = class QuestionChoiceDAO extends Translatable {
     constructor(db) {
-        super(db, 'question_choice_text', 'questionChoiceId');
+        super(db, 'QuestionChoiceText', 'questionChoiceId');
     }
 
     deleteNullData(choices) {
@@ -109,12 +109,8 @@ module.exports = class QuestionChoiceDAO extends Translatable {
     }
 
     findQuestionChoiceIdForCode(questionId, code, transaction) {
-        const sequelize = this.db.sequelize;
-        return sequelize.query(idFromCodeQuery, {
-            type: sequelize.QueryTypes.SELECT,
-            replacements: { question_id: questionId, code },
-            transaction,
-        })
+        const replacements = { question_id: questionId, code };
+        return this.selectQuery(idFromCodeQuery, replacements, transaction)
             .then((result) => {
                 if (result && result.length) {
                     return result[0].id;

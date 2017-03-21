@@ -8,7 +8,7 @@ const Translatable = require('./translatable');
 
 module.exports = class ConsentDocumentDAO extends Translatable {
     constructor(db, dependencies) {
-        super(db, 'consent_document_text', 'consentDocumentId', ['content', 'updateComment']);
+        super(db, 'ConsentDocumentText', 'consentDocumentId', ['content', 'updateComment']);
         Object.assign(this, dependencies);
     }
 

@@ -114,10 +114,9 @@ module.exports = class AssessmentDAO extends Base {
     }
 
     exportBulk() {
-        const sequelize = this.db.sequelize;
         const UserAssessment = this.db.UserAssessment;
         const Assessment = this.db.Assessment;
-        const createdAtColumn = [sequelize.fn('to_char', sequelize.col('user_assessment.created_at'), 'YYYY-MM-DD"T"HH24:MI:SS"Z"'), 'createdAt'];
+        const createdAtColumn = this.timestampColumn('user_assessment', 'created');
         const attributes = ['id', 'userId', 'assessmentId', 'meta', createdAtColumn];
         return UserAssessment.findAll({
             attributes,

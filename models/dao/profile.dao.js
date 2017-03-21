@@ -10,8 +10,7 @@ module.exports = class ProfileDAO extends Base {
     }
 
     createProfile(input, language) {
-        const sequelize = this.db.sequelize;
-        return sequelize.transaction(tx => this.profileSurvey.getProfileSurveyId()
+        return this.transaction(tx => this.profileSurvey.getProfileSurveyId()
                 .then((profileSurveyId) => {
                     input.user.role = 'participant';
                     return this.user.createUser(input.user, tx)

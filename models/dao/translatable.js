@@ -15,7 +15,7 @@ module.exports = class Translatable extends Base {
     }
 
     createTextTx(input, transaction) {
-        const Table = this.db.sequelize.models[this.tableName];
+        const Table = this.db[this.tableName];
         const parentIdField = this.parentIdField;
         const language = input.language || 'en';
         const where = { language };
@@ -37,7 +37,7 @@ module.exports = class Translatable extends Base {
     }
 
     deleteTextTx(parentId, transaction) {
-        const Table = this.db.sequelize.models[this.tableName];
+        const Table = this.db[this.tableName];
         const parentIdField = this.parentIdField;
         const where = {
             [parentIdField]: parentId,
@@ -59,7 +59,7 @@ module.exports = class Translatable extends Base {
     }
 
     getText(parentId, language = 'en') {
-        const Table = this.db.sequelize.models[this.tableName];
+        const Table = this.db[this.tableName];
         const where = { language };
         where[this.parentIdField] = parentId;
         const query = { where, raw: true, attributes: this.textFields };
@@ -93,7 +93,7 @@ module.exports = class Translatable extends Base {
     }
 
     getAllTexts(ids, language = 'en') {
-        const Table = this.db.sequelize.models[this.tableName];
+        const Table = this.db[this.tableName];
         const parentIdField = this.parentIdField;
         const options = { raw: true, attributes: [parentIdField, 'language', ...this.textFields] };
         if (language === 'en') {

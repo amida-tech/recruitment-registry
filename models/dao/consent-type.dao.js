@@ -6,7 +6,7 @@ const Translatable = require('./translatable');
 
 module.exports = class ConsentTypeDAO extends Translatable {
     constructor(db) {
-        super(db, 'consent_type_text', 'consentTypeId', ['title']);
+        super(db, 'ConsentTypeText', 'consentTypeId', ['title']);
     }
 
     getConsentType(id, options = {}) {

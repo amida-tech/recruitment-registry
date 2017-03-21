@@ -24,8 +24,7 @@ module.exports = class SMTPDAO extends Base {
     }
 
     createSmtp(smtp) {
-        const sequelize = this.db.sequelize;
-        return sequelize.transaction(tx => this.createSmtpTx(smtp, tx));
+        return this.transaction(tx => this.createSmtpTx(smtp, tx));
     }
 
     updateSmtpTextTx({ subject, content }, language, transaction) {
@@ -35,9 +34,8 @@ module.exports = class SMTPDAO extends Base {
     }
 
     updateSmtpText(smtpText, language) {
-        const sequelize = this.db.sequelize;
         language = language || 'en';
-        return sequelize.transaction(tx => this.updateSmtpTextTx(smtpText, language, tx));
+        return this.transaction(tx => this.updateSmtpTextTx(smtpText, language, tx));
     }
 
     getSmtp(options = {}) {

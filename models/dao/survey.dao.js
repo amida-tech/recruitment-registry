@@ -44,7 +44,7 @@ const translateRuleChoices = function (ruleParent, choices) {
 
 module.exports = class SurveyDAO extends Translatable {
     constructor(db, dependencies) {
-        super(db, 'survey_text', 'surveyId', ['name', 'description'], { description: true });
+        super(db, 'SurveyText', 'surveyId', ['name', 'description'], { description: true });
         Object.assign(this, dependencies);
         this.db = db;
     }
@@ -331,11 +331,7 @@ module.exports = class SurveyDAO extends Translatable {
             sections_needed: Boolean(questions && !sections),
             survey_id: surveyId,
         };
-        return this.db.sequelize.query(surveyPatchInfoQuery, {
-            transaction,
-            replacements,
-            type: this.db.sequelize.QueryTypes.SELECT,
-        })
+        return this.selectQuery(surveyPatchInfoQuery, replacements, transaction)
             .then((surveys) => {
                 if (!surveys.length) {
                     return RRError.reject('surveyNotFound');
@@ -486,12 +482,11 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     deleteSurvey(id) {
-        const sequelize = this.db.sequelize;
         const Survey = this.db.Survey;
         const SurveyQuestion = this.db.SurveyQuestion;
         const SurveySection = this.db.SurveySection;
         const ProfileSurvey = this.db.ProfileSurvey;
-        return sequelize.transaction(transaction => Survey.destroy({ where: { id }, transaction })
+        return this.transaction(transaction => Survey.destroy({ where: { id }, transaction })
                 .then(() => SurveyQuestion.destroy({ where: { surveyId: id }, transaction }))
                 .then(() => SurveySection.destroy({ where: { surveyId: id }, transaction }))
                 .then(() => ProfileSurvey.destroy({ where: { surveyId: id }, transaction })));

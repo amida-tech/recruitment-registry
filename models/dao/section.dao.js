@@ -11,7 +11,7 @@ const ImportCSVConverter = require('../../import/csv-converter.js');
 
 module.exports = class SectionDAO extends Translatable {
     constructor(db) {
-        super(db, 'section_text', 'sectionId', ['name', 'description'], { name: true, description: true });
+        super(db, 'SectionText', 'sectionId', ['name', 'description'], { name: true, description: true });
         this.db = db;
     }
 
