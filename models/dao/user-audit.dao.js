@@ -1,10 +1,8 @@
 'use strict';
 
-module.exports = class UserAuditDAO {
-    constructor(db) {
-        this.db = db;
-    }
+const Base = require('./base');
 
+module.exports = class UserAuditDAO extends Base {
     createUserAudit(userAudit) {
         return this.db.UserAudit.create(userAudit);
     }

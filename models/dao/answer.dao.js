@@ -2,6 +2,7 @@
 
 const _ = require('lodash');
 
+const Base = require('./base');
 const RRError = require('../../lib/rr-error');
 const SPromise = require('../../lib/promise');
 
@@ -147,9 +148,9 @@ const evaluateEnableWhen = function (rules, answersByQuestionId) {
     });
 };
 
-module.exports = class AnswerDAO {
+module.exports = class AnswerDAO extends Base {
     constructor(db, dependencies) {
-        this.db = db;
+        super(db);
         Object.assign(this, dependencies);
         this.schemaModels = new Map();
     }

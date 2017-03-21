@@ -1,10 +1,8 @@
 'use strict';
 
-module.exports = class SectionDAO {
-    constructor(db) {
-        this.db = db;
-    }
+const Base = require('./base');
 
+module.exports = class SectionDAO extends Base {
     listSurveySectionQuestions(surveySectionIds) {
         return this.db.SurveySectionQuestion.findAll({
             where: { surveySectionId: { $in: surveySectionIds } },

@@ -1,9 +1,11 @@
 'use strict';
 
-module.exports = class UserSurveyDAO {
+const Base = require('./base');
+
+module.exports = class UserSurveyDAO extends Base {
     constructor(db, dependencies) {
+        super(db);
         Object.assign(this, dependencies);
-        this.db = db;
     }
 
     getUserSurveyStatus(userId, surveyId) {

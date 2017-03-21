@@ -1,7 +1,9 @@
 'use strict';
 
-const zipUtil = require('../../lib/zip-util');
 const _ = require('lodash');
+
+const Base = require('./base');
+const zipUtil = require('../../lib/zip-util');
 
 const attributes = ['id', 'name', 'url', 'street', 'street2', 'city', 'state', 'zip'];
 
@@ -16,11 +18,7 @@ const formatResearchSite = function formatResearchSite(researchSite) {
     return researchSite;
 };
 
-module.exports = class ResearchSiteDAO {
-    constructor(db) {
-        this.db = db;
-    }
-
+module.exports = class ResearchSiteDAO extends Base {
     createResearchSite(researchSite) {
         formatResearchSite(researchSite);
         return this.db.sequelize

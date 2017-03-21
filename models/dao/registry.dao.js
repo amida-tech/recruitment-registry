@@ -2,13 +2,10 @@
 
 const _ = require('lodash');
 
+const Base = require('./base');
 const RRError = require('../../lib/rr-error');
 
-module.exports = class RegistryDAO {
-    constructor(db) {
-        this.db = db;
-    }
-
+module.exports = class RegistryDAO extends Base {
     createRegistry(registry) {
         if (registry.url && registry.schema) {
             return RRError.reject('registryBothURLSchema', registry.name);

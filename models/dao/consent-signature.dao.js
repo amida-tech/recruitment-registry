@@ -1,5 +1,7 @@
 'use strict';
 
+const Base = require('./base');
+
 const dbDefaults = function (record) {
     return {
         language: record.language || 'en',
@@ -8,11 +10,7 @@ const dbDefaults = function (record) {
     };
 };
 
-module.exports = class ConsentSignatureDAO {
-    constructor(db) {
-        this.db = db;
-    }
-
+module.exports = class ConsentSignatureDAO extends Base {
     createSignature(signature, transaction) {
         const options = transaction ? { transaction } : {};
         const record = Object.assign({}, signature, dbDefaults(signature));

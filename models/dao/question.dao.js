@@ -10,7 +10,7 @@ const ImportCSVConverter = require('../../import/csv-converter.js');
 
 module.exports = class QuestionDAO extends Translatable {
     constructor(db, dependencies) {
-        super('question_text', 'questionId', ['text', 'instruction'], { instruction: true });
+        super(db, 'question_text', 'questionId', ['text', 'instruction'], { instruction: true });
         Object.assign(this, dependencies);
         this.db = db;
     }

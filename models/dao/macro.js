@@ -1,11 +1,12 @@
 'use strict';
 
+const Base = require('./base');
 const SPromise = require('../../lib/promise');
 
-module.exports = class Macro {
+module.exports = class Macro extends Base {
     constructor(db, dependencies) {
+        super(db);
         Object.assign(this, dependencies);
-        this.db = db;
     }
 
     createSurveys(surveys) {

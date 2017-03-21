@@ -1,5 +1,7 @@
 'use strict';
 
+const Base = require('./base');
+
 const updateQuestionSectionDependency = function updateQuestionSectionDependency(parents, id, questionParents, sectionParents) {
     const { sectionId, parentId, questionParentId } = sectionParents.get(id);
     parents.push({ sectionId });
@@ -24,11 +26,7 @@ const updateQuestionDependency = function updateQuestionDependency(question, que
     }
 };
 
-module.exports = class SurveyQuestionsDAO {
-    constructor(db) {
-        this.db = db;
-    }
-
+module.exports = class SurveyQuestionsDAO extends Base {
     listSurveyQuestions(surveyId, addDependency) {
         const options = {
             where: { surveyId },

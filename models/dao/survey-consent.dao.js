@@ -1,11 +1,12 @@
 'use strict';
 
+const Base = require('./base');
 const RRError = require('../../lib/rr-error');
 
-module.exports = class SurveyConsentDAO {
+module.exports = class SurveyConsentDAO extends Base {
     constructor(db, dependencies) {
+        super(db);
         Object.assign(this, dependencies);
-        this.db = db;
     }
 
     createSurveyConsent({ surveyId, consentId, consentTypeId, action }) {

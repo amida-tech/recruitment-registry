@@ -2,12 +2,13 @@
 
 const _ = require('lodash');
 
+const Base = require('./base');
 const SPromise = require('../../lib/promise');
 
-module.exports = class SectionDAO {
+module.exports = class SectionDAO extends Base {
     constructor(db, dependencies) {
+        super(db);
         Object.assign(this, dependencies);
-        this.db = db;
     }
 
     createSurveySectionTx({ name, description, surveyId, parentQuestionId, line, parentIndex }, ids, transaction) {

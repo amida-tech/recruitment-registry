@@ -44,7 +44,7 @@ const translateRuleChoices = function (ruleParent, choices) {
 
 module.exports = class SurveyDAO extends Translatable {
     constructor(db, dependencies) {
-        super('survey_text', 'surveyId', ['name', 'description'], { description: true });
+        super(db, 'survey_text', 'surveyId', ['name', 'description'], { description: true });
         Object.assign(this, dependencies);
         this.db = db;
     }

@@ -2,10 +2,12 @@
 
 const _ = require('lodash');
 
+const Base = require('./base');
 const SPromise = require('../../lib/promise');
 
-module.exports = class Translatable {
-    constructor(tableName, parentIdField, textFields = ['text'], optionals = {}) {
+module.exports = class Translatable extends Base {
+    constructor(db, tableName, parentIdField, textFields = ['text'], optionals = {}) {
+        super(db);
         this.tableName = tableName;
         this.parentIdField = parentIdField;
         this.textFields = textFields;

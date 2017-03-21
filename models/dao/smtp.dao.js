@@ -2,11 +2,9 @@
 
 const _ = require('lodash');
 
-module.exports = class SMTPDAO {
-    constructor(db) {
-        this.db = db;
-    }
+const Base = require('./base');
 
+module.exports = class SMTPDAO extends Base {
     createSmtpTx(smtp, transaction) {
         const Smtp = this.db.Smtp;
         const SmtpText = this.db.SmtpText;

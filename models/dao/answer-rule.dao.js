@@ -1,16 +1,13 @@
 'use strict';
 
 const _ = require('lodash');
+const Base = require('./base');
 const answerCommon = require('./answer-common');
 
 const ExportCSVConverter = require('../../export/csv-converter.js');
 const ImportCSVConverter = require('../../import/csv-converter.js');
 
-module.exports = class AnswerRuleDAO {
-    constructor(db) {
-        this.db = db;
-    }
-
+module.exports = class AnswerRuleDAO extends Base {
     getSurveyAnswerRules({ surveyId }) {
         const AnswerRule = this.db.AnswerRule;
         const AnswerRuleValue = this.db.AnswerRuleValue;

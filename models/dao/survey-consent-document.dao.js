@@ -2,11 +2,12 @@
 
 const _ = require('lodash');
 
+const Base = require('./base');
 
-module.exports = class SurveyConsentDocumentDAO {
+module.exports = class SurveyConsentDocumentDAO extends Base {
     constructor(db, dependencies) {
+        super(db);
         Object.assign(this, dependencies);
-        this.db = db;
     }
 
     listSurveyConsentDocuments({ userId, surveyId, action }, tx) {

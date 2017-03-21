@@ -1,10 +1,8 @@
 'use strict';
 
-module.exports = class AssessmentDAO {
-    constructor(db) {
-        this.db = db;
-    }
+const Base = require('./base');
 
+module.exports = class AssessmentDAO extends Base {
     createAssessmentSurveys(assessmentId, surveys, transaction) {
         const fn = ({ id, lookback = false }) => ({ assessmentId, surveyId: id, lookback });
         const records = surveys.map(fn);

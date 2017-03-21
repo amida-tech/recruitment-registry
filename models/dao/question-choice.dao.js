@@ -10,8 +10,7 @@ const idFromCodeQuery = queryrize.readQuerySync('question-choice-id-from-code.sq
 
 module.exports = class QuestionChoiceDAO extends Translatable {
     constructor(db) {
-        super('question_choice_text', 'questionChoiceId');
-        this.db = db;
+        super(db, 'question_choice_text', 'questionChoiceId');
     }
 
     deleteNullData(choices) {

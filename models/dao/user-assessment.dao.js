@@ -2,10 +2,12 @@
 
 const _ = require('lodash');
 
-module.exports = class AssessmentDAO {
+const Base = require('./base');
+
+module.exports = class AssessmentDAO extends Base {
     constructor(db, dependencies) {
+        super(db);
         Object.assign(this, dependencies);
-        this.db = db;
     }
 
     closeUserAssessmentById(id, { userId, assessmentId, status = 'collected' }, transaction) {

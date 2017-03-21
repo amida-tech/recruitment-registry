@@ -2,6 +2,7 @@
 
 // const _ = require('lodash');
 
+const Base = require('./base');
 const RRError = require('../../lib/rr-error');
 
 const SPromise = require('../../lib/promise');
@@ -9,9 +10,9 @@ const SPromise = require('../../lib/promise');
 // const ImportCSVConverter = require('../../import/csv-converter.js');
 // const importUtil = require('../../import/import-util');
 
-module.exports = class ChoiceSetDAO {
+module.exports = class ChoiceSetDAO extends Base {
     constructor(db, dependencies) {
-        this.db = db;
+        super(db);
         Object.assign(this, dependencies);
     }
 

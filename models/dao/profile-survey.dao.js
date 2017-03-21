@@ -2,10 +2,12 @@
 
 const _ = require('lodash');
 
-module.exports = class ProfileSurveyDAO {
+const Base = require('./base');
+
+module.exports = class ProfileSurveyDAO extends Base {
     constructor(db, dependencies) {
+        super(db);
         Object.assign(this, dependencies);
-        this.db = db;
     }
 
     getProfileSurveyId() {
