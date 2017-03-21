@@ -8,15 +8,13 @@ const logger = require('../../logger');
 
 pg.types.setTypeParser(1184, value => value);
 
-module.exports = function (inputSchema) {
-    const schema = inputSchema || config.db.schema;
-
+module.exports = function (prependSearchPath) {
     const sequelizeOptions = {
         host: config.db.host,
         dialect: config.db.dialect,
         dialectOptions: {
             ssl: (config.env === 'production'),
-            prependSearchPath: schema !== 'public',
+            prependSearchPath,
         },
         port: config.db.port,
         pool: {
@@ -27,11 +25,7 @@ module.exports = function (inputSchema) {
         logging: message => logger.info(message),
     };
 
-    if (schema !== 'public') {
-        sequelizeOptions.searchPath = schema;
-    }
-
     const { name, user, pass } = config.db;
     const sequelize = new Sequelize(name, user, pass, sequelizeOptions);
-    return { Sequelize, sequelize, schema };
+    return { Sequelize, sequelize };
 };

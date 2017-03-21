@@ -17,6 +17,10 @@ module.exports = class Base {
 
     selectQuery(sql, replacements, transaction) {
         const options = { type: this.db.sequelize.QueryTypes.SELECT };
+        const schema = this.db.schema;
+        if (schema !== 'public') {
+            options.searchPath = schema;
+        }
         if (replacements) {
             options.replacements = replacements;
         }

@@ -1,5 +1,7 @@
 'use strict';
 
+const config = require('../../config');
+
 const sequelizeGenerator = require('./sequelize-generator');
 const surveyStatus = require('./survey-status.model');
 const user = require('./user.model');
@@ -48,7 +50,8 @@ const researchSiteVicinity = require('./research-site-vicinity.model');
 const registry = require('./registry.model');
 
 module.exports = function dbGenerator(inputSchema) {
-    const { Sequelize, sequelize, schema } = sequelizeGenerator(inputSchema);
+    const schema = inputSchema || config.db.schema;
+    const { Sequelize, sequelize } = sequelizeGenerator(schema !== 'public');
 
     const SurveyStatus = surveyStatus(sequelize, Sequelize, schema);
     const User = user(sequelize, Sequelize, schema);
@@ -247,5 +250,6 @@ module.exports = function dbGenerator(inputSchema) {
         ResearchSiteVicinity,
         Registry,
         generator: dbGenerator,
+        schema,
     };
 };
