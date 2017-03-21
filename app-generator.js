@@ -11,6 +11,7 @@ const expressWinston = require('express-winston');
 const swaggerTools = require('swagger-tools');
 
 const models = require('./models');
+const modelsGenerator = require('./models/generator');
 
 const swaggerJson = require('./swagger.json');
 const security = require('./security');
@@ -67,29 +68,29 @@ exports.initialize = function initialize(app, options, callback) {
             validateResponse: true,
         }));
 
-        const m = options.models || models;
+        const effectiveConfig = options.config || config;
+        const schema = effectiveConfig.db.schema;
+        const m = options.models || (options.generatedb ? modelsGenerator(schema) : models);
         app.use(modelsSupplyFn(m));
 
         app.use(middleware.swaggerSecurity(security));
 
         app.use(userAudit);
 
+        const controllers = options.controllers || './controllers';
         app.use(middleware.swaggerRouter({
             useStubs: false,
             ignoreMissingHandlers: true,
-            controllers: './controllers',
+            controllers,
         }));
 
         app.use(middleware.swaggerUi());
 
         app.use(errHandler);
 
-        const effectiveConfig = options.config || config;
-        m.sequelize.sync({
-            force: effectiveConfig.env === 'test',
-        }).then(() => {
-            callback(null, app);
-        });
+        m.sequelize.sync({ force: effectiveConfig.env === 'test' })
+            .then(() => callback(null, app))
+            .catch(err => callback(err, app));
     });
 };
 

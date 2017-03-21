@@ -204,4 +204,6 @@ describe('answer integration', () => {
     it('logout as  user 2', shared.logoutFn());
 
     shared.verifyUserAudit();
+
+    // it('release connections', shared.shutDownFn());
 });

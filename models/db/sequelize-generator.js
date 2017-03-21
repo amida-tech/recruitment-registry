@@ -27,7 +27,7 @@ module.exports = function (inputSchema) {
         logging: message => logger.info(message),
     };
 
-    if (config.db.schema !== 'public') {
+    if (schema !== 'public') {
         sequelizeOptions.searchPath = schema;
     }
 

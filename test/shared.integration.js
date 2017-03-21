@@ -22,7 +22,7 @@ describe('shared integration', () => {
     const rrSuperTest = new RRSuperTest();
     const shared = new SharedIntegration(rrSuperTest);
 
-    before(shared.setUpFn());
+    before(shared.setUpFn({ models }));
 
     it('error: unknown end point', (done) => {
         rrSuperTest.get('/xxxxxxx', false, 404).end(done);
@@ -31,7 +31,9 @@ describe('shared integration', () => {
     it('login as super', shared.loginFn(config.superUser));
 
     it('error: unexpected run time error', (done) => {
-        sinon.stub(language, 'listLanguages', () => SPromise.reject(new Error('unexpected error')));
+        sinon.stub(language, 'listLanguages', function listLanguages() {
+            return SPromise.reject(new Error('unexpected error'));
+        });
         rrSuperTest.get('/languages', true, 500)
             .expect((res) => {
                 expect(res.body.message).to.deep.equal('unexpected error');

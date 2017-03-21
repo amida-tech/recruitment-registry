@@ -35,6 +35,17 @@ class SharedIntegration {
         };
     }
 
+    setUpErrFn(options = {}) {
+        return function setupErr(done) {
+            appgen.generate(options, (err) => {
+                if (!err) {
+                    return done(new Error('Expected error did not happen.'));
+                }
+                return done();
+            });
+        };
+    }
+
     loginFn(login) {
         const rrSuperTest = this.rrSuperTest;
         return function loginfn(done) {
