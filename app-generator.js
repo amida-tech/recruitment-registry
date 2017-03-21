@@ -90,6 +90,7 @@ exports.initialize = function initialize(app, options, callback) {
 
         const schema = effectiveConfig.db.schema;
         const m = options.models || (options.generatedb ? modelsGenerator(schema) : models);
+        app.locals.models = m;
         app.use(modelsSupplyFn(m));
 
         app.use(middleware.swaggerSecurity(security));

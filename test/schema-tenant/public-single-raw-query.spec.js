@@ -85,4 +85,8 @@ describe('tenant single schema public (for raw query)', function tenantPublic4Ra
     it('raw query multi count', multiCount);
 
     it('logout as super', shared.logoutFn());
+
+    it('close connections', function closeSequelize() {
+        return rrSuperTest.shutDown();
+    });
 });

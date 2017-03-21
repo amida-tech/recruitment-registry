@@ -15,7 +15,7 @@ const Generator = require('../util/generator');
 const MultiQuestionGenerator = require('../util/generator/multi-question-generator');
 const History = require('../util/history');
 const questionCommon = require('../util/question-common');
-const sequelizeGenerator = require('../../models/db/sequelize-generator');
+const models = require('../../models');
 
 const swaggerObject = require('../../swagger.json');
 
@@ -25,7 +25,6 @@ describe('tenant single schema named (for raw query)', function tenantNamed4Raw(
     const rrSuperTest = new RRSuperTest();
     const generator = new Generator();
     const shared = new SharedIntegration(rrSuperTest, generator);
-    const { sequelize: publicSequelize } = sequelizeGenerator('public');
 
     const configClone = _.cloneDeep(config);
     configClone.db.schema = 'named';
@@ -56,13 +55,13 @@ describe('tenant single schema named (for raw query)', function tenantNamed4Raw(
     });
 
     it('clean up public tables and all schemas', function cleanup() {
-        return publicSequelize.getQueryInterface().dropAllTables()
-            .then(() => publicSequelize.dropAllSchemas());
+        return models.sequelize.getQueryInterface().dropAllTables()
+            .then(() => models.sequelize.dropAllSchemas());
     });
 
     it('error: setup database without named schema', shared.setUpErrFn(options));
 
-    it('create schema \'named\'', () => publicSequelize.createSchema('named'));
+    it('create schema \'named\'', () => models.sequelize.createSchema('named'));
 
     it('setup database', shared.setUpFn(options));
 
@@ -98,4 +97,8 @@ describe('tenant single schema named (for raw query)', function tenantNamed4Raw(
     it('raw query multi count', multiCount);
 
     it('logout as super', shared.logoutFn());
+
+    it('close connections', function closeSequelize() {
+        return rrSuperTest.shutDown();
+    });
 });

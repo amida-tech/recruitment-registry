@@ -49,4 +49,8 @@ describe('tenant single schema public', function tenantPublic() {
     it('list questions (complete)', tests.listQuestionsFn('complete'));
 
     it('logout as super', shared.logoutFn());
+
+    it('close connections', function closeSequelize() {
+        return rrSuperTest.shutDown();
+    });
 });

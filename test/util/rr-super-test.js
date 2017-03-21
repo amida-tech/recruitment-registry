@@ -22,6 +22,10 @@ module.exports = class RRSupertest {
         this.username = null;
     }
 
+    shutDown() {
+        return this.app.locals.models.sequelize.close();
+    }
+
     authBasic(credentials, status = 200) {
         if (status === 200) {
             this.username = credentials.username;

@@ -11,14 +11,12 @@ const models = require('../models');
 const Generator = require('./util/generator');
 const History = require('./util/history');
 const registryCommon = require('./util/registry-common');
-const sequelizeGenerator = require('../models/db/sequelize-generator');
 const modelsGenerator = require('../models/generator');
 const searchCommon = require('./util/search/search-common');
 
 const expect = chai.expect;
 
 describe('federal search unit', function federalSearchUnit() {
-    const { sequelize: publicSequelize } = sequelizeGenerator();
     const generator = new Generator();
     const hxRegistry = new History();
     const registryTests = new registryCommon.SpecTests(generator, hxRegistry);
@@ -26,14 +24,14 @@ describe('federal search unit', function federalSearchUnit() {
     const registries = _.range(2).map(index => ({ name: `name_${index}`, schema: `schema_${index}` }));
 
     it('drop all schemas', function dropAllSchemas() {
-        return publicSequelize.dropAllSchemas();
+        return models.sequelize.dropAllSchemas();
     });
 
     const searchTestsMap = new Map();
 
     registries.forEach(({ schema }, index) => {
         it(`create schema ${schema}`, function createSchema() {
-            return publicSequelize.createSchema(schema);
+            return models.sequelize.createSchema(schema);
         });
 
         it(`start running search tests for ${schema}`, function startSchemaRun() {});
@@ -42,6 +40,10 @@ describe('federal search unit', function federalSearchUnit() {
         const searchTests = new searchCommon.SpecTests(m, index * 7);
         searchTestsMap.set(schema, searchTests);
         searchTests.runAnswerSearchUnit();
+
+        it('close connections', function closeSequelize() {
+            return m.sequelize.close();
+        });
 
         it(`end running search tests for ${schema}`, function endSchemaRun() {});
     });
