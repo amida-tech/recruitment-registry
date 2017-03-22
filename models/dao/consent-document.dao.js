@@ -8,9 +8,8 @@ const Translatable = require('./translatable');
 
 module.exports = class ConsentDocumentDAO extends Translatable {
     constructor(db, dependencies) {
-        super('consent_document_text', 'consentDocumentId', ['content', 'updateComment']);
+        super(db, 'ConsentDocumentText', 'consentDocumentId', ['content', 'updateComment']);
         Object.assign(this, dependencies);
-        this.db = db;
     }
 
     static finalizeDocumentFields(document, fields, options) {
@@ -90,9 +89,8 @@ module.exports = class ConsentDocumentDAO extends Translatable {
     }
 
     createConsentDocument(input) {
-        const sequelize = this.db.sequelize;
         const ConsentDocument = this.db.ConsentDocument;
-        return sequelize.transaction((transaction) => {
+        return this.transaction((transaction) => {
             const typeId = input.typeId;
             return ConsentDocument.destroy({ where: { typeId }, transaction })
                 .then(() => ConsentDocument.create(input, { transaction }))

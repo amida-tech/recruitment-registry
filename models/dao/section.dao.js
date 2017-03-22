@@ -11,7 +11,7 @@ const ImportCSVConverter = require('../../import/csv-converter.js');
 
 module.exports = class SectionDAO extends Translatable {
     constructor(db) {
-        super('section_text', 'sectionId', ['name', 'description'], { name: true, description: true });
+        super(db, 'SectionText', 'sectionId', ['name', 'description'], { name: true, description: true });
         this.db = db;
     }
 
@@ -31,7 +31,7 @@ module.exports = class SectionDAO extends Translatable {
     }
 
     createSection(section) {
-        return this.db.sequelize.transaction(transaction => this.createSectionTx(section, transaction));
+        return this.transaction(transaction => this.createSectionTx(section, transaction));
     }
 
     getSection(id, options = {}) {
@@ -74,7 +74,7 @@ module.exports = class SectionDAO extends Translatable {
                 if (!records.length) {
                     return {};
                 }
-                return this.db.sequelize.transaction((transaction) => {
+                return this.transaction((transaction) => {
                     const idMap = {};
                     const promises = records.map((record) => {
                         const recordId = record.id;

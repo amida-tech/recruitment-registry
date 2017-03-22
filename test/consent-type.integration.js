@@ -14,24 +14,24 @@ const config = require('../config');
 const History = require('./util/history');
 
 const expect = chai.expect;
-const generator = new Generator();
-const shared = new SharedIntegration(generator);
 
 describe('consent section integration', () => {
     const typeCount = 12;
 
-    const store = new RRSuperTest();
+    const rrSuperTest = new RRSuperTest();
+    const generator = new Generator();
+    const shared = new SharedIntegration(rrSuperTest, generator);
 
     const hxType = new History();
 
-    before(shared.setUpFn(store));
+    before(shared.setUpFn());
 
-    it('login as super', shared.loginFn(store, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     const createConsentTypeFn = function () {
         return function (done) {
             const cst = generator.newConsentType();
-            store.post('/consent-types', cst, 201)
+            rrSuperTest.post('/consent-types', cst, 201)
                 .expect((res) => {
                     hxType.pushWithId(cst, res.body.id);
                 })
@@ -42,7 +42,7 @@ describe('consent section integration', () => {
     const getConsentTypeFn = function (index) {
         return function (done) {
             const consentType = hxType.server(index);
-            store.get(`/consent-types/${consentType.id}`, true, 200)
+            rrSuperTest.get(`/consent-types/${consentType.id}`, true, 200)
                 .expect((res) => {
                     expect(res.body).to.deep.equal(consentType);
                 })
@@ -52,7 +52,7 @@ describe('consent section integration', () => {
 
     const listConsentTypesFn = function () {
         return function (done) {
-            store.get('/consent-types', true, 200)
+            rrSuperTest.get('/consent-types', true, 200)
                 .expect((res) => {
                     const expected = hxType.listServers();
                     expect(res.body).to.deep.equal(expected);
@@ -71,7 +71,7 @@ describe('consent section integration', () => {
     const getTranslatedConsentTypeFn = function (index, language) {
         return function (done) {
             const id = hxType.id(index);
-            store.get(`/consent-types/${id}`, true, 200, { language })
+            rrSuperTest.get(`/consent-types/${id}`, true, 200, { language })
                 .expect((res) => {
                     const expected = hxType.translatedServer(index, language);
                     expect(res.body).to.deep.equal(expected);
@@ -82,7 +82,7 @@ describe('consent section integration', () => {
 
     const listTranslatedConsentTypesFn = function (language) {
         return function (done) {
-            store.get('/consent-types', true, 200, { language })
+            rrSuperTest.get('/consent-types', true, 200, { language })
                 .expect((res) => {
                     const expected = hxType.listTranslatedServers(language);
                     expect(res.body).to.deep.equal(expected);
@@ -96,14 +96,14 @@ describe('consent section integration', () => {
     it('list consent types in spanish when no translation', listTranslatedConsentTypesFn('es'));
 
     _.range(typeCount).forEach((i) => {
-        it(`add translated (es) consent type ${i}`, shared.translateConsentTypeFn(store, i, 'es', hxType));
+        it(`add translated (es) consent type ${i}`, shared.translateConsentTypeFn(i, 'es', hxType));
         it(`get and verify tanslated consent type ${i}`, getTranslatedConsentTypeFn(i, 'es'));
     });
 
     it('list and verify translated (es) consent types', listTranslatedConsentTypesFn('es'));
 
     _.range(0, typeCount, 2).forEach((i) => {
-        it(`add translated (fr) consent type ${i}`, shared.translateConsentTypeFn(store, i, 'fr', hxType));
+        it(`add translated (fr) consent type ${i}`, shared.translateConsentTypeFn(i, 'fr', hxType));
         it(`get and verify tanslated (fr) consent type ${i}`, getTranslatedConsentTypeFn(i, 'fr'));
     });
 
@@ -111,7 +111,7 @@ describe('consent section integration', () => {
 
     it('list consent types in english (original)', listTranslatedConsentTypesFn('en'));
 
-    it('logout as super', shared.logoutFn(store));
+    it('logout as super', shared.logoutFn());
 
-    shared.verifyUserAudit(store);
+    shared.verifyUserAudit();
 });

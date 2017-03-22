@@ -20,14 +20,14 @@ const researchSiteCommon = require('./util/research-site-common');
 const config = require('../config');
 
 const expect = chai.expect;
-const generator = new Generator();
-const shared = new SharedIntegration(generator);
 
 describe('research site integration', () => {
     const rrSuperTest = new RRSuperTest();
     const hxResearchSite = new History();
+    const generator = new Generator();
+    const shared = new SharedIntegration(rrSuperTest, generator);
 
-    before(shared.setUpFn(rrSuperTest));
+    before(shared.setUpFn());
 
     const researchZipCodes = researchSiteCommon.getResearchSiteZips();
 
@@ -121,24 +121,24 @@ describe('research site integration', () => {
 
     _.range(10).forEach((index) => {
         if (index % 2 === 0) {
-            it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+            it('login as super', shared.loginFn(config.superUser));
             it(`create research site ${index}`, createResearchSiteFn(index, undefined, true));
-            it('logout as super', shared.logoutFn(rrSuperTest));
+            it('logout as super', shared.logoutFn());
             it(`get research site ${index}`, getResearchSiteFn(index));
-            it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+            it('login as super', shared.loginFn(config.superUser));
             it(`update some research site meta fields ${index}`, updateResearchSiteFn(index, ['name', 'state']));
             it(`update all research site meta fields ${index}`, updateResearchSiteFn(index, ['name', 'url', 'street', 'street2', 'city', 'state'], true));
-            it('logout as super', shared.logoutFn(rrSuperTest));
+            it('logout as super', shared.logoutFn());
             it(`verify research site ${index}`, verifyResearchSiteFn(index));
         } else {
-            it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+            it('login as super', shared.loginFn(config.superUser));
             it(`create research site ${index}`, createResearchSiteFn(index, undefined, false));
-            it('logout as super', shared.logoutFn(rrSuperTest));
+            it('logout as super', shared.logoutFn());
             it(`get research site ${index}`, getResearchSiteFn(index));
-            it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+            it('login as super', shared.loginFn(config.superUser));
             it(`update some research site meta fields ${index}`, updateResearchSiteFn(index, ['name', 'state']));
             it(`update all research site meta fields ${index}`, updateResearchSiteFn(index, ['name', 'url', 'street', 'city', 'state'], false));
-            it('logout as super', shared.logoutFn(rrSuperTest));
+            it('logout as super', shared.logoutFn());
             it(`verify research site ${index}`, verifyResearchSiteFn(index));
         }
     });
@@ -166,11 +166,11 @@ describe('research site integration', () => {
         it(`find nearby research sites for ${zipCode}`, verifyNearbyFn(zipCode));
     });
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
     [2, 5].forEach((index) => {
         it(`delete research site ${index}`, deleteResearchSiteFn(index));
     });
-    it('logout as super', shared.logoutFn(rrSuperTest));
+    it('logout as super', shared.logoutFn());
 
     it('list research sites', listResearchSitesFn());
 
@@ -178,7 +178,7 @@ describe('research site integration', () => {
         it(`find nearby research sites for ${zipCode}`, verifyNearbyFn(zipCode));
     });
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
     it('update zip code for research site 0', (done) => {
         const id = hxResearchSite.id(0);
         const patch = { zip: '88888' };
@@ -188,7 +188,7 @@ describe('research site integration', () => {
             })
             .end(done);
     });
-    it('logout as super', shared.logoutFn(rrSuperTest));
+    it('logout as super', shared.logoutFn());
 
     it('verify update was successfull', (done) => {
         rrSuperTest.get('/research-sites', true, 200, { 'near-zip': '80001' })
@@ -210,7 +210,7 @@ describe('research site integration', () => {
         };
     };
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
     [
         [0, ['50001', '50002', '50003']],
         [1, ['50002', '50003', '50004']],
@@ -218,7 +218,7 @@ describe('research site integration', () => {
     ].forEach(([index, zipCodes]) => {
         it(`manually set nearby zip codes for reesearch site ${index}`, createResearchSiteVicinityFn(index, zipCodes));
     });
-    it('logout as super', shared.logoutFn(rrSuperTest));
+    it('logout as super', shared.logoutFn());
 
     const verifyNearbyIndicesFn = function (zipCode, indices) {
         return (done) => {
@@ -246,7 +246,7 @@ describe('research site integration', () => {
     });
 
     // // ++ to be run by real api key and real zip code (Boston area)
-    // it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    // it('login as super', shared.loginFn(config.superUser));
     // it('create research site with actual zip 02118', createResearchSiteFn(undefined, '02118'));
     // it('get research site with actual zip code 02118', getResearchSiteFn(10));
     // it('create research site with actual zip 02446', createResearchSiteFn(undefined, '02446'));
@@ -324,5 +324,5 @@ describe('research site integration', () => {
     //         })
     //         .end(done);
     // });
-    // it('logout as super', shared.logoutFn(rrSuperTest));
+    // it('logout as super', shared.logoutFn());
 });

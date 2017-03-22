@@ -69,7 +69,7 @@ A list of full environment variable settings is below.  They can be either manua
 - RECREG_DB_PASS: Database password (no default).
 - RECREG_DB_HOST: Database host ip (localhost).
 - RECREG_DB_PORT: Database host port (5432).
-- RECREG_DB_SCHEMA: Database schema.
+- RECREG_DB_SCHEMA: Database schema in postgres sense.  This can be either a single schema name or '~' delimited string of multi tenant schema names.
 - RECREG_DB_DIALECT: Database dialect (postgres only, see [here](#postgredepend)).
 - RECREG_DB_POOL_MAX: Maximum number of connections in pool.
 - RECREG_DB_POOL_MIN: Minimum number of connections in pool.
@@ -108,6 +108,10 @@ A list of full environment variable settings is below.  They can be either manua
 `npm run-script coverage`
 
 > Runs all the tests and displays coverage metrics.
+
+## Multitenant Support
+
+Multitenancy is supported through postgres schemas.  Multiple schemas are specified using RECREG_DB_SCHEMA as a '~' delimited string of schema names.  This project assumes that each schema has the same table structure during database synchronization.  Schema names are appended to the base url for each API end point so that each tenant can be accessed using a different path.
 
 ## Tests
 

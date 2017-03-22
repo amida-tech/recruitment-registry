@@ -64,7 +64,7 @@
                     "description": "Role for users",
                     "required": false,
                     "type": "string",
-                    "enum": ["participant", "clinician"]
+                    "enum": ["participant", "clinician", "all"]
                 }],
                 "responses": {
                     "200": {
@@ -2978,6 +2978,27 @@
                     }
                 }
             }
+        },
+       "/user-audits": {
+            "x-swagger-router-controller": "user-audit.controller",
+            "get": {
+                "operationId": "listUserAudits",
+                "summary": "List user audits",
+                "security": [{
+                    "admin": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/userAudits"
+                        }
+                     },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
         }
     },
     "securityDefinitions": {
@@ -5458,6 +5479,31 @@
             "type": "array",
             "items": {
                 "$ref": "#/definitions/registries"
+            }
+        },
+        "userAudit": {
+            "type": "object",
+            "required": ["userId", "endpoint", "operation"],
+            "properties": {
+                "userId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "endpoint": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "operation": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "userAudits": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/userAudit"
             }
         }
     }

@@ -2,10 +2,12 @@
 
 const _ = require('lodash');
 
-module.exports = class ProfileSurveyDAO {
+const Base = require('./base');
+
+module.exports = class ProfileSurveyDAO extends Base {
     constructor(db, dependencies) {
+        super(db);
         Object.assign(this, dependencies);
-        this.db = db;
     }
 
     getProfileSurveyId() {
@@ -28,8 +30,7 @@ module.exports = class ProfileSurveyDAO {
     }
 
     createProfileSurveyId(surveyId) {
-        const sequelize = this.db.sequelize;
-        return sequelize.transaction(transaction => this.createProfileSurveyIdTx(surveyId, transaction));
+        return this.transaction(transaction => this.createProfileSurveyIdTx(surveyId, transaction));
     }
 
     deleteProfileSurveyId() {
@@ -37,8 +38,7 @@ module.exports = class ProfileSurveyDAO {
     }
 
     createProfileSurvey(survey) {
-        const sequelize = this.db.sequelize;
-        return sequelize.transaction(transaction => this.survey.createOrReplaceSurvey(survey)
+        return this.transaction(transaction => this.survey.createOrReplaceSurvey(survey)
                 .then(surveyId => this.createProfileSurveyIdTx(surveyId, transaction)
                         .then(() => ({ id: surveyId }))));
     }

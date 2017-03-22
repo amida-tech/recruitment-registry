@@ -1,7 +1,9 @@
 'use strict';
 
 module.exports = function userAssessment(sequelize, Sequelize, schema) {
-    return sequelize.define('user_assessment', {
+    const tableName = 'user_assessment';
+    const modelName = `${schema}_${tableName}`;
+    return sequelize.define(modelName, {
         userId: {
             type: Sequelize.INTEGER,
             allowNull: false,
@@ -51,6 +53,7 @@ module.exports = function userAssessment(sequelize, Sequelize, schema) {
         },
     }, {
         freezeTableName: true,
+        tableName,
         schema,
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',

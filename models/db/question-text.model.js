@@ -1,7 +1,9 @@
 'use strict';
 
 module.exports = function questionText(sequelize, Sequelize, schema) {
-    return sequelize.define('question_text', {
+    const tableName = 'question_text';
+    const modelName = `${schema}_${tableName}`;
+    return sequelize.define(modelName, {
         questionId: {
             type: Sequelize.INTEGER,
             allowNull: false,
@@ -43,6 +45,7 @@ module.exports = function questionText(sequelize, Sequelize, schema) {
         },
     }, {
         freezeTableName: true,
+        tableName,
         schema,
         createdAt: 'createdAt',
         updatedAt: false,

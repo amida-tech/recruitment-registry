@@ -2,10 +2,12 @@
 
 const _ = require('lodash');
 
-module.exports = class ConsentDAO {
+const Base = require('./base');
+
+module.exports = class ConsentDAO extends Base {
     constructor(db, dependencies) {
+        super(db);
         Object.assign(this, dependencies);
-        this.db = db;
     }
 
     fillSections(result) {
@@ -24,7 +26,7 @@ module.exports = class ConsentDAO {
     }
 
     createConsent({ name, sections }) {
-        return this.db.sequelize.transaction((transaction) => {
+        return this.transaction((transaction) => {
             const px = this.db.Consent.create({ name }, { transaction });
             return px.then(({ id }) => {
                 const consentId = id;
@@ -61,10 +63,9 @@ module.exports = class ConsentDAO {
     }
 
     deleteConsent(id) {
-        const sequelize = this.db.sequelize;
         const Consent = this.db.Consent;
         const ConsentSection = this.db.ConsentSection;
-        return sequelize.transaction(transaction => Consent.destroy({ where: { id }, transaction })
+        return this.transaction(transaction => Consent.destroy({ where: { id }, transaction })
                 .then(() => ConsentSection.destroy({ where: { consentId: id }, transaction })));
     }
 

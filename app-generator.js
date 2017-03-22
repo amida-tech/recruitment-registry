@@ -11,6 +11,8 @@ const expressWinston = require('express-winston');
 const swaggerTools = require('swagger-tools');
 
 const models = require('./models');
+const modelsGenerator = require('./models/generator');
+const swaggerUtil = require('./lib/swagger-util');
 
 const swaggerJson = require('./swagger.json');
 const security = require('./security');
@@ -42,7 +44,9 @@ const userAudit = function (req, res, next) {
                 }
             });
         }
-        req.models.userAudit.createUserAudit({ userId, endpoint, operation });
+        if (endpoint !== '/user-audits') {
+            req.models.userAudit.createUserAudit({ userId, endpoint, operation });
+        }
     }
     next();
 };
@@ -55,8 +59,44 @@ const modelsSupplyFn = function (inputModels) {
     };
 };
 
+/* jshint unused:false*/
+const multiModelsSupplyFn = function (inputModels) {
+    return function multiModelsSupply(req, res, next) { // eslint-disable-line no-unused-vars
+        const schema = _.get(req, 'swagger.params.schema.value');
+        req.models = inputModels[schema];
+        next();
+    };
+};
+
+const formSwaggerObject = function (schema, effectiveConfig, effectiveSwaggerJson) {
+    if (Array.isArray(schema)) {
+        const result = _.cloneDeep(effectiveSwaggerJson);
+        swaggerUtil.updateSchema(result, schema);
+        return result;
+    }
+    if (schema !== 'public') {
+        if (effectiveConfig.db.addSchemaPath) {
+            const result = _.cloneDeep(effectiveSwaggerJson);
+            swaggerUtil.updateSchemaConst(result, schema);
+            return result;
+        }
+    }
+    return effectiveSwaggerJson;
+};
+
+const extractSchema = function (configSchema) {
+    const schemas = configSchema.split('~');
+    if (schemas.length > 1) {
+        return schemas;
+    }
+    return configSchema;
+};
+
 exports.initialize = function initialize(app, options, callback) {
-    const swaggerObject = options.swaggerJson || swaggerJson;
+    const effectiveConfig = options.config || config;
+    const schema = extractSchema(effectiveConfig.db.schema);
+    const effSwaggerJson = options.swaggerJson || swaggerJson;
+    const swaggerObject = formSwaggerObject(schema, effectiveConfig, effSwaggerJson);
     app.use(i18n.init);
     swaggerTools.initializeMiddleware(swaggerObject, (middleware) => {
         app.use(middleware.swaggerMetadata());
@@ -65,49 +105,54 @@ exports.initialize = function initialize(app, options, callback) {
             validateResponse: true,
         }));
 
-        const m = options.models || models;
-        app.use(modelsSupplyFn(m));
+        const m = options.models || (options.generatedb ? modelsGenerator(schema) : models);
+        app.locals.models = m;
+        if (Array.isArray(schema)) {
+            app.use(multiModelsSupplyFn(m));
+        } else {
+            app.use(modelsSupplyFn(m));
+        }
 
         app.use(middleware.swaggerSecurity(security));
 
         app.use(userAudit);
 
+        const controllers = options.controllers || './controllers';
         app.use(middleware.swaggerRouter({
             useStubs: false,
             ignoreMissingHandlers: true,
-            controllers: './controllers',
+            controllers,
         }));
 
         app.use(middleware.swaggerUi());
 
         app.use(errHandler);
 
-        m.sequelize.sync({
-            force: config.env === 'test',
-        }).then(() => {
-            callback(null, app);
-        });
+        m.sequelize.sync({ force: effectiveConfig.env === 'test' })
+            .then(() => callback(null, app))
+            .catch(err => callback(err, app));
     });
 };
 
-exports.newExpress = function newExpress() {
+const determineOrigin = function (origin) {
+    if (origin === '*') {
+        return '*';
+    }
+    const corsWhitelist = origin.split(' ');
+    return function dofn(requestOrigin, callback) {
+        const originStatus = corsWhitelist.indexOf(requestOrigin) > -1;
+        const errorMsg = originStatus ? null : 'CORS Error';
+        callback(errorMsg, originStatus);
+    };
+};
+
+exports.newExpress = function newExpress(options = {}) {
     const app = express();
 
     const jsonParser = bodyParser.json();
 
-    const origin = config.cors.origin;
-
-    function determineOrigin(origin) {
-        if (origin === '*') {
-            return '*';
-        }
-        const corsWhitelist = origin.split(' ');
-        return function (requestOrigin, callback) {
-            const originStatus = corsWhitelist.indexOf(requestOrigin) > -1;
-            const errorMsg = originStatus ? null : 'CORS Error';
-            callback(errorMsg, originStatus);
-        };
-    }
+    const effectiveConfig = options.config || config;
+    const origin = effectiveConfig.cors.origin;
 
     const corsOptions = {
         credentials: true,
@@ -148,4 +193,9 @@ exports.newExpress = function newExpress() {
     });
 
     return app;
+};
+
+exports.generate = function (options, callback) {
+    const app = this.newExpress();
+    this.initialize(app, options, callback);
 };

@@ -1,16 +1,13 @@
 'use strict';
 
 const _ = require('lodash');
+const Base = require('./base');
 const answerCommon = require('./answer-common');
 
 const ExportCSVConverter = require('../../export/csv-converter.js');
 const ImportCSVConverter = require('../../import/csv-converter.js');
 
-module.exports = class AnswerRuleDAO {
-    constructor(db) {
-        this.db = db;
-    }
-
+module.exports = class AnswerRuleDAO extends Base {
     getSurveyAnswerRules({ surveyId }) {
         const AnswerRule = this.db.AnswerRule;
         const AnswerRuleValue = this.db.AnswerRuleValue;
@@ -192,7 +189,7 @@ module.exports = class AnswerRuleDAO {
                 if (!rules.length) {
                     return null;
                 }
-                return this.db.sequelize.transaction((transaction) => {
+                return this.transaction((transaction) => {
                     const ruleIdMap = new Map();
                     const records = rules.map(rule => _.omit(rule, 'id'));
                     const fnIdMap = ({ id }, index) => ruleIdMap.set(rules[index].id, id);

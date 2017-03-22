@@ -1,7 +1,9 @@
 'use strict';
 
 module.exports = function researchSite(sequelize, Sequelize, schema) {
-    return sequelize.define('research_site', {
+    const tableName = 'research_site';
+    const modelName = `${schema}_${tableName}`;
+    return sequelize.define(modelName, {
         name: {
             type: Sequelize.TEXT,
             allowNull: false,
@@ -44,6 +46,7 @@ module.exports = function researchSite(sequelize, Sequelize, schema) {
         },
     }, {
         freezeTableName: true,
+        tableName,
         schema,
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',

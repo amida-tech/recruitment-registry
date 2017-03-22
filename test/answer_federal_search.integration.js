@@ -13,26 +13,24 @@ const RRSuperTest = require('./util/rr-super-test');
 const Generator = require('./util/generator');
 const History = require('./util/history');
 const registryCommon = require('./util/registry-common');
-const sequelizeGenerator = require('../models/db/sequelize-generator');
+const models = require('../models');
 const modelsGenerator = require('../models/generator');
 const searchCommon = require('./util/search/search-common');
 
 const expect = chai.expect;
 
 describe('federal search integration', function federalSearchIntegration() {
-    const { sequelize: publicSequelize } = sequelizeGenerator();
-
     const registries = _.range(2).map(index => ({ name: `name_${index}`, schema: `schema_${index}` }));
 
     it('drop all schemas', function dropAllSchemas() {
-        return publicSequelize.dropAllSchemas();
+        return models.sequelize.dropAllSchemas();
     });
 
     const searchTestsMap = new Map();
 
     registries.forEach(({ schema }, index) => {
         it(`create schema ${schema}`, function createSchema() {
-            return publicSequelize.createSchema(schema);
+            return models.sequelize.createSchema(schema);
         });
 
         it(`start running search tests for ${schema}`, function startSchemaRun() {});
@@ -42,6 +40,10 @@ describe('federal search integration', function federalSearchIntegration() {
         const searchTests = new searchCommon.IntegrationTests(rrSuperTest, m, index * 7);
         searchTestsMap.set(schema, searchTests);
         searchTests.runAnswerSearchIntegration();
+
+        it('close connections', function closeSequelize() {
+            return m.sequelize.close();
+        });
 
         it(`end running search tests for ${schema}`, function endSchemaRun() {});
     });
@@ -53,7 +55,7 @@ describe('federal search integration', function federalSearchIntegration() {
     const searchTests = new searchCommon.IntegrationTests(rrSuperTest);
     searchTests.runAnswerSearchIntegration();
 
-    it('login as super', searchTests.shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', searchTests.shared.loginFn(config.superUser));
 
     registries.forEach((registry, index) => {
         it(`create registry ${index}`, registryTests.createRegistryFn(registry));
@@ -91,5 +93,5 @@ describe('federal search integration', function federalSearchIntegration() {
             });
     });
 
-    it('logout as super', searchTests.shared.logoutFn(rrSuperTest));
+    it('logout as super', searchTests.shared.logoutFn());
 });

@@ -20,14 +20,14 @@ const helper = require('../util/survey-common');
 const models = require('../../models');
 
 const expect = chai.expect;
-const generator = new Generator();
-const shared = new SharedIntegration(generator);
 
 describe('consent demo simpler', () => {
     const userExample = userExamples.Alzheimer;
     const surveyExample = surveyExamples.Alzheimer;
 
-    const store = new RRSuperTest();
+    const rrSuperTest = new RRSuperTest();
+    const generator = new Generator();
+    const shared = new SharedIntegration(rrSuperTest, generator);
 
     //* ******
     // Sync and seed the database.  This is part of syncAndLoadAlzheimer.js script.  It creates the consent documents.
@@ -35,7 +35,7 @@ describe('consent demo simpler', () => {
     // This also adds a profile survey.
     //* ****** START 1
 
-    before(shared.setUpFn(store));
+    before(shared.setUpFn());
 
     it('create Terms of Use and Consent Form records', () => models.profileSurvey.createProfileSurvey(surveyExample.survey));
 
@@ -47,12 +47,12 @@ describe('consent demo simpler', () => {
 
     //* *****
     // Get Terms of Use before registration.  The content will be in res.body.content.  Show it to user.
-    // If user accepts note res.body.id.  That is what we store as signature for now.  However since
+    // If user accepts note res.body.id.  That is what we rrSuperTest as signature for now.  However since
     // user has not been created you can not save to db yet.  That is next.
     //* ***** START 2
 
     it('get Terms of Use before registration', (done) => {
-        store.get('/consent-documents/type-name/terms-of-use', false, 200)
+        rrSuperTest.get('/consent-documents/type-name/terms-of-use', false, 200)
             .expect((res) => {
                 const result = res.body;
                 expect(!!result.content).to.equal(true);
@@ -72,7 +72,7 @@ describe('consent demo simpler', () => {
     let survey;
 
     it('get profile survey', (done) => {
-        store.get('/profile-survey', false, 200)
+        rrSuperTest.get('/profile-survey', false, 200)
             .expect((res) => {
                 survey = res.body.survey;
             })
@@ -88,7 +88,7 @@ describe('consent demo simpler', () => {
             answers,
             signatures: [termsOfUse.id], // HERE IS THE SIGNATURE
         };
-        store.post('/profiles', input, 201).end(done);
+        rrSuperTest.post('/profiles', input, 201).end(done);
     });
 
     //* ***** END 3
@@ -98,10 +98,10 @@ describe('consent demo simpler', () => {
     // New signature will be needed if a new Terms of Use document is posted.
     //* ***** START 4
 
-    it('login as user', shared.loginFn(store, userExample));
+    it('login as user', shared.loginFn(userExample));
 
     it('get the Terms of Use document with signature', (done) => {
-        store.get('/user-consent-documents/type-name/terms-of-use', true, 200)
+        rrSuperTest.get('/user-consent-documents/type-name/terms-of-use', true, 200)
             .expect((res) => {
                 expect(res.body.content).to.equal(termsOfUse.content);
                 expect(res.body.signature).to.equal(true);
@@ -120,7 +120,7 @@ describe('consent demo simpler', () => {
     //* ***** START 5
 
     it('get the Consents document', (done) => {
-        store.get('/user-consent-documents/type-name/consent', true, 200)
+        rrSuperTest.get('/user-consent-documents/type-name/consent', true, 200)
             .expect((res) => {
                 consents = res.body;
                 expect(res.body.signature).to.equal(false);
@@ -136,7 +136,7 @@ describe('consent demo simpler', () => {
     //* ***** START 6
 
     it('sign the Consents document', (done) => {
-        store.post('/consent-signatures', { consentDocumentId: consents.id }, 201).end(done);
+        rrSuperTest.post('/consent-signatures', { consentDocumentId: consents.id }, 201).end(done);
     });
 
     //* ***** END 6
@@ -147,7 +147,7 @@ describe('consent demo simpler', () => {
     //* ***** START 7
 
     it('get the Consents document', (done) => {
-        store.get('/user-consent-documents/type-name/consent', true, 200)
+        rrSuperTest.get('/user-consent-documents/type-name/consent', true, 200)
             .expect((res) => {
                 consents = res.body;
                 expect(res.body.signature).to.equal(true);
@@ -158,5 +158,5 @@ describe('consent demo simpler', () => {
 
     //* ***** END 7
 
-    it('logout as user', shared.logoutFn(store));
+    it('logout as user', shared.logoutFn());
 });

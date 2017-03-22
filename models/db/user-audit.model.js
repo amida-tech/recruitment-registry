@@ -1,7 +1,9 @@
 'use strict';
 
 module.exports = function userAudit(sequelize, Sequelize, schema) {
-    return sequelize.define('user_audit', {
+    const tableName = 'user_audit';
+    const modelName = `${schema}_${tableName}`;
+    return sequelize.define(modelName, {
         userId: {
             type: Sequelize.INTEGER,
             allowNull: false,
@@ -28,6 +30,7 @@ module.exports = function userAudit(sequelize, Sequelize, schema) {
         },
     }, {
         freezeTableName: true,
+        tableName,
         schema,
         createdAt: 'createdAt',
         updatedAt: false,

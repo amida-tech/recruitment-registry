@@ -1,7 +1,9 @@
 'use strict';
 
 module.exports = function surveyConsent(sequelize, Sequelize, schema) {
-    return sequelize.define('survey_consent', {
+    const tableName = 'survey_consent';
+    const modelName = `${schema}_${tableName}`;
+    return sequelize.define(modelName, {
         surveyId: {
             type: Sequelize.INTEGER,
             allowNull: false,
@@ -51,6 +53,7 @@ module.exports = function surveyConsent(sequelize, Sequelize, schema) {
         },
     }, {
         freezeTableName: true,
+        tableName,
         schema,
         createdAt: 'createdAt',
         updatedAt: false,

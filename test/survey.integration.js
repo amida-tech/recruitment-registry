@@ -25,34 +25,34 @@ const choiceSetCommon = require('./util/choice-set-common');
 const invalidSurveysSwagger = require('./fixtures/swagger-invalid/new-survey');
 
 const expect = chai.expect;
-const generator = new Generator();
-const shared = new SharedIntegration(generator);
 
 describe('survey integration', () => {
-    const store = new RRSuperTest();
+    const rrSuperTest = new RRSuperTest();
+    const generator = new Generator();
+    const shared = new SharedIntegration(rrSuperTest, generator);
     const user = generator.newUser();
     const hxUser = new History();
     let surveyCount = 8;
     const hxSurvey = new SurveyHistory();
     const hxChoiceSet = new History();
 
-    const tests = new surveyCommon.IntegrationTests(store, generator, hxSurvey);
+    const tests = new surveyCommon.IntegrationTests(rrSuperTest, generator, hxSurvey);
     const choceSetTests = new choiceSetCommon.SpecTests(generator, hxChoiceSet);
     let surveyTemp = null;
 
-    before(shared.setUpFn(store));
+    before(shared.setUpFn());
 
     it('error: create survey unauthorized', (done) => {
         const survey = generator.newSurvey();
-        store.post('/surveys', survey, 401).end(done);
+        rrSuperTest.post('/surveys', survey, 401).end(done);
     });
 
-    it('login as super', shared.loginFn(store, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     const verifySurveyFn = function (index, { noSectionId } = {}) {
         return function (done) {
             const server = hxSurvey.server(index);
-            store.get(`/surveys/${server.id}`, true, 200)
+            rrSuperTest.get(`/surveys/${server.id}`, true, 200)
                 .expect((res) => {
                     if (noSectionId) {
                         surveyCommon.removeSurveySectionIds(res.body);
@@ -69,7 +69,7 @@ describe('survey integration', () => {
             const survey = hxSurvey.server(index);
             const update = { meta: { anyProperty: 2 } };
             Object.assign(survey, update);
-            store.patch(`/surveys/${id}`, update, 204)
+            rrSuperTest.patch(`/surveys/${id}`, update, 204)
                 .end(done);
         };
     };
@@ -85,7 +85,7 @@ describe('survey integration', () => {
             } else {
                 Object.assign(survey, { meta });
             }
-            store.patch(`/surveys/${id}`, { meta }, 204)
+            rrSuperTest.patch(`/surveys/${id}`, { meta }, 204)
                 .end(done);
         };
     };
@@ -101,7 +101,7 @@ describe('survey integration', () => {
                 update.description = `${description}zyx`;
                 survey.description = `${description}zyx`;
             }
-            store.patch('/surveys/text/en', update, 204)
+            rrSuperTest.patch('/surveys/text/en', update, 204)
                 .end(done);
         };
     };
@@ -118,7 +118,7 @@ describe('survey integration', () => {
             } else {
                 delete survey.description;
             }
-            store.patch('/surveys/text/en', update, 204)
+            rrSuperTest.patch('/surveys/text/en', update, 204)
                 .end(done);
         };
     };
@@ -129,7 +129,7 @@ describe('survey integration', () => {
             const sourceSurvey = hxSurvey.server(sourceIndex);
             surveyTemp = _.cloneDeep(survey);
             const surveyPatch = surveyCommon.formQuestionsSectionsSurveyPatch(survey, sourceSurvey);
-            store.patch(`/surveys/${survey.id}`, surveyPatch, 204).end(done);
+            rrSuperTest.patch(`/surveys/${survey.id}`, surveyPatch, 204).end(done);
         };
     };
 
@@ -138,14 +138,14 @@ describe('survey integration', () => {
             const survey = hxSurvey.server(index);
             const sourceSurvey = surveyTemp;
             const surveyPatch = surveyCommon.formQuestionsSectionsSurveyPatch(survey, sourceSurvey);
-            store.patch(`/surveys/${survey.id}`, surveyPatch, 204).end(done);
+            rrSuperTest.patch(`/surveys/${survey.id}`, surveyPatch, 204).end(done);
         };
     };
 
     // const invalidSurveyJSONFn = function (index) {
     //    return function (done) {
     //        const survey = invalidSurveysJSON[index];
-    //        store.post('/surveys', survey, 400)
+    //        rrSuperTest.post('/surveys', survey, 400)
     //            .expect(res => shared.verifyErrorMessage(res, 'jsonSchemaFailed', 'newSurvey'))
     //            .end(done);
     //    };
@@ -158,7 +158,7 @@ describe('survey integration', () => {
     const invalidSurveySwaggerFn = function (index) {
         return function (done) {
             const survey = invalidSurveysSwagger[index];
-            store.post('/surveys', survey, 400)
+            rrSuperTest.post('/surveys', survey, 400)
                 .expect((res) => {
                     expect(Boolean(res.body.message)).to.equal(true);
                 })
@@ -206,7 +206,7 @@ describe('survey integration', () => {
     it('error: change published survey to draft status', (function (index) {
         return function (done) {
             const id = hxSurvey.id(index);
-            store.patch(`/surveys/${id}`, { status: 'draft' }, 409)
+            rrSuperTest.patch(`/surveys/${id}`, { status: 'draft' }, 409)
                 .expect(res => shared.verifyErrorMessage(res, 'surveyPublishedToDraftUpdate'))
                 .end(done);
         };
@@ -215,7 +215,7 @@ describe('survey integration', () => {
     it('error: retire draft survey', (function (index) {
         return function (done) {
             const id = hxSurvey.id(index);
-            store.patch(`/surveys/${id}`, { status: 'retired' }, 403)
+            rrSuperTest.patch(`/surveys/${id}`, { status: 'retired' }, 403)
                 .expect(res => shared.verifyErrorMessage(res, 'surveyDraftToRetiredUpdate'))
                 .end(done);
         };
@@ -224,7 +224,7 @@ describe('survey integration', () => {
     it('error: patch retired survey', (function (index) {
         return function (done) {
             const id = hxSurvey.id(index);
-            store.patch(`/surveys/${id}`, { status: 'retired' }, 409)
+            rrSuperTest.patch(`/surveys/${id}`, { status: 'retired' }, 409)
                 .expect(res => shared.verifyErrorMessage(res, 'surveyRetiredStatusUpdate'))
                 .end(done);
         };
@@ -236,7 +236,7 @@ describe('survey integration', () => {
     ].forEach(([status, updateStatus, index]) => {
         it(`update survey ${index} status ${status} to ${updateStatus}`, (done) => {
             const id = hxSurvey.id(index);
-            store.patch(`/surveys/${id}`, { status: updateStatus }, 204)
+            rrSuperTest.patch(`/surveys/${id}`, { status: updateStatus }, 204)
                 .expect(() => {
                     hxSurvey.server(index).status = updateStatus;
                 })
@@ -262,7 +262,7 @@ describe('survey integration', () => {
         return function (done) {
             const survey = hxSurvey.server(index);
             const translation = translator.translateSurvey(survey, language);
-            store.patch(`/surveys/text/${language}`, translation, 204)
+            rrSuperTest.patch(`/surveys/text/${language}`, translation, 204)
                 .expect(() => {
                     hxSurvey.translate(index, language, translation);
                 })
@@ -273,7 +273,7 @@ describe('survey integration', () => {
     const verifyTranslatedSurveyFn = function (index, language) {
         return function (done) {
             const id = hxSurvey.id(index);
-            store.get(`/surveys/${id}`, true, 200, { language })
+            rrSuperTest.get(`/surveys/${id}`, true, 200, { language })
                 .expect((res) => {
                     translator.isSurveyTranslated(res.body, language);
                     const expected = hxSurvey.translatedServer(index, language);
@@ -285,7 +285,7 @@ describe('survey integration', () => {
 
     const listTranslatedSurveysFn = function (language) {
         return function (done) {
-            store.get('/surveys', true, 200, { language })
+            rrSuperTest.get('/surveys', true, 200, { language })
                 .expect((res) => {
                     const expected = hxSurvey.listTranslatedServers(language);
                     expect(res.body).to.deep.equal(expected);
@@ -307,7 +307,7 @@ describe('survey integration', () => {
         return function (done) {
             const replacement = generator.newSurvey();
             replacement.parentId = hxSurvey.id(index);
-            store.post('/surveys', replacement, 201)
+            rrSuperTest.post('/surveys', replacement, 201)
                 .expect((res) => {
                     hxSurvey.replace(index, replacement, res.body);
                 })
@@ -327,16 +327,16 @@ describe('survey integration', () => {
     });
     it('list surveys and verify', tests.listSurveysFn());
 
-    it('create a new user', shared.createUserFn(store, hxUser, user));
+    it('create a new user', shared.createUserFn(hxUser, user));
 
-    it('login as user', shared.loginFn(store, user));
+    it('login as user', shared.loginFn(user));
 
     it('error: create survey as non admin', (done) => {
         const survey = generator.newSurvey();
-        store.post('/surveys', survey, 403).end(done);
+        rrSuperTest.post('/surveys', survey, 403).end(done);
     });
 
-    it('login as super', shared.loginFn(store, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     it('create survey', tests.createSurveyFn());
     it('verify survey', tests.getSurveyFn());
@@ -347,22 +347,22 @@ describe('survey integration', () => {
         const name = 'puenno';
         const description = 'descripto';
         const id = hxSurvey.lastId();
-        store.patch('/surveys/text/es', { id, name, description }, 204).end(done);
+        rrSuperTest.patch('/surveys/text/es', { id, name, description }, 204).end(done);
     });
 
     let answers;
 
-    it('login as user', shared.loginFn(store, user));
+    it('login as user', shared.loginFn(user));
 
     it('answer survey', (done) => {
         answers = generator.answerSurvey(hxSurvey.lastServer());
         const surveyId = hxSurvey.lastId();
-        store.post('/answers', { surveyId, answers }, 204).end(done);
+        rrSuperTest.post('/answers', { surveyId, answers }, 204).end(done);
     });
 
     it('get answered survey', (done) => {
         const server = hxSurvey.lastServer();
-        store.get(`/answered-surveys/${server.id}`, true, 200)
+        rrSuperTest.get(`/answered-surveys/${server.id}`, true, 200)
             .expect((res) => {
                 comparator.answeredSurvey(server, answers, res.body);
             })
@@ -371,7 +371,7 @@ describe('survey integration', () => {
 
     it('get answered translated survey', (done) => {
         const id = hxSurvey.lastId();
-        store.get(`/answered-surveys/${id}`, true, 200, { language: 'es' })
+        rrSuperTest.get(`/answered-surveys/${id}`, true, 200, { language: 'es' })
             .expect((res) => {
                 const server = hxSurvey.lastServer();
                 const survey = _.cloneDeep(server);
@@ -386,7 +386,7 @@ describe('survey integration', () => {
         generator.updateSurveyGenerator(MultiQuestionSurveyGenerator);
     });
 
-    it('login as super', shared.loginFn(store, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     _.range(surveyCount, surveyCount + 7).forEach((index) => {
         it(`create survey ${index}`, tests.createSurveyFn());
@@ -415,20 +415,20 @@ describe('survey integration', () => {
 
     surveyCount += 3;
 
-    it('logout as super', shared.logoutFn(store));
+    it('logout as super', shared.logoutFn());
 
-    it('login as user', shared.loginFn(store, user));
+    it('login as user', shared.loginFn(user));
     _.range(surveyCount - 10, surveyCount - 3).forEach((index) => {
         it('answer survey', (done) => {
             const survey = hxSurvey.server(index);
             answers = generator.answerQuestions(survey.questions);
             const surveyId = survey.id;
-            store.post('/answers', { surveyId, answers }, 204).end(done);
+            rrSuperTest.post('/answers', { surveyId, answers }, 204).end(done);
         });
 
         it('get answered survey', (done) => {
             const server = hxSurvey.server(index);
-            store.get(`/answered-surveys/${server.id}`, true, 200)
+            rrSuperTest.get(`/answered-surveys/${server.id}`, true, 200)
                 .expect((res) => {
                     comparator.answeredSurvey(server, answers, res.body);
                 })

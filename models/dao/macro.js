@@ -1,15 +1,16 @@
 'use strict';
 
+const Base = require('./base');
 const SPromise = require('../../lib/promise');
 
-module.exports = class Macro {
+module.exports = class Macro extends Base {
     constructor(db, dependencies) {
+        super(db);
         Object.assign(this, dependencies);
-        this.db = db;
     }
 
     createSurveys(surveys) {
-        return this.db.sequelize.transaction((transaction) => {
+        return this.transaction((transaction) => {
             const pxs = surveys.map((survey) => {
                 const px = this.survey.createSurveyTx(survey, transaction);
                 return px;

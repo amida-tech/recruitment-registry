@@ -17,16 +17,15 @@ const Generator = require('./util/generator');
 const config = require('../config');
 
 const expect = chai.expect;
-const generator = new Generator();
-const shared = new SharedIntegration(generator);
 
 describe('reset-token integration', () => {
+    const generator = new Generator();
+    const rrSuperTest = new RRSuperTest();
+    const shared = new SharedIntegration(rrSuperTest, generator);
     const userExample = generator.newUser();
     const surveyExample = generator.newSurvey();
 
     // -------- set up system (syncAndLoadAlzheimer)
-
-    const store = new RRSuperTest();
 
     const receivedEmail = {
         auth: null,
@@ -70,17 +69,17 @@ describe('reset-token integration', () => {
         },
     });
 
-    before(shared.setUpFn(store));
+    before(shared.setUpFn());
 
     it('start smtp server', () => {
         server.listen(9001);
     });
 
-    it('login as super user', shared.loginFn(store, config.superUser));
+    it('login as super user', shared.loginFn(config.superUser));
 
-    it('create registry', shared.createSurveyProfileFn(store, surveyExample));
+    it('create registry', shared.createSurveyProfileFn(surveyExample));
 
-    it('logout as super user', shared.logoutFn(store));
+    it('logout as super user', shared.logoutFn());
 
     // --------
 
@@ -89,7 +88,7 @@ describe('reset-token integration', () => {
     let survey;
 
     it('get profile survey', (done) => {
-        store.get('/profile-survey', false, 200)
+        rrSuperTest.get('/profile-survey', false, 200)
             .expect((res) => {
                 survey = res.body.survey;
             })
@@ -103,23 +102,23 @@ describe('reset-token integration', () => {
     it('fill user profile and submit', (done) => {
         answers = generator.answerQuestions(survey.questions);
         const user = userExample;
-        store.post('/profiles', { user, answers }, 201).end(done);
+        rrSuperTest.post('/profiles', { user, answers }, 201).end(done);
     });
 
     // --------- login
 
-    it('verify user can login', shared.loginFn(store, userExample));
+    it('verify user can login', shared.loginFn(userExample));
 
     let token = null;
 
     it('error: no smtp settings is specified', (done) => {
         const email = userExample.email;
-        store.post('/reset-tokens', { email }, 400)
+        rrSuperTest.post('/reset-tokens', { email }, 400)
             .expect(res => shared.verifyErrorMessage(res, 'smtpNotSpecified'))
             .end(done);
     });
 
-    it('login as super', shared.loginFn(store, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     const smtpSpec = {
         protocol: 'smtp',
@@ -133,19 +132,19 @@ describe('reset-token integration', () => {
     };
 
     it('setup server specifications', (done) => {
-        store.post('/smtp', smtpSpec, 204).end(done);
+        rrSuperTest.post('/smtp', smtpSpec, 204).end(done);
     });
 
-    it('logout as super', shared.logoutFn(store));
+    it('logout as super', shared.logoutFn());
 
     it('error: no email subject/content is specified', (done) => {
         const email = userExample.email;
-        store.post('/reset-tokens', { email }, 400)
+        rrSuperTest.post('/reset-tokens', { email }, 400)
             .expect(res => shared.verifyErrorMessage(res, 'smtpTextNotSpecified'))
             .end(done);
     });
 
-    it('login as super', shared.loginFn(store, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     const actualLink = '${link}'; // eslint-disable-line no-template-curly-in-string
     const smtpText = {
@@ -154,31 +153,31 @@ describe('reset-token integration', () => {
     };
 
     it('setup server specifications', (done) => {
-        store.patch('/smtp/text/en', smtpText, 204).end(done);
+        rrSuperTest.patch('/smtp/text/en', smtpText, 204).end(done);
     });
 
-    it('logout as super', shared.logoutFn(store));
+    it('logout as super', shared.logoutFn());
 
     it('error: generate reset tokens', (done) => {
         const email = userExample.email;
-        store.post('/reset-tokens', { email }, 500).end(done);
+        rrSuperTest.post('/reset-tokens', { email }, 500).end(done);
     });
 
-    it('login as super', shared.loginFn(store, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     it('setup server specifications', (done) => {
         smtpSpec.from = 'smtp@rr.com';
-        store.post('/smtp', smtpSpec, 204).end(done);
+        rrSuperTest.post('/smtp', smtpSpec, 204).end(done);
     });
 
-    it('logout as super', shared.logoutFn(store));
+    it('logout as super', shared.logoutFn());
 
     it('generate reset tokens', (done) => {
         const email = userExample.email;
-        store.post('/reset-tokens', { email }, 204).end(done);
+        rrSuperTest.post('/reset-tokens', { email }, 204).end(done);
     });
 
-    it('verify user can not login', shared.badLoginFn(store, userExample));
+    it('verify user can not login', shared.badLoginFn(userExample));
 
     it('checked received email and recover token', () => {
         expect(receivedEmail.auth.username).to.equal(smtpSpec.username);
@@ -207,12 +206,12 @@ describe('reset-token integration', () => {
 
     it('reset password', (done) => {
         const password = 'newPassword';
-        store.post('/users/password', { token, password }, 204).end(done);
+        rrSuperTest.post('/users/password', { token, password }, 204).end(done);
     });
 
-    it('verify user can not login with old password', shared.badLoginFn(store, userExample));
+    it('verify user can not login with old password', shared.badLoginFn(userExample));
 
-    it('verify user can login', shared.loginFn(store, {
+    it('verify user can login', shared.loginFn({
         username: userExample.username,
         password: 'newPassword',
     }));

@@ -3,14 +3,15 @@
 const moment = require('moment');
 const _ = require('lodash');
 
+const Base = require('./base');
 const RRError = require('../../lib/rr-error');
 
 const attributes = ['id', 'username', 'email', 'role', 'firstname', 'lastname', 'createdAt'];
 
-module.exports = class UserDAO {
+module.exports = class UserDAO extends Base {
     constructor(db, dependencies) {
+        super(db);
         Object.assign(this, dependencies);
-        this.db = db;
     }
 
     createUser(newUser, transaction) {
@@ -38,7 +39,10 @@ module.exports = class UserDAO {
     }
 
     listUsers(options = {}) {
-        const role = options.role ? options.role : { $in: ['clinician', 'participant'] };
+        let role = options.role ? options.role : { $in: ['clinician', 'participant'] };
+        if (role === 'all') {
+            role = { $in: ['admin', 'clinician', 'participant'] };
+        }
         const where = { role };
         return this.db.User.findAll({ raw: true, where, attributes, order: 'username' })
             .then(users => users.map(user => _.omitBy(user, _.isNil)));

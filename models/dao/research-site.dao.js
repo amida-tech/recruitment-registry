@@ -1,7 +1,9 @@
 'use strict';
 
-const zipUtil = require('../../lib/zip-util');
 const _ = require('lodash');
+
+const Base = require('./base');
+const zipUtil = require('../../lib/zip-util');
 
 const attributes = ['id', 'name', 'url', 'street', 'street2', 'city', 'state', 'zip'];
 
@@ -16,15 +18,10 @@ const formatResearchSite = function formatResearchSite(researchSite) {
     return researchSite;
 };
 
-module.exports = class ResearchSiteDAO {
-    constructor(db) {
-        this.db = db;
-    }
-
+module.exports = class ResearchSiteDAO extends Base {
     createResearchSite(researchSite) {
         formatResearchSite(researchSite);
-        return this.db.sequelize
-                .transaction(transaction => this.db.ResearchSite.create(researchSite, { transaction })
+        return this.transaction(transaction => this.db.ResearchSite.create(researchSite, { transaction })
                 .then(({ id }) => zipUtil.findVicinity(researchSite.zip)
                         .then(vicinity => (
                             this.createResearchSiteVicinityTx(id, vicinity, transaction)
@@ -58,7 +55,7 @@ module.exports = class ResearchSiteDAO {
 
     patchResearchSite(id, researchSiteUpdate) {
         formatResearchSite(researchSiteUpdate);
-        return this.db.sequelize.transaction(transaction => (
+        return this.transaction(transaction => (
                     this.db.ResearchSite.update(researchSiteUpdate, { where: { id }, transaction })
                 )
                 .then(() => {
@@ -73,7 +70,7 @@ module.exports = class ResearchSiteDAO {
     }
 
     deleteResearchSite(id) {
-        return this.db.sequelize.transaction(transaction => (
+        return this.transaction(transaction => (
             this.db.ResearchSite
                 .destroy({ where: { id }, transaction })
                 .then(() => (
@@ -99,7 +96,7 @@ module.exports = class ResearchSiteDAO {
     }
 
     createResearchSiteVicinity(researchSiteId, vicinity) {
-        return this.db.sequelize.transaction(transaction => (
+        return this.transaction(transaction => (
             this.createResearchSiteVicinityTx(researchSiteId, vicinity, transaction)
         ));
     }

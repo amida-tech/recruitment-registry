@@ -17,17 +17,17 @@ const translator = require('./util/translator');
 const choiceSetCommon = require('./util/choice-set-common');
 
 const expect = chai.expect;
-const generator = new Generator();
-const shared = new SharedIntegration(generator);
 
 describe('choice set integration', () => {
     const rrSuperTest = new RRSuperTest();
     const hxChoiceSet = new History();
+    const generator = new Generator();
+    const shared = new SharedIntegration(rrSuperTest, generator);
     const tests = new choiceSetCommon.IntegrationTests(rrSuperTest, generator, hxChoiceSet);
 
-    before(shared.setUpFn(rrSuperTest));
+    before(shared.setUpFn());
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     _.range(8).forEach((index) => {
         it(`create choice set ${index}`, tests.createChoiceSetFn());
@@ -91,5 +91,5 @@ describe('choice set integration', () => {
         it(`get choice set ${index}`, tests.getChoiceSetFn(index));
     });
 
-    shared.verifyUserAudit(rrSuperTest);
+    shared.verifyUserAudit();
 });

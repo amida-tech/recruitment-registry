@@ -1,12 +1,9 @@
 'use strict';
 
+const Base = require('./base');
 const RRError = require('../../lib/rr-error');
 
-module.exports = class SurveyIdentifierDAO {
-    constructor(db) {
-        this.db = db;
-    }
-
+module.exports = class SurveyIdentifierDAO extends Base {
     createSurveyIdentifier(surveyIdentifier, transaction) {
         const SurveyIdentifier = this.db.SurveyIdentifier;
         return SurveyIdentifier.create(surveyIdentifier, { transaction })

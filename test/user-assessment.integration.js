@@ -24,8 +24,6 @@ const expect = chai.expect;
 
 const generator = new Generator();
 
-const shared = new SharedIntegration(generator);
-
 describe('user assessment integration', () => {
     const surveyCount = 6;
     const assessmentCount = 2;
@@ -36,17 +34,18 @@ describe('user assessment integration', () => {
     const hxUserAssessment = new MultiIndexHistory();
 
     const rrSuperTest = new RRSuperTest();
+    const shared = new SharedIntegration(rrSuperTest, generator);
     const surveyTests = new surveyCommon.IntegrationTests(rrSuperTest, generator, hxSurvey);
     const assessmentTests = new assessmentCommon.IntegrationTests(rrSuperTest, generator, hxSurvey, hxAssessment);
     const answerTests = new answerCommon.IntegrationTests(rrSuperTest, generator, hxUser, hxSurvey);
     const hxAnswer = answerTests.hxAnswer;
 
-    before(shared.setUpFn(rrSuperTest));
+    before(shared.setUpFn());
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     _.range(2).forEach((index) => {
-        it(`create user ${index}`, shared.createUserFn(rrSuperTest, hxUser));
+        it(`create user ${index}`, shared.createUserFn(hxUser));
     });
 
     _.range(surveyCount).forEach((index) => {
@@ -84,48 +83,48 @@ describe('user assessment integration', () => {
 
     it('open user 0 assessment 0 (0)', openUserAssessmentFn(0, 0, 0));
     it('open user 1 assessment 1 (0)', openUserAssessmentFn(1, 1, 0));
-    it('logout as super', shared.logoutFn(rrSuperTest));
-    it('login as user 0', shared.loginIndexFn(rrSuperTest, hxUser, 0));
+    it('logout as super', shared.logoutFn());
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
     _.range(0, 3).forEach((index) => {
         it(`user 0 answers survey ${index}`, answerTests.answerSurveyFn(0, index));
     });
-    it('logout as  user 0', shared.logoutFn(rrSuperTest));
-    it('login as user 1', shared.loginIndexFn(rrSuperTest, hxUser, 1));
+    it('logout as  user 0', shared.logoutFn());
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
     _.range(3, 6).forEach((index) => {
         it(`user 1 answers survey ${index}`, answerTests.answerSurveyFn(1, index));
     });
-    it('logout as  user 1', shared.logoutFn(rrSuperTest));
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('logout as  user 1', shared.logoutFn());
+    it('login as super', shared.loginFn(config.superUser));
     it('open user 0 assessment 0 (1)', openUserAssessmentFn(0, 0, 1));
     it('open user 1 assessment 1 (1)', openUserAssessmentFn(1, 1, 1));
-    it('logout as super', shared.logoutFn(rrSuperTest));
-    it('login as user 0', shared.loginIndexFn(rrSuperTest, hxUser, 0));
+    it('logout as super', shared.logoutFn());
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
     _.range(0, 3).forEach((index) => {
         it(`user 0 answers survey ${index}`, answerTests.answerSurveyFn(0, index));
     });
-    it('logout as  user 0', shared.logoutFn(rrSuperTest));
-    it('login as user 1', shared.loginIndexFn(rrSuperTest, hxUser, 1));
+    it('logout as  user 0', shared.logoutFn());
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
     _.range(3, 6).forEach((index) => {
         it(`user 1 answers survey ${index}`, answerTests.answerSurveyFn(1, index));
     });
-    it('logout as  user 1', shared.logoutFn(rrSuperTest));
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('logout as  user 1', shared.logoutFn());
+    it('login as super', shared.loginFn(config.superUser));
     it('close user 0 assessment 0', closeUserAssessmentFn(0, 0));
     it('close user 1 assessment 1', closeUserAssessmentFn(1, 1));
     it('open user 0 assessment 0 (2)', openUserAssessmentFn(0, 0, 2));
     it('open user 1 assessment 1 (2)', openUserAssessmentFn(1, 1, 2));
-    it('logout as super', shared.logoutFn(rrSuperTest));
-    it('login as user 0', shared.loginIndexFn(rrSuperTest, hxUser, 0));
+    it('logout as super', shared.logoutFn());
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
     _.range(0, 3).forEach((index) => {
         it(`user 0 answers survey ${index}`, answerTests.answerSurveyFn(0, index));
     });
-    it('logout as  user 0', shared.logoutFn(rrSuperTest));
-    it('login as user 1', shared.loginIndexFn(rrSuperTest, hxUser, 1));
+    it('logout as  user 0', shared.logoutFn());
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
     _.range(3, 6).forEach((index) => {
         it(`user 1 answers survey ${index}`, answerTests.answerSurveyFn(1, index));
     });
-    it('logout as  user 1', shared.logoutFn(rrSuperTest));
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('logout as  user 1', shared.logoutFn());
+    it('login as super', shared.loginFn(config.superUser));
     it('close user 0 assessment 0', closeUserAssessmentFn(0, 0));
     it('close user 1 assessment 1', closeUserAssessmentFn(1, 1));
 
@@ -194,7 +193,7 @@ describe('user assessment integration', () => {
     it('list user 1 assessment 1 (1) answers', listUserAssessmentAnswersFn(1, 1, 1));
     it('list user 1 assessment 1 (2) answers', listUserAssessmentAnswersFn(1, 1, 2));
 
-    it('logout as super', shared.logoutFn(rrSuperTest));
+    it('logout as super', shared.logoutFn());
 
-    shared.verifyUserAudit(rrSuperTest);
+    shared.verifyUserAudit();
 });

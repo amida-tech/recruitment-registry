@@ -18,31 +18,31 @@ const translator = require('./util/translator');
 const models = require('../models');
 
 const expect = chai.expect;
-const generator = new Generator();
-const shared = new SharedIntegration(generator);
 
 describe('consent integration', () => {
     const userCount = 4;
     const typeCount = 12;
 
-    const store = new RRSuperTest();
+    const rrSuperTest = new RRSuperTest();
+    const generator = new Generator();
+    const shared = new SharedIntegration(rrSuperTest, generator);
     const history = new ConsentDocumentHistory(userCount);
     const hxConsent = new History();
     const consentCommon = new ConsentCommon(hxConsent, history);
     const browserMap = new Map();
 
-    before(shared.setUpFn(store));
+    before(shared.setUpFn());
 
-    it('login as super', shared.loginFn(store, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     _.range(typeCount).forEach((i) => {
-        it(`create consent type ${i}`, shared.createConsentTypeFn(store, history));
-        it(`add translated (es) consent type ${i}`, shared.translateConsentTypeFn(store, i, 'es', history.hxType));
+        it(`create consent type ${i}`, shared.createConsentTypeFn(history));
+        it(`add translated (es) consent type ${i}`, shared.translateConsentTypeFn(i, 'es', history.hxType));
     });
 
     _.range(userCount).forEach((i) => {
         const user = generator.newUser();
-        it(`create user ${i}`, shared.createUserFn(store, history.hxUser, user));
+        it(`create user ${i}`, shared.createUserFn(history.hxUser, user));
     });
 
     const consentSpecs = [
@@ -53,17 +53,17 @@ describe('consent integration', () => {
     ];
 
     consentSpecs.forEach((typeIndices, index) => {
-        it(`create consent ${index}`, shared.createConsentFn(store, hxConsent, history, typeIndices));
+        it(`create consent ${index}`, shared.createConsentFn(hxConsent, history, typeIndices));
     });
 
     _.range(consentSpecs.length).forEach((index) => {
-        it(`get/verify consent ${index}`, shared.verifyConsentFn(store, hxConsent, index));
+        it(`get/verify consent ${index}`, shared.verifyConsentFn(hxConsent, index));
     });
 
     _.range(consentSpecs.length).forEach((index) => {
         it(`get/verify consent by name ${index}`, (done) => {
             const name = hxConsent.client(index).name;
-            store.get(`/consents/name/${name}`, true, 200)
+            rrSuperTest.get(`/consents/name/${name}`, true, 200)
                 .expect((res) => {
                     const expected = hxConsent.server(index);
                     expect(res.body).to.deep.equal(expected);
@@ -73,7 +73,7 @@ describe('consent integration', () => {
     });
 
     const listConsentsFn = function (done) {
-        store.get('/consents', true, 200)
+        rrSuperTest.get('/consents', true, 200)
             .expect((res) => {
                 const expected = hxConsent.listServers();
                 expect(res.body).to.deep.equal(expected);
@@ -85,7 +85,7 @@ describe('consent integration', () => {
 
     it('delete consent 2', (done) => {
         const id = hxConsent.id(2);
-        store.delete(`/consents/${id}`, 204)
+        rrSuperTest.delete(`/consents/${id}`, 204)
             .expect(() => {
                 hxConsent.remove(2);
             })
@@ -94,12 +94,12 @@ describe('consent integration', () => {
 
     it('list/verify consents', listConsentsFn);
 
-    it('logout as super', shared.logoutFn(store));
+    it('logout as super', shared.logoutFn());
 
     const getUserConsentDocumentsFn = function (userIndex, index, signatureIndices) {
         return function (done) {
             const id = hxConsent.id(index);
-            store.get(`/consents/${id}/user-documents`, true, 200)
+            rrSuperTest.get(`/consents/${id}/user-documents`, true, 200)
                 .expect((res) => {
                     const typeIndices = consentSpecs[index];
                     const signatures = signatureIndices.reduce((r, i) => {
@@ -120,7 +120,7 @@ describe('consent integration', () => {
     const getTranslatedUserConsentDocumentsFn = function (userIndex, index, signatureIndices, language) {
         return function (done) {
             const id = hxConsent.id(index);
-            store.get(`/consents/${id}/user-documents`, true, 200, { language })
+            rrSuperTest.get(`/consents/${id}/user-documents`, true, 200, { language })
                 .expect((res) => {
                     const typeIndices = consentSpecs[index];
                     const signatures = signatureIndices.reduce((r, i) => {
@@ -142,7 +142,7 @@ describe('consent integration', () => {
     const getUserConsentDocumentsByNameFn = function (userIndex, index, signatureIndices) {
         return function (done) {
             const name = hxConsent.server(index).name;
-            store.get(`/consents/name/${name}/user-documents`, true, 200)
+            rrSuperTest.get(`/consents/name/${name}/user-documents`, true, 200)
                 .expect((res) => {
                     const typeIndices = consentSpecs[index];
                     const signatures = signatureIndices.reduce((r, i) => {
@@ -163,7 +163,7 @@ describe('consent integration', () => {
     const getTranslatedUserConsentDocumentsByNameFn = function (userIndex, index, signatureIndices, language) {
         return function (done) {
             const name = hxConsent.server(index).name;
-            store.get(`/consents/name/${name}/user-documents`, true, 200, { language })
+            rrSuperTest.get(`/consents/name/${name}/user-documents`, true, 200, { language })
                 .expect((res) => {
                     const typeIndices = consentSpecs[index];
                     const signatures = signatureIndices.reduce((r, i) => {
@@ -182,17 +182,17 @@ describe('consent integration', () => {
         };
     };
 
-    it('login as super', shared.loginFn(store, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
     _.range(typeCount).forEach((i) => {
-        it(`create/verify consent document of type ${i}`, shared.createConsentDocumentFn(store, history, i));
-        it(`add translated (es) consent document ${i}`, shared.translateConsentDocumentFn(store, i, 'es', history));
+        it(`create/verify consent document of type ${i}`, shared.createConsentDocumentFn(history, i));
+        it(`add translated (es) consent document ${i}`, shared.translateConsentDocumentFn(i, 'es', history));
     });
-    it('logout as super', shared.logoutFn(store));
+    it('logout as super', shared.logoutFn());
 
     [0, 1, 3].forEach((consentIndex) => {
         it(`get/verify consent ${consentIndex} documents`, (done) => {
             const id = hxConsent.id(consentIndex);
-            store.get(`/consents/${id}/documents`, true, 200)
+            rrSuperTest.get(`/consents/${id}/documents`, true, 200)
                 .expect((res) => {
                     const typeIndices = consentSpecs[consentIndex];
                     const expected = consentCommon.formExpectedConsent(consentIndex, typeIndices);
@@ -203,7 +203,7 @@ describe('consent integration', () => {
 
         it(`get/verify translated (es) consent ${consentIndex} documents`, (done) => {
             const id = hxConsent.id(consentIndex);
-            store.get(`/consents/${id}/documents`, true, 200, { language: 'es' })
+            rrSuperTest.get(`/consents/${id}/documents`, true, 200, { language: 'es' })
                 .expect((res) => {
                     const typeIndices = consentSpecs[consentIndex];
                     const expected = consentCommon.formTranslatedExpectedConsent(consentIndex, typeIndices, undefined, 'es');
@@ -215,7 +215,7 @@ describe('consent integration', () => {
 
         it(`get/verify consent ${consentIndex} documents by name`, (done) => {
             const name = hxConsent.server(consentIndex).name;
-            store.get(`/consents/name/${name}/documents`, true, 200)
+            rrSuperTest.get(`/consents/name/${name}/documents`, true, 200)
                 .expect((res) => {
                     const typeIndices = consentSpecs[consentIndex];
                     const expected = consentCommon.formExpectedConsent(consentIndex, typeIndices);
@@ -226,7 +226,7 @@ describe('consent integration', () => {
 
         it(`get/verify translated (es) consent ${consentIndex} documents by name`, (done) => {
             const name = hxConsent.server(consentIndex).name;
-            store.get(`/consents/name/${name}/documents`, true, 200, { language: 'es' })
+            rrSuperTest.get(`/consents/name/${name}/documents`, true, 200, { language: 'es' })
                 .expect((res) => {
                     const typeIndices = consentSpecs[consentIndex];
                     const expected = consentCommon.formTranslatedExpectedConsent(consentIndex, typeIndices, undefined, 'es');
@@ -237,12 +237,12 @@ describe('consent integration', () => {
         });
 
         _.range(userCount).forEach((userIndex) => {
-            it(`login as user ${userIndex}`, shared.loginIndexFn(store, history.hxUser, 0));
+            it(`login as user ${userIndex}`, shared.loginIndexFn(history.hxUser, 0));
             it(`get/verify user consent ${consentIndex} documents`, getUserConsentDocumentsFn(userIndex, consentIndex, []));
             it(`get/verify user consent ${consentIndex} documents by name`, getUserConsentDocumentsByNameFn(userIndex, consentIndex, []));
             it(`get/verify translated (es) user consent ${consentIndex} documents`, getTranslatedUserConsentDocumentsFn(userIndex, consentIndex, [], 'es'));
             it(`get/verify translated (es) user consent ${consentIndex} documents by name`, getTranslatedUserConsentDocumentsByNameFn(userIndex, consentIndex, [], 'es'));
-            it(`logout as user ${userIndex}`, shared.logoutFn(store));
+            it(`logout as user ${userIndex}`, shared.logoutFn());
         });
     });
 
@@ -266,28 +266,28 @@ describe('consent integration', () => {
                     'User-Agent': userAgent,
                     'X-Forwarded-For': [ip, `111.${browserIndex}0.999`],
                 };
-                store.post('/consent-signatures/bulk', input, 201, header).end(done);
+                rrSuperTest.post('/consent-signatures/bulk', input, 201, header).end(done);
             };
         };
     }());
 
-    it('login as user 0', shared.loginIndexFn(store, history.hxUser, 0));
+    it('login as user 0', shared.loginIndexFn(history.hxUser, 0));
     it('user 0 signs consent 0 (1, 2, 3)', signDocumentsFn(0, 0, [1, 2, 3], 'es'));
-    it('logout as user 0', shared.logoutFn(store));
+    it('logout as user 0', shared.logoutFn());
 
-    it('login as user 1', shared.loginIndexFn(store, history.hxUser, 1));
+    it('login as user 1', shared.loginIndexFn(history.hxUser, 1));
     it('user 1 signs consent 1 (5, 10, 11)', signDocumentsFn(1, 1, [5, 10, 11], 'en'));
-    it('logout as user 1', shared.logoutFn(store));
+    it('logout as user 1', shared.logoutFn());
 
-    it('login as user 2', shared.loginIndexFn(store, history.hxUser, 2));
+    it('login as user 2', shared.loginIndexFn(history.hxUser, 2));
     it('user 2 signs consent 3 (8, 9, 10)', signDocumentsFn(2, 3, [8, 9, 10]));
-    it('logout as user 2', shared.logoutFn(store));
+    it('logout as user 2', shared.logoutFn());
 
-    it('login as user 3', shared.loginIndexFn(store, history.hxUser, 3));
+    it('login as user 3', shared.loginIndexFn(history.hxUser, 3));
     it('user 3 signs consent 0 (0, 2, 3, 4)', signDocumentsFn(3, 0, [0, 2, 3, 4]));
-    it('logout as user 3', shared.logoutFn(store));
+    it('logout as user 3', shared.logoutFn());
 
-    it('login as user 0', shared.loginIndexFn(store, history.hxUser, 0));
+    it('login as user 0', shared.loginIndexFn(history.hxUser, 0));
     it('get/verify user 0 consent 0 documents', getUserConsentDocumentsFn(0, 0, [
         [1, 'es'],
         [2, 'es'],
@@ -298,93 +298,93 @@ describe('consent integration', () => {
         [2, 'es'],
         [3, 'es'],
     ]));
-    it('logout as user 0', shared.logoutFn(store));
+    it('logout as user 0', shared.logoutFn());
 
-    it('login as user 1', shared.loginIndexFn(store, history.hxUser, 1));
+    it('login as user 1', shared.loginIndexFn(history.hxUser, 1));
     it('get/verify user 1 consent 1 documents', getUserConsentDocumentsFn(1, 1, [5, 10, 11]));
-    it('logout as user 1', shared.logoutFn(store));
+    it('logout as user 1', shared.logoutFn());
 
-    it('login as user 2', shared.loginIndexFn(store, history.hxUser, 2));
+    it('login as user 2', shared.loginIndexFn(history.hxUser, 2));
     it('get/verify user 2 consent 3 documents', getUserConsentDocumentsFn(2, 3, [8, 9, 10]));
-    it('logout as user 2', shared.logoutFn(store));
+    it('logout as user 2', shared.logoutFn());
 
-    it('login as user 3', shared.loginIndexFn(store, history.hxUser, 3));
+    it('login as user 3', shared.loginIndexFn(history.hxUser, 3));
     it('get/verify user 3 consent 0 documents', getUserConsentDocumentsFn(3, 0, [0, 2, 3, 4]));
-    it('logout as user 3', shared.logoutFn(store));
+    it('logout as user 3', shared.logoutFn());
 
-    it('login as super', shared.loginFn(store, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
     [2, 10, 8, 4].forEach((typeIndex) => {
-        it(`create/verify consent document of type ${typeIndex}`, shared.createConsentDocumentFn(store, history, typeIndex));
-        it(`add translated (es) consent document ${typeIndex}`, shared.translateConsentDocumentFn(store, typeIndex, 'es', history));
+        it(`create/verify consent document of type ${typeIndex}`, shared.createConsentDocumentFn(history, typeIndex));
+        it(`add translated (es) consent document ${typeIndex}`, shared.translateConsentDocumentFn(typeIndex, 'es', history));
     });
-    it('logout as super', shared.logoutFn(store));
+    it('logout as super', shared.logoutFn());
 
-    it('login as user 0', shared.loginIndexFn(store, history.hxUser, 0));
+    it('login as user 0', shared.loginIndexFn(history.hxUser, 0));
     it('get/verify user 0 consent 0 documents', getUserConsentDocumentsFn(0, 0, [
         [1, 'es'],
         [3, 'es'],
     ]));
-    it('logout as user 0', shared.logoutFn(store));
+    it('logout as user 0', shared.logoutFn());
 
-    it('login as user 1', shared.loginIndexFn(store, history.hxUser, 1));
+    it('login as user 1', shared.loginIndexFn(history.hxUser, 1));
     it('get/verify user 1 consent 1 documents', getUserConsentDocumentsFn(1, 1, [5, 11]));
     it('get/verify user 1 translated (es) consent 1 documents', getTranslatedUserConsentDocumentsFn(1, 1, [5, 11], 'es'));
-    it('logout as user 1', shared.logoutFn(store));
+    it('logout as user 1', shared.logoutFn());
 
-    it('login as user 2', shared.loginIndexFn(store, history.hxUser, 2));
+    it('login as user 2', shared.loginIndexFn(history.hxUser, 2));
     it('get/verify user 2 consent 3 documents', getUserConsentDocumentsFn(2, 3, [9]));
     it('get/verify user 2 translated (es) consent 3 documents', getTranslatedUserConsentDocumentsFn(2, 3, [9], 'es'));
-    it('logout as user 2', shared.logoutFn(store));
+    it('logout as user 2', shared.logoutFn());
 
-    it('login as user 3', shared.loginIndexFn(store, history.hxUser, 3));
+    it('login as user 3', shared.loginIndexFn(history.hxUser, 3));
     it('get/verify user 3 consent 0 documents', getUserConsentDocumentsFn(3, 0, [0, 3]));
     it('get/verify user 3 translated (es) consent 0 documents', getTranslatedUserConsentDocumentsFn(3, 0, [0, 3], 'es'));
-    it('logout as user 3', shared.logoutFn(store));
+    it('logout as user 3', shared.logoutFn());
 
-    it('login as user 0', shared.loginIndexFn(store, history.hxUser, 0));
+    it('login as user 0', shared.loginIndexFn(history.hxUser, 0));
     it('user 0 signs consent 0 (0, 2)', signDocumentsFn(0, 0, [0, 2], 'en'));
-    it('logout as user 0', shared.logoutFn(store));
+    it('logout as user 0', shared.logoutFn());
 
-    it('login as user 1', shared.loginIndexFn(store, history.hxUser, 1));
+    it('login as user 1', shared.loginIndexFn(history.hxUser, 1));
     it('user 1 signs consent 1 (8, 10)', signDocumentsFn(1, 1, [8, 10], 'es'));
-    it('logout as user 1', shared.logoutFn(store));
+    it('logout as user 1', shared.logoutFn());
 
-    it('login as user 2', shared.loginIndexFn(store, history.hxUser, 2));
+    it('login as user 2', shared.loginIndexFn(history.hxUser, 2));
     it('user 2 signs consent 3 (8, 11)', signDocumentsFn(2, 3, [8, 11]));
-    it('logout as user 2', shared.logoutFn(store));
+    it('logout as user 2', shared.logoutFn());
 
-    it('login as user 3', shared.loginIndexFn(store, history.hxUser, 3));
+    it('login as user 3', shared.loginIndexFn(history.hxUser, 3));
     it('user 3 signs consent 0 (2, 4)', signDocumentsFn(3, 0, [2, 4]));
-    it('logout as user 3', shared.logoutFn(store));
+    it('logout as user 3', shared.logoutFn());
 
-    it('login as user 0', shared.loginIndexFn(store, history.hxUser, 0));
+    it('login as user 0', shared.loginIndexFn(history.hxUser, 0));
     it('get/verify user 0 consent 0 documents', getUserConsentDocumentsFn(0, 0, [0, [1, 'es'], 2, [3, 'es']]));
-    it('logout as user 0', shared.logoutFn(store));
+    it('logout as user 0', shared.logoutFn());
 
-    it('login as user 1', shared.loginIndexFn(store, history.hxUser, 1));
+    it('login as user 1', shared.loginIndexFn(history.hxUser, 1));
     it('get/verify user 1 consent 1 documents', getUserConsentDocumentsFn(1, 1, [5, [8, 'es'],
         [10, 'es'], 11,
     ]));
-    it('logout as user 1', shared.logoutFn(store));
+    it('logout as user 1', shared.logoutFn());
 
-    it('login as user 2', shared.loginIndexFn(store, history.hxUser, 2));
+    it('login as user 2', shared.loginIndexFn(history.hxUser, 2));
     it('get/verify user 2 consent 3 documents', getUserConsentDocumentsFn(2, 3, [8, 9, 11]));
-    it('logout as user 2', shared.logoutFn(store));
+    it('logout as user 2', shared.logoutFn());
 
-    it('login as user 3', shared.loginIndexFn(store, history.hxUser, 3));
+    it('login as user 3', shared.loginIndexFn(history.hxUser, 3));
     it('get/verify user 3 consent 0 documents', getUserConsentDocumentsFn(3, 0, [0, 2, 3, 4]));
-    it('logout as user 3', shared.logoutFn(store));
+    it('logout as user 3', shared.logoutFn());
 
-    it('login as super', shared.loginFn(store, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
     [2, 10].forEach((typeIndex) => {
-        it(`create/verify consent document of type ${typeIndex}`, shared.createConsentDocumentFn(store, history, typeIndex));
-        it(`add translated (es) consent document ${typeIndex}`, shared.translateConsentDocumentFn(store, typeIndex, 'es', history));
+        it(`create/verify consent document of type ${typeIndex}`, shared.createConsentDocumentFn(history, typeIndex));
+        it(`add translated (es) consent document ${typeIndex}`, shared.translateConsentDocumentFn(typeIndex, 'es', history));
     });
-    it('logout as super', shared.logoutFn(store));
+    it('logout as super', shared.logoutFn());
 
     it('update history for type 2', (done) => {
         const typeId = history.typeId(2);
-        store.get(`/consent-documents/type-id/${typeId}/update-comments`, false, 200)
+        rrSuperTest.get(`/consent-documents/type-id/${typeId}/update-comments`, false, 200)
             .expect((res) => {
                 const servers = history.serversHistory().filter(h => (h.typeId === typeId));
                 const comments = _.map(servers, 'updateComment');
@@ -395,7 +395,7 @@ describe('consent integration', () => {
 
     it('translated update history for type 2', (done) => {
         const typeId = history.typeId(2);
-        store.get(`/consent-documents/type-id/${typeId}/update-comments`, false, 200, { language: 'es' })
+        rrSuperTest.get(`/consent-documents/type-id/${typeId}/update-comments`, false, 200, { language: 'es' })
             .expect((res) => {
                 const servers = history.translatedServersHistory('es').filter(h => (h.typeId === typeId));
                 const comments = _.map(servers, 'updateComment');
@@ -415,5 +415,5 @@ describe('consent integration', () => {
             });
     });
 
-    shared.verifyUserAudit(store);
+    shared.verifyUserAudit();
 });

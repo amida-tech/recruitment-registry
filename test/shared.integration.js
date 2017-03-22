@@ -17,22 +17,24 @@ const SPromise = require('../lib/promise');
 const language = models.language;
 
 const expect = chai.expect;
-const shared = new SharedIntegration();
 
 describe('shared integration', () => {
-    const store = new RRSuperTest();
+    const rrSuperTest = new RRSuperTest();
+    const shared = new SharedIntegration(rrSuperTest);
 
-    before(shared.setUpFn(store));
+    before(shared.setUpFn({ models }));
 
     it('error: unknown end point', (done) => {
-        store.get('/xxxxxxx', false, 404).end(done);
+        rrSuperTest.get('/xxxxxxx', false, 404).end(done);
     });
 
-    it('login as super', shared.loginFn(store, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     it('error: unexpected run time error', (done) => {
-        sinon.stub(language, 'listLanguages', () => SPromise.reject(new Error('unexpected error')));
-        store.get('/languages', true, 500)
+        sinon.stub(language, 'listLanguages', function listLanguages() {
+            return SPromise.reject(new Error('unexpected error'));
+        });
+        rrSuperTest.get('/languages', true, 500)
             .expect((res) => {
                 expect(res.body.message).to.deep.equal('unexpected error');
                 language.listLanguages.restore();
@@ -41,8 +43,8 @@ describe('shared integration', () => {
     });
 
     it('error: unknown end point (authorized)', (done) => {
-        store.get('/unknown', true, 404).end(done);
+        rrSuperTest.get('/unknown', true, 404).end(done);
     });
 
-    it('logout as super', shared.logoutFn(store));
+    it('logout as super', shared.logoutFn());
 });

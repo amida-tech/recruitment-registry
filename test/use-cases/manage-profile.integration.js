@@ -17,7 +17,6 @@ const surveyExamples = require('../fixtures/example/survey');
 const config = require('../../config');
 
 const expect = chai.expect;
-const shared = new SharedIntegration();
 
 describe('user set-up and login use-case', () => {
     const userExample = userExamples.Alzheimer;
@@ -25,15 +24,16 @@ describe('user set-up and login use-case', () => {
 
     // -------- set up system (syncAndLoadAlzheimer)
 
-    const store = new RRSuperTest();
+    const rrSuperTest = new RRSuperTest();
+    const shared = new SharedIntegration(rrSuperTest);
 
-    before(shared.setUpFn(store));
+    before(shared.setUpFn());
 
-    it('login as super user', shared.loginFn(store, config.superUser));
+    it('login as super user', shared.loginFn(config.superUser));
 
-    it('create registry', shared.createSurveyProfileFn(store, surveyExample.survey));
+    it('create registry', shared.createSurveyProfileFn(surveyExample.survey));
 
-    it('logout as super user', shared.logoutFn(store));
+    it('logout as super user', shared.logoutFn());
 
     // --------
 
@@ -42,7 +42,7 @@ describe('user set-up and login use-case', () => {
     let survey;
 
     it('get profile survey', (done) => {
-        store.get('/profile-survey', false, 200)
+        rrSuperTest.get('/profile-survey', false, 200)
             .expect((res) => {
                 survey = res.body.survey;
             })
@@ -56,13 +56,13 @@ describe('user set-up and login use-case', () => {
     it('fill user profile and submit', (done) => {
         answers = helper.formAnswersToPost(survey, surveyExample.answer);
         const user = userExample;
-        store.authPost('/profiles', { user, answers }, 201).end(done);
+        rrSuperTest.authPost('/profiles', { user, answers }, 201).end(done);
     });
 
     // -------- verification
 
     it('verify user profile', (done) => {
-        store.get('/profiles', true, 200)
+        rrSuperTest.get('/profiles', true, 200)
             .expect((res) => {
                 const result = res.body;
 
@@ -89,7 +89,7 @@ describe('user set-up and login use-case', () => {
             email: 'updated@example.com',
         };
         const user = userUpdates;
-        store.patch('/profiles', { user, answers }, 204)
+        rrSuperTest.patch('/profiles', { user, answers }, 204)
             .send({
                 user: userUpdates,
                 answers,
@@ -98,7 +98,7 @@ describe('user set-up and login use-case', () => {
     });
 
     it('verify user profile', (done) => {
-        store.get('/profiles', true, 200)
+        rrSuperTest.get('/profiles', true, 200)
             .expect((res) => {
                 const result = res.body;
 

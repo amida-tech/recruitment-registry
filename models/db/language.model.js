@@ -25,7 +25,10 @@ module.exports = function language(sequelize, Sequelize, schema) {
         code: 'fr',
     }];
 
-    return sequelize.define('language', {
+    const tableName = 'language';
+
+    const modelName = `${schema}_${tableName}`;
+    return sequelize.define(modelName, {
         code: {
             type: Sequelize.TEXT,
             allowNull: false,
@@ -54,6 +57,7 @@ module.exports = function language(sequelize, Sequelize, schema) {
         },
     }, {
         freezeTableName: true,
+        tableName,
         schema,
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',

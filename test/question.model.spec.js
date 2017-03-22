@@ -8,7 +8,6 @@ const chai = require('chai');
 const _ = require('lodash');
 
 const models = require('../models');
-const db = require('../models/db');
 
 const SharedSpec = require('./util/shared-spec.js');
 const Generator = require('./util/generator');
@@ -23,8 +22,6 @@ const choiceSetCommon = require('./util/choice-set-common');
 const expect = chai.expect;
 const generator = new Generator();
 const shared = new SharedSpec(generator);
-
-const Question = db.Question;
 
 describe('question unit', () => {
     before(shared.setUpFn());
@@ -284,7 +281,8 @@ describe('question unit', () => {
     it('list all questions (complete)', tests.listQuestionsFn('complete'));
 
     const verifyVersioningFn = function (index, expectedVersion) {
-        return function () {
+        return function verifyVersioning() {
+            const Question = models.question.db.Question;
             const id = hxQuestion.id(index);
             return Question.findById(id, { attributes: ['groupId', 'version'], raw: true })
                 .then((versionInfo) => {
@@ -304,8 +302,9 @@ describe('question unit', () => {
     };
 
     const verifyDeletedVersioningFn = function (index, expectedVersion) {
-        return function () {
+        return function verifyDeletedVersioning() {
             const id = hxQuestion.id(index);
+            const Question = models.question.db.Question;
             return Question.findById(id, { attributes: ['groupId', 'version'], raw: true, paranoid: false })
                 .then((versionInfo) => {
                     expect(versionInfo.version).to.equal(expectedVersion);

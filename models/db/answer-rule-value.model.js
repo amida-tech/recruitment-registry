@@ -1,7 +1,9 @@
 'use strict';
 
 module.exports = function answerRuleValue(sequelize, Sequelize, schema) {
-    return sequelize.define('answer_rule_value', {
+    const tableName = 'answer_rule_value';
+    const modelName = `${schema}_${tableName}`;
+    return sequelize.define(modelName, {
         ruleId: {
             type: Sequelize.INTEGER,
             allowNull: false,
@@ -38,6 +40,7 @@ module.exports = function answerRuleValue(sequelize, Sequelize, schema) {
         },
     }, {
         freezeTableName: true,
+        tableName,
         schema,
         createdAt: 'createdAt',
         updatedAt: false,

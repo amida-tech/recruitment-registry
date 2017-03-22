@@ -1,7 +1,9 @@
 'use strict';
 
 module.exports = function staginBHRGap(sequelize, Sequelize, schema) {
-    return sequelize.define('staging_bhr_gap', {
+    const tableName = 'staging_bhr_gap';
+    const modelName = `${schema}_${tableName}`;
+    return sequelize.define(modelName, {
         username: {
             type: Sequelize.TEXT,
         },
@@ -53,6 +55,7 @@ module.exports = function staginBHRGap(sequelize, Sequelize, schema) {
         },
     }, {
         freezeTableName: true,
+        tableName,
         schema,
         timestamps: false,
         indexes: [{ fields: ['username', 'assessment_name', 'line_index'] }],

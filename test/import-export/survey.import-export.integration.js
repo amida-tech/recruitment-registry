@@ -19,17 +19,17 @@ const SurveyHistory = require('../util/survey-history');
 const surveyCommon = require('../util/survey-common');
 
 const expect = chai.expect;
-const generator = new Generator();
-const shared = new SharedIntegration(generator);
 
 describe('survey import-export integration', function surveyImportExportIntegration() {
     const rrSuperTest = new RRSuperTest();
+    const generator = new Generator();
+    const shared = new SharedIntegration(rrSuperTest, generator);
     const hxSurvey = new SurveyHistory();
     const tests = new surveyCommon.IntegrationTests(rrSuperTest, generator, hxSurvey);
 
-    before(shared.setUpFn(rrSuperTest));
+    before(shared.setUpFn());
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     _.range(8).forEach((index) => {
         it(`create survey ${index}`, tests.createSurveyFn({ noSection: true }));
@@ -75,9 +75,9 @@ describe('survey import-export integration', function surveyImportExportIntegrat
             });
     });
 
-    it('reset database', shared.setUpFn(rrSuperTest));
+    it('reset database', shared.setUpFn());
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     let questionIdMap;
 

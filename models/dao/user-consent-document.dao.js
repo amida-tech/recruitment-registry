@@ -1,9 +1,11 @@
 'use strict';
 
-module.exports = class UserConsentDocumentDAO {
+const Base = require('./base');
+
+module.exports = class UserConsentDocumentDAO extends Base {
     constructor(db, dependencies) {
+        super(db);
         Object.assign(this, dependencies);
-        this.db = db;
     }
 
     addSignatureInfo(consentDocument, signature) {

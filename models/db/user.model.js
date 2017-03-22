@@ -19,7 +19,9 @@ module.exports = function User(sequelize, Sequelize, schema) {
         context: crypto,
     });
 
-    const result = sequelize.define('registry_user', {
+    const tableName = 'registry_user';
+    const modelName = `${schema}_${tableName}`;
+    const result = sequelize.define(modelName, {
         username: {
             type: Sequelize.TEXT,
             unique: true,
@@ -81,6 +83,7 @@ module.exports = function User(sequelize, Sequelize, schema) {
         },
     }, {
         freezeTableName: true,
+        tableName,
         schema,
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',

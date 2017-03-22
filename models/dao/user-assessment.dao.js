@@ -2,10 +2,12 @@
 
 const _ = require('lodash');
 
-module.exports = class AssessmentDAO {
+const Base = require('./base');
+
+module.exports = class AssessmentDAO extends Base {
     constructor(db, dependencies) {
+        super(db);
         Object.assign(this, dependencies);
-        this.db = db;
     }
 
     closeUserAssessmentById(id, { userId, assessmentId, status = 'collected' }, transaction) {
@@ -40,9 +42,8 @@ module.exports = class AssessmentDAO {
     }
 
     openUserAssessment({ userId, assessmentId }) {
-        const sequelize = this.db.sequelize;
         const UserAssessment = this.db.UserAssessment;
-        return sequelize.transaction(transaction => UserAssessment.findAll({
+        return this.transaction(transaction => UserAssessment.findAll({
             where: { userId, assessmentId },
             attributes: ['id', 'sequence', 'deletedAt'],
             order: 'sequence',
@@ -70,9 +71,8 @@ module.exports = class AssessmentDAO {
     }
 
     closeUserAssessment({ userId, assessmentId, status }) {
-        const sequelize = this.db.sequelize;
         const UserAssessment = this.db.UserAssessment;
-        return sequelize.transaction(transaction => UserAssessment.findOne({ where: { userId, assessmentId }, attributes: ['id'], transaction })
+        return this.transaction(transaction => UserAssessment.findOne({ where: { userId, assessmentId }, attributes: ['id'], transaction })
                 .then(({ id }) => this.closeUserAssessmentById(id, { userId, assessmentId, status }, transaction)));
     }
 
@@ -98,7 +98,7 @@ module.exports = class AssessmentDAO {
     }
 
     importBulk(records) {
-        return this.db.sequelize.transaction((transaction) => {
+        return this.transaction((transaction) => {
             const dbRecords = records.map(record => _.omit(record, 'answerIds'));
             return this.db.UserAssessment.bulkCreate(dbRecords, { transaction, returning: true })
                 .then(result => result.map(({ id }) => id))
@@ -114,10 +114,9 @@ module.exports = class AssessmentDAO {
     }
 
     exportBulk() {
-        const sequelize = this.db.sequelize;
         const UserAssessment = this.db.UserAssessment;
         const Assessment = this.db.Assessment;
-        const createdAtColumn = [sequelize.fn('to_char', sequelize.col('user_assessment.created_at'), 'YYYY-MM-DD"T"HH24:MI:SS"Z"'), 'createdAt'];
+        const createdAtColumn = this.timestampColumn('user_assessment', 'created');
         const attributes = ['id', 'userId', 'assessmentId', 'meta', createdAtColumn];
         return UserAssessment.findAll({
             attributes,

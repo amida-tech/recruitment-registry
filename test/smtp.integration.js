@@ -14,19 +14,18 @@ const config = require('../config');
 
 const expect = chai.expect;
 
-const shared = new SharedIntegration();
-
 describe('smtp integration', () => {
-    const store = new RRSuperTest();
+    const rrSuperTest = new RRSuperTest();
+    const shared = new SharedIntegration(rrSuperTest);
 
-    before(shared.setUpFn(store));
+    before(shared.setUpFn());
 
     let smtp;
     let smtpText;
     let smtpTextTranslation = {};
 
     const checkNull = function (done) {
-        store.get('/smtp', true, 200)
+        rrSuperTest.get('/smtp', true, 200)
             .expect((res) => {
                 expect(res.body.exists).to.equal(false);
             })
@@ -62,7 +61,7 @@ describe('smtp integration', () => {
             if (withText) {
                 Object.assign(newSmtp, newSmtpText);
             }
-            store.post('/smtp', newSmtp, 204)
+            rrSuperTest.post('/smtp', newSmtp, 204)
                 .expect(() => {
                     smtp = newSmtp;
                     if (withText) {
@@ -78,7 +77,7 @@ describe('smtp integration', () => {
         return function (done) {
             const text = createNewSmtpText(index);
             language = language || 'en';
-            store.patch(`/smtp/text/${language}`, text, 204)
+            rrSuperTest.patch(`/smtp/text/${language}`, text, 204)
                 .expect(() => {
                     smtpText = text;
                 })
@@ -88,7 +87,7 @@ describe('smtp integration', () => {
 
     const getSmtpFn = function () {
         return function (done) {
-            store.get('/smtp', true, 200)
+            rrSuperTest.get('/smtp', true, 200)
                 .expect((res) => {
                     const expected = _.cloneDeep(smtp);
                     if (smtpText) {
@@ -103,7 +102,7 @@ describe('smtp integration', () => {
 
     const getTranslatedSmtpFn = function (language, checkFields) {
         return function (done) {
-            store.get('/smtp', true, 200, { language })
+            rrSuperTest.get('/smtp', true, 200, { language })
                 .end((err, res) => {
                     if (err) {
                         return done(err);
@@ -140,7 +139,7 @@ describe('smtp integration', () => {
         return function (language) {
             return function (done) {
                 const translation = translateSmtp(smtpText, language);
-                store.patch(`/smtp/text/${language}`, translation, 204)
+                rrSuperTest.patch(`/smtp/text/${language}`, translation, 204)
                     .expect(() => {
                         smtpTextTranslation[language] = translation;
                     })
@@ -151,11 +150,11 @@ describe('smtp integration', () => {
 
     const deleteSmtpFn = function () {
         return function (done) {
-            store.delete('/smtp', 204).end(done);
+            rrSuperTest.delete('/smtp', 204).end(done);
         };
     };
 
-    it('login as super', shared.loginFn(store, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     it('get null when no smtp server ever specified', checkNull);
 
@@ -201,7 +200,7 @@ describe('smtp integration', () => {
 
     it('get/verify smtp settings in spanish', getTranslatedSmtpFn('es', true));
 
-    it('logout as super', shared.logoutFn(store));
+    it('logout as super', shared.logoutFn());
 
-    shared.verifyUserAudit(store);
+    shared.verifyUserAudit();
 });

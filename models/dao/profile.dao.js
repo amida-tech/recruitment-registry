@@ -1,16 +1,16 @@
 'use strict';
 
+const Base = require('./base');
 const SPromise = require('../../lib/promise');
 
-module.exports = class ProfileDAO {
+module.exports = class ProfileDAO extends Base {
     constructor(db, dependencies) {
+        super(db);
         Object.assign(this, dependencies);
-        this.db = db;
     }
 
     createProfile(input, language) {
-        const sequelize = this.db.sequelize;
-        return sequelize.transaction(tx => this.profileSurvey.getProfileSurveyId()
+        return this.transaction(tx => this.profileSurvey.getProfileSurveyId()
                 .then((profileSurveyId) => {
                     input.user.role = 'participant';
                     return this.user.createUser(input.user, tx)
@@ -41,11 +41,10 @@ module.exports = class ProfileDAO {
     }
 
     updateProfile(id, input, language) {
-        const sequelize = this.db.sequelize;
         return this.profileSurvey.getProfileSurveyId()
             .then((profileSurveyId) => {
                 if (profileSurveyId) {
-                    return sequelize.transaction(tx => this.user.updateUser(id, input.user, {
+                    return this.transaction(tx => this.user.updateUser(id, input.user, {
                         transaction: tx,
                     })
                             .then(() => {

@@ -1,10 +1,8 @@
 'use strict';
 
-module.exports = class LanguageDAO {
-    constructor(db) {
-        this.db = db;
-    }
+const Base = require('./base');
 
+module.exports = class LanguageDAO extends Base {
     createLanguage(language) {
         return this.db.Language.create(language)
             .then(({ id }) => ({ id }));

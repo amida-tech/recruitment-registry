@@ -2,6 +2,7 @@
 
 const _ = require('lodash');
 
+const Base = require('./base');
 const RRError = require('../../lib/rr-error');
 const SPromise = require('../../lib/promise');
 
@@ -147,9 +148,9 @@ const evaluateEnableWhen = function (rules, answersByQuestionId) {
     });
 };
 
-module.exports = class AnswerDAO {
+module.exports = class AnswerDAO extends Base {
     constructor(db, dependencies) {
-        this.db = db;
+        super(db);
         Object.assign(this, dependencies);
         this.schemaModels = new Map();
     }
@@ -337,7 +338,7 @@ module.exports = class AnswerDAO {
     }
 
     createAnswers(input) {
-        return this.db.sequelize.transaction(tx => this.createAnswersTx(input, tx));
+        return this.transaction(tx => this.createAnswersTx(input, tx));
     }
 
     listAnswers({ userId, scope, surveyId, history, ids }) {
@@ -357,7 +358,7 @@ module.exports = class AnswerDAO {
             attributes.push('surveyId');
         }
         if (scope === 'history-only') {
-            attributes.push([this.db.sequelize.fn('to_char', this.db.sequelize.col('answer.deleted_at'), 'SSSS.MS'), 'deletedAt']);
+            attributes.push(this.timestampColumn('answer', 'deleted', 'SSSS.MS'));
         }
         const include = [
             { model: Question, as: 'question', attributes: ['id', 'type', 'multiple'] },
@@ -480,7 +481,7 @@ module.exports = class AnswerDAO {
         const Answer = this.db.Answer;
         const Question = this.db.Question;
         const QuestionChoice = this.db.QuestionChoice;
-        const createdAtColumn = [this.db.sequelize.fn('to_char', this.db.sequelize.col('answer.created_at'), 'YYYY-MM-DD"T"HH24:MI:SS"Z"'), 'createdAt'];
+        const createdAtColumn = this.timestampColumn('answer', 'created');
         return Answer.findAll({
             where: { id: { $in: ids } },
             attributes: ['id', 'userId', 'surveyId', 'questionId', 'questionChoiceId', 'value', createdAtColumn],
@@ -522,11 +523,11 @@ module.exports = class AnswerDAO {
 
         // find users with a matching answer for each question (i.e., users who match all criteria)
         const include = [{ model: User, as: 'user', attributes: [] }];
-        const having = this.db.sequelize.where(this.db.sequelize.literal('COUNT(DISTINCT(question_id))'), criteria.questions.length);
+        const having = this.where(this.literal('COUNT(DISTINCT(question_id))'), criteria.questions.length);
         const group = ['user_id'];
 
         // count resulting users
-        const attributes = [this.db.sequelize.literal('\'1\'')];
+        const attributes = [this.literal('\'1\'')];
         return Answer.findAll({ raw: true, where, attributes, include, having, group })
             .then(results => results.length);
     }

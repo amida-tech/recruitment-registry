@@ -44,7 +44,7 @@ const translateRuleChoices = function (ruleParent, choices) {
 
 module.exports = class SurveyDAO extends Translatable {
     constructor(db, dependencies) {
-        super('survey_text', 'surveyId', ['name', 'description'], { description: true });
+        super(db, 'SurveyText', 'surveyId', ['name', 'description'], { description: true });
         Object.assign(this, dependencies);
         this.db = db;
     }
@@ -307,7 +307,7 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     createSurvey(survey) {
-        return this.db.sequelize.transaction(transaction => this.createSurveyTx(survey, transaction));
+        return this.transaction(transaction => this.createSurveyTx(survey, transaction));
     }
 
     patchSurveyTextTx({ id, name, description, sections }, language, transaction) {
@@ -321,7 +321,7 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     patchSurveyText({ id, name, description, sections }, language) {
-        return this.db.sequelize.transaction(transaction => this.patchSurveyTextTx({ id, name, description, sections }, language, transaction));
+        return this.transaction(transaction => this.patchSurveyTextTx({ id, name, description, sections }, language, transaction));
     }
 
     patchSurveyInformationTx(surveyId, { name, description, sections, questions }, transaction) {
@@ -331,11 +331,7 @@ module.exports = class SurveyDAO extends Translatable {
             sections_needed: Boolean(questions && !sections),
             survey_id: surveyId,
         };
-        return this.db.sequelize.query(surveyPatchInfoQuery, {
-            transaction,
-            replacements,
-            type: this.db.sequelize.QueryTypes.SELECT,
-        })
+        return this.selectQuery(surveyPatchInfoQuery, replacements, transaction)
             .then((surveys) => {
                 if (!surveys.length) {
                     return RRError.reject('surveyNotFound');
@@ -439,7 +435,7 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     patchSurvey(id, surveyPatch) {
-        return this.db.sequelize.transaction(transaction => this.patchSurveyTx(id, surveyPatch, transaction));
+        return this.transaction(transaction => this.patchSurveyTx(id, surveyPatch, transaction));
     }
 
     replaceSurveyTx(id, replacement, transaction) {
@@ -473,7 +469,7 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     replaceSurvey(id, replacement) {
-        return this.db.sequelize.transaction(tx => this.replaceSurveyTx(id, replacement, tx));
+        return this.transaction(tx => this.replaceSurveyTx(id, replacement, tx));
     }
 
     createOrReplaceSurvey(input) {
@@ -486,12 +482,11 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     deleteSurvey(id) {
-        const sequelize = this.db.sequelize;
         const Survey = this.db.Survey;
         const SurveyQuestion = this.db.SurveyQuestion;
         const SurveySection = this.db.SurveySection;
         const ProfileSurvey = this.db.ProfileSurvey;
-        return sequelize.transaction(transaction => Survey.destroy({ where: { id }, transaction })
+        return this.transaction(transaction => Survey.destroy({ where: { id }, transaction })
                 .then(() => SurveyQuestion.destroy({ where: { surveyId: id }, transaction }))
                 .then(() => SurveySection.destroy({ where: { surveyId: id }, transaction }))
                 .then(() => ProfileSurvey.destroy({ where: { surveyId: id }, transaction })));
@@ -746,7 +741,7 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     importToDb(surveys, surveyQuestions, surveySections, surveySectionQuestions, options = {}) {
-        return this.db.sequelize.transaction((transaction) => {
+        return this.transaction((transaction) => {
             const idMap = {};
             const promises = surveys.map((survey) => {
                 const { id: importId, name, description, meta } = survey;

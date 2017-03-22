@@ -17,23 +17,22 @@ const translator = require('./util/translator');
 
 const expect = chai.expect;
 const generator = new Generator();
-const shared = new SharedIntegration(generator);
 
 describe('profile survey integration', () => {
-    const store = new RRSuperTest();
-
+    const rrSuperTest = new RRSuperTest();
+    const shared = new SharedIntegration(rrSuperTest, generator);
     const hxSurvey = new SurveyHistory();
 
-    before(shared.setUpFn(store));
+    before(shared.setUpFn());
 
     it('error: create profile survey unauthorized', (done) => {
         const clientSurvey = generator.newSurvey();
-        store.post('/profile-survey', clientSurvey, 401)
+        rrSuperTest.post('/profile-survey', clientSurvey, 401)
             .end(done);
     });
 
     const emptyProfileSurvey = function (done) {
-        store.get('/profile-survey', false, 200)
+        rrSuperTest.get('/profile-survey', false, 200)
             .expect((res) => {
                 expect(res.body.exists).to.equal(false);
             })
@@ -41,7 +40,7 @@ describe('profile survey integration', () => {
     };
 
     const emptyProfileSurveyId = function (done) {
-        store.get('/profile-survey-id', false, 200)
+        rrSuperTest.get('/profile-survey-id', false, 200)
             .expect((res) => {
                 expect(res.body).to.equal(0);
             })
@@ -54,7 +53,7 @@ describe('profile survey integration', () => {
 
     const createSurvey = function (done) {
         const clientSurvey = generator.newSurvey();
-        store.post('/surveys', clientSurvey, 201)
+        rrSuperTest.post('/surveys', clientSurvey, 201)
             .expect((res) => {
                 hxSurvey.push(clientSurvey, res.body);
             })
@@ -64,7 +63,7 @@ describe('profile survey integration', () => {
     const createProfileSurveyIdFn = function (index) {
         return function (done) {
             const id = hxSurvey.id(index);
-            store.post('/profile-survey-id', { profileSurveyId: id }, 204)
+            rrSuperTest.post('/profile-survey-id', { profileSurveyId: id }, 204)
                 .end(done);
         };
     };
@@ -72,7 +71,7 @@ describe('profile survey integration', () => {
     const createProfileSurveyFn = function () {
         return function (done) {
             const clientSurvey = generator.newSurvey();
-            store.post('/profile-survey', clientSurvey, 201)
+            rrSuperTest.post('/profile-survey', clientSurvey, 201)
                 .expect((res) => {
                     hxSurvey.push(clientSurvey, res.body);
                 })
@@ -82,7 +81,7 @@ describe('profile survey integration', () => {
 
     const verifyProfileSurveyFn = function (index) {
         return function (done) {
-            store.get('/profile-survey', false, 200)
+            rrSuperTest.get('/profile-survey', false, 200)
                 .expect((res) => {
                     const { exists, survey } = res.body;
                     expect(exists).to.equal(true);
@@ -97,7 +96,7 @@ describe('profile survey integration', () => {
 
     const verifyProfileSurveyIdFn = function (index) {
         return function (done) {
-            store.get('/profile-survey-id', false, 200)
+            rrSuperTest.get('/profile-survey-id', false, 200)
                 .expect((res) => {
                     const id = hxSurvey.id(index);
                     expect(id).to.equal(res.body);
@@ -107,7 +106,7 @@ describe('profile survey integration', () => {
     };
 
     const deleteProfileSurveyId = function (done) {
-        store.delete('/profile-survey-id', 204)
+        rrSuperTest.delete('/profile-survey-id', 204)
             .end(done);
     };
 
@@ -115,7 +114,7 @@ describe('profile survey integration', () => {
         return function (done) {
             const survey = hxSurvey.server(index);
             const translation = translator.translateSurvey(survey, language);
-            store.patch(`/surveys/text/${language}`, translation, 204)
+            rrSuperTest.patch(`/surveys/text/${language}`, translation, 204)
                 .expect(() => {
                     hxSurvey.translate(index, language, translation);
                 })
@@ -125,7 +124,7 @@ describe('profile survey integration', () => {
 
     const verifyNotTranslatedProfileSurveyFn = function (index, language) {
         return function (done) {
-            store.get('/profile-survey', true, 200, { language })
+            rrSuperTest.get('/profile-survey', true, 200, { language })
                 .expect((res) => {
                     const { exists, survey } = res.body;
                     expect(exists).to.equal(true);
@@ -138,7 +137,7 @@ describe('profile survey integration', () => {
 
     const verifyTranslatedProfileSurveyFn = function (index, language) {
         return function (done) {
-            store.get('/profile-survey', true, 200, { language })
+            rrSuperTest.get('/profile-survey', true, 200, { language })
                 .expect((res) => {
                     const { exists, survey } = res.body;
                     expect(exists).to.equal(true);
@@ -150,13 +149,13 @@ describe('profile survey integration', () => {
         };
     };
 
-    it('login as super', shared.loginFn(store, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     it('create survey 0', createSurvey);
 
     it('create profile survey 0 using id', createProfileSurveyIdFn(0));
 
-    it('logout as super', shared.logoutFn(store));
+    it('logout as super', shared.logoutFn());
 
     it('get/verify profile survey 0', verifyProfileSurveyFn(0));
 
@@ -164,19 +163,19 @@ describe('profile survey integration', () => {
 
     it('get profile survey 0 in spanish when no translation', verifyNotTranslatedProfileSurveyFn(0, 'es'));
 
-    it('login as super', shared.loginFn(store, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     it('translate profile survey 0 to spanish', translateSurveyFn(0, 'es'));
 
-    it('logout as super', shared.logoutFn(store));
+    it('logout as super', shared.logoutFn());
 
     it('get/verify translated profile survey 0 in spanish', verifyTranslatedProfileSurveyFn(0, 'es'));
 
-    it('login as super', shared.loginFn(store, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     it('create profile survey 1', createProfileSurveyFn());
 
-    it('logout as super', shared.logoutFn(store));
+    it('logout as super', shared.logoutFn());
 
     it('get/verify profile survey 1 id', verifyProfileSurveyIdFn(1));
 
@@ -184,19 +183,19 @@ describe('profile survey integration', () => {
 
     it('get profile survey 1 in spanish when no translation', verifyNotTranslatedProfileSurveyFn(1, 'es'));
 
-    it('login as super', shared.loginFn(store, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     it('translate profile survey 1 to spanish', translateSurveyFn(1, 'es'));
 
-    it('logout as super', shared.logoutFn(store));
+    it('logout as super', shared.logoutFn());
 
     it('get/verify translated profile survey 1 in spanish', verifyTranslatedProfileSurveyFn(1, 'es'));
 
-    it('login as super', shared.loginFn(store, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     it('create profile survey 2', createProfileSurveyFn());
 
-    it('logout as super', shared.logoutFn(store));
+    it('logout as super', shared.logoutFn());
 
     it('get/verify profile survey 2 id', verifyProfileSurveyIdFn(2));
 
@@ -208,47 +207,47 @@ describe('profile survey integration', () => {
 
     it('verify empty profile survey id', emptyProfileSurveyId);
 
-    it('login as super', shared.loginFn(store, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     it('create profile survey 3', createProfileSurveyFn());
 
-    it('logout as super', shared.logoutFn(store));
+    it('logout as super', shared.logoutFn());
 
     it('get/verify profile survey 3', verifyProfileSurveyFn(3));
 
     it('get/verify profile survey 3 id', verifyProfileSurveyIdFn(3));
 
-    it('login as super', shared.loginFn(store, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     it('delete survey 3', (done) => {
         const id = hxSurvey.id(3);
-        store.delete(`/surveys/${id}`, 204)
+        rrSuperTest.delete(`/surveys/${id}`, 204)
             .end(done);
     });
 
-    it('logout as super', shared.logoutFn(store));
+    it('logout as super', shared.logoutFn());
 
     it('verify empty profile survey', emptyProfileSurvey);
 
     it('verify empty profile survey id', emptyProfileSurveyId);
 
-    it('login as super', shared.loginFn(store, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     it('create profile survey 4', createProfileSurveyFn());
 
-    it('logout as super', shared.logoutFn(store));
+    it('logout as super', shared.logoutFn());
 
     it('get/verify profile survey 4', verifyProfileSurveyFn(4));
 
     it('get/verify profile survey 4 id', verifyProfileSurveyIdFn(4));
 
-    it('login as super', shared.loginFn(store, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     it('replace survey 4', (done) => {
         const id = hxSurvey.id(4);
         const replacementSurvey = generator.newSurvey();
         replacementSurvey.parentId = id;
-        store.post('/surveys', replacementSurvey, 201)
+        rrSuperTest.post('/surveys', replacementSurvey, 201)
             .expect((res) => {
                 delete replacementSurvey.parentId;
                 hxSurvey.push(replacementSurvey, res.body);
@@ -256,11 +255,11 @@ describe('profile survey integration', () => {
             .end(done);
     });
 
-    it('logout as super', shared.logoutFn(store));
+    it('logout as super', shared.logoutFn());
 
     it('get/verify profile survey 5 (replaced 4)', verifyProfileSurveyFn(5));
 
     it('get/verify profile survey 5 (replaced 4) id', verifyProfileSurveyIdFn(5));
 
-    shared.verifyUserAudit(store);
+    shared.verifyUserAudit();
 });

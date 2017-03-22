@@ -10,7 +10,7 @@ const ImportCSVConverter = require('../../import/csv-converter.js');
 
 module.exports = class QuestionDAO extends Translatable {
     constructor(db, dependencies) {
-        super('question_text', 'questionId', ['text', 'instruction'], { instruction: true });
+        super(db, 'QuestionText', 'questionId', ['text', 'instruction'], { instruction: true });
         Object.assign(this, dependencies);
         this.db = db;
     }
@@ -109,12 +109,10 @@ module.exports = class QuestionDAO extends Translatable {
     }
 
     createQuestion(question) {
-        const sequelize = this.db.sequelize;
-        return sequelize.transaction(transaction => this.createQuestionTx(question, transaction));
+        return this.transaction(transaction => this.createQuestionTx(question, transaction));
     }
 
     replaceQuestion(id, replacement) {
-        const sequelize = this.db.sequelize;
         const SurveyQuestion = this.db.SurveyQuestion;
         const Question = this.db.Question;
         return SurveyQuestion.count({ where: { questionId: id } })
@@ -122,7 +120,7 @@ module.exports = class QuestionDAO extends Translatable {
                 if (count) {
                     return RRError.reject('qxReplaceWhenActiveSurveys');
                 }
-                return sequelize.transaction(transaction => Question.findById(id, { transaction })
+                return this.transaction(transaction => Question.findById(id, { transaction })
                             .then((question) => {
                                 if (!question) {
                                     return RRError.reject('qxNotFound');
@@ -222,8 +220,7 @@ module.exports = class QuestionDAO extends Translatable {
     }
 
     updateQuestionText(translation, language) {
-        const sequelize = this.db.sequelize;
-        return sequelize.transaction(tx => this.updateQuestionTextTx(translation, language, tx));
+        return this.transaction(tx => this.updateQuestionTextTx(translation, language, tx));
     }
 
     deleteQuestion(id) {
@@ -337,8 +334,7 @@ module.exports = class QuestionDAO extends Translatable {
     }
 
     addQuestionIdentifiers(questionId, allIdentifiers) {
-        const sequelize = this.db.sequelize;
-        return sequelize.transaction(transaction => this.addQuestionIdentifiersTx(questionId, allIdentifiers, transaction));
+        return this.transaction(transaction => this.addQuestionIdentifiersTx(questionId, allIdentifiers, transaction));
     }
 
     exportMetaQuestionProperties(meta, metaOptions, withChoice, fromQuestion) {
@@ -406,7 +402,6 @@ module.exports = class QuestionDAO extends Translatable {
 
     import(stream, options = {}) {
         const AnswerIdentifier = this.db.AnswerIdentifier;
-        const sequelize = this.db.sequelize;
         const converter = new ImportCSVConverter({ checkType: false });
         return converter.streamToRecords(stream)
             .then((records) => {
@@ -463,7 +458,7 @@ module.exports = class QuestionDAO extends Translatable {
                 if (!records.length) {
                     return {};
                 }
-                return sequelize.transaction((transaction) => {
+                return this.transaction((transaction) => {
                     const mapIds = {};
                     const pxs = records.map(({ id, question }) => {
                         const questionProper = _.omit(question, ['choices', 'key', 'answerKey', 'tag']);

@@ -2,11 +2,9 @@
 
 const RRError = require('../../lib/rr-error');
 
-module.exports = class UserDAO {
-    constructor(db) {
-        this.db = db;
-    }
+const Base = require('./base');
 
+module.exports = class UserDAO extends Base {
     getUser({ id, username }) {
         const User = this.db.User;
         return User.findOne({

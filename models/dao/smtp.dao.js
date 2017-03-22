@@ -2,11 +2,9 @@
 
 const _ = require('lodash');
 
-module.exports = class SMTPDAO {
-    constructor(db) {
-        this.db = db;
-    }
+const Base = require('./base');
 
+module.exports = class SMTPDAO extends Base {
     createSmtpTx(smtp, transaction) {
         const Smtp = this.db.Smtp;
         const SmtpText = this.db.SmtpText;
@@ -26,8 +24,7 @@ module.exports = class SMTPDAO {
     }
 
     createSmtp(smtp) {
-        const sequelize = this.db.sequelize;
-        return sequelize.transaction(tx => this.createSmtpTx(smtp, tx));
+        return this.transaction(tx => this.createSmtpTx(smtp, tx));
     }
 
     updateSmtpTextTx({ subject, content }, language, transaction) {
@@ -37,9 +34,8 @@ module.exports = class SMTPDAO {
     }
 
     updateSmtpText(smtpText, language) {
-        const sequelize = this.db.sequelize;
         language = language || 'en';
-        return sequelize.transaction(tx => this.updateSmtpTextTx(smtpText, language, tx));
+        return this.transaction(tx => this.updateSmtpTextTx(smtpText, language, tx));
     }
 
     getSmtp(options = {}) {

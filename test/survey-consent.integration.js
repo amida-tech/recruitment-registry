@@ -21,13 +21,13 @@ const surveyCommon = require('./util/survey-common');
 const answerCommon = require('./util/answer-common');
 
 const expect = chai.expect;
-const generator = new Generator();
-const shared = new SharedIntegration(generator);
 
 describe('survey consent integration', () => {
     const userCount = 4;
 
-    const store = new RRSuperTest();
+    const rrSuperTest = new RRSuperTest();
+    const generator = new Generator();
+    const shared = new SharedIntegration(rrSuperTest, generator);
     const hxConsentDocument = new ConsentDocumentHistory(userCount);
     const hxConsent = new History();
     const consentCommon = new ConsentCommon(hxConsent, hxConsentDocument, generator);
@@ -35,27 +35,27 @@ describe('survey consent integration', () => {
     const hxUser = hxConsentDocument.hxUser;
     const hxSurveyConsents = new MultiIndexHistory();
 
-    const surveyTests = new surveyCommon.IntegrationTests(store, generator, hxSurvey);
-    const answerTests = new answerCommon.IntegrationTests(store, generator, hxUser, hxSurvey);
+    const surveyTests = new surveyCommon.IntegrationTests(rrSuperTest, generator, hxSurvey);
+    const answerTests = new answerCommon.IntegrationTests(rrSuperTest, generator, hxUser, hxSurvey);
 
-    before(shared.setUpFn(store));
+    before(shared.setUpFn());
 
-    it('login as super', shared.loginFn(store, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     _.range(10).forEach((i) => {
-        it(`create consent type ${i}`, shared.createConsentTypeFn(store, hxConsentDocument));
+        it(`create consent type ${i}`, shared.createConsentTypeFn(hxConsentDocument));
     });
 
     [
         [4, 5, 6],
         [7, 8, 9],
     ].forEach((typeIndices, index) => {
-        it(`create consent ${index}`, shared.createConsentFn(store, hxConsent, hxConsentDocument, typeIndices));
-        it(`get/verify consent ${index}`, shared.verifyConsentFn(store, hxConsent, index));
+        it(`create consent ${index}`, shared.createConsentFn(hxConsent, hxConsentDocument, typeIndices));
+        it(`get/verify consent ${index}`, shared.verifyConsentFn(hxConsent, index));
     });
 
-    it('create profile survey (survey 0)', shared.createProfileSurveyFn(store, hxSurvey));
-    it('verify profile survey (survey 0)', shared.verifyProfileSurveyFn(store, hxSurvey, 0));
+    it('create profile survey (survey 0)', shared.createProfileSurveyFn(hxSurvey));
+    it('verify profile survey (survey 0)', shared.verifyProfileSurveyFn(hxSurvey, 0));
 
     _.range(1, 7).forEach((i) => {
         it(`create survey ${i}`, surveyTests.createSurveyFn(({ noSection: true })));
@@ -72,7 +72,7 @@ describe('survey consent integration', () => {
                 const consentId = hxConsent.id(consentIndex);
                 surveyConsent.consentId = consentId;
             }
-            store.post('/survey-consents', surveyConsent, 201)
+            rrSuperTest.post('/survey-consents', surveyConsent, 201)
                 .expect((res) => {
                     const id = res.body.id;
                     delete surveyConsent.surveyId;
@@ -117,7 +117,7 @@ describe('survey consent integration', () => {
         const surveyId = hxSurvey.id(5);
         const consentId = hxConsent.id(0);
         const surveyConsent = { surveyId, consentId, consentTypeId, action: 'read' };
-        store.post('/survey-consents', surveyConsent, 400)
+        rrSuperTest.post('/survey-consents', surveyConsent, 400)
             .expect(res => shared.verifyErrorMessage(res, 'surveyConsentInvalidTypeForConsent'))
             .end(done);
     });
@@ -139,7 +139,7 @@ describe('survey consent integration', () => {
     });
 
     it('verify survey consents list', (done) => {
-        store.get('/survey-consents', true, 200)
+        rrSuperTest.get('/survey-consents', true, 200)
             .expect((res) => {
                 const list = hxSurveyConsents.listServers();
                 expect(res.body).to.deep.equal(list);
@@ -148,17 +148,17 @@ describe('survey consent integration', () => {
     });
 
     it('error: get profile survey with no consent documents of existing types', (done) => {
-        store.get('/profile-survey', false, 400)
+        rrSuperTest.get('/profile-survey', false, 400)
             .expect(res => shared.verifyErrorMessage(res, 'noSystemConsentDocuments'))
             .end(done);
     });
 
     _.range(10).forEach((i) => {
-        it(`create consent document of type ${i}`, shared.createConsentDocumentFn(store, hxConsentDocument, i));
+        it(`create consent document of type ${i}`, shared.createConsentDocumentFn(hxConsentDocument, i));
     });
 
     it('get profile survey with required consentDocuments', (done) => {
-        store.get('/profile-survey', false, 200)
+        rrSuperTest.get('/profile-survey', false, 200)
             .expect((res) => {
                 const result = res.body;
                 expect(result.exists).to.equal(true);
@@ -174,7 +174,7 @@ describe('survey consent integration', () => {
     const verifyConsentDocumentContentFn = function (typeIndex) {
         return function (done) {
             const id = hxConsentDocument.id(typeIndex);
-            store.get(`/consent-documents/${id}`, false, 200)
+            rrSuperTest.get(`/consent-documents/${id}`, false, 200)
                 .expect((res) => {
                     const expected = hxConsentDocument.server(typeIndex);
                     expect(res.body).to.deep.equal(expected);
@@ -187,7 +187,7 @@ describe('survey consent integration', () => {
         it(`get/verify consent section of type ${i}`, verifyConsentDocumentContentFn(i));
     });
 
-    it('logout as super', shared.logoutFn(store));
+    it('logout as super', shared.logoutFn());
 
     const createProfileWithoutSignaturesFn = function (index, signIndices, documentIndices) {
         return function (done) {
@@ -201,7 +201,7 @@ describe('survey consent integration', () => {
                 const signatures = signIndices.map(signIndex => hxConsentDocument.id(signIndex));
                 Object.assign(response, { signatures });
             }
-            store.authPost('/profiles', response, 400)
+            rrSuperTest.authPost('/profiles', response, 400)
                 .expect((res) => {
                     shared.verifyErrorMessage(res, 'profileSignaturesMissing');
                     const expected = hxConsentDocument.serversInList(documentIndices);
@@ -218,7 +218,7 @@ describe('survey consent integration', () => {
             const user = generator.newUser();
             const signatures = signIndices.map(signIndex => hxConsentDocument.id(signIndex));
             const response = { user, answers, signatures };
-            store.authPost('/profiles', response, 201)
+            rrSuperTest.authPost('/profiles', response, 201)
                 .expect((res) => {
                     hxUser.push(response.user, res.body);
                 })
@@ -228,7 +228,7 @@ describe('survey consent integration', () => {
 
     const getProfileFn = function (index) {
         return function (done) {
-            store.get('/profiles', true, 200)
+            rrSuperTest.get('/profiles', true, 200)
                 .expect((res) => {
                     const result = res.body;
                     const clientUser = Object.assign({ role: 'participant' }, hxUser.client(index));
@@ -241,7 +241,7 @@ describe('survey consent integration', () => {
 
     const verifyProfileFn = function (index) {
         return function (done) {
-            store.get('/profiles', true, 200)
+            rrSuperTest.get('/profiles', true, 200)
                 .expect((res) => {
                     expect(res.body.user).to.deep.equal(hxUser.server(index));
                 })
@@ -251,7 +251,7 @@ describe('survey consent integration', () => {
 
     const readProfileWithoutSignaturesFn = function (index, documentIndices) {
         return function (done) {
-            store.get('/profiles', true, 400)
+            rrSuperTest.get('/profiles', true, 400)
                 .expect((res) => {
                     shared.verifyErrorMessage(res, 'profileSignaturesMissing');
                     const expected = hxConsentDocument.serversInList(documentIndices);
@@ -268,44 +268,44 @@ describe('survey consent integration', () => {
         it(`create user profile ${i} without signatures 3`, createProfileWithoutSignaturesFn(i, [1], [0]));
         it(`create user profile ${i} with signatures`, createProfileFn(i, [0, 1]));
         it(`read user profile ${i} with signatures`, getProfileFn(i));
-        it(`logout as user ${i}`, shared.logoutFn(store));
+        it(`logout as user ${i}`, shared.logoutFn());
     });
 
-    it('login as super', shared.loginFn(store, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
     _.range(2).forEach((i) => {
-        it(`create consent document of type ${i}`, shared.createConsentDocumentFn(store, hxConsentDocument, i));
+        it(`create consent document of type ${i}`, shared.createConsentDocumentFn(hxConsentDocument, i));
     });
-    it('logout as super', shared.logoutFn(store));
+    it('logout as super', shared.logoutFn());
 
     _.range(userCount).forEach((i) => {
-        it(`login as user ${i}`, shared.loginIndexFn(store, hxUser, i));
+        it(`login as user ${i}`, shared.loginIndexFn(hxUser, i));
         it(`read user profile ${i} without signatures`, readProfileWithoutSignaturesFn(i, [0, 1]));
-        it(`logout as user ${i}`, shared.logoutFn(store));
+        it(`logout as user ${i}`, shared.logoutFn());
     });
 
-    it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
-    it('user 0 signs consent document 0', shared.signConsentTypeFn(store, hxConsentDocument, 0, 0));
-    it('user 0 signs consent document 1', shared.signConsentTypeFn(store, hxConsentDocument, 0, 1));
-    it('logout as user 0', shared.logoutFn(store));
-    it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
-    it('user 2 signs consent document 0', shared.signConsentTypeFn(store, hxConsentDocument, 2, 0));
-    it('logout as user 2', shared.logoutFn(store));
-    it('login as user 3', shared.loginIndexFn(store, hxUser, 3));
-    it('user 3 signs consent document 1', shared.signConsentTypeFn(store, hxConsentDocument, 3, 1));
-    it('logout as user 3', shared.logoutFn(store));
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
+    it('user 0 signs consent document 0', shared.signConsentTypeFn(hxConsentDocument, 0, 0));
+    it('user 0 signs consent document 1', shared.signConsentTypeFn(hxConsentDocument, 0, 1));
+    it('logout as user 0', shared.logoutFn());
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
+    it('user 2 signs consent document 0', shared.signConsentTypeFn(hxConsentDocument, 2, 0));
+    it('logout as user 2', shared.logoutFn());
+    it('login as user 3', shared.loginIndexFn(hxUser, 3));
+    it('user 3 signs consent document 1', shared.signConsentTypeFn(hxConsentDocument, 3, 1));
+    it('logout as user 3', shared.logoutFn());
 
-    it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
     it('read user profile 0 with signatures', verifyProfileFn(0));
-    it('logout as user 0', shared.logoutFn(store));
-    it('login as user 1', shared.loginIndexFn(store, hxUser, 1));
+    it('logout as user 0', shared.logoutFn());
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
     it('error: read user profile 1 without signatures', readProfileWithoutSignaturesFn(1, [0, 1]));
-    it('logout as user 1', shared.logoutFn(store));
-    it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
+    it('logout as user 1', shared.logoutFn());
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
     it('error: read user profile 2 without signatures', readProfileWithoutSignaturesFn(2, [1]));
-    it('logout as user 2', shared.logoutFn(store));
-    it('login as user 3', shared.loginIndexFn(store, hxUser, 3));
+    it('logout as user 2', shared.logoutFn());
+    it('login as user 3', shared.loginIndexFn(hxUser, 3));
     it('error: read user profile 3 without signatures', readProfileWithoutSignaturesFn(3, [0]));
-    it('logout as user 3', shared.logoutFn(store));
+    it('logout as user 3', shared.logoutFn());
 
     const answerSurveyWithoutSignaturesFn = function (userIndex, surveyIndex, expectedInfo) {
         return function (done) {
@@ -315,7 +315,7 @@ describe('survey consent integration', () => {
                 surveyId: survey.id,
                 answers,
             };
-            store.post('/answers', input, 400)
+            rrSuperTest.post('/answers', input, 400)
                 .expect((res) => {
                     shared.verifyErrorMessage(res, 'profileSignaturesMissing');
                     const expected = consentCommon.getSurveyConsentDocuments(expectedInfo);
@@ -328,7 +328,7 @@ describe('survey consent integration', () => {
     const listConsentSurveyDocumentsFn = function (userIndex, surveyIndex, action, expectedInfo) {
         return function (done) {
             const surveyId = hxSurvey.id(surveyIndex);
-            store.get('/survey-consent-documents', true, 200, { 'survey-id': surveyId, action })
+            rrSuperTest.get('/survey-consent-documents', true, 200, { 'survey-id': surveyId, action })
                 .expect((res) => {
                     const expected = consentCommon.getSurveyConsentDocuments(expectedInfo);
                     expect(res.body).to.deep.equal(expected);
@@ -337,249 +337,249 @@ describe('survey consent integration', () => {
         };
     };
 
-    it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
     it('user 0 survey 1 consent documents for create', listConsentSurveyDocumentsFn(0, 1, 'create', [2, 3]));
-    it('logout as user 0', shared.logoutFn(store));
-    it('login as user 1', shared.loginIndexFn(store, hxUser, 1));
+    it('logout as user 0', shared.logoutFn());
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
     it('user 1 survey 1 consent documents for create', listConsentSurveyDocumentsFn(1, 1, 'create', [1, 2, 3]));
-    it('logout as user 1', shared.logoutFn(store));
-    it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
+    it('logout as user 1', shared.logoutFn());
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
     it('user 2 survey 1 consent documents for create', listConsentSurveyDocumentsFn(2, 1, 'create', [1, 2, 3]));
-    it('logout as user 2', shared.logoutFn(store));
-    it('login as user 3', shared.loginIndexFn(store, hxUser, 3));
+    it('logout as user 2', shared.logoutFn());
+    it('login as user 3', shared.loginIndexFn(hxUser, 3));
     it('user 3 survey 1 consent documents for create', listConsentSurveyDocumentsFn(3, 1, 'create', [2, 3]));
-    it('logout as user 3', shared.logoutFn(store));
+    it('logout as user 3', shared.logoutFn());
 
-    it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
     it('user 0 survey 2 consent documents for create', listConsentSurveyDocumentsFn(0, 2, 'create', [2, 3]));
-    it('logout as user 0', shared.logoutFn(store));
-    it('login as user 1', shared.loginIndexFn(store, hxUser, 1));
+    it('logout as user 0', shared.logoutFn());
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
     it('user 1 survey 2 consent documents for create', listConsentSurveyDocumentsFn(1, 2, 'create', [2, 3]));
-    it('logout as user 1', shared.logoutFn(store));
-    it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
+    it('logout as user 1', shared.logoutFn());
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
     it('user 2 survey 2 consent documents for create', listConsentSurveyDocumentsFn(2, 2, 'create', [2, 3]));
-    it('logout as user 2', shared.logoutFn(store));
-    it('login as user 3', shared.loginIndexFn(store, hxUser, 3));
+    it('logout as user 2', shared.logoutFn());
+    it('login as user 3', shared.loginIndexFn(hxUser, 3));
     it('user 3 survey 2 consent documents for create', listConsentSurveyDocumentsFn(3, 2, 'create', [2, 3]));
-    it('logout as user 3', shared.logoutFn(store));
+    it('logout as user 3', shared.logoutFn());
 
-    it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
     it('user 0 survey 3 consent documents for create', listConsentSurveyDocumentsFn(0, 3, 'create', [2]));
-    it('logout as user 0', shared.logoutFn(store));
-    it('login as user 1', shared.loginIndexFn(store, hxUser, 1));
+    it('logout as user 0', shared.logoutFn());
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
     it('user 1 survey 3 consent documents for create', listConsentSurveyDocumentsFn(1, 3, 'create', [0, 2]));
-    it('logout as user 1', shared.logoutFn(store));
-    it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
+    it('logout as user 1', shared.logoutFn());
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
     it('user 2 survey 3 consent documents for create', listConsentSurveyDocumentsFn(2, 3, 'create', [2]));
-    it('logout as user 2', shared.logoutFn(store));
-    it('login as user 3', shared.loginIndexFn(store, hxUser, 3));
+    it('logout as user 2', shared.logoutFn());
+    it('login as user 3', shared.loginIndexFn(hxUser, 3));
     it('user 3 survey 3 consent documents for create', listConsentSurveyDocumentsFn(3, 3, 'create', [0, 2]));
-    it('logout as user 3', shared.logoutFn(store));
+    it('logout as user 3', shared.logoutFn());
 
-    it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
     it('error: create user 0 answers to survey 1 without signatures', answerSurveyWithoutSignaturesFn(0, 1, [2, 3]));
-    it('logout as user 0', shared.logoutFn(store));
-    it('login as user 1', shared.loginIndexFn(store, hxUser, 1));
+    it('logout as user 0', shared.logoutFn());
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
     it('error: create user 1 answers to survey 1 without signatures', answerSurveyWithoutSignaturesFn(1, 1, [1, 2, 3]));
-    it('logout as user 1', shared.logoutFn(store));
-    it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
+    it('logout as user 1', shared.logoutFn());
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
     it('error: create user 2 answers to survey 1 without signatures', answerSurveyWithoutSignaturesFn(2, 1, [1, 2, 3]));
-    it('logout as user 2', shared.logoutFn(store));
-    it('login as user 3', shared.loginIndexFn(store, hxUser, 3));
+    it('logout as user 2', shared.logoutFn());
+    it('login as user 3', shared.loginIndexFn(hxUser, 3));
     it('error: create user 3 answers to survey 1 without signatures', answerSurveyWithoutSignaturesFn(3, 1, [2, 3]));
-    it('logout as user 3', shared.logoutFn(store));
+    it('logout as user 3', shared.logoutFn());
 
-    it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
     it('error: create user 0 answers to survey 2 without signatures', answerSurveyWithoutSignaturesFn(0, 2, [2, 3]));
-    it('logout as user 0', shared.logoutFn(store));
-    it('login as user 1', shared.loginIndexFn(store, hxUser, 1));
+    it('logout as user 0', shared.logoutFn());
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
     it('error: create user 1 answers to survey 2 without signatures', answerSurveyWithoutSignaturesFn(1, 2, [2, 3]));
-    it('logout as user 1', shared.logoutFn(store));
-    it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
+    it('logout as user 1', shared.logoutFn());
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
     it('error: create user 2 answers to survey 2 without signatures', answerSurveyWithoutSignaturesFn(2, 2, [2, 3]));
-    it('logout as user 2', shared.logoutFn(store));
-    it('login as user 3', shared.loginIndexFn(store, hxUser, 3));
+    it('logout as user 2', shared.logoutFn());
+    it('login as user 3', shared.loginIndexFn(hxUser, 3));
     it('error: create user 3 answers to survey 2 without signatures', answerSurveyWithoutSignaturesFn(3, 2, [2, 3]));
-    it('logout as user 3', shared.logoutFn(store));
+    it('logout as user 3', shared.logoutFn());
 
-    it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
     it('error: create user 0 answers to survey 3 without signatures', answerSurveyWithoutSignaturesFn(0, 3, [2]));
-    it('logout as user 0', shared.logoutFn(store));
-    it('login as user 1', shared.loginIndexFn(store, hxUser, 1));
+    it('logout as user 0', shared.logoutFn());
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
     it('error: create user 1 answers to survey 3 without signatures', answerSurveyWithoutSignaturesFn(1, 3, [0, 2]));
-    it('logout as user 1', shared.logoutFn(store));
-    it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
+    it('logout as user 1', shared.logoutFn());
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
     it('error: create user 2 answers to survey 3 without signatures', answerSurveyWithoutSignaturesFn(2, 3, [2]));
-    it('logout as user 2', shared.logoutFn(store));
-    it('login as user 3', shared.loginIndexFn(store, hxUser, 3));
+    it('logout as user 2', shared.logoutFn());
+    it('login as user 3', shared.loginIndexFn(hxUser, 3));
     it('error: create user 3 answers to survey 3 without signatures', answerSurveyWithoutSignaturesFn(3, 3, [0, 2]));
-    it('logout as user 3', shared.logoutFn(store));
+    it('logout as user 3', shared.logoutFn());
 
-    it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
-    it('user 0 signs consent document 3', shared.signConsentTypeFn(store, hxConsentDocument, 0, 3));
-    it('logout as user 0', shared.logoutFn(store));
-    it('login as user 1', shared.loginIndexFn(store, hxUser, 1));
-    it('user 1 signs consent document 1', shared.signConsentTypeFn(store, hxConsentDocument, 1, 1));
-    it('user 1 signs consent document 3', shared.signConsentTypeFn(store, hxConsentDocument, 1, 3));
-    it('logout as user 1', shared.logoutFn(store));
-    it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
-    it('user 2 signs consent document 3', shared.signConsentTypeFn(store, hxConsentDocument, 2, 3));
-    it('logout as user 2', shared.logoutFn(store));
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
+    it('user 0 signs consent document 3', shared.signConsentTypeFn(hxConsentDocument, 0, 3));
+    it('logout as user 0', shared.logoutFn());
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
+    it('user 1 signs consent document 1', shared.signConsentTypeFn(hxConsentDocument, 1, 1));
+    it('user 1 signs consent document 3', shared.signConsentTypeFn(hxConsentDocument, 1, 3));
+    it('logout as user 1', shared.logoutFn());
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
+    it('user 2 signs consent document 3', shared.signConsentTypeFn(hxConsentDocument, 2, 3));
+    it('logout as user 2', shared.logoutFn());
 
-    it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
     it('user 0 survey 1 consent documents for create', listConsentSurveyDocumentsFn(0, 1, 'create', [2]));
-    it('logout as user 0', shared.logoutFn(store));
-    it('login as user 1', shared.loginIndexFn(store, hxUser, 1));
+    it('logout as user 0', shared.logoutFn());
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
     it('user 1 survey 1 consent documents for create', listConsentSurveyDocumentsFn(1, 1, 'create', [2]));
-    it('logout as user 1', shared.logoutFn(store));
-    it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
+    it('logout as user 1', shared.logoutFn());
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
     it('user 2 survey 1 consent documents for create', listConsentSurveyDocumentsFn(2, 1, 'create', [1, 2]));
-    it('logout as user 2', shared.logoutFn(store));
-    it('login as user 3', shared.loginIndexFn(store, hxUser, 3));
+    it('logout as user 2', shared.logoutFn());
+    it('login as user 3', shared.loginIndexFn(hxUser, 3));
     it('user 3 survey 1 consent documents for create', listConsentSurveyDocumentsFn(3, 1, 'create', [2, 3]));
-    it('logout as user 3', shared.logoutFn(store));
+    it('logout as user 3', shared.logoutFn());
 
-    it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
     it('user 0 survey 2 consent documents for create', listConsentSurveyDocumentsFn(0, 2, 'create', [2]));
-    it('logout as user 0', shared.logoutFn(store));
-    it('login as user 1', shared.loginIndexFn(store, hxUser, 1));
+    it('logout as user 0', shared.logoutFn());
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
     it('user 1 survey 2 consent documents for create', listConsentSurveyDocumentsFn(1, 2, 'create', [2]));
-    it('logout as user 1', shared.logoutFn(store));
-    it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
+    it('logout as user 1', shared.logoutFn());
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
     it('user 2 survey 2 consent documents for create', listConsentSurveyDocumentsFn(2, 2, 'create', [2]));
-    it('logout as user 2', shared.logoutFn(store));
-    it('login as user 3', shared.loginIndexFn(store, hxUser, 3));
+    it('logout as user 2', shared.logoutFn());
+    it('login as user 3', shared.loginIndexFn(hxUser, 3));
     it('user 3 survey 2 consent documents for create', listConsentSurveyDocumentsFn(3, 2, 'create', [2, 3]));
-    it('logout as user 3', shared.logoutFn(store));
+    it('logout as user 3', shared.logoutFn());
 
-    it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
     it('user 0 survey 3 consent documents for create', listConsentSurveyDocumentsFn(0, 3, 'create', [2]));
-    it('logout as user 0', shared.logoutFn(store));
-    it('login as user 1', shared.loginIndexFn(store, hxUser, 1));
+    it('logout as user 0', shared.logoutFn());
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
     it('user 1 survey 3 consent documents for create', listConsentSurveyDocumentsFn(1, 3, 'create', [0, 2]));
-    it('logout as user 1', shared.logoutFn(store));
-    it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
+    it('logout as user 1', shared.logoutFn());
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
     it('user 2 survey 3 consent documents for create', listConsentSurveyDocumentsFn(2, 3, 'create', [2]));
-    it('logout as user 2', shared.logoutFn(store));
-    it('login as user 3', shared.loginIndexFn(store, hxUser, 3));
+    it('logout as user 2', shared.logoutFn());
+    it('login as user 3', shared.loginIndexFn(hxUser, 3));
     it('user 3 survey 3 consent documents for create', listConsentSurveyDocumentsFn(3, 3, 'create', [0, 2]));
-    it('logout as user 3', shared.logoutFn(store));
+    it('logout as user 3', shared.logoutFn());
 
-    it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
     it('error: create user 0 answers to survey 1 without signatures', answerSurveyWithoutSignaturesFn(0, 1, [2]));
-    it('logout as user 0', shared.logoutFn(store));
-    it('login as user 1', shared.loginIndexFn(store, hxUser, 1));
+    it('logout as user 0', shared.logoutFn());
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
     it('error: create user 1 answers to survey 1 without signatures', answerSurveyWithoutSignaturesFn(1, 1, [2]));
-    it('logout as user 1', shared.logoutFn(store));
-    it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
+    it('logout as user 1', shared.logoutFn());
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
     it('error: create user 2 answers to survey 1 without signatures', answerSurveyWithoutSignaturesFn(2, 1, [1, 2]));
-    it('logout as user 2', shared.logoutFn(store));
-    it('login as user 3', shared.loginIndexFn(store, hxUser, 3));
+    it('logout as user 2', shared.logoutFn());
+    it('login as user 3', shared.loginIndexFn(hxUser, 3));
     it('error: create user 3 answers to survey 1 without signatures', answerSurveyWithoutSignaturesFn(3, 1, [2, 3]));
-    it('logout as user 3', shared.logoutFn(store));
+    it('logout as user 3', shared.logoutFn());
 
-    it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
     it('error: create user 0 answers to survey 2 without signatures', answerSurveyWithoutSignaturesFn(0, 2, [2]));
-    it('logout as user 0', shared.logoutFn(store));
-    it('login as user 1', shared.loginIndexFn(store, hxUser, 1));
+    it('logout as user 0', shared.logoutFn());
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
     it('error: create user 1 answers to survey 2 without signatures', answerSurveyWithoutSignaturesFn(1, 2, [2]));
-    it('logout as user 1', shared.logoutFn(store));
-    it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
+    it('logout as user 1', shared.logoutFn());
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
     it('error: create user 2 answers to survey 2 without signatures', answerSurveyWithoutSignaturesFn(2, 2, [2]));
-    it('logout as user 2', shared.logoutFn(store));
-    it('login as user 3', shared.loginIndexFn(store, hxUser, 3));
+    it('logout as user 2', shared.logoutFn());
+    it('login as user 3', shared.loginIndexFn(hxUser, 3));
     it('error: create user 3 answers to survey 2 without signatures', answerSurveyWithoutSignaturesFn(3, 2, [2, 3]));
-    it('logout as user 3', shared.logoutFn(store));
+    it('logout as user 3', shared.logoutFn());
 
-    it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
     it('error: create user 0 answers to survey 3 without signatures', answerSurveyWithoutSignaturesFn(0, 3, [2]));
-    it('logout as user 0', shared.logoutFn(store));
-    it('login as user 1', shared.loginIndexFn(store, hxUser, 1));
+    it('logout as user 0', shared.logoutFn());
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
     it('error: create user 1 answers to survey 3 without signatures', answerSurveyWithoutSignaturesFn(1, 3, [0, 2]));
-    it('logout as user 1', shared.logoutFn(store));
-    it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
+    it('logout as user 1', shared.logoutFn());
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
     it('error: create user 2 answers to survey 3 without signatures', answerSurveyWithoutSignaturesFn(2, 3, [2]));
-    it('logout as user 2', shared.logoutFn(store));
-    it('login as user 3', shared.loginIndexFn(store, hxUser, 3));
+    it('logout as user 2', shared.logoutFn());
+    it('login as user 3', shared.loginIndexFn(hxUser, 3));
     it('error: create user 3 answers to survey 3 without signatures', answerSurveyWithoutSignaturesFn(3, 3, [0, 2]));
-    it('logout as user 3', shared.logoutFn(store));
+    it('logout as user 3', shared.logoutFn());
 
     _.range(4).forEach((index) => {
-        it(`login as user ${index}`, shared.loginIndexFn(store, hxUser, index));
-        it(`user ${index} signs consent document 2`, shared.signConsentTypeFn(store, hxConsentDocument, index, 2));
-        it(`logout as user ${index}`, shared.logoutFn(store));
+        it(`login as user ${index}`, shared.loginIndexFn(hxUser, index));
+        it(`user ${index} signs consent document 2`, shared.signConsentTypeFn(hxConsentDocument, index, 2));
+        it(`logout as user ${index}`, shared.logoutFn());
     });
 
-    it('login as user 1', shared.loginIndexFn(store, hxUser, 1));
-    it('user 1 signs consent document 0', shared.signConsentTypeFn(store, hxConsentDocument, 1, 0));
-    it('logout as user 1', shared.logoutFn(store));
-    it('login as user 3', shared.loginIndexFn(store, hxUser, 3));
-    it('user 3 signs consent document 0', shared.signConsentTypeFn(store, hxConsentDocument, 3, 0));
-    it('logout as user 3', shared.logoutFn(store));
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
+    it('user 1 signs consent document 0', shared.signConsentTypeFn(hxConsentDocument, 1, 0));
+    it('logout as user 1', shared.logoutFn());
+    it('login as user 3', shared.loginIndexFn(hxUser, 3));
+    it('user 3 signs consent document 0', shared.signConsentTypeFn(hxConsentDocument, 3, 0));
+    it('logout as user 3', shared.logoutFn());
 
-    it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
     it('user 2 survey 1 consent documents for create', listConsentSurveyDocumentsFn(2, 1, 'create', [1]));
-    it('logout as user 2', shared.logoutFn(store));
-    it('login as user 3', shared.loginIndexFn(store, hxUser, 3));
+    it('logout as user 2', shared.logoutFn());
+    it('login as user 3', shared.loginIndexFn(hxUser, 3));
     it('user 3 survey 1 consent documents for create', listConsentSurveyDocumentsFn(3, 1, 'create', [3]));
     it('user 3 survey 2 consent documents for create', listConsentSurveyDocumentsFn(3, 2, 'create', [3]));
-    it('logout as user 3', shared.logoutFn(store));
+    it('logout as user 3', shared.logoutFn());
 
-    it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
     it('error: create user 2 answers to survey 1 without signatures', answerSurveyWithoutSignaturesFn(2, 1, [1]));
-    it('logout as user 2', shared.logoutFn(store));
-    it('login as user 3', shared.loginIndexFn(store, hxUser, 3));
+    it('logout as user 2', shared.logoutFn());
+    it('login as user 3', shared.loginIndexFn(hxUser, 3));
     it('error: create user 3 answers to survey 1 without signatures', answerSurveyWithoutSignaturesFn(3, 1, [3]));
     it('error: create user 3 answers to survey 2 without signatures', answerSurveyWithoutSignaturesFn(3, 2, [3]));
-    it('logout as user 3', shared.logoutFn(store));
+    it('logout as user 3', shared.logoutFn());
 
     _.range(4).forEach((index) => {
-        it(`login as user ${index}`, shared.loginIndexFn(store, hxUser, index));
+        it(`login as user ${index}`, shared.loginIndexFn(hxUser, index));
         it(`user ${index} answers survey 3`, answerTests.answerSurveyFn(index, 3));
-        it(`logout as user ${index}`, shared.logoutFn(store));
+        it(`logout as user ${index}`, shared.logoutFn());
     });
 
-    it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
     it('user 0 answers survey 1', answerTests.answerSurveyFn(0, 1));
-    it('logout as user 0', shared.logoutFn(store));
-    it('login as user 1', shared.loginIndexFn(store, hxUser, 1));
+    it('logout as user 0', shared.logoutFn());
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
     it('user 1 answers survey 1', answerTests.answerSurveyFn(1, 1));
-    it('logout as user 1', shared.logoutFn(store));
-    it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
+    it('logout as user 1', shared.logoutFn());
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
     it('user 0 answers survey 2', answerTests.answerSurveyFn(0, 2));
-    it('login as user 1', shared.loginIndexFn(store, hxUser, 1));
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
     it('user 1 answers survey 2', answerTests.answerSurveyFn(1, 2));
-    it('logout as user 1', shared.logoutFn(store));
-    it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
+    it('logout as user 1', shared.logoutFn());
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
     it('user 2 answers survey 2', answerTests.answerSurveyFn(2, 2));
-    it('logout as user 2', shared.logoutFn(store));
+    it('logout as user 2', shared.logoutFn());
 
-    it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
     it('user 0 gets answered survey 1', answerTests.verifyAnsweredSurveyFn(0, 1));
-    it('logout as user 0', shared.logoutFn(store));
-    it('login as user 1', shared.loginIndexFn(store, hxUser, 1));
+    it('logout as user 0', shared.logoutFn());
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
     it('user 1 gets answered survey 1', answerTests.verifyAnsweredSurveyFn(1, 1));
-    it('logout as user 1', shared.logoutFn(store));
-    it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
+    it('logout as user 1', shared.logoutFn());
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
     it('user 0 gets answered survey 2', answerTests.verifyAnsweredSurveyFn(0, 2));
-    it('logout as user 0', shared.logoutFn(store));
-    it('login as user 1', shared.loginIndexFn(store, hxUser, 1));
+    it('logout as user 0', shared.logoutFn());
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
     it('user 1 gets answered survey 2', answerTests.verifyAnsweredSurveyFn(1, 2));
-    it('logout as user 1', shared.logoutFn(store));
-    it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
+    it('logout as user 1', shared.logoutFn());
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
     it('user 2 gets answered survey 2', answerTests.verifyAnsweredSurveyFn(2, 2));
-    it('logout as user 2', shared.logoutFn(store));
-    it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
+    it('logout as user 2', shared.logoutFn());
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
     it('user 0 gets answered survey 3', answerTests.verifyAnsweredSurveyFn(0, 3));
-    it('logout as user 0', shared.logoutFn(store));
-    it('login as user 1', shared.loginIndexFn(store, hxUser, 1));
+    it('logout as user 0', shared.logoutFn());
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
     it('user 1 gets answered survey 3', answerTests.verifyAnsweredSurveyFn(1, 3));
-    it('logout as user 1', shared.logoutFn(store));
+    it('logout as user 1', shared.logoutFn());
 
     const getAnswersWithoutSignaturesFn = function (userIndex, surveyIndex, expectedInfo) {
         return function (done) {
             const survey = hxSurvey.server(surveyIndex);
-            store.get(`/answered-surveys/${survey.id}`, true, 400)
+            rrSuperTest.get(`/answered-surveys/${survey.id}`, true, 400)
                 .expect((res) => {
                     shared.verifyErrorMessage(res, 'profileSignaturesMissing');
                     const expected = consentCommon.getSurveyConsentDocuments(expectedInfo);
@@ -589,108 +589,108 @@ describe('survey consent integration', () => {
         };
     };
 
-    it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
     it('user 2 survey 3 consent documents for read', listConsentSurveyDocumentsFn(2, 3, 'read', [1]));
-    it('logout as user 2', shared.logoutFn(store));
-    it('login as user 3', shared.loginIndexFn(store, hxUser, 3));
+    it('logout as user 2', shared.logoutFn());
+    it('login as user 3', shared.loginIndexFn(hxUser, 3));
     it('user 3 survey 3 consent documents for read', listConsentSurveyDocumentsFn(3, 3, 'read', [3]));
-    it('logout as user 3', shared.logoutFn(store));
+    it('logout as user 3', shared.logoutFn());
 
-    it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
     it('error: user 2 gets answers to survey 3 without signatures', getAnswersWithoutSignaturesFn(2, 3, [1]));
-    it('logout as user 2', shared.logoutFn(store));
-    it('login as user 3', shared.loginIndexFn(store, hxUser, 3));
+    it('logout as user 2', shared.logoutFn());
+    it('login as user 3', shared.loginIndexFn(hxUser, 3));
     it('error: user 3 gets answers to survey 3 without signatures', getAnswersWithoutSignaturesFn(3, 3, [3]));
-    it('logout as user 3', shared.logoutFn(store));
+    it('logout as user 3', shared.logoutFn());
 
     _.range(2).forEach((i) => {
-        it('login as super', shared.loginFn(store, config.superUser));
-        it(`create consent document of type ${i}`, shared.createConsentDocumentFn(store, hxConsentDocument, i));
-        it('logout as super', shared.logoutFn(store));
+        it('login as super', shared.loginFn(config.superUser));
+        it(`create consent document of type ${i}`, shared.createConsentDocumentFn(hxConsentDocument, i));
+        it('logout as super', shared.logoutFn());
     });
 
-    it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
     it('user 0 survey 1 consent documents for read', listConsentSurveyDocumentsFn(0, 1, 'read', [1]));
-    it('logout as user 0', shared.logoutFn(store));
-    it('login as user 1', shared.loginIndexFn(store, hxUser, 1));
+    it('logout as user 0', shared.logoutFn());
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
     it('user 1 survey 1 consent documents for read', listConsentSurveyDocumentsFn(1, 1, 'read', [1]));
-    it('logout as user 1', shared.logoutFn(store));
-    it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
+    it('logout as user 1', shared.logoutFn());
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
     it('user 2 survey 1 consent documents for read', listConsentSurveyDocumentsFn(2, 1, 'read', [1]));
-    it('logout as user 2', shared.logoutFn(store));
-    it('login as user 3', shared.loginIndexFn(store, hxUser, 3));
+    it('logout as user 2', shared.logoutFn());
+    it('login as user 3', shared.loginIndexFn(hxUser, 3));
     it('user 3 survey 1 consent documents for read', listConsentSurveyDocumentsFn(3, 1, 'read', [1, 3]));
-    it('logout as user 3', shared.logoutFn(store));
+    it('logout as user 3', shared.logoutFn());
 
-    it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
     it('user 0 survey 3 consent documents for read', listConsentSurveyDocumentsFn(0, 3, 'read', [1]));
-    it('logout as user 0', shared.logoutFn(store));
-    it('login as user 1', shared.loginIndexFn(store, hxUser, 1));
+    it('logout as user 0', shared.logoutFn());
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
     it('user 1 survey 3 consent documents for read', listConsentSurveyDocumentsFn(1, 3, 'read', [1]));
-    it('logout as user 1', shared.logoutFn(store));
-    it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
+    it('logout as user 1', shared.logoutFn());
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
     it('user 2 survey 3 consent documents for read', listConsentSurveyDocumentsFn(2, 3, 'read', [1]));
-    it('logout as user 2', shared.logoutFn(store));
-    it('login as user 3', shared.loginIndexFn(store, hxUser, 3));
+    it('logout as user 2', shared.logoutFn());
+    it('login as user 3', shared.loginIndexFn(hxUser, 3));
     it('user 3 survey 3 consent documents for read', listConsentSurveyDocumentsFn(3, 3, 'read', [1, 3]));
-    it('logout as user 3', shared.logoutFn(store));
+    it('logout as user 3', shared.logoutFn());
 
-    it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
     it('error: user 0 gets answers to survey 1 without signatures', getAnswersWithoutSignaturesFn(0, 1, [1]));
-    it('logout as user 0', shared.logoutFn(store));
-    it('login as user 1', shared.loginIndexFn(store, hxUser, 1));
+    it('logout as user 0', shared.logoutFn());
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
     it('error: user 1 gets answers to survey 1 without signatures', getAnswersWithoutSignaturesFn(1, 1, [1]));
-    it('logout as user 1', shared.logoutFn(store));
-    it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
+    it('logout as user 1', shared.logoutFn());
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
     it('error: user 2 gets answers to survey 1 without signatures', getAnswersWithoutSignaturesFn(2, 1, [1]));
-    it('logout as user 2', shared.logoutFn(store));
-    it('login as user 3', shared.loginIndexFn(store, hxUser, 3));
+    it('logout as user 2', shared.logoutFn());
+    it('login as user 3', shared.loginIndexFn(hxUser, 3));
     it('error: user 3 gets answers to survey 1 without signatures', getAnswersWithoutSignaturesFn(3, 1, [1, 3]));
-    it('logout as user 3', shared.logoutFn(store));
+    it('logout as user 3', shared.logoutFn());
 
-    it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
     it('error: user 0 gets answers to survey 3 without signatures', getAnswersWithoutSignaturesFn(0, 3, [1]));
-    it('logout as user 0', shared.logoutFn(store));
-    it('login as user 1', shared.loginIndexFn(store, hxUser, 1));
+    it('logout as user 0', shared.logoutFn());
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
     it('error: user 1 gets answers to survey 3 without signatures', getAnswersWithoutSignaturesFn(1, 3, [1]));
-    it('logout as user 1', shared.logoutFn(store));
-    it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
+    it('logout as user 1', shared.logoutFn());
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
     it('error: user 2 gets answers to survey 3 without signatures', getAnswersWithoutSignaturesFn(2, 3, [1]));
-    it('logout as user 2', shared.logoutFn(store));
-    it('login as user 3', shared.loginIndexFn(store, hxUser, 3));
+    it('logout as user 2', shared.logoutFn());
+    it('login as user 3', shared.loginIndexFn(hxUser, 3));
     it('error: user 3 gets answers to survey 3 without signatures', getAnswersWithoutSignaturesFn(3, 3, [1, 3]));
-    it('logout as user 3', shared.logoutFn(store));
+    it('logout as user 3', shared.logoutFn());
 
     const fnDelete = function (surveyIndex, typeIndex, action) {
         return function (done) {
             const id = hxSurveyConsents.id([surveyIndex, typeIndex, action]);
-            store.delete(`/survey-consents/${id}`, 204).end(done);
+            rrSuperTest.delete(`/survey-consents/${id}`, 204).end(done);
         };
     };
 
-    it('login as super', shared.loginFn(store, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
     it('delete survey 1 consent type 1', fnDelete(1, 1, 'read'));
-    it('logout as super', shared.logoutFn(store));
+    it('logout as super', shared.logoutFn());
 
-    it('login as user 3', shared.loginIndexFn(store, hxUser, 3));
+    it('login as user 3', shared.loginIndexFn(hxUser, 3));
     it('user 3 survey 1 consent documents for read', listConsentSurveyDocumentsFn(3, 1, 'read', [3]));
 
     it('error: user 3 gets answers to survey 1 without signatures', getAnswersWithoutSignaturesFn(3, 1, [3]));
-    it('logout as user 3', shared.logoutFn(store));
+    it('logout as user 3', shared.logoutFn());
 
-    it('login as super', shared.loginFn(store, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
     it('delete survey 1 consent type 1', fnDelete(1, 1, 'create'));
-    it('logout as super', shared.logoutFn(store));
+    it('logout as super', shared.logoutFn());
 
     [0, 1, 2].forEach((index) => {
-        it(`login as user ${index}`, shared.loginIndexFn(store, hxUser, index));
+        it(`login as user ${index}`, shared.loginIndexFn(hxUser, index));
         it(`user ${index} answers survey 1`, answerTests.answerSurveyFn(index, 1));
         it(`user ${index} answered survey 1`, answerTests.verifyAnsweredSurveyFn(index, 1));
-        it(`logout as user ${index}`, shared.logoutFn(store));
+        it(`logout as user ${index}`, shared.logoutFn());
     });
 
     _.range(4).forEach((index) => {
-        it(`login as user ${index}`, shared.loginIndexFn(store, hxUser, index));
+        it(`login as user ${index}`, shared.loginIndexFn(hxUser, index));
         it(`user ${index} survey 4 consent documents for create`, listConsentSurveyDocumentsFn(index, 4, 'create', [
             [0, 4],
             [0, 5],
@@ -704,11 +704,11 @@ describe('survey consent integration', () => {
             [1, 8],
             [1, 9],
         ]));
-        it(`logout as user ${index}`, shared.logoutFn(store));
+        it(`logout as user ${index}`, shared.logoutFn());
     });
 
     _.range(4).forEach((index) => {
-        it(`login as user ${index}`, shared.loginIndexFn(store, hxUser, index));
+        it(`login as user ${index}`, shared.loginIndexFn(hxUser, index));
         it(`error: create user ${index} answers to survey 4 without signatures`, answerSurveyWithoutSignaturesFn(index, 4, [
             [0, 4],
             [0, 5],
@@ -722,100 +722,100 @@ describe('survey consent integration', () => {
             [1, 8],
             [1, 9],
         ]));
-        it(`logout as user ${index}`, shared.logoutFn(store));
+        it(`logout as user ${index}`, shared.logoutFn());
     });
 
-    it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
-    it('user 0 bulk signs consent documents 4, 5, 6', shared.bulkSignConsentTypeFn(store, hxConsentDocument, 0, [4, 5, 6]));
-    it('logout as user 0', shared.logoutFn(store));
-    it('login as user 1', shared.loginIndexFn(store, hxUser, 1));
-    it('user 1 bulk signs consent documents 4, 5, 6, 7, 8, 9', shared.bulkSignConsentTypeFn(store, hxConsentDocument, 1, [4, 5, 6, 7, 8, 9]));
-    it('logout as user 1', shared.logoutFn(store));
-    it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
-    it('user 2 bulk signs consent documents 4, 6, 8', shared.bulkSignConsentTypeFn(store, hxConsentDocument, 2, [4, 6, 8]));
-    it('logout as user 2', shared.logoutFn(store));
-    it('login as user 3', shared.loginIndexFn(store, hxUser, 3));
-    it('user 3 bulk signs consent documents 5, 7, 9', shared.bulkSignConsentTypeFn(store, hxConsentDocument, 3, [5, 7, 9]));
-    it('logout as user 3', shared.logoutFn(store));
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
+    it('user 0 bulk signs consent documents 4, 5, 6', shared.bulkSignConsentTypeFn(hxConsentDocument, 0, [4, 5, 6]));
+    it('logout as user 0', shared.logoutFn());
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
+    it('user 1 bulk signs consent documents 4, 5, 6, 7, 8, 9', shared.bulkSignConsentTypeFn(hxConsentDocument, 1, [4, 5, 6, 7, 8, 9]));
+    it('logout as user 1', shared.logoutFn());
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
+    it('user 2 bulk signs consent documents 4, 6, 8', shared.bulkSignConsentTypeFn(hxConsentDocument, 2, [4, 6, 8]));
+    it('logout as user 2', shared.logoutFn());
+    it('login as user 3', shared.loginIndexFn(hxUser, 3));
+    it('user 3 bulk signs consent documents 5, 7, 9', shared.bulkSignConsentTypeFn(hxConsentDocument, 3, [5, 7, 9]));
+    it('logout as user 3', shared.logoutFn());
 
-    it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
     it('user 2 survey 4 consent documents for create', listConsentSurveyDocumentsFn(2, 4, 'create', [
         [0, 5],
     ]));
-    it('logout as user 2', shared.logoutFn(store));
-    it('login as user 3', shared.loginIndexFn(store, hxUser, 3));
+    it('logout as user 2', shared.logoutFn());
+    it('login as user 3', shared.loginIndexFn(hxUser, 3));
     it('user 3 survey 4 consent documents for create', listConsentSurveyDocumentsFn(3, 4, 'create', [
         [0, 4],
         [0, 6],
     ]));
-    it('logout as user 3', shared.logoutFn(store));
-    it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
+    it('logout as user 3', shared.logoutFn());
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
     it('user 0 survey 5 consent documents for create', listConsentSurveyDocumentsFn(0, 5, 'create', [
         [1, 7],
         [1, 8],
         [1, 9],
     ]));
-    it('logout as user 0', shared.logoutFn(store));
-    it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
+    it('logout as user 0', shared.logoutFn());
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
     it('user 2 survey 5 consent documents for create', listConsentSurveyDocumentsFn(2, 5, 'create', [
         [0, 5],
         [1, 7],
         [1, 9],
     ]));
-    it('logout as user 2', shared.logoutFn(store));
-    it('login as user 3', shared.loginIndexFn(store, hxUser, 3));
+    it('logout as user 2', shared.logoutFn());
+    it('login as user 3', shared.loginIndexFn(hxUser, 3));
     it('user 3 survey 5 consent documents for create', listConsentSurveyDocumentsFn(3, 5, 'create', [
         [0, 4],
         [0, 6],
         [1, 8],
     ]));
-    it('logout as user 3', shared.logoutFn(store));
+    it('logout as user 3', shared.logoutFn());
 
-    it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
     it('error: create user 2 answers to survey 4 without signatures', answerSurveyWithoutSignaturesFn(2, 4, [
         [0, 5],
     ]));
-    it('logout as user 2', shared.logoutFn(store));
-    it('login as user 3', shared.loginIndexFn(store, hxUser, 3));
+    it('logout as user 2', shared.logoutFn());
+    it('login as user 3', shared.loginIndexFn(hxUser, 3));
     it('error: create user 3 answers to survey 4 without signatures', answerSurveyWithoutSignaturesFn(3, 4, [
         [0, 4],
         [0, 6],
     ]));
-    it('logout as user 3', shared.logoutFn(store));
-    it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
+    it('logout as user 3', shared.logoutFn());
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
     it('error: create user 0 answers to survey 5 without signatures', answerSurveyWithoutSignaturesFn(0, 5, [
         [1, 7],
         [1, 8],
         [1, 9],
     ]));
-    it('logout as user 0', shared.logoutFn(store));
-    it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
+    it('logout as user 0', shared.logoutFn());
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
     it('error: create user 2 answers to survey 5 without signatures', answerSurveyWithoutSignaturesFn(2, 5, [
         [0, 5],
         [1, 7],
         [1, 9],
     ]));
-    it('logout as user 2', shared.logoutFn(store));
-    it('login as user 3', shared.loginIndexFn(store, hxUser, 3));
+    it('logout as user 2', shared.logoutFn());
+    it('login as user 3', shared.loginIndexFn(hxUser, 3));
     it('error: create user 3 answers to survey 5 without signatures', answerSurveyWithoutSignaturesFn(3, 5, [
         [0, 4],
         [0, 6],
         [1, 8],
     ]));
-    it('logout as user 3', shared.logoutFn(store));
+    it('logout as user 3', shared.logoutFn());
 
-    it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
     it('user 0 answers survey 4', answerTests.answerSurveyFn(0, 4));
-    it('logout as user 0', shared.logoutFn(store));
-    it('login as user 1', shared.loginIndexFn(store, hxUser, 1));
+    it('logout as user 0', shared.logoutFn());
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
     it('user 1 answers survey 4', answerTests.answerSurveyFn(1, 4));
     it('user 1 answers survey 5', answerTests.answerSurveyFn(1, 5));
 
     it('user 1 gets answered survey 4', answerTests.verifyAnsweredSurveyFn(1, 4));
     it('user 1 gets answered survey 5', answerTests.verifyAnsweredSurveyFn(1, 5));
-    it('logout as user 1', shared.logoutFn(store));
+    it('logout as user 1', shared.logoutFn());
 
-    it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
     it('user 0 survey 4 consent documents for read', listConsentSurveyDocumentsFn(0, 4, 'read', [
         [1, 7],
         [1, 8],
@@ -827,104 +827,104 @@ describe('survey consent integration', () => {
         [1, 8],
         [1, 9],
     ]));
-    it('logout as user 0', shared.logoutFn(store));
+    it('logout as user 0', shared.logoutFn());
 
-    it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
-    it('user 0 bulk signs consent documents 7, 8, 9', shared.bulkSignConsentTypeFn(store, hxConsentDocument, 0, [7, 8, 9]));
-    it('logout as user 0', shared.logoutFn(store));
-    it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
-    it('user 2 bulk signs consent documents 5, 7, 9', shared.bulkSignConsentTypeFn(store, hxConsentDocument, 2, [5, 7, 9]));
-    it('logout as user 2', shared.logoutFn(store));
-    it('login as user 3', shared.loginIndexFn(store, hxUser, 3));
-    it('user 3 bulk signs consent documents 4, 6, 8', shared.bulkSignConsentTypeFn(store, hxConsentDocument, 3, [4, 6, 8]));
-    it('logout as user 3', shared.logoutFn(store));
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
+    it('user 0 bulk signs consent documents 7, 8, 9', shared.bulkSignConsentTypeFn(hxConsentDocument, 0, [7, 8, 9]));
+    it('logout as user 0', shared.logoutFn());
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
+    it('user 2 bulk signs consent documents 5, 7, 9', shared.bulkSignConsentTypeFn(hxConsentDocument, 2, [5, 7, 9]));
+    it('logout as user 2', shared.logoutFn());
+    it('login as user 3', shared.loginIndexFn(hxUser, 3));
+    it('user 3 bulk signs consent documents 4, 6, 8', shared.bulkSignConsentTypeFn(hxConsentDocument, 3, [4, 6, 8]));
+    it('logout as user 3', shared.logoutFn());
 
-    it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
     it('user 0 answers survey 5', answerTests.answerSurveyFn(0, 5));
-    it('logout as user 0', shared.logoutFn(store));
-    it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
+    it('logout as user 0', shared.logoutFn());
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
     it('user 2 answers survey 5', answerTests.answerSurveyFn(2, 4));
     it('user 2 answers survey 5', answerTests.answerSurveyFn(2, 5));
-    it('logout as user 2', shared.logoutFn(store));
-    it('login as user 3', shared.loginIndexFn(store, hxUser, 3));
+    it('logout as user 2', shared.logoutFn());
+    it('login as user 3', shared.loginIndexFn(hxUser, 3));
     it('user 3 answers survey 5', answerTests.answerSurveyFn(3, 4));
     it('user 3 answers survey 5', answerTests.answerSurveyFn(3, 5));
-    it('logout as user 3', shared.logoutFn(store));
+    it('logout as user 3', shared.logoutFn());
 
-    it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
     it('user 0 gets answered survey 4', answerTests.verifyAnsweredSurveyFn(0, 4));
     it('user 0 gets answered survey 5', answerTests.verifyAnsweredSurveyFn(0, 5));
-    it('logout as user 0', shared.logoutFn(store));
-    it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
+    it('logout as user 0', shared.logoutFn());
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
     it('user 2 gets answered survey 4', answerTests.verifyAnsweredSurveyFn(2, 4));
     it('user 2 gets answered survey 5', answerTests.verifyAnsweredSurveyFn(2, 5));
-    it('logout as user 2', shared.logoutFn(store));
-    it('login as user 3', shared.loginIndexFn(store, hxUser, 3));
+    it('logout as user 2', shared.logoutFn());
+    it('login as user 3', shared.loginIndexFn(hxUser, 3));
     it('user 3 gets answered survey 4', answerTests.verifyAnsweredSurveyFn(3, 4));
     it('user 3 gets answered survey 5', answerTests.verifyAnsweredSurveyFn(3, 5));
-    it('logout as user 3', shared.logoutFn(store));
+    it('logout as user 3', shared.logoutFn());
 
     _.range(7, 10).forEach((i) => {
-        it('login as super', shared.loginFn(store, config.superUser));
-        it(`create consent document of type ${i}`, shared.createConsentDocumentFn(store, hxConsentDocument, i));
-        it('logout as super', shared.logoutFn(store));
+        it('login as super', shared.loginFn(config.superUser));
+        it(`create consent document of type ${i}`, shared.createConsentDocumentFn(hxConsentDocument, i));
+        it('logout as super', shared.logoutFn());
     });
 
-    it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
     it('user 0 survey 4 consent documents for read', listConsentSurveyDocumentsFn(0, 5, 'read', [
         [1, 7],
         [1, 8],
         [1, 9],
     ]));
-    it('logout as user 0', shared.logoutFn(store));
-    it('login as user 1', shared.loginIndexFn(store, hxUser, 1));
+    it('logout as user 0', shared.logoutFn());
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
     it('user 1 survey 4 consent documents for read', listConsentSurveyDocumentsFn(1, 5, 'read', [
         [1, 7],
         [1, 8],
         [1, 9],
     ]));
-    it('logout as user 1', shared.logoutFn(store));
-    it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
+    it('logout as user 1', shared.logoutFn());
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
     it('user 2 survey 4 consent documents for read', listConsentSurveyDocumentsFn(2, 5, 'read', [
         [1, 7],
         [1, 8],
         [1, 9],
     ]));
-    it('logout as user 2', shared.logoutFn(store));
-    it('login as user 3', shared.loginIndexFn(store, hxUser, 3));
+    it('logout as user 2', shared.logoutFn());
+    it('login as user 3', shared.loginIndexFn(hxUser, 3));
     it('user 3 survey 4 consent documents for read', listConsentSurveyDocumentsFn(3, 5, 'read', [
         [1, 7],
         [1, 8],
         [1, 9],
     ]));
-    it('logout as user 3', shared.logoutFn(store));
+    it('logout as user 3', shared.logoutFn());
 
-    it('login as user 0', shared.loginIndexFn(store, hxUser, 0));
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
     it('error: user 0 gets answers to survey 4 without signatures', getAnswersWithoutSignaturesFn(0, 5, [
         [1, 7],
         [1, 8],
         [1, 9],
     ]));
-    it('logout as user 0', shared.logoutFn(store));
-    it('login as user 1', shared.loginIndexFn(store, hxUser, 1));
+    it('logout as user 0', shared.logoutFn());
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
     it('error: user 1 gets answers to survey 4 without signatures', getAnswersWithoutSignaturesFn(1, 5, [
         [1, 7],
         [1, 8],
         [1, 9],
     ]));
-    it('logout as user 1', shared.logoutFn(store));
-    it('login as user 2', shared.loginIndexFn(store, hxUser, 2));
+    it('logout as user 1', shared.logoutFn());
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
     it('error: user 2 gets answers to survey 4 without signatures', getAnswersWithoutSignaturesFn(2, 5, [
         [1, 7],
         [1, 8],
         [1, 9],
     ]));
-    it('logout as user 2', shared.logoutFn(store));
-    it('login as user 3', shared.loginIndexFn(store, hxUser, 3));
+    it('logout as user 2', shared.logoutFn());
+    it('login as user 3', shared.loginIndexFn(hxUser, 3));
     it('error: user 3 gets answers to survey 4 without signatures', getAnswersWithoutSignaturesFn(3, 5, [
         [1, 7],
         [1, 8],
         [1, 9],
     ]));
-    it('logout as user 3', shared.logoutFn(store));
+    it('logout as user 3', shared.logoutFn());
 });

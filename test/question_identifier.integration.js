@@ -15,17 +15,17 @@ const History = require('./util/history');
 const questionCommon = require('./util/question-common');
 
 const expect = chai.expect;
-const generator = new Generator();
-const shared = new SharedIntegration(generator);
 
 describe('question identifier integration', () => {
     const rrSuperTest = new RRSuperTest();
+    const generator = new Generator();
+    const shared = new SharedIntegration(rrSuperTest, generator);
     const hxQuestion = new History();
     const tests = new questionCommon.SpecTests(generator, hxQuestion);
     const idGenerator = new questionCommon.IdentifierGenerator();
     const hxIdentifiers = {};
 
-    before(shared.setUpFn(rrSuperTest));
+    before(shared.setUpFn());
 
     const addIdentifierFn = function (index, type) {
         return function (done) {
@@ -41,7 +41,7 @@ describe('question identifier integration', () => {
         };
     };
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     _.range(20).forEach((index) => {
         it(`create question ${index}`, tests.createQuestionFn());
@@ -130,5 +130,5 @@ describe('question identifier integration', () => {
         it(`verify au type answer id to question ${index}`, verifyAnswerIdentifiersFn(index, 'au'));
     });
 
-    it('logout as super', shared.logoutFn(rrSuperTest));
+    it('logout as super', shared.logoutFn());
 });

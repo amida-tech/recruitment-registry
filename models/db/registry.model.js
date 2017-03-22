@@ -1,7 +1,9 @@
 'use strict';
 
 module.exports = function registry(sequelize, Sequelize, schema) {
-    return sequelize.define('registry', {
+    const tableName = 'registry';
+    const modelName = `${schema}_${tableName}`;
+    return sequelize.define(modelName, {
         name: {
             type: Sequelize.TEXT,
             allowNull: false,
@@ -24,6 +26,7 @@ module.exports = function registry(sequelize, Sequelize, schema) {
         },
     }, {
         freezeTableName: true,
+        tableName,
         schema,
         createdAt: 'createdAt',
         updatedAt: false,

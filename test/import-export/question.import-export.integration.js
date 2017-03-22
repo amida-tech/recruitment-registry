@@ -19,17 +19,17 @@ const History = require('../util/history');
 const questionCommon = require('../util/question-common');
 
 const expect = chai.expect;
-const generator = new Generator();
-const shared = new SharedIntegration(generator);
 
 describe('question integration unit', () => {
     const rrSuperTest = new RRSuperTest();
+    const generator = new Generator();
+    const shared = new SharedIntegration(rrSuperTest, generator);
     const hxQuestion = new History();
     const tests = new questionCommon.IntegrationTests(rrSuperTest, generator, hxQuestion);
 
-    before(shared.setUpFn(rrSuperTest));
+    before(shared.setUpFn());
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     _.range(12).forEach((i) => {
         it(`create question ${i}`, tests.createQuestionFn());
@@ -70,9 +70,9 @@ describe('question integration unit', () => {
             .end(done);
     });
 
-    it('reset database', shared.setUpFn(rrSuperTest));
+    it('reset database', shared.setUpFn());
 
-    it('login as super', shared.loginFn(rrSuperTest, config.superUser));
+    it('login as super', shared.loginFn(config.superUser));
 
     let idMap;
 
