@@ -35,6 +35,18 @@ class SharedIntegration {
         };
     }
 
+    static setUpMultiFn(rrSuperTests, options = {}) {
+        return function setupMulti(done) {
+            appgen.generate(options, (err, app) => {
+                if (err) {
+                    return done(err);
+                }
+                rrSuperTests.forEach(rrSuperTest => rrSuperTest.initialize(app));
+                return done();
+            });
+        };
+    }
+
     setUpErrFn(options = {}) {
         return function setupErr(done) {
             appgen.generate(options, (err) => {

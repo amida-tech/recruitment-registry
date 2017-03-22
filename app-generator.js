@@ -59,6 +59,15 @@ const modelsSupplyFn = function (inputModels) {
     };
 };
 
+/* jshint unused:false*/
+const multiModelsSupplyFn = function (inputModels) {
+    return function multiModelsSupply(req, res, next) { // eslint-disable-line no-unused-vars
+        const schema = _.get(req, 'swagger.params.schema.value');
+        req.models = inputModels[schema];
+        next();
+    };
+};
+
 const formSwaggerObject = function (schema, effectiveConfig, effectiveSwaggerJson) {
     if (Array.isArray(schema)) {
         const result = _.cloneDeep(effectiveSwaggerJson);
@@ -98,7 +107,11 @@ exports.initialize = function initialize(app, options, callback) {
 
         const m = options.models || (options.generatedb ? modelsGenerator(schema) : models);
         app.locals.models = m;
-        app.use(modelsSupplyFn(m));
+        if (Array.isArray(schema)) {
+            app.use(multiModelsSupplyFn(m));
+        } else {
+            app.use(modelsSupplyFn(m));
+        }
 
         app.use(middleware.swaggerSecurity(security));
 

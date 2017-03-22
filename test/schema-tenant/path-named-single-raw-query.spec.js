@@ -101,8 +101,4 @@ describe('tenant single schema named (for raw query)', function tenantNamed4Raw(
     it('close connections', function closeSequelize() {
         return rrSuperTest.shutDown();
     });
-
-    it('close connections', function closeSequelize() {
-        return rrSuperTest.shutDown();
-    });
 });
