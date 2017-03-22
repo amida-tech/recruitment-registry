@@ -33,6 +33,8 @@ const ResearchSiteDAO = require('./research-site.dao');
 const Registry = require('./registry.dao');
 const UserAuditDAO = require('./user-audit.dao');
 const Macro = require('./macro');
+const FilterDAO = require('./filter.dao');
+const FilterAnswerDAO = require('./filter-answer.dao');
 
 const doasPerSchema = function (db, daosGenerator) {
     const registry = new Registry(db);
@@ -68,6 +70,8 @@ const doasPerSchema = function (db, daosGenerator) {
     const researchSite = new ResearchSiteDAO(db);
     const userAudit = new UserAuditDAO(db);
     const macro = new Macro(db, { survey, profileSurvey });
+    const filterAnswer = new FilterAnswerDAO(db);
+    const filter = new FilterDAO(db, { filterAnswer });
 
     return {
         sequelize: db.sequelize,
@@ -103,6 +107,8 @@ const doasPerSchema = function (db, daosGenerator) {
         registry,
         userAudit,
         macro,
+        filter,
+        filterAnswer,
     };
 };
 
