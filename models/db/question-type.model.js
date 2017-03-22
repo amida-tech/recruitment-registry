@@ -3,7 +3,9 @@
 const SPromise = require('../../lib/promise');
 
 module.exports = function questionType(sequelize, Sequelize, schema) {
-    return sequelize.define('question_type', {
+    const tableName = 'question_type';
+    const modelName = tableName;
+    return sequelize.define(modelName, {
         name: {
             type: Sequelize.TEXT,
             allowNull: false,
@@ -15,6 +17,7 @@ module.exports = function questionType(sequelize, Sequelize, schema) {
         },
     }, {
         freezeTableName: true,
+        tableName,
         schema,
         createdAt: 'createdAt',
         updatedAt: false,

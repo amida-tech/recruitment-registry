@@ -1,7 +1,9 @@
 'use strict';
 
 module.exports = function choiceSet(sequelize, Sequelize, schema) {
-    return sequelize.define('choice_set', {
+    const tableName = 'choice_set';
+    const modelName = tableName;
+    return sequelize.define(modelName, {
         reference: {
             type: Sequelize.TEXT,
             allowNull: false,
@@ -16,6 +18,7 @@ module.exports = function choiceSet(sequelize, Sequelize, schema) {
         },
     }, {
         freezeTableName: true,
+        tableName,
         schema,
         createdAt: 'createdAt',
         updatedAt: false,

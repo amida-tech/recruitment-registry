@@ -1,7 +1,9 @@
 'use strict';
 
 module.exports = function consentTypeText(sequelize, Sequelize, schema) {
-    return sequelize.define('consent_type_text', {
+    const tableName = 'consent_type_text';
+    const modelName = tableName;
+    return sequelize.define(modelName, {
         consentTypeId: {
             type: Sequelize.INTEGER,
             allowNull: false,
@@ -40,6 +42,7 @@ module.exports = function consentTypeText(sequelize, Sequelize, schema) {
         },
     }, {
         freezeTableName: true,
+        tableName,
         schema,
         createdAt: 'createdAt',
         updatedAt: false,

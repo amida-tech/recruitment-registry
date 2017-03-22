@@ -1,7 +1,9 @@
 'use strict';
 
 module.exports = function section(sequelize, Sequelize, schema) {
-    return sequelize.define('section', {
+    const tableName = 'section';
+    const modelName = tableName;
+    return sequelize.define(modelName, {
         createdAt: {
             type: Sequelize.DATE,
             field: 'created_at',
@@ -19,6 +21,7 @@ module.exports = function section(sequelize, Sequelize, schema) {
         },
     }, {
         freezeTableName: true,
+        tableName,
         schema,
         createdAt: 'createdAt',
         updatedAt: 'updatedAt',

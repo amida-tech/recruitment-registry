@@ -1,7 +1,9 @@
 'use strict';
 
 module.exports = function smtp(sequelize, Sequelize, schema) {
-    return sequelize.define('smtp', {
+    const tableName = 'smtp';
+    const modelName = tableName;
+    return sequelize.define(modelName, {
         protocol: {
             type: Sequelize.TEXT,
             allowNull: false,
@@ -38,6 +40,7 @@ module.exports = function smtp(sequelize, Sequelize, schema) {
         },
     }, {
         freezeTableName: true,
+        tableName,
         schema,
         createdAt: 'createdAt',
         updatedAt: false,

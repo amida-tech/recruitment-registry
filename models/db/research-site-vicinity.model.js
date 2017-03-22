@@ -1,7 +1,9 @@
 'use strict';
 
 module.exports = function researchSiteVicinity(sequelize, Sequelize, schema) {
-    return sequelize.define('research_site_vicinity', {
+    const tableName = 'research_site_vicinity';
+    const modelName = tableName;
+    return sequelize.define(modelName, {
         researchSiteId: {
             type: Sequelize.INTEGER,
             allowNull: false,
@@ -28,6 +30,7 @@ module.exports = function researchSiteVicinity(sequelize, Sequelize, schema) {
         },
     }, {
         freezeTableName: true,
+        tableName,
         schema,
         createdAt: 'createdAt',
         updatedAt: false,

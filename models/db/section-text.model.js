@@ -1,7 +1,9 @@
 'use strict';
 
 module.exports = function sectionText(sequelize, Sequelize, schema) {
-    return sequelize.define('section_text', {
+    const tableName = 'section_text';
+    const modelName = tableName;
+    return sequelize.define(modelName, {
         sectionId: {
             type: Sequelize.INTEGER,
             allowNull: false,
@@ -43,6 +45,7 @@ module.exports = function sectionText(sequelize, Sequelize, schema) {
         },
     }, {
         freezeTableName: true,
+        tableName,
         schema,
         createdAt: 'createdAt',
         updatedAt: false,

@@ -3,7 +3,9 @@
 const SPromise = require('../../lib/promise');
 
 module.exports = function answerRuleLogic(sequelize, Sequelize, schema) {
-    return sequelize.define('answer_rule_logic', {
+    const tableName = 'answer_rule_logic';
+    const modelName = tableName;
+    return sequelize.define(modelName, {
         name: {
             type: Sequelize.TEXT,
             allowNull: false,
@@ -15,6 +17,7 @@ module.exports = function answerRuleLogic(sequelize, Sequelize, schema) {
         },
     }, {
         freezeTableName: true,
+        tableName,
         schema,
         createdAt: 'createdAt',
         updatedAt: false,
