@@ -2,7 +2,7 @@
 
 module.exports = function consentSignature(sequelize, Sequelize, schema) {
     const tableName = 'consent_signature';
-    const modelName = tableName;
+    const modelName = `${schema}_${tableName}`;
     return sequelize.define(modelName, {
         consentDocumentId: {
             type: Sequelize.INTEGER,

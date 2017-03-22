@@ -2,7 +2,7 @@
 
 module.exports = function consent(sequelize, Sequelize, schema) {
     const tableName = 'consent';
-    const modelName = tableName;
+    const modelName = `${schema}_${tableName}`;
     return sequelize.define(modelName, {
         name: {
             type: Sequelize.TEXT,

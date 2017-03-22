@@ -2,7 +2,7 @@
 
 module.exports = function registry(sequelize, Sequelize, schema) {
     const tableName = 'registry';
-    const modelName = tableName;
+    const modelName = `${schema}_${tableName}`;
     return sequelize.define(modelName, {
         name: {
             type: Sequelize.TEXT,

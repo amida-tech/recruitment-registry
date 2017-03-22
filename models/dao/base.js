@@ -32,7 +32,16 @@ module.exports = class Base {
 
     timestampColumn(table, type, format = 'YYYY-MM-DD"T"HH24:MI:SS"Z"') {
         const { col, js } = timestamps[type];
-        const qualifiedCol = `${table}.${col}`;
+        const schema = this.db.schema;
+        const qualifiedCol = `${schema}_${table}.${col}`;
         return [this.db.sequelize.fn('to_char', this.db.sequelize.col(qualifiedCol), format), js];
+    }
+
+    literal(val) {
+        return this.db.sequelize.literal(val);
+    }
+
+    where(attr, comparator, logic) {
+        return this.db.sequelize.where(attr, comparator, logic);
     }
 };

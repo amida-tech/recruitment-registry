@@ -2,7 +2,7 @@
 
 module.exports = function consentDocument(sequelize, Sequelize, schema) {
     const tableName = 'consent_document';
-    const modelName = tableName;
+    const modelName = `${schema}_${tableName}`;
     return sequelize.define(modelName, {
         typeId: {
             type: Sequelize.INTEGER,

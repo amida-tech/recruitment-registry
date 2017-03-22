@@ -20,7 +20,7 @@ module.exports = function User(sequelize, Sequelize, schema) {
     });
 
     const tableName = 'registry_user';
-    const modelName = tableName;
+    const modelName = `${schema}_${tableName}`;
     const result = sequelize.define(modelName, {
         username: {
             type: Sequelize.TEXT,

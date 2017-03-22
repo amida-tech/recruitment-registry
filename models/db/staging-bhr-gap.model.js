@@ -2,7 +2,7 @@
 
 module.exports = function staginBHRGap(sequelize, Sequelize, schema) {
     const tableName = 'staging_bhr_gap';
-    const modelName = tableName;
+    const modelName = `${schema}_${tableName}`;
     return sequelize.define(modelName, {
         username: {
             type: Sequelize.TEXT,

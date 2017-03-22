@@ -1,4 +1,4 @@
-/* global xdescribe,it*/
+/* global describe,it*/
 
 'use strict';
 
@@ -21,7 +21,7 @@ const swaggerObject = require('../../swagger.json');
 
 const expect = chai.expect;
 
-xdescribe('multi tenant (for raw query)', function multiTenant4Raw() {
+describe('multi tenant (for raw query)', function multiTenant4Raw() {
     const schemas = _.range(3).map(index => `schema_${index}`);
     const rrSuperTests = schemas.map(schema => new RRSuperTest(`/${schema}`));
     const generator = new Generator();
@@ -83,17 +83,24 @@ xdescribe('multi tenant (for raw query)', function multiTenant4Raw() {
 
         it('list questions (complete)', tests.listQuestionsFn('complete'));
 
+        let questionGenerator = null;
+
         it('replace generator to multiple question generator', () => {
+            questionGenerator = generator.questionGenerator;
             const multiGenerator = new MultiQuestionGenerator(generator.questionGenerator);
             generator.questionGenerator = multiGenerator;
         });
 
-        _.range(3, schemaIndex + 1).forEach((index) => {
+        _.range(3, 4 + schemaIndex).forEach((index) => {
             it(`create question ${index}`, tests.createQuestionFn());
             it(`get question ${index}`, tests.getQuestionFn(index));
         });
 
         it('list questions (complete)', tests.listQuestionsFn('complete'));
+
+        it('revert question generator to single', function revertGenerator() {
+            generator.questionGenerator = questionGenerator;
+        });
 
         it('logout as super', shared.logoutFn());
     });
@@ -101,7 +108,7 @@ xdescribe('multi tenant (for raw query)', function multiTenant4Raw() {
     const multiCountFn = function (index) {
         return function multiCount() {
             return rrSuperTests[index].get('/questions-multi-count', true, 200)
-                .then(res => expect(res.body.count).to.equal(index + 1));
+                .then(res => expect(res.body.count).to.equal(`${index + 1}`));
         };
     };
 

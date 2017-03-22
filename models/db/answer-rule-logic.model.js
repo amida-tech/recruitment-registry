@@ -4,7 +4,7 @@ const SPromise = require('../../lib/promise');
 
 module.exports = function answerRuleLogic(sequelize, Sequelize, schema) {
     const tableName = 'answer_rule_logic';
-    const modelName = tableName;
+    const modelName = `${schema}_${tableName}`;
     return sequelize.define(modelName, {
         name: {
             type: Sequelize.TEXT,

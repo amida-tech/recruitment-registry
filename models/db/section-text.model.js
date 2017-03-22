@@ -2,7 +2,7 @@
 
 module.exports = function sectionText(sequelize, Sequelize, schema) {
     const tableName = 'section_text';
-    const modelName = tableName;
+    const modelName = `${schema}_${tableName}`;
     return sequelize.define(modelName, {
         sectionId: {
             type: Sequelize.INTEGER,

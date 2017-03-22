@@ -4,7 +4,7 @@ const SPromise = require('../../lib/promise');
 
 module.exports = function questionType(sequelize, Sequelize, schema) {
     const tableName = 'question_type';
-    const modelName = tableName;
+    const modelName = `${schema}_${tableName}`;
     return sequelize.define(modelName, {
         name: {
             type: Sequelize.TEXT,

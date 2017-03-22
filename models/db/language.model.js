@@ -27,7 +27,7 @@ module.exports = function language(sequelize, Sequelize, schema) {
 
     const tableName = 'language';
 
-    const modelName = tableName;
+    const modelName = `${schema}_${tableName}`;
     return sequelize.define(modelName, {
         code: {
             type: Sequelize.TEXT,

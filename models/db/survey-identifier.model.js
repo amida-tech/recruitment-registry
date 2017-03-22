@@ -2,7 +2,7 @@
 
 module.exports = function surveyIdentifier(sequelize, Sequelize, schema) {
     const tableName = 'survey_identifier';
-    const modelName = tableName;
+    const modelName = `${schema}_${tableName}`;
     return sequelize.define(modelName, {
         type: {
             type: Sequelize.TEXT,

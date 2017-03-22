@@ -2,7 +2,7 @@
 
 module.exports = function answer(sequelize, Sequelize, schema) {
     const tableName = 'answer';
-    const modelName = tableName;
+    const modelName = `${schema}_${tableName}`;
     return sequelize.define(modelName, {
         userId: {
             type: Sequelize.INTEGER,

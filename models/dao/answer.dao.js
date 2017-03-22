@@ -523,11 +523,11 @@ module.exports = class AnswerDAO extends Base {
 
         // find users with a matching answer for each question (i.e., users who match all criteria)
         const include = [{ model: User, as: 'user', attributes: [] }];
-        const having = this.db.sequelize.where(this.db.sequelize.literal('COUNT(DISTINCT(question_id))'), criteria.questions.length);
+        const having = this.where(this.literal('COUNT(DISTINCT(question_id))'), criteria.questions.length);
         const group = ['user_id'];
 
         // count resulting users
-        const attributes = [this.db.sequelize.literal('\'1\'')];
+        const attributes = [this.literal('\'1\'')];
         return Answer.findAll({ raw: true, where, attributes, include, having, group })
             .then(results => results.length);
     }

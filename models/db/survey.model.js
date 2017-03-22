@@ -2,7 +2,7 @@
 
 module.exports = function survey(sequelize, Sequelize, schema) {
     const tableName = 'survey';
-    const modelName = tableName;
+    const modelName = `${schema}_${tableName}`;
     return sequelize.define(modelName, {
         status: {
             type: Sequelize.TEXT,

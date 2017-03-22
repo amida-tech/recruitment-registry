@@ -2,7 +2,7 @@
 
 module.exports = function smtp(sequelize, Sequelize, schema) {
     const tableName = 'smtp';
-    const modelName = tableName;
+    const modelName = `${schema}_${tableName}`;
     return sequelize.define(modelName, {
         protocol: {
             type: Sequelize.TEXT,

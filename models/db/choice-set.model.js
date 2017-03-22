@@ -2,7 +2,7 @@
 
 module.exports = function choiceSet(sequelize, Sequelize, schema) {
     const tableName = 'choice_set';
-    const modelName = tableName;
+    const modelName = `${schema}_${tableName}`;
     return sequelize.define(modelName, {
         reference: {
             type: Sequelize.TEXT,

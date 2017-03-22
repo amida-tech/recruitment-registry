@@ -2,7 +2,7 @@
 
 module.exports = function researchSiteVicinity(sequelize, Sequelize, schema) {
     const tableName = 'research_site_vicinity';
-    const modelName = tableName;
+    const modelName = `${schema}_${tableName}`;
     return sequelize.define(modelName, {
         researchSiteId: {
             type: Sequelize.INTEGER,

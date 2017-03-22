@@ -2,7 +2,7 @@
 
 module.exports = function answerRuleValue(sequelize, Sequelize, schema) {
     const tableName = 'answer_rule_value';
-    const modelName = tableName;
+    const modelName = `${schema}_${tableName}`;
     return sequelize.define(modelName, {
         ruleId: {
             type: Sequelize.INTEGER,

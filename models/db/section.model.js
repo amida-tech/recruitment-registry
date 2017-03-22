@@ -2,7 +2,7 @@
 
 module.exports = function section(sequelize, Sequelize, schema) {
     const tableName = 'section';
-    const modelName = tableName;
+    const modelName = `${schema}_${tableName}`;
     return sequelize.define(modelName, {
         createdAt: {
             type: Sequelize.DATE,

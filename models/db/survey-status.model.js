@@ -4,7 +4,7 @@ const SPromise = require('../../lib/promise');
 
 module.exports = function surveyStatus(sequelize, Sequelize, schema) {
     const tableName = 'survey_status';
-    const modelName = tableName;
+    const modelName = `${schema}_${tableName}`;
     return sequelize.define(modelName, {
         name: {
             type: Sequelize.TEXT,

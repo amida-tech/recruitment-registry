@@ -2,7 +2,7 @@
 
 module.exports = function surveySectionQuestion(sequelize, Sequelize, schema) {
     const tableName = 'survey_section_question';
-    const modelName = tableName;
+    const modelName = `${schema}_${tableName}`;
     return sequelize.define(modelName, {
         surveySectionId: {
             type: Sequelize.INTEGER,

@@ -2,7 +2,7 @@
 
 module.exports = function answerRule(sequelize, Sequelize, schema) {
     const tableName = 'answer_rule';
-    const modelName = tableName;
+    const modelName = `${schema}_${tableName}`;
     return sequelize.define(modelName, {
         surveyId: {
             type: Sequelize.INTEGER,
