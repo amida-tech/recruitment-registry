@@ -34,7 +34,7 @@ const Registry = require('./registry.dao');
 const UserAuditDAO = require('./user-audit.dao');
 const Macro = require('./macro');
 
-module.exports = function daosGenerator(db) {
+const doasPerSchema = function (db, daosGenerator) {
     const registry = new Registry(db);
     const questionIdentifier = new QuestionIdentifierDAO(db);
     const answerIdentifier = new AnswerIdentifierDAO(db);
@@ -103,6 +103,19 @@ module.exports = function daosGenerator(db) {
         registry,
         userAudit,
         macro,
-        generator: daosGenerator,
     };
+};
+
+
+module.exports = function daosGenerator(db) {
+    if (db.schemas) {
+        const result = db.schemas.reduce((r, schema) => {
+            r[schema] = doasPerSchema(db[schema]);
+            r.generator = daosGenerator;
+            return r;
+        }, {});
+        return Object.assign({ sequelize: db.sequelize }, result);
+    }
+    const daos = doasPerSchema(db, daosGenerator);
+    return Object.assign({ generator: daosGenerator }, daos);
 };

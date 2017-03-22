@@ -49,10 +49,7 @@ const researchSite = require('./research-site.model');
 const researchSiteVicinity = require('./research-site-vicinity.model');
 const registry = require('./registry.model');
 
-module.exports = function dbGenerator(inputSchema) {
-    const schema = inputSchema || config.db.schema;
-    const { Sequelize, sequelize } = sequelizeGenerator(schema !== 'public');
-
+const defineTables = function (sequelize, Sequelize, schema) {
     const SurveyStatus = surveyStatus(sequelize, Sequelize, schema);
     const User = user(sequelize, Sequelize, schema);
     const QuestionType = questionType(sequelize, Sequelize, schema);
@@ -202,7 +199,6 @@ module.exports = function dbGenerator(inputSchema) {
     });
 
     return {
-        Sequelize,
         sequelize,
         SurveyStatus,
         User,
@@ -249,7 +245,23 @@ module.exports = function dbGenerator(inputSchema) {
         ResearchSite,
         ResearchSiteVicinity,
         Registry,
-        generator: dbGenerator,
         schema,
     };
+};
+
+module.exports = function dbGenerator(inputSchema) {
+    if (inputSchema && Array.isArray(inputSchema)) {
+        const { Sequelize, sequelize } = sequelizeGenerator(true);
+        const tables = inputSchema.reduce((r, schema) => {
+            const schemaTables = defineTables(sequelize, Sequelize, schema);
+            r[schema] = schemaTables;
+            return r;
+        }, {});
+        const schemas = inputSchema;
+        return Object.assign({ Sequelize, sequelize }, schemas, tables);
+    }
+    const schema = inputSchema || config.db.schema;
+    const { Sequelize, sequelize } = sequelizeGenerator(schema !== 'public');
+    const schemaTables = defineTables(sequelize, Sequelize, schema);
+    return Object.assign({ Sequelize, sequelize, generator: dbGenerator }, schemaTables);
 };

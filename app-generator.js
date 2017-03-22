@@ -59,15 +59,13 @@ const modelsSupplyFn = function (inputModels) {
     };
 };
 
-const formSwaggerObject = function (effectiveConfig, effectiveSwaggerJson) {
-    const schema = effectiveConfig.db.schema;
+const formSwaggerObject = function (schema, effectiveConfig, effectiveSwaggerJson) {
+    if (Array.isArray(schema)) {
+        const result = _.cloneDeep(effectiveSwaggerJson);
+        swaggerUtil.updateSchema(result, schema);
+        return result;
+    }
     if (schema !== 'public') {
-        const schemaCount = schema.split('~').length;
-        if (schemaCount > 1) {
-            const result = _.cloneDeep(effectiveSwaggerJson);
-            swaggerUtil.updateSchema(result);
-            return result;
-        }
         if (effectiveConfig.db.addSchemaPath) {
             const result = _.cloneDeep(effectiveSwaggerJson);
             swaggerUtil.updateSchemaConst(result, schema);
@@ -77,9 +75,19 @@ const formSwaggerObject = function (effectiveConfig, effectiveSwaggerJson) {
     return effectiveSwaggerJson;
 };
 
+const extractSchema = function (configSchema) {
+    const schemas = configSchema.split('~');
+    if (schemas.length > 1) {
+        return schemas;
+    }
+    return configSchema;
+};
+
 exports.initialize = function initialize(app, options, callback) {
     const effectiveConfig = options.config || config;
-    const swaggerObject = formSwaggerObject(effectiveConfig, options.swaggerJson || swaggerJson);
+    const schema = extractSchema(effectiveConfig.db.schema);
+    const effSwaggerJson = options.swaggerJson || swaggerJson;
+    const swaggerObject = formSwaggerObject(schema, effectiveConfig, effSwaggerJson);
     app.use(i18n.init);
     swaggerTools.initializeMiddleware(swaggerObject, (middleware) => {
         app.use(middleware.swaggerMetadata());
@@ -88,7 +96,6 @@ exports.initialize = function initialize(app, options, callback) {
             validateResponse: true,
         }));
 
-        const schema = effectiveConfig.db.schema;
         const m = options.models || (options.generatedb ? modelsGenerator(schema) : models);
         app.locals.models = m;
         app.use(modelsSupplyFn(m));
