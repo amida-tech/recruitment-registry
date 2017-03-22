@@ -257,10 +257,10 @@ module.exports = function dbGenerator(inputSchema) {
             r[schema] = schemaTables;
             return r;
         }, {});
-        return Object.assign({ Sequelize, sequelize }, { schemas: inputSchema }, tables);
+        return Object.assign({ sequelize }, { schemas: inputSchema }, tables);
     }
     const schema = inputSchema || config.db.schema;
     const { Sequelize, sequelize } = sequelizeGenerator(schema !== 'public');
     const schemaTables = defineTables(sequelize, Sequelize, schema);
-    return Object.assign({ Sequelize, sequelize, generator: dbGenerator }, schemaTables);
+    return Object.assign({ sequelize, generator: dbGenerator }, schemaTables);
 };
