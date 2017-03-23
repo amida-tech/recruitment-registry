@@ -57,11 +57,11 @@ module.exports = class FilterDAO extends Base {
 
     listFilters() {
         const attributes = this.attributes();
-        return this.db.Filter.findAll({ raw: true, attributes })
+        return this.db.Filter.findAll({ raw: true, attributes, order: 'id' })
             .then(records => records.map(record => _.omitBy(record, _.isNil)));
     }
 
-    patchFilterTx(id, { name, maxCount, criteria }, transaction) {
+    patchFilterTx(id, { name, maxCount, questions }, transaction) {
         return SPromise.resolve()
             .then(() => {
                 if (name || maxCount) {
@@ -70,13 +70,19 @@ module.exports = class FilterDAO extends Base {
                         record.name = name;
                     }
                     if (maxCount) {
-                        record.maxCount = name;
+                        record.maxCount = maxCount;
                     }
                     return this.db.Filter.update(record, { where: { id }, transaction });
                 }
                 return null;
             })
-            .then(() => this.filterAnswer.replaceFilterAnswers(id, criteria, transaction));
+            .then(() => {
+                if (questions) {
+                    const questionPatch = { filterId: id, questions };
+                    return this.filterAnswer.replaceFilterAnswersTx(questionPatch, transaction);
+                }
+                return null;
+            });
     }
 
     patchFilter(id, filter) {
