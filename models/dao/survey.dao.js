@@ -2,6 +2,7 @@
 
 const _ = require('lodash');
 
+const answerCommon = require('./answer-common');
 const RRError = require('../../lib/rr-error');
 const SPromise = require('../../lib/promise');
 const queryrize = require('../../lib/queryrize');
@@ -130,7 +131,7 @@ module.exports = class SurveyDAO extends Translatable {
         const rule = ruleParent;
         const ruleId = ruleParent.ruleId;
         if (rule.answer) {
-            const dbAnswers = this.answer.toDbAnswer(rule.answer);
+            const dbAnswers = answerCommon.prepareAnswerForDB(rule.answer);
             const pxs = dbAnswers.map(({ questionChoiceId, value }) => {
                 questionChoiceId = questionChoiceId || null;
                 value = (value !== undefined ? value : null);

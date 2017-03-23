@@ -5,6 +5,7 @@ const chai = require('chai');
 const models = require('../../models');
 const comparator = require('./comparator');
 const AnswerHistory = require('./answer-history');
+const modelsAnswerCommon = require('../../models/dao/answer-common');
 
 const expect = chai.expect;
 
@@ -87,7 +88,7 @@ const expectedAnswerListForUser = function (userIndex, hxSurvey, hxAnswer) {
         });
         const surveyId = survey.id;
         e.answers.forEach((answer) => {
-            const dbAnswers = models.answer.toDbAnswer(answer.answer);
+            const dbAnswers = modelsAnswerCommon.prepareAnswerForDB(answer.answer);
             dbAnswers.forEach((dbAnswer) => {
                 const value = Object.assign({ surveyId, questionId: answer.questionId }, dbAnswer);
                 value.questionType = idToType.get(value.questionId);

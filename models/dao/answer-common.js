@@ -2,6 +2,8 @@
 
 const _ = require('lodash');
 
+const RRError = require('../../lib/rr-error');
+
 const getValueAnswerGenerator = (function () {
     const fns = {
         text(value) { return { textValue: value }; },
@@ -134,7 +136,127 @@ const generateFilterAnswers = function (type, answers, choiceType) {
     return answers.map(answer => fn(answer, choiceType));
 };
 
+const answerValueToDBFormat = {
+    boolValue(value) {
+        value = value ? 'true' : 'false';
+        return { value };
+    },
+    dateValue(value) {
+        return { value };
+    },
+    yearValue(value) {
+        return { value };
+    },
+    monthValue(value) {
+        return { value };
+    },
+    dayValue(value) {
+        return { value };
+    },
+    textValue(value) {
+        return { value };
+    },
+    numberValue(value) {
+        return { value };
+    },
+    integerValue(value) {
+        return { value };
+    },
+    floatValue(value) {
+        return { value };
+    },
+    feetInchesValue(value) {
+        const feet = value.feet || 0;
+        const inches = value.inches || 0;
+        return { value: `${feet}-${inches}` };
+    },
+    bloodPressureValue(value) {
+        const systolic = value.systolic || 0;
+        const diastolic = value.diastolic || 0;
+        return { value: `${systolic}-${diastolic}` };
+    },
+};
+
+const choiceValueToDBFormat = {
+    choices(value) {
+        return value.map((choice) => {
+            const questionChoiceId = choice.id;
+            choice = _.omit(choice, 'id');
+            const keys = Object.keys(choice);
+            const numKeys = keys.length;
+            if (numKeys > 1) {
+                keys.sort();
+                throw new RRError('answerMultipleTypeChoice', keys.join(', '));
+            }
+            if (numKeys === 0) {
+                return { questionChoiceId, value: 'true' };
+            }
+            const key = keys[0];
+            const fn = answerValueToDBFormat[key];
+            if (!fn) {
+                throw new RRError('answerAnswerNotUnderstood', key);
+            }
+            return Object.assign({ questionChoiceId }, fn(choice[key]));
+        });
+    },
+    choice(value) {
+        return [{ questionChoiceId: value }];
+    },
+};
+
+const prepareAnswerForDB = function (answer) {
+    if (Array.isArray(answer)) {
+        return answer.map((singleAnswer) => {
+            const multipleIndex = singleAnswer.multipleIndex;
+            if (multipleIndex === undefined) {
+                throw new RRError('answerNoMultiQuestionIndex');
+            }
+            const valuePiece = _.omit(singleAnswer, 'multipleIndex');
+            const dbObject = prepareAnswerForDB(valuePiece)[0];
+            dbObject.multipleIndex = multipleIndex;
+            return dbObject;
+        });
+    }
+    const keys = Object.keys(answer);
+    const numKeys = keys.length;
+    if (numKeys > 1) {
+        keys.sort();
+        throw new RRError('answerMultipleTypeAnswers', keys.join(', '));
+    }
+    const key = keys[0];
+    let fn = choiceValueToDBFormat[key];
+    if (fn) {
+        return fn(answer[key]);
+    }
+    fn = answerValueToDBFormat[key];
+    if (!fn) {
+        throw new RRError('answerAnswerNotUnderstood', key);
+    }
+    return [fn(answer[key])];
+};
+
+const prepareFilterAnswerForDB = function (answer) {
+    const dbAnswer = {};
+    if (answer.choice) {
+        dbAnswer.questionChoiceId = answer.choice;
+    }
+    const value = _.omit(answer, 'choice');
+    const keys = Object.keys(value);
+    if (keys.length > 0) {
+        const key = keys[0];
+        const fn = answerValueToDBFormat[key];
+        Object.assign(dbAnswer, fn(value[key]));
+    }
+    return dbAnswer;
+};
+
+const prepareFilterAnswersForDB = function (answers) {
+    return answers.map(answer => prepareFilterAnswerForDB(answer));
+};
+
 module.exports = {
     generateAnswer,
     generateFilterAnswers,
+    prepareAnswerForDB,
+    prepareFilterAnswersForDB,
 };
