@@ -1,5 +1,7 @@
 'use strict';
 
+const _ = require('lodash');
+
 const config = require('../../config');
 
 const sequelizeGenerator = require('./sequelize-generator');
@@ -203,6 +205,9 @@ const defineTables = function (sequelize, Sequelize, schema) {
             },
         },
     });
+
+    FilterAnswer.belongsTo(Question, _.cloneDeep(questionBelongsToArgument));
+    FilterAnswer.belongsTo(QuestionChoice, _.cloneDeep(questionChoiceBelongsToArgument));
 
     return {
         sequelize,

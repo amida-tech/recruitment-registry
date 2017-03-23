@@ -59,6 +59,7 @@ const filterAnswer = function (queryInterface, Sequelize) {
             type: Sequelize.INTEGER,
             allowNull: false,
             field: 'question_id',
+            onUpdate: 'CASCADE',
             references: {
                 model: {
                     tableName: 'question',
@@ -69,6 +70,7 @@ const filterAnswer = function (queryInterface, Sequelize) {
         questionChoiceId: {
             type: Sequelize.INTEGER,
             field: 'question_choice_id',
+            onUpdate: 'CASCADE',
             references: {
                 model: {
                     tableName: 'question_choice',

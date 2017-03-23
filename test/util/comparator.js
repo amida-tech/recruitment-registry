@@ -200,6 +200,11 @@ const comparator = {
         const orderedActual = _.sortBy(serverAnswers, 'questionId');
         expect(orderedActual).to.deep.equal(orderedExpected);
     },
+    createdAt(server) {
+        const compareDateTime = moment().subtract(2, 'second');
+        const createdDateTime = moment(server.createdAt);
+        expect(createdDateTime.isAfter(compareDateTime)).to.equal(true);
+    },
     user(client, server) {
         const expected = _.cloneDeep(client);
         expected.id = server.id;
@@ -210,9 +215,7 @@ const comparator = {
         if (!expected.username) {
             expected.username = expected.email.toLowerCase();
         }
-        const compareDateTime = moment().subtract(2, 'second');
-        const createdDateTime = moment(server.createdAt);
-        expect(createdDateTime.isAfter(compareDateTime)).to.equal(true);
+        this.createdAt(server);
         expected.createdAt = server.createdAt;
         expect(server).to.deep.equal(expected);
     },
@@ -294,7 +297,13 @@ const comparator = {
         expected.id = server.id;
         expect(server).to.deep.equal(expected);
     },
-
+    filter(client, server) {
+        const expected = _.cloneDeep(client);
+        expected.id = server.id;
+        this.createdAt(server);
+        expected.createdAt = server.createdAt;
+        expect(server).to.deep.equal(expected);
+    },
 };
 
 module.exports = comparator;

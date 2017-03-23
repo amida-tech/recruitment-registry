@@ -104,8 +104,9 @@ const getFilterAnswerGenerator = (function () {
             return { textValue: answer.value };
         },
         choiceRef(answer) { return { choice: answer.questionChoiceId }; },
-        choices(answer, choiceType) {
+        choices(answer) {
             const result = { choice: answer.questionChoiceId };
+            const choiceType = answer.choiceType;
             if (choiceType && choiceType !== 'bool') {
                 const fn = getValueAnswerGenerator(choiceType);
                 Object.assign(result, fn(answer.value));
@@ -131,9 +132,9 @@ const getFilterAnswerGenerator = (function () {
     };
 }());
 
-const generateFilterAnswers = function (type, answers, choiceType) {
+const generateFilterAnswers = function (type, answers) {
     const fn = getFilterAnswerGenerator(type);
-    return answers.map(answer => fn(answer, choiceType));
+    return answers.map(answer => fn(answer));
 };
 
 const answerValueToDBFormat = {

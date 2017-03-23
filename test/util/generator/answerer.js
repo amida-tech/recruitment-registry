@@ -142,6 +142,20 @@ module.exports = class Answerer {
         return { questionId: question.id, answer };
     }
 
+    answerFilterQuestion(question) {
+        const type = _.camelCase(question.type);
+        this.answerIndex += 1;
+        if (type === 'choices') {
+            const choice = this.selectChoice(question.choices);
+            const answer = { choice: choice.id };
+            if (choice.type && choice.type !== 'bool') {
+                Object.assign(answer, this[choice.type](question));
+            }
+            return answer;
+        }
+        return this[type](question);
+    }
+
     answerMultipleQuestion(question, multipleIndices) {
         const type = _.camelCase(question.type);
         const answers = multipleIndices.map((multipleIndex) => {

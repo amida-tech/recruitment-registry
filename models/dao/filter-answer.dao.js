@@ -5,14 +5,15 @@ const answerCommon = require('./answer-common');
 
 module.exports = class FilterAnswerDAO extends Base {
     createFilterAnswersTx({ filterId, questions }, transaction) {
-        const records = questions.reduce((r, { id: questionId, answer, answers }) => {
-            const answerRecords = this.answer.toDbAnswer(answer || answers);
-            const record = { filterId, questionId };
+        const records = questions.reduce((r, { questionId, answers }) => {
+            const answerRecords = answerCommon.prepareFilterAnswersForDB(answers);
+            const baseRecord = { filterId, questionId };
             answerRecords.forEach((answerRecord) => {
+                const record = Object.assign({}, baseRecord);
                 record.value = ('value' in answerRecord) ? answerRecord.value : null;
-                record.questionChoiceId = answer.questionChoiceId || null;
+                record.questionChoiceId = answerRecord.questionChoiceId || null;
+                r.push(record);
             });
-            r.push(record);
             return r;
         }, []);
         return this.db.FilterAnswer.bulkCreate(records, { transaction });
@@ -20,15 +21,21 @@ module.exports = class FilterAnswerDAO extends Base {
 
     getFilterAnswers(filterId) {
         const attributes = ['questionId', 'questionChoiceId', 'value'];
-        return this.db.FilterAnswer.findAll({ raw: true, filterId, attributes, order: 'id' })
+        const include = [
+            { model: this.db.Question, as: 'question', attributes: ['type'] },
+            { model: this.db.QuestionChoice, as: 'questionChoice', attributes: ['type'] },
+        ];
+        const where = { filterId };
+        const order = this.qualifiedCol('filter_answer', 'id');
+        const findOptions = { raw: true, where, attributes, include, order };
+        return this.db.FilterAnswer.findAll(findOptions)
             .then((records) => {
                 const groupedRecords = records.reduce((r, record) => {
                     const questionId = record.questionId;
                     let questionInfo = r.get(questionId);
                     if (!questionInfo) {
-                        const multiple = record['question.multiple'];
                         const type = record['question.type'];
-                        questionInfo = { multiple, type, rows: [] };
+                        questionInfo = { type, rows: [] };
                         r.set(questionId, questionInfo);
                     }
                     const { questionChoiceId, value } = record;
@@ -40,13 +47,9 @@ module.exports = class FilterAnswerDAO extends Base {
                     return r;
                 }, new Map());
                 const questions = [];
-                groupedRecords.forEach(({ multiple, type, rows }, questionId) => {
+                groupedRecords.forEach(({ type, rows }, questionId) => {
                     const question = { questionId };
-                    if (multiple) {
-                        question.answers = answerCommon.generateAnswer(type, rows, true);
-                    } else {
-                        question.answer = answerCommon.generateAnswer(type, rows, false);
-                    }
+                    question.answers = answerCommon.generateFilterAnswers(type, rows);
                     questions.push(question);
                 });
                 return questions;

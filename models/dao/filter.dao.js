@@ -12,18 +12,18 @@ module.exports = class FilterDAO extends Base {
     }
 
     attributes() {
-        const created = this.timestampColumn('user_assessment', 'created');
+        const created = this.timestampColumn('filter', 'created');
         return ['id', 'name', 'maxCount', created];
     }
 
-    createFilterTx({ name, maxCount, criteria }, transaction) {
+    createFilterTx({ name, maxCount, questions }, transaction) {
         const record = { name };
         if (maxCount) {
             record.maxCount = maxCount;
         }
         return this.db.Filter.create(record, { transaction })
             .then(({ id }) => {
-                const filterAnswers = { filterId: id, criteria };
+                const filterAnswers = { filterId: id, questions };
                 return this.filterAnswer.createFilterAnswersTx(filterAnswers, transaction)
                     .then(() => ({ id }));
             });
@@ -39,8 +39,8 @@ module.exports = class FilterDAO extends Base {
             .then((record) => {
                 const filter = _.omitBy(record, _.isNil);
                 return this.filterAnswer.getFilterAnswers(id)
-                    .then((criteria) => {
-                        filter.criteria = criteria;
+                    .then((questions) => {
+                        filter.questions = questions;
                         return filter;
                     });
             });
