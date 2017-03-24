@@ -304,6 +304,13 @@ const comparator = {
         expected.createdAt = server.createdAt;
         expect(server).to.deep.equal(expected);
     },
+    cohort(client, server) {
+        const expected = _.cloneDeep(client);
+        expected.id = server.id;
+        this.createdAt(server);
+        expected.createdAt = server.createdAt;
+        expect(server).to.deep.equal(expected);
+    },
 };
 
 module.exports = comparator;

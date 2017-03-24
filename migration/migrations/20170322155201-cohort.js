@@ -107,11 +107,6 @@ const cohort = function (queryInterface, Sequelize) {
             primaryKey: true,
             autoIncrement: true,
         },
-        name: {
-            type: Sequelize.TEXT,
-            unique: true,
-            allowNull: false,
-        },
         filterId: {
             type: Sequelize.INTEGER,
             allowNull: false,
@@ -127,10 +122,6 @@ const cohort = function (queryInterface, Sequelize) {
             type: Sequelize.DATE,
             field: 'created_at',
         },
-        updatedAt: {
-            type: Sequelize.DATE,
-            field: 'updated_at',
-        },
         deletedAt: {
             type: Sequelize.DATE,
             field: 'deleted_at',
@@ -139,7 +130,7 @@ const cohort = function (queryInterface, Sequelize) {
         freezeTableName: true,
         timestamps: true,
         createdAt: 'createdAt',
-        updatedAt: 'updatedAt',
+        updatedAt: false,
         deletedAt: 'deletedAt',
         paranoid: true,
     });

@@ -209,6 +209,23 @@ const defineTables = function (sequelize, Sequelize, schema) {
     FilterAnswer.belongsTo(Question, _.cloneDeep(questionBelongsToArgument));
     FilterAnswer.belongsTo(QuestionChoice, _.cloneDeep(questionChoiceBelongsToArgument));
 
+    Cohort.belongsTo(Filter, {
+        as: 'filter',
+        onUpdate: 'NO ACTION',
+        foreignKey: {
+            type: Sequelize.INTEGER,
+            allowNull: false,
+            fieldName: 'filterId',
+            field: 'filter_id',
+            references: {
+                model: {
+                    model: 'filter',
+                    key: 'id',
+                },
+            },
+        },
+    });
+
     return {
         sequelize,
         SurveyStatus,
