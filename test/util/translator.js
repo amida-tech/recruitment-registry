@@ -23,6 +23,7 @@ const translator = {
         result.text = this.translate(result.text, language);
         delete result.type;
         delete result.meta;
+        delete result.common;
         if (result.choices) {
             result.choices.forEach((choice) => {
                 choice.text = this.translate(choice.text, language);

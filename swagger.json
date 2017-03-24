@@ -927,6 +927,19 @@
                     "required": false,
                     "type": "string",
                     "minLength": 2
+                }, {
+                    "name": "survey-id",
+                    "in": "query",
+                    "description": "Survey id",
+                    "required": false,
+                    "type": "integer",
+                    "minimum": 1
+                }, {
+                    "name": "common-only",
+                    "in": "query",
+                    "description": "Common flag",
+                    "required": false,
+                    "type": "boolean"
                 }],
                 "responses": {
                     "200": {
@@ -3481,6 +3494,9 @@
                 "instruction": {
                     "type": "string"
                 },
+                "common": {
+                    "type": "boolean"
+                },
                 "type": {
                     "$ref": "#/definitions/questionType"
                 },
@@ -3693,6 +3709,9 @@
                 },
                 "type": {
                     "$ref": "#/definitions/questionType"
+                },
+                "common": {
+                    "type": "boolean"
                 },
                 "sections": {
                   "type": "array",
@@ -4568,6 +4587,9 @@
                 "type": {
                     "$ref": "#/definitions/questionType"
                 },
+                "common": {
+                    "type": "boolean"
+                },
                 "multiple": {
                     "type": "boolean"
                 },
@@ -4662,6 +4684,9 @@
                     "$ref": "#/definitions/questionType"
                 },
                 "multiple": {
+                    "type": "boolean"
+                },
+                "common": {
                     "type": "boolean"
                 },
                 "maxCount": {

@@ -71,6 +71,9 @@ const comparator = {
         if (!expected.id) {
             expected.id = id;
         }
+        if (!expected.common) {
+            expected.common = false;
+        }
         delete expected.parentId;
         if (options.ignoreQuestionIdentifier) {
             delete expected.questionIdentifier;

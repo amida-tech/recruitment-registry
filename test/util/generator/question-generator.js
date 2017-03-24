@@ -45,6 +45,12 @@ module.exports = class QuestionGenerator {
         if (index % 2 === 0) {
             result.instruction = `instruction_${index}`;
         }
+        if (index % 5 === 0) {
+            result.common = true;
+        }
+        if (index % 5 === 1) {
+            result.common = false;
+        }
         const metaIndex = index % 3;
         if (metaIndex > 0 && !this.noMeta) {
             result.meta = {

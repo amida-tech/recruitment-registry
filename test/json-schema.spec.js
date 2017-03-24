@@ -14,7 +14,7 @@ const i18n = require('../i18n');
 
 describe('json schema validations', () => {
     const objectTypes = [
-        'newSurvey', 'newQuestion', 'answer',
+        'newSurvey', 'newQuestion', 'answer', 'newUser',
     ];
 
     let lastErr = {};
