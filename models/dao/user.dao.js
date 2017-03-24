@@ -6,7 +6,9 @@ const _ = require('lodash');
 const Base = require('./base');
 const RRError = require('../../lib/rr-error');
 
-const attributes = ['id', 'username', 'email', 'role', 'firstname', 'lastname', 'createdAt'];
+const attributes = [
+    'id', 'username', 'email', 'role', 'firstname', 'lastname', 'institution', 'createdAt',
+];
 
 module.exports = class UserDAO extends Base {
     constructor(db, dependencies) {
@@ -64,7 +66,7 @@ module.exports = class UserDAO extends Base {
                         fields.username = fields.email.toLowerCase();
                     }
                 }
-                ['lastname', 'firstname'].forEach((key) => {
+                ['lastname', 'firstname', 'institution'].forEach((key) => {
                     if (Object.prototype.hasOwnProperty.call(fields, key)) {
                         if (!fields[key]) {
                             fields[key] = null;

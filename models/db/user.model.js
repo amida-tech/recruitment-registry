@@ -81,6 +81,9 @@ module.exports = function User(sequelize, Sequelize, schema) {
         lastname: {
             type: Sequelize.TEXT,
         },
+        institution: {
+            type: Sequelize.TEXT,
+        },
     }, {
         freezeTableName: true,
         tableName,

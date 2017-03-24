@@ -65,6 +65,7 @@ class Generator {
         if (userIndex % 2 === 1) {
             user.firstname = `firstname_${userIndex}`;
             user.lastname = `lastname_${userIndex}`;
+            user.institution = `institution_${userIndex}`;
         }
         return user;
     }
