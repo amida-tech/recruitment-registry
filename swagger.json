@@ -2892,7 +2892,7 @@
                 }
             }
         },
-       "/registries": {
+        "/registries": {
             "x-swagger-router-controller": "registry.controller",
             "get": {
                 "operationId": "listRegistries",
@@ -2979,7 +2979,7 @@
                 }
             }
         },
-       "/user-audits": {
+        "/user-audits": {
             "x-swagger-router-controller": "user-audit.controller",
             "get": {
                 "operationId": "listUserAudits",
@@ -2994,6 +2994,127 @@
                             "$ref": "#/definitions/userAudits"
                         }
                      },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/filters": {
+            "x-swagger-router-controller": "filter.controller",
+            "get": {
+                "operationId": "listFilters",
+                "summary": "List filters",
+                "security": [{
+                    "admin": []
+                }, {
+                    "clinician": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/filterList"
+                        }
+                     },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "createFilter",
+                "summary": "Creates new filter",
+                "security": [{
+                    "admin": []
+                }, {
+                    "clinician": []
+                }],
+                "parameters": [{
+                    "name": "filter",
+                    "in": "body",
+                    "description": "Filter specification",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/newFilter"
+                    }
+                }],
+                "responses": {
+                    "201": {
+                        "$ref": "#/responses/idSuccess"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/filters/{id}": {
+            "x-swagger-router-controller": "filter.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
+            "get": {
+                "operationId": "getFilter",
+                "summary": "Gets filter",
+                "security": [{
+                    "admin": []
+                }, {
+                    "clinician": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successul response",
+                        "schema": {
+                            "$ref": "#/definitions/filter"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "patch": {
+                "operationId": "patchFilter",
+                "summary": "Patches filter",
+                "security": [{
+                    "admin": []
+                }, {
+                    "clinician": []
+                }],
+                "parameters": [{
+                    "name": "filterPatch",
+                    "in": "body",
+                    "description": "Filter patch specification",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/filterPatch"
+                    }
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successul response"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "deleteFilter",
+                "summary": "Deletes filter",
+                "security": [{
+                    "admin": []
+                }, {
+                    "clinician": []
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successul response"
+                    },
                     "default": {
                         "$ref": "#/responses/genericError"
                     }
@@ -3734,11 +3855,7 @@
             "required": ["questions"],
             "properties": {
                 "questions": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/questionQuery"
-                    },
-                    "minItems": 1
+                    "$ref": "#/definitions/questionQueries"
                 }
             }
         },
@@ -3756,6 +3873,13 @@
                     }
                 }
             }
+        },
+        "questionQueries": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/questionQuery"
+            },
+            "minItems": 1
         },
         "federalAnswersQuery": {
             "type": "object",
@@ -3786,6 +3910,90 @@
                     }
                 }
             }
+        },
+        "newFilter": {
+            "type": "object",
+            "required": ["name", "questions"],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "maxCount": {
+                    "type": "integer"
+                },
+                "questions": {
+                    "$ref": "#/definitions/questionQueries"
+                }
+            },
+            "additionalProperties": false
+        },
+        "filter": {
+            "type": "object",
+            "required": ["id", "name", "questions", "createdAt"],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "maxCount": {
+                    "type": "integer"
+                },
+                "questions": {
+                    "$ref": "#/definitions/questionQueries"
+                },
+                "createdAt": {
+                    "type": "string",
+                    "format": "dateTime"
+                }
+            },
+            "additionalProperties": false
+        },
+        "filterList": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": ["id", "name", "createdAt"],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "maxCount": {
+                        "type": "integer"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "dateTime"
+                    }
+                },
+                "additionalProperties": false
+            }
+        },
+        "filterPatch": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "maxCount": {
+                    "type": "integer"
+                },
+                "questions": {
+                    "$ref": "#/definitions/questionQueries"
+                }
+            },
+            "minProperties": 1,
+            "additionalProperties": false
         },
         "userSurveyInfo": {
             "type": "object",
