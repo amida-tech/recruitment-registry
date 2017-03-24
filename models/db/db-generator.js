@@ -1,5 +1,7 @@
 'use strict';
 
+const _ = require('lodash');
+
 const config = require('../../config');
 
 const sequelizeGenerator = require('./sequelize-generator');
@@ -48,6 +50,9 @@ const userAudit = require('./user-audit.model');
 const researchSite = require('./research-site.model');
 const researchSiteVicinity = require('./research-site-vicinity.model');
 const registry = require('./registry.model');
+const filter = require('./filter.model');
+const filterAnswer = require('./filter-answer.model');
+const cohort = require('./cohort.model');
 
 const defineTables = function (sequelize, Sequelize, schema) {
     const SurveyStatus = surveyStatus(sequelize, Sequelize, schema);
@@ -95,6 +100,9 @@ const defineTables = function (sequelize, Sequelize, schema) {
     const ResearchSite = researchSite(sequelize, Sequelize, schema);
     const ResearchSiteVicinity = researchSiteVicinity(sequelize, Sequelize, schema);
     const Registry = registry(sequelize, Sequelize, schema);
+    const Filter = filter(sequelize, Sequelize, schema);
+    const FilterAnswer = filterAnswer(sequelize, Sequelize, schema);
+    const Cohort = cohort(sequelize, Sequelize, schema);
 
     const questionBelongsToArgument = {
         as: 'question',
@@ -198,6 +206,26 @@ const defineTables = function (sequelize, Sequelize, schema) {
         },
     });
 
+    FilterAnswer.belongsTo(Question, _.cloneDeep(questionBelongsToArgument));
+    FilterAnswer.belongsTo(QuestionChoice, _.cloneDeep(questionChoiceBelongsToArgument));
+
+    Cohort.belongsTo(Filter, {
+        as: 'filter',
+        onUpdate: 'NO ACTION',
+        foreignKey: {
+            type: Sequelize.INTEGER,
+            allowNull: false,
+            fieldName: 'filterId',
+            field: 'filter_id',
+            references: {
+                model: {
+                    model: 'filter',
+                    key: 'id',
+                },
+            },
+        },
+    });
+
     return {
         sequelize,
         SurveyStatus,
@@ -245,6 +273,9 @@ const defineTables = function (sequelize, Sequelize, schema) {
         ResearchSite,
         ResearchSiteVicinity,
         Registry,
+        Filter,
+        FilterAnswer,
+        Cohort,
         schema,
     };
 };

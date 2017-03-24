@@ -44,4 +44,9 @@ module.exports = class Base {
     where(attr, comparator, logic) {
         return this.db.sequelize.where(attr, comparator, logic);
     }
+
+    qualifiedCol(table, col) {
+        const schema = this.db.schema;
+        return `${schema}_${table}.${col}`;
+    }
 };

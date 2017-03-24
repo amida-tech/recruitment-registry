@@ -11,104 +11,6 @@ const answerCommon = require('./answer-common');
 const ExportCSVConverter = require('../../export/csv-converter.js');
 const ImportCSVConverter = require('../../import/csv-converter.js');
 
-const answerValueToDBFormat = {
-    boolValue(value) {
-        value = value ? 'true' : 'false';
-        return [{ value }];
-    },
-    dateValue(value) {
-        return [{ value }];
-    },
-    yearValue(value) {
-        return [{ value }];
-    },
-    monthValue(value) {
-        return [{ value }];
-    },
-    dayValue(value) {
-        return [{ value }];
-    },
-    textValue(value) {
-        return [{ value }];
-    },
-    numberValue(value) {
-        return [{ value }];
-    },
-    integerValue(value) {
-        return [{ value }];
-    },
-    floatValue(value) {
-        return [{ value }];
-    },
-    feetInchesValue(value) {
-        const feet = value.feet || 0;
-        const inches = value.inches || 0;
-        return [{ value: `${feet}-${inches}` }];
-    },
-    bloodPressureValue(value) {
-        const systolic = value.systolic || 0;
-        const diastolic = value.diastolic || 0;
-        return [{ value: `${systolic}-${diastolic}` }];
-    },
-};
-
-const choiceValueToDBFormat = {
-    choices(value) {
-        return value.map((choice) => {
-            const questionChoiceId = choice.id;
-            choice = _.omit(choice, 'id');
-            const keys = Object.keys(choice);
-            const numKeys = keys.length;
-            if (numKeys > 1) {
-                keys.sort();
-                throw new RRError('answerMultipleTypeChoice', keys.join(', '));
-            }
-            if (numKeys === 0) {
-                return { questionChoiceId, value: 'true' };
-            }
-            const key = keys[0];
-            const fn = answerValueToDBFormat[key];
-            if (!fn) {
-                throw new RRError('answerAnswerNotUnderstood', key);
-            }
-            return Object.assign({ questionChoiceId }, fn(choice[key])[0]);
-        });
-    },
-    choice(value) {
-        return [{ questionChoiceId: value }];
-    },
-};
-
-const prepareAnswerForDB = function prepareAnswerForDB(answer) {
-    if (Array.isArray(answer)) {
-        return answer.map((singleAnswer) => {
-            const multipleIndex = singleAnswer.multipleIndex;
-            if (multipleIndex === undefined) {
-                throw new RRError('answerNoMultiQuestionIndex');
-            }
-            const valuePiece = _.omit(singleAnswer, 'multipleIndex');
-            const dbObject = prepareAnswerForDB(valuePiece)[0];
-            dbObject.multipleIndex = multipleIndex;
-            return dbObject;
-        });
-    }
-    const keys = Object.keys(answer);
-    const numKeys = keys.length;
-    if (numKeys > 1) {
-        keys.sort();
-        throw new RRError('answerMultipleTypeAnswers', keys.join(', '));
-    }
-    const key = keys[0];
-    let fn = choiceValueToDBFormat[key];
-    if (!fn) {
-        fn = answerValueToDBFormat[key];
-    }
-    if (!fn) {
-        throw new RRError('answerAnswerNotUnderstood', key);
-    }
-    return fn(answer[key]);
-};
-
 const evaluateAnswerRule = function ({ logic, answer }, questionAnswer) {
     if (logic === 'exists') {
         if (questionAnswer && (questionAnswer.answer || questionAnswer.answers)) {
@@ -159,7 +61,7 @@ module.exports = class AnswerDAO extends Base {
         const Answer = this.db.Answer;
         answers = answers.reduce((r, q) => {
             const questionId = q.questionId;
-            const values = prepareAnswerForDB(q.answer || q.answers).map(value => ({
+            const values = answerCommon.prepareAnswerForDB(q.answer || q.answers).map(value => ({
                 userId,
                 surveyId,
                 language,
@@ -191,10 +93,6 @@ module.exports = class AnswerDAO extends Base {
                 }
                 return null;
             });
-    }
-
-    toDbAnswer(answer) {
-        return prepareAnswerForDB(answer);
     }
 
     validateConsent(userId, surveyId, action, transaction) {
@@ -512,7 +410,7 @@ module.exports = class AnswerDAO extends Base {
         // find answers that match one of the search criteria
         const where = { $or: [] };
         criteria.questions.forEach((question) => {
-            prepareAnswerForDB(question.answer || question.answers).forEach((answer) => {
+            answerCommon.prepareFilterAnswersForDB(question.answers).forEach((answer) => {
                 where.$or.push({
                     question_id: question.id,
                     value: ('value' in answer) ? answer.value.toString() : null,

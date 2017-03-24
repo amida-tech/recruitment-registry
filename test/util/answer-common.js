@@ -1,10 +1,12 @@
 'use strict';
 
+const _ = require('lodash');
 const chai = require('chai');
 
 const models = require('../../models');
 const comparator = require('./comparator');
 const AnswerHistory = require('./answer-history');
+const modelsAnswerCommon = require('../../models/dao/answer-common');
 
 const expect = chai.expect;
 
@@ -87,7 +89,7 @@ const expectedAnswerListForUser = function (userIndex, hxSurvey, hxAnswer) {
         });
         const surveyId = survey.id;
         e.answers.forEach((answer) => {
-            const dbAnswers = models.answer.toDbAnswer(answer.answer);
+            const dbAnswers = modelsAnswerCommon.prepareAnswerForDB(answer.answer);
             dbAnswers.forEach((dbAnswer) => {
                 const value = Object.assign({ surveyId, questionId: answer.questionId }, dbAnswer);
                 value.questionType = idToType.get(value.questionId);
@@ -105,12 +107,19 @@ const expectedAnswerListForUser = function (userIndex, hxSurvey, hxAnswer) {
     return expected;
 };
 
-const answersToSearchQuery = function (answers) {
-    const questions = answers.map(answer => ({
-        id: answer.questionId,
-        answer: answer.answer,
-        answers: answer.answers,
-    }));
+const answersToSearchQuery = function (inputAnswers) {
+    const questions = inputAnswers.map((inputAnswer) => {
+        const id = inputAnswer.questionId;
+        let answers = null;
+        if (inputAnswer.answers) {
+            answers = inputAnswer.answers.map(r => _.omit(r, 'multipleIndex'));
+        } else if (inputAnswer.answer.choices) {
+            answers = inputAnswer.answer.choices.map(choice => ({ choice: choice.id, boolValue: true }));
+        } else {
+            answers = [inputAnswer.answer];
+        }
+        return { id, answers };
+    });
     return { questions };
 };
 

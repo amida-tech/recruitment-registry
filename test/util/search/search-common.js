@@ -166,6 +166,13 @@ const Tests = class BaseTests {
     getCriteria(index) {
         const { count, answers } = this.getCase(index);
         const criteria = this.formCriteria(answers);
+        criteria.questions = criteria.questions.map(({ id, answer, answers }) => {
+            if (answer) {
+                return { id, answers: [answer] };
+            }
+            const a = answers.map(r => _.omit(r, 'multipleIndex'));
+            return { id, answers: a };
+        });
         return { count, criteria };
     }
 };
@@ -204,6 +211,13 @@ const SpecTests = class SearchSpecTests extends Tests {
         const self = this;
         return function searchAnswers() {
             const criteria = self.formCriteria(answers);
+            criteria.questions = criteria.questions.map(({ id, answer, answers }) => {
+                if (answer) {
+                    return { id, answers: [answer] };
+                }
+                const a = answers.map(r => _.omit(r, 'multipleIndex'));
+                return { id, answers: a };
+            });
             return m.answer.searchCountUsers(criteria)
                 .then(actual => expect(actual).to.equal(count));
         };
@@ -302,6 +316,13 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
         const self = this;
         return function searchAnswers() {
             const criteria = self.formCriteria(answers);
+            criteria.questions = criteria.questions.map(({ id, answer, answers }) => {
+                if (answer) {
+                    return { id, answers: [answer] };
+                }
+                const a = answers.map(r => _.omit(r, 'multipleIndex'));
+                return { id, answers: a };
+            });
             return rrSuperTest.post('/answers/queries', criteria, 200)
                 .expect(res => expect(res.body.count).to.equal(count));
         };
