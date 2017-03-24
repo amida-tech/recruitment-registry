@@ -3481,6 +3481,9 @@
                 "instruction": {
                     "type": "string"
                 },
+                "common": {
+                    "type": "boolean"
+                },
                 "type": {
                     "$ref": "#/definitions/questionType"
                 },
@@ -3693,6 +3696,9 @@
                 },
                 "type": {
                     "$ref": "#/definitions/questionType"
+                },
+                "common": {
+                    "type": "boolean"
                 },
                 "sections": {
                   "type": "array",
@@ -4568,6 +4574,9 @@
                 "type": {
                     "$ref": "#/definitions/questionType"
                 },
+                "common": {
+                    "type": "boolean"
+                },
                 "multiple": {
                     "type": "boolean"
                 },
@@ -4662,6 +4671,9 @@
                     "$ref": "#/definitions/questionType"
                 },
                 "multiple": {
+                    "type": "boolean"
+                },
+                "common": {
                     "type": "boolean"
                 },
                 "maxCount": {

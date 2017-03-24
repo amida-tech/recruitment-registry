@@ -136,6 +136,14 @@ const cohort = function (queryInterface, Sequelize) {
     });
 };
 
+const questionCommon = function (queryInterface, Sequelize) {
+    return queryInterface.addColumn('question', 'common', {
+        type: Sequelize.BOOLEAN,
+        allowNull: true,
+        field: 'common',
+    });
+};
+
 module.exports = {
     up(queryInterface, Sequelize) {
         return filter(queryInterface, Sequelize)
@@ -149,12 +157,14 @@ module.exports = {
             indexName: 'filter_answer_filter_id',
             where: { deleted_at: { $eq: null } },
         }))
-        .then(() => cohort(queryInterface, Sequelize));
+        .then(() => cohort(queryInterface, Sequelize))
+        .then(() => questionCommon(queryInterface, Sequelize));
     },
 
     down(queryInterface) {
         return queryInterface.dropTable('cohort')
           .then(() => queryInterface.dropTable('filter_answer'))
-          .then(() => queryInterface.dropTable('filter'));
+          .then(() => queryInterface.dropTable('filter'))
+          .then(() => queryInterface.dropColumn('question', 'common'));
     },
 };

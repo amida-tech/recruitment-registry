@@ -120,35 +120,42 @@ module.exports = class QuestionDAO extends Translatable {
                 if (count) {
                     return RRError.reject('qxReplaceWhenActiveSurveys');
                 }
-                return this.transaction(transaction => Question.findById(id, { transaction })
-                            .then((question) => {
-                                if (!question) {
-                                    return RRError.reject('qxNotFound');
+                return this.transaction((transaction) => {
+                    const px = Question.findById(id, { transaction });
+                    return px.then((question) => {
+                        if (!question) {
+                            return RRError.reject('qxNotFound');
+                        }
+                        const version = question.version || 1;
+                        const newQuestion = Object.assign({}, replacement, {
+                            version: version + 1,
+                            groupId: question.groupId || question.id,
+                        });
+                        return this.createQuestionTx(newQuestion, transaction)
+                            .then(({ id }) => {
+                                if (!question.groupId) {
+                                    const update = { version: 1, groupId: question.id };
+                                    return question.update(update, { transaction })
+                                        .then(() => id);
                                 }
-                                const version = question.version || 1;
-                                const newQuestion = Object.assign({}, replacement, {
-                                    version: version + 1,
-                                    groupId: question.groupId || question.id,
-                                });
-                                return this.createQuestionTx(newQuestion, transaction)
-                                    .then(({ id }) => {
-                                        if (!question.groupId) {
-                                            return question.update({ version: 1, groupId: question.id }, { transaction })
-                                                .then(() => id);
-                                        }
-                                        return id;
-                                    })
-                                    .then(id => question.destroy({ transaction })
-                                            .then(() => SurveyQuestion.destroy({ where: { questionId: question.id } }))
-                                            .then(() => ({ id })));
-                            }));
+                                return id;
+                            })
+                            .then((id) => {
+                                const where = { questionId: question.id };
+                                return question.destroy({ transaction })
+                                    .then(() => SurveyQuestion.destroy({ where }))
+                                    .then(() => ({ id }));
+                            });
+                    });
+                });
             });
     }
 
     getQuestion(id, options = {}) {
         const Question = this.db.Question;
         const language = options.language;
-        return Question.findById(id, { raw: true, attributes: ['id', 'type', 'meta', 'multiple', 'maxCount', 'choiceSetId'] })
+        const attributes = ['id', 'type', 'meta', 'multiple', 'maxCount', 'choiceSetId', 'common'];
+        return Question.findById(id, { raw: true, attributes })
             .then((question) => {
                 if (!question) {
                     return RRError.reject('qxNotFound');
@@ -164,6 +171,9 @@ module.exports = class QuestionDAO extends Translatable {
                 }
                 if (question.choiceSetId === null) {
                     delete question.choiceSetId;
+                }
+                if (question.common === null) {
+                    question.common = false;
                 }
                 return question;
             })
@@ -242,6 +252,9 @@ module.exports = class QuestionDAO extends Translatable {
         if (scope === 'complete' || scope === 'export') {
             attributes.push('meta', 'multiple', 'maxCount', 'choiceSetId');
         }
+        if (scope === 'complete') {
+            attributes.push('common');
+        }
         const options = { raw: true, attributes, order: 'id' };
         if (ids) {
             options.where = { id: { $in: ids } };
@@ -271,6 +284,9 @@ module.exports = class QuestionDAO extends Translatable {
                     }
                     if (question.choiceSetId === null) {
                         delete question.choiceSetId;
+                    }
+                    if (question.common === null) {
+                        question.common = false;
                     }
                 });
                 return this.updateAllTexts(questions, language)

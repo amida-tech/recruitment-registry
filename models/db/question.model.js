@@ -55,6 +55,9 @@ module.exports = function question(sequelize, Sequelize, schema) {
             type: Sequelize.DATE,
             field: 'deleted_at',
         },
+        common: {
+            type: Sequelize.BOOLEAN,
+        },
     }, {
         freezeTableName: true,
         tableName,
