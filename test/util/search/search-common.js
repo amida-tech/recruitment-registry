@@ -223,6 +223,14 @@ const SpecTests = class SearchSpecTests extends Tests {
         };
     }
 
+    searchEmptyFn(count) {
+        const m = this.models;
+        return function searchAnswers() {
+            return m.answer.searchCountUsers({})
+                .then(actual => expect(actual).to.equal(count));
+        };
+    }
+
     createAnswersFn(userIndex, surveyIndex, answerInfo) {
         const self = this;
         const hxUser = this.hxUser;
@@ -270,6 +278,8 @@ const SpecTests = class SearchSpecTests extends Tests {
             const msg = `user ${userIndex} answers survey ${surveyIndex}`;
             it(msg, this.createAnswersFn(userIndex, surveyIndex, answerInfo));
         });
+
+        it('search empty criteria', this.searchEmptyFn(5));
 
         const searchCases = testCase0.searchCases;
 

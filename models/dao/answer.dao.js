@@ -402,7 +402,9 @@ module.exports = class AnswerDAO extends Base {
         const User = this.db.User;
 
         // if criteria is empty, return count of all users
-        if (!criteria || !criteria.questions || !criteria.questions.length) { return User.count(); }
+        if (!_.get(criteria, 'questions.length')) {
+            return User.count({ where: { role: 'participant' } });
+        }
 
         const questionIds = criteria.questions.map(question => question.id);
         if (questionIds.length !== new Set(questionIds).size) { return RRError.reject('searchQuestionRepeat'); }
