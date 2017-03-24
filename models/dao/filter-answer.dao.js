@@ -5,7 +5,7 @@ const answerCommon = require('./answer-common');
 
 module.exports = class FilterAnswerDAO extends Base {
     createFilterAnswersTx({ filterId, questions }, transaction) {
-        const records = questions.reduce((r, { questionId, answers }) => {
+        const records = questions.reduce((r, { id: questionId, answers }) => {
             const answerRecords = answerCommon.prepareFilterAnswersForDB(answers);
             const baseRecord = { filterId, questionId };
             answerRecords.forEach((answerRecord) => {
@@ -47,8 +47,8 @@ module.exports = class FilterAnswerDAO extends Base {
                     return r;
                 }, new Map());
                 const questions = [];
-                groupedRecords.forEach(({ type, rows }, questionId) => {
-                    const question = { questionId };
+                groupedRecords.forEach(({ type, rows }, id) => {
+                    const question = { id };
                     question.answers = answerCommon.generateFilterAnswers(type, rows);
                     questions.push(question);
                 });

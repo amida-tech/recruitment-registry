@@ -27,7 +27,7 @@ module.exports = class FilterGenerator {
             const answerCount = (questionIndex % 3) + 1;
             const questionId = question.id;
             const answers = _.range(answerCount).map(() => this.answerer.answerFilterQuestion(question));
-            return { questionId, answers };
+            return { id: questionId, answers };
         });
         return filter;
     }
