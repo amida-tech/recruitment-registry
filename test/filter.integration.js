@@ -6,15 +6,15 @@ process.env.NODE_ENV = 'test';
 
 const _ = require('lodash');
 
-const config = require('../config');
 const SharedIntegration = require('./util/shared-integration.js');
+const config = require('../config');
 const RRSuperTest = require('./util/rr-super-test');
 const Generator = require('./util/generator');
 const History = require('./util/history');
 const questionCommon = require('./util/question-common');
 const filterCommon = require('./util/filter-common');
 
-describe('filter unit', () => {
+describe('filter integration', function filterIntegration() {
     const rrSuperTest = new RRSuperTest();
     const generator = new Generator();
     const shared = new SharedIntegration(rrSuperTest, generator);

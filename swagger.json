@@ -3120,6 +3120,127 @@
                     }
                 }
             }
+        },
+        "/cohorts": {
+            "x-swagger-router-controller": "cohort.controller",
+            "get": {
+                "operationId": "listCohorts",
+                "summary": "List cohorts",
+                "security": [{
+                    "admin": []
+                }, {
+                    "clinician": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/cohortList"
+                        }
+                     },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "createCohort",
+                "summary": "Creates new cohort",
+                "security": [{
+                    "admin": []
+                }, {
+                    "clinician": []
+                }],
+                "parameters": [{
+                    "name": "cohort",
+                    "in": "body",
+                    "description": "Cohort specification",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/newCohort"
+                    }
+                }],
+                "responses": {
+                    "201": {
+                        "$ref": "#/responses/idSuccess"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/cohorts/{id}": {
+            "x-swagger-router-controller": "cohort.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
+            "get": {
+                "operationId": "getCohort",
+                "summary": "Gets cohort",
+                "security": [{
+                    "admin": []
+                }, {
+                    "clinician": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successul response",
+                        "schema": {
+                            "$ref": "#/definitions/cohort"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "patch": {
+                "operationId": "patchCohort",
+                "summary": "Patches cohort",
+                "security": [{
+                    "admin": []
+                }, {
+                    "clinician": []
+                }],
+                "parameters": [{
+                    "name": "cohortPatch",
+                    "in": "body",
+                    "description": "Cohort patch specification",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/cohortPatch"
+                    }
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successul response"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "deleteCohort",
+                "summary": "Deletes filter",
+                "security": [{
+                    "admin": []
+                }, {
+                    "clinician": []
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successul response"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
         }
     },
     "securityDefinitions": {
@@ -3994,6 +4115,61 @@
             },
             "minProperties": 1,
             "additionalProperties": false
+        },
+        "newCohort": {
+            "type": "object",
+            "required": ["filterId"],
+            "properties": {
+                "filterId": {
+                    "type": "integer",
+                    "minimum": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "cohort": {
+            "type": "object",
+            "required": ["id", "name", "createdAt"],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "createdAt": {
+                    "type": "string",
+                    "format": "dateTime"
+                }
+            },
+            "additionalProperties": false
+        },
+        "cohortList": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": ["id", "name", "createdAt"],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "dateTime"
+                    }
+                },
+                "additionalProperties": false
+            }
+        },
+        "cohortPatch": {
+            "type": "object"
         },
         "userSurveyInfo": {
             "type": "object",

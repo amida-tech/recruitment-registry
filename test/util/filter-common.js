@@ -176,5 +176,5 @@ const IntegrationTests = class FilterIntegrationTests {
 
 module.exports = {
     SpecTests,
-    IntegrationTests
+    IntegrationTests,
 };
