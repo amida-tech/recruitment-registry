@@ -188,6 +188,16 @@ describe('question unit', () => {
         it(`verify question ${i}`, verifyQuestionFn(i));
     });
 
+    it('list common questions', () => models.question.listQuestions({ commonOnly: true })
+            .then((questions) => {
+                let expected = hxQuestion.listServers();
+                expected = expected.filter(q => q.common);
+                expect(expected.length).to.be.above(0);
+                const fields = questionCommon.getFieldsForList('summary');
+                expected = expected.map(r => _.pick(r, fields));
+                expect(questions).to.deep.equal(expected);
+            }));
+
     const createSurveyFn = function (questionIndices) {
         return function () {
             const questionIds = questionIndices.map(index => hxQuestion.id(index));
@@ -203,7 +213,16 @@ describe('question unit', () => {
         [5, 8, 11, 14, 15],
     ].forEach((questionIndices, index) => {
         it(`create survey ${index} from questions ${questionIndices}`, createSurveyFn(questionIndices));
+        it(`list survey ${index} questions`, function listSurveyQuestions() {
+            const surveyId = hxSurvey.id(index);
+            return models.question.listQuestions({ scope: 'complete', surveyId })
+                .then((questions) => {
+                    const expected = hxQuestion.listServers(null, questionIndices);
+                    expect(questions).to.deep.equal(expected);
+                });
+        });
     });
+
 
     _.forEach([2, 7, 11, 13, 14], (questionIndex) => {
         it(`error: delete question ${questionIndex} on an active survey`, () => models.question.deleteQuestion(hxQuestion.id(questionIndex))

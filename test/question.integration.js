@@ -240,6 +240,16 @@ describe('question integration', () => {
         it(`rerrSuperTest question ${i} text`, rerrSuperTestUpdatedQxFn(i));
     });
 
+    it('list common questions', () => rrSuperTest.get('/questions', true, 200, { 'common-only': true })
+            .then((res) => {
+                let expected = hxQuestion.listServers();
+                expected = expected.filter(q => q.common);
+                expect(expected.length).to.be.above(0);
+                const fields = questionCommon.getFieldsForList('summary');
+                expected = expected.map(r => _.pick(r, fields));
+                expect(res.body).to.deep.equal(expected);
+            }));
+
     const createSurveyFn = function (questionIndices) {
         return function (done) {
             const questionIds = questionIndices.map(index => hxQuestion.id(index));
@@ -258,6 +268,15 @@ describe('question integration', () => {
         [5, 8, 11, 14, 15],
     ].forEach((questionIndices, index) => {
         it(`create survey ${index} from questions ${questionIndices}`, createSurveyFn(questionIndices));
+        it(`list survey ${index} questions`, function listSurveyQuestions() {
+            const surveyId = hxSurvey.id(index);
+            const query = { scope: 'complete', 'survey-id': surveyId };
+            return rrSuperTest.get('/questions', true, 200, query)
+                .then((res) => {
+                    const expected = hxQuestion.listServers(null, questionIndices);
+                    expect(res.body).to.deep.equal(expected);
+                });
+        });
     });
 
     const deleteQuestionWhenOnSurveyFn = function (index) {

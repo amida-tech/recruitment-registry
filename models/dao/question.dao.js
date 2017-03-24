@@ -246,8 +246,7 @@ module.exports = class QuestionDAO extends Translatable {
             });
     }
 
-    listQuestions({ scope, ids, language } = {}) {
-        scope = scope || 'summary';
+    findQuestions({ scope, ids, surveyId, commonOnly }) {
         const attributes = ['id', 'type'];
         if (scope === 'complete' || scope === 'export') {
             attributes.push('meta', 'multiple', 'maxCount', 'choiceSetId');
@@ -255,12 +254,37 @@ module.exports = class QuestionDAO extends Translatable {
         if (scope === 'complete') {
             attributes.push('common');
         }
-        const options = { raw: true, attributes, order: 'id' };
-        if (ids) {
-            options.where = { id: { $in: ids } };
+        const options = { attributes };
+        if (ids || commonOnly) {
+            const where = {};
+            if (commonOnly) {
+                where.common = true;
+            }
+            if (ids) {
+                where.id = { $in: ids };
+            }
+            options.where = where;
         }
         const Question = this.db.Question;
-        return Question.findAll(options)
+        if (surveyId) {
+            Object.assign(options, { model: Question, as: 'question' });
+            const include = [options];
+            const where = { surveyId };
+            const sqOptions = { raw: true, where, include, attributes: [], order: 'question_id' };
+            return this.db.SurveyQuestion.findAll(sqOptions)
+                .then(questions => questions.map(question => Object.keys(question).reduce((r, key) => {
+                    const newKey = key.split('.')[1];
+                    r[newKey] = question[key];
+                    return r;
+                }, {})));
+        }
+        Object.assign(options, { raw: true, order: 'id' });
+        return Question.findAll(options);
+    }
+
+    listQuestions({ scope, ids, language, surveyId, commonOnly } = {}) {
+        scope = scope || 'summary';
+        return this.findQuestions({ scope, ids, language, surveyId, commonOnly })
             .then((questions) => {
                 if (ids && (questions.length !== ids.length)) {
                     return RRError.reject('qxNotFound');

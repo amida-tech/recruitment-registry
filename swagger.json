@@ -927,6 +927,19 @@
                     "required": false,
                     "type": "string",
                     "minLength": 2
+                }, {
+                    "name": "survey-id",
+                    "in": "query",
+                    "description": "Survey id",
+                    "required": false,
+                    "type": "integer",
+                    "minimum": 1
+                }, {
+                    "name": "common-only",
+                    "in": "query",
+                    "description": "Common flag",
+                    "required": false,
+                    "type": "boolean"
                 }],
                 "responses": {
                     "200": {
