@@ -1,5 +1,6 @@
 'use strict';
 
+const _ = require('lodash');
 const chai = require('chai');
 
 const models = require('../../models');
@@ -106,12 +107,19 @@ const expectedAnswerListForUser = function (userIndex, hxSurvey, hxAnswer) {
     return expected;
 };
 
-const answersToSearchQuery = function (answers) {
-    const questions = answers.map(answer => ({
-        id: answer.questionId,
-        answer: answer.answer,
-        answers: answer.answers,
-    }));
+const answersToSearchQuery = function (inputAnswers) {
+    const questions = inputAnswers.map((inputAnswer) => {
+        const id = inputAnswer.questionId;
+        let answers = null;
+        if (inputAnswer.answers) {
+            answers = inputAnswer.answers.map(r => _.omit(r, 'multipleIndex'));
+        } else if (inputAnswer.answer.choices) {
+            answers = inputAnswer.answer.choices.map(choice => ({ choice: choice.id, boolValue: true }));
+        } else {
+            answers = [inputAnswer.answer];
+        }
+        return { id, answers };
+    });
     return { questions };
 };
 

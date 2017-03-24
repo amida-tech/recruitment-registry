@@ -410,7 +410,7 @@ module.exports = class AnswerDAO extends Base {
         // find answers that match one of the search criteria
         const where = { $or: [] };
         criteria.questions.forEach((question) => {
-            answerCommon.prepareAnswerForDB(question.answer || question.answers).forEach((answer) => {
+            answerCommon.prepareFilterAnswersForDB(question.answers).forEach((answer) => {
                 where.$or.push({
                     question_id: question.id,
                     value: ('value' in answer) ? answer.value.toString() : null,

@@ -3749,13 +3749,10 @@
                 "id": {
                     "type": "integer"
                 },
-                "answer": {
-                    "$ref": "#/definitions/answer"
-                },
                 "answers": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/answer"
+                        "$ref": "#/definitions/filterAnswer"
                     }
                 }
             }
@@ -3984,7 +3981,76 @@
             "maxProperties": 2,
             "additionalProperties": false
         },
-         "newRuleChoicesItem": {
+        "filterAnswer": {
+            "type": "object",
+            "properties": {
+                "choice": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "textValue": {
+                    "type": "string"
+                },
+                "boolValue": {
+                    "type": "boolean"
+                },
+                "dateValue": {
+                    "type": "string",
+                    "format": "date"
+                },
+                "numberValue": {
+                    "type": "number"
+                },
+                "integerValue": {
+                    "type": "integer"
+                },
+                "floatValue": {
+                    "type": "number"
+                },
+                "feetInchesValue": {
+                    "type": "object",
+                    "properties": {
+                        "feet": {
+                            "type": "integer"
+                        },
+                        "inches": {
+                            "type": "integer"
+                        }
+                    },
+                    "minProperties": 1,
+                    "additionalProperties": false
+                },
+                "bloodPressureValue": {
+                    "type": "object",
+                    "required": ["systolic", "diastolic"],
+                    "properties": {
+                        "systolic": {
+                            "type": "integer"
+                        },
+                        "diastolic": {
+                            "type": "integer"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "yearValue": {
+                    "type": "string",
+                    "pattern": "^\\d{4}$"
+                },
+                "monthValue": {
+                    "type": "string",
+                    "pattern": "^\\d{2}$"
+                },
+                "dayValue": {
+                    "type": "string",
+                    "pattern": "^\\d{2}$"
+                }
+            },
+            "minProperties": 1,
+            "maxProperties": 2,
+            "additionalProperties": false
+        },
+        "newRuleChoicesItem": {
             "type": "object",
             "properties": {
                 "text": {
