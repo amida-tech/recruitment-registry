@@ -60,7 +60,7 @@ describe('survey import-export conditional unit', function surveyImportExportUni
     let rulesCsvConsent;
 
     it('export questions to csv', function exportQuestionsToCSV() {
-        return models.question.export()
+        return models.question.exportQuestions()
             .then((result) => { questionCsvContent = result; });
     });
 
@@ -70,7 +70,7 @@ describe('survey import-export conditional unit', function surveyImportExportUni
     });
 
     it('export surveys to csv', function exportSurveysToCSV() {
-        return models.survey.export()
+        return models.survey.exportSurveys()
             .then((result) => { surveyCsvContent = result; });
     });
 
@@ -85,7 +85,7 @@ describe('survey import-export conditional unit', function surveyImportExportUni
 
     it('import question csv into db', function importQuestionsFromCSV() {
         const stream = intoStream(questionCsvContent);
-        return models.question.import(stream)
+        return models.question.importQuestions(stream)
             .then((result) => { questionIdMap = result; });
     });
 
@@ -101,7 +101,7 @@ describe('survey import-export conditional unit', function surveyImportExportUni
 
     it('import survey csv into db', function importSurveysFromCSV() {
         const stream = intoStream(surveyCsvContent);
-        return models.survey.import(stream, { questionIdMap, sectionIdMap })
+        return models.survey.importSurveys(stream, { questionIdMap, sectionIdMap })
             .then((result) => { idMap = result; });
     });
 

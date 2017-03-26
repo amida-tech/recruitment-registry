@@ -65,7 +65,7 @@ exports.addQuestionIdentifiers = function (req, res) {
 };
 
 exports.exportQuestions = function (req, res) {
-    req.models.question.export()
+    req.models.question.exportQuestions()
         .then((csvContent) => {
             res.header('Content-disposition', 'attachment; filename=question.csv');
             res.type('text/csv');
@@ -77,7 +77,7 @@ exports.exportQuestions = function (req, res) {
 exports.importQuestions = function (req, res) {
     const csvFile = _.get(req, 'swagger.params.questioncsv.value');
     const stream = intoStream(csvFile.buffer);
-    req.models.question.import(stream)
+    req.models.question.importQuestions(stream)
         .then(result => res.status(201).json(result))
         .catch(shared.handleError(res));
 };

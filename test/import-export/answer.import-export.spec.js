@@ -50,10 +50,10 @@ describe('answer import-export unit', () => {
     let surveyCsvContent;
     let answerCsvContent;
 
-    it('export questions to csv', () => models.question.export()
+    it('export questions to csv', () => models.question.exportQuestions()
             .then((result) => { questionCsvContent = result; }));
 
-    it('export surveys to csv', () => models.survey.export()
+    it('export surveys to csv', () => models.survey.exportSurveys()
             .then((result) => { surveyCsvContent = result; }));
 
     it('export answers to csv', () => {
@@ -72,7 +72,7 @@ describe('answer import-export unit', () => {
 
     it('import question csv into db', () => {
         const stream = intoStream(questionCsvContent);
-        return models.question.import(stream)
+        return models.question.importQuestions(stream)
             .then((result) => { questionIdMap = result; });
     });
 
@@ -80,7 +80,7 @@ describe('answer import-export unit', () => {
 
     it('import survey csv into db', () => {
         const stream = intoStream(surveyCsvContent);
-        return models.survey.import(stream, { questionIdMap })
+        return models.survey.importSurveys(stream, { questionIdMap })
             .then((result) => { idMap = result; });
     });
 

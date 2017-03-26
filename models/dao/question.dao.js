@@ -390,7 +390,7 @@ module.exports = class QuestionDAO extends Translatable {
         }, {});
     }
 
-    export(options = {}) {
+    exportQuestions(options = {}) {
         return this.listQuestions({ scope: 'export' })
             .then(questions => questions.reduce((r, { id, type, text, instruction, meta, choices }) => {
                 const questionLine = { id, type, text, instruction };
@@ -440,7 +440,7 @@ module.exports = class QuestionDAO extends Translatable {
         }, {});
     }
 
-    import(stream, options = {}) {
+    importQuestions(stream, options = {}) {
         const AnswerIdentifier = this.db.AnswerIdentifier;
         const converter = new ImportCSVConverter({ checkType: false });
         return converter.streamToRecords(stream)

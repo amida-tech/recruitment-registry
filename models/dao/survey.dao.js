@@ -724,7 +724,7 @@ module.exports = class SurveyDAO extends Translatable {
         });
     }
 
-    export() {
+    exportSurveys() {
         return this.listSurveys({ scope: 'export' })
             .then(surveys => surveys.reduce((r, { id, name, description, questions, sections }) => {
                 const surveyLine = { id, name, description };
@@ -785,7 +785,7 @@ module.exports = class SurveyDAO extends Translatable {
         });
     }
 
-    import(stream, { questionIdMap, sectionIdMap }, options = {}) {
+    importSurveys(stream, { questionIdMap, sectionIdMap }, options = {}) {
         questionIdMap = _.toPairs(questionIdMap).reduce((r, pair) => {
             r[pair[0]] = pair[1].questionId;
             return r;
