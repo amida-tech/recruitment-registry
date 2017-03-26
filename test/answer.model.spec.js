@@ -219,22 +219,24 @@ describe('answer unit', () => {
         surveyIdx: 10,
         qxIndices: [43, 44, 28, 45],
         expectedCount: 3,
-    },
-    {
+    }, {
         surveyIdx: 13,
         qxIndices: [52, 53, 54, 55, 56],
         expectedCount: 2,
-    },
-    ];
+    }];
+
     const searchCountUsers = function searchCountUsers(query) {
         return models.answer.searchCountUsers(query);
     };
+
     const searchCountFromAnswers = function searchCountFromAnswers(answers) {
         return searchCountUsers(answerCommon.answersToSearchQuery(answers));
     };
+
     const generateAnswersFn = function generateAnswersFn(surveyIdx, qxIndices) {
         return () => answerCommon.generateAnswers(generator, hxSurvey.server(surveyIdx), hxQuestion, qxIndices);
     };
+
     const saveAnswersFn = function saveAnswersFn(surveyIdx) {
         return (userIdx, answers) => {
             const userId = hxUser.id(userIdx);
@@ -267,15 +269,23 @@ describe('answer unit', () => {
             ]);
         });
 
-        it(`search survey ${surveyIdx} to find all users`, () => searchCountUsers({ questions: [] }).then(count => expect(count).to.be.at.least(userCount)));
+        it(`search survey ${surveyIdx} to find all users`, function searchFindAllUsers() {
+            return searchCountUsers({ questions: [] })
+                .then(({ count }) => expect(count).to.be.at.least(userCount));
+        });
 
-        it(`search survey ${surveyIdx} to find a single user`, () => searchCountFromAnswers(searchAnswersOne).then(count => expect(count).to.equal(1)));
+        it(`search survey ${surveyIdx} to find a single user`, function searchFindSingleUser() {
+            return searchCountFromAnswers(searchAnswersOne)
+                .then(({ count }) => expect(count).to.equal(1));
+        });
 
         // assumes there is a nonzero intersection in the two answer sets TODO build an independent test  for these
-        it(`search survey ${surveyIdx} to find both user`, () => searchCountFromAnswers(_.intersectionWith(searchAnswersOne, searchAnswersTwo, _.isEqual))
-                .then(count => expect(count).to.equal(expectedCount)));
+        it(`search survey ${surveyIdx} to find both user`, function searchFindBothUsers() {
+            return searchCountFromAnswers(_.intersectionWith(searchAnswersOne, searchAnswersTwo, _.isEqual))
+                .then(({ count }) => expect(count).to.equal(expectedCount));
+        });
 
-        it(`search survey ${surveyIdx} to find no users`, () => {
+        it(`search survey ${surveyIdx} to find no users`, function searchFindNoUsers() {
             // find questions answered differently by the two users
             const answersTwo = new Map();
             searchAnswersTwo.forEach(answer => answersTwo.set(answer.questionId, answer));
@@ -289,7 +299,8 @@ describe('answer unit', () => {
                 return false;
             });
 
-            return searchCountFromAnswers(answersOne).then(count => expect(count).to.equal(0));
+            return searchCountFromAnswers(answersOne)
+                .then(({ count }) => expect(count).to.equal(0));
         });
     });
 
@@ -304,7 +315,7 @@ describe('answer unit', () => {
         }];
 
         return saveAnswersFn(surveyIdx)(1, answers).then(() => searchCountFromAnswers(searchInput)
-                .then(count => expect(count).to.equal(2)));
+                .then(({ count }) => expect(count).to.equal(2)));
     });
 
     it('error: question specified multiple times in search criteria', () => {

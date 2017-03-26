@@ -219,7 +219,7 @@ const SpecTests = class SearchSpecTests extends Tests {
                 return { id, answers: a };
             });
             return m.answer.searchCountUsers(criteria)
-                .then(actual => expect(actual).to.equal(count));
+                .then(({ count: actual }) => expect(actual).to.equal(count));
         };
     }
 
@@ -227,7 +227,7 @@ const SpecTests = class SearchSpecTests extends Tests {
         const m = this.models;
         return function searchAnswers() {
             return m.answer.searchCountUsers({})
-                .then(actual => expect(actual).to.equal(count));
+                .then(({ count: actual }) => expect(actual).to.equal(count));
         };
     }
 

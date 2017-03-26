@@ -403,7 +403,7 @@ module.exports = class AnswerDAO extends Base {
 
         // if criteria is empty, return count of all users
         if (!_.get(criteria, 'questions.length')) {
-            return User.count({ where: { role: 'participant' } });
+            return User.count({ where: { role: 'participant' } }).then(count => ({ count }));
         }
 
         const questionIds = criteria.questions.map(question => question.id);
@@ -429,7 +429,7 @@ module.exports = class AnswerDAO extends Base {
         // count resulting users
         const attributes = [this.literal('\'1\'')];
         return Answer.findAll({ raw: true, where, attributes, include, having, group })
-            .then(results => results.length);
+            .then(results => ({ count: results.length }));
     }
 
     federalSearchCountUsers(federalCriteria) {
@@ -467,12 +467,11 @@ module.exports = class AnswerDAO extends Base {
                 const promises = registries.map(({ id }) => {
                     const models = this.schemaModels.get(id);
                     const criteria = criteriaMap.get(id);
-                    return models.answer.searchCountUsers(criteria).then(count => ({ count }));
+                    return models.answer.searchCountUsers(criteria);
                 });
                 return SPromise.all(promises);
             })
             .then(federal => this.searchCountUsers(federalCriteria.local.criteria)
-                    .then(count => ({ count }))
                     .then((local) => {
                         const result = { local, federal };
                         const totalCount = federal.reduce((r, { count }) => r + count, local.count);
