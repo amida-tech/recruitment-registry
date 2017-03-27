@@ -292,6 +292,9 @@ module.exports = class AnswerDAO extends Base {
                 if (scope === 'export') {
                     return result.map((answer) => {
                         const r = { surveyId: answer.surveyId };
+                        if (userIds) {
+                            r.userId = answer.userId;
+                        }
                         r.questionId = answer['question.id'];
                         r.questionType = answer['question.type'];
                         if (answer.questionChoiceId) {
@@ -362,7 +365,8 @@ module.exports = class AnswerDAO extends Base {
             });
     }
 
-    importForUser(userId, stream, surveyIdMap, questionIdMap, userIdMap) {
+    importAnswers(stream, maps) {
+        const { userId, surveyIdMap, questionIdMap, userIdMap } = maps;
         const converter = new ImportCSVConverter({ checkType: false });
         return converter.streamToRecords(stream)
             .then(records => records.map((record) => {

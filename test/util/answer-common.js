@@ -124,7 +124,7 @@ const answersToSearchQuery = function (inputAnswers) {
 };
 
 const compareImportedAnswers = function (actual, rawExpected, maps) {
-    const { questionIdMap } = maps;
+    const { userIdMap, questionIdMap } = maps;
     const expected = _.cloneDeep(rawExpected);
     expected.forEach((record) => {
         const questionIdInfo = questionIdMap[record.questionId];
@@ -132,6 +132,9 @@ const compareImportedAnswers = function (actual, rawExpected, maps) {
         if (record.questionChoiceId) {
             const choicesIds = questionIdInfo.choicesIds;
             record.questionChoiceId = choicesIds[record.questionChoiceId];
+        }
+        if (userIdMap) {
+            record.userId = userIdMap[record.userId];
         }
     });
     expect(actual).to.deep.equal(expected);
@@ -213,6 +216,28 @@ const SpecTests = class AnswerSpecTests {
                 });
         };
     }
+
+    listAnswersForUsersFn(userIndices) {
+        const hxUser = this.hxUser;
+        const hxSurvey = this.hxSurvey;
+        const hxAnswer = this.hxAnswer;
+        return function listAnswersForUsers() {
+            const userIds = userIndices.map(index => hxUser.id(index));
+            const expected = [];
+            userIndices.forEach((index) => {
+                const userExpected = expectedAnswerListForUser(index, hxSurvey, hxAnswer);
+                const userId = hxUser.id(index);
+                userExpected.forEach(r => Object.assign(r, { userId }));
+                expected.push(...userExpected);
+            });
+            return models.answer.listAnswers({ scope: 'export', userIds })
+                .then((answers) => {
+                    const actual = _.sortBy(answers, ['userId', 'surveyId']);
+                    expect(actual).to.deep.equal(expected);
+                    return actual;
+                });
+        };
+    }
 };
 
 const IntegrationTests = class AnswerIntegrationTests {
@@ -290,6 +315,30 @@ const IntegrationTests = class AnswerIntegrationTests {
                 .then((res) => {
                     expect(res.body).to.deep.equal(expected);
                     return res.body;
+                });
+        };
+    }
+
+    listAnswersForUsersFn(userIndices) {
+        const rrSuperTest = this.rrSuperTest;
+        const hxUser = this.hxUser;
+        const hxSurvey = this.hxSurvey;
+        const hxAnswer = this.hxAnswer;
+        return function listAnswersForUsers() {
+            const userIds = userIndices.map(index => hxUser.id(index));
+            const expected = [];
+            userIndices.forEach((index) => {
+                const userExpected = expectedAnswerListForUser(index, hxSurvey, hxAnswer);
+                const userId = hxUser.id(index);
+                userExpected.forEach(r => Object.assign(r, { userId }));
+                expected.push(...userExpected);
+            });
+            const query = { 'user-ids': userIds };
+            return rrSuperTest.get('/answers/multi-user-export', true, 200, query)
+                .then((res) => {
+                    const actual = _.sortBy(res.body, ['userId', 'surveyId']);
+                    expect(actual).to.deep.equal(expected);
+                    return actual;
                 });
         };
     }
