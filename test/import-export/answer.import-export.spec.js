@@ -4,7 +4,6 @@
 
 process.env.NODE_ENV = 'test';
 
-const chai = require('chai');
 const _ = require('lodash');
 
 const models = require('../../models');
@@ -17,18 +16,15 @@ const surveyCommon = require('../util/survey-common');
 const answerCommon = require('../util/answer-common');
 const intoStream = require('into-stream');
 
-const expect = chai.expect;
-const generator = new Generator();
-const shared = new SharedSpec(generator);
-
-describe('answer import-export unit', () => {
-    before(shared.setUpFn());
-
+describe('answer import-export unit', function answerIOSpec() {
+    const generator = new Generator();
+    const shared = new SharedSpec(generator);
     const hxUser = new History();
     const hxSurvey = new SurveyHistory();
     const surveyTests = new surveyCommon.SpecTests(generator, hxSurvey);
     const answerTests = new answerCommon.SpecTests(generator, hxUser, hxSurvey);
-    const hxAnswer = answerTests.hxAnswer;
+
+    before(shared.setUpFn());
 
     _.range(4).forEach((i) => {
         it(`create user ${i}`, shared.createUserFn(hxUser));
@@ -44,7 +40,11 @@ describe('answer import-export unit', () => {
         it(`user 0 gets answered survey ${index}`, answerTests.verifyAnsweredSurveyFn(0, index));
     });
 
-    it('list user 0 answers', answerTests.listAnswersForUserFn(0));
+    let user0Answers;
+    it('list user 0 answers', function listAnswersUser0() {
+        return answerTests.listAnswersForUserFn(0)()
+            .then((answers) => { user0Answers = answers; });
+    });
 
     let questionCsvContent;
     let surveyCsvContent;
@@ -94,20 +94,12 @@ describe('answer import-export unit', () => {
         return models.answer.importForUser(userId, stream, idMap, questionIdMap);
     });
 
-    it('list imported answers and verify', () => {
+    it('list imported answers and verify', function verifyUser0Answers() {
         const userId = hxUser.id(0);
         return models.answer.listAnswers({ scope: 'export', userId })
             .then((answers) => {
-                const expected = hxAnswer.lastAnswers;
-                expected.forEach((record) => {
-                    const questionIdInfo = questionIdMap[record.questionId];
-                    record.questionId = questionIdInfo.questionId;
-                    if (record.questionChoiceId) {
-                        const choicesIds = questionIdInfo.choicesIds;
-                        record.questionChoiceId = choicesIds[record.questionChoiceId];
-                    }
-                });
-                expect(answers).to.deep.equal(expected);
+                const maps = { questionIdMap };
+                answerCommon.compareImportedAnswers(answers, user0Answers, maps);
             });
     });
 });

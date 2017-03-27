@@ -6,7 +6,6 @@ process.env.NODE_ENV = 'test';
 
 const path = require('path');
 const fs = require('fs');
-const chai = require('chai');
 const _ = require('lodash');
 const mkdirp = require('mkdirp');
 
@@ -20,9 +19,7 @@ const History = require('../util/history');
 const surveyCommon = require('../util/survey-common');
 const answerCommon = require('../util/answer-common');
 
-const expect = chai.expect;
-
-describe('answer import-export integration', () => {
+describe('answer import-export integration', function answerIOIntegration() {
     const rrSuperTest = new RRSuperTest();
     const generator = new Generator();
     const shared = new SharedIntegration(rrSuperTest, generator);
@@ -30,7 +27,6 @@ describe('answer import-export integration', () => {
     const hxSurvey = new SurveyHistory();
     const surveyTests = new surveyCommon.IntegrationTests(rrSuperTest, generator, hxSurvey);
     const answerTests = new answerCommon.IntegrationTests(rrSuperTest, generator, hxUser, hxSurvey);
-    const hxAnswer = answerTests.hxAnswer;
 
     before(shared.setUpFn());
 
@@ -84,7 +80,11 @@ describe('answer import-export integration', () => {
 
     it('login as user 0', shared.loginIndexFn(hxUser, 0));
 
-    it('list user 0 answers', answerTests.listAnswersForUserFn(0));
+    let user0Answers;
+    it('list user 0 answers', function listAnswersUser0() {
+        return answerTests.listAnswersForUserFn(0)()
+            .then((answers) => { user0Answers = answers; });
+    });
 
     it('export answers to csv', (done) => {
         rrSuperTest.get('/answers/csv', true, 200)
@@ -144,21 +144,12 @@ describe('answer import-export integration', () => {
             .end(done);
     });
 
-    it('list imported answers and verify', (done) => {
-        rrSuperTest.get('/answers/export', true, 200)
-            .expect((res) => {
-                const expected = hxAnswer.lastAnswers;
-                expected.forEach((record) => {
-                    const questionIdInfo = questionIdMap[record.questionId];
-                    record.questionId = questionIdInfo.questionId;
-                    if (record.questionChoiceId) {
-                        const choicesIds = questionIdInfo.choicesIds;
-                        record.questionChoiceId = choicesIds[record.questionChoiceId];
-                    }
-                });
-                expect(res.body).to.deep.equal(expected);
-            })
-            .end(done);
+    it('list imported answers and verify', function verifyUser0Answers() {
+        return rrSuperTest.get('/answers/export', true, 200)
+            .then((res) => {
+                const maps = { questionIdMap };
+                answerCommon.compareImportedAnswers(res.body, user0Answers, maps);
+            });
     });
 
     it('logout as user 0', shared.logoutFn());

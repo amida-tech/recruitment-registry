@@ -123,6 +123,20 @@ const answersToSearchQuery = function (inputAnswers) {
     return { questions };
 };
 
+const compareImportedAnswers = function (actual, rawExpected, maps) {
+    const { questionIdMap } = maps;
+    const expected = _.cloneDeep(rawExpected);
+    expected.forEach((record) => {
+        const questionIdInfo = questionIdMap[record.questionId];
+        record.questionId = questionIdInfo.questionId;
+        if (record.questionChoiceId) {
+            const choicesIds = questionIdInfo.choicesIds;
+            record.questionChoiceId = choicesIds[record.questionChoiceId];
+        }
+    });
+    expect(actual).to.deep.equal(expected);
+};
+
 const SpecTests = class AnswerSpecTests {
     constructor(generator, hxUser, hxSurvey, hxQuestion) {
         this.generator = generator;
@@ -195,7 +209,7 @@ const SpecTests = class AnswerSpecTests {
             return models.answer.listAnswers({ scope: 'export', userId })
                 .then((answers) => {
                     expect(answers).to.deep.equal(expected);
-                    hxAnswer.lastAnswers = answers;
+                    return answers;
                 });
         };
     }
@@ -270,14 +284,13 @@ const IntegrationTests = class AnswerIntegrationTests {
         const rrSuperTest = this.rrSuperTest;
         const hxSurvey = this.hxSurvey;
         const hxAnswer = this.hxAnswer;
-        return function (done) {
+        return function () {
             const expected = expectedAnswerListForUser(userIndex, hxSurvey, hxAnswer);
-            rrSuperTest.get('/answers/export', true, 200)
-                .expect((res) => {
+            return rrSuperTest.get('/answers/export', true, 200)
+                .then((res) => {
                     expect(res.body).to.deep.equal(expected);
-                    hxAnswer.lastAnswers = res.body;
-                })
-                .end(done);
+                    return res.body;
+                });
         };
     }
 };
@@ -286,6 +299,7 @@ module.exports = {
     testQuestions,
     answersToSearchQuery,
     generateAnswers,
+    compareImportedAnswers,
     SpecTests,
     IntegrationTests,
 };
