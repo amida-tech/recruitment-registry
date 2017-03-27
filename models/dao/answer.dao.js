@@ -425,15 +425,7 @@ module.exports = class AnswerDAO extends Base {
      * @param {object} query questionId:value mapping to search users by
      * @returns {integer}
      */
-    searchCountUsers(criteria) {
-        const Answer = this.db.Answer;
-        const User = this.db.User;
-
-        // if criteria is empty, return count of all users
-        if (!_.get(criteria, 'questions.length')) {
-            return User.count({ where: { role: 'participant' } }).then(count => ({ count }));
-        }
-
+    searchUsers(criteria) {
         const questionIds = criteria.questions.map(question => question.id);
         if (questionIds.length !== new Set(questionIds).size) { return RRError.reject('searchQuestionRepeat'); }
 
@@ -450,13 +442,28 @@ module.exports = class AnswerDAO extends Base {
         });
 
         // find users with a matching answer for each question (i.e., users who match all criteria)
-        const include = [{ model: User, as: 'user', attributes: [] }];
+        const include = [{ model: this.db.User, as: 'user', attributes: [] }];
         const having = this.where(this.literal('COUNT(DISTINCT(question_id))'), criteria.questions.length);
         const group = ['user_id'];
 
         // count resulting users
-        const attributes = [this.literal('\'1\'')];
-        return Answer.findAll({ raw: true, where, attributes, include, having, group })
+        const attributes = ['userId'];
+        return this.db.Answer.findAll({ raw: true, where, attributes, include, having, group });
+    }
+
+    /**
+     * Search users by their survey answers. Returns a count of users only.
+     * @param {object} query questionId:value mapping to search users by
+     * @returns {integer}
+     */
+    searchCountUsers(criteria) {
+        // if criteria is empty, return count of all users
+        if (!_.get(criteria, 'questions.length')) {
+            return this.db.User.count({ where: { role: 'participant' } })
+                .then(count => ({ count }));
+        }
+
+        return this.searchUsers(criteria)
             .then(results => ({ count: results.length }));
     }
 

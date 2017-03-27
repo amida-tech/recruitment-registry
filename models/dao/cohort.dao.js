@@ -12,6 +12,11 @@ const rekeyFilterName = function (cohort) {
 };
 
 module.exports = class CohortDAO extends Base {
+    constructor(db, dependencies) {
+        super(db);
+        Object.assign(this, dependencies);
+    }
+
     findOptions() {
         const created = this.timestampColumn('cohort', 'created');
         const attributes = ['id', created];
