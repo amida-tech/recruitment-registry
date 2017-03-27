@@ -50,6 +50,10 @@ const evaluateEnableWhen = function (rules, answersByQuestionId) {
     });
 };
 
+const basicExportFields = [
+    'surveyId', 'questionId', 'questionChoiceId', 'questionType', 'choiceType', 'value',
+];
+
 module.exports = class AnswerDAO extends Base {
     constructor(db, dependencies) {
         super(db);
@@ -239,12 +243,21 @@ module.exports = class AnswerDAO extends Base {
         return this.transaction(tx => this.createAnswersTx(input, tx));
     }
 
-    listAnswers({ userId, scope, surveyId, history, ids }) {
+    listAnswers({ userId, scope, surveyId, history, ids, userIds }) {
         const Answer = this.db.Answer;
         const Question = this.db.Question;
         const QuestionChoice = this.db.QuestionChoice;
         scope = scope || 'survey';
-        const where = ids ? { id: { $in: ids } } : { userId };
+        const where = {};
+        if (ids) {
+            where.id = { $in: ids };
+        }
+        if (userId) {
+            where.userId = userId;
+        }
+        if (userIds) {
+            where.userId = { $in: userIds };
+        }
         if (surveyId) {
             where.surveyId = surveyId;
         }
@@ -257,6 +270,9 @@ module.exports = class AnswerDAO extends Base {
         }
         if (scope === 'history-only') {
             attributes.push(this.timestampColumn('answer', 'deleted', 'SSSS.MS'));
+        }
+        if (userIds) {
+            attributes.push('userId');
         }
         const include = [
             { model: Question, as: 'question', attributes: ['id', 'type', 'multiple'] },
@@ -332,13 +348,21 @@ module.exports = class AnswerDAO extends Base {
     exportForUser(userId) {
         return this.listAnswers({ userId, scope: 'export' })
             .then((answers) => {
-                const converter = new ExportCSVConverter({ fields: ['surveyId', 'questionId', 'questionChoiceId', 'questionType', 'choiceType', 'value'] });
+                const converter = new ExportCSVConverter({ fields: basicExportFields });
                 return converter.dataToCSV(answers);
             });
     }
 
-    importForUser(userId, stream, surveyIdMap, questionIdMap) {
-        const Answer = this.db.Answer;
+    exportForUsers(userIds) {
+        const fields = ['userId', ...basicExportFields];
+        return this.listAnswers({ userIds, scope: 'export' })
+            .then((answers) => {
+                const converter = new ExportCSVConverter({ fields });
+                return converter.dataToCSV(answers);
+            });
+    }
+
+    importForUser(userId, stream, surveyIdMap, questionIdMap, userIdMap) {
         const converter = new ImportCSVConverter({ checkType: false });
         return converter.streamToRecords(stream)
             .then(records => records.map((record) => {
@@ -363,11 +387,11 @@ module.exports = class AnswerDAO extends Base {
                 }
                 delete record.questionType;
                 delete record.choiceType;
-                record.userId = userId;
+                record.userId = userId || userIdMap[record.userId];
                 record.language = 'en';
                 return record;
             }))
-            .then(records => Answer.bulkCreate(records));
+            .then(records => this.db.Answer.bulkCreate(records));
     }
 
     importRecords(records) {

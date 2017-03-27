@@ -106,4 +106,23 @@ module.exports = class UserDAO extends Base {
                 return user.save();
             });
     }
+
+    importDummyUsers(originalIds) {
+        const password = 'pw';
+        const role = 'import';
+        const records = originalIds.map((id) => {
+            const username = `username_${id}`;
+            const email = `${username}@dummy.com`;
+            return { username, email, password, role };
+        });
+        return this.db.User.bulkCreate(records, { returning: true })
+            .then((users) => {
+                const userIdMap = new Map();
+                originalIds.forEach((id, index) => {
+                    const newId = users[index].id;
+                    userIdMap.set(id, newId);
+                });
+                return userIdMap;
+            });
+    }
 };

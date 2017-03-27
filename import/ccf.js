@@ -518,19 +518,8 @@ const importAnswersToDb = function (jsonDB, userIdMap) {
 const importUsers = function (filepath) {
     const converter = new XLSXConverter();
     return converter.fileToRecords(filepath)
-        .then((users) => {
-            const userIdMap = new Map();
-            const password = 'pw';
-            const role = 'import';
-            const promises = users.map((user) => {
-                const username = `username_${user.id}`;
-                const email = `${username}@dummy.com`;
-                const record = { username, email, password, role };
-                return models.user.createUser(record)
-                    .then(({ id }) => userIdMap.set(user.id, id));
-            });
-            return SPromise.all(promises).then(() => userIdMap);
-        });
+        .then(users => users.map(({ id }) => id))
+        .then(ids => models.user.importDummyUsers(ids));
 };
 
 const ImportFiles = function (filepaths) {
