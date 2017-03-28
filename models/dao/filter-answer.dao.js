@@ -20,40 +20,9 @@ module.exports = class FilterAnswerDAO extends Base {
     }
 
     getFilterAnswers(filterId) {
-        const attributes = ['questionId', 'questionChoiceId', 'value'];
-        const include = [
-            { model: this.db.Question, as: 'question', attributes: ['type'] },
-            { model: this.db.QuestionChoice, as: 'questionChoice', attributes: ['type'] },
-        ];
         const where = { filterId };
         const order = this.qualifiedCol('filter_answer', 'id');
-        const findOptions = { raw: true, where, attributes, include, order };
-        return this.db.FilterAnswer.findAll(findOptions)
-            .then((records) => {
-                const groupedRecords = records.reduce((r, record) => {
-                    const questionId = record.questionId;
-                    let questionInfo = r.get(questionId);
-                    if (!questionInfo) {
-                        const type = record['question.type'];
-                        questionInfo = { type, rows: [] };
-                        r.set(questionId, questionInfo);
-                    }
-                    const { questionChoiceId, value } = record;
-                    const row = { questionChoiceId, value };
-                    if (questionInfo.type === 'choices') {
-                        row.choiceType = record['questionChoice.type'];
-                    }
-                    questionInfo.rows.push(row);
-                    return r;
-                }, new Map());
-                const questions = [];
-                groupedRecords.forEach(({ type, rows }, id) => {
-                    const question = { id };
-                    question.answers = answerCommon.generateFilterAnswers(type, rows);
-                    questions.push(question);
-                });
-                return questions;
-            });
+        return answerCommon.getFilterAnswers(this, this.db.FilterAnswer, { where, order });
     }
 
     deleteFilterAnswersTx(filterId, transaction) {

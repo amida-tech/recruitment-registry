@@ -328,6 +328,15 @@ const SpecTests = class SearchSpecTests extends Tests {
         };
     }
 
+    patchFilterFn(searchCase, store) {
+        const self = this;
+        const m = this.models;
+        return function patchFilter() {
+            const filterPatch = self.formCriteria(searchCase.answers);
+            return m.filter.patchFilter(store.id, filterPatch);
+        };
+    }
+
     runAnswerSearchUnit() {
         it('sync models', this.shared.setUpFn());
 
@@ -386,6 +395,9 @@ const SpecTests = class SearchSpecTests extends Tests {
                 it(`compare cohort ${(3 * index) + 2}`, this.compareExportToCohortFn(store, true));
                 it(`patch cohort ${(3 * index) + 3} (limited count)`, this.patchCohortFn(cohortId, store, true, searchCase.count));
                 it(`compare cohort ${(3 * index) + 3}`, this.compareExportToCohortFn(store, true));
+                it(`patch filter ${index} for empty`, this.patchFilterFn(testCase0.emptyCase, store));
+                it(`patch cohort ${3 * index} filter edit (no count)`, this.patchCohortFn(cohortId, store, false));
+                it(`compare cohort ${3 * index} filter edit`, this.compareExportToCohortFn(store, false));
                 cohortId += 1;
             }
         });
@@ -529,6 +541,15 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
         };
     }
 
+    patchFilterFn(searchCase, store) {
+        const self = this;
+        const rrSuperTest = this.rrSuperTest;
+        return function patchFilter() {
+            const filterPatch = self.formCriteria(searchCase.answers);
+            return rrSuperTest.patch(`/filters/${store.id}`, filterPatch, 204);
+        };
+    }
+
     runAnswerSearchIntegration() {
         const options = this.models ? { models: this.models } : {};
         it('sync models', this.shared.setUpFn(options));
@@ -608,6 +629,9 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
                 it(`compare cohort ${(3 * index) + 2}`, this.compareExportToCohortFn(filepath, cohortFilepath, true));
                 it(`patch cohort ${(3 * index) + 2} (limited count)`, this.patchCohortFn(cohortId, store, cohortPatchFilepath, true, searchCase.count));
                 it(`compare cohort ${(3 * index) + 2}`, this.compareExportToCohortFn(filepath, cohortPatchFilepath, true));
+                it(`patch filter ${index} for empty`, this.patchFilterFn(testCase0.emptyCase, store));
+                it(`patch cohort ${3 * index} filter edit (no count)`, this.patchCohortFn(cohortId, store, cohortPatchFilepath, false));
+                it(`compare cohort ${3 * index} filter edit`, this.compareExportToCohortFn(filepath, cohortPatchFilepath, false));
                 cohortId += 1;
             }
         });

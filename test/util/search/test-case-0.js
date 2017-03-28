@@ -226,5 +226,6 @@ const searchCases = [{
 module.exports = {
     answerSequence,
     searchCases,
+    emptyCase: searchCases[3],
 };
 
