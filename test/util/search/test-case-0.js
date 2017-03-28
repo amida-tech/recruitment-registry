@@ -165,6 +165,7 @@ const answerSequence = [{ // user 0, survey 0
 
 const searchCases = [{
     count: 3,
+    userIndices: [0, 1, 2],
     answers: [{
         surveyIndex: 0,
         answerInfo: [{
@@ -180,6 +181,7 @@ const searchCases = [{
     }],
 }, {
     count: 2,
+    userIndices: [0, 2],
     answers: [{
         surveyIndex: 0,
         answerInfo: [{
@@ -195,6 +197,7 @@ const searchCases = [{
     }],
 }, {
     count: 1,
+    userIndices: [1],
     answers: [{
         surveyIndex: 1,
         answerInfo: [{
@@ -204,6 +207,7 @@ const searchCases = [{
     }],
 }, {
     count: 0,
+    userIndices: [],
     answers: [{
         surveyIndex: 0,
         answerInfo: [{

@@ -426,6 +426,12 @@ module.exports = class AnswerDAO extends Base {
      * @returns {integer}
      */
     searchUsers(criteria) {
+        if (!_.get(criteria, 'questions.length')) {
+            const attributes = ['id'];
+            return this.db.User.findAll({ raw: true, where: { role: 'participant' }, attributes })
+                .then(ids => ids.map(({ id }) => ({ userId: id })));
+        }
+
         const questionIds = criteria.questions.map(question => question.id);
         if (questionIds.length !== new Set(questionIds).size) { return RRError.reject('searchQuestionRepeat'); }
 

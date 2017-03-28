@@ -206,10 +206,10 @@ const SpecTests = class SearchSpecTests extends Tests {
         };
     }
 
-    searchAnswersFn({ count, answers }) {
+    searchAnswerCountFn({ count, answers }) {
         const m = this.models;
         const self = this;
-        return function searchAnswers() {
+        return function searchAnswerCount() {
             const criteria = self.formCriteria(answers);
             criteria.questions = criteria.questions.map(({ id, answer, answers }) => {
                 if (answer) {
@@ -223,9 +223,30 @@ const SpecTests = class SearchSpecTests extends Tests {
         };
     }
 
+    searchAnswerUsersFn({ userIndices, answers }) {
+        const m = this.models;
+        const self = this;
+        return function searchAnswerUsers() {
+            const criteria = self.formCriteria(answers);
+            criteria.questions = criteria.questions.map(({ id, answer, answers }) => {
+                if (answer) {
+                    return { id, answers: [answer] };
+                }
+                const a = answers.map(r => _.omit(r, 'multipleIndex'));
+                return { id, answers: a };
+            });
+            return m.answer.searchUsers(criteria)
+                .then((userIds) => {
+                    const actual = userIds.map(({ userId }) => userId);
+                    const expected = userIndices.map(index => self.hxUser.id(index));
+                    expect(actual).to.deep.equal(expected);
+                });
+        };
+    }
+
     searchEmptyFn(count) {
         const m = this.models;
-        return function searchAnswers() {
+        return function searchEmpty() {
             return m.answer.searchCountUsers({})
                 .then(({ count: actual }) => expect(actual).to.equal(count));
         };
@@ -284,7 +305,8 @@ const SpecTests = class SearchSpecTests extends Tests {
         const searchCases = testCase0.searchCases;
 
         searchCases.forEach((searchCase, index) => {
-            it(`search case ${index}`, this.searchAnswersFn(searchCase));
+            it(`search case ${index} count`, this.searchAnswerCountFn(searchCase));
+            it(`search case ${index} user ids`, this.searchAnswerUsersFn(searchCase));
         });
     }
 };
@@ -305,7 +327,6 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
         const hxSurvey = this.hxSurvey;
         const hxQuestion = this.hxQuestion;
         const surveyGenerator = this.surveyGenerator;
-        // const m = this.models;
         const rrSuperTest = this.rrSuperTest;
         return function createSurvey() {
             const survey = surveyGenerator.newBody();
@@ -320,11 +341,10 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
         };
     }
 
-    searchAnswersFn({ count, answers }) {
-        // const m = this.models;
+    searchAnswerCountFn({ count, answers }) {
         const rrSuperTest = this.rrSuperTest;
         const self = this;
-        return function searchAnswers() {
+        return function searchAnswerCount() {
             const criteria = self.formCriteria(answers);
             criteria.questions = criteria.questions.map(({ id, answer, answers }) => {
                 if (answer) {
@@ -335,6 +355,27 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
             });
             return rrSuperTest.post('/answers/queries', criteria, 200)
                 .expect(res => expect(res.body.count).to.equal(count));
+        };
+    }
+
+    searchAnswerUsersFn({ userIndices, answers }) {
+        const rrSuperTest = this.rrSuperTest;
+        const self = this;
+        return function searchAnswerUsers() {
+            const criteria = self.formCriteria(answers);
+            criteria.questions = criteria.questions.map(({ id, answer, answers }) => {
+                if (answer) {
+                    return { id, answers: [answer] };
+                }
+                const a = answers.map(r => _.omit(r, 'multipleIndex'));
+                return { id, answers: a };
+            });
+            return rrSuperTest.post('/answers/user-ids', criteria, 200)
+                .then((res) => {
+                    const actual = res.body.map(({ userId }) => userId);
+                    const expected = userIndices.map(index => self.hxUser.id(index));
+                    expect(actual).to.deep.equal(expected);
+                });
         };
     }
 
@@ -396,7 +437,8 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
 
         it('login as super', this.shared.loginFn(config.superUser));
         searchCases.forEach((searchCase, index) => {
-            it(`search case ${index}`, this.searchAnswersFn(searchCase));
+            it(`search case ${index} count`, this.searchAnswerCountFn(searchCase));
+            it(`search case ${index} user ids`, this.searchAnswerUsersFn(searchCase));
         });
         it('logout as super', this.shared.logoutFn());
     }
