@@ -139,6 +139,64 @@ const cohort = function (queryInterface, Sequelize) {
     });
 };
 
+const cohortAnswer = function (queryInterface, Sequelize) {
+    return queryInterface.createTable('cohort_answer', {
+        id: {
+            type: Sequelize.INTEGER,
+            primaryKey: true,
+            autoIncrement: true,
+        },
+        cohortId: {
+            type: Sequelize.INTEGER,
+            allowNull: false,
+            field: 'cohort_id',
+            references: {
+                model: {
+                    tableName: 'cohort',
+                },
+                key: 'id',
+            },
+        },
+        questionId: {
+            type: Sequelize.INTEGER,
+            allowNull: false,
+            field: 'question_id',
+            onUpdate: 'CASCADE',
+            references: {
+                model: {
+                    tableName: 'question',
+                },
+                key: 'id',
+            },
+        },
+        questionChoiceId: {
+            type: Sequelize.INTEGER,
+            field: 'question_choice_id',
+            onUpdate: 'CASCADE',
+            references: {
+                model: {
+                    tableName: 'question_choice',
+                },
+                key: 'id',
+            },
+        },
+        value: {
+            type: Sequelize.TEXT,
+        },
+        createdAt: {
+            type: Sequelize.DATE,
+            field: 'created_at',
+        },
+    }, {
+        freezeTableName: true,
+        timestamps: true,
+        createdAt: 'createdAt',
+        updatedAt: false,
+        deletedAt: false,
+        indexes: [{ fields: ['cohort_id'] }],
+    });
+};
+
 const questionCommon = function (queryInterface, Sequelize) {
     return queryInterface.addColumn('question', 'common', {
         type: Sequelize.BOOLEAN,
@@ -161,6 +219,10 @@ module.exports = {
             where: { deleted_at: { $eq: null } },
         }))
         .then(() => cohort(queryInterface, Sequelize))
+        .then(() => cohortAnswer(queryInterface, Sequelize))
+        .then(() => queryInterface.addIndex('cohort_answer', ['cohort_id'], {
+            indexName: 'cohort_answer_cohort_id',
+        }))
         .then(() => questionCommon(queryInterface, Sequelize));
     },
 

@@ -53,6 +53,7 @@ const registry = require('./registry.model');
 const filter = require('./filter.model');
 const filterAnswer = require('./filter-answer.model');
 const cohort = require('./cohort.model');
+const cohortAnswer = require('./cohort-answer.model');
 
 const defineTables = function (sequelize, Sequelize, schema) {
     const SurveyStatus = surveyStatus(sequelize, Sequelize, schema);
@@ -103,6 +104,7 @@ const defineTables = function (sequelize, Sequelize, schema) {
     const Filter = filter(sequelize, Sequelize, schema);
     const FilterAnswer = filterAnswer(sequelize, Sequelize, schema);
     const Cohort = cohort(sequelize, Sequelize, schema);
+    const CohortAnswer = cohortAnswer(sequelize, Sequelize, schema);
 
     const questionBelongsToArgument = {
         as: 'question',
@@ -208,6 +210,8 @@ const defineTables = function (sequelize, Sequelize, schema) {
 
     FilterAnswer.belongsTo(Question, _.cloneDeep(questionBelongsToArgument));
     FilterAnswer.belongsTo(QuestionChoice, _.cloneDeep(questionChoiceBelongsToArgument));
+    CohortAnswer.belongsTo(Question, _.cloneDeep(questionBelongsToArgument));
+    CohortAnswer.belongsTo(QuestionChoice, _.cloneDeep(questionChoiceBelongsToArgument));
 
     return {
         sequelize,
@@ -259,6 +263,7 @@ const defineTables = function (sequelize, Sequelize, schema) {
         Filter,
         FilterAnswer,
         Cohort,
+        CohortAnswer,
         schema,
     };
 };
