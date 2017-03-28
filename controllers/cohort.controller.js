@@ -6,7 +6,11 @@ const shared = require('./shared.js');
 
 exports.createCohort = function (req, res) {
     req.models.cohort.createCohort(req.body)
-        .then(result => res.status(201).json(result))
+        .then((csvContent) => {
+            res.header('Content-disposition', 'attachment; filename=cohort.csv');
+            res.type('text/csv');
+            res.status(201).send(csvContent);
+        })
         .catch(shared.handleError(res));
 };
 
@@ -20,7 +24,11 @@ exports.getCohort = function (req, res) {
 exports.patchCohort = function (req, res) {
     const id = _.get(req, 'swagger.params.id.value');
     req.models.cohort.patchCohort(id, req.body)
-        .then(() => res.status(204).end())
+        .then((csvContent) => {
+            res.header('Content-disposition', 'attachment; filename=cohort.csv');
+            res.type('text/csv');
+            res.status(200).send(csvContent);
+        })
         .catch(shared.handleError(res));
 };
 

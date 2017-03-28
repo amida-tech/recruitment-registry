@@ -2,8 +2,8 @@
 
 const _ = require('lodash');
 
+const RRError = require('../../lib/rr-error');
 const Base = require('./base');
-const SPromise = require('../../lib/promise');
 
 const rekeyFilterName = function (cohort) {
     const r = _.omit(cohort, 'filter.name');
@@ -24,9 +24,23 @@ module.exports = class CohortDAO extends Base {
         return { raw: true, attributes, include };
     }
 
-    createCohort({ filterId }) {
-        return this.db.Cohort.create({ filterId })
-            .then(({ id }) => this.sendEmail().then(() => ({ id })));
+    createCohort({ filterId, count }) {
+        return this.filter.getFilter(filterId)
+            .then((filter) => {
+                if (!filter) {
+                    return RRError.reject('cohortNoSuchFilter');
+                }
+                return this.db.Cohort.create({ filterId }).then(() => filter);
+            })
+            .then(filter => this.answer.searchUsers(filter))
+            .then((userIds) => {
+                const ids = userIds.map(({ userId }) => userId);
+                if (count && count > ids.length) {
+                    return this.answer.exportForUsers(ids);
+                }
+                const limitedIds = _.sampleSize(ids, count);
+                return this.answer.exportForUsers(limitedIds);
+            });
     }
 
     getCohort(id) {
@@ -34,8 +48,23 @@ module.exports = class CohortDAO extends Base {
         return this.db.Cohort.findById(id, findOptions).then(rekeyFilterName);
     }
 
-    patchCohort() { // will accept ({ id })
-        return this.sendEmail();
+    patchCohort(id, { count }) {
+        return this.db.Cohort.findById(id, { raw: true, attributes: ['filterId'] })
+            .then((record) => {
+                if (!record) {
+                    return RRError.reject('cohortNoSuchCohort');
+                }
+                return this.filter.getFilter(record.filterId);
+            })
+            .then(filter => this.answer.searchUsers(filter))
+            .then((userIds) => {
+                const ids = userIds.map(({ userId }) => userId);
+                if (count && count > ids.length) {
+                    return this.answer.exportForUsers(ids);
+                }
+                const limitedIds = _.sampleSize(ids, count);
+                return this.answer.exportForUsers(limitedIds);
+            });
     }
 
     deleteCohort(id) {
@@ -47,9 +76,5 @@ module.exports = class CohortDAO extends Base {
         findOptions.order = this.qualifiedCol('cohort', 'created_at');
         return this.db.Cohort.findAll(findOptions)
             .then(cohorts => cohorts.map(rekeyFilterName));
-    }
-
-    sendEmail() {
-        return SPromise.resolve(); // to be implemented
     }
 };

@@ -3308,6 +3308,7 @@
             "post": {
                 "operationId": "createCohort",
                 "summary": "Creates new cohort",
+                "produces": ["text/csv", "application/json"],
                 "security": [{
                     "admin": []
                 }, {
@@ -3324,7 +3325,10 @@
                 }],
                 "responses": {
                     "201": {
-                        "$ref": "#/responses/idSuccess"
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "file"
+                        }
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -3363,6 +3367,7 @@
             "patch": {
                 "operationId": "patchCohort",
                 "summary": "Patches cohort",
+                "produces": ["text/csv", "application/json"],
                 "security": [{
                     "admin": []
                 }, {
@@ -3378,8 +3383,11 @@
                     }
                 }],
                 "responses": {
-                    "204": {
-                        "description": "Successul response"
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "file"
+                        }
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -4302,6 +4310,10 @@
                 "filterId": {
                     "type": "integer",
                     "minimum": 1
+                },
+                "count": {
+                    "type": "integer",
+                    "minimum": 1
                 }
             },
             "additionalProperties": false
@@ -4348,7 +4360,13 @@
             }
         },
         "cohortPatch": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer",
+                    "minimum": 1
+                }
+            }
         },
         "userSurveyInfo": {
             "type": "object",

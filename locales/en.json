@@ -62,5 +62,7 @@
 	"genericUnique": "Record with {{$0}} '{{$1}}' already exists.",
 	"registryNoneFound": "No registries found in the system.",
 	"registryIdNotFound": "No registry with id {{$0}} is found in the system.",
-	"not-existing": "not-existing"
+	"not-existing": "not-existing",
+	"cohortNoSuchFilter": "Filter given to create cohort does not exist.",
+	"cohortNoSuchCohort": "No such cohort exists."
 }

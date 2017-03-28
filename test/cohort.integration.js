@@ -26,6 +26,7 @@ describe('cohort integration', function cohortIntegeration() {
     const hxCohort = new History();
     const qxTests = new questionCommon.IntegrationTests(rrSuperTest, generator, hxQuestion);
     const filterTests = new filterCommon.IntegrationTests(rrSuperTest, hxQuestion);
+    let cohortId = 1;
 
     before(shared.setUpFn());
 
@@ -40,9 +41,10 @@ describe('cohort integration', function cohortIntegeration() {
         return function createCohort() {
             const filter = filterTests.hxFilter.server(filterIndex);
             return rrSuperTest.post('/cohorts', { filterId: filter.id }, 201)
-                .then((res) => {
+                .then(() => {
                     const client = { name: filter.name };
-                    hxCohort.push(client, res.body);
+                    hxCohort.push(client, { id: cohortId });
+                    cohortId += 1;
                 });
         };
     };
@@ -62,7 +64,7 @@ describe('cohort integration', function cohortIntegeration() {
     const patchCohortFn = function (index) { // does nothing currently, will send email
         return function patchCohort() {
             const id = hxCohort.id(index);
-            return rrSuperTest.patch(`/cohorts/${id}`, {}, 204);
+            return rrSuperTest.patch(`/cohorts/${id}`, {}, 200);
         };
     };
 
