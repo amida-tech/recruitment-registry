@@ -5,12 +5,6 @@ const _ = require('lodash');
 const RRError = require('../../lib/rr-error');
 const Base = require('./base');
 
-const rekeyFilterName = function (cohort) {
-    const r = _.omit(cohort, 'filter.name');
-    r.name = cohort['filter.name'];
-    return r;
-};
-
 module.exports = class CohortDAO extends Base {
     constructor(db, dependencies) {
         super(db);
@@ -19,18 +13,23 @@ module.exports = class CohortDAO extends Base {
 
     findOptions() {
         const created = this.timestampColumn('cohort', 'created');
-        const attributes = ['id', created];
-        const include = [{ model: this.db.Filter, as: 'filter', attributes: ['name'] }];
-        return { raw: true, attributes, include };
+        const attributes = ['id', 'name', created];
+        return { raw: true, attributes };
     }
 
-    createCohort({ filterId, count }) {
+    createCohort({ filterId, count, name }) {
         return this.filter.getFilter(filterId)
             .then((filter) => {
                 if (!filter) {
                     return RRError.reject('cohortNoSuchFilter');
                 }
-                return this.db.Cohort.create({ filterId }).then(() => filter);
+                const newCohort = { filterId };
+                if (name) {
+                    newCohort.name = name;
+                } else {
+                    newCohort.name = filter.name;
+                }
+                return this.db.Cohort.create(newCohort).then(() => filter);
             })
             .then(filter => this.answer.searchUsers(filter))
             .then((userIds) => {
@@ -45,7 +44,7 @@ module.exports = class CohortDAO extends Base {
 
     getCohort(id) {
         const findOptions = this.findOptions();
-        return this.db.Cohort.findById(id, findOptions).then(rekeyFilterName);
+        return this.db.Cohort.findById(id, findOptions);
     }
 
     patchCohort(id, { count }) {
@@ -74,7 +73,6 @@ module.exports = class CohortDAO extends Base {
     listCohorts() {
         const findOptions = this.findOptions();
         findOptions.order = this.qualifiedCol('cohort', 'created_at');
-        return this.db.Cohort.findAll(findOptions)
-            .then(cohorts => cohorts.map(rekeyFilterName));
+        return this.db.Cohort.findAll(findOptions);
     }
 };

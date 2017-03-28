@@ -36,9 +36,10 @@ describe('cohort unit', () => {
     const createCohortFn = function (filterIndex) {
         return function createCohort() {
             const filter = filterTests.hxFilter.server(filterIndex);
-            return models.cohort.createCohort(({ filterId: filter.id }))
+            const name = (filterIndex % 4) === 0 ? filter.name : `cohort_${cohortId}`;
+            return models.cohort.createCohort(({ filterId: filter.id, name }))
                 .then(() => {
-                    const client = { name: filter.name };
+                    const client = { name };
                     hxCohort.push(client, { id: cohortId });
                     cohortId += 1;
                 });

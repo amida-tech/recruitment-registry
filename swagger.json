@@ -4311,6 +4311,10 @@
                     "type": "integer",
                     "minimum": 1
                 },
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
                 "count": {
                     "type": "integer",
                     "minimum": 1

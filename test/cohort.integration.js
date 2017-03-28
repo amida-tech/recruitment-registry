@@ -40,9 +40,10 @@ describe('cohort integration', function cohortIntegeration() {
     const createCohortFn = function (filterIndex) {
         return function createCohort() {
             const filter = filterTests.hxFilter.server(filterIndex);
-            return rrSuperTest.post('/cohorts', { filterId: filter.id }, 201)
+            const name = (filterIndex % 4) === 0 ? filter.name : `cohort_${cohortId}`;
+            return rrSuperTest.post('/cohorts', { filterId: filter.id, name }, 201)
                 .then(() => {
-                    const client = { name: filter.name };
+                    const client = { name };
                     hxCohort.push(client, { id: cohortId });
                     cohortId += 1;
                 });
