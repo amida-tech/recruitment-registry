@@ -6,9 +6,9 @@ process.env.NODE_ENV = 'test';
 
 const path = require('path');
 const fs = require('fs');
-const chai = require('chai');
 const _ = require('lodash');
 const mkdirp = require('mkdirp');
+const chai = require('chai');
 
 const config = require('../../config');
 
@@ -22,7 +22,7 @@ const answerCommon = require('../util/answer-common');
 
 const expect = chai.expect;
 
-describe('answer import-export integration', () => {
+describe('answer import-export integration', function answerIOIntegration() {
     const rrSuperTest = new RRSuperTest();
     const generator = new Generator();
     const shared = new SharedIntegration(rrSuperTest, generator);
@@ -30,7 +30,6 @@ describe('answer import-export integration', () => {
     const hxSurvey = new SurveyHistory();
     const surveyTests = new surveyCommon.IntegrationTests(rrSuperTest, generator, hxSurvey);
     const answerTests = new answerCommon.IntegrationTests(rrSuperTest, generator, hxUser, hxSurvey);
-    const hxAnswer = answerTests.hxAnswer;
 
     before(shared.setUpFn());
 
@@ -47,11 +46,15 @@ describe('answer import-export integration', () => {
 
     it('logout as super', shared.logoutFn());
 
-    _.range(4).forEach((index) => {
-        it('login as user 0', shared.loginIndexFn(hxUser, 0));
-        it(`user 0 answers survey ${index}`, answerTests.answerSurveyFn(0, index));
-        it(`user 0 gets answered survey ${index}`, answerTests.verifyAnsweredSurveyFn(0, index));
-        it('logout as user 0', shared.logoutFn());
+    _.range(4).forEach((userIndex) => {
+        _.range(4).forEach((index) => {
+            it(`login as user ${userIndex}`, shared.loginIndexFn(hxUser, userIndex));
+            const titleAnswer = `user ${userIndex} answers survey ${index}`;
+            it(titleAnswer, answerTests.answerSurveyFn(userIndex, index));
+            const titleVerify = `user ${userIndex} gets answered survey ${index}`;
+            it(titleVerify, answerTests.verifyAnsweredSurveyFn(userIndex, index));
+            it(`logout as user ${userIndex}`, shared.logoutFn());
+        });
     });
 
     const generatedDirectory = path.join(__dirname, '../generated');
@@ -84,9 +87,33 @@ describe('answer import-export integration', () => {
 
     it('login as user 0', shared.loginIndexFn(hxUser, 0));
 
-    it('list user 0 answers', answerTests.listAnswersForUserFn(0));
+    let user0Answers;
+    it('list user 0 answers', function listAnswersUser0() {
+        return answerTests.listAnswersForUserFn(0)()
+            .then((answers) => {
+                expect(answers).to.have.length.above(5); // make sure enough answers
+                user0Answers = answers;
+            });
+    });
 
-    it('export answers to csv', (done) => {
+    it('logout as  user 0', shared.logoutFn());
+
+    it('login as super', shared.loginFn(config.superUser));
+
+    let users1And3Answers;
+    it('list user 1, 3 answers', function listAnswersUsers1And3() {
+        return answerTests.listAnswersForUsersFn([1, 3])()
+            .then((answers) => {
+                expect(answers).to.have.length.above(5); // make sure enough answers
+                users1And3Answers = answers;
+            });
+    });
+
+    it('logout as super', shared.logoutFn());
+
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
+
+    it('export user 0 answers to csv', (done) => {
         rrSuperTest.get('/answers/csv', true, 200)
             .expect((res) => {
                 const filepath = path.join(generatedDirectory, 'answer.csv');
@@ -97,9 +124,25 @@ describe('answer import-export integration', () => {
 
     it('logout as  user 0', shared.logoutFn());
 
+    it('login as super', shared.loginFn(config.superUser));
+
+    it('export users 1, 3 answers to csv', (done) => {
+        const userIds = [hxUser.id(1), hxUser.id(3)];
+        rrSuperTest.get('/answers/multi-user-csv', true, 200, { 'user-ids': userIds })
+            .expect((res) => {
+                const filepath = path.join(generatedDirectory, 'answer-multi.csv');
+                fs.writeFileSync(filepath, res.text);
+            })
+            .end(done);
+    });
+
+    it('logout as super', shared.logoutFn());
+
     it('reset database', shared.setUpFn());
 
-    it('reset user history', () => {
+    let originalUserIds;
+    it('reset user history', function resetUserHistory() {
+        originalUserIds = _.range(4).map(index => hxUser.id(index));
         hxUser.reset();
     });
 
@@ -144,22 +187,42 @@ describe('answer import-export integration', () => {
             .end(done);
     });
 
-    it('list imported answers and verify', (done) => {
-        rrSuperTest.get('/answers/export', true, 200)
-            .expect((res) => {
-                const expected = hxAnswer.lastAnswers;
-                expected.forEach((record) => {
-                    const questionIdInfo = questionIdMap[record.questionId];
-                    record.questionId = questionIdInfo.questionId;
-                    if (record.questionChoiceId) {
-                        const choicesIds = questionIdInfo.choicesIds;
-                        record.questionChoiceId = choicesIds[record.questionChoiceId];
-                    }
-                });
-                expect(res.body).to.deep.equal(expected);
-            })
-            .end(done);
+    it('list imported answers and verify', function verifyUser0Answers() {
+        return rrSuperTest.get('/answers/export', true, 200)
+            .then((res) => {
+                const maps = { questionIdMap };
+                answerCommon.compareImportedAnswers(res.body, user0Answers, maps);
+            });
     });
 
     it('logout as user 0', shared.logoutFn());
+
+    it('login as super', shared.loginFn(config.superUser));
+
+    let userIdMap;
+    it('import user 1, 3 answer csv into db', function importAnswersUser1And3() {
+        userIdMap = {
+            [originalUserIds[1]]: hxUser.id(1),
+            [originalUserIds[3]]: hxUser.id(2),
+        };
+        const filepath = path.join(generatedDirectory, 'answer-multi.csv');
+        const questionidmap = JSON.stringify(questionIdMap);
+        const surveyidmap = JSON.stringify(surveyIdMap);
+        const useridmap = JSON.stringify(userIdMap);
+        const maps = { useridmap, surveyidmap, questionidmap };
+        return rrSuperTest.postFile('/answers/multi-user-csv', 'answercsv', filepath, maps, 204);
+    });
+
+    it('list imported user 1, 3 answers and verify', function verifyUser1And3Answers() {
+        const userIds = [hxUser.id(1), hxUser.id(2)];
+        const query = { 'user-ids': userIds };
+        return rrSuperTest.get('/answers/multi-user-export', true, 200, query)
+             .then((res) => {
+                 const maps = { userIdMap, questionIdMap };
+                 const actual = _.sortBy(res.body, ['userId', 'surveyId']);
+                 answerCommon.compareImportedAnswers(actual, users1And3Answers, maps);
+             });
+    });
+
+    it('logout as super', shared.logoutFn());
 });

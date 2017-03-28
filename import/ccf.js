@@ -287,7 +287,7 @@ const importQuestionsToDB = function ({ questions, choices }) {
     }, ['id,type,text,instruction,key,choiceId,choiceText,choiceType,answerKey,tag,toggle']);
     const options = { meta: [{ name: 'ccType', type: 'question' }, { name: 'toggle', type: 'choice' }], sourceType: identifierType };
     const stream = intoStream(csv.join('\n'));
-    return models.question.import(stream, options);
+    return models.question.importQuestions(stream, options);
 };
 
 const importSectionsToDB = function (jsonDB, rules, questionIdMap) {
@@ -365,7 +365,7 @@ const importSurveysToDb = function (jsonDB, rules, spec) {
     const stream = intoStream(surveysCsv.join('\n'));
     const meta = [{ name: 'isBHI', type: 'boolean' }, { name: 'maxScore', type: 'integer' }];
     const options = { meta, sourceType: identifierType };
-    return models.survey.import(stream, { questionIdMap, sectionIdMap }, options)
+    return models.survey.importSurveys(stream, { questionIdMap, sectionIdMap }, options)
         .then((surveyIdMap) => {
             const ruleStream = intoStream(rules.join('\n'));
             return models.answerRule.importAnswerRules(ruleStream, { sectionIdMap, questionIdMap, surveyIdMap })
@@ -518,19 +518,8 @@ const importAnswersToDb = function (jsonDB, userIdMap) {
 const importUsers = function (filepath) {
     const converter = new XLSXConverter();
     return converter.fileToRecords(filepath)
-        .then((users) => {
-            const userIdMap = new Map();
-            const password = 'pw';
-            const role = 'import';
-            const promises = users.map((user) => {
-                const username = `username_${user.id}`;
-                const email = `${username}@dummy.com`;
-                const record = { username, email, password, role };
-                return models.user.createUser(record)
-                    .then(({ id }) => userIdMap.set(user.id, id));
-            });
-            return SPromise.all(promises).then(() => userIdMap);
-        });
+        .then(users => users.map(({ id }) => id))
+        .then(ids => models.user.importDummyUsers(ids));
 };
 
 const ImportFiles = function (filepaths) {

@@ -118,6 +118,9 @@ const cohort = function (queryInterface, Sequelize) {
                 key: 'id',
             },
         },
+        name: {
+            type: Sequelize.TEXT,
+        },
         createdAt: {
             type: Sequelize.DATE,
             field: 'created_at',

@@ -66,7 +66,7 @@ exports.getAnsweredSurvey = function (req, res) {
 };
 
 exports.exportSurveys = function (req, res) {
-    req.models.survey.export()
+    req.models.survey.exportSurveys()
         .then((csvContent) => {
             res.header('Content-disposition', 'attachment; filename=survey.csv');
             res.type('text/csv');
@@ -80,7 +80,7 @@ exports.importSurveys = function (req, res) {
     const idMapAsString = _.get(req, 'swagger.params.questionidmap.value');
     const idMap = JSON.parse(idMapAsString);
     const stream = intoStream(csvFile.buffer);
-    req.models.survey.import(stream, { questionIdMap: idMap })
+    req.models.survey.importSurveys(stream, { questionIdMap: idMap })
         .then(result => res.status(201).json(result))
         .catch(shared.handleError(res));
 };

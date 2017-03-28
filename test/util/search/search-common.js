@@ -2,8 +2,12 @@
 
 'use strict';
 
+const path = require('path');
+const fs = require('fs');
 const chai = require('chai');
 const _ = require('lodash');
+const intoStream = require('into-stream');
+const mkdirp = require('mkdirp');
 
 const config = require('../../../config');
 
@@ -19,6 +23,7 @@ const questionCommon = require('../question-common');
 const QuestionGenerator = require('../generator/question-generator');
 const MultiQuestionGenerator = require('../generator/multi-question-generator');
 const SurveyGenerator = require('../generator/survey-generator');
+const ImportCSVConverter = require('../../../import/csv-converter.js');
 
 const testCase0 = require('./test-case-0');
 
@@ -155,24 +160,24 @@ const Tests = class BaseTests {
     }
 
     formCriteria(inputAnswers) {
-        const questions = inputAnswers.reduce((r, { surveyIndex, answerInfo }) => {
+        const rawQuestions = inputAnswers.reduce((r, { surveyIndex, answerInfo }) => {
             const answers = this.answerInfoToObject(surveyIndex, answerInfo, 'id');
             r.push(...answers);
             return r;
         }, []);
-        return { questions };
-    }
-
-    getCriteria(index) {
-        const { count, answers } = this.getCase(index);
-        const criteria = this.formCriteria(answers);
-        criteria.questions = criteria.questions.map(({ id, answer, answers }) => {
+        const questions = rawQuestions.map(({ id, answer, answers }) => {
             if (answer) {
                 return { id, answers: [answer] };
             }
             const a = answers.map(r => _.omit(r, 'multipleIndex'));
             return { id, answers: a };
         });
+        return { questions };
+    }
+
+    getCriteria(index) {
+        const { count, answers } = this.getCase(index);
+        const criteria = this.formCriteria(answers);
         return { count, criteria };
     }
 };
@@ -206,28 +211,48 @@ const SpecTests = class SearchSpecTests extends Tests {
         };
     }
 
-    searchAnswersFn({ count, answers }) {
+    searchAnswerCountFn({ count, answers }) {
         const m = this.models;
         const self = this;
-        return function searchAnswers() {
+        return function searchAnswerCount() {
             const criteria = self.formCriteria(answers);
-            criteria.questions = criteria.questions.map(({ id, answer, answers }) => {
-                if (answer) {
-                    return { id, answers: [answer] };
-                }
-                const a = answers.map(r => _.omit(r, 'multipleIndex'));
-                return { id, answers: a };
-            });
             return m.answer.searchCountUsers(criteria)
-                .then(actual => expect(actual).to.equal(count));
+                .then(({ count: actual }) => expect(actual).to.equal(count));
+        };
+    }
+
+    searchAnswerUsersFn({ userIndices, answers }) {
+        const m = this.models;
+        const self = this;
+        return function searchAnswerUsers() {
+            const criteria = self.formCriteria(answers);
+            return m.answer.searchUsers(criteria)
+                .then((userIds) => {
+                    const actual = userIds.map(({ userId }) => userId);
+                    const expected = userIndices.map(index => self.hxUser.id(index));
+                    expect(actual).to.deep.equal(expected);
+                });
+        };
+    }
+
+    exportAnswersForUsersFn({ userIndices }, store) {
+        const m = this.models;
+        const self = this;
+        return function exportAnswersForUsers() {
+            const userIds = userIndices.map(index => self.hxUser.id(index));
+            return m.answer.exportForUsers(userIds)
+                .then((result) => {
+                    expect(result).to.have.length.above(userIndices.length - 1);
+                    store.allContent = result;
+                });
         };
     }
 
     searchEmptyFn(count) {
         const m = this.models;
-        return function searchAnswers() {
+        return function searchEmpty() {
             return m.answer.searchCountUsers({})
-                .then(actual => expect(actual).to.equal(count));
+                .then(({ count: actual }) => expect(actual).to.equal(count));
         };
     }
 
@@ -244,6 +269,62 @@ const SpecTests = class SearchSpecTests extends Tests {
             const input = { userId, surveyId, answers };
             return m.answer.createAnswers(input)
                 .then(() => hxAnswers.push(userIndex, surveyIndex, answers));
+        };
+    }
+
+    compareExportToCohortFn(store, limit) {
+        return function compareExportToCohort() {
+            const converter = new ImportCSVConverter({ checkType: false });
+            const streamFullExport = intoStream(store.allContent);
+            return converter.streamToRecords(streamFullExport)
+                .then((recordsFullExport) => {
+                    const streamCohort = intoStream(store.cohort);
+                    return converter.streamToRecords(streamCohort)
+                        .then((recordsCohort) => {
+                            expect(recordsCohort.length).to.be.above(0);
+                            if (limit) {
+                                const userIdSet = new Set(recordsCohort.map(({ userId }) => userId));
+                                const filterRecordsFull = recordsFullExport.reduce((r, record) => {
+                                    if (userIdSet.has(record.userId)) {
+                                        r.push(record);
+                                    }
+                                    return r;
+                                }, []);
+                                expect(filterRecordsFull).to.deep.equal(recordsCohort);
+                            } else {
+                                expect(recordsFullExport).to.deep.equal(recordsCohort);
+                            }
+                        });
+                });
+        };
+    }
+
+    createCohortFn(store, limited, userCount) {
+        const m = this.models;
+        return function createCohort() {
+            const count = limited ? userCount - 1 : 10000;
+            return m.cohort.createCohort(({ filterId: store.id, count }))
+                .then((result) => { store.cohort = result; });
+        };
+    }
+
+    patchCohortFn(id, store, limited, userCount) {
+        const m = this.models;
+        return function createCohort() {
+            const count = limited ? userCount - 1 : 10000;
+            return m.cohort.patchCohort(id, { count })
+                .then((result) => { store.cohort = result; });
+        };
+    }
+
+    createFilterFn(index, searchCase, store) {
+        const self = this;
+        const m = this.models;
+        return function createFilter() {
+            const filter = { name: `name_${index}`, maxCount: 5 };
+            Object.assign(filter, self.formCriteria(searchCase.answers));
+            return m.filter.createFilter(filter)
+                .then(({ id }) => { store.id = id; });
         };
     }
 
@@ -283,8 +364,30 @@ const SpecTests = class SearchSpecTests extends Tests {
 
         const searchCases = testCase0.searchCases;
 
+        let cohortId = 1;
         searchCases.forEach((searchCase, index) => {
-            it(`search case ${index}`, this.searchAnswersFn(searchCase));
+            it(`search case ${index} count`, this.searchAnswerCountFn(searchCase));
+            it(`search case ${index} user ids`, this.searchAnswerUsersFn(searchCase));
+            if (searchCase.count > 1) {
+                const store = {};
+                it(`search case ${index} export answers`, this.exportAnswersForUsersFn(searchCase, store));
+                it(`create filter ${index}`, this.createFilterFn(index, searchCase, store));
+                it(`create cohort ${3 * index} (no count)`, this.createCohortFn(store, false));
+                it(`compare cohort ${3 * index}`, this.compareExportToCohortFn(store, false));
+                it(`patch cohort ${3 * index} (no count)`, this.patchCohortFn(cohortId, store, false));
+                it(`compare cohort ${3 * index}`, this.compareExportToCohortFn(store, false));
+                cohortId += 1;
+                it(`create cohort ${(3 * index) + 1} (large count)`, this.createCohortFn(store, true, 10000));
+                it(`compare cohort ${3 * index}`, this.compareExportToCohortFn(store, false));
+                it(`patch cohort ${(3 * index) + 1} (large count)`, this.patchCohortFn(cohortId, store, true, 10000));
+                it(`compare cohort ${(3 * index) + 1}`, this.compareExportToCohortFn(store, false));
+                cohortId += 1;
+                it(`create cohort ${(3 * index) + 2} (limited count`, this.createCohortFn(store, true, searchCase.count));
+                it(`compare cohort ${(3 * index) + 2}`, this.compareExportToCohortFn(store, true));
+                it(`patch cohort ${(3 * index) + 3} (limited count)`, this.patchCohortFn(cohortId, store, true, searchCase.count));
+                it(`compare cohort ${(3 * index) + 3}`, this.compareExportToCohortFn(store, true));
+                cohortId += 1;
+            }
         });
     }
 };
@@ -305,7 +408,6 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
         const hxSurvey = this.hxSurvey;
         const hxQuestion = this.hxQuestion;
         const surveyGenerator = this.surveyGenerator;
-        // const m = this.models;
         const rrSuperTest = this.rrSuperTest;
         return function createSurvey() {
             const survey = surveyGenerator.newBody();
@@ -320,21 +422,37 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
         };
     }
 
-    searchAnswersFn({ count, answers }) {
-        // const m = this.models;
+    searchAnswerCountFn({ count, answers }) {
         const rrSuperTest = this.rrSuperTest;
         const self = this;
-        return function searchAnswers() {
+        return function searchAnswerCount() {
             const criteria = self.formCriteria(answers);
-            criteria.questions = criteria.questions.map(({ id, answer, answers }) => {
-                if (answer) {
-                    return { id, answers: [answer] };
-                }
-                const a = answers.map(r => _.omit(r, 'multipleIndex'));
-                return { id, answers: a };
-            });
             return rrSuperTest.post('/answers/queries', criteria, 200)
                 .expect(res => expect(res.body.count).to.equal(count));
+        };
+    }
+
+    searchAnswerUsersFn({ userIndices, answers }) {
+        const rrSuperTest = this.rrSuperTest;
+        const self = this;
+        return function searchAnswerUsers() {
+            const criteria = self.formCriteria(answers);
+            return rrSuperTest.post('/answers/user-ids', criteria, 200)
+                .then((res) => {
+                    const actual = res.body.map(({ userId }) => userId);
+                    const expected = userIndices.map(index => self.hxUser.id(index));
+                    expect(actual).to.deep.equal(expected);
+                });
+        };
+    }
+
+    exportAnswersForUsersFn({ userIndices }, filepath) {
+        const rrSuperTest = this.rrSuperTest;
+        const self = this;
+        return function exportAnswersForUsers() {
+            const userIds = userIndices.map(index => self.hxUser.id(index));
+            return rrSuperTest.get('/answers/multi-user-csv', true, 200, { 'user-ids': userIds })
+                .then(res => fs.writeFileSync(filepath, res.text));
         };
     }
 
@@ -342,7 +460,6 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
         const self = this;
         const hxSurvey = this.hxSurvey;
         const hxAnswers = this.hxAnswers;
-        // const m = this.models;
         const rrSuperTest = this.rrSuperTest;
         return function createAnswers() {
             const surveyId = hxSurvey.id(surveyIndex);
@@ -353,9 +470,74 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
         };
     }
 
+    compareExportToCohortFn(filepath, cohortFilepath, limit) {
+        return function compareExportToCohort() {
+            const converter = new ImportCSVConverter({ checkType: false });
+            const streamFullExport = fs.createReadStream(filepath);
+            return converter.streamToRecords(streamFullExport)
+                .then((recordsFullExport) => {
+                    const streamCohort = fs.createReadStream(cohortFilepath);
+                    return converter.streamToRecords(streamCohort)
+                        .then((recordsCohort) => {
+                            expect(recordsFullExport.length).to.be.above(2);
+                            expect(recordsCohort.length).to.be.above(2);
+                            if (limit) {
+                                const userIdSet = new Set(recordsCohort.map(({ userId }) => userId));
+                                const filterRecordsFull = recordsFullExport.reduce((r, record) => {
+                                    if (userIdSet.has(record.userId)) {
+                                        r.push(record);
+                                    }
+                                    return r;
+                                }, []);
+                                expect(filterRecordsFull).to.deep.equal(recordsCohort);
+                            } else {
+                                expect(recordsFullExport).to.deep.equal(recordsCohort);
+                            }
+                        });
+                });
+        };
+    }
+
+    createCohortFn(store, filepath, limited, userCount) {
+        const rrSuperTest = this.rrSuperTest;
+        return function createCohort() {
+            const count = limited ? userCount - 1 : 10000;
+            const payload = { filterId: store.id, count };
+            return rrSuperTest.post('/cohorts', payload, 201)
+                .then(res => fs.writeFileSync(filepath, res.text));
+        };
+    }
+
+    patchCohortFn(id, store, filepath, limited, userCount) {
+        const rrSuperTest = this.rrSuperTest;
+        return function createCohort() {
+            const count = limited ? userCount - 1 : 10000;
+            const payload = { count };
+            return rrSuperTest.patch(`/cohorts/${id}`, payload, 200)
+                .then(res => fs.writeFileSync(filepath, res.text));
+        };
+    }
+
+    createFilterFn(index, searchCase, store) {
+        const self = this;
+        const rrSuperTest = this.rrSuperTest;
+        return function createFilter() {
+            const filter = { name: `name_${index}`, maxCount: 5 };
+            Object.assign(filter, self.formCriteria(searchCase.answers));
+            return rrSuperTest.post('/filters', filter, 201)
+                .then((res) => { store.id = res.body.id; });
+        };
+    }
+
     runAnswerSearchIntegration() {
         const options = this.models ? { models: this.models } : {};
         it('sync models', this.shared.setUpFn(options));
+
+        const generatedDirectory = path.join(__dirname, '../../generated');
+
+        it('create output directory if necessary', (done) => {
+            mkdirp(generatedDirectory, done);
+        });
 
         it('login as super', this.shared.loginFn(config.superUser));
 
@@ -395,8 +577,39 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
         const searchCases = testCase0.searchCases;
 
         it('login as super', this.shared.loginFn(config.superUser));
+        let cohortId = 1;
         searchCases.forEach((searchCase, index) => {
-            it(`search case ${index}`, this.searchAnswersFn(searchCase));
+            it(`search case ${index} count`, this.searchAnswerCountFn(searchCase));
+            it(`search case ${index} user ids`, this.searchAnswerUsersFn(searchCase));
+            if (searchCase.count > 1) {
+                const store = {};
+                let cohortFilepath;
+                let cohortPatchFilepath;
+                const filepath = path.join(generatedDirectory, `answer-multi_${index}.csv`);
+                it(`search case ${index} export answers`, this.exportAnswersForUsersFn(searchCase, filepath));
+                it(`create filter ${index}`, this.createFilterFn(index, searchCase, store));
+                cohortFilepath = path.join(generatedDirectory, `cohort_${3 * index}.csv`);
+                cohortPatchFilepath = path.join(generatedDirectory, `cohort_patch_${3 * index}.csv`);
+                it(`create cohort ${3 * index} (no count)`, this.createCohortFn(store, cohortFilepath, false));
+                it(`compare cohort ${3 * index}`, this.compareExportToCohortFn(filepath, cohortFilepath, false));
+                it(`patch cohort ${3 * index} (no count)`, this.patchCohortFn(cohortId, store, cohortPatchFilepath, false));
+                it(`compare cohort ${3 * index}`, this.compareExportToCohortFn(filepath, cohortPatchFilepath, false));
+                cohortId += 1;
+                cohortFilepath = path.join(generatedDirectory, `cohort_${(3 * index) + 1}.csv`);
+                cohortPatchFilepath = path.join(generatedDirectory, `cohort_patch_${(3 * index) + 1}.csv`);
+                it(`create cohort ${(3 * index) + 1} (large count)`, this.createCohortFn(store, cohortFilepath, true, 10000));
+                it(`compare cohort ${(3 * index) + 1}`, this.compareExportToCohortFn(filepath, cohortFilepath, false));
+                it(`patch cohort ${(3 * index) + 1} (large count)`, this.patchCohortFn(cohortId, store, cohortPatchFilepath, true, 10000));
+                it(`compare cohort ${(3 * index) + 1}`, this.compareExportToCohortFn(filepath, cohortPatchFilepath, false));
+                cohortId += 1;
+                cohortFilepath = path.join(generatedDirectory, `cohort_${(3 * index) + 2}.csv`);
+                cohortPatchFilepath = path.join(generatedDirectory, `cohort_patch_${(3 * index) + 2}.csv`);
+                it(`create cohort ${(3 * index) + 2} (limited count`, this.createCohortFn(store, cohortFilepath, true, searchCase.count));
+                it(`compare cohort ${(3 * index) + 2}`, this.compareExportToCohortFn(filepath, cohortFilepath, true));
+                it(`patch cohort ${(3 * index) + 2} (limited count)`, this.patchCohortFn(cohortId, store, cohortPatchFilepath, true, searchCase.count));
+                it(`compare cohort ${(3 * index) + 2}`, this.compareExportToCohortFn(filepath, cohortPatchFilepath, true));
+                cohortId += 1;
+            }
         });
         it('logout as super', this.shared.logoutFn());
     }

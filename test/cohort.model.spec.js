@@ -24,6 +24,7 @@ describe('cohort unit', () => {
     const hxCohort = new History();
     const qxTests = new questionCommon.SpecTests(generator, hxQuestion);
     const filterTests = new filterCommon.SpecTests(hxQuestion);
+    let cohortId = 1;
 
     before(shared.setUpFn());
 
@@ -35,10 +36,12 @@ describe('cohort unit', () => {
     const createCohortFn = function (filterIndex) {
         return function createCohort() {
             const filter = filterTests.hxFilter.server(filterIndex);
-            return models.cohort.createCohort(({ filterId: filter.id }))
-                .then(({ id }) => {
-                    const client = { name: filter.name };
-                    hxCohort.push(client, { id });
+            const name = (filterIndex % 4) === 0 ? filter.name : `cohort_${cohortId}`;
+            return models.cohort.createCohort(({ filterId: filter.id, name }))
+                .then(() => {
+                    const client = { name };
+                    hxCohort.push(client, { id: cohortId });
+                    cohortId += 1;
                 });
         };
     };
@@ -57,7 +60,7 @@ describe('cohort unit', () => {
     const patchCohortFn = function (index) { // does nothing currently, will send email
         return function patchCohort() {
             const id = hxCohort.id(index);
-            return models.cohort.patchCohort(id);
+            return models.cohort.patchCohort(id, {});
         };
     };
 

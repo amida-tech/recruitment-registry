@@ -50,6 +50,10 @@ const evaluateEnableWhen = function (rules, answersByQuestionId) {
     });
 };
 
+const basicExportFields = [
+    'surveyId', 'questionId', 'questionChoiceId', 'questionType', 'choiceType', 'value',
+];
+
 module.exports = class AnswerDAO extends Base {
     constructor(db, dependencies) {
         super(db);
@@ -239,12 +243,21 @@ module.exports = class AnswerDAO extends Base {
         return this.transaction(tx => this.createAnswersTx(input, tx));
     }
 
-    listAnswers({ userId, scope, surveyId, history, ids }) {
+    listAnswers({ userId, scope, surveyId, history, ids, userIds }) {
         const Answer = this.db.Answer;
         const Question = this.db.Question;
         const QuestionChoice = this.db.QuestionChoice;
         scope = scope || 'survey';
-        const where = ids ? { id: { $in: ids } } : { userId };
+        const where = {};
+        if (ids) {
+            where.id = { $in: ids };
+        }
+        if (userId) {
+            where.userId = userId;
+        }
+        if (userIds) {
+            where.userId = { $in: userIds };
+        }
         if (surveyId) {
             where.surveyId = surveyId;
         }
@@ -257,6 +270,9 @@ module.exports = class AnswerDAO extends Base {
         }
         if (scope === 'history-only') {
             attributes.push(this.timestampColumn('answer', 'deleted', 'SSSS.MS'));
+        }
+        if (userIds) {
+            attributes.push('userId');
         }
         const include = [
             { model: Question, as: 'question', attributes: ['id', 'type', 'multiple'] },
@@ -276,6 +292,9 @@ module.exports = class AnswerDAO extends Base {
                 if (scope === 'export') {
                     return result.map((answer) => {
                         const r = { surveyId: answer.surveyId };
+                        if (userIds) {
+                            r.userId = answer.userId;
+                        }
                         r.questionId = answer['question.id'];
                         r.questionType = answer['question.type'];
                         if (answer.questionChoiceId) {
@@ -332,13 +351,22 @@ module.exports = class AnswerDAO extends Base {
     exportForUser(userId) {
         return this.listAnswers({ userId, scope: 'export' })
             .then((answers) => {
-                const converter = new ExportCSVConverter({ fields: ['surveyId', 'questionId', 'questionChoiceId', 'questionType', 'choiceType', 'value'] });
+                const converter = new ExportCSVConverter({ fields: basicExportFields });
                 return converter.dataToCSV(answers);
             });
     }
 
-    importForUser(userId, stream, surveyIdMap, questionIdMap) {
-        const Answer = this.db.Answer;
+    exportForUsers(userIds) {
+        const fields = ['userId', ...basicExportFields];
+        return this.listAnswers({ userIds, scope: 'export' })
+            .then((answers) => {
+                const converter = new ExportCSVConverter({ fields });
+                return converter.dataToCSV(answers);
+            });
+    }
+
+    importAnswers(stream, maps) {
+        const { userId, surveyIdMap, questionIdMap, userIdMap } = maps;
         const converter = new ImportCSVConverter({ checkType: false });
         return converter.streamToRecords(stream)
             .then(records => records.map((record) => {
@@ -363,11 +391,11 @@ module.exports = class AnswerDAO extends Base {
                 }
                 delete record.questionType;
                 delete record.choiceType;
-                record.userId = userId;
+                record.userId = userId || userIdMap[record.userId];
                 record.language = 'en';
                 return record;
             }))
-            .then(records => Answer.bulkCreate(records));
+            .then(records => this.db.Answer.bulkCreate(records));
     }
 
     importRecords(records) {
@@ -397,13 +425,11 @@ module.exports = class AnswerDAO extends Base {
      * @param {object} query questionId:value mapping to search users by
      * @returns {integer}
      */
-    searchCountUsers(criteria) {
-        const Answer = this.db.Answer;
-        const User = this.db.User;
-
-        // if criteria is empty, return count of all users
+    searchUsers(criteria) {
         if (!_.get(criteria, 'questions.length')) {
-            return User.count({ where: { role: 'participant' } });
+            const attributes = ['id'];
+            return this.db.User.findAll({ raw: true, where: { role: 'participant' }, attributes })
+                .then(ids => ids.map(({ id }) => ({ userId: id })));
         }
 
         const questionIds = criteria.questions.map(question => question.id);
@@ -422,14 +448,29 @@ module.exports = class AnswerDAO extends Base {
         });
 
         // find users with a matching answer for each question (i.e., users who match all criteria)
-        const include = [{ model: User, as: 'user', attributes: [] }];
+        const include = [{ model: this.db.User, as: 'user', attributes: [] }];
         const having = this.where(this.literal('COUNT(DISTINCT(question_id))'), criteria.questions.length);
         const group = ['user_id'];
 
         // count resulting users
-        const attributes = [this.literal('\'1\'')];
-        return Answer.findAll({ raw: true, where, attributes, include, having, group })
-            .then(results => results.length);
+        const attributes = ['userId'];
+        return this.db.Answer.findAll({ raw: true, where, attributes, include, having, group });
+    }
+
+    /**
+     * Search users by their survey answers. Returns a count of users only.
+     * @param {object} query questionId:value mapping to search users by
+     * @returns {integer}
+     */
+    searchCountUsers(criteria) {
+        // if criteria is empty, return count of all users
+        if (!_.get(criteria, 'questions.length')) {
+            return this.db.User.count({ where: { role: 'participant' } })
+                .then(count => ({ count }));
+        }
+
+        return this.searchUsers(criteria)
+            .then(results => ({ count: results.length }));
     }
 
     federalSearchCountUsers(federalCriteria) {
@@ -467,12 +508,11 @@ module.exports = class AnswerDAO extends Base {
                 const promises = registries.map(({ id }) => {
                     const models = this.schemaModels.get(id);
                     const criteria = criteriaMap.get(id);
-                    return models.answer.searchCountUsers(criteria).then(count => ({ count }));
+                    return models.answer.searchCountUsers(criteria);
                 });
                 return SPromise.all(promises);
             })
             .then(federal => this.searchCountUsers(federalCriteria.local.criteria)
-                    .then(count => ({ count }))
                     .then((local) => {
                         const result = { local, federal };
                         const totalCount = federal.reduce((r, { count }) => r + count, local.count);

@@ -73,7 +73,7 @@ const doasPerSchema = function (db, daosGenerator) {
     const macro = new Macro(db, { survey, profileSurvey });
     const filterAnswer = new FilterAnswerDAO(db);
     const filter = new FilterDAO(db, { filterAnswer });
-    const cohort = new CohortDAO(db);
+    const cohort = new CohortDAO(db, { answer, filter });
 
     return {
         sequelize: db.sequelize,

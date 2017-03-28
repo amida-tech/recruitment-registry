@@ -601,6 +601,79 @@
                 }
             }
         },
+        "/answers/multi-user-csv": {
+            "x-swagger-router-controller": "answer.controller",
+            "get": {
+                "summary": "Exports answers as csv file",
+                "operationId": "exportMultiUserAnswers",
+                "produces": ["text/csv", "application/json"],
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "user-ids",
+                    "in": "query",
+                    "required": true,
+                    "type": "array",
+                    "items": {
+                        "type": "integer",
+                        "minimum": 1
+                    }
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
+            "post": {
+                "summary": "Imports answer csv file",
+                "operationId": "importMultiUserAnswers",
+                "consumes": ["multipart/form-data"],
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "answercsv",
+                    "in": "formData",
+                    "description": "Answer CSV file",
+                    "required": true,
+                    "type": "file"
+                }, {
+                    "name": "questionidmap",
+                    "in": "formData",
+                    "description": "Question Id Map",
+                    "required": true,
+                    "type": "string"
+                }, {
+                    "name": "surveyidmap",
+                    "in": "formData",
+                    "description": "Question Id Map",
+                    "required": true,
+                    "type": "string"
+                }, {
+                    "name": "useridmap",
+                    "in": "formData",
+                    "description": "User Id Map",
+                    "required": true,
+                    "type": "string"
+                }],
+                "responses": {
+                    "204": {
+                        "description": "Successful response"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
         "/answers/export": {
             "x-swagger-router-controller": "answer.controller",
             "get": {
@@ -608,6 +681,40 @@
                 "operationId": "listAnswersExport",
                 "security": [{
                     "participant": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "object"
+                            }
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/answers/multi-user-export": {
+            "x-swagger-router-controller": "answer.controller",
+            "get": {
+                "summary": "List answers multi user export ready",
+                "operationId": "listAnswersMultiUserExport",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "user-ids",
+                    "in": "query",
+                    "required": true,
+                    "type": "array",
+                    "items": {
+                        "type": "integer",
+                        "minimum": 1
+                    }
                 }],
                 "responses": {
                     "200": {
@@ -648,6 +755,48 @@
                         "description": "Successful response.",
                         "schema": {
                             "type": "object"
+                        }
+                    },
+                   "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/answers/user-ids": {
+            "x-swagger-router-controller": "answer.controller",
+            "post": {
+                "summary": "Searches all answers and returns user ids",
+                "operationId": "searchAnswerUsers",
+                "security": [{
+                    "admin": []
+                }, {
+                    "clinician": []
+                }],
+                "parameters": [{
+                    "name": "query",
+                    "in": "body",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/answersQuery"
+                    }
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response.",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "required": ["userId"],
+                                "properties": {
+                                    "userId": {
+                                        "type": "integer",
+                                        "minimum": 1
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
                         }
                     },
                    "default": {
@@ -3159,6 +3308,7 @@
             "post": {
                 "operationId": "createCohort",
                 "summary": "Creates new cohort",
+                "produces": ["text/csv", "application/json"],
                 "security": [{
                     "admin": []
                 }, {
@@ -3175,7 +3325,10 @@
                 }],
                 "responses": {
                     "201": {
-                        "$ref": "#/responses/idSuccess"
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "file"
+                        }
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -3214,6 +3367,7 @@
             "patch": {
                 "operationId": "patchCohort",
                 "summary": "Patches cohort",
+                "produces": ["text/csv", "application/json"],
                 "security": [{
                     "admin": []
                 }, {
@@ -3229,8 +3383,11 @@
                     }
                 }],
                 "responses": {
-                    "204": {
-                        "description": "Successul response"
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "file"
+                        }
                     },
                     "default": {
                         "$ref": "#/responses/genericError"
@@ -4153,6 +4310,14 @@
                 "filterId": {
                     "type": "integer",
                     "minimum": 1
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "count": {
+                    "type": "integer",
+                    "minimum": 1
                 }
             },
             "additionalProperties": false
@@ -4199,7 +4364,13 @@
             }
         },
         "cohortPatch": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer",
+                    "minimum": 1
+                }
+            }
         },
         "userSurveyInfo": {
             "type": "object",
