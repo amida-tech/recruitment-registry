@@ -8,51 +8,31 @@ const chai = require('chai');
 
 const config = require('../config');
 
-const RRSuperTest = require('./util/rr-super-test');
 const Generator = require('./util/generator');
 const History = require('./util/history');
 const registryCommon = require('./util/registry-common');
-const modelsGenerator = require('../models/generator');
-const searchCommon = require('./util/search/search-common');
 const federalCommon = require('./util/search/federal-search-common');
+const SharedIntegration = require('./util/shared-integration');
 
 const expect = chai.expect;
 
 describe('federal search integration', function federalSearchIntegration() {
-    const tests = new federalCommon.SpecTests();
+    const tests = new federalCommon.IntegrationTests();
 
     describe('prepare system', tests.prepareSystemFn());
 
-    const searchTestsMap = new Map();
-    const modelsMap = new Map();
-
-    tests.registries.forEach(({ schema }, index) => {
-        const m = modelsGenerator(schema);
-        modelsMap.set(schema, m);
-        const rrSuperTest = new RRSuperTest();
-        const searchTests = new searchCommon.IntegrationTests(rrSuperTest, m, index * 7);
-        searchTestsMap.set(schema, searchTests);
+    tests.schemas.forEach((schema) => {
+        const searchTests = tests.searchTestsMap.get(schema);
         describe(`set up ${schema} via search tests`, searchTests.answerSearchIntegrationFn());
-    });
-
-    describe('clean system', function cleanSystem() {
-        tests.registries.forEach(({ schema }) => {
-            it('close connections', function closeSequelize() {
-                const m = modelsMap.get(schema);
-                return m.sequelize.close();
-            });
-        });
     });
 
     const generator = new Generator();
     const hxRegistry = new History();
-    const rrSuperTest = new RRSuperTest();
+    const rrSuperTest = tests.rrSuperTest;
     const registryTests = new registryCommon.IntegrationTests(rrSuperTest, generator, hxRegistry);
-    const searchTests = new searchCommon.IntegrationTests(rrSuperTest);
-    describe('set up current via search tests', searchTests.answerSearchIntegrationFn());
-
+    const shared = new SharedIntegration(rrSuperTest);
     describe('federal', function federal() {
-        it('login as super', searchTests.shared.loginFn(config.superUser));
+        it('login as super', shared.loginFn(config.superUser));
 
         tests.registries.forEach((registry, index) => {
             it(`create registry ${index}`, registryTests.createRegistryFn(registry));
@@ -60,11 +40,12 @@ describe('federal search integration', function federalSearchIntegration() {
         });
 
         it('federal search case 0', function federalSearch() {
+            const searchTestsMap = tests.searchTestsMap;
             const schema0 = tests.registries[0].schema;
             const schema1 = tests.registries[1].schema;
             const { count: count0, criteria: criteria0 } = searchTestsMap.get(schema0).getCriteria(0);
             const { count: count1, criteria: criteria1 } = searchTestsMap.get(schema1).getCriteria(1);
-            const { count, criteria } = searchTests.getCriteria(2);
+            const { count, criteria } = searchTestsMap.get('current').getCriteria(2);
             const federalCriteria = {
                 local: { criteria },
                 federal: [{
@@ -90,6 +71,13 @@ describe('federal search integration', function federalSearchIntegration() {
                 });
         });
 
-        it('logout as super', searchTests.shared.logoutFn());
+        it('logout as super', shared.logoutFn());
+    });
+
+    describe('clean system', function cleanSystem() {
+        it('close connections', function closeSequelize() {
+            const m = tests.rrSuperTest.app.locals.models;
+            return m.sequelize.close();
+        });
     });
 });

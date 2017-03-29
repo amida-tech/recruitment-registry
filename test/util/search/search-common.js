@@ -67,8 +67,7 @@ const answerGenerators = {
 };
 
 const Tests = class BaseTests {
-    constructor(inputModels, offset = 5, surveyCount = 4) {
-        this.models = inputModels || models;
+    constructor(offset = 5, surveyCount = 4) {
         this.offset = offset;
         this.surveyCount = surveyCount;
 
@@ -183,10 +182,12 @@ const Tests = class BaseTests {
 };
 
 const SpecTests = class SearchSpecTests extends Tests {
-    constructor(inputModels, offset = 5, surveyCount = 4) {
-        super(inputModels, offset, surveyCount);
+    constructor(inputModels, offset = 5, surveyCount = 4, sync = true) {
+        super(offset, surveyCount);
+        this.models = inputModels || models;
         const generator = new Generator();
 
+        this.sync = sync;
         this.shared = new SharedSpec(generator, this.models);
         this.answerTests = new answerCommon.SpecTests(generator, this.hxUser, this.hxSurvey, this.hxQuestion);
         this.questionTests = new questionCommon.SpecTests(generator, this.hxQuestion, this.models);
@@ -340,7 +341,9 @@ const SpecTests = class SearchSpecTests extends Tests {
     answerSearchUnitFn() {
         const self = this;
         return function answerSearchUnit() {
-            it('sync models', self.shared.setUpFn());
+            if (self.sync) {
+                it('sync models', self.shared.setUpFn());
+            }
 
             _.range(5).forEach((index) => {
                 it(`create user ${index}`, self.shared.createUserFn(self.hxUser));
@@ -408,14 +411,15 @@ const SpecTests = class SearchSpecTests extends Tests {
 };
 
 const IntegrationTests = class SearchIntegrationTests extends Tests {
-    constructor(rrSuperTest, inputModels, offset = 5, surveyCount = 4) {
-        super(inputModels, offset, surveyCount);
+    constructor(rrSuperTest, offset = 5, surveyCount = 4, sync = true) {
+        super(offset, surveyCount);
         this.rrSuperTest = rrSuperTest;
         const generator = new Generator();
 
-        this.shared = new SharedIntegration(rrSuperTest, generator, this.models);
+        this.sync = sync;
+        this.shared = new SharedIntegration(rrSuperTest, generator);
         this.answerTests = new answerCommon.IntegrationTests(rrSuperTest, generator, this.hxUser, this.hxSurvey, this.hxQuestion);
-        this.questionTests = new questionCommon.IntegrationTests(rrSuperTest, generator, this.hxQuestion, this.models);
+        this.questionTests = new questionCommon.IntegrationTests(rrSuperTest, generator, this.hxQuestion);
         this.hxAnswers = this.answerTests.hxAnswer;
     }
 
@@ -556,9 +560,9 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
     answerSearchIntegrationFn() {
         const self = this;
         return function answerSearchIntegration() {
-            const options = self.models ? { models: self.models } : {};
-            it('sync models', self.shared.setUpFn(options));
-
+            if (self.sync) {
+                it('sync models', self.shared.setUpFn());
+            }
             const generatedDirectory = path.join(__dirname, '../../generated');
 
             it('create output directory if necessary', (done) => {

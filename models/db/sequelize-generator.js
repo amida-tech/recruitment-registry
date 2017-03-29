@@ -12,6 +12,7 @@ module.exports = function (prependSearchPath) {
     const sequelizeOptions = {
         host: config.db.host,
         dialect: config.db.dialect,
+        native: false,
         dialectOptions: {
             ssl: (config.env === 'production'),
             prependSearchPath,

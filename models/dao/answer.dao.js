@@ -58,7 +58,6 @@ module.exports = class AnswerDAO extends Base {
     constructor(db, dependencies) {
         super(db);
         Object.assign(this, dependencies);
-        this.schemaModels = new Map();
     }
 
     fileAnswer({ userId, surveyId, language, answers }, transaction) {
@@ -473,7 +472,7 @@ module.exports = class AnswerDAO extends Base {
             .then(results => ({ count: results.length }));
     }
 
-    federalSearchCountUsers(federalCriteria) {
+    federalSearchCountUsers(federalModels, federalCriteria) {
         const federals = federalCriteria.federal || [];
         const attributes = ['id', 'url', 'schema'];
         return this.db.Registry.findAll({ raw: true, attributes })
@@ -490,23 +489,10 @@ module.exports = class AnswerDAO extends Base {
                 return registries;
             })
             .then((registries) => {
-                const toBeSyncModels = registries.filter(({ id }) => !this.schemaModels.has(id));
-                if (toBeSyncModels.length) {
-                    const promises = toBeSyncModels.map(({ id, schema }) => {
-                        const schemaDb = this.db.generator(schema);
-                        const models = this.generator(schemaDb);
-                        return models.sequelize.sync({ force: false })
-                            .then(this.schemaModels.set(id, models));
-                    });
-                    return SPromise.all(promises).then(() => registries);
-                }
-                return registries;
-            })
-            .then((registries) => {
                 const criteriaMapInput = federals.map(({ registryId, criteria }) => [registryId, criteria]);
                 const criteriaMap = new Map(criteriaMapInput);
-                const promises = registries.map(({ id }) => {
-                    const models = this.schemaModels.get(id);
+                const promises = registries.map(({ id, schema }) => {
+                    const models = federalModels[schema];
                     const criteria = criteriaMap.get(id);
                     return models.answer.searchCountUsers(criteria);
                 });
