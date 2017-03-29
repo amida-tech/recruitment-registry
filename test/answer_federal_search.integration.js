@@ -22,30 +22,37 @@ const expect = chai.expect;
 describe('federal search integration', function federalSearchIntegration() {
     const registries = _.range(2).map(index => ({ name: `name_${index}`, schema: `schema_${index}` }));
 
-    it('drop all schemas', function dropAllSchemas() {
-        return models.sequelize.dropAllSchemas();
+    describe('prepare system', function prepareSystem() {
+        it('drop all schemas', function dropAllSchemas() {
+            return models.sequelize.dropAllSchemas();
+        });
+
+        registries.forEach(({ schema }) => {
+            it(`create schema ${schema}`, function createSchema() {
+                return models.sequelize.createSchema(schema);
+            });
+        });
     });
 
     const searchTestsMap = new Map();
+    const modelsMap = new Map();
 
     registries.forEach(({ schema }, index) => {
-        it(`create schema ${schema}`, function createSchema() {
-            return models.sequelize.createSchema(schema);
-        });
-
-        it(`start running search tests for ${schema}`, function startSchemaRun() {});
-
         const m = modelsGenerator(schema);
+        modelsMap.set(schema, m);
         const rrSuperTest = new RRSuperTest();
         const searchTests = new searchCommon.IntegrationTests(rrSuperTest, m, index * 7);
         searchTestsMap.set(schema, searchTests);
-        searchTests.runAnswerSearchIntegration();
+        describe(`set up ${schema} via search tests`, searchTests.answerSearchIntegrationFn());
+    });
 
-        it('close connections', function closeSequelize() {
-            return m.sequelize.close();
+    describe('clean system', function cleanSystem() {
+        registries.forEach(({ schema }) => {
+            it('close connections', function closeSequelize() {
+                const m = modelsMap.get(schema);
+                return m.sequelize.close();
+            });
         });
-
-        it(`end running search tests for ${schema}`, function endSchemaRun() {});
     });
 
     const generator = new Generator();
@@ -53,45 +60,47 @@ describe('federal search integration', function federalSearchIntegration() {
     const rrSuperTest = new RRSuperTest();
     const registryTests = new registryCommon.IntegrationTests(rrSuperTest, generator, hxRegistry);
     const searchTests = new searchCommon.IntegrationTests(rrSuperTest);
-    searchTests.runAnswerSearchIntegration();
+    describe('set up current via search tests', searchTests.answerSearchIntegrationFn());
 
-    it('login as super', searchTests.shared.loginFn(config.superUser));
+    describe('federal', function federal() {
+        it('login as super', searchTests.shared.loginFn(config.superUser));
 
-    registries.forEach((registry, index) => {
-        it(`create registry ${index}`, registryTests.createRegistryFn(registry));
-        it(`get registry ${index}`, registryTests.getRegistryFn(index));
+        registries.forEach((registry, index) => {
+            it(`create registry ${index}`, registryTests.createRegistryFn(registry));
+            it(`get registry ${index}`, registryTests.getRegistryFn(index));
+        });
+
+        it('federal search case 0', function federalSearch() {
+            const schema0 = registries[0].schema;
+            const schema1 = registries[1].schema;
+            const { count: count0, criteria: criteria0 } = searchTestsMap.get(schema0).getCriteria(0);
+            const { count: count1, criteria: criteria1 } = searchTestsMap.get(schema1).getCriteria(1);
+            const { count, criteria } = searchTests.getCriteria(2);
+            const federalCriteria = {
+                local: { criteria },
+                federal: [{
+                    registryId: hxRegistry.id(0),
+                    criteria: criteria0,
+                }, {
+                    registryId: hxRegistry.id(1),
+                    criteria: criteria1,
+                }],
+            };
+            return rrSuperTest.post('/answers/federal-queries', federalCriteria, 200)
+                .expect((res) => {
+                    const expected = {
+                        local: { count },
+                        federal: [{
+                            count: count0,
+                        }, {
+                            count: count1,
+                        }],
+                        total: { count: count + count0 + count1 },
+                    };
+                    expect(res.body).to.deep.equal(expected);
+                });
+        });
+
+        it('logout as super', searchTests.shared.logoutFn());
     });
-
-    it('federal search case 0', function federalSearch() {
-        const schema0 = registries[0].schema;
-        const schema1 = registries[1].schema;
-        const { count: count0, criteria: criteria0 } = searchTestsMap.get(schema0).getCriteria(0);
-        const { count: count1, criteria: criteria1 } = searchTestsMap.get(schema1).getCriteria(1);
-        const { count, criteria } = searchTests.getCriteria(2);
-        const federalCriteria = {
-            local: { criteria },
-            federal: [{
-                registryId: hxRegistry.id(0),
-                criteria: criteria0,
-            }, {
-                registryId: hxRegistry.id(1),
-                criteria: criteria1,
-            }],
-        };
-        return rrSuperTest.post('/answers/federal-queries', federalCriteria, 200)
-            .expect((res) => {
-                const expected = {
-                    local: { count },
-                    federal: [{
-                        count: count0,
-                    }, {
-                        count: count1,
-                    }],
-                    total: { count: count + count0 + count1 },
-                };
-                expect(res.body).to.deep.equal(expected);
-            });
-    });
-
-    it('logout as super', searchTests.shared.logoutFn());
 });

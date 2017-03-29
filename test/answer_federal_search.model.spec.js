@@ -17,10 +17,6 @@ const searchCommon = require('./util/search/search-common');
 const expect = chai.expect;
 
 describe('federal search unit', function federalSearchUnit() {
-    const generator = new Generator();
-    const hxRegistry = new History();
-    const registryTests = new registryCommon.SpecTests(generator, hxRegistry);
-
     const registries = _.range(2).map(index => ({ name: `name_${index}`, schema: `schema_${index}` }));
 
     describe('prepare system', function prepareSystem() {
@@ -46,7 +42,7 @@ describe('federal search unit', function federalSearchUnit() {
         describe(`set up ${schema} via search tests`, searchTests.answerSearchUnitFn());
     });
 
-    describe('clean system', function prepareSystem() {
+    describe('clean system', function cleanSystem() {
         registries.forEach(({ schema }) => {
             it(`close connection ${schema}`, function closeConnection() {
                 const m = modelsMap.get(schema);
@@ -55,6 +51,9 @@ describe('federal search unit', function federalSearchUnit() {
         });
     });
 
+    const generator = new Generator();
+    const hxRegistry = new History();
+    const registryTests = new registryCommon.SpecTests(generator, hxRegistry);
     const searchTests = new searchCommon.SpecTests();
     describe('set up current via search tests', searchTests.answerSearchUnitFn());
 
