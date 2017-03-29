@@ -4,7 +4,6 @@
 
 process.env.NODE_ENV = 'test';
 
-const _ = require('lodash');
 const chai = require('chai');
 
 const models = require('../models');
@@ -13,28 +12,19 @@ const History = require('./util/history');
 const registryCommon = require('./util/registry-common');
 const modelsGenerator = require('../models/generator');
 const searchCommon = require('./util/search/search-common');
+const federalCommon = require('./util/search/federal-search-common');
 
 const expect = chai.expect;
 
 describe('federal search unit', function federalSearchUnit() {
-    const registries = _.range(2).map(index => ({ name: `name_${index}`, schema: `schema_${index}` }));
+    const tests = new federalCommon.SpecTests();
 
-    describe('prepare system', function prepareSystem() {
-        it('drop all schemas', function dropAllSchemas() {
-            return models.sequelize.dropAllSchemas();
-        });
-
-        registries.forEach(({ schema }) => {
-            it(`create schema ${schema}`, function createSchema() {
-                return models.sequelize.createSchema(schema);
-            });
-        });
-    });
+    describe('prepare system', tests.prepareSystemFn());
 
     const searchTestsMap = new Map();
     const modelsMap = new Map();
 
-    registries.forEach(({ schema }, index) => {
+    tests.registries.forEach(({ schema }, index) => {
         const m = modelsGenerator(schema);
         modelsMap.set(schema, m);
         const searchTests = new searchCommon.SpecTests(m, index * 7);
@@ -43,7 +33,7 @@ describe('federal search unit', function federalSearchUnit() {
     });
 
     describe('clean system', function cleanSystem() {
-        registries.forEach(({ schema }) => {
+        tests.registries.forEach(({ schema }) => {
             it(`close connection ${schema}`, function closeConnection() {
                 const m = modelsMap.get(schema);
                 return m.sequelize.close();
@@ -58,14 +48,14 @@ describe('federal search unit', function federalSearchUnit() {
     describe('set up current via search tests', searchTests.answerSearchUnitFn());
 
     describe('federal', function federal() {
-        registries.forEach((registry, index) => {
+        tests.registries.forEach((registry, index) => {
             it(`create registry ${index}`, registryTests.createRegistryFn(registry));
             it(`get registry ${index}`, registryTests.getRegistryFn(index));
         });
 
         it('search case 0', function federalSearch() {
-            const schema0 = registries[0].schema;
-            const schema1 = registries[1].schema;
+            const schema0 = tests.registries[0].schema;
+            const schema1 = tests.registries[1].schema;
             const { count: count0, criteria: criteria0 } = searchTestsMap.get(schema0).getCriteria(0);
             const { count: count1, criteria: criteria1 } = searchTestsMap.get(schema1).getCriteria(1);
             const { count, criteria } = searchTests.getCriteria(2);
