@@ -6,7 +6,6 @@ process.env.NODE_ENV = 'test';
 
 const searchCommon = require('./util/search/search-common');
 
-describe('answer search unit', function answerSearchUnit() {
-    const tests = new searchCommon.SpecTests();
-    tests.runAnswerSearchUnit();
-});
+const tests = new searchCommon.SpecTests();
+
+describe('answer search unit', tests.answerSearchUnitFn());

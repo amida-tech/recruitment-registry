@@ -337,70 +337,73 @@ const SpecTests = class SearchSpecTests extends Tests {
         };
     }
 
-    runAnswerSearchUnit() {
-        it('sync models', this.shared.setUpFn());
+    answerSearchUnitFn() {
+        const self = this;
+        return function answerSearchUnit() {
+            it('sync models', self.shared.setUpFn());
 
-        _.range(5).forEach((index) => {
-            it(`create user ${index}`, this.shared.createUserFn(this.hxUser));
-        });
+            _.range(5).forEach((index) => {
+                it(`create user ${index}`, self.shared.createUserFn(self.hxUser));
+            });
 
-        _.range(this.offset).forEach((index) => {
-            it(`create question ${index}`, this.questionTests.createQuestionFn());
-            it(`get question ${index}`, this.questionTests.getQuestionFn(index));
-        });
+            _.range(self.offset).forEach((index) => {
+                it(`create question ${index}`, self.questionTests.createQuestionFn());
+                it(`get question ${index}`, self.questionTests.getQuestionFn(index));
+            });
 
-        this.questions.forEach((question, index) => {
-            const actualIndex = this.offset + index;
-            it(`create question ${actualIndex}`, this.questionTests.createQuestionFn(question));
-            it(`get question ${actualIndex}`, this.questionTests.getQuestionFn(actualIndex));
-        });
+            self.questions.forEach((question, index) => {
+                const actualIndex = self.offset + index;
+                it(`create question ${actualIndex}`, self.questionTests.createQuestionFn(question));
+                it(`get question ${actualIndex}`, self.questionTests.getQuestionFn(actualIndex));
+            });
 
-        it('create a map of all choice/choice question choices', this.generateChoiceMapFn());
+            it('create a map of all choice/choice question choices', self.generateChoiceMapFn());
 
-        _.range(this.surveyCount).forEach((index) => {
-            const qxIndices = this.types.map(type => this.typeIndexMap.get(type)[index]);
-            it(`create survey ${index}`, this.createSurveyFn(qxIndices));
-        });
+            _.range(self.surveyCount).forEach((index) => {
+                const qxIndices = self.types.map(type => self.typeIndexMap.get(type)[index]);
+                it(`create survey ${index}`, self.createSurveyFn(qxIndices));
+            });
 
-        const answerSequence = testCase0.answerSequence;
+            const answerSequence = testCase0.answerSequence;
 
-        answerSequence.forEach(({ userIndex, surveyIndex, answerInfo }) => {
-            const msg = `user ${userIndex} answers survey ${surveyIndex}`;
-            it(msg, this.createAnswersFn(userIndex, surveyIndex, answerInfo));
-        });
+            answerSequence.forEach(({ userIndex, surveyIndex, answerInfo }) => {
+                const msg = `user ${userIndex} answers survey ${surveyIndex}`;
+                it(msg, self.createAnswersFn(userIndex, surveyIndex, answerInfo));
+            });
 
-        it('search empty criteria', this.searchEmptyFn(5));
+            it('search empty criteria', self.searchEmptyFn(5));
 
-        const searchCases = testCase0.searchCases;
+            const searchCases = testCase0.searchCases;
 
-        let cohortId = 1;
-        searchCases.forEach((searchCase, index) => {
-            it(`search case ${index} count`, this.searchAnswerCountFn(searchCase));
-            it(`search case ${index} user ids`, this.searchAnswerUsersFn(searchCase));
-            if (searchCase.count > 1) {
-                const store = {};
-                it(`search case ${index} export answers`, this.exportAnswersForUsersFn(searchCase, store));
-                it(`create filter ${index}`, this.createFilterFn(index, searchCase, store));
-                it(`create cohort ${3 * index} (no count)`, this.createCohortFn(store, false));
-                it(`compare cohort ${3 * index}`, this.compareExportToCohortFn(store, false));
-                it(`patch cohort ${3 * index} (no count)`, this.patchCohortFn(cohortId, store, false));
-                it(`compare cohort ${3 * index}`, this.compareExportToCohortFn(store, false));
-                cohortId += 1;
-                it(`create cohort ${(3 * index) + 1} (large count)`, this.createCohortFn(store, true, 10000));
-                it(`compare cohort ${3 * index}`, this.compareExportToCohortFn(store, false));
-                it(`patch cohort ${(3 * index) + 1} (large count)`, this.patchCohortFn(cohortId, store, true, 10000));
-                it(`compare cohort ${(3 * index) + 1}`, this.compareExportToCohortFn(store, false));
-                cohortId += 1;
-                it(`create cohort ${(3 * index) + 2} (limited count`, this.createCohortFn(store, true, searchCase.count));
-                it(`compare cohort ${(3 * index) + 2}`, this.compareExportToCohortFn(store, true));
-                it(`patch cohort ${(3 * index) + 3} (limited count)`, this.patchCohortFn(cohortId, store, true, searchCase.count));
-                it(`compare cohort ${(3 * index) + 3}`, this.compareExportToCohortFn(store, true));
-                it(`patch filter ${index} for empty`, this.patchFilterFn(testCase0.emptyCase, store));
-                it(`patch cohort ${3 * index} filter edit (no count)`, this.patchCohortFn(cohortId, store, false));
-                it(`compare cohort ${3 * index} filter edit`, this.compareExportToCohortFn(store, false));
-                cohortId += 1;
-            }
-        });
+            let cohortId = 1;
+            searchCases.forEach((searchCase, index) => {
+                it(`search case ${index} count`, self.searchAnswerCountFn(searchCase));
+                it(`search case ${index} user ids`, self.searchAnswerUsersFn(searchCase));
+                if (searchCase.count > 1) {
+                    const store = {};
+                    it(`search case ${index} export answers`, self.exportAnswersForUsersFn(searchCase, store));
+                    it(`create filter ${index}`, self.createFilterFn(index, searchCase, store));
+                    it(`create cohort ${3 * index} (no count)`, self.createCohortFn(store, false));
+                    it(`compare cohort ${3 * index}`, self.compareExportToCohortFn(store, false));
+                    it(`patch cohort ${3 * index} (no count)`, self.patchCohortFn(cohortId, store, false));
+                    it(`compare cohort ${3 * index}`, self.compareExportToCohortFn(store, false));
+                    cohortId += 1;
+                    it(`create cohort ${(3 * index) + 1} (large count)`, self.createCohortFn(store, true, 10000));
+                    it(`compare cohort ${3 * index}`, self.compareExportToCohortFn(store, false));
+                    it(`patch cohort ${(3 * index) + 1} (large count)`, self.patchCohortFn(cohortId, store, true, 10000));
+                    it(`compare cohort ${(3 * index) + 1}`, self.compareExportToCohortFn(store, false));
+                    cohortId += 1;
+                    it(`create cohort ${(3 * index) + 2} (limited count`, self.createCohortFn(store, true, searchCase.count));
+                    it(`compare cohort ${(3 * index) + 2}`, self.compareExportToCohortFn(store, true));
+                    it(`patch cohort ${(3 * index) + 3} (limited count)`, self.patchCohortFn(cohortId, store, true, searchCase.count));
+                    it(`compare cohort ${(3 * index) + 3}`, self.compareExportToCohortFn(store, true));
+                    it(`patch filter ${index} for empty`, self.patchFilterFn(testCase0.emptyCase, store));
+                    it(`patch cohort ${3 * index} filter edit (no count)`, self.patchCohortFn(cohortId, store, false));
+                    it(`compare cohort ${3 * index} filter edit`, self.compareExportToCohortFn(store, false));
+                    cohortId += 1;
+                }
+            });
+        };
     }
 };
 
