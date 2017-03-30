@@ -8,6 +8,7 @@ const chai = require('chai');
 
 const config = require('../config');
 
+const tokener = require('../lib/tokener');
 const Generator = require('./util/generator');
 const History = require('./util/history');
 const registryCommon = require('./util/registry-common');
@@ -57,6 +58,13 @@ describe('federal search integration', function federalSearchIntegration() {
         tests.registries.forEach((registry, index) => {
             it(`create registry ${index}`, registryTests.createRegistryFn(registry));
             it(`get registry ${index}`, registryTests.getRegistryFn(index));
+            if (registry.url) {
+                it(`setup environment for registry ${registry.name}`, function setupEnvironment() {
+                    const token = tokener.createJWT({ id: 1, originalUsername: 'super' });
+                    const key = `RECREG_JWT_${registry.name}`;
+                    process.env[key] = token;
+                });
+            }
         });
 
         it('federal search case 0', function federalSearch() {

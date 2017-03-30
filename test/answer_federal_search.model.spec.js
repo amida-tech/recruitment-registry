@@ -6,6 +6,7 @@ process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
 
+const tokener = require('../lib/tokener');
 const Generator = require('./util/generator');
 const History = require('./util/history');
 const registryCommon = require('./util/registry-common');
@@ -50,6 +51,13 @@ describe('federal search unit', function federalSearchUnit() {
         tests.registries.forEach((registry, index) => {
             it(`create registry ${index}`, registryTests.createRegistryFn(registry));
             it(`get registry ${index}`, registryTests.getRegistryFn(index));
+            if (registry.url) {
+                it(`setup environment for registry ${registry.name}`, function setupEnvironment() {
+                    const token = tokener.createJWT({ id: 1, originalUsername: 'super' });
+                    const key = `RECREG_JWT_${registry.name}`;
+                    process.env[key] = token;
+                });
+            }
         });
 
         it('search case 0', function federalSearch() {

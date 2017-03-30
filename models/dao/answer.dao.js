@@ -55,19 +55,29 @@ const basicExportFields = [
     'surveyId', 'questionId', 'questionChoiceId', 'questionType', 'choiceType', 'value',
 ];
 
-const requestPost = function (questions, url) {
+const requestPost = function (registryName, questions, url) {
     const opts = {
         json: true,
         body: questions,
-        url: `${url}/answers/registry-queries`,
+        url: `${url}/answers/queries`,
     };
+    const key = `RECREG_JWT_${registryName}`;
+    const jwt = process.env[key];
+    if (key) {
+        opts.headers = {
+            authorization: `Bearer ${jwt}`,
+        };
+    }
+
     return new Promise((resolve, reject) => (
         request.post(opts, (err, res) => {
             if (err) {
-                return reject(err);
+                const rrerror = new RRError('answerRemoteRegistryError', registryName, err.message);
+                return reject(rrerror);
             }
             if (res.statusCode !== 200) {
-                return reject(new Error(res.body.message));
+                const rrerror = new RRError('answerRemoteRegistryError', registryName, res.body.message);
+                return reject(rrerror);
             }
             return resolve(res.body);
         })
@@ -494,7 +504,7 @@ module.exports = class AnswerDAO extends Base {
 
     federalSearchCountUsers(federalModels, federalCriteria) {
         const federals = federalCriteria.federal || [];
-        const attributes = ['id', 'url', 'schema'];
+        const attributes = ['id', 'name', 'url', 'schema'];
         return this.db.Registry.findAll({ raw: true, attributes })
             .then((registries) => {
                 if (!registries.length) {
@@ -511,13 +521,13 @@ module.exports = class AnswerDAO extends Base {
             .then((registries) => {
                 const criteriaMapInput = federals.map(({ registryId, criteria }) => [registryId, criteria]);
                 const criteriaMap = new Map(criteriaMapInput);
-                const promises = registries.map(({ id, schema, url }) => {
+                const promises = registries.map(({ id, name, schema, url }) => {
                     const criteria = criteriaMap.get(id);
                     if (schema) {
                         const models = federalModels[schema];
                         return models.answer.searchCountUsers(criteria);
                     }
-                    return requestPost(criteria, url);
+                    return requestPost(name, criteria, url);
                 });
                 return SPromise.all(promises);
             })

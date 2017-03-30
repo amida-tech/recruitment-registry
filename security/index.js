@@ -89,8 +89,4 @@ module.exports = {
     self(req, def, header, callback) {
         jwtAuth(req, header, _.constant(null), callback);
     },
-    registry(req, def, header, callback) {
-        callback(null);
-        // jwtAuth(req, header, _.constant(null), callback);
-    },
 };
