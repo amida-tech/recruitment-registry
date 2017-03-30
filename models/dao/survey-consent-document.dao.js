@@ -10,7 +10,7 @@ module.exports = class SurveyConsentDocumentDAO extends Base {
         Object.assign(this, dependencies);
     }
 
-    listSurveyConsentDocuments({ userId, surveyId, action }, tx) {
+    listSurveyConsentDocuments({ userId, surveyId, action }, inputOptions, tx) {
         const query = {
             where: { surveyId, action },
             raw: true,
@@ -30,6 +30,12 @@ module.exports = class SurveyConsentDocumentDAO extends Base {
                 if (tx) {
                     options.transaction = tx;
                 }
+                if (inputOptions.detail) {
+                    options.summary = false;
+                }
+                if (inputOptions.language) {
+                    options.language = inputOptions.language;
+                }
                 return this.userConsentDocument.listUserConsentDocuments(userId, options)
                     .then((docs) => {
                         const typeIdMap = _.keyBy(surveyConsents, 'consentTypeId');
@@ -39,6 +45,8 @@ module.exports = class SurveyConsentDocumentDAO extends Base {
                                 doc.consentId = surveyConsent.consentId;
                                 doc.consentName = surveyConsent.consentName;
                             }
+                            delete doc.updateComment;
+                            delete doc.type;
                             delete doc.typeId;
                         });
                         return docs;
