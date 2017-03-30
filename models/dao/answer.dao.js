@@ -1,6 +1,7 @@
 'use strict';
 
 const _ = require('lodash');
+const request = require('request');
 
 const Base = require('./base');
 const RRError = require('../../lib/rr-error');
@@ -53,6 +54,25 @@ const evaluateEnableWhen = function (rules, answersByQuestionId) {
 const basicExportFields = [
     'surveyId', 'questionId', 'questionChoiceId', 'questionType', 'choiceType', 'value',
 ];
+
+const requestPost = function (questions, url) {
+    const opts = {
+        json: true,
+        body: questions,
+        url: `${url}/answers/registry-queries`,
+    };
+    return new Promise((resolve, reject) => (
+        request.post(opts, (err, res) => {
+            if (err) {
+                return reject(err);
+            }
+            if (res.statusCode !== 200) {
+                return reject(new Error(res.body.message));
+            }
+            return resolve(res.body);
+        })
+    ));
+};
 
 module.exports = class AnswerDAO extends Base {
     constructor(db, dependencies) {
@@ -491,10 +511,13 @@ module.exports = class AnswerDAO extends Base {
             .then((registries) => {
                 const criteriaMapInput = federals.map(({ registryId, criteria }) => [registryId, criteria]);
                 const criteriaMap = new Map(criteriaMapInput);
-                const promises = registries.map(({ id, schema }) => {
-                    const models = federalModels[schema];
+                const promises = registries.map(({ id, schema, url }) => {
                     const criteria = criteriaMap.get(id);
-                    return models.answer.searchCountUsers(criteria);
+                    if (schema) {
+                        const models = federalModels[schema];
+                        return models.answer.searchCountUsers(criteria);
+                    }
+                    return requestPost(criteria, url);
                 });
                 return SPromise.all(promises);
             })

@@ -268,9 +268,9 @@ const defineTables = function (sequelize, Sequelize, schema) {
     };
 };
 
-module.exports = function dbGenerator(inputSchema) {
+module.exports = function dbGenerator(inputSchema, inputDbName) {
     if (inputSchema && Array.isArray(inputSchema)) {
-        const { Sequelize, sequelize } = sequelizeGenerator(true);
+        const { Sequelize, sequelize } = sequelizeGenerator(true, inputDbName);
         const tables = inputSchema.reduce((r, schema) => {
             const schemaTables = defineTables(sequelize, Sequelize, schema);
             r[schema] = schemaTables;
@@ -279,7 +279,7 @@ module.exports = function dbGenerator(inputSchema) {
         return Object.assign({ sequelize }, { schemas: inputSchema }, tables);
     }
     const schema = inputSchema || config.db.schema;
-    const { Sequelize, sequelize } = sequelizeGenerator(schema !== 'public');
+    const { Sequelize, sequelize } = sequelizeGenerator(schema !== 'public', inputDbName);
     const schemaTables = defineTables(sequelize, Sequelize, schema);
     return Object.assign({ sequelize, generator: dbGenerator }, schemaTables);
 };

@@ -763,6 +763,35 @@
                 }
             }
         },
+        "/answers/registry-queries": {
+            "x-swagger-router-controller": "answer.controller",
+            "post": {
+                "summary": "Searches all answers and returns count of matching users",
+                "operationId": "searchAnswers",
+                "security": [{
+                    "registry": []
+                }],
+                "parameters": [{
+                    "name": "query",
+                    "in": "body",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/answersQuery"
+                    }
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response.",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                   "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
         "/answers/user-ids": {
             "x-swagger-router-controller": "answer.controller",
             "post": {
@@ -3430,6 +3459,11 @@
             "name": "Authorization"
         },
         "self": {
+            "type": "apiKey",
+            "in": "header",
+            "name": "Authorization"
+        },
+        "registry": {
             "type": "apiKey",
             "in": "header",
             "name": "Authorization"

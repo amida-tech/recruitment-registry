@@ -423,6 +423,13 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
         this.hxAnswers = this.answerTests.hxAnswer;
     }
 
+    updateRRSuperTest(rrSuperTest) {
+        this.rrSuperTest = rrSuperTest;
+        this.shared.rrSuperTest = rrSuperTest;
+        this.answerTests.rrSuperTest = rrSuperTest;
+        this.questionTests.rrSuperTest = rrSuperTest;
+    }
+
     createSurveyFn(qxIndices) {
         const hxSurvey = this.hxSurvey;
         const hxQuestion = this.hxQuestion;
