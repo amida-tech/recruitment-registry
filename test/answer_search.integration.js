@@ -7,8 +7,7 @@ process.env.NODE_ENV = 'test';
 const searchCommon = require('./util/search/search-common');
 const RRSuperTest = require('./util/rr-super-test');
 
-describe('answer search integration', function answerSearchUnit() {
-    const rrSuperTest = new RRSuperTest();
-    const tests = new searchCommon.IntegrationTests(rrSuperTest);
-    tests.runAnswerSearchIntegration();
-});
+const rrSuperTest = new RRSuperTest();
+const tests = new searchCommon.IntegrationTests(rrSuperTest);
+
+describe('answer search unit', tests.answerSearchIntegrationFn());

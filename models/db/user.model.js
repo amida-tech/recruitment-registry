@@ -102,6 +102,7 @@ module.exports = function User(sequelize, Sequelize, schema) {
                 if (options.force) {
                     const role = 'admin';
                     const user = Object.assign({ role }, config.superUser);
+                    user.originalUsername = user.username;
                     return this.create(user);
                 }
                 return null;

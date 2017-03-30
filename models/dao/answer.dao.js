@@ -1,6 +1,7 @@
 'use strict';
 
 const _ = require('lodash');
+const request = require('request');
 
 const Base = require('./base');
 const RRError = require('../../lib/rr-error');
@@ -54,11 +55,39 @@ const basicExportFields = [
     'surveyId', 'questionId', 'questionChoiceId', 'questionType', 'choiceType', 'value',
 ];
 
+const requestPost = function (registryName, questions, url) {
+    const opts = {
+        json: true,
+        body: questions,
+        url: `${url}/answers/queries`,
+    };
+    const key = `RECREG_JWT_${registryName}`;
+    const jwt = process.env[key];
+    if (key) {
+        opts.headers = {
+            authorization: `Bearer ${jwt}`,
+        };
+    }
+
+    return new Promise((resolve, reject) => (
+        request.post(opts, (err, res) => {
+            if (err) {
+                const rrerror = new RRError('answerRemoteRegistryError', registryName, err.message);
+                return reject(rrerror);
+            }
+            if (res.statusCode !== 200) {
+                const rrerror = new RRError('answerRemoteRegistryError', registryName, res.body.message);
+                return reject(rrerror);
+            }
+            return resolve(res.body);
+        })
+    ));
+};
+
 module.exports = class AnswerDAO extends Base {
     constructor(db, dependencies) {
         super(db);
         Object.assign(this, dependencies);
-        this.schemaModels = new Map();
     }
 
     fileAnswer({ userId, surveyId, language, answers }, transaction) {
@@ -473,9 +502,9 @@ module.exports = class AnswerDAO extends Base {
             .then(results => ({ count: results.length }));
     }
 
-    federalSearchCountUsers(federalCriteria) {
+    federalSearchCountUsers(federalModels, federalCriteria) {
         const federals = federalCriteria.federal || [];
-        const attributes = ['id', 'url', 'schema'];
+        const attributes = ['id', 'name', 'url', 'schema'];
         return this.db.Registry.findAll({ raw: true, attributes })
             .then((registries) => {
                 if (!registries.length) {
@@ -490,25 +519,15 @@ module.exports = class AnswerDAO extends Base {
                 return registries;
             })
             .then((registries) => {
-                const toBeSyncModels = registries.filter(({ id }) => !this.schemaModels.has(id));
-                if (toBeSyncModels.length) {
-                    const promises = toBeSyncModels.map(({ id, schema }) => {
-                        const schemaDb = this.db.generator(schema);
-                        const models = this.generator(schemaDb);
-                        return models.sequelize.sync({ force: false })
-                            .then(this.schemaModels.set(id, models));
-                    });
-                    return SPromise.all(promises).then(() => registries);
-                }
-                return registries;
-            })
-            .then((registries) => {
                 const criteriaMapInput = federals.map(({ registryId, criteria }) => [registryId, criteria]);
                 const criteriaMap = new Map(criteriaMapInput);
-                const promises = registries.map(({ id }) => {
-                    const models = this.schemaModels.get(id);
+                const promises = registries.map(({ id, name, schema, url }) => {
                     const criteria = criteriaMap.get(id);
-                    return models.answer.searchCountUsers(criteria);
+                    if (schema) {
+                        const models = federalModels[schema];
+                        return models.answer.searchCountUsers(criteria);
+                    }
+                    return requestPost(name, criteria, url);
                 });
                 return SPromise.all(promises);
             })

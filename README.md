@@ -90,6 +90,7 @@ A list of full environment variable settings is below.  They can be either manua
 - RECREG_ZIP_BASE_URL: Base API URL for Zipwise zip code API. Set to `https://www.zipwise.com/webservices/radius.php`.
 - RECREG_ZIP_API_KEY: API key for Zipwise.
 - RECREG_ZIP_DISTANCE: Distance to query when finding zip code vicinities (`50`).
+- RECREG_JWT_<registry name>: JWT for remote registries for federal search.
 
 ## Commands
 

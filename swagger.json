@@ -3433,6 +3433,11 @@
             "type": "apiKey",
             "in": "header",
             "name": "Authorization"
+        },
+        "registry": {
+            "type": "apiKey",
+            "in": "header",
+            "name": "Authorization"
         }
     },
     "responses": {

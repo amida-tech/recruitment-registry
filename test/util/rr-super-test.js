@@ -3,6 +3,7 @@
 const path = require('path');
 
 const session = require('supertest-session');
+const supertest = require('supertest');
 const _ = require('lodash');
 
 module.exports = class RRSupertest {
@@ -14,6 +15,10 @@ module.exports = class RRSupertest {
         }
         this.userAudit = [];
         this.username = null;
+    }
+
+    initializeUrl(url) {
+        this.server = supertest(url);
     }
 
     initialize(app) {
