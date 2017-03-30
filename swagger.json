@@ -2470,6 +2470,12 @@
                     "required": false,
                     "type": "string",
                     "minLength": 2
+                }, {
+                    "name": "detail",
+                    "in": "query",
+                    "description": "include content of the document",
+                    "required": false,
+                    "type": "boolean"
                 }],
                  "responses": {
                     "200": {
@@ -5675,6 +5681,10 @@
                 },
                 "title": {
                     "type": "string"
+                },
+                "content": {
+                    "type": "string",
+                    "minLength": 1
                 }
             },
             "additionalProperties": false

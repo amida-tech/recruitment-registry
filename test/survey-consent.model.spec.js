@@ -276,13 +276,22 @@ describe('survey consent unit', () => {
         };
     };
 
-    const listConsentSurveyDocumentsFn = function (userIndex, surveyIndex, action, expectedInfo) {
+    const listConsentSurveyDocumentsFn = function (userIndex, surveyIndex, action, expectedInfo, detail) {
         return function () {
             const userId = hxUser.id(userIndex);
             const surveyId = hxSurvey.id(surveyIndex);
-            return models.surveyConsentDocument.listSurveyConsentDocuments({ userId, surveyId, action })
+            const options = {};
+            if (detail) {
+                options.detail = true;
+            }
+            return models.surveyConsentDocument.listSurveyConsentDocuments({ userId, surveyId, action }, options)
                 .then((result) => {
-                    const expected = consentCommon.getSurveyConsentDocuments(expectedInfo);
+                    const expected = _.cloneDeep(consentCommon.getSurveyConsentDocuments(expectedInfo));
+                    if (detail) {
+                        const ids = expected.map(({ id }) => id);
+                        const contents = hxConsentDocument.getContents(ids);
+                        expected.forEach((r, index) => { r.content = contents[index]; });
+                    }
                     expect(result).to.deep.equal(expected);
                 });
         };
@@ -292,6 +301,11 @@ describe('survey consent unit', () => {
     it('user 1 survey 1 consent documents for create', listConsentSurveyDocumentsFn(1, 1, 'create', [1, 2, 3]));
     it('user 2 survey 1 consent documents for create', listConsentSurveyDocumentsFn(2, 1, 'create', [1, 2, 3]));
     it('user 3 survey 1 consent documents for create', listConsentSurveyDocumentsFn(3, 1, 'create', [2, 3]));
+
+    it('user 0 survey 1 consent documents for create with content', listConsentSurveyDocumentsFn(0, 1, 'create', [2, 3], true));
+    it('user 1 survey 1 consent documents for create with content', listConsentSurveyDocumentsFn(1, 1, 'create', [1, 2, 3], true));
+    it('user 2 survey 1 consent documents for create with content', listConsentSurveyDocumentsFn(2, 1, 'create', [1, 2, 3], true));
+    it('user 3 survey 1 consent documents for create with content', listConsentSurveyDocumentsFn(3, 1, 'create', [2, 3], true));
 
     it('user 0 survey 2 consent documents for create', listConsentSurveyDocumentsFn(0, 2, 'create', [2, 3]));
     it('user 1 survey 2 consent documents for create', listConsentSurveyDocumentsFn(1, 2, 'create', [2, 3]));
