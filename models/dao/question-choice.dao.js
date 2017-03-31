@@ -104,8 +104,21 @@ module.exports = class QuestionChoiceDAO extends Translatable {
     }
 
     deleteQuestionChoice(id) {
-        const QuestionChoice = this.db.QuestionChoice;
-        return QuestionChoice.destroy({ where: { id } });
+        return this.db.Answer.count({ where: { questionChoiceId: id } })
+            .then((count) => {
+                if (count > 0) {
+                    return RRError.reject('qxChoiceNoDeleteAnswered');
+                }
+                return null;
+            })
+            .then(() => this.db.FilterAnswer.count({ where: { questionChoiceId: id } }))
+            .then((count) => {
+                if (count > 0) {
+                    return RRError.reject('qxChoiceNoDeleteInFilter');
+                }
+                return null;
+            })
+            .then(() => this.db.QuestionChoice.destroy({ where: { id } }));
     }
 
     findQuestionChoiceIdForCode(questionId, code, transaction) {

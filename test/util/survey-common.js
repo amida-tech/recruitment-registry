@@ -206,7 +206,15 @@ const SpecTests = class SurveySpecTests {
             const questionIds = questionIndices.map(index => hxQuestion.id(index));
             const survey = generator.newSurveyQuestionIds(questionIds);
             return models.survey.createSurvey(survey)
-                .then(id => hxSurvey.push(survey, { id }));
+                .then((id) => {
+                    const fullSurvey = _.cloneDeep(survey);
+                    fullSurvey.questions = questionIndices.map((qxIndex, index) => {
+                        const question = Object.assign({}, survey.questions[index]);
+                        Object.assign(question, hxQuestion.server(qxIndex));
+                        return question;
+                    });
+                    hxSurvey.push(fullSurvey, { id });
+                });
         };
     }
 
@@ -216,7 +224,8 @@ const SpecTests = class SurveySpecTests {
             const surveyId = hxSurvey.id(index);
             return models.survey.getSurvey(surveyId)
                 .then((survey) => {
-                    comparator.survey(hxSurvey.client(index), survey);
+                    const client = hxSurvey.client(index);
+                    comparator.survey(client, survey);
                     hxSurvey.updateServer(index, survey);
                 });
         };

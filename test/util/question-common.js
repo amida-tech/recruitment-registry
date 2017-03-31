@@ -81,7 +81,7 @@ const SpecTests = class QuestionSpecTests {
         const generator = this.generator;
         const hxQuestion = this.hxQuestion;
         const m = this.models;
-        return function () {
+        return function createQuestion() {
             question = question || generator.newQuestion();
             return m.question.createQuestion(question)
                 .then(({ id }) => hxQuestion.push(question, { id }));
@@ -91,7 +91,7 @@ const SpecTests = class QuestionSpecTests {
     getQuestionFn(index) {
         const hxQuestion = this.hxQuestion;
         const m = this.models;
-        return function () {
+        return function getQuestion() {
             index = (index === undefined) ? hxQuestion.lastIndex() : index;
             const id = hxQuestion.id(index);
             return m.question.getQuestion(id)
@@ -102,10 +102,21 @@ const SpecTests = class QuestionSpecTests {
         };
     }
 
+    verifyQuestionFn(index) {
+        const hxQuestion = this.hxQuestion;
+        return function verifyQuestion() {
+            const question = hxQuestion.server(index);
+            return models.question.getQuestion(question.id)
+                .then((result) => {
+                    expect(result).to.deep.equal(question);
+                });
+        };
+    }
+
     deleteQuestionFn(index) {
         const hxQuestion = this.hxQuestion;
         const m = this.models;
-        return function () {
+        return function deleteQuestion() {
             return m.question.deleteQuestion(hxQuestion.id(index))
                 .then(() => {
                     hxQuestion.remove(index);
@@ -116,7 +127,7 @@ const SpecTests = class QuestionSpecTests {
     listQuestionsFn(scope) {
         const hxQuestion = this.hxQuestion;
         const m = this.models;
-        return function () {
+        return function listQuestions() {
             const options = scope ? {} : undefined;
             if (scope) {
                 options.scope = scope;
@@ -142,7 +153,7 @@ const IntegrationTests = class QuestionIntegrationTests {
         const generator = this.generator;
         const rrSuperTest = this.rrSuperTest;
         const hxQuestion = this.hxQuestion;
-        return function (done) {
+        return function createQuestion(done) {
             question = question || generator.newQuestion();
             rrSuperTest.post('/questions', question, 201)
                 .expect((res) => {
@@ -155,7 +166,7 @@ const IntegrationTests = class QuestionIntegrationTests {
     getQuestionFn(index) {
         const rrSuperTest = this.rrSuperTest;
         const hxQuestion = this.hxQuestion;
-        return function (done) {
+        return function getQuestion(done) {
             index = (index === undefined) ? hxQuestion.lastIndex() : index;
             const id = hxQuestion.id(index);
             rrSuperTest.get(`/questions/${id}`, true, 200)
@@ -170,7 +181,7 @@ const IntegrationTests = class QuestionIntegrationTests {
     deleteQuestionFn(index) {
         const rrSuperTest = this.rrSuperTest;
         const hxQuestion = this.hxQuestion;
-        return function (done) {
+        return function deleteQuestion(done) {
             const id = hxQuestion.id(index);
             rrSuperTest.delete(`/questions/${id}`, 204)
                 .expect(() => {
@@ -184,7 +195,7 @@ const IntegrationTests = class QuestionIntegrationTests {
         const rrSuperTest = this.rrSuperTest;
         const hxQuestion = this.hxQuestion;
         const query = scope ? { scope } : undefined;
-        return function (done) {
+        return function listQuestion(done) {
             rrSuperTest.get('/questions', true, 200, query)
                 .expect((res) => {
                     const fields = getFieldsForList(scope);
