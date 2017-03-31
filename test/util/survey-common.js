@@ -182,16 +182,29 @@ const formQuestionsSectionsSurveyPatch = function (survey, { questions, sections
 };
 
 const SpecTests = class SurveySpecTests {
-    constructor(generator, hxSurvey) {
+    constructor(generator, hxSurvey, hxQuestion) {
         this.generator = generator;
         this.hxSurvey = hxSurvey;
+        this.hxQuestion = hxQuestion; // not updated in all creates.
     }
 
     createSurveyFn(options) {
         const generator = this.generator;
         const hxSurvey = this.hxSurvey;
-        return function () {
+        return function createSurvey() {
             const survey = generator.newSurvey(options);
+            return models.survey.createSurvey(survey)
+                .then(id => hxSurvey.push(survey, { id }));
+        };
+    }
+
+    createSurveyQxHxFn(questionIndices) {
+        const generator = this.generator;
+        const hxSurvey = this.hxSurvey;
+        const hxQuestion = this.hxQuestion;
+        return function createSurveyQxHx() {
+            const questionIds = questionIndices.map(index => hxQuestion.id(index));
+            const survey = generator.newSurveyQuestionIds(questionIds);
             return models.survey.createSurvey(survey)
                 .then(id => hxSurvey.push(survey, { id }));
         };
@@ -199,7 +212,7 @@ const SpecTests = class SurveySpecTests {
 
     getSurveyFn(index) {
         const hxSurvey = this.hxSurvey;
-        return function () {
+        return function getSurvey() {
             const surveyId = hxSurvey.id(index);
             return models.survey.getSurvey(surveyId)
                 .then((survey) => {
@@ -211,7 +224,7 @@ const SpecTests = class SurveySpecTests {
 
     deleteSurveyFn(index) {
         const hxSurvey = this.hxSurvey;
-        return function () {
+        return function deleteSurvey() {
             const id = hxSurvey.id(index);
             return models.survey.deleteSurvey(id)
                 .then(() => hxSurvey.remove(index));
@@ -220,7 +233,7 @@ const SpecTests = class SurveySpecTests {
 
     listSurveysFn(options, count = -1) {
         const hxSurvey = this.hxSurvey;
-        return function () {
+        return function listSurveys() {
             return models.survey.listSurveys(options)
                 .then((surveys) => {
                     if (count >= 0) {
@@ -247,7 +260,7 @@ const IntegrationTests = class SurveyIntegrationTests {
         const generator = this.generator;
         const rrSuperTest = this.rrSuperTest;
         const hxSurvey = this.hxSurvey;
-        return function (done) {
+        return function createSurvey(done) {
             const survey = generator.newSurvey(options);
             rrSuperTest.post('/surveys', survey, 201)
                 .expect((res) => {
@@ -260,7 +273,7 @@ const IntegrationTests = class SurveyIntegrationTests {
     getSurveyFn(index) {
         const rrSuperTest = this.rrSuperTest;
         const hxSurvey = this.hxSurvey;
-        return function (done) {
+        return function getSurvey(done) {
             if (index === null || index === undefined) {
                 index = hxSurvey.lastIndex();
             }
@@ -278,7 +291,7 @@ const IntegrationTests = class SurveyIntegrationTests {
     deleteSurveyFn(index) {
         const rrSuperTest = this.rrSuperTest;
         const hxSurvey = this.hxSurvey;
-        return function (done) {
+        return function deleteSurvey(done) {
             const id = hxSurvey.id(index);
             rrSuperTest.delete(`/surveys/${id}`, 204)
                 .expect(() => {
@@ -291,7 +304,7 @@ const IntegrationTests = class SurveyIntegrationTests {
     listSurveysFn(options, count = -1) {
         const rrSuperTest = this.rrSuperTest;
         const hxSurvey = this.hxSurvey;
-        return function (done) {
+        return function listSurveys(done) {
             rrSuperTest.get('/surveys', true, 200, options)
                 .expect((res) => {
                     if (count >= 0) {
