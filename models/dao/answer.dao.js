@@ -133,7 +133,7 @@ module.exports = class AnswerDAO extends Base {
             userId,
             surveyId,
             action,
-        }, transaction)
+        }, {}, transaction)
             .then((consentDocuments) => {
                 if (consentDocuments && consentDocuments.length > 0) {
                     const err = new RRError('profileSignaturesMissing');

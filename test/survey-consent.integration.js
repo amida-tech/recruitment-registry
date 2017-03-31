@@ -325,12 +325,21 @@ describe('survey consent integration', () => {
         };
     };
 
-    const listConsentSurveyDocumentsFn = function (userIndex, surveyIndex, action, expectedInfo) {
+    const listConsentSurveyDocumentsFn = function (userIndex, surveyIndex, action, expectedInfo, detail) {
         return function (done) {
             const surveyId = hxSurvey.id(surveyIndex);
-            rrSuperTest.get('/survey-consent-documents', true, 200, { 'survey-id': surveyId, action })
+            const query = { 'survey-id': surveyId, action };
+            if (detail) {
+                query.detail = true;
+            }
+            rrSuperTest.get('/survey-consent-documents', true, 200, query)
                 .expect((res) => {
-                    const expected = consentCommon.getSurveyConsentDocuments(expectedInfo);
+                    const expected = _.cloneDeep(consentCommon.getSurveyConsentDocuments(expectedInfo));
+                    if (detail) {
+                        const ids = expected.map(({ id }) => id);
+                        const contents = hxConsentDocument.getContents(ids);
+                        expected.forEach((r, index) => { r.content = contents[index]; });
+                    }
                     expect(res.body).to.deep.equal(expected);
                 })
                 .end(done);
@@ -348,6 +357,19 @@ describe('survey consent integration', () => {
     it('logout as user 2', shared.logoutFn());
     it('login as user 3', shared.loginIndexFn(hxUser, 3));
     it('user 3 survey 1 consent documents for create', listConsentSurveyDocumentsFn(3, 1, 'create', [2, 3]));
+    it('logout as user 3', shared.logoutFn());
+
+    it('login as user 0', shared.loginIndexFn(hxUser, 0));
+    it('user 0 survey 1 consent documents for create (with content)', listConsentSurveyDocumentsFn(0, 1, 'create', [2, 3], true));
+    it('logout as user 0', shared.logoutFn());
+    it('login as user 1', shared.loginIndexFn(hxUser, 1));
+    it('user 1 survey 1 consent documents for create (with content)', listConsentSurveyDocumentsFn(1, 1, 'create', [1, 2, 3], true));
+    it('logout as user 1', shared.logoutFn());
+    it('login as user 2', shared.loginIndexFn(hxUser, 2));
+    it('user 2 survey 1 consent documents for create (with content)', listConsentSurveyDocumentsFn(2, 1, 'create', [1, 2, 3], true));
+    it('logout as user 2', shared.logoutFn());
+    it('login as user 3', shared.loginIndexFn(hxUser, 3));
+    it('user 3 survey 1 consent documents for create (with content)', listConsentSurveyDocumentsFn(3, 1, 'create', [2, 3], true));
     it('logout as user 3', shared.logoutFn());
 
     it('login as user 0', shared.loginIndexFn(hxUser, 0));

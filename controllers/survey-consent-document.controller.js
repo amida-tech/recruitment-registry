@@ -8,9 +8,10 @@ exports.listSurveyConsentDocuments = function (req, res) {
     const userId = req.user.id;
     const surveyId = _.get(req, 'swagger.params.survey-id.value');
     const action = _.get(req, 'swagger.params.action.value');
-    // const language = _.get(req, 'swagger.params.language.value');
-    // const options = { language };
-    req.models.surveyConsentDocument.listSurveyConsentDocuments({ userId, surveyId, action })
+    const language = _.get(req, 'swagger.params.language.value');
+    const detail = _.get(req, 'swagger.params.detail.value');
+    const options = { language, detail };
+    req.models.surveyConsentDocument.listSurveyConsentDocuments({ userId, surveyId, action }, options)
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };

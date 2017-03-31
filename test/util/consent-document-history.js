@@ -78,6 +78,16 @@ module.exports = class ConsentDocumentHistory {
         return _.sortBy(result, 'id');
     }
 
+    getContents(ids) {
+        const map = new Map();
+        this.activeConsentDocuments.forEach((d) => {
+            if (d) {
+                map.set(d.id, d.content);
+            }
+        });
+        return ids.map(id => map.get(id));
+    }
+
     serversInListWithSigned(userIndex) {
         const signatureMap = new Map(this.signatures[userIndex].map(signature => [signature.id, signature]));
         const result = this.activeConsentDocuments.reduce((r, { id }, index) => {
