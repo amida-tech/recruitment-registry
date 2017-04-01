@@ -1,5 +1,7 @@
 'use strict';
 
+const _ = require('lodash');
+
 const SPromise = require('../../lib/promise');
 const queryrize = require('../../lib/queryrize');
 const RRError = require('../../lib/rr-error');
@@ -11,18 +13,6 @@ const idFromCodeQuery = queryrize.readQuerySync('question-choice-id-from-code.sq
 module.exports = class QuestionChoiceDAO extends Translatable {
     constructor(db) {
         super(db, 'QuestionChoiceText', 'questionChoiceId');
-    }
-
-    deleteNullData(choices) {
-        choices.forEach((choice) => {
-            if (!choice.meta) {
-                delete choice.meta;
-            }
-            if (!choice.code) {
-                delete choice.code;
-            }
-        });
-        return choices;
     }
 
     createQuestionChoiceTx(choice, transaction) {
@@ -43,7 +33,7 @@ module.exports = class QuestionChoiceDAO extends Translatable {
             attributes: ['id', 'type', 'meta', 'code'],
             order: 'line',
         })
-            .then(choices => this.deleteNullData(choices))
+            .then(choices => choices.map(choice => _.omitBy(choice, _.isNil)))
             .then(choices => this.updateAllTexts(choices, language));
     }
 
@@ -58,7 +48,7 @@ module.exports = class QuestionChoiceDAO extends Translatable {
         }
         const QuestionChoice = this.db.QuestionChoice;
         return QuestionChoice.findAll(options)
-            .then(choices => this.deleteNullData(choices))
+            .then(choices => choices.map(choice => _.omitBy(choice, _.isNil)))
             .then(choices => this.updateAllTexts(choices, language));
     }
 
@@ -73,12 +63,8 @@ module.exports = class QuestionChoiceDAO extends Translatable {
         }
         const QuestionChoice = this.db.QuestionChoice;
         return QuestionChoice.findAll(options)
-            .then(choices => this.deleteNullData(choices))
+            .then(choices => choices.map(choice => _.omitBy(choice, _.isNil)))
             .then(choices => this.updateAllTexts(choices, language));
-    }
-
-    updateMultipleChoiceTextsTx(choices, language, transaction) {
-        return this.createMultipleTextsTx(choices, language, transaction);
     }
 
     createQuestionChoices(choiceSetId, choices, transaction) {
@@ -88,7 +74,7 @@ module.exports = class QuestionChoiceDAO extends Translatable {
     }
 
     updateMultipleChoiceTexts(choices, language) {
-        return this.transaction(transaction => this.updateMultipleChoiceTextsTx(choices, language, transaction));
+        return this.transaction(transaction => this.createMultipleTextsTx(choices, language, transaction));
     }
 
     listQuestionChoices(choiceSetId, language) {

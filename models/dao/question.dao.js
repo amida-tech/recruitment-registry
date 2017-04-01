@@ -18,7 +18,7 @@ module.exports = class QuestionDAO extends Translatable {
     createChoicesTx(questionId, choices, transaction) {
         const records = choices.map((choice, line) => {
             const record = { questionId, line };
-            Object.assign(record, _.pick(choice, ['text', 'code', 'meta']));
+            Object.assign(record, _.pick(choice, ['code', 'meta']));
             record.type = choice.type || 'bool';
             return record;
         });
@@ -223,7 +223,7 @@ module.exports = class QuestionDAO extends Translatable {
             .then(() => {
                 const choices = translation.choices;
                 if (choices) {
-                    return this.questionChoice.updateMultipleChoiceTextsTx(choices, language, tx);
+                    return this.questionChoice.createMultipleTextsTx(choices, language, tx);
                 }
                 return null;
             });
