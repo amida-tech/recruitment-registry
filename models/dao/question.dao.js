@@ -16,37 +16,37 @@ module.exports = class QuestionDAO extends Translatable {
     }
 
     createChoicesTx(questionId, choices, transaction) {
-        const pxs = choices.map(({ text, code, type, meta, answerIdentifier }, line) => {
-            type = type || 'bool';
-            const choice = { questionId, text, type, line };
-            if (meta) {
-                choice.meta = meta;
-            }
-            if (code) {
-                choice.code = code;
-            }
-            return this.questionChoice.createQuestionChoiceTx(choice, transaction)
-                .then(({ id }) => {
+        const records = choices.map((choice, line) => {
+            const record = { questionId, line };
+            Object.assign(record, _.pick(choice, ['text', 'code', 'meta']));
+            record.type = choice.type || 'bool';
+            return record;
+        });
+        return this.db.QuestionChoice.bulkCreate(records, { transaction, returning: true })
+            .then(result => result.map(({ id }) => id))
+            .then((ids) => {
+                const texts = choices.map(({ text }, index) => ({ text, id: ids[index] }));
+                return this.questionChoice.createMultipleTextsTx(texts, 'en', transaction)
+                    .then(() => ids);
+            })
+            .then((ids) => {
+                const idRecords = choices.reduce((r, choice, index) => {
+                    const answerIdentifier = choice.answerIdentifier;
                     if (answerIdentifier) {
                         const { type, value: identifier } = answerIdentifier;
-                        const questionChoiceId = id;
-                        return this.answerIdentifier.createAnswerIdentifier({ type, identifier, questionId, questionChoiceId }, transaction)
-                            .then(() => ({ id }));
+                        const questionChoiceId = ids[index];
+                        const idRecord = { type, identifier, questionId, questionChoiceId };
+                        r.push(idRecord);
                     }
-                    return { id };
-                })
-                .then(({ id }) => {
-                    const result = { id, text: choice.text };
-                    if (meta) {
-                        result.meta = meta;
-                    }
-                    if (code) {
-                        choice.code = code;
-                    }
-                    return result;
-                });
-        });
-        return SPromise.all(pxs);
+                    return r;
+                }, []);
+                return this.db.AnswerIdentifier.bulkCreate(idRecords, { transaction })
+                    .then(() => ids);
+            })
+            .then(ids => ids.map((id, index) => {
+                const fields = _.pick(choices[index], ['text', 'code', 'meta']);
+                return Object.assign({ id }, fields);
+            }));
     }
 
     updateChoiceSetReference(choiceSetReference, transaction) {

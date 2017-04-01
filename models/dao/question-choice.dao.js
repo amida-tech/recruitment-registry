@@ -78,8 +78,7 @@ module.exports = class QuestionChoiceDAO extends Translatable {
     }
 
     updateMultipleChoiceTextsTx(choices, language, transaction) {
-        const inputs = choices.map(({ id, text }) => ({ id, text, language }));
-        return this.createMultipleTextsTx(inputs, transaction);
+        return this.createMultipleTextsTx(choices, language, transaction);
     }
 
     createQuestionChoices(choiceSetId, choices, transaction) {

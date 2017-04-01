@@ -3,7 +3,6 @@
 const _ = require('lodash');
 
 const Base = require('./base');
-const SPromise = require('../../lib/promise');
 
 module.exports = class Translatable extends Base {
     constructor(db, tableName, parentIdField, textFields = ['text'], optionals = {}) {
@@ -14,6 +13,20 @@ module.exports = class Translatable extends Base {
         this.optionals = optionals;
     }
 
+    createRecord(input, inputLanguage) {
+        const language = inputLanguage || input.language || 'en';
+        const record = { language };
+        record[this.parentIdField] = input.id;
+        this.textFields.forEach((field) => {
+            let value = input[field];
+            if (value === undefined) {
+                value = null;
+            }
+            record[field] = value;
+        });
+        return record;
+    }
+
     createTextTx(input, transaction) {
         const Table = this.db[this.tableName];
         const parentIdField = this.parentIdField;
@@ -22,15 +35,7 @@ module.exports = class Translatable extends Base {
         where[parentIdField] = input.id;
         return Table.destroy({ where, transaction })
             .then(() => {
-                const record = { language };
-                record[parentIdField] = input.id;
-                this.textFields.forEach((field) => {
-                    let value = input[field];
-                    if (value === undefined) {
-                        value = null;
-                    }
-                    record[field] = value;
-                });
+                const record = this.createRecord(input);
                 return Table.create(record, { transaction })
                     .then(() => input);
             });
@@ -45,9 +50,17 @@ module.exports = class Translatable extends Base {
         return Table.destroy({ where, transaction });
     }
 
-    createMultipleTextsTx(inputs, transaction) {
-        const pxs = inputs.map(input => this.createTextTx(input, transaction));
-        return SPromise.all(pxs);
+    createMultipleTextsTx(inputs, inputLanguage, transaction) {
+        const Table = this.db[this.tableName];
+        const parentIdField = this.parentIdField;
+        const ids = inputs.map(input => input.id);
+        const language = inputLanguage || 'en';
+        const where = { language, [parentIdField]: { $in: ids } };
+        return Table.destroy({ where, transaction })
+            .then(() => {
+                const records = inputs.map(input => this.createRecord(input, language));
+                return Table.bulkCreate(records, { transaction });
+            });
     }
 
     createText(input) {
