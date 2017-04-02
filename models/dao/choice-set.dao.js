@@ -19,8 +19,12 @@ module.exports = class ChoiceSetDAO extends Base {
     createChoiceSetTx({ reference, choices }, transaction) {
         const ChoiceSet = this.db.ChoiceSet;
         return ChoiceSet.create({ reference }, { transaction })
-            .then(({ id }) => this.questionChoice.createQuestionChoices(id, choices, transaction)
-                    .then(() => ({ id })));
+            .then(({ id }) => {
+                const type = 'choice';
+                const chs = choices.map(ch => Object.assign({ choiceSetId: id, type }, ch));
+                return this.questionChoice.createQuestionChoicesTx(chs, transaction)
+                    .then(() => ({ id }));
+            });
     }
 
     createChoiceSet(choiceSet) {

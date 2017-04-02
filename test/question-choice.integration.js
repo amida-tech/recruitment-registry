@@ -7,8 +7,9 @@ process.env.NODE_ENV = 'test';
 const _ = require('lodash');
 const chai = require('chai');
 
-const models = require('../models');
-const SharedSpec = require('./util/shared-spec.js');
+const config = require('../config');
+const RRSuperTest = require('./util/rr-super-test');
+const SharedIntegration = require('./util/shared-integration.js');
 const Generator = require('./util/generator');
 const ChoiceSetQuestionGenerator = require('./util/generator/choice-set-question-generator');
 const comparator = require('./util/comparator');
@@ -22,21 +23,24 @@ const QuestionChoiceGenerator = require('./util/generator/question-choice-genera
 
 const expect = chai.expect;
 
-describe('question choice unit', () => {
+describe('question choice integration', () => {
+    const rrSuperTest = new RRSuperTest();
     const generator = new Generator();
     const filterGenerator = new FilterGenerator();
     const qxChoiceGenerator = new QuestionChoiceGenerator();
-    const shared = new SharedSpec(generator);
+    const shared = new SharedIntegration(rrSuperTest, generator);
     const hxQuestion = new History();
     const hxChoiceSet = new History();
     const hxSurvey = new History();
     const hxUser = new History();
-    const questionTests = new questionCommon.SpecTests(generator, hxQuestion);
-    const choiceSetTests = new choiceSetCommon.SpecTests(generator, hxChoiceSet);
-    const surveyTests = new surveyCommon.SpecTests(generator, hxSurvey, hxQuestion);
-    const answerTests = new answerCommon.SpecTests(generator, hxUser, hxSurvey, hxQuestion);
+    const questionTests = new questionCommon.IntegrationTests(rrSuperTest, generator, hxQuestion);
+    const choiceSetTests = new choiceSetCommon.IntegrationTests(rrSuperTest, generator, hxChoiceSet);
+    const surveyTests = new surveyCommon.IntegrationTests(rrSuperTest, generator, hxSurvey, hxQuestion);
+    const answerTests = new answerCommon.IntegrationTests(rrSuperTest, generator, hxUser, hxSurvey, hxQuestion);
 
     before(shared.setUpFn());
+
+    it('login as super', shared.loginFn(config.superUser));
 
     _.range(3).forEach((index) => {
         it(`create user ${index}`, shared.createUserFn(hxUser));
@@ -53,7 +57,7 @@ describe('question choice unit', () => {
             const question = hxQuestion.server(index);
             choice.questionId = question.id;
             const id = question.choices[choiceIndex].id;
-            return models.questionChoice.patchQuestionChoice(id, choice)
+            return rrSuperTest.patch(`/question-choices/${id}`, choice, 204)
                 .then(() => {
                     delete choice.questionId;
                     if (choice.type === 'choices') {
@@ -74,7 +78,7 @@ describe('question choice unit', () => {
             const choiceSet = hxChoiceSet.server(index);
             choice.choiceSetId = choiceSet.id;
             const id = choiceSet.choices[choiceIndex].id;
-            return models.questionChoice.patchQuestionChoice(id, choice)
+            return rrSuperTest.patch(`/question-choices/${id}`, choice, 204)
                 .then(() => {
                     delete choice.choiceSetId;
                     Object.assign(choiceSet.choices[choiceIndex], choice);
@@ -123,9 +127,8 @@ describe('question choice unit', () => {
     const errorNoDeleteAnsweredFn = function (index) {
         return function errorNoDeleteAnswerChoice() {
             const choice = answeredQxChoiceIds[index];
-            return models.questionChoice.deleteQuestionChoice(choice)
-                .then(shared.throwingHandler)
-                .catch(shared.expectedErrorHandler('qxChoiceNoDeleteAnswered'));
+            return rrSuperTest.delete(`/question-choices/${choice}`, 400)
+                .then(res => shared.verifyErrorMessage(res, 'qxChoiceNoDeleteAnswered'));
         };
     };
 
@@ -138,7 +141,7 @@ describe('question choice unit', () => {
     _.range(3).forEach((index) => {
         it(`delete choice case ${index}`, function deleteChoice() {
             const choice = answeredQxChoiceIds[index];
-            return models.questionChoice.deleteQuestionChoice(choice);
+            return rrSuperTest.delete(`/question-choices/${choice}`, 204);
         });
 
         it(`update question ${[0, 1, 10][index]} local copy`, function updateQuestion() {
@@ -177,15 +180,15 @@ describe('question choice unit', () => {
             return question;
         });
         const filter = filterGenerator.newFilterQuestionsReady(questions);
-        return models.filter.createFilter(filter).then(({ id }) => { filterId = id; });
+        return rrSuperTest.post('/filters', filter, 201)
+            .then((res) => { filterId = res.body.id; });
     });
 
     const errorNoDeleteInFilterFn = function (index) {
         return function errorNoDeleteInFilter() {
             const choice = qxChoicesInFilters[index];
-            return models.questionChoice.deleteQuestionChoice(choice)
-                .then(shared.throwingHandler)
-                .catch(shared.expectedErrorHandler('qxChoiceNoDeleteInFilter'));
+            return rrSuperTest.delete(`/question-choices/${choice}`, 400)
+                .then(res => shared.verifyErrorMessage(res, 'qxChoiceNoDeleteInFilter'));
         };
     };
 
@@ -194,13 +197,13 @@ describe('question choice unit', () => {
     });
 
     it('delete filter 0', function deleteFilter() {
-        return models.filter.deleteFilter(filterId);
+        return rrSuperTest.delete(`/filters/${filterId}`, 204);
     });
 
     _.range(3).forEach((index) => {
         it(`delete choice case ${index}`, function deleteChoice() {
             const choice = qxChoicesInFilters[index];
-            return models.questionChoice.deleteQuestionChoice(choice);
+            return rrSuperTest.delete(`/question-choices/${choice}`, 204);
         });
 
         it(`update question ${[2, 3, 11][index]} local copy`, function updateQuestion() {
@@ -240,13 +243,13 @@ describe('question choice unit', () => {
             const server = hxQuestion.server(index);
             const choice = qxChoiceGenerator.newQuestionChoice();
             choice.questionId = server.id;
-            return models.questionChoice.createQuestionChoice(choice)
-                .then(({ id }) => {
+            return rrSuperTest.post('/question-choices', choice, 201)
+                .then((res) => {
                     delete choice.questionId;
                     if (server.type === 'choices') {
                         choice.type = choice.type || 'bool';
                     }
-                    server.choices.push(Object.assign({ id }, choice));
+                    server.choices.push(Object.assign(res.body, choice));
                 });
         });
 
@@ -258,10 +261,10 @@ describe('question choice unit', () => {
             const server = hxChoiceSet.server(index);
             const choice = qxChoiceGenerator.newQuestionChoice({ alwaysCode: true });
             choice.choiceSetId = server.id;
-            return models.questionChoice.createQuestionChoice(choice)
-                .then(({ id }) => {
+            return rrSuperTest.post('/question-choices', choice, 201)
+                .then((res) => {
                     delete choice.choiceSetId;
-                    const choiceWithId = Object.assign({ id }, choice);
+                    const choiceWithId = Object.assign(res.body, choice);
                     server.choices.push(choiceWithId);
 
                     _.range(10 + index, 20, 3).forEach((qxIndex) => {
@@ -285,14 +288,14 @@ describe('question choice unit', () => {
             choice.questionId = server.id;
             const beforeIndex = (index % 2) + 2;
             choice.before = server.choices[beforeIndex].id;
-            return models.questionChoice.createQuestionChoice(choice)
-                .then(({ id }) => {
+            return rrSuperTest.post('/question-choices', choice, 201)
+                .then((res) => {
                     delete choice.questionId;
                     delete choice.before;
                     if (server.type === 'choices') {
                         choice.type = choice.type || 'bool';
                     }
-                    server.choices.splice(beforeIndex, 0, Object.assign({ id }, choice));
+                    server.choices.splice(beforeIndex, 0, Object.assign(res.body, choice));
                 });
         });
 
@@ -306,11 +309,11 @@ describe('question choice unit', () => {
             choice.choiceSetId = server.id;
             const beforeIndex = (index % 2) + 2;
             choice.before = server.choices[beforeIndex].id;
-            return models.questionChoice.createQuestionChoice(choice)
-                .then(({ id }) => {
+            return rrSuperTest.post('/question-choices', choice, 201)
+                .then((res) => {
                     delete choice.choiceSetId;
                     delete choice.before;
-                    const choiceWithId = Object.assign({ id }, choice);
+                    const choiceWithId = Object.assign(res.body, choice);
                     server.choices.splice(beforeIndex, 0, choiceWithId);
 
                     _.range(10 + index, 20, 3).forEach((qxIndex) => {
@@ -336,7 +339,7 @@ describe('question choice unit', () => {
             choice.before = server.choices[beforeIndex].id;
             const patchIndex = server.choices.length - (index % 2) - 1;
             const id = server.choices[patchIndex].id;
-            return models.questionChoice.patchQuestionChoice(id, choice)
+            return rrSuperTest.patch(`/question-choices/${id}`, choice, 204)
                 .then(() => {
                     delete choice.questionId;
                     delete choice.before;
@@ -358,7 +361,7 @@ describe('question choice unit', () => {
             choice.before = server.choices[beforeIndex].id;
             const patchIndex = server.choices.length - (index % 2) - 1;
             const id = server.choices[patchIndex].id;
-            return models.questionChoice.patchQuestionChoice(id, choice)
+            return rrSuperTest.patch(`/question-choices/${id}`, choice, 204)
                 .then(() => {
                     delete choice.choiceSetId;
                     delete choice.before;
@@ -380,4 +383,6 @@ describe('question choice unit', () => {
     _.range(10, 20).forEach((index) => {
         it(`verify question ${index}`, questionTests.verifyQuestionFn(index));
     });
+
+    it('logout as super', shared.logoutFn());
 });

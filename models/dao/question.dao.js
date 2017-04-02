@@ -16,19 +16,8 @@ module.exports = class QuestionDAO extends Translatable {
     }
 
     createChoicesTx(questionId, choices, transaction) {
-        const records = choices.map((choice, line) => {
-            const record = { questionId, line };
-            Object.assign(record, _.pick(choice, ['code', 'meta']));
-            record.type = choice.type || 'bool';
-            return record;
-        });
-        return this.db.QuestionChoice.bulkCreate(records, { transaction, returning: true })
-            .then(result => result.map(({ id }) => id))
-            .then((ids) => {
-                const texts = choices.map(({ text }, index) => ({ text, id: ids[index] }));
-                return this.questionChoice.createMultipleTextsTx(texts, 'en', transaction)
-                    .then(() => ids);
-            })
+        const choicesWithParent = choices.map(ch => Object.assign({ questionId }, ch));
+        return this.questionChoice.createQuestionChoicesTx(choicesWithParent, transaction)
             .then((ids) => {
                 const idRecords = choices.reduce((r, choice, index) => {
                     const answerIdentifier = choice.answerIdentifier;

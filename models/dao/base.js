@@ -15,8 +15,8 @@ module.exports = class Base {
         return this.db.sequelize.transaction(autoCallback);
     }
 
-    selectQuery(sql, replacements, transaction) {
-        const options = { type: this.db.sequelize.QueryTypes.SELECT };
+    queryCommon(sql, inputOptions, replacements, transaction) {
+        const options = Object.assign({}, inputOptions);
         const schema = this.db.schema;
         if (schema !== 'public') {
             options.searchPath = schema;
@@ -28,6 +28,15 @@ module.exports = class Base {
             options.transaction = transaction;
         }
         return this.db.sequelize.query(sql, options);
+    }
+
+    query(sql, replacements, transaction) {
+        return this.queryCommon(sql, {}, replacements, transaction);
+    }
+
+    selectQuery(sql, replacements, transaction) {
+        const options = { type: this.db.sequelize.QueryTypes.SELECT };
+        return this.queryCommon(sql, options, replacements, transaction);
     }
 
     timestampColumn(table, type, format = 'YYYY-MM-DD"T"HH24:MI:SS"Z"') {
@@ -48,5 +57,10 @@ module.exports = class Base {
     qualifiedCol(table, col) {
         const schema = this.db.schema;
         return `${schema}_${table}.${col}`;
+    }
+
+    fnCol(fnName, table, col) {
+        const qCol = this.qualifiedCol(table, col);
+        return [this.db.sequelize.fn(fnName, this.db.sequelize.col(qCol))];
     }
 };

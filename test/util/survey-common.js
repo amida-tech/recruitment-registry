@@ -259,10 +259,11 @@ const SpecTests = class SurveySpecTests {
 };
 
 const IntegrationTests = class SurveyIntegrationTests {
-    constructor(rrSuperTest, generator, hxSurvey) {
+    constructor(rrSuperTest, generator, hxSurvey, hxQuestion) {
         this.rrSuperTest = rrSuperTest;
         this.generator = generator;
         this.hxSurvey = hxSurvey;
+        this.hxQuestion = hxQuestion; // not updated in all creates.
     }
 
     createSurveyFn(options) {
@@ -276,6 +277,27 @@ const IntegrationTests = class SurveyIntegrationTests {
                     hxSurvey.push(survey, res.body);
                 })
                 .end(done);
+        };
+    }
+
+    createSurveyQxHxFn(questionIndices) {
+        const rrSuperTest = this.rrSuperTest;
+        const generator = this.generator;
+        const hxSurvey = this.hxSurvey;
+        const hxQuestion = this.hxQuestion;
+        return function createSurveyQxHx() {
+            const questionIds = questionIndices.map(index => hxQuestion.id(index));
+            const survey = generator.newSurveyQuestionIds(questionIds);
+            return rrSuperTest.post('/surveys', survey, 201)
+                .then((res) => {
+                    const fullSurvey = _.cloneDeep(survey);
+                    fullSurvey.questions = questionIndices.map((qxIndex, index) => {
+                        const question = Object.assign({}, survey.questions[index]);
+                        Object.assign(question, hxQuestion.server(qxIndex));
+                        return question;
+                    });
+                    hxSurvey.push(fullSurvey, res.body);
+                });
         };
     }
 

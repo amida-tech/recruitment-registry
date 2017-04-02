@@ -2,7 +2,6 @@
 
 const _ = require('lodash');
 
-const SPromise = require('../../lib/promise');
 const queryrize = require('../../lib/queryrize');
 const RRError = require('../../lib/rr-error');
 
@@ -16,13 +15,105 @@ module.exports = class QuestionChoiceDAO extends Translatable {
     }
 
     createQuestionChoiceTx(choice, transaction) {
-        const QuestionChoice = this.db.QuestionChoice;
-        return QuestionChoice.create(choice, { transaction })
+        const record = _.omit(choice, 'text');
+        return this.db.QuestionChoice.create(record, { transaction })
             .then(({ id }) => {
-                const input = { id, text: choice.text };
-                return this.createTextTx(input, transaction)
+                const textRecord = { id, text: choice.text };
+                return this.createTextTx(textRecord, transaction)
                     .then(() => ({ id }));
             });
+    }
+
+    patchQuestionChoiceTx(id, choicePatch, transaction) {
+        const record = _.omit(choicePatch, 'text');
+        return this.db.QuestionChoice.update(record, { where: { id }, transaction })
+            .then(() => {
+                if (choicePatch.text) {
+                    const textRecord = { id, text: choicePatch.text };
+                    return this.createTextTx(textRecord, transaction);
+                }
+                return null;
+            });
+    }
+
+    createQuestionChoicesTx(choices, transaction) {
+        const records = choices.map((choice, line) => {
+            const record = { line };
+            Object.assign(record, _.omit(choice, 'text'));
+            record.type = choice.type || 'bool';
+            return record;
+        });
+        return this.db.QuestionChoice.bulkCreate(records, { transaction, returning: true })
+            .then(result => result.map(({ id }) => id))
+            .then((ids) => {
+                const texts = choices.map(({ text }, index) => ({ text, id: ids[index] }));
+                return this.createMultipleTextsTx(texts, 'en', transaction)
+                    .then(() => ids);
+            });
+    }
+
+    findNewQuestionChoiceLine(choice, questionId, choiceSetId, transaction) {
+        if (choice.before) {
+            const findOptions = { attributes: ['line'], raw: true, transaction };
+            return this.db.QuestionChoice.findById(choice.before, findOptions)
+                .then((record) => {
+                    if (record) {
+                        const line = record.line;
+                        return this.shiftLines(line, questionId, choiceSetId, transaction)
+                            .then(() => line);
+                    }
+                    return RRError.reject('qxChoiceInvalidBeforeId');
+                });
+        }
+        const attributes = this.fnCol('max', 'question_choice', 'line');
+        const where = questionId ? { questionId } : { choiceSetId };
+        return this.db.QuestionChoice.findOne({ raw: true, attributes, where, transaction })
+                .then(record => (record ? record.max + 1 : 0));
+    }
+
+    shiftLines(line, questionId, choiceSetId, transaction) {
+        let where = questionId ? 'question_id = :questionId' : 'choice_set_id = :choiceSetId';
+        where = `line >= :line AND ${where} AND deleted_at IS NULL`;
+        const sql = `UPDATE ONLY question_choice SET line = line + 1 WHERE ${where}`;
+        return this.query(sql, { line, questionId, choiceSetId }, transaction);
+    }
+
+    createQuestionChoice(choice) {
+        const { questionId, choiceSetId } = choice;
+        if (!(questionId || choiceSetId)) {
+            return RRError.reject('qxChoiceNoParent');
+        }
+        if (questionId && choiceSetId) {
+            return RRError.reject('qxChoiceMultipleParent');
+        }
+        return this.transaction(transaction => this.findNewQuestionChoiceLine(choice, questionId, choiceSetId, transaction)
+                .then((line) => {
+                    const ch = _.omit(choice, 'before');
+                    ch.line = line;
+                    ch.type = choice.type || (choiceSetId ? 'choice' : 'bool');
+                    return this.createQuestionChoiceTx(ch, transaction);
+                }));
+    }
+
+    patchQuestionChoice(id, choicePatch) {
+        const { questionId, choiceSetId } = choicePatch;
+        if (!(questionId || choiceSetId)) {
+            return RRError.reject('qxChoiceNoParent');
+        }
+        if (questionId && choiceSetId) {
+            return RRError.reject('qxChoiceMultipleParent');
+        }
+        return this.transaction((transaction) => {
+            if (choicePatch.before) {
+                return this.findNewQuestionChoiceLine(choicePatch, questionId, choiceSetId, transaction)
+                    .then((line) => {
+                        const ch = _.omit(choicePatch, 'before');
+                        ch.line = line;
+                        return this.patchQuestionChoiceTx(id, ch, transaction);
+                    });
+            }
+            return this.patchQuestionChoiceTx(id, choicePatch, transaction);
+        });
     }
 
     findChoicesPerQuestion(questionId, language) {
@@ -65,12 +156,6 @@ module.exports = class QuestionChoiceDAO extends Translatable {
         return QuestionChoice.findAll(options)
             .then(choices => choices.map(choice => _.omitBy(choice, _.isNil)))
             .then(choices => this.updateAllTexts(choices, language));
-    }
-
-    createQuestionChoices(choiceSetId, choices, transaction) {
-        const type = 'choice';
-        const promises = choices.map(({ code, text }, line) => this.createQuestionChoiceTx({ choiceSetId, text, code, line, type }, transaction));
-        return SPromise.all(promises);
     }
 
     updateMultipleChoiceTexts(choices, language) {

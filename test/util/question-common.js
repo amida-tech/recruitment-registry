@@ -178,6 +178,18 @@ const IntegrationTests = class QuestionIntegrationTests {
         };
     }
 
+    verifyQuestionFn(index) {
+        const rrSuperTest = this.rrSuperTest;
+        const hxQuestion = this.hxQuestion;
+        return function verifyQuestion() {
+            const question = hxQuestion.server(index);
+            return rrSuperTest.get(`/questions/${question.id}`, true, 200)
+                .then((res) => {
+                    expect(res.body).to.deep.equal(question);
+                });
+        };
+    }
+
     deleteQuestionFn(index) {
         const rrSuperTest = this.rrSuperTest;
         const hxQuestion = this.hxQuestion;
