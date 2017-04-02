@@ -37,16 +37,6 @@ describe('question unit', () => {
                 expect(questions).to.have.length(0);
             }));
 
-    const verifyQuestionFn = function (index) {
-        return function () {
-            const question = hxQuestion.server(index);
-            return models.question.getQuestion(question.id)
-                .then((result) => {
-                    expect(result).to.deep.equal(question);
-                });
-        };
-    };
-
     const updateQuestionTextFn = function (index) {
         return function () {
             const clientQuestion = hxQuestion.client(index);
@@ -83,9 +73,9 @@ describe('question unit', () => {
         it(`create question ${i}`, tests.createQuestionFn());
         it(`get question ${i}`, tests.getQuestionFn(i));
         it(`update question ${i}`, updateQuestionTextFn(i));
-        it(`verify question ${i}`, verifyQuestionFn(i));
+        it(`verify question ${i}`, tests.verifyQuestionFn(i));
         it(`revert update question ${i}`, revertUpdateQuestionTextFn(i));
-        it(`verify question ${i}`, verifyQuestionFn(i));
+        it(`verify question ${i}`, tests.verifyQuestionFn(i));
     });
 
     it('error: get with non-existent id', () => models.question.getQuestion(99999)
@@ -183,9 +173,9 @@ describe('question unit', () => {
         it(`create question ${i}`, tests.createQuestionFn());
         it(`get question ${i}`, tests.getQuestionFn(i));
         it(`update question ${i}`, updateQuestionTextFn(i));
-        it(`verify question ${i}`, verifyQuestionFn(i));
+        it(`verify question ${i}`, tests.verifyQuestionFn(i));
         it(`revert update question ${i}`, revertUpdateQuestionTextFn(i));
-        it(`verify question ${i}`, verifyQuestionFn(i));
+        it(`verify question ${i}`, tests.verifyQuestionFn(i));
     });
 
     it('list common questions', () => models.question.listQuestions({ commonOnly: true })

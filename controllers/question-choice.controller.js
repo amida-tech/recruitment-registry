@@ -4,9 +4,24 @@ const _ = require('lodash');
 
 const shared = require('./shared.js');
 
+exports.createQuestionChoice = function (req, res) {
+    const questionChoice = _.get(req, 'swagger.params.newQuestionChoice.value');
+    req.models.questionChoice.createQuestionChoice(questionChoice)
+        .then(result => res.status(201).json(result))
+        .catch(shared.handleError(res));
+};
+
 exports.deleteQuestionChoice = function (req, res) {
     const id = _.get(req, 'swagger.params.id.value');
     req.models.questionChoice.deleteQuestionChoice(id)
+        .then(() => res.status(204).end())
+        .catch(shared.handleError(res));
+};
+
+exports.patchQuestionChoice = function (req, res) {
+    const id = _.get(req, 'swagger.params.id.value');
+    const patch = _.get(req, 'swagger.params.questionChoicePatch.value');
+    req.models.questionChoice.patchQuestionChoice(id, patch)
         .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };

@@ -16,37 +16,26 @@ module.exports = class QuestionDAO extends Translatable {
     }
 
     createChoicesTx(questionId, choices, transaction) {
-        const pxs = choices.map(({ text, code, type, meta, answerIdentifier }, line) => {
-            type = type || 'bool';
-            const choice = { questionId, text, type, line };
-            if (meta) {
-                choice.meta = meta;
-            }
-            if (code) {
-                choice.code = code;
-            }
-            return this.questionChoice.createQuestionChoiceTx(choice, transaction)
-                .then(({ id }) => {
+        const choicesWithParent = choices.map(ch => Object.assign({ questionId }, ch));
+        return this.questionChoice.createQuestionChoicesTx(choicesWithParent, transaction)
+            .then((ids) => {
+                const idRecords = choices.reduce((r, choice, index) => {
+                    const answerIdentifier = choice.answerIdentifier;
                     if (answerIdentifier) {
                         const { type, value: identifier } = answerIdentifier;
-                        const questionChoiceId = id;
-                        return this.answerIdentifier.createAnswerIdentifier({ type, identifier, questionId, questionChoiceId }, transaction)
-                            .then(() => ({ id }));
+                        const questionChoiceId = ids[index];
+                        const idRecord = { type, identifier, questionId, questionChoiceId };
+                        r.push(idRecord);
                     }
-                    return { id };
-                })
-                .then(({ id }) => {
-                    const result = { id, text: choice.text };
-                    if (meta) {
-                        result.meta = meta;
-                    }
-                    if (code) {
-                        choice.code = code;
-                    }
-                    return result;
-                });
-        });
-        return SPromise.all(pxs);
+                    return r;
+                }, []);
+                return this.db.AnswerIdentifier.bulkCreate(idRecords, { transaction })
+                    .then(() => ids);
+            })
+            .then(ids => ids.map((id, index) => {
+                const fields = _.pick(choices[index], ['text', 'code', 'meta']);
+                return Object.assign({ id }, fields);
+            }));
     }
 
     updateChoiceSetReference(choiceSetReference, transaction) {
@@ -223,7 +212,7 @@ module.exports = class QuestionDAO extends Translatable {
             .then(() => {
                 const choices = translation.choices;
                 if (choices) {
-                    return this.questionChoice.updateMultipleChoiceTextsTx(choices, language, tx);
+                    return this.questionChoice.createMultipleTextsTx(choices, language, tx);
                 }
                 return null;
             });

@@ -2890,6 +2890,33 @@
                 }
             }
         },
+        "/question-choices": {
+            "x-swagger-router-controller": "question-choice.controller",
+            "post": {
+                "operationId": "createQuestionChoice",
+                "summary": "Creates new question choice",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "newQuestionChoice",
+                    "in": "body",
+                    "description": "Question choice specification",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/newQuestionChoice"
+                    }
+                }],
+                "responses": {
+                    "201": {
+                        "$ref": "#/responses/idSuccess"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
         "/question-choices/{id}": {
             "x-swagger-router-controller": "question-choice.controller",
             "parameters": [{
@@ -2898,6 +2925,29 @@
                 "required": true,
                 "type": "integer"
             }],
+            "patch": {
+                "summary": "Patches question choice",
+                "operationId": "patchQuestionChoice",
+                "security": [{
+                    "admin": []
+                }],
+                "parameters": [{
+                    "name": "questionChoicePatch",
+                    "in": "body",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/questionChoicePatch"
+                    }
+                }],
+                 "responses": {
+                    "204": {
+                        "description": "Successful response."
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            },
             "delete": {
                 "summary": "Deletes question choice",
                 "operationId": "deleteQuestionChoice",
@@ -5965,6 +6015,63 @@
                     }
                 }
             }
+        },
+        "newQuestionChoice": {
+            "type": "object",
+            "required": ["text"],
+            "properties": {
+                "text": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "code": {
+                    "type": "string"
+                },
+                "meta": {
+                    "type": "object"
+                },
+                "before": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "questionId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "choiceSetId": {
+                    "type": "integer",
+                    "minimum": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "questionChoicePatch": {
+            "type": "object",
+            "properties": {
+                "text": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "code": {
+                    "type": "string"
+                },
+                "meta": {
+                    "type": "object"
+                },
+                "before": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "questionId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "choiceSetId": {
+                    "type": "integer",
+                    "minimum": 1
+                }
+            },
+            "additionalProperties": false
         },
         "zip": {
             "type": "string",

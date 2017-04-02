@@ -154,8 +154,7 @@ module.exports = class SectionDAO extends Base {
     }
 
     updateMultipleSectionNamesTx(sections, language, transaction) {
-        const inputs = sections.map(({ id, name }) => ({ id, name, language }));
-        return this.section.createMultipleTextsTx(inputs, transaction);
+        return this.section.createMultipleTextsTx(sections, language, transaction);
     }
 
     deleteSurveySectionsTx(surveyId, transaction) {

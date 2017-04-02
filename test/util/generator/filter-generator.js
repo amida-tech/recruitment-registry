@@ -11,14 +11,20 @@ module.exports = class FilterGenerator {
         this.answerer = new Answerer();
     }
 
-    newFilter(hxQuestion) {
+    newBody() {
         this.index += 1;
         const index = this.index;
-        const numQuestions = (index % 4) + 1;
         const filter = { name: `name_${index}` };
         if ((index % 5) !== 2) {
             filter.maxCount = (index + 1) * 50;
         }
+        return filter;
+    }
+
+    newFilter(hxQuestion) {
+        const filter = this.newBody();
+        const numQuestions = (this.index % 4) + 1;
+
         filter.questions = _.range(numQuestions).map(() => {
             this.questionIndex += 1;
             const questionPoolSize = hxQuestion.length();
@@ -29,6 +35,12 @@ module.exports = class FilterGenerator {
             const answers = _.range(answerCount).map(() => this.answerer.answerFilterQuestion(question));
             return { id: questionId, answers };
         });
+        return filter;
+    }
+
+    newFilterQuestionsReady(questions) {
+        const filter = this.newBody();
+        filter.questions = questions;
         return filter;
     }
 };

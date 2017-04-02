@@ -6,7 +6,7 @@ module.exports = class ChoiceSetQuestionGenerator extends QuestionGenerator {
     constructor(predecessor, choiceSets) {
         super(predecessor);
         this.choiceSets = choiceSets;
-        this.choiceSetIndex = 0;
+        this.choiceSetIndex = -1;
     }
 
     newQuestion() {
