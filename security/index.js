@@ -54,7 +54,7 @@ const jwtAuth = function (req, header, verifyUserFn, callback) {
     return callback(noAuth);
 };
 
-const roleCheck = function (role) {
+const roleCheck = function roleCheck(role) {
     return function (user) {
         if (user.role === role) {
             return null;
@@ -63,7 +63,7 @@ const roleCheck = function (role) {
     };
 };
 
-const rolesCheck = function (roles) {
+const rolesCheck = function rolesCheck(roles) {
     return function (user) {
         if (roles.indexOf(user.role) >= 0) {
             return null;

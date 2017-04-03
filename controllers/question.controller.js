@@ -6,7 +6,7 @@ const intoStream = require('into-stream');
 const shared = require('./shared.js');
 const jsonSchema = require('../lib/json-schema');
 
-exports.createQuestion = function (req, res) {
+exports.createQuestion = function createQuestion(req, res) {
     if (!jsonSchema('newQuestion', req.body, res)) {
         return;
     }
@@ -23,21 +23,21 @@ exports.createQuestion = function (req, res) {
     }
 };
 
-exports.updateQuestionText = function (req, res) {
+exports.updateQuestionText = function updateQuestionText(req, res) {
     const language = _.get(req, 'swagger.params.language.value');
     req.models.question.updateQuestionText(req.body, language)
         .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };
 
-exports.deleteQuestion = function (req, res) {
+exports.deleteQuestion = function deleteQuestion(req, res) {
     const id = _.get(req, 'swagger.params.id.value');
     req.models.question.deleteQuestion(id)
         .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };
 
-exports.getQuestion = function (req, res) {
+exports.getQuestion = function getQuestion(req, res) {
     const id = _.get(req, 'swagger.params.id.value');
     const language = _.get(req, 'swagger.params.language.value');
     const options = language ? { language } : {};
@@ -46,7 +46,7 @@ exports.getQuestion = function (req, res) {
         .catch(shared.handleError(res));
 };
 
-exports.listQuestions = function (req, res) {
+exports.listQuestions = function listQuestions(req, res) {
     const scope = _.get(req, 'swagger.params.scope.value');
     const language = _.get(req, 'swagger.params.language.value');
     const surveyId = _.get(req, 'swagger.params.survey-id.value');
@@ -57,14 +57,14 @@ exports.listQuestions = function (req, res) {
         .catch(shared.handleError(res));
 };
 
-exports.addQuestionIdentifiers = function (req, res) {
+exports.addQuestionIdentifiers = function addQuestionIdentifiers(req, res) {
     const id = _.get(req, 'swagger.params.id.value');
     req.models.question.addQuestionIdentifiers(id, req.body)
         .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };
 
-exports.exportQuestions = function (req, res) {
+exports.exportQuestions = function exportQuestions(req, res) {
     req.models.question.exportQuestions()
         .then((csvContent) => {
             res.header('Content-disposition', 'attachment; filename=question.csv');
@@ -74,7 +74,7 @@ exports.exportQuestions = function (req, res) {
         .catch(shared.handleError(res));
 };
 
-exports.importQuestions = function (req, res) {
+exports.importQuestions = function importQuestions(req, res) {
     const csvFile = _.get(req, 'swagger.params.questioncsv.value');
     const stream = intoStream(csvFile.buffer);
     req.models.question.importQuestions(stream)

@@ -8,6 +8,14 @@ const Translatable = require('./translatable');
 const ExportCSVConverter = require('../../export/csv-converter.js');
 const ImportCSVConverter = require('../../import/csv-converter.js');
 
+const cleanDBQuestion = function (question) {
+    const result = _.omitBy(question, _.isNil);
+    if (question.common === null) {
+        result.common = false;
+    }
+    return result;
+};
+
 module.exports = class QuestionDAO extends Translatable {
     constructor(db, dependencies) {
         super(db, 'QuestionText', 'questionId', ['text', 'instruction'], { instruction: true });
@@ -149,22 +157,7 @@ module.exports = class QuestionDAO extends Translatable {
                 if (!question) {
                     return RRError.reject('qxNotFound');
                 }
-                if (question.meta === null) {
-                    delete question.meta;
-                }
-                if (question.maxCount === null) {
-                    delete question.maxCount;
-                }
-                if (question.multiple === null) {
-                    delete question.multiple;
-                }
-                if (question.choiceSetId === null) {
-                    delete question.choiceSetId;
-                }
-                if (question.common === null) {
-                    question.common = false;
-                }
-                return question;
+                return cleanDBQuestion(question);
             })
             .then((question) => {
                 if (question.choiceSetId) {
@@ -274,6 +267,7 @@ module.exports = class QuestionDAO extends Translatable {
     listQuestions({ scope, ids, language, surveyId, commonOnly } = {}) {
         scope = scope || 'summary';
         return this.findQuestions({ scope, ids, language, surveyId, commonOnly })
+            .then(questions => questions.map(question => cleanDBQuestion(question)))
             .then((questions) => {
                 if (ids && (questions.length !== ids.length)) {
                     return RRError.reject('qxNotFound');
@@ -285,23 +279,6 @@ module.exports = class QuestionDAO extends Translatable {
                 if (ids) {
                     questions = ids.map(id => map.get(id)); // order by specified ids
                 }
-                questions.forEach((question) => {
-                    if (question.meta === null) {
-                        delete question.meta;
-                    }
-                    if (question.maxCount === null) {
-                        delete question.maxCount;
-                    }
-                    if (question.multiple === null) {
-                        delete question.multiple;
-                    }
-                    if (question.choiceSetId === null) {
-                        delete question.choiceSetId;
-                    }
-                    if (question.common === null) {
-                        question.common = false;
-                    }
-                });
                 return this.updateAllTexts(questions, language)
                     .then(() => {
                         const promises = questions.reduce((r, question) => {

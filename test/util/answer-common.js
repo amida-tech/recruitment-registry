@@ -155,7 +155,7 @@ const SpecTests = class AnswerSpecTests {
         const hxSurvey = this.hxSurvey;
         const hxQuestion = this.hxQuestion;
         const hxAnswer = this.hxAnswer;
-        return function () {
+        return function answerSurvey() {
             const userId = hxUser.id(userIndex);
             const survey = hxSurvey.server(surveyIndex);
             const answers = generateAnswers(generator, survey, hxQuestion, qxIndices);
@@ -175,7 +175,7 @@ const SpecTests = class AnswerSpecTests {
         const hxUser = this.hxUser;
         const hxSurvey = this.hxSurvey;
         const hxAnswer = this.hxAnswer;
-        return function () {
+        return function getAnswers() {
             return models.answer.getAnswers({
                 userId: hxUser.id(userIndex),
                 surveyId: hxSurvey.id(surveyIndex),
@@ -191,7 +191,7 @@ const SpecTests = class AnswerSpecTests {
         const hxUser = this.hxUser;
         const hxSurvey = this.hxSurvey;
         const hxAnswer = this.hxAnswer;
-        return function () {
+        return function verifyAnsweredSurvey() {
             const userId = hxUser.id(userIndex);
             const survey = hxSurvey.server(surveyIndex);
             const { answers } = hxAnswer.getLast(userIndex, surveyIndex);
@@ -206,7 +206,7 @@ const SpecTests = class AnswerSpecTests {
         const hxUser = this.hxUser;
         const hxSurvey = this.hxSurvey;
         const hxAnswer = this.hxAnswer;
-        return function () {
+        return function listAnswersForUser() {
             const userId = hxUser.id(userIndex);
             const expected = expectedAnswerListForUser(userIndex, hxSurvey, hxAnswer);
             return models.answer.listAnswers({ scope: 'export', userId })
@@ -256,7 +256,7 @@ const IntegrationTests = class AnswerIntegrationTests {
         const hxSurvey = this.hxSurvey;
         const hxQuestion = this.hxQuestion;
         const hxAnswer = this.hxAnswer;
-        return function () {
+        return function answerSurvey() {
             const survey = hxSurvey.server(surveyIndex);
             const answers = generateAnswers(generator, survey, hxQuestion, qxIndices);
             const input = {
@@ -279,7 +279,7 @@ const IntegrationTests = class AnswerIntegrationTests {
         const rrSuperTest = this.rrSuperTest;
         const hxSurvey = this.hxSurvey;
         const hxAnswer = this.hxAnswer;
-        return function (done) {
+        return function getAnswers(done) {
             const surveyId = hxSurvey.id(surveyIndex);
             rrSuperTest.get('/answers', true, 200, { 'survey-id': surveyId })
                 .expect((res) => {
@@ -294,7 +294,7 @@ const IntegrationTests = class AnswerIntegrationTests {
         const hxSurvey = this.hxSurvey;
         const hxAnswer = this.hxAnswer;
         const rrSuperTest = this.rrSuperTest;
-        return function (done) {
+        return function verifyAnsweredSurvey(done) {
             const survey = hxSurvey.server(surveyIndex);
             const { answers } = hxAnswer.getLast(userIndex, surveyIndex);
             rrSuperTest.get(`/answered-surveys/${survey.id}`, true, 200)
@@ -309,7 +309,7 @@ const IntegrationTests = class AnswerIntegrationTests {
         const rrSuperTest = this.rrSuperTest;
         const hxSurvey = this.hxSurvey;
         const hxAnswer = this.hxAnswer;
-        return function () {
+        return function listAnswersForUser() {
             const expected = expectedAnswerListForUser(userIndex, hxSurvey, hxAnswer);
             return rrSuperTest.get('/answers/export', true, 200)
                 .then((res) => {

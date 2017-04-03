@@ -4,7 +4,7 @@ const _ = require('lodash');
 
 const shared = require('./shared.js');
 
-exports.getQuestionIdByIdentifier = function (req, res) {
+exports.getQuestionIdByIdentifier = function getQuestionIdByIdentifier(req, res) {
     const type = _.get(req, 'swagger.params.type.value');
     const identifier = _.get(req, 'swagger.params.identifier.value');
     req.models.questionIdentifier.getQuestionIdByIdentifier(type, identifier)

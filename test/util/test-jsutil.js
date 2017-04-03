@@ -2,7 +2,7 @@
 
 const _ = require('lodash');
 
-exports.oppositeCase = function (input) {
+exports.oppositeCase = function oppositeCase(input) {
     let result = '';
     _.range(input.length).forEach((index) => {
         const ch = input.charAt(index);
@@ -15,7 +15,7 @@ exports.oppositeCase = function (input) {
     return result;
 };
 
-exports.findStanding = function (selections) {
+exports.findStanding = function findStanding(selections) {
     const result = [];
     selections.forEach((selection) => {
         const toBeRemoved = selection.map(r => (r < 0 ? -r : r));
@@ -26,7 +26,7 @@ exports.findStanding = function (selections) {
     return result;
 };
 
-exports.findRemoved = function (selections) {
+exports.findRemoved = function findRemoved(selections) {
     const result = [];
     const actualResult = [];
     selections.forEach((selection, timeIndex) => {

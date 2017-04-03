@@ -4,7 +4,7 @@ const _ = require('lodash');
 
 const shared = require('./shared.js');
 
-exports.listSurveyConsentDocuments = function (req, res) {
+exports.listSurveyConsentDocuments = function listSurveyConsentDocuments(req, res) {
     const userId = req.user.id;
     const surveyId = _.get(req, 'swagger.params.survey-id.value');
     const action = _.get(req, 'swagger.params.action.value');

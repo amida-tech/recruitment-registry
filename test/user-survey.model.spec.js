@@ -41,8 +41,8 @@ describe('user survey unit', () => {
         it(`create user ${i}`, shared.createUserFn(hxUser));
     });
 
-    const verifyNoUserSurveys = function (userIndex) {
-        return function () {
+    const verifyNoUserSurveysFn = function (userIndex) {
+        return function verifyNoUserSurveys() {
             const userId = hxUser.id(userIndex);
             return models.userSurvey.listUserSurveys(userId)
                 .then(result => expect(result.length).to.equal(0));
@@ -50,7 +50,7 @@ describe('user survey unit', () => {
     };
 
     _.range(userCount).forEach((i) => {
-        it(`verify no surveys for user ${i}`, verifyNoUserSurveys(i));
+        it(`verify no surveys for user ${i}`, verifyNoUserSurveysFn(i));
     });
 
     _.range(surveyCount).forEach((i) => {
@@ -59,7 +59,7 @@ describe('user survey unit', () => {
     });
 
     const verifyStatusFn = function (userIndex, surveyIndex, expectedStatus) {
-        return function () {
+        return function verifyStatus() {
             const userId = hxUser.id(userIndex);
             const surveyId = hxSurvey.id(surveyIndex);
             return models.userSurvey.getUserSurveyStatus(userId, surveyId)
@@ -73,7 +73,7 @@ describe('user survey unit', () => {
     it('verify user 1 survey 1 status', verifyStatusFn(0, 0, 'new'));
 
     const verifyUserSurveyListFn = function (userIndex, statusList) {
-        return function () {
+        return function verifyUserSurveyList() {
             const userId = hxUser.id(userIndex);
             return models.userSurvey.listUserSurveys(userId)
                 .then((userSurveys) => {
@@ -93,7 +93,7 @@ describe('user survey unit', () => {
     it('verify user 1 user survey list', verifyUserSurveyListFn(1, ['new', 'new', 'new']));
 
     const verifyUserSurveyFn = function (userIndex, surveyIndex, status) {
-        return function () {
+        return function verifyUserSurvey() {
             const userId = hxUser.id(userIndex);
             const surveyId = hxSurvey.id(surveyIndex);
             return models.userSurvey.getUserSurvey(userId, surveyId)
@@ -108,7 +108,7 @@ describe('user survey unit', () => {
     };
 
     const verifyUserSurveyAnswersFn = function (userIndex, surveyIndex, status, includeSurvey) {
-        return function () {
+        return function verifyUserSurveyAnswers() {
             const userId = hxUser.id(userIndex);
             const surveyId = hxSurvey.id(surveyIndex);
             const options = {};
@@ -132,7 +132,7 @@ describe('user survey unit', () => {
     };
 
     const answerSurveyFullFn = function (userIndex, surveyIndex, status) {
-        return function () {
+        return function answerSurveyFull() {
             const survey = hxSurvey.server(surveyIndex);
             const answers = generator.answerQuestions(survey.questions);
             const input = {
@@ -148,7 +148,7 @@ describe('user survey unit', () => {
     };
 
     const answerSurveyPartialFn = function (userIndex, surveyIndex) {
-        return function () {
+        return function answerSurveyPartial() {
             const survey = hxSurvey.server(surveyIndex);
             const requiredQuestions = survey.questions.filter(question => question.required);
             expect(requiredQuestions).to.have.length.above(0);
@@ -167,7 +167,7 @@ describe('user survey unit', () => {
     };
 
     const answerSurveyMissingPlusCompletedFn = function (userIndex, surveyIndex) {
-        return function () {
+        return function answerSurveyMissingPlusCompleted() {
             const survey = hxSurvey.server(surveyIndex);
             const requiredQuestions = survey.questions.filter(question => question.required);
             expect(requiredQuestions).to.have.length.above(0);
@@ -192,7 +192,7 @@ describe('user survey unit', () => {
     };
 
     const answerSurveyPartialCompletedFn = function (userIndex, surveyIndex) {
-        return function () {
+        return function answerSurveyPartialCompleted() {
             const survey = hxSurvey.server(surveyIndex);
             const requiredQuestions = survey.questions.filter(question => question.required);
             expect(requiredQuestions).to.have.length.above(0);
@@ -272,7 +272,7 @@ describe('user survey unit', () => {
     it('verify user 0 user survey list', verifyUserSurveyListFn(0, ['completed', 'completed', 'new']));
 
     const verifyTranslatedUserSurveyListFn = function (userIndex, statusList, language, notTranslated) {
-        return function () {
+        return function verifyTranslatedUserSurveyList() {
             const userId = hxUser.id(userIndex);
             return models.userSurvey.listUserSurveys(userId, { language })
                 .then((userSurveys) => {
@@ -293,7 +293,7 @@ describe('user survey unit', () => {
     };
 
     const verifyTranslatedUserSurveyFn = function (userIndex, surveyIndex, status, language, notTranslated) {
-        return function () {
+        return function verifyTranslatedUserSurvey() {
             const userId = hxUser.id(userIndex);
             const surveyId = hxSurvey.id(surveyIndex);
             return models.userSurvey.getUserSurvey(userId, surveyId, { language })
@@ -311,7 +311,7 @@ describe('user survey unit', () => {
     };
 
     const verifyTranslatedUserSurveyAnswersFn = function (userIndex, surveyIndex, status, language, notTranslated) {
-        return function () {
+        return function verifyTranslatedUserSurveyAnswers() {
             const userId = hxUser.id(userIndex);
             const surveyId = hxSurvey.id(surveyIndex);
             const options = { includeSurvey: true, language };
@@ -339,7 +339,7 @@ describe('user survey unit', () => {
     it('verify user 2 survey 1 answers in spanish (no transaltion)', verifyTranslatedUserSurveyAnswersFn(2, 1, 'new', 'es', true));
 
     const translateSurveyFn = function (index, language) {
-        return function () {
+        return function translateSurvey() {
             const survey = hxSurvey.server(index);
             const translation = translator.translateSurvey(survey, language);
             return models.survey.patchSurveyText(translation, language)
@@ -362,7 +362,7 @@ describe('user survey unit', () => {
     it('verify user 2 survey 1 answers in spanish', verifyTranslatedUserSurveyAnswersFn(2, 1, 'new', 'es'));
 
     const answerTranslatedSurveyFullFn = function (userIndex, surveyIndex, status, language) {
-        return function () {
+        return function answerTranslatedSurveyFull() {
             const survey = hxSurvey.server(surveyIndex);
             const answers = generator.answerQuestions(survey.questions);
             const input = {

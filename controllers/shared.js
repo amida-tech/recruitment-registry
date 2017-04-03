@@ -12,7 +12,7 @@ const sequelizeErrorMap = {
     },
 };
 
-const transformSequelizeError = function (err) {
+const transformSequelizeError = function transformSequelizeError(err) {
     const topSpecification = sequelizeErrorMap[err.name];
     if (topSpecification) {
         const fields = err.fields;
@@ -46,8 +46,8 @@ exports.errToJSON = function errToJSON(err, res) {
     return jsutil.errToJSON(localErr);
 };
 
-exports.handleError = function (res) {
-    return function (err) {
+exports.handleError = function handleErrorFn(res) {
+    return function handleError(err) {
         const json = exports.errToJSON(err, res);
         if (err instanceof RRError) {
             const statusCode = err.statusCode || 400;

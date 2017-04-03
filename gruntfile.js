@@ -5,7 +5,7 @@
 const swaggerTools = require('swagger-tools');
 const swaggerObject = require('./swagger.json');
 
-module.exports = function (grunt) {
+module.exports = function gruntmain(grunt) {
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-mocha-test');

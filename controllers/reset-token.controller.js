@@ -4,7 +4,7 @@ const resetToken = require('../lib/reset-token');
 
 const shared = require('./shared.js');
 
-exports.resetToken = function (req, res) {
+exports.resetToken = function resetTokenFunction(req, res) {
     const email = req.body.email;
     const language = req.body.language;
     resetToken(req.models, email, language)

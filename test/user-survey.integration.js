@@ -45,7 +45,7 @@ describe('user survey integration', () => {
     });
     it('logout as super', shared.logoutFn());
 
-    const verifyNoUserSurveys = function (done) {
+    const verifyNoUserSurveysFn = function (done) {
         rrSuperTest.get('/user-surveys', true, 200)
             .expect((res) => {
                 const userSurveys = res.body;
@@ -56,7 +56,7 @@ describe('user survey integration', () => {
 
     _.range(userCount).forEach((i) => {
         it(`login as user ${i}`, shared.loginIndexFn(hxUser, i));
-        it(`verify no surveys for user ${i}`, verifyNoUserSurveys);
+        it(`verify no surveys for user ${i}`, verifyNoUserSurveysFn);
         it(`logout as user ${i}`, shared.logoutFn());
     });
 
@@ -68,7 +68,7 @@ describe('user survey integration', () => {
     it('logout as super', shared.logoutFn());
 
     const verifyStatusFn = function (surveyIndex, expectedStatus) {
-        return function (done) {
+        return function verifyStatus(done) {
             const surveyId = hxSurvey.id(surveyIndex);
             rrSuperTest.get(`/user-surveys/${surveyId}/status`, true, 200)
                 .expect((res) => {
@@ -89,7 +89,7 @@ describe('user survey integration', () => {
     it('logout as user 1', shared.logoutFn());
 
     const verifyUserSurveyListFn = function (statusList) {
-        return function (done) {
+        return function verifyUserSurveyList(done) {
             rrSuperTest.get('/user-surveys', true, 200)
                 .expect((res) => {
                     const userSurveys = res.body;
@@ -114,7 +114,7 @@ describe('user survey integration', () => {
     it('logout as user 1', shared.logoutFn());
 
     const verifyUserSurveyFn = function (userIndex, surveyIndex, status) {
-        return function (done) {
+        return function verifyUserSurvey(done) {
             const surveyId = hxSurvey.id(surveyIndex);
             rrSuperTest.get(`/user-surveys/${surveyId}`, true, 200)
                 .expect((res) => {
@@ -130,7 +130,7 @@ describe('user survey integration', () => {
     };
 
     const verifyUserSurveyAnswersFn = function (userIndex, surveyIndex, status, includeSurvey) {
-        return function (done) {
+        return function verifyUserSurveyAnswers(done) {
             const surveyId = hxSurvey.id(surveyIndex);
             const query = {};
             if (includeSurvey) {
@@ -173,7 +173,7 @@ describe('user survey integration', () => {
     };
 
     const answerSurveyPartialFn = function (userIndex, surveyIndex) {
-        return function (done) {
+        return function answerSurveyFull(done) {
             const survey = hxSurvey.server(surveyIndex);
             const requiredQuestions = survey.questions.filter(question => question.required);
             expect(requiredQuestions).to.have.length.above(0);
@@ -194,7 +194,7 @@ describe('user survey integration', () => {
     };
 
     const answerSurveyMissingPlusCompletedFn = function (userIndex, surveyIndex) {
-        return function (done) {
+        return function answerSurveyMissingPlusCompleted(done) {
             const survey = hxSurvey.server(surveyIndex);
             const requiredQuestions = survey.questions.filter(question => question.required);
             expect(requiredQuestions).to.have.length.above(0);
@@ -219,7 +219,7 @@ describe('user survey integration', () => {
     };
 
     const answerSurveyPartialCompletedFn = function (userIndex, surveyIndex) {
-        return function (done) {
+        return function answerSurveyPartialCompleted(done) {
             const survey = hxSurvey.server(surveyIndex);
             const requiredQuestions = survey.questions.filter(question => question.required);
             expect(requiredQuestions).to.have.length.above(0);
@@ -317,7 +317,7 @@ describe('user survey integration', () => {
     it('logout as user 0', shared.logoutFn());
 
     const verifyTranslatedUserSurveyListFn = function (userIndex, statusList, language, notTranslated) {
-        return function (done) {
+        return function verifyTranslatedUserSurveyList(done) {
             rrSuperTest.get('/user-surveys', true, 200, { language })
                 .expect((res) => {
                     const userSurveys = res.body;
@@ -339,7 +339,7 @@ describe('user survey integration', () => {
     };
 
     const verifyTranslatedUserSurveyFn = function (userIndex, surveyIndex, status, language, notTranslated) {
-        return function (done) {
+        return function verifyTranslatedUserSurvey(done) {
             const surveyId = hxSurvey.id(surveyIndex);
             rrSuperTest.get(`/user-surveys/${surveyId}`, true, 200, { language })
                 .expect((res) => {
@@ -358,7 +358,7 @@ describe('user survey integration', () => {
     };
 
     const verifyTranslatedUserSurveyAnswersFn = function (userIndex, surveyIndex, status, language, notTranslated) {
-        return function (done) {
+        return function verifyTranslatedUserSurveyAnswers(done) {
             const surveyId = hxSurvey.id(surveyIndex);
             const query = { 'include-survey': true, language };
             rrSuperTest.get(`/user-surveys/${surveyId}/answers`, true, 200, query)
@@ -391,7 +391,7 @@ describe('user survey integration', () => {
     it('logout as user 2', shared.logoutFn());
 
     const translateSurveyFn = function (index, language) {
-        return function (done) {
+        return function translateSurvey(done) {
             const survey = hxSurvey.server(index);
             const translation = translator.translateSurvey(survey, language);
             rrSuperTest.patch(`/surveys/text/${language}`, translation, 204)
@@ -421,7 +421,7 @@ describe('user survey integration', () => {
     it('verify user 2 survey 1 answers in spanish', verifyTranslatedUserSurveyAnswersFn(2, 1, 'new', 'es'));
 
     const answerTranslatedSurveyFullFn = function (userIndex, surveyIndex, status, language) {
-        return function (done) {
+        return function answerTranslatedSurveyFull(done) {
             const survey = hxSurvey.server(surveyIndex);
             const answers = generator.answerQuestions(survey.questions);
             const input = {
