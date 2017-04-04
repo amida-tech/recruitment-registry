@@ -8,6 +8,7 @@ const chai = require('chai');
 const _ = require('lodash');
 
 const config = require('../config');
+const SPromise = require('../lib/promise');
 const SharedIntegration = require('./util/shared-integration');
 const RRSuperTest = require('./util/rr-super-test');
 const Generator = require('./util/generator');
@@ -28,7 +29,7 @@ describe('question identifier integration', () => {
     before(shared.setUpFn());
 
     const addIdentifierFn = function (index, type) {
-        return function (done) {
+        return function addIdentifier() {
             const question = hxQuestion.server(index);
             const allIdentifiers = idGenerator.newAllIdentifiers(question, type);
             let allIdentifiersForType = hxIdentifiers[type];
@@ -37,7 +38,7 @@ describe('question identifier integration', () => {
                 hxIdentifiers[type] = allIdentifiersForType;
             }
             allIdentifiersForType[question.id] = allIdentifiers;
-            rrSuperTest.post(`/questions/${question.id}/identifiers`, allIdentifiers, 204).end(done);
+            return rrSuperTest.post(`/questions/${question.id}/identifiers`, allIdentifiers, 204);
         };
     };
 
@@ -53,10 +54,10 @@ describe('question identifier integration', () => {
         idGenerator.reset();
     });
 
-    it('error: cannot specify same type/value identifier', (done) => {
+    it('error: cannot specify same type/value identifier', function errorSame() {
         const question = hxQuestion.server(0);
         const allIdentifiers = idGenerator.newAllIdentifiers(question, 'cc');
-        rrSuperTest.post(`/questions/${question.id}/identifiers`, allIdentifiers, 400).end(done);
+        return rrSuperTest.post(`/questions/${question.id}/identifiers`, allIdentifiers, 400);
     });
 
     it('reset identifier generator', () => {
@@ -72,49 +73,41 @@ describe('question identifier integration', () => {
     });
 
     const verifyQuestionIdentifiersFn = function (index, type) {
-        return function (done) {
+        return function verifyQuestionIdentifiers() {
             const id = hxQuestion.id(index);
             const allIdentifiers = hxIdentifiers[type][id];
             const identifier = allIdentifiers.identifier;
-            rrSuperTest.get(`/question-identifiers/${type}/${identifier}`, true, 200)
-                .expect((res) => {
+            return rrSuperTest.get(`/question-identifiers/${type}/${identifier}`, true, 200)
+                .then((res) => {
                     const expected = { questionId: id };
                     expect(res.body).to.deep.equal(expected);
-                })
-                .end(done);
+                });
         };
     };
 
     const verifyAnswerIdentifiersFn = function (index, type) {
-        return function (done) {
+        return function verifyAnswerIdentifiers() {
             const question = hxQuestion.server(index);
             const allIdentifiers = hxIdentifiers[type][question.id];
             const questionType = question.type;
             if (questionType === 'choice' || questionType === 'choices') {
-                let count = 0;
-                question.choices.forEach(({ id: questionChoiceId }, choiceIndex) => {
+                const pxs = question.choices.map(({ id: questionChoiceId }, choiceIndex) => {
                     const identifier = allIdentifiers.choices[choiceIndex].answerIdentifier;
-                    rrSuperTest.get(`/answer-identifiers/${type}/${identifier}`, true, 200)
-                        .expect((res) => {
+                    return rrSuperTest.get(`/answer-identifiers/${type}/${identifier}`, true, 200)
+                        .then((res) => {
                             const expected = { questionId: question.id, questionChoiceId };
                             expect(res.body).to.deep.equal(expected);
-                        })
-                        .end(() => {
-                            count += 1;
-                            if (count === question.choices.length) {
-                                done();
-                            }
                         });
                 });
-            } else {
-                const identifier = allIdentifiers.answerIdentifier;
-                rrSuperTest.get(`/answer-identifiers/${type}/${identifier}`, allIdentifiers, 200)
-                    .expect((res) => {
+                return SPromise.all(pxs);
+            }
+            const identifier = allIdentifiers.answerIdentifier;
+            const endpoint = `/answer-identifiers/${type}/${identifier}`;
+            return rrSuperTest.get(endpoint, allIdentifiers, 200)
+                    .then((res) => {
                         const expected = { questionId: question.id };
                         expect(res.body).to.deep.equal(expected);
-                    })
-                    .end(done);
-            }
+                    });
         };
     };
 

@@ -19,7 +19,7 @@ describe('swagger validations', () => {
     ];
 
     const testValidFn = function (objectType, data) {
-        return function (done) {
+        return function testValid(done) {
             spec.validateModel(swaggerJson, `#/definitions/${objectType}`, data, (err, result) => {
                 if (err) {
                     return done(err);
@@ -31,7 +31,7 @@ describe('swagger validations', () => {
     };
 
     // const testInvalidFn = function (objectType, data) {
-    //    return function (done) {
+    //    return function testInvalid(done) {
     //        spec.validateModel(swaggerJson, `#/definitions/${objectType}`, data, function (err, result) {
     //            if (err) {
     //                return done(err);

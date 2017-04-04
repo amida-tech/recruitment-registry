@@ -168,7 +168,7 @@ class SharedSpec {
     expectedErrorHandler(code, ...params) {
         return function expectedErrorHandler(err) {
             if (!(err instanceof RRError)) {
-                console.log(err);
+                console.log(err); // eslint-disable-line no-console
             }
             expect(err).to.be.instanceof(RRError);
             expect(err.code).to.equal(code);

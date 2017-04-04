@@ -56,7 +56,7 @@ describe('user assessment unit', () => {
     });
 
     const openUserAssessmentFn = function (userIndex, assessmentIndex, timeIndex) {
-        return function () {
+        return function v() {
             const userId = hxUser.id(userIndex);
             const assessmentId = hxAssessment.id(assessmentIndex);
             const userAssessment = { userId, assessmentId };
@@ -66,7 +66,7 @@ describe('user assessment unit', () => {
     };
 
     const closeUserAssessmentFn = function (userIndex, assessmentIndex) {
-        return function () {
+        return function closeUserAssessment() {
             const userId = hxUser.id(userIndex);
             const assessmentId = hxAssessment.id(assessmentIndex);
             const userAssessment = { userId, assessmentId };
@@ -111,7 +111,7 @@ describe('user assessment unit', () => {
     });
 
     const listUserAssessmentsFn = function (userIndex, assessmentIndex) {
-        return function () {
+        return function listUserAssessments() {
             const userId = hxUser.id(userIndex);
             const assessmentId = hxAssessment.id(assessmentIndex);
             return models.userAssessment.listUserAssessments(userId, assessmentId)
@@ -126,7 +126,7 @@ describe('user assessment unit', () => {
     };
 
     const listUserAssessmentAnswersFn = function (userIndex, assessmentIndex, timeIndex) {
-        return function () {
+        return function listUserAssessmentAnswers() {
             const id = hxUserAssessment.id([userIndex, assessmentIndex, timeIndex]);
             const [minSurveyIndex, maxSurveyIndex] = assessmentIndex === 0 ? [0, 2] : [3, 5];
             const surveyTimeIndices = _.range(minSurveyIndex, maxSurveyIndex + 1).reduce((r, surveyIndex) => {

@@ -155,7 +155,7 @@ describe('user survey integration', () => {
     };
 
     const answerSurveyFullFn = function (userIndex, surveyIndex, status) {
-        return function (done) {
+        return function answerSurveyFull(done) {
             const survey = hxSurvey.server(surveyIndex);
             const answers = generator.answerQuestions(survey.questions);
             const input = {

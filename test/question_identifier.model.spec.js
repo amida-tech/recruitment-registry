@@ -50,12 +50,14 @@ describe('question identifier unit', () => {
         idGenerator.reset();
     });
 
-    it('error: cannot specify same type/value identifier', () => {
+    it('error: cannot specify same type/value identifier', function errorSame() {
         const question = hxQuestion.server(0);
         const allIdentifiers = idGenerator.newAllIdentifiers(question, 'cc');
         const { type, identifier } = allIdentifiers;
+        const errorType = 'SequelizeUniqueConstraintError';
         return models.question.addQuestionIdentifiers(question.id, allIdentifiers)
-            .then(shared.throwingHandler, shared.expectedSeqErrorHandler('SequelizeUniqueConstraintError', { type, identifier }));
+            .then(shared.throwingHandler)
+            .catch(shared.expectedSeqErrorHandler(errorType, { type, identifier }));
     });
 
     it('reset identifier generator', () => {
@@ -70,11 +72,12 @@ describe('question identifier unit', () => {
         it(`add ot type id to question ${index}`, addIdentifierFn(index, 'ot'));
     });
 
-    const verifyQuestionIdentifiersFn = function (index, type) {
-        return function () {
+    const verifyQuestionIdentifiersFn = function (index, inputType) {
+        return function verifyQuestionIdentifiers() {
             const id = hxQuestion.id(index);
-            const allIdentifiers = hxIdentifiers[type][id];
-            return models.questionIdentifier.getQuestionIdByIdentifier(allIdentifiers.type, allIdentifiers.identifier)
+            const allIdentifiers = hxIdentifiers[inputType][id];
+            const { type, identifier } = allIdentifiers;
+            return models.questionIdentifier.getQuestionIdByIdentifier(type, identifier)
                 .then((result) => {
                     const expected = { questionId: id };
                     expect(result).to.deep.equal(expected);
@@ -82,20 +85,25 @@ describe('question identifier unit', () => {
         };
     };
 
-    const verifyAnswerIdentifiersFn = function (index, type) {
-        return function () {
+    const verifyAnswerIdentifiersFn = function (index, inputType) {
+        return function verifyAnswerIdentifiers() {
             const question = hxQuestion.server(index);
-            const allIdentifiers = hxIdentifiers[type][question.id];
+            const allIdentifiers = hxIdentifiers[inputType][question.id];
             const questionType = question.type;
             if (questionType === 'choice' || questionType === 'choices') {
-                const pxs = question.choices.map(({ id: questionChoiceId }, choiceIndex) => models.answerIdentifier.getIdsByAnswerIdentifier(allIdentifiers.type, allIdentifiers.choices[choiceIndex].answerIdentifier)
+                const { type, choices } = allIdentifiers;
+                const pxs = question.choices.map(({ id: questionChoiceId }, choiceIndex) => {
+                    const choiceIden = choices[choiceIndex].answerIdentifier;
+                    return models.answerIdentifier.getIdsByAnswerIdentifier(type, choiceIden)
                         .then((result) => {
                             const expected = { questionId: question.id, questionChoiceId };
                             expect(result).to.deep.equal(expected);
-                        }));
+                        });
+                });
                 return SPromise.all(pxs);
             }
-            return models.answerIdentifier.getIdsByAnswerIdentifier(allIdentifiers.type, allIdentifiers.answerIdentifier)
+            const { type, answerIdentifier } = allIdentifiers;
+            return models.answerIdentifier.getIdsByAnswerIdentifier(type, answerIdentifier)
                     .then((result) => {
                         const expected = { questionId: question.id };
                         expect(result).to.deep.equal(expected);
