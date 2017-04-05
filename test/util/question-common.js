@@ -3,6 +3,7 @@
 const chai = require('chai');
 
 const models = require('../../models');
+const SPromise = require('../../lib/promise');
 const comparator = require('./comparator');
 
 const scopeToFieldsMap = {
@@ -57,14 +58,59 @@ const BaseTests = class BaseTests {
         const self = this;
         return function addIdentifier() {
             const question = hxQuestion.server(index);
-            const allIdentifiers = idGenerator.newAllIdentifiers(question, type);
-            let allIdentifiersForType = hxIdentifiers[type];
-            if (!allIdentifiersForType) {
-                allIdentifiersForType = {};
-                hxIdentifiers[type] = allIdentifiersForType;
+            const identifiers = idGenerator.newIdentifiers(question, type);
+            let identifiers4Type = hxIdentifiers[type];
+            if (!identifiers4Type) {
+                identifiers4Type = {};
+                hxIdentifiers[type] = identifiers4Type;
             }
-            allIdentifiersForType[question.id] = allIdentifiers;
-            return self.addIdentifierPx(question.id, allIdentifiers);
+            identifiers4Type[question.id] = identifiers;
+            return self.addIdentifierPx(question.id, identifiers);
+        };
+    }
+
+    verifyQuestionIdentifiersFn(index, inputType) {
+        const hxQuestion = this.hxQuestion;
+        const hxIdentifiers = this.hxIdentifiers;
+        const self = this;
+        return function verifyQuestionIdentifiers() {
+            const id = hxQuestion.id(index);
+            const identifiers = hxIdentifiers[inputType][id];
+            const { type, identifier } = identifiers;
+            return self.getQuestionIdByIdentifierPx(type, identifier)
+                .then((result) => {
+                    const expected = { questionId: id };
+                    expect(result).to.deep.equal(expected);
+                });
+        };
+    }
+
+    verifyAnswerIdentifiersFn(index, inputType) {
+        const hxQuestion = this.hxQuestion;
+        const hxIdentifiers = this.hxIdentifiers;
+        const self = this;
+        return function verifyAnswerIdentifiers() {
+            const question = hxQuestion.server(index);
+            const identifiers = hxIdentifiers[inputType][question.id];
+            const questionType = question.type;
+            if (questionType === 'choice' || questionType === 'choices') {
+                const { type, answerIdentifiers } = identifiers;
+                const pxs = question.choices.map(({ id: questionChoiceId }, choiceIndex) => {
+                    const choiceIden = answerIdentifiers[choiceIndex].identifier;
+                    return self.getIdsByAnswerIdentifierPx(type, choiceIden)
+                        .then((result) => {
+                            const expected = { questionId: question.id, questionChoiceId };
+                            expect(result).to.deep.equal(expected);
+                        });
+                });
+                return SPromise.all(pxs);
+            }
+            const { type, answerIdentifier } = identifiers;
+            return self.getIdsByAnswerIdentifierPx(type, answerIdentifier)
+                    .then((result) => {
+                        const expected = { questionId: question.id };
+                        expect(result).to.deep.equal(expected);
+                    });
         };
     }
 };
@@ -142,6 +188,14 @@ const SpecTests = class QuestionSpecTests extends BaseTests {
     addIdentifierPx(questionId, allIdentifiers) {
         return this.models.question.addQuestionIdentifiers(questionId, allIdentifiers);
     }
+
+    getQuestionIdByIdentifierPx(type, identifier) {
+        return this.models.questionIdentifier.getQuestionIdByIdentifier(type, identifier);
+    }
+
+    getIdsByAnswerIdentifierPx(type, answerIdentifier) {
+        return models.answerIdentifier.getIdsByAnswerIdentifier(type, answerIdentifier);
+    }
 };
 
 const IntegrationTests = class QuestionIntegrationTests extends BaseTests {
@@ -217,6 +271,16 @@ const IntegrationTests = class QuestionIntegrationTests extends BaseTests {
 
     addIdentifierPx(questionId, allIdentifiers) {
         return this.rrSuperTest.post(`/questions/${questionId}/identifiers`, allIdentifiers, 204);
+    }
+
+    getQuestionIdByIdentifierPx(type, identifier) {
+        return this.rrSuperTest.get(`/question-identifiers/${type}/${identifier}`, true, 200)
+            .then(res => res.body);
+    }
+
+    getIdsByAnswerIdentifierPx(type, answerIdentifier) {
+        const endpoint = `/answer-identifiers/${type}/${answerIdentifier}`;
+        return this.rrSuperTest.get(endpoint, false, 200).then(res => res.body);
     }
 };
 

@@ -5,15 +5,15 @@ module.exports = class QuestionIdentifierGenerator {
         this.index = 0;
     }
 
-    newAllIdentifiers(question, type) {
+    newIdentifiers(question, type) {
         this.index += 1;
         const identifier = `qid-${this.index}-${question.id}`;
         const result = { type, identifier };
         const questionType = question.type;
         if ((questionType === 'choice') || (questionType === 'choices')) {
-            result.choices = question.choices.map(choice => ({
-                answerIdentifier: `cid-${this.index}-${question.id}-${choice.id}`,
-                id: choice.id,
+            result.answerIdentifiers = question.choices.map(choice => ({
+                identifier: `cid-${this.index}-${question.id}-${choice.id}`,
+                questionChoiceId: choice.id,
             }));
         } else {
             this.index += 1;

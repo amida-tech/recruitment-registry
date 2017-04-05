@@ -325,22 +325,22 @@ module.exports = class QuestionDAO extends Translatable {
             });
     }
 
-    addQuestionIdentifiersTx(questionId, allIdentifiers, transaction) {
+    addQuestionIdentifiersTx(questionId, identifiers, transaction) {
         const QuestionIdentifier = this.db.QuestionIdentifier;
         const AnswerIdentifier = this.db.AnswerIdentifier;
-        const { type, identifier, answerIdentifier, choices } = allIdentifiers;
+        const { type, identifier, answerIdentifier, answerIdentifiers } = identifiers;
         return QuestionIdentifier.create({ type, identifier, questionId }, { transaction })
             .then(() => {
                 if (answerIdentifier) {
                     return AnswerIdentifier.create({ type, identifier: answerIdentifier, questionId }, { transaction });
                 }
-                const pxs = choices.map(({ answerIdentifier: identifier, id: questionChoiceId }) => AnswerIdentifier.create({ type, identifier, questionId, questionChoiceId }, { transaction }));
+                const pxs = answerIdentifiers.map(({ identifier, questionChoiceId }) => AnswerIdentifier.create({ type, identifier, questionId, questionChoiceId }, { transaction }));
                 return SPromise.all(pxs);
             });
     }
 
-    addQuestionIdentifiers(questionId, allIdentifiers) {
-        return this.transaction(transaction => this.addQuestionIdentifiersTx(questionId, allIdentifiers, transaction));
+    addQuestionIdentifiers(questionId, identifiers) {
+        return this.transaction(transaction => this.addQuestionIdentifiersTx(questionId, identifiers, transaction));
     }
 
     exportMetaQuestionProperties(meta, metaOptions, withChoice, fromQuestion) {

@@ -4,19 +4,15 @@
 
 process.env.NODE_ENV = 'test';
 
-const chai = require('chai');
 const _ = require('lodash');
 
 const config = require('../config');
-const SPromise = require('../lib/promise');
 const SharedIntegration = require('./util/shared-integration');
 const RRSuperTest = require('./util/rr-super-test');
 const Generator = require('./util/generator');
 const QuestionIdentifierGenerator = require('./util/generator/question-identifier-generator');
 const History = require('./util/history');
 const questionCommon = require('./util/question-common');
-
-const expect = chai.expect;
 
 describe('question identifier integration', function questionIdentifierIntegration() {
     const rrSuperTest = new RRSuperTest();
@@ -25,7 +21,7 @@ describe('question identifier integration', function questionIdentifierIntegrati
     const hxQuestion = new History();
     const idGenerator = new QuestionIdentifierGenerator();
     const hxIdentifiers = {};
-    const tests = new questionCommon.SpecTests({ generator, hxQuestion, idGenerator, hxIdentifiers });
+    const tests = new questionCommon.IntegrationTests(rrSuperTest, { generator, hxQuestion, idGenerator, hxIdentifiers });
     let questionCount = 0;
 
     before(shared.setUpFn());
@@ -46,7 +42,7 @@ describe('question identifier integration', function questionIdentifierIntegrati
 
     it('error: cannot specify same type/value identifier', function errorSame() {
         const question = hxQuestion.server(0);
-        const allIdentifiers = idGenerator.newAllIdentifiers(question, 'cc');
+        const allIdentifiers = idGenerator.newIdentifiers(question, 'cc');
         return rrSuperTest.post(`/questions/${question.id}/identifiers`, allIdentifiers, 400);
     });
 
@@ -62,55 +58,16 @@ describe('question identifier integration', function questionIdentifierIntegrati
         it(`add ot type id to question ${index}`, tests.addIdentifierFn(index, 'ot'));
     });
 
-    const verifyQuestionIdentifiersFn = function (index, type) {
-        return function verifyQuestionIdentifiers() {
-            const id = hxQuestion.id(index);
-            const allIdentifiers = hxIdentifiers[type][id];
-            const identifier = allIdentifiers.identifier;
-            return rrSuperTest.get(`/question-identifiers/${type}/${identifier}`, true, 200)
-                .then((res) => {
-                    const expected = { questionId: id };
-                    expect(res.body).to.deep.equal(expected);
-                });
-        };
-    };
-
-    const verifyAnswerIdentifiersFn = function (index, type) {
-        return function verifyAnswerIdentifiers() {
-            const question = hxQuestion.server(index);
-            const allIdentifiers = hxIdentifiers[type][question.id];
-            const questionType = question.type;
-            if (questionType === 'choice' || questionType === 'choices') {
-                const pxs = question.choices.map(({ id: questionChoiceId }, choiceIndex) => {
-                    const identifier = allIdentifiers.choices[choiceIndex].answerIdentifier;
-                    return rrSuperTest.get(`/answer-identifiers/${type}/${identifier}`, true, 200)
-                        .then((res) => {
-                            const expected = { questionId: question.id, questionChoiceId };
-                            expect(res.body).to.deep.equal(expected);
-                        });
-                });
-                return SPromise.all(pxs);
-            }
-            const identifier = allIdentifiers.answerIdentifier;
-            const endpoint = `/answer-identifiers/${type}/${identifier}`;
-            return rrSuperTest.get(endpoint, allIdentifiers, 200)
-                    .then((res) => {
-                        const expected = { questionId: question.id };
-                        expect(res.body).to.deep.equal(expected);
-                    });
-        };
-    };
-
     _.range(questionCount).forEach((index) => {
-        it(`verify cc type id to question ${index}`, verifyQuestionIdentifiersFn(index, 'cc'));
-        it(`verify ot type id to question ${index}`, verifyQuestionIdentifiersFn(index, 'ot'));
-        it(`verify au type id to question ${index}`, verifyQuestionIdentifiersFn(index, 'au'));
+        it(`verify cc type id to question ${index}`, tests.verifyQuestionIdentifiersFn(index, 'cc'));
+        it(`verify ot type id to question ${index}`, tests.verifyQuestionIdentifiersFn(index, 'ot'));
+        it(`verify au type id to question ${index}`, tests.verifyQuestionIdentifiersFn(index, 'au'));
     });
 
     _.range(questionCount).forEach((index) => {
-        it(`verify cc type answer id to question ${index}`, verifyAnswerIdentifiersFn(index, 'cc'));
-        it(`verify ot type answer id to question ${index}`, verifyAnswerIdentifiersFn(index, 'ot'));
-        it(`verify au type answer id to question ${index}`, verifyAnswerIdentifiersFn(index, 'au'));
+        it(`verify cc type answer id to question ${index}`, tests.verifyAnswerIdentifiersFn(index, 'cc'));
+        it(`verify ot type answer id to question ${index}`, tests.verifyAnswerIdentifiersFn(index, 'ot'));
+        it(`verify au type answer id to question ${index}`, tests.verifyAnswerIdentifiersFn(index, 'au'));
     });
 
     it('logout as super', shared.logoutFn());

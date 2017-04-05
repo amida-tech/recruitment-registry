@@ -5867,17 +5867,17 @@
                     "type": "string",
                     "minLength": 1
                 },
-                "choices": {
+                "answerIdentifiers": {
                     "type": "array",
                     "items": {
                         "type": "object",
-                        "required": ["id", "answerIdentifier"],
+                        "required": ["identifier", "questionChoiceId"],
                         "properties": {
-                            "id": {
+                            "questionChoiceId": {
                                 "type": "integer",
                                 "minimum": 1
                             },
-                            "answerIdentifier": {
+                            "identifier": {
                                 "type": "string",
                                 "minLength": 1
                             }
