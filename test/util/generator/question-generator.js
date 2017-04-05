@@ -147,23 +147,28 @@ module.exports = class QuestionGenerator {
         return question;
     }
 
-    newBody(type, options) {
+    newBody(options) {
+        const type = options.type;
         const key = _.camelCase(type);
         return this[key] ? this[key](options) : this.body(type);
     }
 
-    newQuestion(type, options) {
-        type = type || questionTypes[(this.index + 1) % questionTypes.length];
-        const result = this.newBody(type, options);
+    newQuestion(inputOptions = {}) {
+        const options = Object.assign({}, inputOptions);
+        if (!options.type) {
+            options.type = questionTypes[(this.index + 1) % questionTypes.length];
+        }
+        const result = this.newBody(options);
         return result;
     }
 
-    newMultiQuestion(type, options = {}) {
-        if (!type) {
+    newMultiQuestion(inputOptions = {}) {
+        const options = Object.assign({}, inputOptions);
+        if (!options.type) {
             const types = QuestionGenerator.singleQuestionTypes();
-            type = types[(this.index + 1) % types.length];
+            options.type = types[(this.index + 1) % types.length];
         }
-        const result = this.newBody(type, options);
+        const result = this.newBody(options);
         result.multiple = true;
         const max = options.max || this.index % 5;
         if (max < 3) {

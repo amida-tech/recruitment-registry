@@ -38,22 +38,24 @@ const conditionalQuestionMap = conditionalQuestions.reduce((r, questionInfo) => 
 
 const specialQuestionGenerator = {
     multipleSupport(surveyGenerator, questionInfo) {
-        const options = { max: questionInfo.selectionCount };
-        return surveyGenerator.questionGenerator.newMultiQuestion('text', options);
+        const options = { type: 'text', max: questionInfo.selectionCount };
+        return surveyGenerator.questionGenerator.newMultiQuestion(options);
     },
     type(surveyGenerator, questionInfo) {
-        return surveyGenerator.questionGenerator.newQuestion(questionInfo.type);
+        const type = questionInfo.type;
+        return surveyGenerator.questionGenerator.newQuestion({ type });
     },
     enableWhen(surveyGenerator, questionInfo, index) {
         const { type, relativeIndex, logic } = questionInfo;
-        const question = surveyGenerator.questionGenerator.newQuestion(type);
+        const question = surveyGenerator.questionGenerator.newQuestion({ type });
         const questionIndex = index - relativeIndex;
         const enableWhen = [{ questionIndex, logic }];
         question.enableWhen = enableWhen;
         return question;
     },
     questionSection(surveyGenerator, questionInfo) {
-        return surveyGenerator.questionGenerator.newQuestion(questionInfo.type);
+        const type = questionInfo.type;
+        return surveyGenerator.questionGenerator.newQuestion({ type });
     },
 };
 

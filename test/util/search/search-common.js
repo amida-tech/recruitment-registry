@@ -87,25 +87,25 @@ const Tests = class BaseTests {
         const types = [];
         const questions = [];
         ['choice', 'choices', 'text', 'bool'].forEach((type) => {
-            const options = { choiceCount: 6, noText: true, noOneOf: true };
+            const options = { type, choiceCount: 6, noText: true, noOneOf: true };
             types.push(type);
             const indices = [];
             typeIndexMap.set(type, indices);
             _.range(surveyCount).forEach(() => {
                 indices.push(offset + questions.length);
-                const question = questionGenerator.newQuestion(type, options);
+                const question = questionGenerator.newQuestion(options);
                 questions.push(question);
             });
         });
         ['choice', 'text', 'bool'].forEach((type) => {
-            const options = { choiceCount: 6, noOneOf: true, max: 5 };
+            const options = { type, choiceCount: 6, noOneOf: true, max: 5 };
             const multiType = `multi${type}`;
             types.push(multiType);
             const indices = [];
             typeIndexMap.set(multiType, indices);
             _.range(surveyCount).forEach(() => {
                 indices.push(offset + questions.length);
-                const question = multiQuestionGenerator.newMultiQuestion(type, options);
+                const question = multiQuestionGenerator.newMultiQuestion(options);
                 questions.push(question);
             });
         });

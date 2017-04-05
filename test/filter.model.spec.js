@@ -24,13 +24,13 @@ describe('filter unit', () => {
 
     ['choice', 'choices'].forEach((type) => {
         _.range(count, count + 3).forEach((index) => {
-            const question = questionGenerator.newQuestion(type);
+            const question = questionGenerator.newQuestion({ type });
             it(`create question ${index}`, qxTests.createQuestionFn(question));
             it(`get question ${index}`, qxTests.getQuestionFn(index));
         });
         count += 3;
         _.range(count, count + 3).forEach((index) => {
-            const question = questionGenerator.newMultiQuestion(type);
+            const question = questionGenerator.newMultiQuestion({ type });
             it(`create question ${index}`, qxTests.createQuestionFn(question));
             it(`get question ${index}`, qxTests.getQuestionFn(index));
         });
