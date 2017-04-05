@@ -18,38 +18,24 @@ const questionCommon = require('./util/question-common');
 
 const expect = chai.expect;
 
-describe('question identifier integration', () => {
+describe('question identifier integration', function questionIdentifierIntegration() {
     const rrSuperTest = new RRSuperTest();
     const generator = new Generator();
     const shared = new SharedIntegration(rrSuperTest, generator);
     const hxQuestion = new History();
-    const tests = new questionCommon.SpecTests(generator, hxQuestion);
     const idGenerator = new QuestionIdentifierGenerator();
     const hxIdentifiers = {};
+    const tests = new questionCommon.SpecTests({ generator, hxQuestion, idGenerator, hxIdentifiers });
     let questionCount = 0;
 
     before(shared.setUpFn());
-
-    const addIdentifierFn = function (index, type) {
-        return function addIdentifier() {
-            const question = hxQuestion.server(index);
-            const allIdentifiers = idGenerator.newAllIdentifiers(question, type);
-            let allIdentifiersForType = hxIdentifiers[type];
-            if (!allIdentifiersForType) {
-                allIdentifiersForType = {};
-                hxIdentifiers[type] = allIdentifiersForType;
-            }
-            allIdentifiersForType[question.id] = allIdentifiers;
-            return rrSuperTest.post(`/questions/${question.id}/identifiers`, allIdentifiers, 204);
-        };
-    };
 
     it('login as super', shared.loginFn(config.superUser));
 
     _.range(20).forEach((index) => {
         it(`create question ${index}`, tests.createQuestionFn());
         it(`get question ${index}`, tests.getQuestionFn(index));
-        it(`add cc type id to question ${index}`, addIdentifierFn(index, 'cc'));
+        it(`add cc type id to question ${index}`, tests.addIdentifierFn(index, 'cc'));
     });
 
     questionCount += 20;
@@ -69,11 +55,11 @@ describe('question identifier integration', () => {
     });
 
     _.range(questionCount).forEach((index) => {
-        it(`add au type id to question ${index}`, addIdentifierFn(index, 'au'));
+        it(`add au type id to question ${index}`, tests.addIdentifierFn(index, 'au'));
     });
 
     _.range(questionCount).forEach((index) => {
-        it(`add ot type id to question ${index}`, addIdentifierFn(index, 'ot'));
+        it(`add ot type id to question ${index}`, tests.addIdentifierFn(index, 'ot'));
     });
 
     const verifyQuestionIdentifiersFn = function (index, type) {

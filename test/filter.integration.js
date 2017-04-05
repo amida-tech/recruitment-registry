@@ -19,7 +19,7 @@ describe('filter integration', function filterIntegration() {
     const generator = new Generator();
     const shared = new SharedIntegration(rrSuperTest, generator);
     const hxQuestion = new History();
-    const qxTests = new questionCommon.IntegrationTests(rrSuperTest, generator, hxQuestion);
+    const qxTests = new questionCommon.IntegrationTests(rrSuperTest, { generator, hxQuestion });
     const tests = new filterCommon.IntegrationTests(rrSuperTest, hxQuestion);
     const questionGenerator = generator.questionGenerator;
     let count = 0;

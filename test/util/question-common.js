@@ -42,10 +42,36 @@ const updateIds = function (questions, idMap) {
     });
 };
 
-const SpecTests = class QuestionSpecTests {
-    constructor(generator, hxQuestion, inputModels) {
+const BaseTests = class BaseTests {
+    constructor({ generator, hxQuestion, idGenerator, hxIdentifiers }) {
         this.generator = generator;
         this.hxQuestion = hxQuestion;
+        this.idGenerator = idGenerator;
+        this.hxIdentifiers = hxIdentifiers;
+    }
+
+    addIdentifierFn(index, type) {
+        const hxQuestion = this.hxQuestion;
+        const idGenerator = this.idGenerator;
+        const hxIdentifiers = this.hxIdentifiers;
+        const self = this;
+        return function addIdentifier() {
+            const question = hxQuestion.server(index);
+            const allIdentifiers = idGenerator.newAllIdentifiers(question, type);
+            let allIdentifiersForType = hxIdentifiers[type];
+            if (!allIdentifiersForType) {
+                allIdentifiersForType = {};
+                hxIdentifiers[type] = allIdentifiersForType;
+            }
+            allIdentifiersForType[question.id] = allIdentifiers;
+            return self.addIdentifierPx(question.id, allIdentifiers);
+        };
+    }
+};
+
+const SpecTests = class QuestionSpecTests extends BaseTests {
+    constructor(helpers, inputModels) {
+        super(helpers);
         this.models = inputModels || models;
     }
 
@@ -112,41 +138,42 @@ const SpecTests = class QuestionSpecTests {
                 });
         };
     }
+
+    addIdentifierPx(questionId, allIdentifiers) {
+        return this.models.question.addQuestionIdentifiers(questionId, allIdentifiers);
+    }
 };
 
-const IntegrationTests = class QuestionIntegrationTests {
-    constructor(rrSuperTest, generator, hxQuestion) {
+const IntegrationTests = class QuestionIntegrationTests extends BaseTests {
+    constructor(rrSuperTest, helpers) {
+        super(helpers);
         this.rrSuperTest = rrSuperTest;
-        this.generator = generator;
-        this.hxQuestion = hxQuestion;
     }
 
     createQuestionFn(question) {
         const generator = this.generator;
         const rrSuperTest = this.rrSuperTest;
         const hxQuestion = this.hxQuestion;
-        return function createQuestion(done) {
+        return function createQuestion() {
             question = question || generator.newQuestion();
-            rrSuperTest.post('/questions', question, 201)
-                .expect((res) => {
+            return rrSuperTest.post('/questions', question, 201)
+                .then((res) => {
                     hxQuestion.push(question, res.body);
-                })
-                .end(done);
+                });
         };
     }
 
     getQuestionFn(index) {
         const rrSuperTest = this.rrSuperTest;
         const hxQuestion = this.hxQuestion;
-        return function getQuestion(done) {
+        return function getQuestion() {
             index = (index === undefined) ? hxQuestion.lastIndex() : index;
             const id = hxQuestion.id(index);
-            rrSuperTest.get(`/questions/${id}`, true, 200)
-                .expect((res) => {
+            return rrSuperTest.get(`/questions/${id}`, true, 200)
+                .then((res) => {
                     hxQuestion.reloadServer(res.body);
                     comparator.question(hxQuestion.client(index), res.body);
-                })
-                .end(done);
+                });
         };
     }
 
@@ -165,13 +192,12 @@ const IntegrationTests = class QuestionIntegrationTests {
     deleteQuestionFn(index) {
         const rrSuperTest = this.rrSuperTest;
         const hxQuestion = this.hxQuestion;
-        return function deleteQuestion(done) {
+        return function deleteQuestion() {
             const id = hxQuestion.id(index);
-            rrSuperTest.delete(`/questions/${id}`, 204)
-                .expect(() => {
+            return rrSuperTest.delete(`/questions/${id}`, 204)
+                .then(() => {
                     hxQuestion.remove(index);
-                })
-                .end(done);
+                });
         };
     }
 
@@ -179,15 +205,18 @@ const IntegrationTests = class QuestionIntegrationTests {
         const rrSuperTest = this.rrSuperTest;
         const hxQuestion = this.hxQuestion;
         const query = scope ? { scope } : undefined;
-        return function listQuestion(done) {
-            rrSuperTest.get('/questions', true, 200, query)
-                .expect((res) => {
+        return function listQuestion() {
+            return rrSuperTest.get('/questions', true, 200, query)
+                .then((res) => {
                     const fields = getFieldsForList(scope);
                     const expected = hxQuestion.listServers(fields);
                     expect(res.body).to.deep.equal(expected);
-                })
-                .end(done);
+                });
         };
+    }
+
+    addIdentifierPx(questionId, allIdentifiers) {
+        return this.rrSuperTest.post(`/questions/${questionId}/identifiers`, allIdentifiers, 204);
     }
 };
 

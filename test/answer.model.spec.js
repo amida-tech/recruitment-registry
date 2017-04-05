@@ -34,7 +34,7 @@ describe('answer unit', () => {
     const tests = new answerCommon.SpecTests(generator, hxUser, hxSurvey, hxQuestion);
     const hxAnswers = tests.hxAnswer;
 
-    const questionTests = new questionCommon.SpecTests(generator, hxQuestion);
+    const questionTests = new questionCommon.SpecTests({ generator, hxQuestion });
     const choceSetTests = new choiceSetCommon.SpecTests(generator, hxChoiceSet);
 
     before(shared.setUpFn());

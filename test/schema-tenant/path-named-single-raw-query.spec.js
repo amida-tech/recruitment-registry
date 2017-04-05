@@ -68,7 +68,7 @@ describe('tenant single schema named (for raw query)', function tenantNamed4Raw(
     it('login as super', shared.loginFn(config.superUser));
 
     const hxQuestion = new History();
-    const tests = new questionCommon.IntegrationTests(rrSuperTest, generator, hxQuestion);
+    const tests = new questionCommon.IntegrationTests(rrSuperTest, { generator, hxQuestion });
 
     _.range(3).forEach((index) => {
         it(`create question ${index}`, tests.createQuestionFn());

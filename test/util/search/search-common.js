@@ -190,7 +190,8 @@ const SpecTests = class SearchSpecTests extends Tests {
         this.sync = sync;
         this.shared = new SharedSpec(generator, this.models);
         this.answerTests = new answerCommon.SpecTests(generator, this.hxUser, this.hxSurvey, this.hxQuestion);
-        this.questionTests = new questionCommon.SpecTests(generator, this.hxQuestion, this.models);
+        const qxCommonParameters = { generator, hxQuestion: this.hxQuestion };
+        this.questionTests = new questionCommon.SpecTests(qxCommonParameters, this.models);
         this.hxAnswers = this.answerTests.hxAnswer;
     }
 
@@ -419,7 +420,8 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
         this.sync = sync;
         this.shared = new SharedIntegration(rrSuperTest, generator);
         this.answerTests = new answerCommon.IntegrationTests(rrSuperTest, generator, this.hxUser, this.hxSurvey, this.hxQuestion);
-        this.questionTests = new questionCommon.IntegrationTests(rrSuperTest, generator, this.hxQuestion);
+        const qxCommonParameters = { generator, hxQuestion: this.hxQuestion };
+        this.questionTests = new questionCommon.IntegrationTests(rrSuperTest, qxCommonParameters);
         this.hxAnswers = this.answerTests.hxAnswer;
     }
 

@@ -29,7 +29,7 @@ describe('question unit', () => {
     const hxQuestion = new History();
     const hxChoiceSet = new History();
     const hxSurvey = new History();
-    const tests = new questionCommon.SpecTests(generator, hxQuestion);
+    const tests = new questionCommon.SpecTests({ generator, hxQuestion });
     const choceSetTests = new choiceSetCommon.SpecTests(generator, hxChoiceSet);
 
     it('list all questions when none', () => models.question.listQuestions()

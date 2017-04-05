@@ -88,7 +88,7 @@ describe('question integration', () => {
     const hxQuestion = new History();
     const hxChoiceSet = new History();
     const hxSurvey = new History();
-    const tests = new questionCommon.IntegrationTests(rrSuperTest, generator, hxQuestion);
+    const tests = new questionCommon.IntegrationTests(rrSuperTest, { generator, hxQuestion });
     const choceSetTests = new choiceSetCommon.SpecTests(generator, hxChoiceSet);
 
     _.range(10).forEach((i) => {

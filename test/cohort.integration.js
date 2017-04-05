@@ -24,7 +24,7 @@ describe('cohort integration', function cohortIntegeration() {
     const shared = new SharedIntegration(rrSuperTest, generator);
     const hxQuestion = new History();
     const hxCohort = new History();
-    const qxTests = new questionCommon.IntegrationTests(rrSuperTest, generator, hxQuestion);
+    const qxTests = new questionCommon.IntegrationTests(rrSuperTest, { generator, hxQuestion });
     const filterTests = new filterCommon.IntegrationTests(rrSuperTest, hxQuestion);
     let cohortId = 1;
 
