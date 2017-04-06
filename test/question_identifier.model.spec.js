@@ -21,56 +21,73 @@ describe('question identifier unit', function questionIdentifierUnit() {
     const hxQuestion = new History();
     const idGenerator = new QuestionIdentifierGenerator();
     const hxIdentifiers = {};
-    const tests = new questionCommon.SpecTests({ generator, hxQuestion, idGenerator, hxIdentifiers });
+    const qxCommonOptions = { generator, hxQuestion, idGenerator, hxIdentifiers };
+    const tests = new questionCommon.SpecTests(qxCommonOptions);
     const qxIndexSet = new TypedIndexSet();
     const answerIndexSet = new TypedIndexSet();
     let questionCount = 0;
 
     before(shared.setUpFn());
 
-    _.range(20).forEach((index) => {
+    _.range(5).forEach((index) => {
+        it(`create question ${index} (no identifier)`, tests.createQuestionFn());
+        it(`get question ${index}`, tests.getQuestionFn(index));
+    });
+    questionCount += 5;
+
+    _.range(questionCount, questionCount + 20).forEach((index) => {
         it(`create question ${index}`, tests.createQuestionFn());
         it(`get question ${index}`, tests.getQuestionFn(index));
-        it(`add cc type id to question ${index}`, tests.addIdentifierFn(index, 'cc'));
-        qxIndexSet.addIndex('cc', index);
-        answerIndexSet.addIndex('cc', index);
+        it(`add question ${index} federal identifier`, tests.addIdentifierFn(index, 'federal'));
+        qxIndexSet.addIndex('federal', index);
+        answerIndexSet.addIndex('federal', index);
     });
-
     questionCount += 20;
 
     it('reset identifier generator', tests.resetIdentifierGeneratorFn());
 
     it('error: cannot specify same type/value identifier', function errorSame() {
-        const question = hxQuestion.server(0);
-        const identifiers = idGenerator.newIdentifiers(question, 'cc');
+        const question = hxQuestion.server(5);
+        const identifiers = idGenerator.newIdentifiers(question, 'federal');
         const { type, identifier } = identifiers;
         const errorType = 'SequelizeUniqueConstraintError';
+        const errorFn = shared.expectedSeqErrorHandler(errorType, { type, identifier });
         return models.question.addQuestionIdentifiers(question.id, identifiers)
-            .then(shared.throwingHandler)
-            .catch(shared.expectedSeqErrorHandler(errorType, { type, identifier }));
+            .then(shared.throwingHandler, errorFn);
     });
 
     it('reset identifier generator', tests.resetIdentifierGeneratorFn());
 
-    _.range(questionCount).forEach((index) => {
+    _.range(8, 18).forEach((index) => {
         it(`add au type id to question ${index}`, tests.addIdentifierFn(index, 'au'));
         qxIndexSet.addIndex('au', index);
         answerIndexSet.addIndex('au', index);
     });
 
-    _.range(questionCount).forEach((index) => {
+    _.range(questionCount, questionCount + 8).forEach((index) => {
+        it(`create question ${index}`, tests.createQuestionFn());
+        it(`get question ${index}`, tests.getQuestionFn(index));
+        it(`add question ${index} au identifier`, tests.addIdentifierFn(index, 'au'));
+        qxIndexSet.addIndex('au', index);
+        answerIndexSet.addIndex('au', index);
+    });
+    questionCount += 5;
+
+    _.range(15, 28).forEach((index) => {
         it(`add ot type id to question ${index}`, tests.addIdentifierFn(index, 'ot'));
         qxIndexSet.addIndex('ot', index);
         answerIndexSet.addIndex('ot', index);
     });
 
     _.range(questionCount).forEach((index) => {
-        ['au', 'cc', 'ot'].forEach((type) => {
+        ['au', 'federal', 'ot'].forEach((type) => {
             if (qxIndexSet.has(type, index)) {
-                it(`verify ${type} question identifier for question ${index}`, tests.verifyQuestionIdentifiersFn(index, type));
+                const msg = `verify ${type} question identifier for question ${index}`;
+                it(msg, tests.verifyQuestionIdentifiersFn(index, type));
             }
             if (answerIndexSet.has(type, index)) {
-                it(`verify ${type} answer identifier for question ${index}`, tests.verifyAnswerIdentifiersFn(index, type));
+                const msg = `verify ${type} answer identifier for question ${index}`;
+                it(msg, tests.verifyAnswerIdentifiersFn(index, type));
             }
         });
     });
