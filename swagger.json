@@ -1089,6 +1089,12 @@
                     "description": "Common flag",
                     "required": false,
                     "type": "boolean"
+                }, {
+                    "name": "federal",
+                    "in": "query",
+                    "description": "Federal flag",
+                    "required": false,
+                    "type": "boolean"
                 }],
                 "responses": {
                     "200": {
@@ -4819,6 +4825,10 @@
                 "id": {
                     "type": "integer",
                     "minimum": 1
+                },
+                "identifier": {
+                    "type": "string",
+                    "minLength": 1
                 },
                 "text": {
                     "type": "string",

@@ -91,5 +91,7 @@ describe('question identifier integration', function questionIdentifierIntegrati
         });
     });
 
+    it('list federal questions', tests.listQuestionsFn({ federal: true }));
+
     it('logout as super', shared.logoutFn());
 });

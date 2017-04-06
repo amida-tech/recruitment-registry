@@ -126,6 +126,39 @@ const BaseTests = class BaseTests {
             expect(question.multiple).to.equal(true);
         }
     }
+
+    listQuestionsFn(options) {
+        const hxQuestion = this.hxQuestion;
+        const self = this;
+        return function listQuestions() {
+            let query;
+            if (options) {
+                if (typeof options === 'string') {
+                    query = { scope: options };
+                } else {
+                    query = options;
+                }
+            }
+            return self.listQuestionsPx(query)
+                .then((questions) => {
+                    const fields = getFieldsForList(query && query.scope);
+                    let expected = hxQuestion.listServers(fields);
+                    if (options && options.federal) {
+                        const federalMap = self.hxIdentifiers.federal;
+                        expected = expected.reduce((r, question) => {
+                            const federalInfo = federalMap[question.id];
+                            if (federalInfo) {
+                                const identifier = federalInfo.identifier;
+                                const newQuestion = Object.assign({ identifier }, question);
+                                r.push(newQuestion);
+                            }
+                            return r;
+                        }, []);
+                    }
+                    expect(questions).to.deep.equal(expected);
+                });
+        };
+    }
 };
 
 const SpecTests = class QuestionSpecTests extends BaseTests {
@@ -183,25 +216,8 @@ const SpecTests = class QuestionSpecTests extends BaseTests {
         };
     }
 
-    listQuestionsFn(options) {
-        const hxQuestion = this.hxQuestion;
-        const m = this.models;
-        return function listQuestions() {
-            let listOptions;
-            if (options) {
-                if (typeof options === 'string') {
-                    listOptions = { scope: options };
-                } else {
-                    listOptions = options;
-                }
-            }
-            return m.question.listQuestions(listOptions)
-                .then((questions) => {
-                    const fields = getFieldsForList(listOptions && listOptions.scope);
-                    const expected = hxQuestion.listServers(fields);
-                    expect(questions).to.deep.equal(expected);
-                });
-        };
+    listQuestionsPx(options) {
+        return this.models.question.listQuestions(options);
     }
 
     addIdentifierPx(questionId, allIdentifiers) {
@@ -276,25 +292,8 @@ const IntegrationTests = class QuestionIntegrationTests extends BaseTests {
         };
     }
 
-    listQuestionsFn(options) {
-        const rrSuperTest = this.rrSuperTest;
-        const hxQuestion = this.hxQuestion;
-        let query;
-        if (options) {
-            if (typeof options === 'string') {
-                query = { scope: options };
-            } else {
-                query = options;
-            }
-        }
-        return function listQuestion() {
-            return rrSuperTest.get('/questions', true, 200, query)
-                .then((res) => {
-                    const fields = getFieldsForList(query && query.scope);
-                    const expected = hxQuestion.listServers(fields);
-                    expect(res.body).to.deep.equal(expected);
-                });
-        };
+    listQuestionsPx(query) {
+        return this.rrSuperTest.get('/questions', true, 200, query).then(res => res.body);
     }
 
     addIdentifierPx(questionId, allIdentifiers) {

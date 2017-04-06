@@ -91,4 +91,6 @@ describe('question identifier unit', function questionIdentifierUnit() {
             }
         });
     });
+
+    it('list federal questions', tests.listQuestionsFn({ federal: true }));
 });

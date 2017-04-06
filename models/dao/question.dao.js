@@ -264,9 +264,38 @@ module.exports = class QuestionDAO extends Translatable {
         return Question.findAll(options);
     }
 
-    listQuestions({ scope, ids, language, surveyId, commonOnly } = {}) {
-        scope = scope || 'summary';
-        return this.findQuestions({ scope, ids, language, surveyId, commonOnly })
+    findFederalQuestions(options = {}) {
+        return this.db.QuestionIdentifier.findAll({
+            raw: true,
+            attributes: ['questionId', 'identifier'],
+            where: { type: 'federal' },
+        })
+            .then((records) => {
+                const map = new Map(records.map(record => [record.questionId, record.identifier]));
+                const ids = records.map(record => record.questionId);
+                const optionsWithIds = Object.assign({ ids, options });
+                return this.findQuestions(optionsWithIds)
+                    .then((results) => {
+                        results.forEach((result) => {
+                            const identifier = map.get(result.id);
+                            Object.assign(result, { identifier });
+                        });
+                        return results;
+                    });
+            });
+    }
+
+    findQuestionsForList(options) {
+        if (options.federal) {
+            return this.findFederalQuestions(options);
+        }
+        return this.findQuestions(options);
+    }
+
+    listQuestions(options = {}) {
+        const { ids, language } = options;
+        const scope = options.scope || 'summary';
+        return this.findQuestionsForList(options)
             .then(questions => questions.map(question => cleanDBQuestion(question)))
             .then((questions) => {
                 if (ids && (questions.length !== ids.length)) {
