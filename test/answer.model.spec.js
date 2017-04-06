@@ -154,10 +154,8 @@ describe('answer unit', () => {
     });
 
     _.range(22, 34).forEach((index) => {
-        it(`create question ${index} (multi)`, () => {
-            const question = generator.questionGenerator.newMultiQuestion();
-            return questionTests.createQuestionFn(question)();
-        });
+        const options = { multi: true };
+        it(`create question ${index} (multi)`, questionTests.createQuestionFn(options));
         it(`get question ${index}`, questionTests.getQuestionFn(index));
     });
     _.range(34, 52).forEach((index) => {

@@ -113,6 +113,19 @@ const BaseTests = class BaseTests {
                     });
         };
     }
+
+    resetIdentifierGeneratorFn() {
+        const idGenerator = this.idGenerator;
+        return function resetIdentifierGenerator() {
+            idGenerator.reset();
+        };
+    }
+
+    sanityCheckOptions(question, options = {}) {
+        if (options.multi) {
+            expect(question.multiple).to.equal(true);
+        }
+    }
 };
 
 const SpecTests = class QuestionSpecTests extends BaseTests {
@@ -121,12 +134,14 @@ const SpecTests = class QuestionSpecTests extends BaseTests {
         this.models = inputModels || models;
     }
 
-    createQuestionFn(question) {
+    createQuestionFn(options = {}) {
         const generator = this.generator;
         const hxQuestion = this.hxQuestion;
         const m = this.models;
+        const self = this;
         return function createQuestion() {
-            question = question || generator.newQuestion();
+            const question = options.question || generator.newQuestion(options);
+            self.sanityCheckOptions(question, options);
             return m.question.createQuestion(question)
                 .then(({ id }) => hxQuestion.push(question, { id }));
         };
@@ -204,12 +219,14 @@ const IntegrationTests = class QuestionIntegrationTests extends BaseTests {
         this.rrSuperTest = rrSuperTest;
     }
 
-    createQuestionFn(question) {
+    createQuestionFn(options = {}) {
         const generator = this.generator;
         const rrSuperTest = this.rrSuperTest;
         const hxQuestion = this.hxQuestion;
+        const self = this;
         return function createQuestion() {
-            question = question || generator.newQuestion();
+            const question = options.question || generator.newQuestion(options);
+            self.sanityCheckOptions(question, options);
             return rrSuperTest.post('/questions', question, 201)
                 .then((res) => {
                     hxQuestion.push(question, res.body);

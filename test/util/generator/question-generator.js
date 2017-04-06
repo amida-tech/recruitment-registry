@@ -154,6 +154,9 @@ module.exports = class QuestionGenerator {
     }
 
     newQuestion(inputOptions = {}) {
+        if (inputOptions.multi) {
+            return this.newMultiQuestion(inputOptions);
+        }
         const options = Object.assign({}, inputOptions);
         if (!options.type) {
             options.type = questionTypes[(this.index + 1) % questionTypes.length];

@@ -357,7 +357,7 @@ const SpecTests = class SearchSpecTests extends Tests {
 
             self.questions.forEach((question, index) => {
                 const actualIndex = self.offset + index;
-                it(`create question ${actualIndex}`, self.questionTests.createQuestionFn(question));
+                it(`create question ${actualIndex}`, self.questionTests.createQuestionFn({ question }));
                 it(`get question ${actualIndex}`, self.questionTests.getQuestionFn(actualIndex));
             });
 
@@ -591,7 +591,7 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
 
             self.questions.forEach((question, index) => {
                 const actualIndex = self.offset + index;
-                it(`create question ${actualIndex}`, self.questionTests.createQuestionFn(question));
+                it(`create question ${actualIndex}`, self.questionTests.createQuestionFn({ question }));
                 it(`get question ${actualIndex}`, self.questionTests.getQuestionFn(actualIndex));
             });
 
