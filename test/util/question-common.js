@@ -183,17 +183,21 @@ const SpecTests = class QuestionSpecTests extends BaseTests {
         };
     }
 
-    listQuestionsFn(scope) {
+    listQuestionsFn(options) {
         const hxQuestion = this.hxQuestion;
         const m = this.models;
         return function listQuestions() {
-            const options = scope ? {} : undefined;
-            if (scope) {
-                options.scope = scope;
+            let listOptions;
+            if (options) {
+                if (typeof options === 'string') {
+                    listOptions = { scope: options };
+                } else {
+                    listOptions = options;
+                }
             }
-            return m.question.listQuestions(options)
+            return m.question.listQuestions(listOptions)
                 .then((questions) => {
-                    const fields = getFieldsForList(scope);
+                    const fields = getFieldsForList(listOptions && listOptions.scope);
                     const expected = hxQuestion.listServers(fields);
                     expect(questions).to.deep.equal(expected);
                 });
@@ -272,14 +276,21 @@ const IntegrationTests = class QuestionIntegrationTests extends BaseTests {
         };
     }
 
-    listQuestionsFn(scope) {
+    listQuestionsFn(options) {
         const rrSuperTest = this.rrSuperTest;
         const hxQuestion = this.hxQuestion;
-        const query = scope ? { scope } : undefined;
+        let query;
+        if (options) {
+            if (typeof options === 'string') {
+                query = { scope: options };
+            } else {
+                query = options;
+            }
+        }
         return function listQuestion() {
             return rrSuperTest.get('/questions', true, 200, query)
                 .then((res) => {
-                    const fields = getFieldsForList(scope);
+                    const fields = getFieldsForList(query && query.scope);
                     const expected = hxQuestion.listServers(fields);
                     expect(res.body).to.deep.equal(expected);
                 });
