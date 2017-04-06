@@ -154,7 +154,7 @@ const Tests = class BaseTests {
         });
     }
 
-    getCase(index) {
+    getCase(index) { // eslint-disable-line class-methods-use-this
         return testCase0.searchCases[index];
     }
 
@@ -274,7 +274,7 @@ const SpecTests = class SearchSpecTests extends Tests {
         };
     }
 
-    compareExportToCohortFn(store, limit) {
+    compareExportToCohortFn(store, limit) { // eslint-disable-line class-methods-use-this
         return function compareExportToCohort() {
             const converter = new ImportCSVConverter({ checkType: false });
             const streamFullExport = intoStream(store.allContent);
@@ -498,7 +498,7 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
         };
     }
 
-    compareExportToCohortFn(filepath, cohortFilepath, limit) {
+    compareExportToCohortFn(filepath, cohortFilepath, limit) { // eslint-disable-line class-methods-use-this
         return function compareExportToCohort() {
             const converter = new ImportCSVConverter({ checkType: false });
             const streamFullExport = fs.createReadStream(filepath);

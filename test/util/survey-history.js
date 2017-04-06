@@ -9,7 +9,7 @@ module.exports = class SurveyHistory extends History {
         super(['id', 'name', 'description', 'status']);
     }
 
-    filterListServersByStatus(result, status = 'published') {
+    filterListServersByStatus(result, status = 'published') { // eslint-disable-line class-methods-use-this
         if (status === 'all') {
             return result;
         }

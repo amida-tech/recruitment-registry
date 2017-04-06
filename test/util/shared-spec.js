@@ -161,11 +161,11 @@ class SharedSpec {
         };
     }
 
-    throwingHandler() {
+    throwingHandler() { // eslint-disable-line class-methods-use-this
         throw new Error('Unexpected no error.');
     }
 
-    expectedErrorHandler(code, ...params) {
+    expectedErrorHandler(code, ...params) { // eslint-disable-line class-methods-use-this
         return function expectedErrorHandler(err) {
             if (!(err instanceof RRError)) {
                 console.log(err); // eslint-disable-line no-console
@@ -177,7 +177,7 @@ class SharedSpec {
         };
     }
 
-    expectedSeqErrorHandler(name, fields) {
+    expectedSeqErrorHandler(name, fields) { // eslint-disable-line class-methods-use-this
         return function expectedSeqErrorHandler(err) {
             expect(err.name).to.equal(name);
             expect(err.fields).to.deep.equal(fields);
@@ -185,7 +185,7 @@ class SharedSpec {
         };
     }
 
-    sanityEnoughUserTested(hxUser) {
+    sanityEnoughUserTested(hxUser) { // eslint-disable-line class-methods-use-this
         return function sanityEnoughUserTested() {
             const userCount = hxUser.length();
             const counts = _.range(userCount).reduce((r, index) => {
@@ -201,7 +201,7 @@ class SharedSpec {
         };
     }
 
-    stubRequestGet(error, data) {
+    stubRequestGet(error, data) { // eslint-disable-line class-methods-use-this
         return sinon.stub(request, 'get', (opts, callback) => {
             if (typeof opts === 'function') { callback = opts; }
             if (error) {

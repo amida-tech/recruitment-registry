@@ -62,7 +62,7 @@ module.exports = class SurveyGenerator {
         return this.surveyIndex % 4;
     }
 
-    count() {
+    count() { // eslint-disable-line class-methods-use-this
         return null;
     }
 

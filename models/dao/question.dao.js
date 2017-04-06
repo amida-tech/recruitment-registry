@@ -16,6 +16,32 @@ const cleanDBQuestion = function (question) {
     return result;
 };
 
+const exportMetaQuestionProperties = function (meta, metaOptions, withChoice, fromQuestion) {
+    return metaOptions.reduce((r, propertyInfo) => {
+        if (fromQuestion && withChoice) {
+            return r;
+        }
+        const name = propertyInfo.name;
+        if (Object.prototype.hasOwnProperty.call(meta, name)) {
+            r[name] = meta[name];
+        }
+        return r;
+    }, {});
+};
+
+const importMetaQuestionProperties = function (record, metaOptions, fromType) {
+    return metaOptions.reduce((r, propertyInfo) => {
+        if (propertyInfo.type === fromType) {
+            const name = propertyInfo.name;
+            const value = record[name];
+            if (value !== undefined && value !== null) {
+                r[name] = value;
+            }
+        }
+        return r;
+    }, {});
+};
+
 module.exports = class QuestionDAO extends Translatable {
     constructor(db, dependencies) {
         super(db, 'QuestionText', 'questionId', ['text', 'instruction'], { instruction: true });
@@ -400,25 +426,12 @@ module.exports = class QuestionDAO extends Translatable {
         return this.transaction(transaction => this.addQuestionIdentifiersTx(questionId, identifiers, transaction));
     }
 
-    exportMetaQuestionProperties(meta, metaOptions, withChoice, fromQuestion) {
-        return metaOptions.reduce((r, propertyInfo) => {
-            if (fromQuestion && withChoice) {
-                return r;
-            }
-            const name = propertyInfo.name;
-            if (Object.prototype.hasOwnProperty.call(meta, name)) {
-                r[name] = meta[name];
-            }
-            return r;
-        }, {});
-    }
-
     exportQuestions(options = {}) {
         return this.listQuestions({ scope: 'export' })
             .then(questions => questions.reduce((r, { id, type, text, instruction, meta, choices }) => {
                 const questionLine = { id, type, text, instruction };
                 if (meta && options.meta) {
-                    Object.assign(questionLine, this.exportMetaQuestionProperties(meta, options.meta, choices, true));
+                    Object.assign(questionLine, exportMetaQuestionProperties(meta, options.meta, choices, true));
                 }
                 if (!choices) {
                     r.push(questionLine);
@@ -433,7 +446,7 @@ module.exports = class QuestionDAO extends Translatable {
                         line.choiceCode = code;
                     }
                     if (meta && options.meta) {
-                        Object.assign(questionLine, this.exportMetaQuestionProperties(meta, options.meta, true, false));
+                        Object.assign(questionLine, exportMetaQuestionProperties(meta, options.meta, true, false));
                     }
                     if (index === 0) {
                         Object.assign(line, questionLine);
@@ -448,19 +461,6 @@ module.exports = class QuestionDAO extends Translatable {
                 const converter = new ExportCSVConverter();
                 return converter.dataToCSV(lines);
             });
-    }
-
-    importMetaQuestionProperties(record, metaOptions, fromType) {
-        return metaOptions.reduce((r, propertyInfo) => {
-            if (propertyInfo.type === fromType) {
-                const name = propertyInfo.name;
-                const value = record[name];
-                if (value !== undefined && value !== null) {
-                    r[name] = value;
-                }
-            }
-            return r;
-        }, {});
     }
 
     importQuestions(stream, options = {}) {
@@ -481,7 +481,7 @@ module.exports = class QuestionDAO extends Translatable {
                             question.instruction = record.instruction;
                         }
                         if (options.meta) {
-                            const meta = this.importMetaQuestionProperties(record, options.meta, 'question');
+                            const meta = importMetaQuestionProperties(record, options.meta, 'question');
                             if (Object.keys(meta).length > 0) {
                                 question.meta = meta;
                             }
@@ -504,7 +504,7 @@ module.exports = class QuestionDAO extends Translatable {
                             choice.code = record.choiceCode;
                         }
                         if (options.meta) {
-                            const meta = this.importMetaQuestionProperties(record, options.meta, 'choice');
+                            const meta = importMetaQuestionProperties(record, options.meta, 'choice');
                             if (Object.keys(meta).length > 0) {
                                 choice.meta = meta;
                             }

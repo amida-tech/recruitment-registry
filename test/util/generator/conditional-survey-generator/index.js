@@ -138,7 +138,7 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
         return counts[surveyIndex];
     }
 
-    numOfCases() {
+    numOfCases() { // eslint-disable-line class-methods-use-this
         return counts.length;
     }
 
@@ -149,7 +149,7 @@ module.exports = class ConditionalSurveyGenerator extends SurveyGenerator {
         }
     }
 
-    getRequiredOverride(key) {
+    getRequiredOverride(key) { // eslint-disable-line class-methods-use-this
         return requiredOverrides[key];
     }
 

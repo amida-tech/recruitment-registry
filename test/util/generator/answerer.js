@@ -181,7 +181,7 @@ module.exports = class Answerer {
         return { questionId: question.id, answer: { choices } };
     }
 
-    answerChoiceQuestion(question, choiceIndex) {
+    answerChoiceQuestion(question, choiceIndex) { // eslint-disable-line class-methods-use-this
         const choice = question.choices[choiceIndex].id;
         const answer = { choice };
         return { questionId: question.id, answer };

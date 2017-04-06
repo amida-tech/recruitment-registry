@@ -121,7 +121,7 @@ const BaseTests = class BaseTests {
         };
     }
 
-    sanityCheckOptions(question, options = {}) {
+    sanityCheckOptions(question, options = {}) { // eslint-disable-line class-methods-use-this
         if (options.multi) {
             expect(question.multiple).to.equal(true);
         }
@@ -237,7 +237,7 @@ const SpecTests = class QuestionSpecTests extends BaseTests {
     }
 
     getIdsByAnswerIdentifierPx(type, answerIdentifier) {
-        return models.answerIdentifier.getIdsByAnswerIdentifier(type, answerIdentifier);
+        return this.models.answerIdentifier.getIdsByAnswerIdentifier(type, answerIdentifier);
     }
 };
 

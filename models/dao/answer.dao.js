@@ -84,6 +84,37 @@ const requestPost = function (registryName, questions, url) {
     ));
 };
 
+const isEnabled = function ({ questionId, parents }, questionAnswerRulesMap, sectionAnswerRulesMap, answersByQuestionId) {
+    const rules = questionAnswerRulesMap.get(questionId);
+    if (rules && rules.length) {
+        const enabled = evaluateEnableWhen(rules, answersByQuestionId);
+        return enabled;
+    }
+    if (parents && parents.length) {
+        const enabled = parents.every(({ sectionId, questionId }) => {
+            if (sectionId) {
+                const rules = sectionAnswerRulesMap.get(sectionId);
+                if (rules && rules.length) {
+                    return evaluateEnableWhen(rules, answersByQuestionId);
+                }
+                return true;
+            }
+            if (questionId) {
+                const rules = questionAnswerRulesMap.get(questionId);
+                if (rules && rules.length) {
+                    return evaluateEnableWhen(rules, answersByQuestionId);
+                }
+                return true;
+            }
+            return true;
+        });
+        if (!enabled) {
+            return false;
+        }
+    }
+    return true;
+};
+
 module.exports = class AnswerDAO extends Base {
     constructor(db, dependencies) {
         super(db);
@@ -144,37 +175,6 @@ module.exports = class AnswerDAO extends Base {
             });
     }
 
-    isEnabled({ questionId, parents }, questionAnswerRulesMap, sectionAnswerRulesMap, answersByQuestionId) {
-        const rules = questionAnswerRulesMap.get(questionId);
-        if (rules && rules.length) {
-            const enabled = evaluateEnableWhen(rules, answersByQuestionId);
-            return enabled;
-        }
-        if (parents && parents.length) {
-            const enabled = parents.every(({ sectionId, questionId }) => {
-                if (sectionId) {
-                    const rules = sectionAnswerRulesMap.get(sectionId);
-                    if (rules && rules.length) {
-                        return evaluateEnableWhen(rules, answersByQuestionId);
-                    }
-                    return true;
-                }
-                if (questionId) {
-                    const rules = questionAnswerRulesMap.get(questionId);
-                    if (rules && rules.length) {
-                        return evaluateEnableWhen(rules, answersByQuestionId);
-                    }
-                    return true;
-                }
-                return true;
-            });
-            if (!enabled) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     validateAnswers(userId, surveyId, answers, status) {
         const Answer = this.db.Answer;
         return this.surveyQuestion.listSurveyQuestions(surveyId, true)
@@ -186,7 +186,7 @@ module.exports = class AnswerDAO extends Base {
                             const questionId = surveyQuestion.questionId;
                             const answer = answersByQuestionId[questionId];
                             if (sectionAnswerRulesMap || questionAnswerRulesMap) {
-                                const enabled = this.isEnabled(surveyQuestion, questionAnswerRulesMap, sectionAnswerRulesMap, answersByQuestionId);
+                                const enabled = isEnabled(surveyQuestion, questionAnswerRulesMap, sectionAnswerRulesMap, answersByQuestionId);
                                 if (!enabled) {
                                     surveyQuestion.ignore = true;
                                 }
