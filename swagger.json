@@ -4913,6 +4913,21 @@
             "additionalProperties": false,
             "minProperties": 2
         },
+        "newIdentifier": {
+            "type": "object",
+            "required": ["type", "value"],
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "value": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "additionalProperties": false
+        },
         "newChoice": {
             "type": "object",
             "required": ["text"],
@@ -4929,6 +4944,9 @@
                 },
                 "code": {
                     "type": "string"
+                },
+                "answerIdentifier": {
+                    "$ref": "#/definitions/newIdentifier"
                 }
             },
             "additionalProperties": false
@@ -4959,6 +4977,12 @@
                 "maxCount": {
                     "type": "integer",
                     "minimum": 1
+                },
+                "questionIdentifier": {
+                    "$ref": "#/definitions/newIdentifier"
+                },
+                "answerIdentifier": {
+                    "$ref": "#/definitions/newIdentifier"
                 },
                 "choiceSetId": {
                     "type": "integer",

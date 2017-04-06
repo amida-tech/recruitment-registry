@@ -1,6 +1,7 @@
 'use strict';
 
 const chai = require('chai');
+const _ = require('lodash');
 
 const models = require('../../models');
 const SPromise = require('../../lib/promise');
@@ -127,7 +128,7 @@ const BaseTests = class BaseTests {
         }
     }
 
-    getQuestionFn(index, options = {}) {
+    getQuestionFn(index, options = {}, overrideComparatorOptions = {}) {
         const hxQuestion = this.hxQuestion;
         const self = this;
         return function getQuestion() {
@@ -136,8 +137,8 @@ const BaseTests = class BaseTests {
             return self.getQuestionPx(id, options)
                 .then((question) => {
                     hxQuestion.updateServer(index, question);
-                    const comparatorOptions = {};
-                    if (options.federal) {
+                    const comparatorOptions = _.cloneDeep(overrideComparatorOptions);
+                    if (options.federal && self.hxIdentifiers) {
                         comparatorOptions.identifiers = self.hxIdentifiers.federal;
                     }
                     comparator.question(hxQuestion.client(index), question, comparatorOptions);

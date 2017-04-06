@@ -15,6 +15,19 @@ const virtualQuestionTypes = [
 
 const questionTypes = ['choices', ...singleQuestionTypes, ...virtualQuestionTypes];
 
+const updateIdentifiers = function (question, identifiers) {
+    const { type, postfix } = identifiers;
+    question.questionIdentifier = { type, value: `qx_${postfix}` };
+    const qxType = question.type;
+    if (qxType === 'choice' || qxType === 'choices') {
+        question.choices.forEach((choice, index) => {
+            choice.answerIdentifier = { type, value: `choice_${postfix}_${index}` };
+        });
+    } else {
+        question.answerIdentifier = { type, value: `answer_${postfix}` };
+    }
+};
+
 module.exports = class QuestionGenerator {
     constructor(predecessor, options = {}) {
         if (predecessor) {
@@ -162,6 +175,9 @@ module.exports = class QuestionGenerator {
             options.type = questionTypes[(this.index + 1) % questionTypes.length];
         }
         const result = this.newBody(options);
+        if (options.identifiers) {
+            updateIdentifiers(result, options.identifiers);
+        }
         return result;
     }
 
@@ -176,6 +192,9 @@ module.exports = class QuestionGenerator {
         const max = options.max || this.index % 5;
         if (max < 3) {
             result.maxCount = 8 - max;
+        }
+        if (options.identifiers) {
+            updateIdentifiers(result, options.identifiers);
         }
         return result;
     }

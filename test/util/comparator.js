@@ -81,12 +81,21 @@ const comparator = {
         if (options.ignoreAnswerIdentifier) {
             delete expected.answerIdentifier;
             delete expected.answerIdentifiers;
+        } else if (expected.answerIdentifier) {
+            if (expected.answerIdentifier.type === 'federal') {
+                expected.answerIdentifier = expected.answerIdentifier.value;
+            }
         }
         expect(server.type).to.equal(expected.type);
         if (expected.type === 'choice' || expected.type === 'open-choice' || expected.type === 'choices' || expected.type === 'choice-ref') {
             expected.choices.forEach((choice, index) => {
                 choice.id = server.choices[index].id;
                 if (options.ignoreAnswerIdentifier) {
+                    delete choice.answerIdentifier;
+                } else if (choice.answerIdentifier) {
+                    if (choice.answerIdentifier.type === 'federal') {
+                        choice.identifier = choice.answerIdentifier.value;
+                    }
                     delete choice.answerIdentifier;
                 }
             });

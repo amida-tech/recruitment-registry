@@ -91,8 +91,12 @@ const Tests = class BaseTests {
             types.push(type);
             const indices = [];
             typeIndexMap.set(type, indices);
-            _.range(surveyCount).forEach(() => {
+            _.range(surveyCount).forEach((index) => {
                 indices.push(offset + questions.length);
+                options.identifiers = {
+                    type: 'federal',
+                    postfix: `survey_${index}_${type}`,
+                };
                 const question = questionGenerator.newQuestion(options);
                 questions.push(question);
             });
@@ -103,7 +107,11 @@ const Tests = class BaseTests {
             types.push(multiType);
             const indices = [];
             typeIndexMap.set(multiType, indices);
-            _.range(surveyCount).forEach(() => {
+            _.range(surveyCount).forEach((index) => {
+                options.identifiers = {
+                    type: 'federal',
+                    postfix: `survey_${index}_${multiType}`,
+                };
                 indices.push(offset + questions.length);
                 const question = multiQuestionGenerator.newMultiQuestion(options);
                 questions.push(question);
@@ -358,7 +366,7 @@ const SpecTests = class SearchSpecTests extends Tests {
             self.questions.forEach((question, index) => {
                 const actualIndex = self.offset + index;
                 it(`create question ${actualIndex}`, self.questionTests.createQuestionFn({ question }));
-                it(`get question ${actualIndex}`, self.questionTests.getQuestionFn(actualIndex));
+                it(`get question ${actualIndex}`, self.questionTests.getQuestionFn(actualIndex, { federal: true }, { ignoreQuestionIdentifier: true }));
             });
 
             it('create a map of all choice/choice question choices', self.generateChoiceMapFn());
@@ -592,7 +600,7 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
             self.questions.forEach((question, index) => {
                 const actualIndex = self.offset + index;
                 it(`create question ${actualIndex}`, self.questionTests.createQuestionFn({ question }));
-                it(`get question ${actualIndex}`, self.questionTests.getQuestionFn(actualIndex));
+                it(`get question ${actualIndex}`, self.questionTests.getQuestionFn(actualIndex, { federal: true }, { ignoreQuestionIdentifier: true }));
             });
 
             it('create a map of all choice/choice question choices', self.generateChoiceMapFn());
