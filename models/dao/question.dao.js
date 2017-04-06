@@ -190,6 +190,34 @@ module.exports = class QuestionDAO extends Translatable {
                         question.choices = choices;
                         return question;
                     });
+            })
+            .then((question) => {
+                if (options.federal) {
+                    return this.db.AnswerIdentifier.findAll({
+                        raw: true,
+                        attributes: ['identifier', 'questionChoiceId'],
+                        where: { type: 'federal', questionId: question.id },
+                    })
+                        .then((result) => {
+                            if (result.length < 1) {
+                                return RRError.reject('questionNotFederal');
+                            }
+                            if (['choice', 'choices'].indexOf(question.type) < 0) {
+                                question.answerIdentifier = result[0].identifier;
+                                return question;
+                            }
+                            const map = new Map(result.map(({ questionChoiceId, identifier }) => [questionChoiceId, identifier]));
+                            question.choices.forEach((choice) => {
+                                const identifier = map.get(choice.id);
+                                if (!identifier) {
+                                    throw new RRError('questionNotFederalChoice', choice.text);
+                                }
+                                choice.identifier = identifier;
+                            });
+                            return question;
+                        });
+                }
+                return question;
             });
     }
 

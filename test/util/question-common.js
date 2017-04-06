@@ -127,6 +127,24 @@ const BaseTests = class BaseTests {
         }
     }
 
+    getQuestionFn(index, options = {}) {
+        const hxQuestion = this.hxQuestion;
+        const self = this;
+        return function getQuestion() {
+            index = (index === undefined) ? hxQuestion.lastIndex() : index;
+            const id = hxQuestion.id(index);
+            return self.getQuestionPx(id, options)
+                .then((question) => {
+                    hxQuestion.updateServer(index, question);
+                    const comparatorOptions = {};
+                    if (options.federal) {
+                        comparatorOptions.identifiers = self.hxIdentifiers.federal;
+                    }
+                    comparator.question(hxQuestion.client(index), question, comparatorOptions);
+                });
+        };
+    }
+
     listQuestionsFn(options) {
         const hxQuestion = this.hxQuestion;
         const self = this;
@@ -180,18 +198,8 @@ const SpecTests = class QuestionSpecTests extends BaseTests {
         };
     }
 
-    getQuestionFn(index) {
-        const hxQuestion = this.hxQuestion;
-        const m = this.models;
-        return function getQuestion() {
-            index = (index === undefined) ? hxQuestion.lastIndex() : index;
-            const id = hxQuestion.id(index);
-            return m.question.getQuestion(id)
-                .then((question) => {
-                    hxQuestion.updateServer(index, question);
-                    comparator.question(hxQuestion.client(index), question);
-                });
-        };
+    getQuestionPx(id, options) {
+        return this.models.question.getQuestion(id, options);
     }
 
     verifyQuestionFn(index) {
@@ -253,19 +261,8 @@ const IntegrationTests = class QuestionIntegrationTests extends BaseTests {
                 });
         };
     }
-
-    getQuestionFn(index) {
-        const rrSuperTest = this.rrSuperTest;
-        const hxQuestion = this.hxQuestion;
-        return function getQuestion() {
-            index = (index === undefined) ? hxQuestion.lastIndex() : index;
-            const id = hxQuestion.id(index);
-            return rrSuperTest.get(`/questions/${id}`, true, 200)
-                .then((res) => {
-                    hxQuestion.reloadServer(res.body);
-                    comparator.question(hxQuestion.client(index), res.body);
-                });
-        };
+    getQuestionPx(id, query) {
+        return this.rrSuperTest.get(`/questions/${id}`, true, 200, query).then(res => res.body);
     }
 
     verifyQuestionFn(index) {

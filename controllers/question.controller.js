@@ -40,7 +40,11 @@ exports.deleteQuestion = function deleteQuestion(req, res) {
 exports.getQuestion = function getQuestion(req, res) {
     const id = _.get(req, 'swagger.params.id.value');
     const language = _.get(req, 'swagger.params.language.value');
-    const options = language ? { language } : {};
+    const federal = _.get(req, 'swagger.params.federal.value');
+    const options = { federal };
+    if (language) {
+        options.language = language;
+    }
     req.models.question.getQuestion(id, options)
         .then(question => res.status(200).json(question))
         .catch(shared.handleError(res));

@@ -90,6 +90,22 @@ const comparator = {
                     delete choice.answerIdentifier;
                 }
             });
+        }
+        if (options.identifiers) {
+            const identifiers = options.identifiers[id];
+            if (expected.type === 'choice' || expected.type === 'choices') {
+                const map = new Map(identifiers.answerIdentifiers.map((answerIdentifier) => {
+                    const id = answerIdentifier.questionChoiceId;
+                    return [id, answerIdentifier.identifier];
+                }));
+                expected.choices.forEach((choice) => {
+                    choice.identifier = map.get(choice.id);
+                });
+            } else {
+                expected.answerIdentifier = identifiers.answerIdentifier;
+            }
+        }
+        if (expected.type === 'choice' || expected.type === 'open-choice' || expected.type === 'choices' || expected.type === 'choice-ref') {
             expect(server.choices).to.deep.equal(expected.choices);
         }
         this.enableWhen(expected, server, options);

@@ -1178,6 +1178,12 @@
                     "required": false,
                     "type": "string",
                     "minLength": 1
+                }, {
+                    "name": "federal",
+                    "in": "query",
+                    "description": "Include federal identifiers",
+                    "required": false,
+                    "type": "boolean"
                 }],
                 "responses": {
                     "200": {
@@ -4488,6 +4494,10 @@
                     "type": "string",
                     "minLength": 1
                 },
+                "identifier": {
+                    "type": "string",
+                    "minLength": 1
+                },
                 "code": {
                     "type": "string"
                 },
@@ -4827,6 +4837,10 @@
                     "minimum": 1
                 },
                 "identifier": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "answerIdentifier": {
                     "type": "string",
                     "minLength": 1
                 },

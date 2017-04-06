@@ -93,5 +93,12 @@ describe('question identifier integration', function questionIdentifierIntegrati
 
     it('list federal questions', tests.listQuestionsFn({ federal: true }));
 
+    _.range(questionCount).forEach((index) => {
+        if (qxIndexSet.has('federal', index)) {
+            const options = { federal: true };
+            it(`get question ${index} with federal identifiers`, tests.getQuestionFn(index, options));
+        }
+    });
+
     it('logout as super', shared.logoutFn());
 });
