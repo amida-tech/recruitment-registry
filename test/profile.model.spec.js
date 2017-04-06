@@ -28,7 +28,7 @@ describe('profile unit', () => {
     const hxConsentDoc = new ConsentDocumentHistory(2);
 
     const createProfileFn = function () {
-        return function () {
+        return function createProfile() {
             const user = generator.newUser();
             const input = { user };
             return models.profile.createProfile(input)
@@ -38,7 +38,7 @@ describe('profile unit', () => {
     };
 
     const verifyProfileFn = function (userIndex) {
-        return function () {
+        return function verifyProfile() {
             const userId = hxUser.id(userIndex);
             return models.profile.getProfile({ userId })
                 .then((result) => {
@@ -48,7 +48,7 @@ describe('profile unit', () => {
     };
 
     const updateProfileFn = function (userIndex) {
-        return function () {
+        return function updateProfile() {
             const userUpdates = {
                 email: `updated${userIndex}@example.com`,
             };
@@ -79,7 +79,7 @@ describe('profile unit', () => {
     });
 
     const createProfileWithSurveyFn = function (surveyIndex, signatures, language) {
-        return function () {
+        return function createProfileWithSurvey() {
             const survey = hxSurvey.server(surveyIndex);
             const clientUser = generator.newUser();
             const answers = generator.answerQuestions(survey.questions);
@@ -94,7 +94,7 @@ describe('profile unit', () => {
     };
 
     const verifyProfileWithSurveyFn = function (surveyIndex, userIndex, language) {
-        return function () {
+        return function verifyProfileWithSurvey() {
             const survey = hxSurvey.server(surveyIndex);
             const userId = hxUser.id(userIndex);
             return models.profile.getProfile({ userId })
@@ -106,7 +106,7 @@ describe('profile unit', () => {
     };
 
     const updateProfileWithSurveyFn = function (surveyIndex, userIndex) {
-        return function () {
+        return function updateProfileWithSurvey() {
             const survey = hxSurvey.server(surveyIndex);
             const answers = generator.answerQuestions(survey.questions);
             const userUpdates = {
@@ -125,7 +125,7 @@ describe('profile unit', () => {
 
     const verifySignedDocumentFn = function (userIndex, expected, language) {
         language = language || 'en';
-        return function () {
+        return function verifySignedDocument() {
             const server = hxConsentDoc.server(0);
             const userId = hxUser.id(userIndex);
             return models.userConsentDocument.getUserConsentDocument(userId, server.id)
@@ -141,7 +141,7 @@ describe('profile unit', () => {
 
     const verifySignedDocumentByTypeNameFn = function (userIndex, expected, language) {
         language = language || 'en';
-        return function () {
+        return function verifySignedDocumentByTypeName() {
             const server = hxConsentDoc.server(0);
             const typeName = hxConsentDoc.type(0).name;
             const userId = hxUser.id(userIndex);

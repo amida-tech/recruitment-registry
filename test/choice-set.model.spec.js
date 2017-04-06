@@ -38,7 +38,7 @@ describe('choice set unit', () => {
     it('list all choice sets', tests.listChoiceSetsFn());
 
     const translateChoiceSetFn = function (index, language) {
-        return function () {
+        return function translateChoiceSet() {
             const server = hxChoiceSet.server(index);
             const translation = translator.translateChoiceSet(server, language);
             return models.questionChoice.updateMultipleChoiceTexts(translation.choices, language)
@@ -49,7 +49,7 @@ describe('choice set unit', () => {
     };
 
     const getTranslatedChoiceSetFn = function (index, language, notTranslated) {
-        return function () {
+        return function getTranslatedChoiceSet() {
             const id = hxChoiceSet.id(index);
             return models.choiceSet.getChoiceSet(id, language)
                 .then((result) => {
@@ -76,7 +76,7 @@ describe('choice set unit', () => {
     it('list all choice sets', tests.listChoiceSetsFn());
 
     const deleteFirstChoiceFn = function (index) {
-        return function () {
+        return function deleteFirstChoice() {
             const server = hxChoiceSet.server(index);
             const choiceId = server.choices[0].id;
             const client = hxChoiceSet.client(index);

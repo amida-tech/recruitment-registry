@@ -39,7 +39,7 @@ describe('profile survey unit', () => {
 
     const createProfileSurveyIdFn = function () {
         const survey = generator.newSurvey();
-        return function () {
+        return function createProfileSurveyId() {
             return models.survey.createSurvey(survey)
                 .then((id) => {
                     hxSurvey.push(survey, { id });
@@ -49,7 +49,7 @@ describe('profile survey unit', () => {
     };
 
     const verifyProfileSurveyIdFn = function (index) {
-        return function () {
+        return function verifyProfileSurveyId() {
             return models.profileSurvey.getProfileSurveyId()
                 .then((profileSurveyId) => {
                     const id = hxSurvey.id(index);
@@ -59,7 +59,7 @@ describe('profile survey unit', () => {
     };
 
     const translateProfileSurveyFn = function (index, language) {
-        return function () {
+        return function translateProfileSurvey() {
             const survey = hxSurvey.server(index);
             const translation = translator.translateSurvey(survey, language);
             return models.survey.patchSurveyText(translation, language)
@@ -68,7 +68,7 @@ describe('profile survey unit', () => {
     };
 
     const verifyNotTranslatedProfileSurveyFn = function (index, language) {
-        return function () {
+        return function verifyNotTranslatedProfileSurvey() {
             return models.profileSurvey.getProfileSurvey({ language })
                 .then((profileSurvey) => {
                     expect(profileSurvey.exists).to.equal(true);
@@ -79,7 +79,7 @@ describe('profile survey unit', () => {
     };
 
     const verifyTranslatedProfileSurveyFn = function (index, language) {
-        return function () {
+        return function verifyTranslatedProfileSurvey() {
             return models.profileSurvey.getProfileSurvey({ language })
                 .then((profileSurvey) => {
                     expect(profileSurvey.exists).to.equal(true);

@@ -8,7 +8,7 @@ const logger = require('../../logger');
 
 pg.types.setTypeParser(1184, value => value);
 
-module.exports = function (prependSearchPath, inputDbName) {
+module.exports = function sequelizeGenerator(prependSearchPath, inputDbName) {
     const sequelizeOptions = {
         host: config.db.host,
         dialect: config.db.dialect,

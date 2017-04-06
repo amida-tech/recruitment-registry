@@ -36,7 +36,7 @@ describe('auth integration', () => {
     });
 
     const successfullLoginFn = function (index) {
-        return function (done) {
+        return function successfullLogin(done) {
             const client = hxUser.client(index);
             let username = client.username;
             const email = client.email;
@@ -64,7 +64,7 @@ describe('auth integration', () => {
     };
 
     const wrongUsernameFn = function (index) {
-        return function (done) {
+        return function wrongUsername(done) {
             const client = hxUser.client(index);
             let username = client.username;
             const email = client.email;
@@ -80,7 +80,7 @@ describe('auth integration', () => {
     };
 
     const wrongPasswordFn = function (index) {
-        return function (done) {
+        return function wrongPassword(done) {
             const client = hxUser.client(index);
             let username = client.username;
             const email = client.email;

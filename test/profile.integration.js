@@ -32,7 +32,7 @@ describe('profile integration', () => {
     before(shared.setUpFn());
 
     const createProfileFn = function () {
-        return function (done) {
+        return function createProfile(done) {
             const user = generator.newUser();
             const input = { user };
             rrSuperTest.authPost('/profiles', input, 201)
@@ -45,7 +45,7 @@ describe('profile integration', () => {
     };
 
     const verifyProfileFn = function (userIndex) {
-        return function (done) {
+        return function verifyProfile(done) {
             rrSuperTest.get('/profiles', true, 200)
                 .expect((res) => {
                     const result = res.body;
@@ -56,7 +56,7 @@ describe('profile integration', () => {
     };
 
     const updateProfileFn = function (userIndex) {
-        return function (done) {
+        return function updateProfile(done) {
             const userUpdates = {
                 email: `updated${userIndex}@example.com`,
             };
@@ -90,7 +90,7 @@ describe('profile integration', () => {
     it('get/verify profile survey', shared.verifyProfileSurveyFn(hxSurvey, 0));
 
     const createProfileWithSurveyFn = function (surveyIndex, signatures) {
-        return function (done) {
+        return function createProfileWithSurvey(done) {
             const survey = hxSurvey.server(surveyIndex);
             const clientUser = generator.newUser();
             const answers = generator.answerQuestions(survey.questions);
@@ -108,7 +108,7 @@ describe('profile integration', () => {
     };
 
     const createProfileWithSurveyLanguageFn = function (surveyIndex, signatures, language) {
-        return function (done) {
+        return function createProfileWithSurveyLanguage(done) {
             const survey = hxSurvey.server(surveyIndex);
             const clientUser = generator.newUser();
             const answers = generator.answerQuestions(survey.questions);
@@ -129,7 +129,7 @@ describe('profile integration', () => {
     };
 
     const verifyProfileWithSurveyFn = function (surveyIndex, userIndex, language) {
-        return function (done) {
+        return function verifyProfileWithSurvey(done) {
             rrSuperTest.get('/profiles', true, 200)
                 .expect((res) => {
                     const result = res.body;
@@ -143,7 +143,7 @@ describe('profile integration', () => {
     };
 
     const updateProfileWithSurveyFn = function (surveyIndex, userIndex) {
-        return function (done) {
+        return function updateProfileWithSurvey(done) {
             const survey = hxSurvey.server(surveyIndex);
             const answers = generator.answerQuestions(survey.questions);
             const userUpdates = {
@@ -160,7 +160,7 @@ describe('profile integration', () => {
     };
 
     const verifySignedDocumentFn = function (expected, language) {
-        return function (done) {
+        return function verifySignedDocument(done) {
             const server = hxConsentDoc.server(0);
             rrSuperTest.get(`/user-consent-documents/${server.id}`, true, 200)
                 .expect((res) => {
@@ -176,7 +176,7 @@ describe('profile integration', () => {
     };
 
     const verifySignedDocumentByTypeNameFn = function (expected) {
-        return function (done) {
+        return function verifySignedDocumentByTypeName(done) {
             const server = hxConsentDoc.server(0);
             const typeName = hxConsentDoc.type(0).name;
             rrSuperTest.get(`/user-consent-documents/type-name/${typeName}`, true, 200)
@@ -193,7 +193,7 @@ describe('profile integration', () => {
     };
 
     const patchProfileFn = function (surveyIndex, userIndex, language) {
-        return function (done) {
+        return function patchProfile(done) {
             const survey = hxSurvey.server(surveyIndex);
             const answers = generator.answerQuestions(survey.questions);
             expect(answers.length).to.be.above(2);

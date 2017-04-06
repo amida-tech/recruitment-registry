@@ -58,7 +58,7 @@ describe('question integration', () => {
     it('login as super', shared.loginFn(config.superUser));
 
     const invalidQuestionJSONFn = function (index) {
-        return function (done) {
+        return function invalidQuestionJSON(done) {
             const question = invalidQuestionsJSON[index];
             rrSuperTest.post('/questions', question, 400)
                 .expect(res => shared.verifyErrorMessage(res, 'jsonSchemaFailed', 'newQuestion'))
@@ -71,7 +71,7 @@ describe('question integration', () => {
     });
 
     const invalidQuestionSwaggerFn = function (index) {
-        return function (done) {
+        return function invalidQuestionSwagger(done) {
             const question = invalidQuestionsSwagger[index];
             rrSuperTest.post('/questions', question, 400)
                 .expect((res) => {
@@ -111,7 +111,7 @@ describe('question integration', () => {
     });
 
     const updateQxFn = function (index) {
-        return function (done) {
+        return function updateQx(done) {
             const id = hxQuestion.id(index);
             const clientQuestion = hxQuestion.client(index);
             const text = `Updated ${clientQuestion.text}`;
@@ -125,7 +125,7 @@ describe('question integration', () => {
     };
 
     const verifyUpdatedQxFn = function (index) {
-        return function (done) {
+        return function verifyUpdatedQx(done) {
             const id = hxQuestion.id(index);
             const clientQuestion = hxQuestion.client(index);
             const text = `Updated ${clientQuestion.text}`;
@@ -144,7 +144,7 @@ describe('question integration', () => {
     };
 
     const rerrSuperTestUpdatedQxFn = function (index) {
-        return function (done) {
+        return function rerrSuperTestUpdatedQx(done) {
             const id = hxQuestion.id(index);
             const clientQuestion = hxQuestion.client(index);
             const text = clientQuestion.text;
@@ -172,7 +172,7 @@ describe('question integration', () => {
     it('list questions (default)', tests.listQuestionsFn('export'));
 
     const translateQuestionFn = function (index, language) {
-        return function (done) {
+        return function translateQuestion(done) {
             const server = hxQuestion.server(index);
             const translation = translator.translateQuestion(server, language);
             rrSuperTest.patch(`/questions/text/${language}`, translation, 204)
@@ -184,7 +184,7 @@ describe('question integration', () => {
     };
 
     const getTranslatedQuestionFn = function (index, language) {
-        return function (done) {
+        return function getTranslatedQuestion(done) {
             const id = hxQuestion.id(index);
             rrSuperTest.get(`/questions/${id}`, true, 200, { language })
                 .expect((res) => {
@@ -196,7 +196,7 @@ describe('question integration', () => {
     };
 
     const listTranslatedQuestionsFn = function (language) {
-        return function (done) {
+        return function getTranslatedQuestion(done) {
             rrSuperTest.get('/questions', true, 200, { scope: 'complete', language })
                 .expect((res) => {
                     const expected = hxQuestion.listTranslatedServers(language);
@@ -251,7 +251,7 @@ describe('question integration', () => {
             }));
 
     const createSurveyFn = function (questionIndices) {
-        return function (done) {
+        return function createSurvey(done) {
             const questionIds = questionIndices.map(index => hxQuestion.id(index));
             const clientSurvey = generator.newSurveyQuestionIds(questionIds);
             rrSuperTest.post('/surveys', clientSurvey, 201)
@@ -280,7 +280,7 @@ describe('question integration', () => {
     });
 
     const deleteQuestionWhenOnSurveyFn = function (index) {
-        return function (done) {
+        return function deleteQuestionWhenOnSurvey(done) {
             const id = hxQuestion.id(index);
             rrSuperTest.delete(`/questions/${id}`, 400)
                 .expect(res => shared.verifyErrorMessage(res, 'qxReplaceWhenActiveSurveys'))
@@ -293,7 +293,7 @@ describe('question integration', () => {
     });
 
     const deleteSurveyFn = function (index) {
-        return function (done) {
+        return function deleteSurvey(done) {
             const id = hxSurvey.id(index);
             rrSuperTest.delete(`/surveys/${id}`, 204)
                 .expect(() => {
@@ -335,7 +335,7 @@ describe('question integration', () => {
     });
 
     const replaceQxOnSurvey = function (questionIndex) {
-        return function (done) {
+        return function replaceQxOnS(done) {
             const replacement = generator.newQuestion();
             const parentId = hxQuestion.id(questionIndex);
             replacement.parentId = parentId;
@@ -358,7 +358,7 @@ describe('question integration', () => {
     it('delete survey 3', deleteSurveyFn(3));
 
     const replaceQxFn = function (questionIndex) {
-        return function (done) {
+        return function replaceQx(done) {
             const replacement = generator.newQuestion();
             const parentId = hxQuestion.id(questionIndex);
             replacement.parentId = parentId;

@@ -25,7 +25,7 @@ describe('consent unit', () => {
     before(shared.setUpFn());
 
     const createConsentTypeFn = function () {
-        return function () {
+        return function createConsentType() {
             const cst = generator.newConsentType();
             return models.consentType.createConsentType(cst)
                 .then(server => hxType.pushWithId(cst, server.id));
@@ -33,7 +33,7 @@ describe('consent unit', () => {
     };
 
     const getConsentTypeFn = function (index) {
-        return function () {
+        return function getConsentType() {
             const consentType = hxType.server(index);
             return models.consentType.getConsentType(consentType.id)
                 .then((result) => {
@@ -43,7 +43,7 @@ describe('consent unit', () => {
     };
 
     const listConsentTypesFn = function () {
-        return function () {
+        return function listConsentTypes() {
             return models.consentType.listConsentTypes()
                 .then((result) => {
                     const expected = hxType.listServers();
@@ -60,7 +60,7 @@ describe('consent unit', () => {
     it('list consent types and verify', listConsentTypesFn());
 
     const getTranslatedConsentTypeFn = function (index, language) {
-        return function () {
+        return function getTranslatedConsentType() {
             const id = hxType.id(index);
             return models.consentType.getConsentType(id, { language })
                 .then((result) => {
@@ -71,7 +71,7 @@ describe('consent unit', () => {
     };
 
     const listTranslatedConsentTypesFn = function (language) {
-        return function () {
+        return function listTranslatedConsentTypes() {
             return models.consentType.listConsentTypes({ language })
                 .then((result) => {
                     const expected = hxType.listTranslatedServers(language);

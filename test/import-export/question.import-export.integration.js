@@ -87,7 +87,7 @@ describe('question integration unit', () => {
 
     it('list imported questions and verify', () => {
         const query = { scope: 'export' };
-        return function (done) {
+        return function listImported(done) {
             rrSuperTest.get('/questions', true, 200, query)
                 .expect((res) => {
                     const fields = questionCommon.getFieldsForList('export');

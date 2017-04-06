@@ -97,7 +97,7 @@ describe('consent integration', () => {
     it('logout as super', shared.logoutFn());
 
     const getUserConsentDocumentsFn = function (userIndex, index, signatureIndices) {
-        return function (done) {
+        return function getUserConsentDocuments(done) {
             const id = hxConsent.id(index);
             rrSuperTest.get(`/consents/${id}/user-documents`, true, 200)
                 .expect((res) => {
@@ -118,7 +118,7 @@ describe('consent integration', () => {
     };
 
     const getTranslatedUserConsentDocumentsFn = function (userIndex, index, signatureIndices, language) {
-        return function (done) {
+        return function getTranslatedUserConsentDocuments(done) {
             const id = hxConsent.id(index);
             rrSuperTest.get(`/consents/${id}/user-documents`, true, 200, { language })
                 .expect((res) => {
@@ -140,7 +140,7 @@ describe('consent integration', () => {
     };
 
     const getUserConsentDocumentsByNameFn = function (userIndex, index, signatureIndices) {
-        return function (done) {
+        return function getUserConsentDocumentsByName(done) {
             const name = hxConsent.server(index).name;
             rrSuperTest.get(`/consents/name/${name}/user-documents`, true, 200)
                 .expect((res) => {
@@ -161,7 +161,7 @@ describe('consent integration', () => {
     };
 
     const getTranslatedUserConsentDocumentsByNameFn = function (userIndex, index, signatureIndices, language) {
-        return function (done) {
+        return function getTranslatedUserConsentDocumentsByName(done) {
             const name = hxConsent.server(index).name;
             rrSuperTest.get(`/consents/name/${name}/user-documents`, true, 200, { language })
                 .expect((res) => {
@@ -246,11 +246,11 @@ describe('consent integration', () => {
         });
     });
 
-    const signDocumentsFn = (function () {
+    const signDocumentsFn = (function signDocumentsGen() {
         let browserIndex = 0;
 
-        return function (userIndex, index, newSignatureIndices, language) {
-            return function (done) {
+        return function signDocuments(userIndex, index, newSignatureIndices, language) {
+            return function signDocuments2(done) {
                 language = language || 'en';
                 const consentDocumentIds = newSignatureIndices.map(i => history.id(i));
                 const input = { consentDocumentIds };

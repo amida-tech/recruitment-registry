@@ -55,7 +55,7 @@ describe('smtp integration', () => {
     };
 
     const createSmtpFn = function (index, withText) {
-        return function (done) {
+        return function createSmtp(done) {
             const newSmtp = createNewSmtp(index);
             const newSmtpText = createNewSmtpText(index);
             if (withText) {
@@ -74,7 +74,7 @@ describe('smtp integration', () => {
     };
 
     const updateSmtpTextFn = function (index, language) {
-        return function (done) {
+        return function updateSmtpText(done) {
             const text = createNewSmtpText(index);
             language = language || 'en';
             rrSuperTest.patch(`/smtp/text/${language}`, text, 204)
@@ -86,7 +86,7 @@ describe('smtp integration', () => {
     };
 
     const getSmtpFn = function () {
-        return function (done) {
+        return function getSmtp(done) {
             rrSuperTest.get('/smtp', true, 200)
                 .expect((res) => {
                     const expected = _.cloneDeep(smtp);
@@ -101,7 +101,7 @@ describe('smtp integration', () => {
     };
 
     const getTranslatedSmtpFn = function (language, checkFields) {
-        return function (done) {
+        return function getTranslatedSmtp(done) {
             rrSuperTest.get('/smtp', true, 200, { language })
                 .end((err, res) => {
                     if (err) {
@@ -128,7 +128,7 @@ describe('smtp integration', () => {
         };
     };
 
-    const translateSmtpFn = (function () {
+    const translateSmtpFn = (function translateSmtpGen() {
         const translateSmtp = function (server, language) {
             return {
                 subject: `${server.subject} (${language})`,
@@ -136,8 +136,8 @@ describe('smtp integration', () => {
             };
         };
 
-        return function (language) {
-            return function (done) {
+        return function transSmtp(language) {
+            return function transSmtp2(done) {
                 const translation = translateSmtp(smtpText, language);
                 rrSuperTest.patch(`/smtp/text/${language}`, translation, 204)
                     .expect(() => {
@@ -149,7 +149,7 @@ describe('smtp integration', () => {
     }());
 
     const deleteSmtpFn = function () {
-        return function (done) {
+        return function deleteSmtp(done) {
             rrSuperTest.delete('/smtp', 204).end(done);
         };
     };

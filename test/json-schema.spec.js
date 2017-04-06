@@ -2,6 +2,8 @@
 
 'use strict';
 
+/* eslint no-console: 0 */
+
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
@@ -33,7 +35,7 @@ describe('json schema validations', () => {
     });
 
     const testFn = function (objectType) {
-        return function () {
+        return function test() {
             const kebabObjectType = _.kebabCase(objectType);
 
             const valids = require(`./fixtures/valids/${kebabObjectType}`); // eslint-disable-line global-require, import/no-dynamic-require

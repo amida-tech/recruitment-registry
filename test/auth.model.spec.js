@@ -23,7 +23,7 @@ describe('auth unit', () => {
     before(shared.setUpFn());
 
     const authenticateUserBadPWFn = function (index) {
-        return function () {
+        return function authenticateUserBadPW() {
             const client = hxUser.client(index);
             const username = client.username || client.email;
             return models.auth.authenticateUser(username, `${client.password}a`)
@@ -32,7 +32,7 @@ describe('auth unit', () => {
     };
 
     const authenticateOppositeCaseUserFn = function (index) {
-        return function () {
+        return function authenticateOppositeCaseUser() {
             const client = hxUser.client(index);
             if (!client.username) {
                 const username = testJsutil.oppositeCase(client.email);
@@ -43,7 +43,7 @@ describe('auth unit', () => {
     };
 
     const authenticateOppositeCaseUserErrorFn = function (index) {
-        return function () {
+        return function authenticateOppositeCaseUserError() {
             const client = hxUser.client(index);
             if (client.username) {
                 const username = testJsutil.oppositeCase(client.username);
@@ -55,7 +55,7 @@ describe('auth unit', () => {
     };
 
     const updateUserPasswordFn = function (index) {
-        return function () {
+        return function updateUserPassword() {
             const client = hxUser.client(index);
             const password = `${client.password}updated`;
             const id = hxUser.id(index);
@@ -65,7 +65,7 @@ describe('auth unit', () => {
     };
 
     const updateUserFn = function (index) {
-        return function () {
+        return function updateUser() {
             const client = hxUser.client(index);
             const { username, email, password } = client;
             const updateFields = { email: `u${email}`, password: `u${password}` };

@@ -79,7 +79,7 @@ module.exports = function gruntmain(grunt) {
             options: {
                 configFile: '.eslintrc.js',
                 fix: true,
-                quiet: true,
+                //quiet: true,
             },
             target: [
                 '**/*.js',

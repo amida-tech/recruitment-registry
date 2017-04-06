@@ -50,7 +50,7 @@ describe('answer unit', () => {
     });
 
     const createSurveyFn = function (qxIndices) {
-        return function () {
+        return function createSurvey() {
             const inputSurvey = generator.newSurvey();
             delete inputSurvey.sections;
             inputSurvey.questions = qxIndices.map(index => ({
@@ -98,7 +98,7 @@ describe('answer unit', () => {
     });
 
     const listAnswersFn = function (userIndex, surveyIndex) {
-        return function () {
+        return function listAnswers() {
             return models.answer.listAnswers({
                 userId: hxUser.id(userIndex),
                 surveyId: hxSurvey.id(surveyIndex),

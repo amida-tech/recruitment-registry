@@ -58,7 +58,7 @@ describe('survey consent unit', () => {
     });
 
     const createSurveyConsentFn = function (surveyIndex, typeIndex, action, consentIndex) {
-        return function () {
+        return function createSurveyConsent() {
             const consentType = hxConsentDocument.type(typeIndex);
             const consentTypeId = consentType.id;
             const surveyId = hxSurvey.id(surveyIndex);
@@ -105,7 +105,7 @@ describe('survey consent unit', () => {
         it(`require consent type ${index} in survey 3 answer read`, createSurveyConsentFn(3, index, 'read'));
     });
 
-    it('error: require consent type with inconsistent consent', () => {
+    it('error: require consent type with inconsistent consent', function errorConsistentType() {
         const consentTypeId = hxConsentDocument.typeId(0);
         const surveyId = hxSurvey.id(5);
         const consentId = hxConsent.id(0);
@@ -154,7 +154,7 @@ describe('survey consent unit', () => {
             }));
 
     const verifyConsentDocumentContentFn = function (typeIndex) {
-        return function () {
+        return function verifyConsentDocumentContent() {
             const cs = hxConsentDocument.server(typeIndex);
             return models.consentDocument.getConsentDocument(cs.id)
                 .then((result) => {
@@ -168,7 +168,7 @@ describe('survey consent unit', () => {
     });
 
     const createProfileWithoutSignaturesFn = function (index, signIndices, documentIndices) {
-        return function () {
+        return function createProfileWithoutSignatures() {
             const profileSurvey = hxSurvey.server(0);
             const answers = generator.answerQuestions(profileSurvey.questions);
             const response = {
@@ -189,7 +189,7 @@ describe('survey consent unit', () => {
     };
 
     const createProfileFn = function (index, signIndices) {
-        return function () {
+        return function createProfile() {
             const profileSurvey = hxSurvey.server(0);
             const answers = generator.answerQuestions(profileSurvey.questions);
             const user = generator.newUser();
@@ -203,7 +203,7 @@ describe('survey consent unit', () => {
     };
 
     const getProfileFn = function (index) {
-        return function () {
+        return function getProfile() {
             const userId = hxConsentDocument.userId(index);
             return models.profile.getProfile({ userId })
                 .then((result) => {
@@ -214,7 +214,7 @@ describe('survey consent unit', () => {
     };
 
     const verifyProfileFn = function (index) {
-        return function () {
+        return function verifyProfile() {
             const userId = hxConsentDocument.userId(index);
             return models.profile.getProfile({ userId })
                 .then((result) => {
@@ -224,7 +224,7 @@ describe('survey consent unit', () => {
     };
 
     const readProfileWithoutSignaturesFn = function (index, documentIndices) {
-        return function () {
+        return function readProfileWithoutSignatures() {
             const userId = hxConsentDocument.userId(index);
             return models.profile.getProfile({ userId })
                 .then(shared.throwingHandler, shared.expectedErrorHandler('profileSignaturesMissing'))
@@ -263,7 +263,7 @@ describe('survey consent unit', () => {
     it('error: read user profile 3 without signatures', readProfileWithoutSignaturesFn(3, [0]));
 
     const answerSurveyWithoutSignaturesFn = function (userIndex, surveyIndex, expectedInfo) {
-        return function () {
+        return function answerSurveyWithoutSignatures() {
             const userId = hxUser.id(userIndex);
             const survey = hxSurvey.server(surveyIndex);
             const answers = generator.answerQuestions(survey.questions);
@@ -277,7 +277,7 @@ describe('survey consent unit', () => {
     };
 
     const listConsentSurveyDocumentsFn = function (userIndex, surveyIndex, action, expectedInfo, detail) {
-        return function () {
+        return function listConsentSurveyDocuments() {
             const userId = hxUser.id(userIndex);
             const surveyId = hxSurvey.id(surveyIndex);
             const options = {};
@@ -401,7 +401,7 @@ describe('survey consent unit', () => {
     it('user 1 gets answered survey 3', answerTests.verifyAnsweredSurveyFn(1, 3));
 
     const getAnswersWithoutSignaturesFn = function (userIndex, surveyIndex, expectedInfo) {
-        return function () {
+        return function getAnswersWithoutSignatures() {
             const userId = hxUser.id(userIndex);
             const survey = hxSurvey.server(surveyIndex);
             return models.answer.getAnswers({ userId, surveyId: survey.id })
@@ -444,7 +444,7 @@ describe('survey consent unit', () => {
     it('error: user 3 gets answers to survey 3 without signatures', getAnswersWithoutSignaturesFn(3, 3, [1, 3]));
 
     const fnDelete = function (surveyIndex, typeIndex, action) {
-        return function () {
+        return function fn() {
             const id = hxSurveyConsents.id([surveyIndex, typeIndex, action]);
             return models.surveyConsent.deleteSurveyConsent(id);
         };

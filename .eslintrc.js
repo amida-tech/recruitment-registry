@@ -5,7 +5,7 @@ module.exports = {
     ],
     'rules': {
         'indent': ['error', 4],
-        'func-names': ['warn', 'as-needed'],
+        'func-names': ['error', 'as-needed'],
         'prefer-arrow-callback': ['error', { 'allowNamedFunctions': true }],
         'no-param-reassign': 'off',
         'class-methods-use-this': 'off',

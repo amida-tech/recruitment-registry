@@ -28,7 +28,7 @@ describe('consent document/type/signature unit', () => {
     before(shared.setUpFn());
 
     const verifyConsentTypeInListFn = function () {
-        return function () {
+        return function verifyConsentTypeInList() {
             return models.consentType.listConsentTypes()
                 .then((result) => {
                     const types = history.listTypes();
@@ -51,7 +51,7 @@ describe('consent document/type/signature unit', () => {
             .then(shared.throwingHandler, shared.expectedErrorHandler('noSystemConsentDocuments')));
 
     const verifyConsentDocumentFn = function (typeIndex) {
-        return function () {
+        return function verifyConsentDocument() {
             const cs = history.server(typeIndex);
             return models.consentDocument.getConsentDocument(cs.id)
                 .then((result) => {
@@ -61,7 +61,7 @@ describe('consent document/type/signature unit', () => {
     };
 
     const verifyConsentDocumentByTypeNameFn = function (typeIndex) {
-        return function () {
+        return function verifyConsentDocumentByTypeName() {
             const cs = history.server(typeIndex);
             const typeName = history.type(typeIndex).name;
             return models.consentDocument.getConsentDocumentByTypeName(typeName)
@@ -72,7 +72,7 @@ describe('consent document/type/signature unit', () => {
     };
 
     const verifyTranslatedConsentDocumentFn = function (index, language) {
-        return function () {
+        return function verifyTranslatedConsentDocument() {
             const id = history.id(index);
             return models.consentDocument.getConsentDocument(id, { language })
                 .then((result) => {
@@ -137,7 +137,7 @@ describe('consent document/type/signature unit', () => {
     });
 
     const signConsentTypeFn = function (userIndex, typeIndex, language) {
-        return function () {
+        return function signConsentType() {
             const consentDocumentId = history.id(typeIndex);
             const userId = history.userId(userIndex);
             history.sign(typeIndex, userIndex, language);
@@ -271,7 +271,7 @@ describe('consent document/type/signature unit', () => {
     verifyConsentDocuments(3, [0, 2]);
 
     const verifySignatureExistenceFn = function (userIndex) {
-        return function () {
+        return function verifySignatureExistence() {
             const userId = history.userId(userIndex);
             return models.consentSignature.getSignatureHistory(userId)
                 .then((result) => {

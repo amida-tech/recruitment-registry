@@ -63,7 +63,7 @@ describe('survey consent integration', () => {
     });
 
     const createSurveyConsentFn = function (surveyIndex, typeIndex, action, consentIndex) {
-        return function (done) {
+        return function createSurveyConsent(done) {
             const consentType = hxConsentDocument.type(typeIndex);
             const consentTypeId = consentType.id;
             const surveyId = hxSurvey.id(surveyIndex);
@@ -172,7 +172,7 @@ describe('survey consent integration', () => {
     });
 
     const verifyConsentDocumentContentFn = function (typeIndex) {
-        return function (done) {
+        return function verifyConsentDocumentContent(done) {
             const id = hxConsentDocument.id(typeIndex);
             rrSuperTest.get(`/consent-documents/${id}`, false, 200)
                 .expect((res) => {
@@ -190,7 +190,7 @@ describe('survey consent integration', () => {
     it('logout as super', shared.logoutFn());
 
     const createProfileWithoutSignaturesFn = function (index, signIndices, documentIndices) {
-        return function (done) {
+        return function createProfileWithoutSignatures(done) {
             const profileSurvey = hxSurvey.server(0);
             const answers = generator.answerQuestions(profileSurvey.questions);
             const response = {
@@ -212,7 +212,7 @@ describe('survey consent integration', () => {
     };
 
     const createProfileFn = function (index, signIndices) {
-        return function (done) {
+        return function createProfile(done) {
             const profileSurvey = hxSurvey.server(0);
             const answers = generator.answerQuestions(profileSurvey.questions);
             const user = generator.newUser();
@@ -227,7 +227,7 @@ describe('survey consent integration', () => {
     };
 
     const getProfileFn = function (index) {
-        return function (done) {
+        return function getProfile(done) {
             rrSuperTest.get('/profiles', true, 200)
                 .expect((res) => {
                     const result = res.body;
@@ -240,7 +240,7 @@ describe('survey consent integration', () => {
     };
 
     const verifyProfileFn = function (index) {
-        return function (done) {
+        return function verifyProfile(done) {
             rrSuperTest.get('/profiles', true, 200)
                 .expect((res) => {
                     expect(res.body.user).to.deep.equal(hxUser.server(index));
@@ -250,7 +250,7 @@ describe('survey consent integration', () => {
     };
 
     const readProfileWithoutSignaturesFn = function (index, documentIndices) {
-        return function (done) {
+        return function readProfileWithoutSignature(done) {
             rrSuperTest.get('/profiles', true, 400)
                 .expect((res) => {
                     shared.verifyErrorMessage(res, 'profileSignaturesMissing');
@@ -308,7 +308,7 @@ describe('survey consent integration', () => {
     it('logout as user 3', shared.logoutFn());
 
     const answerSurveyWithoutSignaturesFn = function (userIndex, surveyIndex, expectedInfo) {
-        return function (done) {
+        return function answerSurveyWithoutSignatures(done) {
             const survey = hxSurvey.server(surveyIndex);
             const answers = generator.answerQuestions(survey.questions);
             const input = {
@@ -326,7 +326,7 @@ describe('survey consent integration', () => {
     };
 
     const listConsentSurveyDocumentsFn = function (userIndex, surveyIndex, action, expectedInfo, detail) {
-        return function (done) {
+        return function listConsentSurveyDocuments(done) {
             const surveyId = hxSurvey.id(surveyIndex);
             const query = { 'survey-id': surveyId, action };
             if (detail) {
@@ -599,7 +599,7 @@ describe('survey consent integration', () => {
     it('logout as user 1', shared.logoutFn());
 
     const getAnswersWithoutSignaturesFn = function (userIndex, surveyIndex, expectedInfo) {
-        return function (done) {
+        return function getAnswersWithoutSignatures(done) {
             const survey = hxSurvey.server(surveyIndex);
             rrSuperTest.get(`/answered-surveys/${survey.id}`, true, 400)
                 .expect((res) => {
@@ -684,7 +684,7 @@ describe('survey consent integration', () => {
     it('logout as user 3', shared.logoutFn());
 
     const fnDelete = function (surveyIndex, typeIndex, action) {
-        return function (done) {
+        return function fn(done) {
             const id = hxSurveyConsents.id([surveyIndex, typeIndex, action]);
             rrSuperTest.delete(`/survey-consents/${id}`, 204).end(done);
         };

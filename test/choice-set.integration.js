@@ -37,7 +37,7 @@ describe('choice set integration', () => {
     it('list all choice sets', tests.listChoiceSetsFn());
 
     const translateChoiceSetFn = function (index, language) {
-        return function (done) {
+        return function translateChoiceSet(done) {
             const server = hxChoiceSet.server(index);
             const translation = translator.translateChoiceSet(server, language);
             rrSuperTest.patch(`/question-choices/multi-text/${language}`, translation.choices, 204)
@@ -49,7 +49,7 @@ describe('choice set integration', () => {
     };
 
     const getTranslatedChoiceSetFn = function (index, language, notTranslated) {
-        return function (done) {
+        return function getTranslatedChoiceSet(done) {
             const id = hxChoiceSet.id(index);
             rrSuperTest.get(`/choice-sets/${id}`, true, 200, { language })
                 .expect((res) => {
@@ -77,7 +77,7 @@ describe('choice set integration', () => {
     it('list all choice sets', tests.listChoiceSetsFn());
 
     const deleteFirstChoiceFn = function (index) {
-        return function (done) {
+        return function deleteFirstChoice(done) {
             const server = hxChoiceSet.server(index);
             const choiceId = server.choices[0].id;
             const client = hxChoiceSet.client(index);
