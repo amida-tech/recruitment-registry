@@ -93,6 +93,13 @@ exports.searchAnswers = function searchAnswers(req, res) {
         .catch(shared.handleError(res));
 };
 
+exports.countParticipantsIdentifiers = function countParticipantsIdentifiers(req, res) {
+    const query = _.get(req, 'swagger.params.query.value');
+    req.models.answer.countParticipantsIdentifiers(query)
+        .then(result => res.status(200).json(result))
+        .catch(shared.handleError(res));
+};
+
 exports.searchAnswerUsers = function searchAnswerUsers(req, res) {
     const query = _.get(req, 'swagger.params.query.value');
     req.models.answer.searchUsers(query)

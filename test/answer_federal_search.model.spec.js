@@ -64,11 +64,11 @@ describe('federal search unit', function federalSearchUnit() {
             const searchTestsMap = tests.searchTestsMap;
             const schema0 = tests.registries[0].schema;
             const schema1 = tests.registries[1].schema;
-            const { count: count0, criteria: criteria0 } = searchTestsMap.get(schema0).getCriteria(0);
-            const { count: count1, criteria: criteria1 } = searchTestsMap.get(schema1).getCriteria(1);
-            const { count: count2, criteria: criteria2 } = searchTestsMap.get('recregone').getCriteria(0);
-            const { count: count3, criteria: criteria3 } = searchTestsMap.get('recregtwo').getCriteria(1);
-            const { count, criteria } = searchTestsMap.get('current').getCriteria(2);
+            const { count: count0, federatedCriteria: criteria0 } = searchTestsMap.get(schema0).getFederatedCriteria(0);
+            const { count: count1, federatedCriteria: criteria1 } = searchTestsMap.get(schema1).getFederatedCriteria(1);
+            const { count: count2, federatedCriteria: criteria2 } = searchTestsMap.get('recregone').getFederatedCriteria(0);
+            const { count: count3, federatedCriteria: criteria3 } = searchTestsMap.get('recregtwo').getFederatedCriteria(1);
+            const { count, federatedCriteria: criteria } = searchTestsMap.get('current').getFederatedCriteria(2);
             const federalCriteria = {
                 local: { criteria },
                 federal: [{

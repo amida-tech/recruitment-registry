@@ -59,7 +59,7 @@ const requestPost = function (registryName, questions, url) {
     const opts = {
         json: true,
         body: questions,
-        url: `${url}/answers/queries`,
+        url: `${url}/answers/identifier-queries`,
     };
     const key = `RECREG_JWT_${registryName}`;
     const jwt = process.env[key];
@@ -502,6 +502,40 @@ module.exports = class AnswerDAO extends Base {
             .then(results => ({ count: results.length }));
     }
 
+    countParticipantsIdentifiers(federatedCriteria) {
+        if (federatedCriteria.length < 1) {
+            return this.db.User.count({ where: { role: 'participant' } })
+                .then(count => ({ count }));
+        }
+        const identifiers = federatedCriteria.map(({ identifier }) => identifier);
+        return this.db.AnswerIdentifier.findAll({
+            raw: true,
+            where: { identifier: { $in: identifiers }, type: 'federal' },
+            attributes: ['identifier', 'questionId', 'questionChoiceId'],
+        })
+            .then((records) => {
+                const identifierMap = new Map(federatedCriteria.map(r => [r.identifier, r]));
+                const questionMap = new Map();
+                const questions = records.reduce((r, record) => {
+                    const { identifier, questionId, questionChoiceId } = record;
+                    let answers = questionMap.get(questionId);
+                    if (!answers) {
+                        answers = [];
+                        questionMap.set(questionId, answers);
+                        r.push({ id: questionId, answers });
+                    }
+                    const criterion = identifierMap.get(identifier);
+                    const answer = _.omit(criterion, 'identifier');
+                    if (questionChoiceId) {
+                        answer.choice = questionChoiceId;
+                    }
+                    answers.push(answer);
+                    return r;
+                }, []);
+                return this.searchCountUsers({ questions });
+            });
+    }
+
     federalSearchCountUsers(federalModels, federalCriteria) {
         const federals = federalCriteria.federal || [];
         const attributes = ['id', 'name', 'url', 'schema'];
@@ -523,15 +557,16 @@ module.exports = class AnswerDAO extends Base {
                 const criteriaMap = new Map(criteriaMapInput);
                 const promises = registries.map(({ id, name, schema, url }) => {
                     const criteria = criteriaMap.get(id);
+                    console.log(criteria);
                     if (schema) {
                         const models = federalModels[schema];
-                        return models.answer.searchCountUsers(criteria);
+                        return models.answer.countParticipantsIdentifiers(criteria);
                     }
                     return requestPost(name, criteria, url);
                 });
                 return SPromise.all(promises);
             })
-            .then(federal => this.searchCountUsers(federalCriteria.local.criteria)
+            .then(federal => this.countParticipantsIdentifiers(federalCriteria.local.criteria)
                     .then((local) => {
                         const result = { local, federal };
                         const totalCount = federal.reduce((r, { count }) => r + count, local.count);
