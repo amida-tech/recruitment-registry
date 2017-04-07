@@ -40,8 +40,8 @@ exports.deleteQuestion = function deleteQuestion(req, res) {
 exports.getQuestion = function getQuestion(req, res) {
     const id = _.get(req, 'swagger.params.id.value');
     const language = _.get(req, 'swagger.params.language.value');
-    const federal = _.get(req, 'swagger.params.federal.value');
-    const options = { federal };
+    const federated = _.get(req, 'swagger.params.federated.value');
+    const options = { federated };
     if (language) {
         options.language = language;
     }
@@ -55,8 +55,8 @@ exports.listQuestions = function listQuestions(req, res) {
     const language = _.get(req, 'swagger.params.language.value');
     const surveyId = _.get(req, 'swagger.params.survey-id.value');
     const commonOnly = _.get(req, 'swagger.params.common-only.value');
-    const federal = _.get(req, 'swagger.params.federal.value');
-    const options = { scope, language, surveyId, commonOnly, federal };
+    const federated = _.get(req, 'swagger.params.federated.value');
+    const options = { scope, language, surveyId, commonOnly, federated };
     req.models.question.listQuestions(options)
         .then(questions => res.status(200).json(questions))
         .catch(shared.handleError(res));

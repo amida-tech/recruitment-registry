@@ -38,9 +38,9 @@ describe('question identifier unit', function questionIdentifierUnit() {
     _.range(questionCount, questionCount + 20).forEach((index) => {
         it(`create question ${index}`, tests.createQuestionFn());
         it(`get question ${index}`, tests.getQuestionFn(index));
-        it(`add question ${index} federal identifier`, tests.addIdentifierFn(index, 'federal'));
-        qxIndexSet.addIndex('federal', index);
-        answerIndexSet.addIndex('federal', index);
+        it(`add question ${index} federated identifier`, tests.addIdentifierFn(index, 'federated'));
+        qxIndexSet.addIndex('federated', index);
+        answerIndexSet.addIndex('federated', index);
     });
     questionCount += 20;
 
@@ -48,7 +48,7 @@ describe('question identifier unit', function questionIdentifierUnit() {
 
     it('error: cannot specify same type/value identifier', function errorSame() {
         const question = hxQuestion.server(5);
-        const identifiers = idGenerator.newIdentifiers(question, 'federal');
+        const identifiers = idGenerator.newIdentifiers(question, 'federated');
         const { type, identifier } = identifiers;
         const errorType = 'SequelizeUniqueConstraintError';
         const errorFn = shared.expectedSeqErrorHandler(errorType, { type, identifier });
@@ -80,7 +80,7 @@ describe('question identifier unit', function questionIdentifierUnit() {
     });
 
     _.range(questionCount).forEach((index) => {
-        ['au', 'federal', 'ot'].forEach((type) => {
+        ['au', 'federated', 'ot'].forEach((type) => {
             if (qxIndexSet.has(type, index)) {
                 const msg = `verify ${type} question identifier for question ${index}`;
                 it(msg, tests.verifyQuestionIdentifiersFn(index, type));
@@ -92,12 +92,12 @@ describe('question identifier unit', function questionIdentifierUnit() {
         });
     });
 
-    it('list federal questions', tests.listQuestionsFn({ federal: true }));
+    it('list federated questions', tests.listQuestionsFn({ federated: true }));
 
     _.range(questionCount).forEach((index) => {
-        if (qxIndexSet.has('federal', index)) {
-            const options = { federal: true };
-            it(`get question ${index} with federal identifiers`, tests.getQuestionFn(index, options));
+        if (qxIndexSet.has('federated', index)) {
+            const options = { federated: true };
+            it(`get question ${index} with federated identifiers`, tests.getQuestionFn(index, options));
         }
     });
 });

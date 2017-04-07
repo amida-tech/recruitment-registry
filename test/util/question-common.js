@@ -138,8 +138,8 @@ const BaseTests = class BaseTests {
                 .then((question) => {
                     hxQuestion.updateServer(index, question);
                     const comparatorOptions = _.cloneDeep(overrideComparatorOptions);
-                    if (options.federal && self.hxIdentifiers) {
-                        comparatorOptions.identifiers = self.hxIdentifiers.federal;
+                    if (options.federated && self.hxIdentifiers) {
+                        comparatorOptions.identifiers = self.hxIdentifiers.federated;
                     }
                     comparator.question(hxQuestion.client(index), question, comparatorOptions);
                 });
@@ -162,12 +162,12 @@ const BaseTests = class BaseTests {
                 .then((questions) => {
                     const fields = getFieldsForList(query && query.scope);
                     let expected = hxQuestion.listServers(fields);
-                    if (options && options.federal) {
-                        const federalMap = self.hxIdentifiers.federal;
+                    if (options && options.federated) {
+                        const federatedMap = self.hxIdentifiers.federated;
                         expected = expected.reduce((r, question) => {
-                            const federalInfo = federalMap[question.id];
-                            if (federalInfo) {
-                                const identifier = federalInfo.identifier;
+                            const federatedInfo = federatedMap[question.id];
+                            if (federatedInfo) {
+                                const identifier = federatedInfo.identifier;
                                 const newQuestion = Object.assign({ identifier }, question);
                                 r.push(newQuestion);
                             }

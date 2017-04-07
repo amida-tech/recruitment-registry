@@ -510,7 +510,7 @@ module.exports = class AnswerDAO extends Base {
         const identifiers = federatedCriteria.map(({ identifier }) => identifier);
         return this.db.AnswerIdentifier.findAll({
             raw: true,
-            where: { identifier: { $in: identifiers }, type: 'federal' },
+            where: { identifier: { $in: identifiers }, type: 'federated' },
             attributes: ['identifier', 'questionId', 'questionChoiceId'],
         })
             .then((records) => {
@@ -536,8 +536,8 @@ module.exports = class AnswerDAO extends Base {
             });
     }
 
-    federalSearchCountUsers(federalModels, federalCriteria) {
-        const federals = federalCriteria.federal || [];
+    federatedSearchCountUsers(federatedModels, federatedCriteria) {
+        const federateds = federatedCriteria.federated || [];
         const attributes = ['id', 'name', 'url', 'schema'];
         return this.db.Registry.findAll({ raw: true, attributes })
             .then((registries) => {
@@ -545,7 +545,7 @@ module.exports = class AnswerDAO extends Base {
                     return RRError.reject('registryNoneFound');
                 }
                 const registryMap = new Map(registries.map(registry => [registry.id, registry]));
-                federals.forEach(({ registryId }) => {
+                federateds.forEach(({ registryId }) => {
                     if (!registryMap.has(registryId)) {
                         throw new RRError('registryIdNotFound', registryId);
                     }
@@ -553,23 +553,22 @@ module.exports = class AnswerDAO extends Base {
                 return registries;
             })
             .then((registries) => {
-                const criteriaMapInput = federals.map(({ registryId, criteria }) => [registryId, criteria]);
+                const criteriaMapInput = federateds.map(({ registryId, criteria }) => [registryId, criteria]);
                 const criteriaMap = new Map(criteriaMapInput);
                 const promises = registries.map(({ id, name, schema, url }) => {
                     const criteria = criteriaMap.get(id);
-                    console.log(criteria);
                     if (schema) {
-                        const models = federalModels[schema];
+                        const models = federatedModels[schema];
                         return models.answer.countParticipantsIdentifiers(criteria);
                     }
                     return requestPost(name, criteria, url);
                 });
                 return SPromise.all(promises);
             })
-            .then(federal => this.countParticipantsIdentifiers(federalCriteria.local.criteria)
+            .then(federated => this.countParticipantsIdentifiers(federatedCriteria.local.criteria)
                     .then((local) => {
-                        const result = { local, federal };
-                        const totalCount = federal.reduce((r, { count }) => r + count, local.count);
+                        const result = { local, federated };
+                        const totalCount = federated.reduce((r, { count }) => r + count, local.count);
                         result.total = { count: totalCount };
                         return result;
                     }));

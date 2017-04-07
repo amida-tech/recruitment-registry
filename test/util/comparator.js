@@ -82,7 +82,7 @@ const comparator = {
             delete expected.answerIdentifier;
             delete expected.answerIdentifiers;
         } else if (expected.answerIdentifier) {
-            if (expected.answerIdentifier.type === 'federal') {
+            if (expected.answerIdentifier.type === 'federated') {
                 expected.answerIdentifier = expected.answerIdentifier.value;
             }
         }
@@ -93,7 +93,7 @@ const comparator = {
                 if (options.ignoreAnswerIdentifier) {
                     delete choice.answerIdentifier;
                 } else if (choice.answerIdentifier) {
-                    if (choice.answerIdentifier.type === 'federal') {
+                    if (choice.answerIdentifier.type === 'federated') {
                         choice.identifier = choice.answerIdentifier.value;
                     }
                     delete choice.answerIdentifier;

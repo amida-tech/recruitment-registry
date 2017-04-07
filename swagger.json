@@ -836,11 +836,11 @@
                 }
             }
         },
-        "/answers/federal-queries": {
+        "/answers/federated-queries": {
             "x-swagger-router-controller": "answer.controller",
             "post": {
                 "summary": "Federa; searches all answers and returns count of matching users",
-                "operationId": "federalSearchAnswers",
+                "operationId": "federatedSearchAnswers",
                 "security": [{
                     "admin": []
                 }, {
@@ -851,7 +851,7 @@
                     "in": "body",
                     "required": true,
                     "schema": {
-                        "$ref": "#/definitions/federalAnswersQuery"
+                        "$ref": "#/definitions/federatedAnswersQuery"
                     }
                 }],
                 "responses": {
@@ -1121,9 +1121,9 @@
                     "required": false,
                     "type": "boolean"
                 }, {
-                    "name": "federal",
+                    "name": "federated",
                     "in": "query",
-                    "description": "Federal flag",
+                    "description": "Federated flag",
                     "required": false,
                     "type": "boolean"
                 }],
@@ -1210,9 +1210,9 @@
                     "type": "string",
                     "minLength": 1
                 }, {
-                    "name": "federal",
+                    "name": "federated",
                     "in": "query",
-                    "description": "Include federal identifiers",
+                    "description": "Include federated identifiers",
                     "required": false,
                     "type": "boolean"
                 }],
@@ -4299,9 +4299,9 @@
             },
             "minItems": 1
         },
-        "federalAnswersQuery": {
+        "federatedAnswersQuery": {
             "type": "object",
-            "required": ["local", "federal"],
+            "required": ["local", "federated"],
             "properties": {
                 "local": {
                     "type": "object",
@@ -4311,7 +4311,7 @@
                         }
                     }
                 },
-                "federal": {
+                "federated": {
                     "type": "array",
                     "items": {
                         "type": "object",

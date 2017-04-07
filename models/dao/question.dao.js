@@ -218,15 +218,15 @@ module.exports = class QuestionDAO extends Translatable {
                     });
             })
             .then((question) => {
-                if (options.federal) {
+                if (options.federated) {
                     return this.db.AnswerIdentifier.findAll({
                         raw: true,
                         attributes: ['identifier', 'questionChoiceId'],
-                        where: { type: 'federal', questionId: question.id },
+                        where: { type: 'federated', questionId: question.id },
                     })
                         .then((result) => {
                             if (result.length < 1) {
-                                return RRError.reject('questionNotFederal');
+                                return RRError.reject('questionNotFederated');
                             }
                             if (['choice', 'choices'].indexOf(question.type) < 0) {
                                 question.answerIdentifier = result[0].identifier;
@@ -236,7 +236,7 @@ module.exports = class QuestionDAO extends Translatable {
                             question.choices.forEach((choice) => {
                                 const identifier = map.get(choice.id);
                                 if (!identifier) {
-                                    throw new RRError('questionNotFederalChoice', choice.text);
+                                    throw new RRError('questionNotFederatedChoice', choice.text);
                                 }
                                 choice.identifier = identifier;
                             });
@@ -318,11 +318,11 @@ module.exports = class QuestionDAO extends Translatable {
         return Question.findAll(options);
     }
 
-    findFederalQuestions(options = {}) {
+    findFederatedQuestions(options = {}) {
         return this.db.QuestionIdentifier.findAll({
             raw: true,
             attributes: ['questionId', 'identifier'],
-            where: { type: 'federal' },
+            where: { type: 'federated' },
         })
             .then((records) => {
                 const map = new Map(records.map(record => [record.questionId, record.identifier]));
@@ -340,8 +340,8 @@ module.exports = class QuestionDAO extends Translatable {
     }
 
     findQuestionsForList(options) {
-        if (options.federal) {
-            return this.findFederalQuestions(options);
+        if (options.federated) {
+            return this.findFederatedQuestions(options);
         }
         return this.findQuestions(options);
     }

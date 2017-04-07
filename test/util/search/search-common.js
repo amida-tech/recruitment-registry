@@ -135,7 +135,7 @@ const Tests = class BaseTests {
             _.range(surveyCount).forEach((index) => {
                 indices.push(offset + questions.length);
                 options.identifiers = {
-                    type: 'federal',
+                    type: 'federated',
                     postfix: `survey_${index}_${type}`,
                 };
                 const question = questionGenerator.newQuestion(options);
@@ -150,7 +150,7 @@ const Tests = class BaseTests {
             typeIndexMap.set(multiType, indices);
             _.range(surveyCount).forEach((index) => {
                 options.identifiers = {
-                    type: 'federal',
+                    type: 'federated',
                     postfix: `survey_${index}_${multiType}`,
                 };
                 indices.push(offset + questions.length);
@@ -442,7 +442,7 @@ const SpecTests = class SearchSpecTests extends Tests {
             self.questions.forEach((question, index) => {
                 const actualIndex = self.offset + index;
                 it(`create question ${actualIndex}`, self.questionTests.createQuestionFn({ question }));
-                it(`get question ${actualIndex}`, self.questionTests.getQuestionFn(actualIndex, { federal: true }, { ignoreQuestionIdentifier: true }));
+                it(`get question ${actualIndex}`, self.questionTests.getQuestionFn(actualIndex, { federated: true }, { ignoreQuestionIdentifier: true }));
             });
 
             it('create a map of all choice/choice question choices', self.generateChoiceMapFn());
@@ -687,7 +687,7 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
             self.questions.forEach((question, index) => {
                 const actualIndex = self.offset + index;
                 it(`create question ${actualIndex}`, self.questionTests.createQuestionFn({ question }));
-                it(`get question ${actualIndex}`, self.questionTests.getQuestionFn(actualIndex, { federal: true }, { ignoreQuestionIdentifier: true }));
+                it(`get question ${actualIndex}`, self.questionTests.getQuestionFn(actualIndex, { federated: true }, { ignoreQuestionIdentifier: true }));
             });
 
             it('create a map of all choice/choice question choices', self.generateChoiceMapFn());

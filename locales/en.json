@@ -68,6 +68,6 @@
 	"answerRemoteRegistryError": "Cannot get data from registry {{0}}: {{1}}",
 	"qxChoiceNoDeleteAnswered": "Cannot delete question choice: there are answers using the choice.",
 	"qxChoiceNoDeleteInFilter": "Cannot delete question choice: there are filters using the choice.",
-	"questionNotFederal": "Not a federal question.",
-	"questionNotFederalChoice": "Choice '{{$0}}' does not have a federal identifier."
+	"questionNotFederated": "Not a federated question.",
+	"questionNotFederatedChoice": "Choice '{{$0}}' does not have a federated identifier."
 }

@@ -96,7 +96,7 @@ const Tests = class BaseTests {
     }
 };
 
-const SpecTests = class FederalSearchSpecTests extends Tests {
+const SpecTests = class FederatedSearchSpecTests extends Tests {
     constructor() {
         super();
         this.models = generator(this.schemas);
@@ -123,7 +123,7 @@ const SpecTests = class FederalSearchSpecTests extends Tests {
     }
 };
 
-const IntegrationTests = class FederalSearchSpecTests extends Tests {
+const IntegrationTests = class FederatedSearchSpecTests extends Tests {
     constructor() {
         super();
         this.rrSuperTests = this.schemas.reduce((r, schema) => {
