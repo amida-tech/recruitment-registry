@@ -579,6 +579,14 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
         };
     }
 
+    searchEmptyFn(count) {
+        const rrSuperTest = this.rrSuperTest;
+        return function searchEmpty() {
+            return rrSuperTest.post('/answers/queries', { questions: [] }, 200)
+                .then(res => expect(res.body.count).to.equal(count));
+        };
+    }
+
     createAnswersFn(userIndex, surveyIndex, answerInfo) {
         const self = this;
         const hxSurvey = this.hxSurvey;
@@ -708,9 +716,12 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
                 it(`logout as user ${userIndex}`, self.shared.logoutFn());
             });
 
+            it('login as super', self.shared.loginFn(config.superUser));
+
+            it('search empty criteria', self.searchEmptyFn(5));
+
             const searchCases = testCase0.searchCases;
 
-            it('login as super', self.shared.loginFn(config.superUser));
             let cohortId = 1;
             searchCases.forEach((searchCase, index) => {
                 it(`search case ${index} count`, self.searchAnswerCountFn(searchCase));

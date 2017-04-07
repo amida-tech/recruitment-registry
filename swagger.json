@@ -839,7 +839,7 @@
         "/answers/federated-queries": {
             "x-swagger-router-controller": "answer.controller",
             "post": {
-                "summary": "Federa; searches all answers and returns count of matching users",
+                "summary": "Searches all answers and returns count of matching users",
                 "operationId": "federatedSearchAnswers",
                 "security": [{
                     "admin": []
@@ -851,7 +851,7 @@
                     "in": "body",
                     "required": true,
                     "schema": {
-                        "$ref": "#/definitions/federatedAnswersQuery"
+                        "$ref": "#/definitions/answerIdentifiersQuery"
                     }
                 }],
                 "responses": {
@@ -4296,37 +4296,6 @@
             "type": "array",
             "items": {
                 "$ref": "#/definitions/questionQuery"
-            },
-            "minItems": 1
-        },
-        "federatedAnswersQuery": {
-            "type": "object",
-            "required": ["local", "federated"],
-            "properties": {
-                "local": {
-                    "type": "object",
-                    "properties": {
-                        "criteria": {
-                            "$ref": "#/definitions/answerIdentifiersQuery"
-                        }
-                    }
-                },
-                "federated": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "required": ["registryId", "criteria"],
-                        "properties": {
-                            "registryId": {
-                                "type": "integer",
-                                "minimum": 1
-                            },
-                            "criteria": {
-                                "$ref": "#/definitions/answerIdentifiersQuery"
-                            }
-                        }
-                    }
-                }
             }
         },
         "newFilter": {

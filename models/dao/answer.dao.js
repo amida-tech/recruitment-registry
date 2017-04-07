@@ -536,27 +536,17 @@ module.exports = class AnswerDAO extends Base {
             });
     }
 
-    federatedSearchCountUsers(federatedModels, federatedCriteria) {
-        const federateds = federatedCriteria.federated || [];
+    federatedSearchCountUsers(federatedModels, criteria) {
         const attributes = ['id', 'name', 'url', 'schema'];
         return this.db.Registry.findAll({ raw: true, attributes })
             .then((registries) => {
                 if (!registries.length) {
                     return RRError.reject('registryNoneFound');
                 }
-                const registryMap = new Map(registries.map(registry => [registry.id, registry]));
-                federateds.forEach(({ registryId }) => {
-                    if (!registryMap.has(registryId)) {
-                        throw new RRError('registryIdNotFound', registryId);
-                    }
-                });
                 return registries;
             })
             .then((registries) => {
-                const criteriaMapInput = federateds.map(({ registryId, criteria }) => [registryId, criteria]);
-                const criteriaMap = new Map(criteriaMapInput);
-                const promises = registries.map(({ id, name, schema, url }) => {
-                    const criteria = criteriaMap.get(id);
+                const promises = registries.map(({ name, schema, url }) => {
                     if (schema) {
                         const models = federatedModels[schema];
                         return models.answer.countParticipantsIdentifiers(criteria);
@@ -565,12 +555,10 @@ module.exports = class AnswerDAO extends Base {
                 });
                 return SPromise.all(promises);
             })
-            .then(federated => this.countParticipantsIdentifiers(federatedCriteria.local.criteria)
-                    .then((local) => {
-                        const result = { local, federated };
-                        const totalCount = federated.reduce((r, { count }) => r + count, local.count);
-                        result.total = { count: totalCount };
-                        return result;
-                    }));
+            .then(federated => this.countParticipantsIdentifiers(criteria)
+                .then((local) => {
+                    const count = federated.reduce((r, { count }) => r + count, local.count);
+                    return { count };
+                }));
     }
 };

@@ -64,44 +64,13 @@ describe('federated search unit', function federatedSearchUnit() {
             const searchTestsMap = tests.searchTestsMap;
             const schema0 = tests.registries[0].schema;
             const schema1 = tests.registries[1].schema;
-            const { count: count0, federatedCriteria: criteria0 } = searchTestsMap.get(schema0).getFederatedCriteria(0);
-            const { count: count1, federatedCriteria: criteria1 } = searchTestsMap.get(schema1).getFederatedCriteria(1);
-            const { count: count2, federatedCriteria: criteria2 } = searchTestsMap.get('recregone').getFederatedCriteria(0);
-            const { count: count3, federatedCriteria: criteria3 } = searchTestsMap.get('recregtwo').getFederatedCriteria(1);
-            const { count, federatedCriteria: criteria } = searchTestsMap.get('current').getFederatedCriteria(2);
-            const federatedCriteria = {
-                local: { criteria },
-                federated: [{
-                    registryId: hxRegistry.id(0),
-                    criteria: criteria0,
-                }, {
-                    registryId: hxRegistry.id(1),
-                    criteria: criteria1,
-                }, {
-                    registryId: hxRegistry.id(2),
-                    criteria: criteria2,
-                }, {
-                    registryId: hxRegistry.id(3),
-                    criteria: criteria3,
-                }],
-            };
-            return tests.models.current.answer.federatedSearchCountUsers(tests.models, federatedCriteria)
-                .then((result) => {
-                    const expected = {
-                        local: { count },
-                        federated: [{
-                            count: count0,
-                        }, {
-                            count: count1,
-                        }, {
-                            count: count2,
-                        }, {
-                            count: count3,
-                        }],
-                        total: { count: count + count0 + count1 + count2 + count3 },
-                    };
-                    expect(result).to.deep.equal(expected);
-                });
+            const { count: count0 } = searchTestsMap.get(schema0).getFederatedCriteria(0);
+            const { count: count1 } = searchTestsMap.get(schema1).getFederatedCriteria(0);
+            const { count: count2 } = searchTestsMap.get('recregone').getFederatedCriteria(0);
+            const { count: count3 } = searchTestsMap.get('recregtwo').getFederatedCriteria(0);
+            const { count, federatedCriteria: criteria } = searchTestsMap.get('current').getFederatedCriteria(0);
+            return tests.models.current.answer.federatedSearchCountUsers(tests.models, criteria)
+                .then(result => expect(result.count).to.equal(count + count0 + count1 + count2 + count3));
         });
     });
 
