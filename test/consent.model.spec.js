@@ -228,7 +228,7 @@ describe('consent unit', () => {
     });
 
     const signDocumentsFn = function (userIndex, index, newSignatureIndices, expectedSignatureIndices, language) {
-        return function () {
+        return function signDocuments() {
             const userId = history.userId(userIndex);
             const documentIds = newSignatureIndices.map(i => history.id(i));
             return models.consentSignature.bulkCreateSignatures(documentIds, { userId, language })

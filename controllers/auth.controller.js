@@ -19,7 +19,7 @@ const authenticate = passport.authenticate('basic', {
     failWithError: true,
 });
 
-exports.authenticateBasic = function (req, res) {
+exports.authenticateBasic = function authenticateBasic(req, res) {
     authenticate(req, res, (err) => {
         if (err) {
             const json = shared.errToJSON(err, res);

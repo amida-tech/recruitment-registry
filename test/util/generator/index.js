@@ -70,8 +70,8 @@ class Generator {
         return user;
     }
 
-    newQuestion(type, options) {
-        return this.questionGenerator.newQuestion(type, options);
+    newQuestion(options) {
+        return this.questionGenerator.newQuestion(options);
     }
 
     newSurvey(options) {

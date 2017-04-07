@@ -31,7 +31,7 @@ describe('question choice unit', () => {
     const hxChoiceSet = new History();
     const hxSurvey = new History();
     const hxUser = new History();
-    const questionTests = new questionCommon.SpecTests(generator, hxQuestion);
+    const questionTests = new questionCommon.SpecTests({ generator, hxQuestion });
     const choiceSetTests = new choiceSetCommon.SpecTests(generator, hxChoiceSet);
     const surveyTests = new surveyCommon.SpecTests(generator, hxSurvey, hxQuestion);
     const answerTests = new answerCommon.SpecTests(generator, hxUser, hxSurvey, hxQuestion);
@@ -44,8 +44,8 @@ describe('question choice unit', () => {
 
     _.range(10).forEach((index) => {
         const type = (index % 2) === 0 ? 'choice' : 'choices';
-        const question = generator.newQuestion(type, { noText: true });
-        it(`create question ${index}`, questionTests.createQuestionFn(question));
+        const options = { type, noText: true };
+        it(`create question ${index}`, questionTests.createQuestionFn(options));
         it(`get question ${index}`, questionTests.getQuestionFn(index));
         const choiceIndex = index % 3;
         it(`patch question ${index} choice ${choiceIndex}`, function patchQuestionChoice() {

@@ -16,7 +16,7 @@ const SpecTests = class SectionSpecTests {
     createSectionFn(section) {
         const generator = this.generator;
         const hxSection = this.hxSection;
-        return function () {
+        return function createSection() {
             section = section || generator.newSection();
             return models.section.createSection(section)
                 .then(({ id }) => hxSection.push(section, { id }));
@@ -25,7 +25,7 @@ const SpecTests = class SectionSpecTests {
 
     getSectionFn(index) {
         const hxSection = this.hxSection;
-        return function () {
+        return function getSection() {
             index = (index === undefined) ? hxSection.lastIndex() : index;
             const id = hxSection.id(index);
             return models.section.getSection(id)
@@ -38,7 +38,7 @@ const SpecTests = class SectionSpecTests {
 
     verifySectionFn(index) {
         const hxSection = this.hxSection;
-        return function () {
+        return function verifySection() {
             const server = hxSection.server(index);
             return models.section.getSection(server.id)
                 .then((section) => {
@@ -49,7 +49,7 @@ const SpecTests = class SectionSpecTests {
 
     deleteSectionFn(index) {
         const hxSection = this.hxSection;
-        return function () {
+        return function deleteSection() {
             return models.section.deleteSection(hxSection.id(index))
                 .then(() => {
                     hxSection.remove(index);
@@ -59,7 +59,7 @@ const SpecTests = class SectionSpecTests {
 
     listSectionsFn(fields, options) {
         const hxSection = this.hxSection;
-        return function () {
+        return function listSections() {
             return models.section.listSections(options)
                 .then((sections) => {
                     const expected = hxSection.listServers(fields);
@@ -80,7 +80,7 @@ const IntegrationTests = class SectionIntegrationTests {
         const generator = this.generator;
         const rrSuperTest = this.rrSuperTest;
         const hxSection = this.hxSection;
-        return function () {
+        return function createSection() {
             section = section || generator.newSection();
             return rrSuperTest.post('/sections', section, 201)
                 .expect((res) => {
@@ -92,7 +92,7 @@ const IntegrationTests = class SectionIntegrationTests {
     getSectionFn(index) {
         const rrSuperTest = this.rrSuperTest;
         const hxSection = this.hxSection;
-        return function () {
+        return function getSection() {
             index = (index === undefined) ? hxSection.lastIndex() : index;
             const id = hxSection.id(index);
             return rrSuperTest.get(`/sections/${id}`, true, 200)
@@ -106,7 +106,7 @@ const IntegrationTests = class SectionIntegrationTests {
     deleteSectionFn(index) {
         const rrSuperTest = this.rrSuperTest;
         const hxSection = this.hxSection;
-        return function () {
+        return function deleteSection() {
             const id = hxSection.id(index);
             return rrSuperTest.delete(`/sections/${id}`, 204)
                 .expect(() => {
@@ -118,7 +118,7 @@ const IntegrationTests = class SectionIntegrationTests {
     listSectionsFn() {
         const rrSuperTest = this.rrSuperTest;
         const hxSection = this.hxSection;
-        return function () {
+        return function listSections() {
             return rrSuperTest.get('/sections', true, 200)
                 .expect((res) => {
                     const expected = hxSection.listServers();

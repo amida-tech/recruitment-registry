@@ -22,7 +22,7 @@ describe('cohort unit', () => {
     const shared = new SharedSpec(generator);
     const hxQuestion = new History();
     const hxCohort = new History();
-    const qxTests = new questionCommon.SpecTests(generator, hxQuestion);
+    const qxTests = new questionCommon.SpecTests({ generator, hxQuestion });
     const filterTests = new filterCommon.SpecTests(hxQuestion);
     let cohortId = 1;
 

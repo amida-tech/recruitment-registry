@@ -72,7 +72,7 @@ module.exports = class ConsentDAO extends Base {
     fillConsentDocuments(id, options = {}) {
         const ConsentSection = this.db.ConsentSection;
         const consentDocument = this.consentDocument;
-        return function (result) {
+        return function fnFillConsentDocuments(result) {
             return ConsentSection.findAll({ where: { consentId: id }, raw: true, attributes: ['typeId', 'line'], order: 'line' })
                 .then((sections) => {
                     const typeIds = _.map(sections, 'typeId');
@@ -106,7 +106,7 @@ module.exports = class ConsentDAO extends Base {
 
     fillUserConsentDocuments(userId) {
         const ConsentSignature = this.db.ConsentSignature;
-        return function (result) {
+        return function fnFillUserConsentDocuments(result) {
             return ConsentSignature.findAll({
                 where: { userId },
                 raw: true,

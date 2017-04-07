@@ -763,6 +763,37 @@
                 }
             }
         },
+        "/answers/identifier-queries": {
+            "x-swagger-router-controller": "answer.controller",
+            "post": {
+                "summary": "Searches all answers and returns count of matching users using identifiers",
+                "operationId": "countParticipantsIdentifiers",
+                "security": [{
+                    "admin": []
+                }, {
+                    "clinician": []
+                }],
+                "parameters": [{
+                    "name": "query",
+                    "in": "body",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/answerIdentifiersQuery"
+                    }
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response.",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                   "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
         "/answers/user-ids": {
             "x-swagger-router-controller": "answer.controller",
             "post": {
@@ -805,11 +836,11 @@
                 }
             }
         },
-        "/answers/federal-queries": {
+        "/answers/federated-queries": {
             "x-swagger-router-controller": "answer.controller",
             "post": {
-                "summary": "Federa; searches all answers and returns count of matching users",
-                "operationId": "federalSearchAnswers",
+                "summary": "Searches all answers and returns count of matching users",
+                "operationId": "federatedSearchAnswers",
                 "security": [{
                     "admin": []
                 }, {
@@ -820,7 +851,7 @@
                     "in": "body",
                     "required": true,
                     "schema": {
-                        "$ref": "#/definitions/federalAnswersQuery"
+                        "$ref": "#/definitions/answerIdentifiersQuery"
                     }
                 }],
                 "responses": {
@@ -1089,6 +1120,12 @@
                     "description": "Common flag",
                     "required": false,
                     "type": "boolean"
+                }, {
+                    "name": "federated",
+                    "in": "query",
+                    "description": "Federated flag",
+                    "required": false,
+                    "type": "boolean"
                 }],
                 "responses": {
                     "200": {
@@ -1172,6 +1209,12 @@
                     "required": false,
                     "type": "string",
                     "minLength": 1
+                }, {
+                    "name": "federated",
+                    "in": "query",
+                    "description": "Include federated identifiers",
+                    "required": false,
+                    "type": "boolean"
                 }],
                 "responses": {
                     "200": {
@@ -4243,41 +4286,16 @@
                 }
             }
         },
+        "answerIdentifiersQuery": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/answerIdentifierQuery"
+            }
+        },
         "questionQueries": {
             "type": "array",
             "items": {
                 "$ref": "#/definitions/questionQuery"
-            },
-            "minItems": 1
-        },
-        "federalAnswersQuery": {
-            "type": "object",
-            "required": ["local", "federal"],
-            "properties": {
-                "local": {
-                    "type": "object",
-                    "properties": {
-                        "criteria": {
-                            "$ref": "#/definitions/answersQuery"
-                        }
-                    }
-                },
-                "federal": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "required": ["registryId", "criteria"],
-                        "properties": {
-                            "registryId": {
-                                "type": "integer",
-                                "minimum": 1
-                            },
-                            "criteria": {
-                                "$ref": "#/definitions/answersQuery"
-                            }
-                        }
-                    }
-                }
             }
         },
         "newFilter": {
@@ -4479,6 +4497,10 @@
                     "minimum": 1
                 },
                 "text": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "identifier": {
                     "type": "string",
                     "minLength": 1
                 },
@@ -4696,6 +4718,75 @@
             "maxProperties": 2,
             "additionalProperties": false
         },
+        "answerIdentifierQuery": {
+            "type": "object",
+            "required": ["identifier"],
+            "properties": {
+                "identifier": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "textValue": {
+                    "type": "string"
+                },
+                "boolValue": {
+                    "type": "boolean"
+                },
+                "dateValue": {
+                    "type": "string",
+                    "format": "date"
+                },
+                "numberValue": {
+                    "type": "number"
+                },
+                "integerValue": {
+                    "type": "integer"
+                },
+                "floatValue": {
+                    "type": "number"
+                },
+                "feetInchesValue": {
+                    "type": "object",
+                    "properties": {
+                        "feet": {
+                            "type": "integer"
+                        },
+                        "inches": {
+                            "type": "integer"
+                        }
+                    },
+                    "minProperties": 1,
+                    "additionalProperties": false
+                },
+                "bloodPressureValue": {
+                    "type": "object",
+                    "required": ["systolic", "diastolic"],
+                    "properties": {
+                        "systolic": {
+                            "type": "integer"
+                        },
+                        "diastolic": {
+                            "type": "integer"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "yearValue": {
+                    "type": "string",
+                    "pattern": "^\\d{4}$"
+                },
+                "monthValue": {
+                    "type": "string",
+                    "pattern": "^\\d{2}$"
+                },
+                "dayValue": {
+                    "type": "string",
+                    "pattern": "^\\d{2}$"
+                }
+            },
+            "maxProperties": 2,
+            "additionalProperties": false
+        },
         "newRuleChoicesItem": {
             "type": "object",
             "properties": {
@@ -4820,6 +4911,14 @@
                     "type": "integer",
                     "minimum": 1
                 },
+                "identifier": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "answerIdentifier": {
+                    "type": "string",
+                    "minLength": 1
+                },
                 "text": {
                     "type": "string",
                      "minLength": 1
@@ -4889,6 +4988,21 @@
             "additionalProperties": false,
             "minProperties": 2
         },
+        "newIdentifier": {
+            "type": "object",
+            "required": ["type", "value"],
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "value": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "additionalProperties": false
+        },
         "newChoice": {
             "type": "object",
             "required": ["text"],
@@ -4905,6 +5019,9 @@
                 },
                 "code": {
                     "type": "string"
+                },
+                "answerIdentifier": {
+                    "$ref": "#/definitions/newIdentifier"
                 }
             },
             "additionalProperties": false
@@ -4935,6 +5052,12 @@
                 "maxCount": {
                     "type": "integer",
                     "minimum": 1
+                },
+                "questionIdentifier": {
+                    "$ref": "#/definitions/newIdentifier"
+                },
+                "answerIdentifier": {
+                    "$ref": "#/definitions/newIdentifier"
                 },
                 "choiceSetId": {
                     "type": "integer",
@@ -5867,17 +5990,17 @@
                     "type": "string",
                     "minLength": 1
                 },
-                "choices": {
+                "answerIdentifiers": {
                     "type": "array",
                     "items": {
                         "type": "object",
-                        "required": ["id", "answerIdentifier"],
+                        "required": ["identifier", "questionChoiceId"],
                         "properties": {
-                            "id": {
+                            "questionChoiceId": {
                                 "type": "integer",
                                 "minimum": 1
                             },
-                            "answerIdentifier": {
+                            "identifier": {
                                 "type": "string",
                                 "minLength": 1
                             }

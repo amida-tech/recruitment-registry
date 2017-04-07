@@ -1,8 +1,10 @@
 'use strict';
 
 const chai = require('chai');
+const _ = require('lodash');
 
 const models = require('../../models');
+const SPromise = require('../../lib/promise');
 const comparator = require('./comparator');
 
 const scopeToFieldsMap = {
@@ -42,64 +44,163 @@ const updateIds = function (questions, idMap) {
     });
 };
 
-const IdentifierGenerator = class identifierGenerator {
-    constructor() {
-        this.index = 0;
+const BaseTests = class BaseTests {
+    constructor({ generator, hxQuestion, idGenerator, hxIdentifiers }) {
+        this.generator = generator;
+        this.hxQuestion = hxQuestion;
+        this.idGenerator = idGenerator;
+        this.hxIdentifiers = hxIdentifiers;
     }
 
-    newAllIdentifiers(question, type) {
-        this.index += 1;
-        const identifier = `qid-${this.index}-${question.id}`;
-        const result = { type, identifier };
-        const questionType = question.type;
-        if ((questionType === 'choice') || (questionType === 'choices')) {
-            result.choices = question.choices.map(choice => ({
-                answerIdentifier: `cid-${this.index}-${question.id}-${choice.id}`,
-                id: choice.id,
-            }));
-        } else {
-            this.index += 1;
-            const answerIdentifier = `aid-${this.index}-${question.id}`;
-            result.answerIdentifier = answerIdentifier;
+    addIdentifierFn(index, type) {
+        const hxQuestion = this.hxQuestion;
+        const idGenerator = this.idGenerator;
+        const hxIdentifiers = this.hxIdentifiers;
+        const self = this;
+        return function addIdentifier() {
+            const question = hxQuestion.server(index);
+            const identifiers = idGenerator.newIdentifiers(question, type);
+            let identifiers4Type = hxIdentifiers[type];
+            if (!identifiers4Type) {
+                identifiers4Type = {};
+                hxIdentifiers[type] = identifiers4Type;
+            }
+            identifiers4Type[question.id] = identifiers;
+            return self.addIdentifierPx(question.id, identifiers);
+        };
+    }
+
+    verifyQuestionIdentifiersFn(index, inputType) {
+        const hxQuestion = this.hxQuestion;
+        const hxIdentifiers = this.hxIdentifiers;
+        const self = this;
+        return function verifyQuestionIdentifiers() {
+            const id = hxQuestion.id(index);
+            const identifiers = hxIdentifiers[inputType][id];
+            const { type, identifier } = identifiers;
+            return self.getQuestionIdByIdentifierPx(type, identifier)
+                .then((result) => {
+                    const expected = { questionId: id };
+                    expect(result).to.deep.equal(expected);
+                });
+        };
+    }
+
+    verifyAnswerIdentifiersFn(index, inputType) {
+        const hxQuestion = this.hxQuestion;
+        const hxIdentifiers = this.hxIdentifiers;
+        const self = this;
+        return function verifyAnswerIdentifiers() {
+            const question = hxQuestion.server(index);
+            const identifiers = hxIdentifiers[inputType][question.id];
+            const questionType = question.type;
+            if (questionType === 'choice' || questionType === 'choices') {
+                const { type, answerIdentifiers } = identifiers;
+                const pxs = question.choices.map(({ id: questionChoiceId }, choiceIndex) => {
+                    const choiceIden = answerIdentifiers[choiceIndex].identifier;
+                    return self.getIdsByAnswerIdentifierPx(type, choiceIden)
+                        .then((result) => {
+                            const expected = { questionId: question.id, questionChoiceId };
+                            expect(result).to.deep.equal(expected);
+                        });
+                });
+                return SPromise.all(pxs);
+            }
+            const { type, answerIdentifier } = identifiers;
+            return self.getIdsByAnswerIdentifierPx(type, answerIdentifier)
+                    .then((result) => {
+                        const expected = { questionId: question.id };
+                        expect(result).to.deep.equal(expected);
+                    });
+        };
+    }
+
+    resetIdentifierGeneratorFn() {
+        const idGenerator = this.idGenerator;
+        return function resetIdentifierGenerator() {
+            idGenerator.reset();
+        };
+    }
+
+    sanityCheckOptions(question, options = {}) { // eslint-disable-line class-methods-use-this
+        if (options.multi) {
+            expect(question.multiple).to.equal(true);
         }
-        return result;
     }
 
-    reset() {
-        this.index = 0;
+    getQuestionFn(index, options = {}, overrideComparatorOptions = {}) {
+        const hxQuestion = this.hxQuestion;
+        const self = this;
+        return function getQuestion() {
+            index = (index === undefined) ? hxQuestion.lastIndex() : index;
+            const id = hxQuestion.id(index);
+            return self.getQuestionPx(id, options)
+                .then((question) => {
+                    hxQuestion.updateServer(index, question);
+                    const comparatorOptions = _.cloneDeep(overrideComparatorOptions);
+                    if (options.federated && self.hxIdentifiers) {
+                        comparatorOptions.identifiers = self.hxIdentifiers.federated;
+                    }
+                    comparator.question(hxQuestion.client(index), question, comparatorOptions);
+                });
+        };
+    }
+
+    listQuestionsFn(options) {
+        const hxQuestion = this.hxQuestion;
+        const self = this;
+        return function listQuestions() {
+            let query;
+            if (options) {
+                if (typeof options === 'string') {
+                    query = { scope: options };
+                } else {
+                    query = options;
+                }
+            }
+            return self.listQuestionsPx(query)
+                .then((questions) => {
+                    const fields = getFieldsForList(query && query.scope);
+                    let expected = hxQuestion.listServers(fields);
+                    if (options && options.federated) {
+                        const federatedMap = self.hxIdentifiers.federated;
+                        expected = expected.reduce((r, question) => {
+                            const federatedInfo = federatedMap[question.id];
+                            if (federatedInfo) {
+                                const identifier = federatedInfo.identifier;
+                                const newQuestion = Object.assign({ identifier }, question);
+                                r.push(newQuestion);
+                            }
+                            return r;
+                        }, []);
+                    }
+                    expect(questions).to.deep.equal(expected);
+                });
+        };
     }
 };
 
-const SpecTests = class QuestionSpecTests {
-    constructor(generator, hxQuestion, inputModels) {
-        this.generator = generator;
-        this.hxQuestion = hxQuestion;
+const SpecTests = class QuestionSpecTests extends BaseTests {
+    constructor(helpers, inputModels) {
+        super(helpers);
         this.models = inputModels || models;
     }
 
-    createQuestionFn(question) {
+    createQuestionFn(options = {}) {
         const generator = this.generator;
         const hxQuestion = this.hxQuestion;
         const m = this.models;
+        const self = this;
         return function createQuestion() {
-            question = question || generator.newQuestion();
+            const question = options.question || generator.newQuestion(options);
+            self.sanityCheckOptions(question, options);
             return m.question.createQuestion(question)
                 .then(({ id }) => hxQuestion.push(question, { id }));
         };
     }
 
-    getQuestionFn(index) {
-        const hxQuestion = this.hxQuestion;
-        const m = this.models;
-        return function getQuestion() {
-            index = (index === undefined) ? hxQuestion.lastIndex() : index;
-            const id = hxQuestion.id(index);
-            return m.question.getQuestion(id)
-                .then((question) => {
-                    hxQuestion.updateServer(index, question);
-                    comparator.question(hxQuestion.client(index), question);
-                });
-        };
+    getQuestionPx(id, options) {
+        return this.models.question.getQuestion(id, options);
     }
 
     verifyQuestionFn(index) {
@@ -124,58 +225,45 @@ const SpecTests = class QuestionSpecTests {
         };
     }
 
-    listQuestionsFn(scope) {
-        const hxQuestion = this.hxQuestion;
-        const m = this.models;
-        return function listQuestions() {
-            const options = scope ? {} : undefined;
-            if (scope) {
-                options.scope = scope;
-            }
-            return m.question.listQuestions(options)
-                .then((questions) => {
-                    const fields = getFieldsForList(scope);
-                    const expected = hxQuestion.listServers(fields);
-                    expect(questions).to.deep.equal(expected);
-                });
-        };
+    listQuestionsPx(options) {
+        return this.models.question.listQuestions(options);
+    }
+
+    addIdentifierPx(questionId, allIdentifiers) {
+        return this.models.question.addQuestionIdentifiers(questionId, allIdentifiers);
+    }
+
+    getQuestionIdByIdentifierPx(type, identifier) {
+        return this.models.questionIdentifier.getQuestionIdByIdentifier(type, identifier);
+    }
+
+    getIdsByAnswerIdentifierPx(type, answerIdentifier) {
+        return this.models.answerIdentifier.getIdsByAnswerIdentifier(type, answerIdentifier);
     }
 };
 
-const IntegrationTests = class QuestionIntegrationTests {
-    constructor(rrSuperTest, generator, hxQuestion) {
+const IntegrationTests = class QuestionIntegrationTests extends BaseTests {
+    constructor(rrSuperTest, helpers) {
+        super(helpers);
         this.rrSuperTest = rrSuperTest;
-        this.generator = generator;
-        this.hxQuestion = hxQuestion;
     }
 
-    createQuestionFn(question) {
+    createQuestionFn(options = {}) {
         const generator = this.generator;
         const rrSuperTest = this.rrSuperTest;
         const hxQuestion = this.hxQuestion;
-        return function createQuestion(done) {
-            question = question || generator.newQuestion();
-            rrSuperTest.post('/questions', question, 201)
-                .expect((res) => {
+        const self = this;
+        return function createQuestion() {
+            const question = options.question || generator.newQuestion(options);
+            self.sanityCheckOptions(question, options);
+            return rrSuperTest.post('/questions', question, 201)
+                .then((res) => {
                     hxQuestion.push(question, res.body);
-                })
-                .end(done);
+                });
         };
     }
-
-    getQuestionFn(index) {
-        const rrSuperTest = this.rrSuperTest;
-        const hxQuestion = this.hxQuestion;
-        return function getQuestion(done) {
-            index = (index === undefined) ? hxQuestion.lastIndex() : index;
-            const id = hxQuestion.id(index);
-            rrSuperTest.get(`/questions/${id}`, true, 200)
-                .expect((res) => {
-                    hxQuestion.reloadServer(res.body);
-                    comparator.question(hxQuestion.client(index), res.body);
-                })
-                .end(done);
-        };
+    getQuestionPx(id, query) {
+        return this.rrSuperTest.get(`/questions/${id}`, true, 200, query).then(res => res.body);
     }
 
     verifyQuestionFn(index) {
@@ -193,29 +281,31 @@ const IntegrationTests = class QuestionIntegrationTests {
     deleteQuestionFn(index) {
         const rrSuperTest = this.rrSuperTest;
         const hxQuestion = this.hxQuestion;
-        return function deleteQuestion(done) {
+        return function deleteQuestion() {
             const id = hxQuestion.id(index);
-            rrSuperTest.delete(`/questions/${id}`, 204)
-                .expect(() => {
+            return rrSuperTest.delete(`/questions/${id}`, 204)
+                .then(() => {
                     hxQuestion.remove(index);
-                })
-                .end(done);
+                });
         };
     }
 
-    listQuestionsFn(scope) {
-        const rrSuperTest = this.rrSuperTest;
-        const hxQuestion = this.hxQuestion;
-        const query = scope ? { scope } : undefined;
-        return function listQuestion(done) {
-            rrSuperTest.get('/questions', true, 200, query)
-                .expect((res) => {
-                    const fields = getFieldsForList(scope);
-                    const expected = hxQuestion.listServers(fields);
-                    expect(res.body).to.deep.equal(expected);
-                })
-                .end(done);
-        };
+    listQuestionsPx(query) {
+        return this.rrSuperTest.get('/questions', true, 200, query).then(res => res.body);
+    }
+
+    addIdentifierPx(questionId, allIdentifiers) {
+        return this.rrSuperTest.post(`/questions/${questionId}/identifiers`, allIdentifiers, 204);
+    }
+
+    getQuestionIdByIdentifierPx(type, identifier) {
+        return this.rrSuperTest.get(`/question-identifiers/${type}/${identifier}`, true, 200)
+            .then(res => res.body);
+    }
+
+    getIdsByAnswerIdentifierPx(type, answerIdentifier) {
+        const endpoint = `/answer-identifiers/${type}/${answerIdentifier}`;
+        return this.rrSuperTest.get(endpoint, false, 200).then(res => res.body);
     }
 };
 
@@ -224,5 +314,4 @@ module.exports = {
     SpecTests,
     IntegrationTests,
     updateIds,
-    IdentifierGenerator,
 };

@@ -19,9 +19,8 @@ describe('filter integration', function filterIntegration() {
     const generator = new Generator();
     const shared = new SharedIntegration(rrSuperTest, generator);
     const hxQuestion = new History();
-    const qxTests = new questionCommon.IntegrationTests(rrSuperTest, generator, hxQuestion);
+    const qxTests = new questionCommon.IntegrationTests(rrSuperTest, { generator, hxQuestion });
     const tests = new filterCommon.IntegrationTests(rrSuperTest, hxQuestion);
-    const questionGenerator = generator.questionGenerator;
     let count = 0;
 
     before(shared.setUpFn());
@@ -30,14 +29,12 @@ describe('filter integration', function filterIntegration() {
 
     ['choice', 'choices'].forEach((type) => {
         _.range(count, count + 3).forEach((index) => {
-            const question = questionGenerator.newQuestion(type);
-            it(`create question ${index}`, qxTests.createQuestionFn(question));
+            it(`create question ${index}`, qxTests.createQuestionFn({ type }));
             it(`get question ${index}`, qxTests.getQuestionFn(index));
         });
         count += 3;
         _.range(count, count + 3).forEach((index) => {
-            const question = questionGenerator.newMultiQuestion(type);
-            it(`create question ${index}`, qxTests.createQuestionFn(question));
+            it(`create question ${index}`, qxTests.createQuestionFn({ type }));
             it(`get question ${index}`, qxTests.getQuestionFn(index));
         });
         count += 3;
@@ -50,8 +47,7 @@ describe('filter integration', function filterIntegration() {
     count += 10;
 
     _.range(count, count + 10).forEach((index) => {
-        const question = questionGenerator.newMultiQuestion();
-        it(`create question ${index}`, qxTests.createQuestionFn(question));
+        it(`create question ${index}`, qxTests.createQuestionFn({ multi: true }));
         it(`get question ${index}`, qxTests.getQuestionFn(index));
     });
     count += 10;

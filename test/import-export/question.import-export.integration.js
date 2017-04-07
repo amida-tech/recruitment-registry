@@ -25,7 +25,7 @@ describe('question integration unit', () => {
     const generator = new Generator();
     const shared = new SharedIntegration(rrSuperTest, generator);
     const hxQuestion = new History();
-    const tests = new questionCommon.IntegrationTests(rrSuperTest, generator, hxQuestion);
+    const tests = new questionCommon.IntegrationTests(rrSuperTest, { generator, hxQuestion });
 
     before(shared.setUpFn());
 
@@ -87,7 +87,7 @@ describe('question integration unit', () => {
 
     it('list imported questions and verify', () => {
         const query = { scope: 'export' };
-        return function (done) {
+        return function listImported(done) {
             rrSuperTest.get('/questions', true, 200, query)
                 .expect((res) => {
                     const fields = questionCommon.getFieldsForList('export');

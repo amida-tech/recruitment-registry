@@ -61,7 +61,7 @@ describe('profile survey integration', () => {
     };
 
     const createProfileSurveyIdFn = function (index) {
-        return function (done) {
+        return function createProfileSurveyId(done) {
             const id = hxSurvey.id(index);
             rrSuperTest.post('/profile-survey-id', { profileSurveyId: id }, 204)
                 .end(done);
@@ -69,7 +69,7 @@ describe('profile survey integration', () => {
     };
 
     const createProfileSurveyFn = function () {
-        return function (done) {
+        return function createProfileSurvey(done) {
             const clientSurvey = generator.newSurvey();
             rrSuperTest.post('/profile-survey', clientSurvey, 201)
                 .expect((res) => {
@@ -80,7 +80,7 @@ describe('profile survey integration', () => {
     };
 
     const verifyProfileSurveyFn = function (index) {
-        return function (done) {
+        return function verifyProfileSurvey(done) {
             rrSuperTest.get('/profile-survey', false, 200)
                 .expect((res) => {
                     const { exists, survey } = res.body;
@@ -95,7 +95,7 @@ describe('profile survey integration', () => {
     };
 
     const verifyProfileSurveyIdFn = function (index) {
-        return function (done) {
+        return function verifyProfileSurveyId(done) {
             rrSuperTest.get('/profile-survey-id', false, 200)
                 .expect((res) => {
                     const id = hxSurvey.id(index);
@@ -111,7 +111,7 @@ describe('profile survey integration', () => {
     };
 
     const translateSurveyFn = function (index, language) {
-        return function (done) {
+        return function translateSurvey(done) {
             const survey = hxSurvey.server(index);
             const translation = translator.translateSurvey(survey, language);
             rrSuperTest.patch(`/surveys/text/${language}`, translation, 204)
@@ -123,7 +123,7 @@ describe('profile survey integration', () => {
     };
 
     const verifyNotTranslatedProfileSurveyFn = function (index, language) {
-        return function (done) {
+        return function verifyNotTranslatedProfileSurvey(done) {
             rrSuperTest.get('/profile-survey', true, 200, { language })
                 .expect((res) => {
                     const { exists, survey } = res.body;
@@ -136,7 +136,7 @@ describe('profile survey integration', () => {
     };
 
     const verifyTranslatedProfileSurveyFn = function (index, language) {
-        return function (done) {
+        return function verifyTranslatedProfileSurvey(done) {
             rrSuperTest.get('/profile-survey', true, 200, { language })
                 .expect((res) => {
                     const { exists, survey } = res.body;

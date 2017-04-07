@@ -2,20 +2,20 @@
 
 const Base = require('./base');
 
+const addSignatureInfo = function (consentDocument, signature) {
+    if (signature) {
+        consentDocument.signature = true;
+        consentDocument.language = signature.language;
+    } else {
+        consentDocument.signature = false;
+    }
+    return consentDocument;
+};
+
 module.exports = class UserConsentDocumentDAO extends Base {
     constructor(db, dependencies) {
         super(db);
         Object.assign(this, dependencies);
-    }
-
-    addSignatureInfo(consentDocument, signature) {
-        if (signature) {
-            consentDocument.signature = true;
-            consentDocument.language = signature.language;
-        } else {
-            consentDocument.signature = false;
-        }
-        return consentDocument;
     }
 
     listUserConsentDocuments(userId, options = {}) {
@@ -38,7 +38,7 @@ module.exports = class UserConsentDocumentDAO extends Base {
                         if (includeSigned) {
                             activeDocuments.forEach((activeDocument) => {
                                 const signature = signedDocumentMap.get(activeDocument.id);
-                                this.addSignatureInfo(activeDocument, signature);
+                                addSignatureInfo(activeDocument, signature);
                             });
                             return activeDocuments;
                         }
@@ -53,7 +53,7 @@ module.exports = class UserConsentDocumentDAO extends Base {
             raw: true,
             attributes: ['language'],
         })
-            .then(signature => this.addSignatureInfo(result, signature));
+            .then(signature => addSignatureInfo(result, signature));
     }
 
     getUserConsentDocument(userId, id, options) {

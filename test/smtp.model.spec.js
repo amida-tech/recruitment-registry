@@ -49,7 +49,7 @@ describe('smtp unit', () => {
     };
 
     const createSmtpFn = function (index, withText) {
-        return function () {
+        return function createSmtp() {
             const newSmtp = createNewSmtp(index);
             const newSmtpText = createNewSmtpText(index);
             if (withText) {
@@ -67,7 +67,7 @@ describe('smtp unit', () => {
     };
 
     const updateSmtpTextFn = function (index, language) {
-        return function () {
+        return function updateSmtpText() {
             const text = createNewSmtpText(index);
             return models.smtp.updateSmtpText(text, language)
                 .then(() => (smtpText = text));
@@ -75,7 +75,7 @@ describe('smtp unit', () => {
     };
 
     const getSmtpFn = function () {
-        return function () {
+        return function getSmtp() {
             return models.smtp.getSmtp()
                 .then((result) => {
                     const expected = _.cloneDeep(smtp);
@@ -88,7 +88,7 @@ describe('smtp unit', () => {
     };
 
     const getTranslatedSmtpFn = function (language, checkFields) {
-        return function () {
+        return function getTranslatedSmtp() {
             return models.smtp.getSmtp({ language })
                 .then((result) => {
                     const expected = _.cloneDeep(smtp);
@@ -109,7 +109,7 @@ describe('smtp unit', () => {
         };
     };
 
-    const translateSmtpFn = (function () {
+    const translateSmtpFn = (function translateSmtpGen() {
         const translateSmtp = function (server, language) {
             return {
                 subject: `${server.subject} (${language})`,
@@ -117,8 +117,8 @@ describe('smtp unit', () => {
             };
         };
 
-        return function (language) {
-            return function () {
+        return function transSmtp(language) {
+            return function transSmtp2() {
                 const translation = translateSmtp(smtpText, language);
                 return models.smtp.updateSmtpText(translation, language)
                     .then(() => {
@@ -129,7 +129,7 @@ describe('smtp unit', () => {
     }());
 
     const deleteSmtpFn = function () {
-        return function () {
+        return function deleteSmtp() {
             return models.smtp.deleteSmtp();
         };
     };

@@ -178,7 +178,7 @@ const SurveyCSVConverter = class SurveyCSVConverter {
 
 const generateChoiceAnswerer = function (questionId, columnName, choiceMap) {
     const choiceIdMap = choiceMap.get(questionId);
-    return function (value, surveyId, username) {
+    return function fnGenerateChoiceAnswerer(value, surveyId, username) {
         if (value) {
             const questionChoiceId = choiceIdMap.get(value);
             if (!questionChoiceId) {
@@ -192,7 +192,7 @@ const generateChoiceAnswerer = function (questionId, columnName, choiceMap) {
 
 const generateChoicesAnswerer = function (questionId, columnName, choiceMap) {
     const choiceIdMap = choiceMap.get(questionId);
-    return function (semicolonValues, surveyId, username) {
+    return function fnGenerateChoicesAnswerer(semicolonValues, surveyId, username) {
         if (semicolonValues) {
             const values = semicolonValues.split(';');
             return values.map((value) => {
@@ -208,7 +208,7 @@ const generateChoicesAnswerer = function (questionId, columnName, choiceMap) {
 };
 
 const generateIntegerAnswerer = function (questionId) {
-    return function (value, surveyId, username) {
+    return function fnGenerateIntegerAnswerer(value, surveyId, username) {
         if (value !== undefined) {
             return [{ survey_id: surveyId, question_id: questionId, value, username }];
         }

@@ -4,7 +4,7 @@ const _ = require('lodash');
 
 const RRError = require('../../lib/rr-error');
 
-const getValueAnswerGenerator = (function () {
+const getValueAnswerGenerator = (function getValueAnswerGeneratorGen() {
     const fns = {
         text(value) { return { textValue: value }; },
         zip(value) { return { textValue: value }; },
@@ -36,13 +36,13 @@ const getValueAnswerGenerator = (function () {
         },
     };
 
-    return function (type) {
+    return function fnGetValueAnswerGenerator(type) {
         const typeCamelCase = _.camelCase(type);
         return fns[typeCamelCase];
     };
 }());
 
-const getChoiceAnswerGenerator = (function () {
+const getChoiceAnswerGenerator = (function getChoiceAnswerGeneratorGen() {
     const fns = {
         choice(entries) { return { choice: entries[0].questionChoiceId }; },
         openChoice(entries) {
@@ -64,7 +64,7 @@ const getChoiceAnswerGenerator = (function () {
         },
     };
 
-    return function (type) {
+    return function fnGetChoiceAnswerGenerator(type) {
         const typeCamelCase = _.camelCase(type);
         return fns[typeCamelCase];
     };
@@ -93,7 +93,7 @@ const generateAnswer = function (type, entries, multiple) {
     return fn(entries[0].value);
 };
 
-const getFilterAnswerGenerator = (function () {
+const getFilterAnswerGenerator = (function getFilterAnswerGeneratorGen() {
     const fns = {
         choice(answer) { return { choice: answer.questionChoiceId }; },
         openChoice(answer) {
@@ -117,12 +117,12 @@ const getFilterAnswerGenerator = (function () {
 
     const fnValue = function (type) {
         const fn = getValueAnswerGenerator(type);
-        return function (answer) {
+        return function fn2(answer) {
             return fn(answer.value);
         };
     };
 
-    return function (type) {
+    return function fnGetFilterAnswerGenerator(type) {
         const typeCamelCase = _.camelCase(type);
         const fn = fns[typeCamelCase];
         if (fn) {

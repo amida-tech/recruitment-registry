@@ -8,7 +8,7 @@ const config = require('../../config');
 const SPromise = require('../../lib/promise');
 const RRError = require('../../lib/rr-error');
 
-module.exports = function (sequelize, DataTypes) {
+module.exports = function Table(sequelize, DataTypes) {
     const bccompare = SPromise.promisify(bcrypt.compare, {
         context: bcrypt,
     });

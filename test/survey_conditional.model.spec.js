@@ -64,7 +64,7 @@ describe('survey (conditional questions) unit', () => {
     });
 
     const verifySurveyFn = function (index) {
-        return function () {
+        return function verifySurvey() {
             const survey = _.cloneDeep(hxSurvey.server(index));
             return models.survey.getSurvey(survey.id)
                 .then((serverSurvey) => {

@@ -102,7 +102,7 @@ xdescribe('bhr gap import-export', () => {
     });
 
     const transformTableDataFn = function (columIdentifier, filebase) {
-        return function () {
+        return function transformTableData() {
             const filepath = path.join(fixtureDir, `${filebase}.csv`);
             const outputFilepath = path.join(outputDir, `${filebase}-trans.csv`);
             return bhrGapImport.transformSurveyFile(filepath, columIdentifier, outputFilepath);
@@ -110,14 +110,14 @@ xdescribe('bhr gap import-export', () => {
     };
 
     const importTableDataFn = function (tableIdentifier, filebase) {
-        return function () {
+        return function importTableData() {
             const transFile = path.join(outputDir, `${filebase}-trans.csv`);
             return bhrGapImport.importTransformedSurveyFile({ type: 'bhr-gap', value: tableIdentifier }, transFile);
         };
     };
 
     const exportTableDataFn = function (surveyType, answerType, filenamebase) {
-        return function () {
+        return function exportTableData() {
             const filepath = path.join(outputDir, `${filenamebase}_exported.csv`);
             return bhrGapExport.writeTableData({ type: 'bhr-gap', value: surveyType }, answerType, filepath, ['SubjectCode', 'Timepoint'])
                 .then(({ columns }) => {

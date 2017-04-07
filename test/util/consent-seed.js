@@ -3,7 +3,7 @@
 const models = require('../../models');
 const SPromise = require('../../lib/promise');
 
-module.exports = function (example) {
+module.exports = function consentSeed(example) {
     const consentTypePxs = example.consentTypes.map(consentType => models.consentType.createConsentType(consentType));
     return SPromise.all(consentTypePxs)
         .then(ids => example.consentTypes.reduce((r, consentType, index) => {

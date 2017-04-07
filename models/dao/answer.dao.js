@@ -59,7 +59,7 @@ const requestPost = function (registryName, questions, url) {
     const opts = {
         json: true,
         body: questions,
-        url: `${url}/answers/queries`,
+        url: `${url}/answers/identifier-queries`,
     };
     const key = `RECREG_JWT_${registryName}`;
     const jwt = process.env[key];
@@ -82,6 +82,37 @@ const requestPost = function (registryName, questions, url) {
             return resolve(res.body);
         })
     ));
+};
+
+const isEnabled = function ({ questionId, parents }, questionAnswerRulesMap, sectionAnswerRulesMap, answersByQuestionId) {
+    const rules = questionAnswerRulesMap.get(questionId);
+    if (rules && rules.length) {
+        const enabled = evaluateEnableWhen(rules, answersByQuestionId);
+        return enabled;
+    }
+    if (parents && parents.length) {
+        const enabled = parents.every(({ sectionId, questionId }) => {
+            if (sectionId) {
+                const rules = sectionAnswerRulesMap.get(sectionId);
+                if (rules && rules.length) {
+                    return evaluateEnableWhen(rules, answersByQuestionId);
+                }
+                return true;
+            }
+            if (questionId) {
+                const rules = questionAnswerRulesMap.get(questionId);
+                if (rules && rules.length) {
+                    return evaluateEnableWhen(rules, answersByQuestionId);
+                }
+                return true;
+            }
+            return true;
+        });
+        if (!enabled) {
+            return false;
+        }
+    }
+    return true;
 };
 
 module.exports = class AnswerDAO extends Base {
@@ -144,37 +175,6 @@ module.exports = class AnswerDAO extends Base {
             });
     }
 
-    isEnabled({ questionId, parents }, questionAnswerRulesMap, sectionAnswerRulesMap, answersByQuestionId) {
-        const rules = questionAnswerRulesMap.get(questionId);
-        if (rules && rules.length) {
-            const enabled = evaluateEnableWhen(rules, answersByQuestionId);
-            return enabled;
-        }
-        if (parents && parents.length) {
-            const enabled = parents.every(({ sectionId, questionId }) => {
-                if (sectionId) {
-                    const rules = sectionAnswerRulesMap.get(sectionId);
-                    if (rules && rules.length) {
-                        return evaluateEnableWhen(rules, answersByQuestionId);
-                    }
-                    return true;
-                }
-                if (questionId) {
-                    const rules = questionAnswerRulesMap.get(questionId);
-                    if (rules && rules.length) {
-                        return evaluateEnableWhen(rules, answersByQuestionId);
-                    }
-                    return true;
-                }
-                return true;
-            });
-            if (!enabled) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     validateAnswers(userId, surveyId, answers, status) {
         const Answer = this.db.Answer;
         return this.surveyQuestion.listSurveyQuestions(surveyId, true)
@@ -186,7 +186,7 @@ module.exports = class AnswerDAO extends Base {
                             const questionId = surveyQuestion.questionId;
                             const answer = answersByQuestionId[questionId];
                             if (sectionAnswerRulesMap || questionAnswerRulesMap) {
-                                const enabled = this.isEnabled(surveyQuestion, questionAnswerRulesMap, sectionAnswerRulesMap, answersByQuestionId);
+                                const enabled = isEnabled(surveyQuestion, questionAnswerRulesMap, sectionAnswerRulesMap, answersByQuestionId);
                                 if (!enabled) {
                                     surveyQuestion.ignore = true;
                                 }
@@ -502,41 +502,63 @@ module.exports = class AnswerDAO extends Base {
             .then(results => ({ count: results.length }));
     }
 
-    federalSearchCountUsers(federalModels, federalCriteria) {
-        const federals = federalCriteria.federal || [];
+    countParticipantsIdentifiers(federatedCriteria) {
+        if (federatedCriteria.length < 1) {
+            return this.db.User.count({ where: { role: 'participant' } })
+                .then(count => ({ count }));
+        }
+        const identifiers = federatedCriteria.map(({ identifier }) => identifier);
+        return this.db.AnswerIdentifier.findAll({
+            raw: true,
+            where: { identifier: { $in: identifiers }, type: 'federated' },
+            attributes: ['identifier', 'questionId', 'questionChoiceId'],
+        })
+            .then((records) => {
+                const identifierMap = new Map(federatedCriteria.map(r => [r.identifier, r]));
+                const questionMap = new Map();
+                const questions = records.reduce((r, record) => {
+                    const { identifier, questionId, questionChoiceId } = record;
+                    let answers = questionMap.get(questionId);
+                    if (!answers) {
+                        answers = [];
+                        questionMap.set(questionId, answers);
+                        r.push({ id: questionId, answers });
+                    }
+                    const criterion = identifierMap.get(identifier);
+                    const answer = _.omit(criterion, 'identifier');
+                    if (questionChoiceId) {
+                        answer.choice = questionChoiceId;
+                    }
+                    answers.push(answer);
+                    return r;
+                }, []);
+                return this.searchCountUsers({ questions });
+            });
+    }
+
+    federatedSearchCountUsers(federatedModels, criteria) {
         const attributes = ['id', 'name', 'url', 'schema'];
         return this.db.Registry.findAll({ raw: true, attributes })
             .then((registries) => {
                 if (!registries.length) {
                     return RRError.reject('registryNoneFound');
                 }
-                const registryMap = new Map(registries.map(registry => [registry.id, registry]));
-                federals.forEach(({ registryId }) => {
-                    if (!registryMap.has(registryId)) {
-                        throw new RRError('registryIdNotFound', registryId);
-                    }
-                });
                 return registries;
             })
             .then((registries) => {
-                const criteriaMapInput = federals.map(({ registryId, criteria }) => [registryId, criteria]);
-                const criteriaMap = new Map(criteriaMapInput);
-                const promises = registries.map(({ id, name, schema, url }) => {
-                    const criteria = criteriaMap.get(id);
+                const promises = registries.map(({ name, schema, url }) => {
                     if (schema) {
-                        const models = federalModels[schema];
-                        return models.answer.searchCountUsers(criteria);
+                        const models = federatedModels[schema];
+                        return models.answer.countParticipantsIdentifiers(criteria);
                     }
                     return requestPost(name, criteria, url);
                 });
                 return SPromise.all(promises);
             })
-            .then(federal => this.searchCountUsers(federalCriteria.local.criteria)
-                    .then((local) => {
-                        const result = { local, federal };
-                        const totalCount = federal.reduce((r, { count }) => r + count, local.count);
-                        result.total = { count: totalCount };
-                        return result;
-                    }));
+            .then(federated => this.countParticipantsIdentifiers(criteria)
+                .then((local) => {
+                    const count = federated.reduce((r, { count }) => r + count, local.count);
+                    return { count };
+                }));
     }
 };

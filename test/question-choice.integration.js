@@ -33,7 +33,7 @@ describe('question choice integration', () => {
     const hxChoiceSet = new History();
     const hxSurvey = new History();
     const hxUser = new History();
-    const questionTests = new questionCommon.IntegrationTests(rrSuperTest, generator, hxQuestion);
+    const questionTests = new questionCommon.IntegrationTests(rrSuperTest, { generator, hxQuestion });
     const choiceSetTests = new choiceSetCommon.IntegrationTests(rrSuperTest, generator, hxChoiceSet);
     const surveyTests = new surveyCommon.IntegrationTests(rrSuperTest, generator, hxSurvey, hxQuestion);
     const answerTests = new answerCommon.IntegrationTests(rrSuperTest, generator, hxUser, hxSurvey, hxQuestion);
@@ -48,8 +48,8 @@ describe('question choice integration', () => {
 
     _.range(10).forEach((index) => {
         const type = (index % 2) === 0 ? 'choice' : 'choices';
-        const question = generator.newQuestion(type, { noText: true });
-        it(`create question ${index}`, questionTests.createQuestionFn(question));
+        const options = { type, noText: true };
+        it(`create question ${index}`, questionTests.createQuestionFn(options));
         it(`get question ${index}`, questionTests.getQuestionFn(index));
         const choiceIndex = index % 3;
         it(`patch question ${index} choice ${choiceIndex}`, function patchQuestionChoice() {

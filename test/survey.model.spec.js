@@ -43,7 +43,7 @@ describe('survey unit', () => {
             }));
 
     const verifySurveyFn = function (index, { noSectionId } = {}) {
-        return function () {
+        return function verifySurvey() {
             const expected = hxSurvey.server(index);
             const surveyId = hxSurvey.id(index);
             return models.survey.getSurvey(surveyId)
@@ -57,7 +57,7 @@ describe('survey unit', () => {
     };
 
     const patchSurveyMetaFn = function (index) {
-        return function () {
+        return function patchSurveyMeta() {
             const surveyId = hxSurvey.id(index);
             const survey = hxSurvey.server(index);
             const update = { meta: { anyProperty: 2 } };
@@ -67,7 +67,7 @@ describe('survey unit', () => {
     };
 
     const revertPatchedSurveyMetaFn = function (index) {
-        return function () {
+        return function revertPatchedSurveyMeta() {
             const surveyId = hxSurvey.id(index);
             const survey = hxSurvey.server(index);
             let { meta } = hxSurvey.client(index);
@@ -82,7 +82,7 @@ describe('survey unit', () => {
     };
 
     const patchSurveyTextFn = function (index) {
-        return function () {
+        return function patchSurveyText() {
             const id = hxSurvey.id(index);
             const survey = hxSurvey.server(index);
             survey.name += 'xyz';
@@ -97,7 +97,7 @@ describe('survey unit', () => {
     };
 
     const revertPatchedSurveyTextFn = function (index) {
-        return function () {
+        return function revertPatchedSurveyText() {
             const id = hxSurvey.id(index);
             const survey = hxSurvey.server(index);
             const { name, description } = hxSurvey.client(index);
@@ -110,7 +110,7 @@ describe('survey unit', () => {
     };
 
     const patchSurveyQuestionsSectionsFn = function (index, sourceIndex) {
-        return function () {
+        return function patchSurveyQuestionsSections() {
             const survey = hxSurvey.server(index);
             const sourceSurvey = hxSurvey.server(sourceIndex);
             surveyTemp = _.cloneDeep(survey);
@@ -120,7 +120,7 @@ describe('survey unit', () => {
     };
 
     const revertPatchedSurveyQuestionSectionsFn = function (index) {
-        return function () {
+        return function revertPatchedSurveyQuestionSections() {
             const survey = hxSurvey.server(index);
             const sourceSurvey = surveyTemp;
             const surveyPatch = surveyCommon.formQuestionsSectionsSurveyPatch(survey, sourceSurvey);
@@ -164,24 +164,24 @@ describe('survey unit', () => {
     it('list surveys (retired)', tests.listSurveysFn({ status: 'retired' }, 3));
     it('list surveys (draft)', tests.listSurveysFn({ status: 'draft' }, 3));
 
-    it('error: change published survey to draft status', (function (index) {
-        return function () {
+    it('error: change published survey to draft status', (function errorChangePublishedToDraftFn(index) {
+        return function errorChangePublishedToDraft() {
             const id = hxSurvey.id(index);
             return models.survey.patchSurvey(id, { status: 'draft' })
                 .then(shared.throwingHandler, shared.expectedErrorHandler('surveyPublishedToDraftUpdate'));
         };
     }(surveyCount - 4)));
 
-    it('error: retire draft survey', (function (index) {
-        return function () {
+    it('error: retire draft survey', (function errorRetireDraftFn(index) {
+        return function errorRetireDraft() {
             const id = hxSurvey.id(index);
             return models.survey.patchSurvey(id, { status: 'retired' })
                 .then(shared.throwingHandler, shared.expectedErrorHandler('surveyDraftToRetiredUpdate'));
         };
     }(surveyCount - 7)));
 
-    it('error: patch retired survey', (function (index) {
-        return function () {
+    it('error: patch retired survey', (function errorPatchRetiredFn(index) {
+        return function errorPatchRetired() {
             const id = hxSurvey.id(index);
             return models.survey.patchSurvey(id, { status: 'retired' })
                 .then(shared.throwingHandler, shared.expectedErrorHandler('surveyRetiredStatusUpdate'));
@@ -192,7 +192,7 @@ describe('survey unit', () => {
         ['draft', 'published', surveyCount - 9],
         ['published', 'retired', surveyCount - 6],
     ].forEach(([status, updateStatus, index]) => {
-        it(`update survey ${index} status ${status} to ${updateStatus}`, () => {
+        it(`update survey ${index} status ${status} to ${updateStatus}`, function updateSurvey() {
             const id = hxSurvey.id(index);
             return models.survey.patchSurvey(id, { status: updateStatus })
                 .then(() => { hxSurvey.server(index).status = updateStatus; });
@@ -242,7 +242,7 @@ describe('survey unit', () => {
             }));
 
     const translateTextFn = function (index, language) {
-        return function () {
+        return function translateText() {
             const survey = hxSurvey.server(index);
             const translation = translator.translateSurvey(survey, language);
             return models.survey.patchSurveyText(translation, language)
@@ -253,7 +253,7 @@ describe('survey unit', () => {
     };
 
     const getTranslatedFn = function (index, language) {
-        return function () {
+        return function getTranslated() {
             const id = hxSurvey.id(index);
             return models.survey.getSurvey(id, { language })
                 .then((result) => {
@@ -265,7 +265,7 @@ describe('survey unit', () => {
     };
 
     const listTranslatedFn = function (language) {
-        return function () {
+        return function listTranslated() {
             return models.survey.listSurveys({ language })
                 .then((result) => {
                     const expected = hxSurvey.listTranslatedServers(language);
@@ -288,7 +288,7 @@ describe('survey unit', () => {
             }));
 
     const replaceSurveyFn = function (index) {
-        return function () {
+        return function replaceSurvey() {
             const id = hxSurvey.id(index);
             const clientSurvey = generator.newSurvey();
             return models.survey.replaceSurvey(id, clientSurvey)
@@ -306,7 +306,7 @@ describe('survey unit', () => {
     };
 
     const dbVersionCompareFn = function (index, count) {
-        return function () {
+        return function dbVersionCompare() {
             const id = hxSurvey.id(index);
             return models.survey.getSurvey(id, { override: { attributes: ['id', 'version', 'groupId'] } })
                 .then((surveyWithGroupId) => {
@@ -334,7 +334,7 @@ describe('survey unit', () => {
     it(`survey ${surveyCount + 2} is version 3`, dbVersionCompareFn(surveyCount + 2, 3));
 
     const dbVersionParentlessCompareFn = function (index, replaced) {
-        return function () {
+        return function dbVersionParentlessCompare() {
             const id = hxSurvey.id(index);
             return models.survey.getSurvey(id, { override: { attributes: ['id', 'version', 'groupId'], paranoid: false } })
                 .then((survey) => {
@@ -353,7 +353,7 @@ describe('survey unit', () => {
     it('survey 3 is version 1', dbVersionParentlessCompareFn(3, true));
 
     const listSurveyScopeVersionFn = function (index) {
-        return function () {
+        return function listSurveyScopeVersion() {
             return models.survey.listSurveys({ scope: 'version', version: 3, history: true })
                 .then((list) => {
                     expect(list).to.have.length(1);
@@ -492,7 +492,7 @@ describe('survey unit', () => {
     };
 
     const answerVerifySurveyFn = function (surveyIndex) {
-        return function () {
+        return function answerVerifySurvey() {
             const survey = hxSurvey.server(surveyIndex);
             const answers = generator.answerSurvey(survey);
             const input = {

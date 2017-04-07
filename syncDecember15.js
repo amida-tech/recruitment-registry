@@ -1,5 +1,7 @@
 'use strict';
 
+/* eslint no-console: 0 */
+
 const models = require('./models');
 
 const consentSeed = require('./test/util/consent-seed');

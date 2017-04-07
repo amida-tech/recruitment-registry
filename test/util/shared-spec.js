@@ -22,7 +22,7 @@ class SharedSpec {
 
     setUpFn(force = true) {
         const m = this.models;
-        return function () {
+        return function setUp() {
             return m.sequelize.sync({ force });
         };
     }
@@ -30,7 +30,7 @@ class SharedSpec {
     createUserFn(hxUser, override) {
         const m = this.models;
         const generator = this.generator;
-        return function () {
+        return function createUser() {
             const user = generator.newUser(override);
             return m.user.createUser(user)
                 .then(({ id }) => {
@@ -41,7 +41,7 @@ class SharedSpec {
 
     authenticateUserFn(hxUser, index) {
         const m = this.models;
-        return function () {
+        return function authenticateUser() {
             const client = hxUser.client(index);
             const username = client.username || client.email;
             return m.auth.authenticateUser(username, client.password);
@@ -51,7 +51,7 @@ class SharedSpec {
     createProfileSurveyFn(hxSurvey) {
         const m = this.models;
         const generator = this.generator;
-        return function () {
+        return function createProfileSurvey() {
             const survey = generator.newSurvey();
             return m.profileSurvey.createProfileSurvey(survey)
                 .then(({ id }) => hxSurvey.push(survey, { id }));
@@ -60,7 +60,7 @@ class SharedSpec {
 
     verifyProfileSurveyFn(hxSurvey, index) {
         const m = this.models;
-        return function () {
+        return function verifyProfileSurvey() {
             return m.profileSurvey.getProfileSurvey()
                 .then((profileSurvey) => {
                     expect(profileSurvey.exists).to.equal(true);
@@ -76,7 +76,7 @@ class SharedSpec {
     createConsentTypeFn(history) {
         const m = this.models;
         const generator = this.generator;
-        return function () {
+        return function createConsentType() {
             const cst = generator.newConsentType();
             return m.consentType.createConsentType(cst)
                 .then(server => history.pushType(cst, server));
@@ -85,7 +85,7 @@ class SharedSpec {
 
     translateConsentTypeFn(index, language, hxType) {
         const m = this.models;
-        return function () {
+        return function translateConsentType() {
             const server = hxType.server(index);
             const translation = translator.translateConsentType(server, language);
             return m.consentType.updateConsentTypeText(translation, language)
@@ -97,7 +97,7 @@ class SharedSpec {
 
     translateConsentDocumentFn(index, language, history) {
         const m = this.models;
-        return function () {
+        return function translateConsentDocument() {
             const server = history.server(index);
             const translation = translator.translateConsentDocument(server, language);
             return m.consentDocument.updateConsentDocumentText(translation, language)
@@ -110,7 +110,7 @@ class SharedSpec {
     createConsentDocumentFn(history, typeIndex) {
         const m = this.models;
         const generator = this.generator;
-        return function () {
+        return function createConsentDocument() {
             const typeId = history.typeId(typeIndex);
             const cs = generator.newConsentDocument({ typeId });
             return m.consentDocument.createConsentDocument(cs)
@@ -121,7 +121,7 @@ class SharedSpec {
     createConsentFn(hxConsent, hxConsentDocument, typeIndices) {
         const m = this.models;
         const generator = this.generator;
-        return function () {
+        return function createConsent() {
             const sections = typeIndices.map(typeIndex => hxConsentDocument.typeId(typeIndex));
             const clientConsent = generator.newConsent({ sections });
             return m.consent.createConsent(clientConsent)
@@ -131,7 +131,7 @@ class SharedSpec {
 
     verifyConsentFn(hxConsent, index) {
         const m = this.models;
-        return function () {
+        return function verifyConsent() {
             const expected = hxConsent.server(index);
             return m.consent.getConsent(expected.id)
                 .then((consent) => {
@@ -143,7 +143,7 @@ class SharedSpec {
 
     signConsentTypeFn(history, userIndex, typeIndex) {
         const m = this.models;
-        return function () {
+        return function signConsentType() {
             const consentDocumentId = history.id(typeIndex);
             const userId = history.userId(userIndex);
             history.sign(typeIndex, userIndex);
@@ -153,7 +153,7 @@ class SharedSpec {
 
     bulkSignConsentTypeFn(history, userIndex, typeIndices) {
         const m = this.models;
-        return function () {
+        return function bulkSignConsentType() {
             const consentDocumentIds = typeIndices.map(typeIndex => history.id(typeIndex));
             const userId = history.userId(userIndex);
             typeIndices.forEach(typeIndex => history.sign(typeIndex, userIndex));
@@ -161,14 +161,14 @@ class SharedSpec {
         };
     }
 
-    throwingHandler() {
+    throwingHandler() { // eslint-disable-line class-methods-use-this
         throw new Error('Unexpected no error.');
     }
 
-    expectedErrorHandler(code, ...params) {
-        return function (err) {
+    expectedErrorHandler(code, ...params) { // eslint-disable-line class-methods-use-this
+        return function expectedErrorHandler(err) {
             if (!(err instanceof RRError)) {
-                console.log(err);
+                console.log(err); // eslint-disable-line no-console
             }
             expect(err).to.be.instanceof(RRError);
             expect(err.code).to.equal(code);
@@ -177,16 +177,16 @@ class SharedSpec {
         };
     }
 
-    expectedSeqErrorHandler(name, fields) {
-        return function (err) {
+    expectedSeqErrorHandler(name, fields) { // eslint-disable-line class-methods-use-this
+        return function expectedSeqErrorHandler(err) {
             expect(err.name).to.equal(name);
             expect(err.fields).to.deep.equal(fields);
             return err;
         };
     }
 
-    sanityEnoughUserTested(hxUser) {
-        return function () {
+    sanityEnoughUserTested(hxUser) { // eslint-disable-line class-methods-use-this
+        return function sanityEnoughUserTested() {
             const userCount = hxUser.length();
             const counts = _.range(userCount).reduce((r, index) => {
                 if (hxUser.client(index).username) {
@@ -201,7 +201,7 @@ class SharedSpec {
         };
     }
 
-    stubRequestGet(error, data) {
+    stubRequestGet(error, data) { // eslint-disable-line class-methods-use-this
         return sinon.stub(request, 'get', (opts, callback) => {
             if (typeof opts === 'function') { callback = opts; }
             if (error) {

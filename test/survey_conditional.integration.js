@@ -70,7 +70,7 @@ describe('survey (conditional questions) integration', () => {
     });
 
     const verifySurveyFn = function (index) {
-        return function (done) {
+        return function verifySurvey(done) {
             const survey = _.cloneDeep(hxSurvey.server(index));
             rrSuperTest.get(`/surveys/${survey.id}`, true, 200)
                 .expect((res) => {

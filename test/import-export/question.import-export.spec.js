@@ -23,7 +23,7 @@ describe('question import-export unit', () => {
     before(shared.setUpFn());
 
     const hxQuestion = new History();
-    const tests = new questionCommon.SpecTests(generator, hxQuestion);
+    const tests = new questionCommon.SpecTests({ generator, hxQuestion });
 
     _.range(12).forEach((i) => {
         it(`create question ${i}`, tests.createQuestionFn());

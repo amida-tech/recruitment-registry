@@ -38,7 +38,7 @@ describe('answer integration', () => {
 
     const tests = new answerCommon.IntegrationTests(rrSuperTest, generator, hxUser, hxSurvey, hxQuestion);
 
-    const questionTests = new questionCommon.IntegrationTests(rrSuperTest, generator, hxQuestion);
+    const questionTests = new questionCommon.IntegrationTests(rrSuperTest, { generator, hxQuestion });
     const choceSetTests = new choiceSetCommon.SpecTests(generator, hxChoiceSet);
 
     before(shared.setUpFn());
@@ -97,10 +97,8 @@ describe('answer integration', () => {
     it('login as super', shared.loginFn(config.superUser));
 
     _.range(22, 34).forEach((index) => {
-        it(`create question ${index} (multi)`, (done) => {
-            const question = generator.questionGenerator.newMultiQuestion();
-            return questionTests.createQuestionFn(question)(done);
-        });
+        const options = { multi: true };
+        it(`create question ${index} (multi)`, questionTests.createQuestionFn(options));
         it(`get question ${index}`, questionTests.getQuestionFn(index));
     });
     _.range(34, 52).forEach((index) => {

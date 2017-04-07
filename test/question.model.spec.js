@@ -29,7 +29,7 @@ describe('question unit', () => {
     const hxQuestion = new History();
     const hxChoiceSet = new History();
     const hxSurvey = new History();
-    const tests = new questionCommon.SpecTests(generator, hxQuestion);
+    const tests = new questionCommon.SpecTests({ generator, hxQuestion });
     const choceSetTests = new choiceSetCommon.SpecTests(generator, hxChoiceSet);
 
     it('list all questions when none', () => models.question.listQuestions()
@@ -38,7 +38,7 @@ describe('question unit', () => {
             }));
 
     const updateQuestionTextFn = function (index) {
-        return function () {
+        return function updateQuestionText() {
             const clientQuestion = hxQuestion.client(index);
             const question = hxQuestion.server(index);
             const text = `Updated ${clientQuestion.text}`;
@@ -54,7 +54,7 @@ describe('question unit', () => {
     };
 
     const revertUpdateQuestionTextFn = function (index) {
-        return function () {
+        return function revertUpdateQuestionText() {
             const clientQuestion = hxQuestion.client(index);
             const question = hxQuestion.server(index);
             const text = clientQuestion.text;
@@ -101,7 +101,7 @@ describe('question unit', () => {
             .then(shared.throwingHandler, shared.expectedErrorHandler('qxNotFound')));
 
     const translateQuestionFn = function (index, language) {
-        return function () {
+        return function translateQuestion() {
             const server = hxQuestion.server(index);
             const translation = translator.translateQuestion(server, language);
             if (translation.choices && index < 4) {
@@ -115,7 +115,7 @@ describe('question unit', () => {
     };
 
     const getTranslatedQuestionFn = function (index, language, notTranslated) {
-        return function () {
+        return function getTranslatedQuestion() {
             const id = hxQuestion.id(index);
             return models.question.getQuestion(id, { language })
                 .then((result) => {
@@ -129,7 +129,7 @@ describe('question unit', () => {
     };
 
     const listTranslatedQuestionsFn = function (language, notTranslated) {
-        return function () {
+        return function listTranslatedQuestions() {
             return models.question.listQuestions({ scope: 'complete', language })
                 .then((result) => {
                     const expected = hxQuestion.listTranslatedServers(language);
@@ -189,7 +189,7 @@ describe('question unit', () => {
             }));
 
     const createSurveyFn = function (questionIndices) {
-        return function () {
+        return function createSurvey() {
             const questionIds = questionIndices.map(index => hxQuestion.id(index));
             const clientSurvey = generator.newSurveyQuestionIds(questionIds);
             return models.survey.createSurvey(clientSurvey)

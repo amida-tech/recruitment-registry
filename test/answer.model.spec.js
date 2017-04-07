@@ -34,7 +34,7 @@ describe('answer unit', () => {
     const tests = new answerCommon.SpecTests(generator, hxUser, hxSurvey, hxQuestion);
     const hxAnswers = tests.hxAnswer;
 
-    const questionTests = new questionCommon.SpecTests(generator, hxQuestion);
+    const questionTests = new questionCommon.SpecTests({ generator, hxQuestion });
     const choceSetTests = new choiceSetCommon.SpecTests(generator, hxChoiceSet);
 
     before(shared.setUpFn());
@@ -50,7 +50,7 @@ describe('answer unit', () => {
     });
 
     const createSurveyFn = function (qxIndices) {
-        return function () {
+        return function createSurvey() {
             const inputSurvey = generator.newSurvey();
             delete inputSurvey.sections;
             inputSurvey.questions = qxIndices.map(index => ({
@@ -98,7 +98,7 @@ describe('answer unit', () => {
     });
 
     const listAnswersFn = function (userIndex, surveyIndex) {
-        return function () {
+        return function listAnswers() {
             return models.answer.listAnswers({
                 userId: hxUser.id(userIndex),
                 surveyId: hxSurvey.id(surveyIndex),
@@ -154,10 +154,8 @@ describe('answer unit', () => {
     });
 
     _.range(22, 34).forEach((index) => {
-        it(`create question ${index} (multi)`, () => {
-            const question = generator.questionGenerator.newMultiQuestion();
-            return questionTests.createQuestionFn(question)();
-        });
+        const options = { multi: true };
+        it(`create question ${index} (multi)`, questionTests.createQuestionFn(options));
         it(`get question ${index}`, questionTests.getQuestionFn(index));
     });
     _.range(34, 52).forEach((index) => {

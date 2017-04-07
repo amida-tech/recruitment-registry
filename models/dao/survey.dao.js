@@ -43,6 +43,25 @@ const translateRuleChoices = function (ruleParent, choices) {
     return null;
 };
 
+const translateEnableWhen = function (parent, questions, questionChoices) {
+    let enableWhen = parent.enableWhen;
+    if (enableWhen) {
+        enableWhen = _.cloneDeep(enableWhen);
+        parent.enableWhen = enableWhen.map((rule) => {
+            const questionIndex = rule.questionIndex;
+            if (questionIndex !== undefined) {
+                rule.questionId = questions[questionIndex].id;
+                delete rule.questionIndex;
+            }
+            if (questionChoices) {
+                const choices = questionChoices[rule.questionId];
+                rule = translateRuleChoices(rule, choices) || rule;
+            }
+            return rule;
+        });
+    }
+};
+
 module.exports = class SurveyDAO extends Translatable {
     constructor(db, dependencies) {
         super(db, 'SurveyText', 'surveyId', ['name', 'description'], { description: true });
@@ -236,32 +255,13 @@ module.exports = class SurveyDAO extends Translatable {
         return sections;
     }
 
-    translateEnableWhen(parent, questions, questionChoices) {
-        let enableWhen = parent.enableWhen;
-        if (enableWhen) {
-            enableWhen = _.cloneDeep(enableWhen);
-            parent.enableWhen = enableWhen.map((rule) => {
-                const questionIndex = rule.questionIndex;
-                if (questionIndex !== undefined) {
-                    rule.questionId = questions[questionIndex].id;
-                    delete rule.questionIndex;
-                }
-                if (questionChoices) {
-                    const choices = questionChoices[rule.questionId];
-                    rule = translateRuleChoices(rule, choices) || rule;
-                }
-                return rule;
-            });
-        }
-    }
-
     createSurveyQuestionsTx(questions, sections, surveyId, transaction) {
         questions = questions.slice();
         return this.createNewQuestionsTx(questions, transaction)
             .then(({ questions, questionChoices }) => {
-                questions.forEach(question => this.translateEnableWhen(question, questions, questionChoices));
+                questions.forEach(question => translateEnableWhen(question, questions, questionChoices));
                 if (sections) {
-                    sections.forEach(section => this.translateEnableWhen(section, questions, questionChoices));
+                    sections.forEach(section => translateEnableWhen(section, questions, questionChoices));
                 }
                 return questions;
             })

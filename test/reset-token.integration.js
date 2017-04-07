@@ -35,7 +35,7 @@ describe('reset-token integration', () => {
     };
 
     class SMTPStream extends stream.Writable {
-        _write(chunk, enc, next) {
+        _write(chunk, enc, next) { // eslint-disable-line class-methods-use-this
             receivedEmail.content += chunk.toString();
             next();
         }

@@ -195,7 +195,7 @@ exports.newExpress = function newExpress(options = {}) {
     return app;
 };
 
-exports.generate = function (options, callback) {
+exports.generate = function generate(options, callback) {
     const app = this.newExpress();
     this.initialize(app, options, callback);
 };

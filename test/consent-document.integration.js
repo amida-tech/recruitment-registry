@@ -27,7 +27,7 @@ describe('consent document integration', () => {
     before(shared.setUpFn());
 
     const listConsentTypesFn = function () {
-        return function (done) {
+        return function listConsentTypes(done) {
             rrSuperTest.get('/consent-types', true, 200)
                 .expect((res) => {
                     const types = history.listTypes();
@@ -60,7 +60,7 @@ describe('consent document integration', () => {
     it('logout as user 0', shared.logoutFn());
 
     const getConsentDocumentFn = function (typeIndex) {
-        return function (done) {
+        return function getConsentDocument(done) {
             const id = history.id(typeIndex);
             rrSuperTest.get(`/consent-documents/${id}`, false, 200)
                 .expect((res) => {
@@ -72,7 +72,7 @@ describe('consent document integration', () => {
     };
 
     const getConsentDocumentByTypeNameFn = function (typeIndex) {
-        return function (done) {
+        return function getConsentDocumentByTypeName(done) {
             const typeName = history.type(typeIndex).name;
             rrSuperTest.get(`/consent-documents/type-name/${typeName}`, false, 200)
                 .expect((res) => {
@@ -84,7 +84,7 @@ describe('consent document integration', () => {
     };
 
     const getTranslatedConsentDocumentFn = function (typeIndex, language) {
-        return function (done) {
+        return function getTranslatedConsentDocument(done) {
             const id = history.id(typeIndex);
             rrSuperTest.get(`/consent-documents/${id}`, false, 200, { language })
                 .expect((res) => {
@@ -108,7 +108,7 @@ describe('consent document integration', () => {
     });
 
     const getUserConsentDocumentsFn = function (expectedIndices) {
-        return function (done) {
+        return function getUserConsentDocuments(done) {
             rrSuperTest.get('/user-consent-documents', true, 200)
                 .expect((res) => {
                     const expected = history.serversInList(expectedIndices);
@@ -119,7 +119,7 @@ describe('consent document integration', () => {
     };
 
     const getUserConsentDocumentsAllFn = function (userIndex) {
-        return function (done) {
+        return function getUserConsentDocumentsAll(done) {
             rrSuperTest.get('/user-consent-documents', true, 200, { 'include-signed': true })
                 .expect((res) => {
                     const expected = history.serversInListWithSigned(userIndex);
@@ -130,7 +130,7 @@ describe('consent document integration', () => {
     };
 
     const getTranslatedUserConsentDocumentsFn = function (expectedIndices, language) {
-        return function (done) {
+        return function getTranslatedUserConsentDocuments(done) {
             rrSuperTest.get('/user-consent-documents', true, 200, { language })
                 .expect((res) => {
                     const expected = history.translatedServersInList(expectedIndices, language);
@@ -154,7 +154,7 @@ describe('consent document integration', () => {
     });
 
     const signConsentTypeFn = function (userIndex, typeIndex, language) {
-        return function (done) {
+        return function signConsentType(done) {
             const consentDocumentId = history.id(typeIndex);
             const input = { consentDocumentId };
             const typeId = history.typeId(typeIndex);
@@ -174,7 +174,7 @@ describe('consent document integration', () => {
     };
 
     const signConsentTypeAgainFn = function (typeIndex) {
-        return function (done) {
+        return function signConsentTypeAgain(done) {
             const consentDocumentId = history.id(typeIndex);
             rrSuperTest.post('/consent-signatures', { consentDocumentId }, 400).end(done);
         };
@@ -296,7 +296,7 @@ describe('consent document integration', () => {
     verifyConsentDocuments(0, []);
 
     const deleteConsentTypeFn = function (index) {
-        return function (done) {
+        return function deleteConsentType(done) {
             const id = history.typeId(index);
             rrSuperTest.delete(`/consent-types/${id}`, 204)
                 .expect(() => {
@@ -317,7 +317,7 @@ describe('consent document integration', () => {
     verifyConsentDocuments(3, [0, 2]);
 
     const verifySignaturesFn = function (userIndex) {
-        return function (done) {
+        return function verifySignatures(done) {
             const userId = history.userId(userIndex);
             rrSuperTest.get('/consent-signatures', true, 200, { 'user-id': userId })
                 .expect((res) => {

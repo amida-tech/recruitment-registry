@@ -81,6 +81,10 @@ const comparator = {
         if (options.ignoreAnswerIdentifier) {
             delete expected.answerIdentifier;
             delete expected.answerIdentifiers;
+        } else if (expected.answerIdentifier) {
+            if (expected.answerIdentifier.type === 'federated') {
+                expected.answerIdentifier = expected.answerIdentifier.value;
+            }
         }
         expect(server.type).to.equal(expected.type);
         if (expected.type === 'choice' || expected.type === 'open-choice' || expected.type === 'choices' || expected.type === 'choice-ref') {
@@ -88,8 +92,29 @@ const comparator = {
                 choice.id = server.choices[index].id;
                 if (options.ignoreAnswerIdentifier) {
                     delete choice.answerIdentifier;
+                } else if (choice.answerIdentifier) {
+                    if (choice.answerIdentifier.type === 'federated') {
+                        choice.identifier = choice.answerIdentifier.value;
+                    }
+                    delete choice.answerIdentifier;
                 }
             });
+        }
+        if (options.identifiers) {
+            const identifiers = options.identifiers[id];
+            if (expected.type === 'choice' || expected.type === 'choices') {
+                const map = new Map(identifiers.answerIdentifiers.map((answerIdentifier) => {
+                    const id = answerIdentifier.questionChoiceId;
+                    return [id, answerIdentifier.identifier];
+                }));
+                expected.choices.forEach((choice) => {
+                    choice.identifier = map.get(choice.id);
+                });
+            } else {
+                expected.answerIdentifier = identifiers.answerIdentifier;
+            }
+        }
+        if (expected.type === 'choice' || expected.type === 'open-choice' || expected.type === 'choices' || expected.type === 'choice-ref') {
             expect(server.choices).to.deep.equal(expected.choices);
         }
         this.enableWhen(expected, server, options);

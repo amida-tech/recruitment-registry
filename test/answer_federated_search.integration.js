@@ -12,13 +12,13 @@ const tokener = require('../lib/tokener');
 const Generator = require('./util/generator');
 const History = require('./util/history');
 const registryCommon = require('./util/registry-common');
-const federalCommon = require('./util/search/federal-search-common');
+const federatedCommon = require('./util/search/federated-search-common');
 const SharedIntegration = require('./util/shared-integration');
 
 const expect = chai.expect;
 
-describe('federal search integration', function federalSearchIntegration() {
-    const tests = new federalCommon.IntegrationTests();
+describe('federated search integration', function federatedSearchIntegration() {
+    const tests = new federatedCommon.IntegrationTests();
 
     describe('prepare system', tests.prepareSystemFn());
 
@@ -52,7 +52,7 @@ describe('federal search integration', function federalSearchIntegration() {
     const rrSuperTest = tests.rrSuperTest;
     const registryTests = new registryCommon.IntegrationTests(rrSuperTest, generator, hxRegistry);
     const shared = new SharedIntegration(rrSuperTest);
-    describe('federal', function federal() {
+    describe('federated', function federated() {
         it('login as super', shared.loginFn(config.superUser));
 
         tests.registries.forEach((registry, index) => {
@@ -67,48 +67,17 @@ describe('federal search integration', function federalSearchIntegration() {
             }
         });
 
-        it('federal search case 0', function federalSearch() {
+        it('search case 0', function federatedSearch() {
             const searchTestsMap = tests.searchTestsMap;
             const schema0 = tests.registries[0].schema;
             const schema1 = tests.registries[1].schema;
-            const { count: count0, criteria: criteria0 } = searchTestsMap.get(schema0).getCriteria(0);
-            const { count: count1, criteria: criteria1 } = searchTestsMap.get(schema1).getCriteria(1);
-            const { count: count2, criteria: criteria2 } = searchTestsMap.get('recregone').getCriteria(0);
-            const { count: count3, criteria: criteria3 } = searchTestsMap.get('recregtwo').getCriteria(1);
-            const { count, criteria } = searchTestsMap.get('current').getCriteria(2);
-            const federalCriteria = {
-                local: { criteria },
-                federal: [{
-                    registryId: hxRegistry.id(0),
-                    criteria: criteria0,
-                }, {
-                    registryId: hxRegistry.id(1),
-                    criteria: criteria1,
-                }, {
-                    registryId: hxRegistry.id(2),
-                    criteria: criteria2,
-                }, {
-                    registryId: hxRegistry.id(3),
-                    criteria: criteria3,
-                }],
-            };
-            return rrSuperTest.post('/answers/federal-queries', federalCriteria, 200)
-                .expect((res) => {
-                    const expected = {
-                        local: { count },
-                        federal: [{
-                            count: count0,
-                        }, {
-                            count: count1,
-                        }, {
-                            count: count2,
-                        }, {
-                            count: count3,
-                        }],
-                        total: { count: count + count0 + count1 + count2 + count3 },
-                    };
-                    expect(res.body).to.deep.equal(expected);
-                });
+            const { count: count0 } = searchTestsMap.get(schema0).getFederatedCriteria(0);
+            const { count: count1 } = searchTestsMap.get(schema1).getFederatedCriteria(0);
+            const { count: count2 } = searchTestsMap.get('recregone').getFederatedCriteria(0);
+            const { count: count3 } = searchTestsMap.get('recregtwo').getFederatedCriteria(0);
+            const { count, federatedCriteria: criteria } = searchTestsMap.get('current').getFederatedCriteria(0);
+            return rrSuperTest.post('/answers/federated-queries', criteria, 200)
+                .then(res => expect(res.body.count).to.equal(count + count0 + count1 + count2 + count3));
         });
 
         it('logout as super', shared.logoutFn());

@@ -8,6 +8,40 @@ const Translatable = require('./translatable');
 const ExportCSVConverter = require('../../export/csv-converter.js');
 const ImportCSVConverter = require('../../import/csv-converter.js');
 
+const cleanDBQuestion = function (question) {
+    const result = _.omitBy(question, _.isNil);
+    if (question.common === null) {
+        result.common = false;
+    }
+    return result;
+};
+
+const exportMetaQuestionProperties = function (meta, metaOptions, withChoice, fromQuestion) {
+    return metaOptions.reduce((r, propertyInfo) => {
+        if (fromQuestion && withChoice) {
+            return r;
+        }
+        const name = propertyInfo.name;
+        if (Object.prototype.hasOwnProperty.call(meta, name)) {
+            r[name] = meta[name];
+        }
+        return r;
+    }, {});
+};
+
+const importMetaQuestionProperties = function (record, metaOptions, fromType) {
+    return metaOptions.reduce((r, propertyInfo) => {
+        if (propertyInfo.type === fromType) {
+            const name = propertyInfo.name;
+            const value = record[name];
+            if (value !== undefined && value !== null) {
+                r[name] = value;
+            }
+        }
+        return r;
+    }, {});
+};
+
 module.exports = class QuestionDAO extends Translatable {
     constructor(db, dependencies) {
         super(db, 'QuestionText', 'questionId', ['text', 'instruction'], { instruction: true });
@@ -149,22 +183,7 @@ module.exports = class QuestionDAO extends Translatable {
                 if (!question) {
                     return RRError.reject('qxNotFound');
                 }
-                if (question.meta === null) {
-                    delete question.meta;
-                }
-                if (question.maxCount === null) {
-                    delete question.maxCount;
-                }
-                if (question.multiple === null) {
-                    delete question.multiple;
-                }
-                if (question.choiceSetId === null) {
-                    delete question.choiceSetId;
-                }
-                if (question.common === null) {
-                    question.common = false;
-                }
-                return question;
+                return cleanDBQuestion(question);
             })
             .then((question) => {
                 if (question.choiceSetId) {
@@ -197,6 +216,34 @@ module.exports = class QuestionDAO extends Translatable {
                         question.choices = choices;
                         return question;
                     });
+            })
+            .then((question) => {
+                if (options.federated) {
+                    return this.db.AnswerIdentifier.findAll({
+                        raw: true,
+                        attributes: ['identifier', 'questionChoiceId'],
+                        where: { type: 'federated', questionId: question.id },
+                    })
+                        .then((result) => {
+                            if (result.length < 1) {
+                                return RRError.reject('questionNotFederated');
+                            }
+                            if (['choice', 'choices'].indexOf(question.type) < 0) {
+                                question.answerIdentifier = result[0].identifier;
+                                return question;
+                            }
+                            const map = new Map(result.map(({ questionChoiceId, identifier }) => [questionChoiceId, identifier]));
+                            question.choices.forEach((choice) => {
+                                const identifier = map.get(choice.id);
+                                if (!identifier) {
+                                    throw new RRError('questionNotFederatedChoice', choice.text);
+                                }
+                                choice.identifier = identifier;
+                            });
+                            return question;
+                        });
+                }
+                return question;
             });
     }
 
@@ -271,9 +318,39 @@ module.exports = class QuestionDAO extends Translatable {
         return Question.findAll(options);
     }
 
-    listQuestions({ scope, ids, language, surveyId, commonOnly } = {}) {
-        scope = scope || 'summary';
-        return this.findQuestions({ scope, ids, language, surveyId, commonOnly })
+    findFederatedQuestions(options = {}) {
+        return this.db.QuestionIdentifier.findAll({
+            raw: true,
+            attributes: ['questionId', 'identifier'],
+            where: { type: 'federated' },
+        })
+            .then((records) => {
+                const map = new Map(records.map(record => [record.questionId, record.identifier]));
+                const ids = records.map(record => record.questionId);
+                const optionsWithIds = Object.assign({ ids, options });
+                return this.findQuestions(optionsWithIds)
+                    .then((results) => {
+                        results.forEach((result) => {
+                            const identifier = map.get(result.id);
+                            Object.assign(result, { identifier });
+                        });
+                        return results;
+                    });
+            });
+    }
+
+    findQuestionsForList(options) {
+        if (options.federated) {
+            return this.findFederatedQuestions(options);
+        }
+        return this.findQuestions(options);
+    }
+
+    listQuestions(options = {}) {
+        const { ids, language } = options;
+        const scope = options.scope || 'summary';
+        return this.findQuestionsForList(options)
+            .then(questions => questions.map(question => cleanDBQuestion(question)))
             .then((questions) => {
                 if (ids && (questions.length !== ids.length)) {
                     return RRError.reject('qxNotFound');
@@ -285,23 +362,6 @@ module.exports = class QuestionDAO extends Translatable {
                 if (ids) {
                     questions = ids.map(id => map.get(id)); // order by specified ids
                 }
-                questions.forEach((question) => {
-                    if (question.meta === null) {
-                        delete question.meta;
-                    }
-                    if (question.maxCount === null) {
-                        delete question.maxCount;
-                    }
-                    if (question.multiple === null) {
-                        delete question.multiple;
-                    }
-                    if (question.choiceSetId === null) {
-                        delete question.choiceSetId;
-                    }
-                    if (question.common === null) {
-                        question.common = false;
-                    }
-                });
                 return this.updateAllTexts(questions, language)
                     .then(() => {
                         const promises = questions.reduce((r, question) => {
@@ -348,35 +408,22 @@ module.exports = class QuestionDAO extends Translatable {
             });
     }
 
-    addQuestionIdentifiersTx(questionId, allIdentifiers, transaction) {
+    addQuestionIdentifiersTx(questionId, identifiers, transaction) {
         const QuestionIdentifier = this.db.QuestionIdentifier;
         const AnswerIdentifier = this.db.AnswerIdentifier;
-        const { type, identifier, answerIdentifier, choices } = allIdentifiers;
+        const { type, identifier, answerIdentifier, answerIdentifiers } = identifiers;
         return QuestionIdentifier.create({ type, identifier, questionId }, { transaction })
             .then(() => {
                 if (answerIdentifier) {
                     return AnswerIdentifier.create({ type, identifier: answerIdentifier, questionId }, { transaction });
                 }
-                const pxs = choices.map(({ answerIdentifier: identifier, id: questionChoiceId }) => AnswerIdentifier.create({ type, identifier, questionId, questionChoiceId }, { transaction }));
+                const pxs = answerIdentifiers.map(({ identifier, questionChoiceId }) => AnswerIdentifier.create({ type, identifier, questionId, questionChoiceId }, { transaction }));
                 return SPromise.all(pxs);
             });
     }
 
-    addQuestionIdentifiers(questionId, allIdentifiers) {
-        return this.transaction(transaction => this.addQuestionIdentifiersTx(questionId, allIdentifiers, transaction));
-    }
-
-    exportMetaQuestionProperties(meta, metaOptions, withChoice, fromQuestion) {
-        return metaOptions.reduce((r, propertyInfo) => {
-            if (fromQuestion && withChoice) {
-                return r;
-            }
-            const name = propertyInfo.name;
-            if (Object.prototype.hasOwnProperty.call(meta, name)) {
-                r[name] = meta[name];
-            }
-            return r;
-        }, {});
+    addQuestionIdentifiers(questionId, identifiers) {
+        return this.transaction(transaction => this.addQuestionIdentifiersTx(questionId, identifiers, transaction));
     }
 
     exportQuestions(options = {}) {
@@ -384,7 +431,7 @@ module.exports = class QuestionDAO extends Translatable {
             .then(questions => questions.reduce((r, { id, type, text, instruction, meta, choices }) => {
                 const questionLine = { id, type, text, instruction };
                 if (meta && options.meta) {
-                    Object.assign(questionLine, this.exportMetaQuestionProperties(meta, options.meta, choices, true));
+                    Object.assign(questionLine, exportMetaQuestionProperties(meta, options.meta, choices, true));
                 }
                 if (!choices) {
                     r.push(questionLine);
@@ -399,7 +446,7 @@ module.exports = class QuestionDAO extends Translatable {
                         line.choiceCode = code;
                     }
                     if (meta && options.meta) {
-                        Object.assign(questionLine, this.exportMetaQuestionProperties(meta, options.meta, true, false));
+                        Object.assign(questionLine, exportMetaQuestionProperties(meta, options.meta, true, false));
                     }
                     if (index === 0) {
                         Object.assign(line, questionLine);
@@ -414,19 +461,6 @@ module.exports = class QuestionDAO extends Translatable {
                 const converter = new ExportCSVConverter();
                 return converter.dataToCSV(lines);
             });
-    }
-
-    importMetaQuestionProperties(record, metaOptions, fromType) {
-        return metaOptions.reduce((r, propertyInfo) => {
-            if (propertyInfo.type === fromType) {
-                const name = propertyInfo.name;
-                const value = record[name];
-                if (value !== undefined && value !== null) {
-                    r[name] = value;
-                }
-            }
-            return r;
-        }, {});
     }
 
     importQuestions(stream, options = {}) {
@@ -447,7 +481,7 @@ module.exports = class QuestionDAO extends Translatable {
                             question.instruction = record.instruction;
                         }
                         if (options.meta) {
-                            const meta = this.importMetaQuestionProperties(record, options.meta, 'question');
+                            const meta = importMetaQuestionProperties(record, options.meta, 'question');
                             if (Object.keys(meta).length > 0) {
                                 question.meta = meta;
                             }
@@ -470,7 +504,7 @@ module.exports = class QuestionDAO extends Translatable {
                             choice.code = record.choiceCode;
                         }
                         if (options.meta) {
-                            const meta = this.importMetaQuestionProperties(record, options.meta, 'choice');
+                            const meta = importMetaQuestionProperties(record, options.meta, 'choice');
                             if (Object.keys(meta).length > 0) {
                                 choice.meta = meta;
                             }

@@ -66,6 +66,47 @@ const answerGenerators = {
     },
 };
 
+const federatedAnswerGenerators = {
+    text(question, spec) {
+        const identifier = question.answerIdentifier;
+        return [{ identifier, textValue: spec.value }];
+    },
+    bool(question, spec) {
+        const identifier = question.answerIdentifier;
+        return [{ identifier, boolValue: spec.value }];
+    },
+    choice(question, spec) {
+        const identifier = question.choices[spec.choiceIndex].identifier;
+        return [{ identifier }];
+    },
+    choices(question, spec) {
+        const identifiers = spec.choiceIndices.map((choiceIndex) => {
+            const identifier = question.choices[choiceIndex].identifier;
+            return { identifier };
+        });
+        return identifiers;
+    },
+    multitext(question, spec) {
+        const values = spec.values;
+        const identifier = question.answerIdentifier;
+        const fn = textValue => ({ identifier, textValue });
+        return values.map(fn);
+    },
+    multibool(question, spec) {
+        const values = spec.values;
+        const identifier = question.answerIdentifier;
+        const fn = boolValue => ({ identifier, boolValue });
+        return values.map(fn);
+    },
+    multichoice(question, spec) {
+        const identifiers = spec.choiceIndices.map((choiceIndex) => {
+            const identifier = question.choices[choiceIndex].identifier;
+            return { identifier };
+        });
+        return identifiers;
+    },
+};
+
 const Tests = class BaseTests {
     constructor(offset = 5, surveyCount = 4) {
         this.offset = offset;
@@ -87,25 +128,33 @@ const Tests = class BaseTests {
         const types = [];
         const questions = [];
         ['choice', 'choices', 'text', 'bool'].forEach((type) => {
-            const options = { choiceCount: 6, noText: true, noOneOf: true };
+            const options = { type, choiceCount: 6, noText: true, noOneOf: true };
             types.push(type);
             const indices = [];
             typeIndexMap.set(type, indices);
-            _.range(surveyCount).forEach(() => {
+            _.range(surveyCount).forEach((index) => {
                 indices.push(offset + questions.length);
-                const question = questionGenerator.newQuestion(type, options);
+                options.identifiers = {
+                    type: 'federated',
+                    postfix: `survey_${index}_${type}`,
+                };
+                const question = questionGenerator.newQuestion(options);
                 questions.push(question);
             });
         });
         ['choice', 'text', 'bool'].forEach((type) => {
-            const options = { choiceCount: 6, noOneOf: true, max: 5 };
+            const options = { type, choiceCount: 6, noOneOf: true, max: 5 };
             const multiType = `multi${type}`;
             types.push(multiType);
             const indices = [];
             typeIndexMap.set(multiType, indices);
-            _.range(surveyCount).forEach(() => {
+            _.range(surveyCount).forEach((index) => {
+                options.identifiers = {
+                    type: 'federated',
+                    postfix: `survey_${index}_${multiType}`,
+                };
                 indices.push(offset + questions.length);
-                const question = multiQuestionGenerator.newMultiQuestion(type, options);
+                const question = multiQuestionGenerator.newMultiQuestion(options);
                 questions.push(question);
             });
         });
@@ -154,7 +203,18 @@ const Tests = class BaseTests {
         });
     }
 
-    getCase(index) {
+    answerInfoToFederatedObject(surveyIndex, answerInfo) {
+        return answerInfo.map((info) => {
+            const questionType = info.questionType;
+            const questionIndex = this.typeIndexMap.get(questionType)[surveyIndex];
+            const question = this.hxQuestion.server(questionIndex);
+            const answerGenerator = federatedAnswerGenerators[questionType];
+            const answerObject = answerGenerator(question, info);
+            return answerObject;
+        });
+    }
+
+    getCase(index) { // eslint-disable-line class-methods-use-this
         return testCase0.searchCases[index];
     }
 
@@ -174,10 +234,24 @@ const Tests = class BaseTests {
         return { questions };
     }
 
+    formFederatedCriteria(inputAnswers) {
+        return inputAnswers.reduce((r, { surveyIndex, answerInfo }) => {
+            const answers = this.answerInfoToFederatedObject(surveyIndex, answerInfo);
+            answers.forEach(answer => r.push(...answer));
+            return r;
+        }, []);
+    }
+
     getCriteria(index) {
         const { count, answers } = this.getCase(index);
         const criteria = this.formCriteria(answers);
         return { count, criteria };
+    }
+
+    getFederatedCriteria(index) {
+        const { count, answers } = this.getCase(index);
+        const federatedCriteria = this.formFederatedCriteria(answers);
+        return { count, federatedCriteria };
     }
 };
 
@@ -190,7 +264,8 @@ const SpecTests = class SearchSpecTests extends Tests {
         this.sync = sync;
         this.shared = new SharedSpec(generator, this.models);
         this.answerTests = new answerCommon.SpecTests(generator, this.hxUser, this.hxSurvey, this.hxQuestion);
-        this.questionTests = new questionCommon.SpecTests(generator, this.hxQuestion, this.models);
+        const qxCommonParameters = { generator, hxQuestion: this.hxQuestion };
+        this.questionTests = new questionCommon.SpecTests(qxCommonParameters, this.models);
         this.hxAnswers = this.answerTests.hxAnswer;
     }
 
@@ -218,6 +293,16 @@ const SpecTests = class SearchSpecTests extends Tests {
         return function searchAnswerCount() {
             const criteria = self.formCriteria(answers);
             return m.answer.searchCountUsers(criteria)
+                .then(({ count: actual }) => expect(actual).to.equal(count));
+        };
+    }
+
+    countParticipantsIdentifiersFn({ count, answers }) {
+        const m = this.models;
+        const self = this;
+        return function countParticipantsIdentifierst() {
+            const criteria = self.formFederatedCriteria(answers);
+            return m.answer.countParticipantsIdentifiers(criteria)
                 .then(({ count: actual }) => expect(actual).to.equal(count));
         };
     }
@@ -273,7 +358,7 @@ const SpecTests = class SearchSpecTests extends Tests {
         };
     }
 
-    compareExportToCohortFn(store, limit) {
+    compareExportToCohortFn(store, limit) { // eslint-disable-line class-methods-use-this
         return function compareExportToCohort() {
             const converter = new ImportCSVConverter({ checkType: false });
             const streamFullExport = intoStream(store.allContent);
@@ -356,8 +441,8 @@ const SpecTests = class SearchSpecTests extends Tests {
 
             self.questions.forEach((question, index) => {
                 const actualIndex = self.offset + index;
-                it(`create question ${actualIndex}`, self.questionTests.createQuestionFn(question));
-                it(`get question ${actualIndex}`, self.questionTests.getQuestionFn(actualIndex));
+                it(`create question ${actualIndex}`, self.questionTests.createQuestionFn({ question }));
+                it(`get question ${actualIndex}`, self.questionTests.getQuestionFn(actualIndex, { federated: true }, { ignoreQuestionIdentifier: true }));
             });
 
             it('create a map of all choice/choice question choices', self.generateChoiceMapFn());
@@ -381,6 +466,7 @@ const SpecTests = class SearchSpecTests extends Tests {
             let cohortId = 1;
             searchCases.forEach((searchCase, index) => {
                 it(`search case ${index} count`, self.searchAnswerCountFn(searchCase));
+                it(`search case ${index} identifier count`, self.countParticipantsIdentifiersFn(searchCase));
                 it(`search case ${index} user ids`, self.searchAnswerUsersFn(searchCase));
                 if (searchCase.count > 1) {
                     const store = {};
@@ -419,7 +505,8 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
         this.sync = sync;
         this.shared = new SharedIntegration(rrSuperTest, generator);
         this.answerTests = new answerCommon.IntegrationTests(rrSuperTest, generator, this.hxUser, this.hxSurvey, this.hxQuestion);
-        this.questionTests = new questionCommon.IntegrationTests(rrSuperTest, generator, this.hxQuestion);
+        const qxCommonParameters = { generator, hxQuestion: this.hxQuestion };
+        this.questionTests = new questionCommon.IntegrationTests(rrSuperTest, qxCommonParameters);
         this.hxAnswers = this.answerTests.hxAnswer;
     }
 
@@ -458,6 +545,16 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
         };
     }
 
+    countParticipantsIdentifiersFn({ count, answers }) {
+        const rrSuperTest = this.rrSuperTest;
+        const self = this;
+        return function countParticipantsIdentifierst() {
+            const criteria = self.formFederatedCriteria(answers);
+            return rrSuperTest.post('/answers/identifier-queries', criteria, 200)
+                .expect(res => expect(res.body.count).to.equal(count));
+        };
+    }
+
     searchAnswerUsersFn({ userIndices, answers }) {
         const rrSuperTest = this.rrSuperTest;
         const self = this;
@@ -482,6 +579,14 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
         };
     }
 
+    searchEmptyFn(count) {
+        const rrSuperTest = this.rrSuperTest;
+        return function searchEmpty() {
+            return rrSuperTest.post('/answers/queries', { questions: [] }, 200)
+                .then(res => expect(res.body.count).to.equal(count));
+        };
+    }
+
     createAnswersFn(userIndex, surveyIndex, answerInfo) {
         const self = this;
         const hxSurvey = this.hxSurvey;
@@ -496,7 +601,7 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
         };
     }
 
-    compareExportToCohortFn(filepath, cohortFilepath, limit) {
+    compareExportToCohortFn(filepath, cohortFilepath, limit) { // eslint-disable-line class-methods-use-this
         return function compareExportToCohort() {
             const converter = new ImportCSVConverter({ checkType: false });
             const streamFullExport = fs.createReadStream(filepath);
@@ -589,8 +694,8 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
 
             self.questions.forEach((question, index) => {
                 const actualIndex = self.offset + index;
-                it(`create question ${actualIndex}`, self.questionTests.createQuestionFn(question));
-                it(`get question ${actualIndex}`, self.questionTests.getQuestionFn(actualIndex));
+                it(`create question ${actualIndex}`, self.questionTests.createQuestionFn({ question }));
+                it(`get question ${actualIndex}`, self.questionTests.getQuestionFn(actualIndex, { federated: true }, { ignoreQuestionIdentifier: true }));
             });
 
             it('create a map of all choice/choice question choices', self.generateChoiceMapFn());
@@ -611,12 +716,16 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
                 it(`logout as user ${userIndex}`, self.shared.logoutFn());
             });
 
+            it('login as super', self.shared.loginFn(config.superUser));
+
+            it('search empty criteria', self.searchEmptyFn(5));
+
             const searchCases = testCase0.searchCases;
 
-            it('login as super', self.shared.loginFn(config.superUser));
             let cohortId = 1;
             searchCases.forEach((searchCase, index) => {
                 it(`search case ${index} count`, self.searchAnswerCountFn(searchCase));
+                it(`search case ${index} identifier count`, self.countParticipantsIdentifiersFn(searchCase));
                 it(`search case ${index} user ids`, self.searchAnswerUsersFn(searchCase));
                 if (searchCase.count > 1) {
                     const store = {};

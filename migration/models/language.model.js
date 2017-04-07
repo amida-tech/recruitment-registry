@@ -2,7 +2,7 @@
 
 const SPromise = require('../../lib/promise');
 
-module.exports = function (sequelize, DataTypes) {
+module.exports = function Table(sequelize, DataTypes) {
     const languages = [{
         name: 'English',
         nativeName: 'English',

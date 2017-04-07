@@ -4,13 +4,13 @@ const _ = require('lodash');
 
 const shared = require('./shared.js');
 
-exports.createSmtp = function (req, res) {
+exports.createSmtp = function createSmtp(req, res) {
     req.models.smtp.createSmtp(req.body)
         .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };
 
-exports.getSmtp = function (req, res) {
+exports.getSmtp = function getSmtp(req, res) {
     const language = _.get(req, 'swagger.params.language.value');
     const options = language ? { language } : {};
     req.models.smtp.getSmtp(options)
@@ -24,14 +24,14 @@ exports.getSmtp = function (req, res) {
         .catch(shared.handleError(res));
 };
 
-exports.updateSmtpText = function (req, res) {
+exports.updateSmtpText = function updateSmtpText(req, res) {
     const language = _.get(req, 'swagger.params.language.value');
     req.models.smtp.updateSmtpText(req.body, language)
         .then(() => res.status(204).end())
         .catch(shared.handleError(res));
 };
 
-exports.deleteSmtp = function (req, res) {
+exports.deleteSmtp = function deleteSmtp(req, res) {
     req.models.smtp.deleteSmtp()
         .then(() => res.status(204).end())
         .catch(shared.handleError(res));

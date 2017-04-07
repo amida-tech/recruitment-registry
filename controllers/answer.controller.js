@@ -5,7 +5,7 @@ const intoStream = require('into-stream');
 
 const shared = require('./shared.js');
 
-exports.createAnswers = function (req, res) {
+exports.createAnswers = function createAnswers(req, res) {
     const answers = req.body;
     answers.userId = req.user.id;
     req.models.answer.createAnswers(answers)
@@ -13,7 +13,7 @@ exports.createAnswers = function (req, res) {
         .catch(shared.handleError(res));
 };
 
-exports.getAnswers = function (req, res) {
+exports.getAnswers = function getAnswers(req, res) {
     const surveyId = _.get(req, 'swagger.params.survey-id.value');
     const userId = req.user.id;
     req.models.answer.getAnswers({ userId, surveyId })
@@ -21,7 +21,7 @@ exports.getAnswers = function (req, res) {
         .catch(shared.handleError(res));
 };
 
-exports.exportAnswers = function (req, res) {
+exports.exportAnswers = function exportAnswers(req, res) {
     const userId = req.user.id;
     req.models.answer.exportForUser(userId)
         .then((csvContent) => {
@@ -32,7 +32,7 @@ exports.exportAnswers = function (req, res) {
         .catch(shared.handleError(res));
 };
 
-exports.exportMultiUserAnswers = function (req, res) {
+exports.exportMultiUserAnswers = function exportMultiUserAnswers(req, res) {
     const userIds = _.get(req, 'swagger.params.user-ids.value');
     req.models.answer.exportForUsers(userIds)
         .then((csvContent) => {
@@ -43,7 +43,7 @@ exports.exportMultiUserAnswers = function (req, res) {
         .catch(shared.handleError(res));
 };
 
-exports.importAnswers = function (req, res) {
+exports.importAnswers = function importAnswers(req, res) {
     const userId = req.user.id;
     const csvFile = _.get(req, 'swagger.params.answercsv.value');
     const questionIdMapAsString = _.get(req, 'swagger.params.questionidmap.value');
@@ -57,7 +57,7 @@ exports.importAnswers = function (req, res) {
         .catch(shared.handleError(res));
 };
 
-exports.importMultiUserAnswers = function (req, res) {
+exports.importMultiUserAnswers = function importMultiUserAnswers(req, res) {
     const csvFile = _.get(req, 'swagger.params.answercsv.value');
     const questionIdMapAsString = _.get(req, 'swagger.params.questionidmap.value');
     const surveyIdMapAsString = _.get(req, 'swagger.params.surveyidmap.value');
@@ -72,38 +72,45 @@ exports.importMultiUserAnswers = function (req, res) {
         .catch(shared.handleError(res));
 };
 
-exports.listAnswersExport = function (req, res) {
+exports.listAnswersExport = function listAnswersExport(req, res) {
     const userId = req.user.id;
     req.models.answer.listAnswers({ scope: 'export', userId })
         .then(answers => res.status(200).json(answers))
         .catch(shared.handleError(res));
 };
 
-exports.listAnswersMultiUserExport = function (req, res) {
+exports.listAnswersMultiUserExport = function listAnswersMultiUserExport(req, res) {
     const userIds = _.get(req, 'swagger.params.user-ids.value');
     req.models.answer.listAnswers({ scope: 'export', userIds })
         .then(answers => res.status(200).json(answers))
         .catch(shared.handleError(res));
 };
 
-exports.searchAnswers = function (req, res) {
+exports.searchAnswers = function searchAnswers(req, res) {
     const query = _.get(req, 'swagger.params.query.value');
     req.models.answer.searchCountUsers(query)
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };
 
-exports.searchAnswerUsers = function (req, res) {
+exports.countParticipantsIdentifiers = function countParticipantsIdentifiers(req, res) {
+    const query = _.get(req, 'swagger.params.query.value');
+    req.models.answer.countParticipantsIdentifiers(query)
+        .then(result => res.status(200).json(result))
+        .catch(shared.handleError(res));
+};
+
+exports.searchAnswerUsers = function searchAnswerUsers(req, res) {
     const query = _.get(req, 'swagger.params.query.value');
     req.models.answer.searchUsers(query)
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };
 
-exports.federalSearchAnswers = function (req, res) {
+exports.federatedSearchAnswers = function federatedSearchAnswers(req, res) {
     const query = _.get(req, 'swagger.params.query.value');
     const allModels = req.app.locals.models;
-    req.models.answer.federalSearchCountUsers(allModels, query)
+    req.models.answer.federatedSearchCountUsers(allModels, query)
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };

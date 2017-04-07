@@ -47,7 +47,7 @@ class SharedIntegration {
         };
     }
 
-    setUpErrFn(options = {}) {
+    setUpErrFn(options = {}) { // eslint-disable-line class-methods-use-this
         return function setupErr(done) {
             appgen.generate(options, (err) => {
                 if (!err) {
@@ -304,7 +304,7 @@ class SharedIntegration {
         it('logout as super', this.logoutFn());
     }
 
-    verifyErrorMessage(res, code, ...params) {
+    verifyErrorMessage(res, code, ...params) { // eslint-disable-line class-methods-use-this
         const req = {};
         const response = {};
         i18n.init(req, response);
@@ -314,7 +314,7 @@ class SharedIntegration {
         expect(res.body.message).to.equal(expected);
     }
 
-    verifyErrorMessageLang(res, language, code, ...params) {
+    verifyErrorMessageLang(res, language, code, ...params) { // eslint-disable-line class-methods-use-this
         const req = { url: `http://aaa.com/anything?language=${language}` };
         const response = {};
         i18n.init(req, response);

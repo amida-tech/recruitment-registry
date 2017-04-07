@@ -4,114 +4,100 @@
 
 process.env.NODE_ENV = 'test';
 
-const chai = require('chai');
 const _ = require('lodash');
 
 const models = require('../models');
-const SPromise = require('../lib/promise');
 const SharedSpec = require('./util/shared-spec.js');
 const Generator = require('./util/generator');
+const TypedIndexSet = require('./util/typed-index-set');
+const QuestionIdentifierGenerator = require('./util/generator/question-identifier-generator');
 const History = require('./util/history');
 const questionCommon = require('./util/question-common');
 
-const expect = chai.expect;
 const generator = new Generator();
 const shared = new SharedSpec(generator);
 
-describe('question identifier unit', () => {
+describe('question identifier unit', function questionIdentifierUnit() {
     const hxQuestion = new History();
-    const tests = new questionCommon.SpecTests(generator, hxQuestion);
-    const idGenerator = new questionCommon.IdentifierGenerator();
+    const idGenerator = new QuestionIdentifierGenerator();
     const hxIdentifiers = {};
+    const qxCommonOptions = { generator, hxQuestion, idGenerator, hxIdentifiers };
+    const tests = new questionCommon.SpecTests(qxCommonOptions);
+    const qxIndexSet = new TypedIndexSet();
+    const answerIndexSet = new TypedIndexSet();
+    let questionCount = 0;
 
     before(shared.setUpFn());
 
-    const addIdentifierFn = function (index, type) {
-        return function () {
-            const question = hxQuestion.server(index);
-            const allIdentifiers = idGenerator.newAllIdentifiers(question, type);
-            let allIdentifiersForType = hxIdentifiers[type];
-            if (!allIdentifiersForType) {
-                allIdentifiersForType = {};
-                hxIdentifiers[type] = allIdentifiersForType;
-            }
-            allIdentifiersForType[question.id] = allIdentifiers;
-            return models.question.addQuestionIdentifiers(question.id, allIdentifiers);
-        };
-    };
+    _.range(5).forEach((index) => {
+        it(`create question ${index} (no identifier)`, tests.createQuestionFn());
+        it(`get question ${index}`, tests.getQuestionFn(index));
+    });
+    questionCount += 5;
 
-    _.range(20).forEach((index) => {
+    _.range(questionCount, questionCount + 20).forEach((index) => {
         it(`create question ${index}`, tests.createQuestionFn());
         it(`get question ${index}`, tests.getQuestionFn(index));
-        it(`add cc type id to question ${index}`, addIdentifierFn(index, 'cc'));
+        it(`add question ${index} federated identifier`, tests.addIdentifierFn(index, 'federated'));
+        qxIndexSet.addIndex('federated', index);
+        answerIndexSet.addIndex('federated', index);
+    });
+    questionCount += 20;
+
+    it('reset identifier generator', tests.resetIdentifierGeneratorFn());
+
+    it('error: cannot specify same type/value identifier', function errorSame() {
+        const question = hxQuestion.server(5);
+        const identifiers = idGenerator.newIdentifiers(question, 'federated');
+        const { type, identifier } = identifiers;
+        const errorType = 'SequelizeUniqueConstraintError';
+        const errorFn = shared.expectedSeqErrorHandler(errorType, { type, identifier });
+        return models.question.addQuestionIdentifiers(question.id, identifiers)
+            .then(shared.throwingHandler, errorFn);
     });
 
-    it('reset identifier generator', () => {
-        idGenerator.reset();
+    it('reset identifier generator', tests.resetIdentifierGeneratorFn());
+
+    _.range(8, 18).forEach((index) => {
+        it(`add au type id to question ${index}`, tests.addIdentifierFn(index, 'au'));
+        qxIndexSet.addIndex('au', index);
+        answerIndexSet.addIndex('au', index);
     });
 
-    it('error: cannot specify same type/value identifier', () => {
-        const question = hxQuestion.server(0);
-        const allIdentifiers = idGenerator.newAllIdentifiers(question, 'cc');
-        const { type, identifier } = allIdentifiers;
-        return models.question.addQuestionIdentifiers(question.id, allIdentifiers)
-            .then(shared.throwingHandler, shared.expectedSeqErrorHandler('SequelizeUniqueConstraintError', { type, identifier }));
+    _.range(questionCount, questionCount + 8).forEach((index) => {
+        it(`create question ${index}`, tests.createQuestionFn());
+        it(`get question ${index}`, tests.getQuestionFn(index));
+        it(`add question ${index} au identifier`, tests.addIdentifierFn(index, 'au'));
+        qxIndexSet.addIndex('au', index);
+        answerIndexSet.addIndex('au', index);
+    });
+    questionCount += 5;
+
+    _.range(15, 28).forEach((index) => {
+        it(`add ot type id to question ${index}`, tests.addIdentifierFn(index, 'ot'));
+        qxIndexSet.addIndex('ot', index);
+        answerIndexSet.addIndex('ot', index);
     });
 
-    it('reset identifier generator', () => {
-        idGenerator.reset();
-    });
-
-    _.range(20).forEach((index) => {
-        it(`add au type id to question ${index}`, addIdentifierFn(index, 'au'));
-    });
-
-    _.range(20).forEach((index) => {
-        it(`add ot type id to question ${index}`, addIdentifierFn(index, 'ot'));
-    });
-
-    const verifyQuestionIdentifiersFn = function (index, type) {
-        return function () {
-            const id = hxQuestion.id(index);
-            const allIdentifiers = hxIdentifiers[type][id];
-            return models.questionIdentifier.getQuestionIdByIdentifier(allIdentifiers.type, allIdentifiers.identifier)
-                .then((result) => {
-                    const expected = { questionId: id };
-                    expect(result).to.deep.equal(expected);
-                });
-        };
-    };
-
-    const verifyAnswerIdentifiersFn = function (index, type) {
-        return function () {
-            const question = hxQuestion.server(index);
-            const allIdentifiers = hxIdentifiers[type][question.id];
-            const questionType = question.type;
-            if (questionType === 'choice' || questionType === 'choices') {
-                const pxs = question.choices.map(({ id: questionChoiceId }, choiceIndex) => models.answerIdentifier.getIdsByAnswerIdentifier(allIdentifiers.type, allIdentifiers.choices[choiceIndex].answerIdentifier)
-                        .then((result) => {
-                            const expected = { questionId: question.id, questionChoiceId };
-                            expect(result).to.deep.equal(expected);
-                        }));
-                return SPromise.all(pxs);
+    _.range(questionCount).forEach((index) => {
+        ['au', 'federated', 'ot'].forEach((type) => {
+            if (qxIndexSet.has(type, index)) {
+                const msg = `verify ${type} question identifier for question ${index}`;
+                it(msg, tests.verifyQuestionIdentifiersFn(index, type));
             }
-            return models.answerIdentifier.getIdsByAnswerIdentifier(allIdentifiers.type, allIdentifiers.answerIdentifier)
-                    .then((result) => {
-                        const expected = { questionId: question.id };
-                        expect(result).to.deep.equal(expected);
-                    });
-        };
-    };
-
-    _.range(20).forEach((index) => {
-        it(`verify cc type id to question ${index}`, verifyQuestionIdentifiersFn(index, 'cc'));
-        it(`verify ot type id to question ${index}`, verifyQuestionIdentifiersFn(index, 'ot'));
-        it(`verify au type id to question ${index}`, verifyQuestionIdentifiersFn(index, 'au'));
+            if (answerIndexSet.has(type, index)) {
+                const msg = `verify ${type} answer identifier for question ${index}`;
+                it(msg, tests.verifyAnswerIdentifiersFn(index, type));
+            }
+        });
     });
 
-    _.range(20).forEach((index) => {
-        it(`verify cc type answer id to question ${index}`, verifyAnswerIdentifiersFn(index, 'cc'));
-        it(`verify ot type answer id to question ${index}`, verifyAnswerIdentifiersFn(index, 'ot'));
-        it(`verify au type answer id to question ${index}`, verifyAnswerIdentifiersFn(index, 'au'));
+    it('list federated questions', tests.listQuestionsFn({ federated: true }));
+
+    _.range(questionCount).forEach((index) => {
+        if (qxIndexSet.has('federated', index)) {
+            const options = { federated: true };
+            it(`get question ${index} with federated identifiers`, tests.getQuestionFn(index, options));
+        }
     });
 });

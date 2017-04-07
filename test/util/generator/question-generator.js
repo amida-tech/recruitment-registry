@@ -15,6 +15,19 @@ const virtualQuestionTypes = [
 
 const questionTypes = ['choices', ...singleQuestionTypes, ...virtualQuestionTypes];
 
+const updateIdentifiers = function (question, identifiers) {
+    const { type, postfix } = identifiers;
+    question.questionIdentifier = { type, value: `qx_${postfix}` };
+    const qxType = question.type;
+    if (qxType === 'choice' || qxType === 'choices') {
+        question.choices.forEach((choice, index) => {
+            choice.answerIdentifier = { type, value: `choice_${postfix}_${index}` };
+        });
+    } else {
+        question.answerIdentifier = { type, value: `answer_${postfix}` };
+    }
+};
+
 module.exports = class QuestionGenerator {
     constructor(predecessor, options = {}) {
         if (predecessor) {
@@ -147,27 +160,41 @@ module.exports = class QuestionGenerator {
         return question;
     }
 
-    newBody(type, options) {
+    newBody(options) {
+        const type = options.type;
         const key = _.camelCase(type);
         return this[key] ? this[key](options) : this.body(type);
     }
 
-    newQuestion(type, options) {
-        type = type || questionTypes[(this.index + 1) % questionTypes.length];
-        const result = this.newBody(type, options);
+    newQuestion(inputOptions = {}) {
+        if (inputOptions.multi) {
+            return this.newMultiQuestion(inputOptions);
+        }
+        const options = Object.assign({}, inputOptions);
+        if (!options.type) {
+            options.type = questionTypes[(this.index + 1) % questionTypes.length];
+        }
+        const result = this.newBody(options);
+        if (options.identifiers) {
+            updateIdentifiers(result, options.identifiers);
+        }
         return result;
     }
 
-    newMultiQuestion(type, options = {}) {
-        if (!type) {
+    newMultiQuestion(inputOptions = {}) {
+        const options = Object.assign({}, inputOptions);
+        if (!options.type) {
             const types = QuestionGenerator.singleQuestionTypes();
-            type = types[(this.index + 1) % types.length];
+            options.type = types[(this.index + 1) % types.length];
         }
-        const result = this.newBody(type, options);
+        const result = this.newBody(options);
         result.multiple = true;
         const max = options.max || this.index % 5;
         if (max < 3) {
             result.maxCount = 8 - max;
+        }
+        if (options.identifiers) {
+            updateIdentifiers(result, options.identifiers);
         }
         return result;
     }

@@ -29,7 +29,7 @@ describe('consent section integration', () => {
     it('login as super', shared.loginFn(config.superUser));
 
     const createConsentTypeFn = function () {
-        return function (done) {
+        return function createConsentType(done) {
             const cst = generator.newConsentType();
             rrSuperTest.post('/consent-types', cst, 201)
                 .expect((res) => {
@@ -40,7 +40,7 @@ describe('consent section integration', () => {
     };
 
     const getConsentTypeFn = function (index) {
-        return function (done) {
+        return function getConsentType(done) {
             const consentType = hxType.server(index);
             rrSuperTest.get(`/consent-types/${consentType.id}`, true, 200)
                 .expect((res) => {
@@ -51,7 +51,7 @@ describe('consent section integration', () => {
     };
 
     const listConsentTypesFn = function () {
-        return function (done) {
+        return function listConsentTypes(done) {
             rrSuperTest.get('/consent-types', true, 200)
                 .expect((res) => {
                     const expected = hxType.listServers();
@@ -69,7 +69,7 @@ describe('consent section integration', () => {
     it('list consent types and verify', listConsentTypesFn());
 
     const getTranslatedConsentTypeFn = function (index, language) {
-        return function (done) {
+        return function getTranslatedConsentType(done) {
             const id = hxType.id(index);
             rrSuperTest.get(`/consent-types/${id}`, true, 200, { language })
                 .expect((res) => {
@@ -81,7 +81,7 @@ describe('consent section integration', () => {
     };
 
     const listTranslatedConsentTypesFn = function (language) {
-        return function (done) {
+        return function listTranslatedConsentTypes(done) {
             rrSuperTest.get('/consent-types', true, 200, { language })
                 .expect((res) => {
                     const expected = hxType.listTranslatedServers(language);

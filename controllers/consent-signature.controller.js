@@ -4,7 +4,7 @@ const _ = require('lodash');
 
 const shared = require('./shared.js');
 
-exports.createSignature = function (req, res) {
+exports.createSignature = function createSignature(req, res) {
     const { consentDocumentId, language } = _.get(req, 'swagger.params.consent_document.value');
     const userId = req.user.id;
     const ip = req.ip;
@@ -14,7 +14,7 @@ exports.createSignature = function (req, res) {
         .catch(shared.handleError(res));
 };
 
-exports.bulkCreateSignatures = function (req, res) {
+exports.bulkCreateSignatures = function bulkCreateSignatures(req, res) {
     const input = _.get(req, 'swagger.params.consent_documents.value');
     const userId = req.user.id;
     const ip = req.ip;
@@ -25,7 +25,7 @@ exports.bulkCreateSignatures = function (req, res) {
         .catch(shared.handleError(res));
 };
 
-exports.getSignatureHistory = function (req, res) {
+exports.getSignatureHistory = function getSignatureHistory(req, res) {
     const userId = _.get(req, 'swagger.params.user-id.value');
     req.models.consentSignature.getSignatureHistory(userId)
         .then(result => res.status(200).json(result))
