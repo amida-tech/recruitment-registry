@@ -56,9 +56,9 @@ describe('survey (conditional questions) unit', () => {
             const newSurvey = ConditionalSurveyGenerator.newSurveyFromPrevious(clientSurvey, survey);
             return models.survey.createSurvey(newSurvey)
                 .then((id) => {
-                    const survey = _.cloneDeep(hxSurvey.server(surveyIndex));
-                    survey.id = id;
-                    hxSurvey.push(newSurvey, survey);
+                    const updatedSurvey = _.cloneDeep(hxSurvey.server(surveyIndex));
+                    updatedSurvey.id = id;
+                    hxSurvey.push(newSurvey, updatedSurvey);
                 });
         });
     });

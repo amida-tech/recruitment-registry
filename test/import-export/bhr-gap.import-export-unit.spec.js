@@ -39,12 +39,14 @@ describe('bhr gap import-export unit', () => {
 
     before(shared.setUpFn());
 
-    it('load all choice sets', () => models.choiceSet.createChoiceSets(choiceSets)
+    it('load all choice sets', function loadAllChoiceSets() {
+        return models.choiceSet.createChoiceSets(choiceSets)
             .then(() => models.choiceSet.listChoiceSets())
-            .then((choiceSets) => {
-                const promises = choiceSets.map(({ id }) => models.choiceSet.getChoiceSet(id));
+            .then((sets) => {
+                const promises = sets.map(({ id }) => models.choiceSet.getChoiceSet(id));
                 return SPromise.all(promises).then(result => comparator.updateChoiceSetMap(result));
-            }));
+            });
+    });
 
     it('load all surveys', () => models.macro.createSurveys(surveys));
 
@@ -110,7 +112,7 @@ describe('bhr gap import-export unit', () => {
                         return models.sequelize.query(query, { type: models.sequelize.QueryTypes.SELECT })
                             .then((users) => {
                                 const dbUsernames = users.map(user => user.username).sort();
-                                const fileUsernames = originalUsers.map(originalUsers => originalUsers.UserCode).sort();
+                                const fileUsernames = originalUsers.map(ou => ou.UserCode).sort();
                                 expect(dbUsernames).to.deep.equal(fileUsernames);
                             });
                     }));

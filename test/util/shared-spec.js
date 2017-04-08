@@ -132,8 +132,8 @@ class SharedSpec {
     verifyConsentFn(hxConsent, index) {
         const m = this.models;
         return function verifyConsent() {
-            const expected = hxConsent.server(index);
-            return m.consent.getConsent(expected.id)
+            const id = hxConsent.id(index);
+            return m.consent.getConsent(id)
                 .then((consent) => {
                     const expected = hxConsent.server(index);
                     expect(consent).to.deep.equal(expected);

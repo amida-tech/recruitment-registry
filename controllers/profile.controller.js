@@ -8,10 +8,10 @@ const sendMail = require('../lib/email');
 exports.createProfile = function createProfile(req, res) {
     const { user, answers, signatures, language } = req.body;
     req.models.profile.createProfile({ user, answers, signatures }, language)
-        .then((user) => {
+        .then((record) => {
             sendMail(user, 'new_contact', {});
 
-            const token = tokener.createJWT(user);
+            const token = tokener.createJWT(record);
             res.cookie('rr-jwt-token', token);
             res.status(201).json({ id: user.id });
         })

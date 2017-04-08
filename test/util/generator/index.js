@@ -31,8 +31,8 @@ class Generator {
         this.registryIndex = -1;
     }
 
-    updateSurveyGenerator(SurveyGenerator) {
-        this.surveyGenerator = this.surveyGenerator.newSurveyGenerator(SurveyGenerator);
+    updateSurveyGenerator(SurveyGeneratorClass) {
+        this.surveyGenerator = this.surveyGenerator.newSurveyGenerator(SurveyGeneratorClass);
     }
 
     updateAnswererClass(AnswererClass) {
