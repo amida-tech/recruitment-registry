@@ -8,7 +8,7 @@ module.exports = {
         'func-names': ['error', 'as-needed'],
         'prefer-arrow-callback': ['error', { 'allowNamedFunctions': true }],
         //'no-param-reassign': ['error', { // r is used in array.reduce like accumulator patterns
-        //    'props': true, 'ignorePropertyModificationsFor': ['req', 'res', 'r']
+        //    'props': true, 'ignorePropertyModificationsFor': ['req', 'res', 'p', 'r']
         //}],
         'no-param-reassign': 'off',
         'max-len': 'off',
