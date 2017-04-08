@@ -21,7 +21,7 @@ const formatResearchSite = function formatResearchSite(researchSite) {
 module.exports = class ResearchSiteDAO extends Base {
     createResearchSite(researchSite) {
         formatResearchSite(researchSite);
-        return this.transaction(transaction => this.db.ResearchSite.create(researchSite, { transaction })
+        return this.transaction(transaction => this.db.ResearchSite.create(researchSite, { transaction }) // eslint-disable-line max-len
                 .then(({ id }) => zipUtil.findVicinity(researchSite.zip)
                         .then(vicinity => (
                             this.createResearchSiteVicinityTx(id, vicinity, transaction)
@@ -74,7 +74,7 @@ module.exports = class ResearchSiteDAO extends Base {
             this.db.ResearchSite
                 .destroy({ where: { id }, transaction })
                 .then(() => (
-                    this.db.ResearchSiteVicinity.destroy({ where: { researchSiteId: id }, transaction })
+                    this.db.ResearchSiteVicinity.destroy({ where: { researchSiteId: id }, transaction }) // eslint-disable-line max-len
                 ))
         ));
     }

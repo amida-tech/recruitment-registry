@@ -11,10 +11,10 @@ module.exports = class SectionDAO extends Base {
         Object.assign(this, dependencies);
     }
 
-    createSurveySectionTx({ name, description, surveyId, parentQuestionId, line, parentIndex }, ids, transaction) {
+    createSurveySectionTx({ name, description, surveyId, parentQuestionId, line, parentIndex }, ids, transaction) { // eslint-disable-line max-len
         return this.section.createSectionTx({ name, description }, transaction)
             .then(({ id: sectionId }) => {
-                const parentId = parentIndex === null || parentIndex === undefined ? null : ids[parentIndex].id;
+                const parentId = parentIndex === null || parentIndex === undefined ? null : ids[parentIndex].id; // eslint-disable-line max-len
                 const record = { surveyId, sectionId, parentId, line };
                 if (parentQuestionId) {
                     record.parentQuestionId = parentQuestionId;
@@ -27,12 +27,12 @@ module.exports = class SectionDAO extends Base {
             });
     }
 
-    bulkCreateFlattenedSectionsForSurveyTx(surveyId, surveyQuestionIds, flattenedSections, transaction) {
+    bulkCreateFlattenedSectionsForSurveyTx(surveyId, surveyQuestionIds, flattenedSections, transaction) { // eslint-disable-line max-len
         if (!flattenedSections.length) {
             return this.db.SurveySection.destroy({ where: { surveyId }, transaction });
         }
         return this.db.SurveySection.destroy({ where: { surveyId }, transaction })
-            .then(() => flattenedSections.reduce((r, { parentIndex, questionIndex, line, name }) => {
+            .then(() => flattenedSections.reduce((r, { parentIndex, questionIndex, line, name }) => { // eslint-disable-line max-len
                 const record = { name, surveyId, line, parentIndex };
                 if (questionIndex !== undefined) {
                     record.parentQuestionId = surveyQuestionIds[questionIndex];
@@ -81,18 +81,18 @@ module.exports = class SectionDAO extends Base {
                 if (!surveySections) {
                     return null;
                 }
-                const ids = surveySections.reduce((r, section) => {
-                    const { id, parentQuestionId } = section;
+                const ids = surveySections.reduce((r, p) => {
+                    const { id, parentQuestionId } = p;
                     r.push(id);
                     if (parentQuestionId) {
                         const question = questionMap.get(parentQuestionId);
                         if (!question.sections) {
                             question.sections = [];
                         }
-                        question.sections.push(section);
-                        delete section.parentId;
+                        question.sections.push(p);
+                        delete p.parentId;
                     } else {
-                        delete section.parentQuestionId;
+                        delete p.parentQuestionId;
                     }
                     return r;
                 }, []);
@@ -128,27 +128,27 @@ module.exports = class SectionDAO extends Base {
                             innerQuestionSet.add(question.id);
                         });
                         const result = { innerQuestionSet };
-                        result.sections = surveySections.reduce((r, section) => {
-                            if (section.parentId) {
-                                const parent = idMap[section.parentId];
+                        result.sections = surveySections.reduce((r, p) => {
+                            if (p.parentId) {
+                                const parent = idMap[p.parentId];
                                 if (!parent.sections) {
                                     parent.sections = [];
                                 }
-                                parent.sections.push(section);
-                                delete section.parentId;
-                            } else if (section.parentQuestionId) {
-                                delete section.parentQuestionId;
+                                parent.sections.push(p);
+                                delete p.parentId;
+                            } else if (p.parentQuestionId) {
+                                delete p.parentQuestionId;
                             } else {
-                                r.push(section);
-                                delete section.parentId;
+                                r.push(p);
+                                delete p.parentId;
                             }
-                            section.id = section.sectionId;
-                            const meta = section['section.meta'];
+                            p.id = p.sectionId;
+                            const meta = p['section.meta'];
                             if (meta) {
-                                section.meta = meta;
+                                p.meta = meta;
                             }
-                            delete section.sectionId;
-                            delete section['section.meta'];
+                            delete p.sectionId;
+                            delete p['section.meta'];
                             return r;
                         }, []);
                         return result;
@@ -185,7 +185,7 @@ module.exports = class SectionDAO extends Base {
                         surveySections.forEach((surveySection) => {
                             if (surveySection.surveyId !== currentSurveyId) {
                                 if (currentSurvey && currentSurvey.questions) {
-                                    currentSurvey.questions = currentSurvey.questions.filter(q => !sectionQuestionSet.has(q.id));
+                                    currentSurvey.questions = currentSurvey.questions.filter(q => !sectionQuestionSet.has(q.id)); // eslint-disable-line max-len
                                 }
                                 currentSurveyId = surveySection.surveyId;
                                 currentSurvey = surveyMap.get(currentSurveyId);
@@ -194,7 +194,7 @@ module.exports = class SectionDAO extends Base {
                                 });
                             }
                             const section = { id: surveySection.sectionId };
-                            if (surveySection.parentId === null && surveySection.parentQuestionId === null) {
+                            if (surveySection.parentId === null && surveySection.parentQuestionId === null) { // eslint-disable-line max-len
                                 if (!currentSurvey.sections) {
                                     currentSurvey.sections = [section];
                                     delete currentSurvey.questions;
@@ -229,7 +229,7 @@ module.exports = class SectionDAO extends Base {
                             }
                         });
                         if (currentSurvey && currentSurvey.questions) {
-                            currentSurvey.questions = currentSurvey.questions.filter(q => !sectionQuestionSet.has(q.id));
+                            currentSurvey.questions = currentSurvey.questions.filter(q => !sectionQuestionSet.has(q.id)); // eslint-disable-line max-len
                         }
                     });
             });

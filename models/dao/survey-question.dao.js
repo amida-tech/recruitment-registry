@@ -2,7 +2,7 @@
 
 const Base = require('./base');
 
-const updateQuestionSectionDependency = function updateQuestionSectionDependency(parents, id, questionParents, sectionParents) {
+const updateQuestionSectionDependency = function (parents, id, questionParents, sectionParents) {
     const { sectionId, parentId, questionParentId } = sectionParents.get(id);
     parents.push({ sectionId });
     if (parentId) {
@@ -17,12 +17,13 @@ const updateQuestionSectionDependency = function updateQuestionSectionDependency
     }
 };
 
-const updateQuestionDependency = function updateQuestionDependency(question, questionParents, sectionParents) {
+const updateQuestionDependency = function (question, questionParents, sectionParents) {
     const id = question.questionId;
     const parentId = questionParents.get(id);
     if (parentId) {
-        question.parents = [];
-        updateQuestionSectionDependency(question.parents, parentId, questionParents, sectionParents);
+        const parents = [];
+        question.parents = parents; // eslint-disable-line no-param-reassign
+        updateQuestionSectionDependency(parents, parentId, questionParents, sectionParents);
     }
 };
 

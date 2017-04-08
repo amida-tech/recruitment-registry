@@ -15,8 +15,9 @@ module.exports = class SMTPDAO extends Base {
                 return Smtp.create(fields, { transaction })
                     .then(() => {
                         if (content) {
+                            const record = { subject, content, language: 'en' };
                             return SmtpText.destroy({ where: {}, transaction })
-                                .then(() => SmtpText.create({ subject, content, language: 'en' }, { transaction }));
+                                .then(() => SmtpText.create(record, { transaction }));
                         }
                         return null;
                     });
@@ -34,8 +35,7 @@ module.exports = class SMTPDAO extends Base {
     }
 
     updateSmtpText(smtpText, language) {
-        language = language || 'en';
-        return this.transaction(tx => this.updateSmtpTextTx(smtpText, language, tx));
+        return this.transaction(tx => this.updateSmtpTextTx(smtpText, language || 'en', tx));
     }
 
     getSmtp(options = {}) {
