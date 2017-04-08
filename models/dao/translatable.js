@@ -91,9 +91,9 @@ module.exports = class Translatable extends Base {
             this.textFields.forEach((field) => {
                 const value = fieldValues[field];
                 if (value !== null) {
-                    parent[field] = fieldValues[field];
+                    parent[field] = fieldValues[field]; // eslint-disable-line no-param-reassign
                 } else if (!this.optionals[field]) {
-                    parent[field] = '';
+                    parent[field] = '';                 // eslint-disable-line no-param-reassign
                 }
             });
         }

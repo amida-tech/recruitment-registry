@@ -2,14 +2,15 @@
 
 const Base = require('./base');
 
-const addSignatureInfo = function (consentDocument, signature) {
+const signatureToInfo = function (signature) {
     if (signature) {
-        consentDocument.signature = true;
-        consentDocument.language = signature.language;
-    } else {
-        consentDocument.signature = false;
+        return { signature: true, language: signature.language };
     }
-    return consentDocument;
+    return { signature: false };
+};
+
+const addSignatureInfo = function (consentDocument, signature) {
+    return Object.assign(consentDocument, signatureToInfo(signature));
 };
 
 module.exports = class UserConsentDocumentDAO extends Base {
@@ -33,16 +34,16 @@ module.exports = class UserConsentDocumentDAO extends Base {
                     query.transaction = options.transaction;
                 }
                 return this.db.ConsentSignature.findAll(query)
-                    .then(signedDocuments => new Map(signedDocuments.map(signedDocument => [signedDocument.consentDocumentId, signedDocument])))
-                    .then((signedDocumentMap) => {
+                    .then(docs => new Map(docs.map(r => [r.consentDocumentId, r])))
+                    .then((docMap) => {
                         if (includeSigned) {
                             activeDocuments.forEach((activeDocument) => {
-                                const signature = signedDocumentMap.get(activeDocument.id);
+                                const signature = docMap.get(activeDocument.id);
                                 addSignatureInfo(activeDocument, signature);
                             });
                             return activeDocuments;
                         }
-                        return activeDocuments.filter(activeDocument => !signedDocumentMap.has(activeDocument.id));
+                        return activeDocuments.filter(r => !docMap.has(r.id));
                     });
             });
     }

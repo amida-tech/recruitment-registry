@@ -33,7 +33,9 @@ module.exports = class AssessmentDAO extends Base {
                             transaction,
                         }))
                         .then((answers) => {
-                            const records = answers.map(answer => ({ answerId: answer.id, userAssessmentId: id }));
+                            const records = answers.map(answer => ({
+                                answerId: answer.id, userAssessmentId: id,
+                            }));
                             return UserAssessmentAnswer.bulkCreate(records, { transaction });
                         });
                 }
@@ -61,19 +63,25 @@ module.exports = class AssessmentDAO extends Base {
                     if (lastUserAssessment.deletedAt) {
                         return sequence;
                     }
-                    return this.closeUserAssessmentById(lastUserAssessment.id, { assessmentId, userId }, transaction)
+                    const lastId = lastUserAssessment.id;
+                    const record = { assessmentId, userId };
+                    return this.closeUserAssessmentById(lastId, record, transaction)
                         .then(() => sequence);
                 })
                 .then((sequence) => {
                     const record = { userId, assessmentId, sequence, status: 'scheduled' };
-                    return UserAssessment.create(record, { transaction }).then(({ id }) => ({ id }));
+                    return UserAssessment.create(record, { transaction })
+                        .then(({ id }) => ({ id }));
                 }));
     }
 
     closeUserAssessment({ userId, assessmentId, status }) {
-        const UserAssessment = this.db.UserAssessment;
-        return this.transaction(transaction => UserAssessment.findOne({ where: { userId, assessmentId }, attributes: ['id'], transaction })
-                .then(({ id }) => this.closeUserAssessmentById(id, { userId, assessmentId, status }, transaction)));
+        return this.transaction((transaction) => {
+            const record = { userId, assessmentId, status };
+            const where = { userId, assessmentId };
+            return this.db.UserAssessment.findOne({ where, attributes: ['id'], transaction })
+                .then(({ id }) => this.closeUserAssessmentById(id, record, transaction));
+        });
     }
 
     listUserAssessments(userId, assessmentId) {
