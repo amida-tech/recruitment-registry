@@ -99,10 +99,10 @@ module.exports = class QuestionDAO extends Translatable {
                                 const nChoices = (choices && choices.length) || 0;
                                 if (nOneOfChoices || nChoices) {
                                     if (nOneOfChoices) {
-                                        choices = oneOfChoices.map(text => ({ text, type: 'bool' }));
+                                        choices = oneOfChoices.map(ch => ({ text: ch, type: 'bool' }));
                                     }
                                     return this.createChoicesTx(result.id, choices, transaction)
-                                        .then(choices => (result.choices = choices));
+                                        .then(chs => (result.choices = chs));
                                 }
                                 return null;
                             })
@@ -135,16 +135,16 @@ module.exports = class QuestionDAO extends Translatable {
         return this.transaction(transaction => this.createQuestionTx(question, transaction));
     }
 
-    replaceQuestion(id, replacement) {
+    replaceQuestion(parentId, replacement) {
         const SurveyQuestion = this.db.SurveyQuestion;
         const Question = this.db.Question;
-        return SurveyQuestion.count({ where: { questionId: id } })
+        return SurveyQuestion.count({ where: { questionId: parentId } })
             .then((count) => {
                 if (count) {
                     return RRError.reject('qxReplaceWhenActiveSurveys');
                 }
                 return this.transaction((transaction) => {
-                    const px = Question.findById(id, { transaction });
+                    const px = Question.findById(parentId, { transaction });
                     return px.then((question) => {
                         if (!question) {
                             return RRError.reject('qxNotFound');
@@ -174,11 +174,11 @@ module.exports = class QuestionDAO extends Translatable {
             });
     }
 
-    getQuestion(id, options = {}) {
+    getQuestion(qid, options = {}) {
         const Question = this.db.Question;
         const language = options.language;
         const attributes = ['id', 'type', 'meta', 'multiple', 'maxCount', 'choiceSetId', 'common'];
-        return Question.findById(id, { raw: true, attributes })
+        return Question.findById(qid, { raw: true, attributes })
             .then((question) => {
                 if (!question) {
                     return RRError.reject('qxNotFound');
@@ -417,7 +417,7 @@ module.exports = class QuestionDAO extends Translatable {
                 if (answerIdentifier) {
                     return AnswerIdentifier.create({ type, identifier: answerIdentifier, questionId }, { transaction });
                 }
-                const pxs = answerIdentifiers.map(({ identifier, questionChoiceId }) => AnswerIdentifier.create({ type, identifier, questionId, questionChoiceId }, { transaction }));
+                const pxs = answerIdentifiers.map(r => AnswerIdentifier.create({ type, identifier: r.identifier, questionId, questionChoiceId: r.questionChoiceId }, { transaction }));
                 return SPromise.all(pxs);
             });
     }
@@ -437,16 +437,16 @@ module.exports = class QuestionDAO extends Translatable {
                     r.push(questionLine);
                     return r;
                 }
-                choices.forEach(({ id, type, text, code, meta }, index) => {
-                    const line = { choiceId: id, choiceText: text };
-                    if (type) {
-                        line.choiceType = type;
+                choices.forEach((choice, index) => {
+                    const line = { choiceId: choice.id, choiceText: choice.text };
+                    if (choice.type) {
+                        line.choiceType = choice.type;
                     }
-                    if (code) {
-                        line.choiceCode = code;
+                    if (choice.code) {
+                        line.choiceCode = choice.code;
                     }
-                    if (meta && options.meta) {
-                        Object.assign(questionLine, exportMetaQuestionProperties(meta, options.meta, true, false));
+                    if (choice.meta && options.meta) {
+                        Object.assign(questionLine, exportMetaQuestionProperties(choice.meta, options.meta, true, false));
                     }
                     if (index === 0) {
                         Object.assign(line, questionLine);
@@ -545,12 +545,12 @@ module.exports = class QuestionDAO extends Translatable {
                                         .then((choicesIds) => {
                                             const type = options.sourceType;
                                             if (type) {
-                                                const pxs = choicesIds.map((questionChoiceId, index) => {
+                                                const pxs2 = choicesIds.map((questionChoiceId, index) => {
                                                     const identifier = choices[index].answerKey;
                                                     const tag = parseInt(choices[index].tag, 10);
                                                     return AnswerIdentifier.create({ type, identifier, questionId, questionChoiceId, tag }, { transaction });
                                                 });
-                                                return SPromise.all(pxs)
+                                                return SPromise.all(pxs2)
                                                     .then(() => choicesIds);
                                             }
                                             return choicesIds;

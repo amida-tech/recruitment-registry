@@ -8,7 +8,6 @@ module.exports = {
         'func-names': ['error', 'as-needed'],
         'prefer-arrow-callback': ['error', { 'allowNamedFunctions': true }],
         'no-param-reassign': 'off',
-        'no-shadow': 'off',
         'max-len': 'off',
     },
     'parserOptions': {

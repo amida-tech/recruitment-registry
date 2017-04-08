@@ -398,17 +398,17 @@ const toDbFormat = function (userId, surveyId, createdAt, answersByQuestionId) {
             return r;
         }
         if (questionType === 'choice') {
-            const questionChoiceId = answer.answers.reduce((p, answer) => {
-                if ((answer.questionChoiceType !== 'bool') || (typeof answer.value !== 'boolean')) {
-                    throw new RRError('ccfInconsistentAnswerForType', 'choice', answer.questionChoiceType);
+            const questionChoiceId = answer.answers.reduce((p, a) => {
+                if ((a.questionChoiceType !== 'bool') || (typeof a.value !== 'boolean')) {
+                    throw new RRError('ccfInconsistentAnswerForType', 'choice', a.questionChoiceType);
                 }
-                if (!answer.value) {
+                if (!a.value) {
                     return p;
                 }
                 if (p !== null) {
                     throw new RRError('ccfMultipleSelectionsForChoice');
                 }
-                p = answer.questionChoiceId;
+                p = a.questionChoiceId;
                 return p;
             }, null);
             if (questionChoiceId === null) {
@@ -449,17 +449,17 @@ const importAnswersToDb = function (jsonDB, userIdMap) {
                         r.push(dbAnswer);
                         answerIndex.set(questionId, dbAnswer);
                     }
-                    const answer = {};
+                    const answer2 = {};
                     if (answerInfo.questionChoiceId) {
-                        answer.questionChoiceId = answerInfo.questionChoiceId;
-                        answer.questionChoiceType = answerInfo.questionChoiceType;
+                        answer2.questionChoiceId = answerInfo.questionChoiceId;
+                        answer2.questionChoiceType = answerInfo.questionChoiceType;
                     }
                     if (Object.prototype.hasOwnProperty.call(record, 'string_value')) {
-                        answer.value = record.string_value.toString();
+                        answer2.value = record.string_value.toString();
                     } else if (Object.prototype.hasOwnProperty.call(record, 'boolean_value')) {
-                        answer.value = record.boolean_value;
+                        answer2.value = record.boolean_value;
                     }
-                    dbAnswer.answers.push(answer);
+                    dbAnswer.answers.push(answer2);
                     return r;
                 }, []);
                 const userId = userIdMap.get(answer.user_id);
@@ -490,7 +490,7 @@ const importAnswersToDb = function (jsonDB, userIdMap) {
             });
             return models.answer.importRecords(records)
                 .then((ids) => {
-                    const records = jsonDB.assessments.map((assessment, index, assessments) => {
+                    const records2 = jsonDB.assessments.map((assessment, index, assessments) => {
                         const createdAt = assessment.updated_at;
                         const record = {
                             userId: userIdMap.get(assessment.hb_user_id),
@@ -510,7 +510,7 @@ const importAnswersToDb = function (jsonDB, userIdMap) {
                         record.answerIds = assessment.answerIndices.map(answerIndex => ids[answerIndex]);
                         return record;
                     });
-                    return models.userAssessment.importBulk(records);
+                    return models.userAssessment.importBulk(records2);
                 });
         });
 };

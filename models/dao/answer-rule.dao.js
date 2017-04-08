@@ -196,7 +196,7 @@ module.exports = class AnswerRuleDAO extends Base {
                     return AnswerRule.bulkCreate(records, { transaction, returning: true })
                         .then(result => result.forEach(fnIdMap))
                         .then(() => {
-                            const records = ruleValues.map((ruleValue) => {
+                            const records2 = ruleValues.map((ruleValue) => {
                                 const record = { line: ruleValue.line };
                                 if (ruleValue.value || ruleValue.value === 0) {
                                     record.value = ruleValue.value;
@@ -207,7 +207,7 @@ module.exports = class AnswerRuleDAO extends Base {
                                 record.ruleId = ruleIdMap.get(ruleValue.id);
                                 return record;
                             });
-                            return AnswerRuleValue.bulkCreate(records, { transaction })
+                            return AnswerRuleValue.bulkCreate(records2, { transaction })
                                 .then(() => {
                                     const ruleIdObj = {};
                                     ruleIdMap.forEach((value, key) => { ruleIdObj[key] = value; });

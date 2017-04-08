@@ -85,16 +85,16 @@ module.exports = class SurveyDAO extends Translatable {
                 sectionInfo.indices = indices;
             }
             if (section.sections) {
-                const parentIndex = result.sections.length ? result.sections.length - 1 : null;
-                this.flattenSectionsHieararchy(section.sections, result, parentIndex);
+                const index = result.sections.length ? result.sections.length - 1 : null;
+                this.flattenSectionsHieararchy(section.sections, result, index);
             }
         });
         return result;
     }
 
-    flattenQuestionsHierarchy(questions, result) {
+    flattenQuestionsHierarchy(parentQuestions, result) {
         const indices = [];
-        questions.forEach((question) => {
+        parentQuestions.forEach((question) => {
             const questionIndex = result.questions.length;
             indices.push(questionIndex);
             result.questions.push(question);
@@ -111,8 +111,8 @@ module.exports = class SurveyDAO extends Translatable {
                     }
                     result.sections.push(sectionInfo);
                     if (questions) {
-                        const indices = this.flattenQuestionsHierarchy(questions, result);
-                        sectionInfo.indices = indices;
+                        const indices2 = this.flattenQuestionsHierarchy(questions, result);
+                        sectionInfo.indices = indices2;
                     }
                     if (sections) {
                         const parentIndex = result.sections.length ? result.sections.length - 1 : null;
@@ -255,9 +255,8 @@ module.exports = class SurveyDAO extends Translatable {
         return sections;
     }
 
-    createSurveyQuestionsTx(questions, sections, surveyId, transaction) {
-        questions = questions.slice();
-        return this.createNewQuestionsTx(questions, transaction)
+    createSurveyQuestionsTx(inputQuestions, sections, surveyId, transaction) {
+        return this.createNewQuestionsTx(inputQuestions.slice(), transaction)
             .then(({ questions, questionChoices }) => {
                 questions.forEach(question => translateEnableWhen(question, questions, questionChoices));
                 if (sections) {
@@ -273,15 +272,15 @@ module.exports = class SurveyDAO extends Translatable {
                     .then(() => questions));
     }
 
-    updateSurveyTx(id, survey, transaction) {
+    updateSurveyTx(inputId, survey, transaction) {
         const { sections, questions } = this.flattenHierarchy(survey);
         if (!questions.length) {
             return RRError.reject('surveyNoQuestions');
         }
-        return this.createTextTx({ id, name: survey.name, description: survey.description }, transaction)
+        return this.createTextTx({ id: inputId, name: survey.name, description: survey.description }, transaction)
             .then(({ id }) => this.createSurveyQuestionsTx(questions, sections, id, transaction)
-                    .then((questions) => {
-                        const questionIds = questions.map(question => question.id);
+                    .then((qxs) => {
+                        const questionIds = qxs.map(question => question.id);
                         return { questionIds, surveyId: id };
                     }))
             .then(({ questionIds, surveyId }) => {
@@ -421,9 +420,8 @@ module.exports = class SurveyDAO extends Translatable {
                                 return null;
                             })
                             .then(() => this.createSurveyQuestionsTx(questions, sections, surveyId, transaction))
-                            .then(questions => questions.map(question => question.id))
-                            .then(questionIds => ({ sections, questionIds }))
-                            .then(({ sections, questionIds }) => {
+                            .then(qxs => qxs.map(question => question.id))
+                            .then((questionIds) => {
                                 if (sections) {
                                     return this.surveySection.bulkCreateFlattenedSectionsForSurveyTx(surveyId, questionIds, sections, transaction);
                                 } else if (survey.sectionCount) {
@@ -439,8 +437,8 @@ module.exports = class SurveyDAO extends Translatable {
         return this.transaction(transaction => this.patchSurveyTx(id, surveyPatch, transaction));
     }
 
-    replaceSurveyTx(id, replacement, transaction) {
-        return this.db.Survey.findById(id)
+    replaceSurveyTx(originalId, replacement, transaction) {
+        return this.db.Survey.findById(originalId)
             .then((survey) => {
                 if (!survey) {
                     return RRError.reject('surveyNotFound');
@@ -599,10 +597,10 @@ module.exports = class SurveyDAO extends Translatable {
                                                 question.enableWhen.push(rule);
                                             }
                                         });
-                                        return { survey, questions: qxs };
+                                        return qxs;
                                     });
                             })
-                            .then(({ survey, questions }) => this.surveySection.getSectionsForSurveyTx(survey.id, questions, answerRuleInfos, options.language)
+                            .then(questions => this.surveySection.getSectionsForSurveyTx(survey.id, questions, answerRuleInfos, options.language)
                                     .then((result) => {
                                         if (!result) {
                                             survey.questions = questions;
@@ -612,7 +610,7 @@ module.exports = class SurveyDAO extends Translatable {
                                         if (sections && sections.length) {
                                             survey.sections = sections;
                                         } else {
-                                            survey.questions = questions.filter(({ id }) => !innerQuestionSet.has(id));
+                                            survey.questions = questions.filter(qx => !innerQuestionSet.has(qx.id));
                                         }
                                         return survey;
                                     })));
@@ -754,33 +752,31 @@ module.exports = class SurveyDAO extends Translatable {
                     .then(({ id }) => this.createTextTx({ id, name, description }, transaction))
                     .then(({ id }) => { idMap[importId] = id; });
             });
-            return SPromise.all(promises).then(() => idMap)
-                .then((idMap) => {
+            return SPromise.all(promises)
+                .then(() => {
                     surveyQuestions.forEach((surveyQuestion) => {
                         const newSurveyId = idMap[surveyQuestion.surveyId];
                         Object.assign(surveyQuestion, { surveyId: newSurveyId });
                     });
-                    return this.surveyQuestion.importSurveyQuestionsTx(surveyQuestions, transaction)
-                        .then(() => idMap);
+                    return this.surveyQuestion.importSurveyQuestionsTx(surveyQuestions, transaction);
                 })
-                .then((idMap) => {
+                .then(() => {
                     surveySections.forEach((surveySection) => {
                         const newSurveyId = idMap[surveySection.surveyId];
                         Object.assign(surveySection, { surveyId: newSurveyId });
                     });
-                    return this.surveySection.importSurveySectionsTx(surveySections, surveySectionQuestions, transaction)
-                        .then(() => idMap);
+                    return this.surveySection.importSurveySectionsTx(surveySections, surveySectionQuestions, transaction);
                 })
-                .then((idMap) => {
+                .then(() => {
                     if (options.sourceType) {
                         const type = options.sourceType;
-                        const promises = _.transform(idMap, (r, surveyId, identifier) => {
+                        const promises2 = _.transform(idMap, (r, surveyId, identifier) => {
                             const record = { type, identifier, surveyId };
                             const promise = this.surveyIdentifier.createSurveyIdentifier(record, transaction);
                             r.push(promise);
                             return r;
                         }, []);
-                        return SPromise.all(promises).then(() => idMap);
+                        return SPromise.all(promises2).then(() => idMap);
                     }
                     return idMap;
                 });

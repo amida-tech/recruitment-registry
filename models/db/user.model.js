@@ -21,7 +21,7 @@ module.exports = function User(sequelize, Sequelize, schema) {
 
     const tableName = 'registry_user';
     const modelName = `${schema}_${tableName}`;
-    const result = sequelize.define(modelName, {
+    const Table = sequelize.define(modelName, {
         username: {
             type: Sequelize.TEXT,
             unique: true,
@@ -119,7 +119,7 @@ module.exports = function User(sequelize, Sequelize, schema) {
         },
     });
 
-    result.prototype.authenticate = function authenticate(password) {
+    Table.prototype.authenticate = function authenticate(password) {
         return bccompare(password, this.password)
             .then((result) => {
                 if (!result) {
@@ -129,14 +129,14 @@ module.exports = function User(sequelize, Sequelize, schema) {
     };
 
 
-    result.prototype.updatePassword = function updatePassword() {
+    Table.prototype.updatePassword = function updatePassword() {
         return bchash(this.password, config.crypt.hashrounds)
             .then((hash) => {
                 this.password = hash;
             });
     };
 
-    result.prototype.updateResetPWToken = function updateResetPWToken() {
+    Table.prototype.updateResetPWToken = function updateResetPWToken() {
         return randomBytes(config.crypt.resetTokenLength)
             .then(buf => buf.toString('hex'))
             .then(token => randomBytes(config.crypt.resetPasswordLength)
@@ -155,5 +155,5 @@ module.exports = function User(sequelize, Sequelize, schema) {
             });
     };
 
-    return result;
+    return Table;
 };

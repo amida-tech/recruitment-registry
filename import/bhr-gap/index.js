@@ -319,8 +319,8 @@ const importSubjects = function (filepath, options) {
                     fs.writeFileSync(answerFilepath, answerConverter.dataToCSV(subjectAnswers));
                 })
                 .then(() => {
-                    const query = 'copy answer (user_id, survey_id, question_id, question_choice_id, value, language_code) from :filepath csv header';
-                    return sequelize.query(query, { replacements: { filepath: answerFilepath } });
+                    const query2 = 'copy answer (user_id, survey_id, question_id, question_choice_id, value, language_code) from :filepath csv header';
+                    return sequelize.query(query2, { replacements: { filepath: answerFilepath } });
                 });
         });
 };

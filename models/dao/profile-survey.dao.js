@@ -62,12 +62,11 @@ module.exports = class ProfileSurveyDAO extends Base {
                                         return this.consentDocument.listConsentDocuments({ summary: true, typeIds })
                                             .then((consentDocuments) => {
                                                 survey.consentDocuments = consentDocuments;
-                                                return survey;
                                             });
                                     }
-                                    return survey;
+                                    return null;
                                 })
-                                .then(survey => ({ exists: true, survey }));
+                                .then(() => ({ exists: true, survey }));
                         });
                 }
                 return { exists: false };

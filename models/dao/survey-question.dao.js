@@ -10,9 +10,9 @@ const updateQuestionSectionDependency = function updateQuestionSectionDependency
     }
     if (questionParentId) {
         parents.push({ questionId: questionParentId });
-        const parentId = questionParents.get(questionParentId);
-        if (parentId) {
-            updateQuestionSectionDependency(parents, parentId, questionParents, sectionParents);
+        const parentId2 = questionParents.get(questionParentId);
+        if (parentId2) {
+            updateQuestionSectionDependency(parents, parentId2, questionParents, sectionParents);
         }
     }
 };

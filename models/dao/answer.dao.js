@@ -91,18 +91,18 @@ const isEnabled = function ({ questionId, parents }, questionAnswerRulesMap, sec
         return enabled;
     }
     if (parents && parents.length) {
-        const enabled = parents.every(({ sectionId, questionId }) => {
-            if (sectionId) {
-                const rules = sectionAnswerRulesMap.get(sectionId);
-                if (rules && rules.length) {
-                    return evaluateEnableWhen(rules, answersByQuestionId);
+        const enabled = parents.every((parent) => {
+            if (parent.sectionId) {
+                const rules2 = sectionAnswerRulesMap.get(parent.sectionId);
+                if (rules2 && rules2.length) {
+                    return evaluateEnableWhen(rules2, answersByQuestionId);
                 }
                 return true;
             }
-            if (questionId) {
-                const rules = questionAnswerRulesMap.get(questionId);
-                if (rules && rules.length) {
-                    return evaluateEnableWhen(rules, answersByQuestionId);
+            if (parent.questionId) {
+                const rules2 = questionAnswerRulesMap.get(parent.questionId);
+                if (rules2 && rules2.length) {
+                    return evaluateEnableWhen(rules2, answersByQuestionId);
                 }
                 return true;
             }
@@ -339,14 +339,12 @@ module.exports = class AnswerDAO extends Base {
                     });
                 }
                 const groupedResult = _.groupBy(result, (r) => {
-                    const surveyId = r.surveyId;
-                    const deletedAt = r.deletedAt;
                     let key = r['question.id'];
-                    if (deletedAt) {
-                        key = `${deletedAt};${key}`;
+                    if (r.deletedAt) {
+                        key = `${r.deletedAt};${key}`;
                     }
-                    if (surveyId) {
-                        key = `${surveyId};${key}`;
+                    if (r.surveyId) {
+                        key = `${r.surveyId};${key}`;
                     }
                     return key;
                 });
@@ -557,7 +555,7 @@ module.exports = class AnswerDAO extends Base {
             })
             .then(federated => this.countParticipantsIdentifiers(criteria)
                 .then((local) => {
-                    const count = federated.reduce((r, { count }) => r + count, local.count);
+                    const count = federated.reduce((r, p) => r + p.count, local.count);
                     return { count };
                 }));
     }
