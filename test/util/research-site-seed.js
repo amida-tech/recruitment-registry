@@ -1,5 +1,7 @@
 'use strict';
 
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 /* eslint no-console: 0 */
 
 const models = require('../../models');

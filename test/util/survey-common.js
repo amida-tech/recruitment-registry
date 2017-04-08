@@ -1,5 +1,9 @@
 'use strict';
 
+/* eslint no-param-reassign: 0, max-len: 0 */
+
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 const chai = require('chai');
 const _ = require('lodash');
 
@@ -26,8 +30,8 @@ const formAnswersToPost = function (survey, answersSpec) {
                     const result = { id };
                     const numValues = answerValueType.reduce((r2, p) => {
                         if (Object.prototype.hasOwnProperty.call(cindex, p)) {
-                            r2 += 1;
                             result[p] = cindex[p];
+                            return r2 + 1;
                         }
                         return r2;
                     }, 0);

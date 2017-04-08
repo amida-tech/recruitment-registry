@@ -2,6 +2,8 @@
 
 'use strict';
 
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 const path = require('path');
 const fs = require('fs');
 const chai = require('chai');

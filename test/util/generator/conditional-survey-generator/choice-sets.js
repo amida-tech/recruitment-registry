@@ -1,5 +1,7 @@
 'use strict';
 
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 module.exports = [{
     reference: 'yes-no-1-2',
     choices: [{ text: 'Yes', code: '1' }, { text: 'No', code: '2' }],

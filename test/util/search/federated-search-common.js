@@ -2,6 +2,8 @@
 
 'use strict';
 
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 const _ = require('lodash');
 
 const config = require('../../../config');

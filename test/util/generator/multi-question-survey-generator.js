@@ -1,5 +1,7 @@
 'use strict';
 
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 const SurveyGenerator = require('./survey-generator');
 
 const patterns = [

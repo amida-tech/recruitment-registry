@@ -1,5 +1,7 @@
 'use strict';
 
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 // valid US zip codes
 const exampleZips = {
     20001: ['20001', '21001', '23002', '22003', '20010', '20020', '20030'],

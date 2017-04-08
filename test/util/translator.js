@@ -1,5 +1,7 @@
 'use strict';
 
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 const _ = require('lodash');
 const chai = require('chai');
 
@@ -19,24 +21,21 @@ const translator = {
         });
     },
     translateQuestion(question, language) {
-        const result = _.cloneDeep(question);
-        result.text = this.translate(result.text, language);
-        delete result.type;
-        delete result.meta;
-        delete result.common;
-        if (result.choices) {
-            result.choices.forEach((choice) => {
-                choice.text = this.translate(choice.text, language);
-                delete choice.type;
-                delete choice.code;
-            });
+        const text = this.translate(question.text, language);
+        const translation = { id: question.id, text };
+        if (question.instruction) {
+            translation.instruction = question.instruction;
         }
-        return result;
+        const choices = question.choices;
+        if (choices) {
+            translation.choices = choices.map(ch => ({
+                id: ch.id,
+                text: this.translate(ch.text, language),
+            }));
+        }
+        return translation;
     },
-    translateSurveySections(surveySections, language, result) {
-        if (!result) {
-            result = [];
-        }
+    translateSurveySections(surveySections, language, result = []) {
         surveySections.forEach(({ id, name, sections }) => {
             const translated = {
                 id,
@@ -44,7 +43,7 @@ const translator = {
             };
             result.push(translated);
             if (sections) {
-                this.translateSurveySections(sections);
+                this.translateSurveySections(sections, language);
             }
         });
         return result;
@@ -64,10 +63,8 @@ const translator = {
         return result;
     },
     translateChoiceSet(choiceSet, language) {
-        const result = _.cloneDeep(choiceSet);
-        result.choices.forEach((choice) => {
-            choice.text = this.translate(choice.text, language);
-        });
+        const result = {};
+        result.choices = choiceSet.choices.map(({ id, text }) => ({ id, text: this.translate(text, language) }));
         return result;
     },
     isQuestionTranslated(question, language) {
