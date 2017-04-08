@@ -1,10 +1,10 @@
 'use strict';
 
-/* eslint func-names: 0, no-console: 0, import/no-extraneous-dependencies: 0 */
+/* eslint no-param-reassign: 0, no-console: 0, import/no-extraneous-dependencies: 0 */
 
 const request = require('superagent');
 
-module.exports = function (locals) {
+module.exports = function authentication03(locals) {
     console.log(`------ start ${module.filename}`);
 
     locals.agent = request.agent();
