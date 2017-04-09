@@ -11,33 +11,31 @@ module.exports = class ProfileDAO extends Base {
 
     createProfile(input, language) {
         return this.transaction(tx => this.profileSurvey.getProfileSurveyId()
-                .then((profileSurveyId) => {
-                    input.user.role = 'participant';
-                    return this.user.createUser(input.user, tx)
-                        .then((user) => {
-                            if (input.signatures && input.signatures.length) {
-                                return SPromise.all(input.signatures.map((consentDocumentId) => {
-                                    const userId = user.id;
-                                    return this.consentSignature.createSignature({ userId, consentDocumentId, language }, tx);
-                                }))
-                                    .then(() => user);
-                            }
-                            return user;
-                        })
-                        .then((user) => {
-                            if (profileSurveyId) {
-                                const answerInput = {
-                                    userId: user.id,
-                                    surveyId: profileSurveyId,
-                                    answers: input.answers,
-                                    language,
-                                };
-                                return this.answer.createAnswersTx(answerInput, tx)
-                                    .then(() => user);
-                            }
-                            return user;
-                        });
-                }));
+            .then(profileSurveyId => this.user.createUser(input.user, tx)
+                    .then((user) => {
+                        if (input.signatures && input.signatures.length) {
+                            return SPromise.all(input.signatures.map((consentDocumentId) => {
+                                const userId = user.id;
+                                const record = { userId, consentDocumentId, language };
+                                return this.consentSignature.createSignature(record, tx);
+                            }))
+                                .then(() => user);
+                        }
+                        return user;
+                    })
+                    .then((user) => {
+                        if (profileSurveyId) {
+                            const answerInput = {
+                                userId: user.id,
+                                surveyId: profileSurveyId,
+                                answers: input.answers,
+                                language,
+                            };
+                            return this.answer.createAnswersTx(answerInput, tx)
+                                .then(() => user);
+                        }
+                        return user;
+                    })));
     }
 
     updateProfile(id, input, language) {

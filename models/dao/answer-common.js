@@ -139,8 +139,7 @@ const generateFilterAnswers = function (type, answers) {
 
 const answerValueToDBFormat = {
     boolValue(value) {
-        value = value ? 'true' : 'false';
-        return { value };
+        return { value: value ? 'true' : 'false' };
     },
     dateValue(value) {
         return { value };
@@ -180,10 +179,10 @@ const answerValueToDBFormat = {
 
 const choiceValueToDBFormat = {
     choices(value) {
-        return value.map((choice) => {
-            const questionChoiceId = choice.id;
-            choice = _.omit(choice, 'id');
-            const keys = Object.keys(choice);
+        return value.map((r) => {
+            const questionChoiceId = r.id;
+            delete r.id;
+            const keys = Object.keys(r);
             const numKeys = keys.length;
             if (numKeys > 1) {
                 keys.sort();
@@ -197,7 +196,7 @@ const choiceValueToDBFormat = {
             if (!fn) {
                 throw new RRError('answerAnswerNotUnderstood', key);
             }
-            return Object.assign({ questionChoiceId }, fn(choice[key]));
+            return Object.assign({ questionChoiceId }, fn(r[key]));
         });
     },
     choice(value) {

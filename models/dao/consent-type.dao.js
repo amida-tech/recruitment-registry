@@ -48,16 +48,16 @@ module.exports = class ConsentTypeDAO extends Translatable {
     }
 
     deleteConsentType(id) {
-        const ConsentType = this.db.ConsentType;
-        const ConsentSection = this.db.ConsentSection;
-        const ConsentDocument = this.db.ConsentDocument;
-        return ConsentSection.count({ where: { typeId: id } })
+        return this.db.ConsentSection.count({ where: { typeId: id } })
             .then((count) => {
                 if (count) {
                     return RRError.reject('consentTypeDeleteOnConsent');
                 }
-                return this.transaction(transaction => ConsentType.destroy({ where: { id }, transaction })
-                            .then(() => ConsentDocument.destroy({ where: { typeId: id }, transaction })));
+                return this.transaction((transaction) => {
+                    const where = { typeId: id };
+                    return this.db.ConsentType.destroy({ where: { id }, transaction })
+                        .then(() => this.db.ConsentDocument.destroy({ where, transaction }));
+                });
             });
     }
 };

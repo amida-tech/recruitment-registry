@@ -1,5 +1,7 @@
 'use strict';
 
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 const _ = require('lodash');
 
 const History = require('./history');
@@ -38,10 +40,10 @@ module.exports = class SurveyHistory extends History {
     makeSectionExportReady({ id, questions, sections }) {
         const result = { id };
         if (questions) {
-            result.questions = questions.map(({ id, required, sections: questionSections }) => {
-                const q = { id, required };
-                if (questionSections) {
-                    q.sections = questionSections.map(section => this.makeSectionExportReady(section));
+            result.questions = questions.map((qx) => {
+                const q = _.pick(qx, ['id', 'required']);
+                if (qx.sections) {
+                    q.sections = qx.sections.map(section => this.makeSectionExportReady(section));
                 }
                 return q;
             });

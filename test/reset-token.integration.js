@@ -2,6 +2,8 @@
 
 'use strict';
 
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 process.env.NODE_ENV = 'test';
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
@@ -63,9 +65,9 @@ describe('reset-token integration', () => {
             receivedEmail.to = address.address;
             callback();
         },
-        onData(stream, session, callback) {
-            stream.pipe(smtpStream);
-            stream.on('end', callback);
+        onData(dataStream, session, callback) {
+            dataStream.pipe(smtpStream);
+            dataStream.on('end', callback);
         },
     });
 

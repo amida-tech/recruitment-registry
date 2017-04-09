@@ -1,5 +1,7 @@
 'use strict';
 
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 module.exports = [{
     surveyIndex: 0,
     caseIndex: 0,

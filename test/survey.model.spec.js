@@ -2,6 +2,8 @@
 
 'use strict';
 
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
@@ -292,7 +294,7 @@ describe('survey unit', () => {
             const id = hxSurvey.id(index);
             const clientSurvey = generator.newSurvey();
             return models.survey.replaceSurvey(id, clientSurvey)
-                .then(id => models.survey.getSurvey(id))
+                .then(newId => models.survey.getSurvey(newId))
                 .then((serverSurvey) => {
                     comparator.survey(clientSurvey, serverSurvey);
                     hxSurvey.replace(index, clientSurvey, serverSurvey);
@@ -309,20 +311,18 @@ describe('survey unit', () => {
         return function dbVersionCompare() {
             const id = hxSurvey.id(index);
             return models.survey.getSurvey(id, { override: { attributes: ['id', 'version', 'groupId'] } })
-                .then((surveyWithGroupId) => {
-                    const groupId = surveyWithGroupId.groupId;
-                    return models.survey.listSurveys({
-                        scope: 'version-only',
-                        history: true,
-                        order: 'version',
-                        groupId,
-                    })
+                .then(surveyWithGroupId => models.survey.listSurveys({
+                    scope: 'version-only',
+                    history: true,
+                    order: 'version',
+                    groupId: surveyWithGroupId.groupId,
+                })
                         .then(actual => actual.map(({ version, groupId }) => ({ version, groupId })))
                         .then((actual) => {
+                            const groupId = surveyWithGroupId.groupId;
                             const expected = _.range(1, count + 1).map(version => ({ version, groupId }));
                             expect(actual).to.deep.equal(expected);
-                        });
-                });
+                        }));
         };
     };
 
@@ -375,8 +375,7 @@ describe('survey unit', () => {
 
     it('extract existing questions/sections', () => {
         const surveys = hxSurvey.listServers(['status', 'questions', 'sections']);
-
-        const { questions, sections } = surveys.reduce((r, survey) => {
+        const p = surveys.reduce((r, survey) => {
             const { questions, sections } = models.survey.flattenHierarchy(survey);
             r.questions.push(...questions);
             if (sections && sections.length) {
@@ -385,8 +384,8 @@ describe('survey unit', () => {
             return r;
         }, { questions: [], sections: [] });
 
-        hxSurvey.questions = questions;
-        hxSurvey.sections = sections;
+        hxSurvey.questions = p.questions;
+        hxSurvey.sections = p.sections;
     });
 
     it('create survey by existing questions only', () => {
@@ -557,8 +556,8 @@ describe('survey unit', () => {
                         const removedAnswer = answeredSurveyQuestions.find(qx => (qx.id === removedQxId)).answer;
                         answers.push({ questionId: removedQxId, answer: removedAnswer });
                         return models.survey.getAnsweredSurvey(input.userId, input.surveyId)
-                            .then((answeredSurvey) => {
-                                comparator.answeredSurvey(survey, answers, answeredSurvey);
+                            .then((r) => {
+                                comparator.answeredSurvey(survey, answers, r);
                             });
                     });
             });

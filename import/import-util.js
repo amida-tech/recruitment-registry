@@ -24,7 +24,7 @@ const updateMeta = function (target, record, options) {
     if (options.meta) {
         const meta = extractMeta(record, options.meta);
         if (Object.keys(meta).length > 0) {
-            target.meta = meta;
+            target.meta = meta; // eslint-disable-line no-param-reassign
         }
     }
 };

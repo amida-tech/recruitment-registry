@@ -1,5 +1,9 @@
 'use strict';
 
+/* eslint no-param-reassign: 0, max-len: 0 */
+
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 const chai = require('chai');
 const _ = require('lodash');
 
@@ -8,9 +12,13 @@ const comparator = require('./comparator');
 
 const expect = chai.expect;
 
+const answerValueType = [
+    'textValue', 'code', 'monthValue', 'yearValue', 'dayValue', 'integerValue', 'boolValue',
+];
+
 const formAnswersToPost = function (survey, answersSpec) {
     const questions = survey.questions;
-    const result = answersSpec.reduce((r, spec, index) => {
+    return answersSpec.reduce((r, spec, index) => {
         if (spec !== null) {
             const entry = {
                 questionId: questions[index].id,
@@ -20,12 +28,12 @@ const formAnswersToPost = function (survey, answersSpec) {
                 entry.answer.choices = spec.choices.map((cindex) => {
                     const { id } = questions[index].choices[cindex.index];
                     const result = { id };
-                    const numValues = ['textValue', 'code', 'monthValue', 'yearValue', 'dayValue', 'integerValue', 'boolValue'].reduce((r, p) => {
+                    const numValues = answerValueType.reduce((r2, p) => {
                         if (Object.prototype.hasOwnProperty.call(cindex, p)) {
-                            r += 1;
                             result[p] = cindex[p];
+                            return r2 + 1;
                         }
-                        return r;
+                        return r2;
                     }, 0);
                     if (!numValues) {
                         result.boolValue = true;
@@ -46,7 +54,6 @@ const formAnswersToPost = function (survey, answersSpec) {
         }
         return r;
     }, []);
-    return result;
 };
 
 const formAnsweredSurvey = function (survey, answers) {

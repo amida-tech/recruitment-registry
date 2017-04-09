@@ -2,6 +2,8 @@
 
 'use strict';
 
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 /* eslint no-console: 0 */
 
 process.env.NODE_ENV = 'test';

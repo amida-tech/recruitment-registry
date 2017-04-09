@@ -8,7 +8,7 @@ const config = require('../../config');
 const SPromise = require('../../lib/promise');
 const RRError = require('../../lib/rr-error');
 
-module.exports = function Table(sequelize, DataTypes) {
+module.exports = function User(sequelize, DataTypes) {
     const bccompare = SPromise.promisify(bcrypt.compare, {
         context: bcrypt,
     });
@@ -19,7 +19,7 @@ module.exports = function Table(sequelize, DataTypes) {
         context: crypto,
     });
 
-    const result = sequelize.define('registry_user', {
+    const Table = sequelize.define('registry_user', {
         username: {
             type: DataTypes.TEXT,
             unique: true,
@@ -106,7 +106,7 @@ module.exports = function Table(sequelize, DataTypes) {
         },
     });
 
-    result.prototype.authenticate = function authenticate(password) {
+    Table.prototype.authenticate = function authenticate(password) {
         return bccompare(password, this.password)
             .then((result) => {
                 if (!result) {
@@ -116,14 +116,14 @@ module.exports = function Table(sequelize, DataTypes) {
     };
 
 
-    result.prototype.updatePassword = function updatePassword() {
+    Table.prototype.updatePassword = function updatePassword() {
         return bchash(this.password, config.crypt.hashrounds)
             .then((hash) => {
                 this.password = hash;
             });
     };
 
-    result.prototype.updateResetPWToken = function updateResetPWToken() {
+    Table.prototype.updateResetPWToken = function updateResetPWToken() {
         return randomBytes(config.crypt.resetTokenLength)
             .then(buf => buf.toString('hex'))
             .then(token => randomBytes(config.crypt.resetPasswordLength)
@@ -143,5 +143,5 @@ module.exports = function Table(sequelize, DataTypes) {
     };
 
 
-    return result;
+    return Table;
 };

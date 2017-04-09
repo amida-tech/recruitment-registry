@@ -1,5 +1,7 @@
 'use strict';
 
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 const _ = require('lodash');
 
 const models = require('../models');
@@ -60,9 +62,9 @@ const updateExportSurveyQuestion = function (r, wrapSection, index, answerIdenti
             const { identifier, tag } = answerIdentifierMap[`${question.id}:${choice.id}`];
             line[cAnswerHash] = identifier;
             line.tag = tag;
-            const meta = choice.meta;
-            if (meta && meta.toggle) {
-                line.toggle = meta.toggle;
+            const toggle = _.get(choice, 'meta.toggle');
+            if (toggle) {
+                line.toggle = toggle;
             }
             r.push(line);
             line = {};
@@ -153,8 +155,8 @@ const exportAssessments = function () {
                         .then((answers) => {
                             const surveyIdSet = new Set();
                             answers.forEach(answer => surveyIdSet.add(answer.surveyId));
-                            const ids = [...surveyIdSet];
-                            return models.surveyIdentifier.getIdentifiersBySurveyId(identifierType, ids)
+                            const surveyIds = [...surveyIdSet];
+                            return models.surveyIdentifier.getIdentifiersBySurveyId(identifierType, surveyIds)
                                 .then((surveyMap) => {
                                     answers.forEach((answer) => {
                                         answer.pillar_hash = surveyMap.get(answer.surveyId);

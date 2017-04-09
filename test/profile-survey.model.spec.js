@@ -2,6 +2,8 @@
 
 'use strict';
 
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
@@ -152,9 +154,9 @@ describe('profile survey unit', () => {
     it('get/verify profile survey 4 id', verifyProfileSurveyIdFn(4));
 
     it('replace survey 4', () => {
-        const id = hxSurvey.id(4);
+        const sid = hxSurvey.id(4);
         const replacementSurvey = generator.newSurvey();
-        return models.survey.replaceSurvey(id, replacementSurvey)
+        return models.survey.replaceSurvey(sid, replacementSurvey)
             .then((id) => {
                 hxSurvey.push(replacementSurvey, { id });
             });

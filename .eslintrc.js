@@ -7,9 +7,9 @@ module.exports = {
         'indent': ['error', 4],
         'func-names': ['error', 'as-needed'],
         'prefer-arrow-callback': ['error', { 'allowNamedFunctions': true }],
-        'no-param-reassign': 'off',
-        'no-shadow': 'off',
-        'max-len': 'off',
+        'no-param-reassign': ['error', { // p, q, r are used in accumulator patterns
+            'props': true, 'ignorePropertyModificationsFor': ['req', 'res', 'p', 'q', 'r']
+        }],
     },
     'parserOptions': {
         'sourceType': 'script'

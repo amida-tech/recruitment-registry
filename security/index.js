@@ -41,9 +41,9 @@ const jwtAuth = function (req, header, verifyUserFn, callback) {
                 return req.models.auth.getUser(payload)
                     .then((user) => {
                         if (user) {
-                            const err = verifyUserFn(user);
+                            const err2 = verifyUserFn(user);
                             req.user = user;
-                            return callback(err);
+                            return callback(err2);
                         }
                         return callback(invalidUser);
                     });

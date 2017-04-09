@@ -29,8 +29,8 @@ module.exports = function gruntmain(grunt) {
                     grunt.log.error('');
                     grunt.log.error('Errors');
                     grunt.log.error('------');
-                    result.errors.forEach((err) => {
-                        grunt.log.error(`#/${err.path.join('/')}: ${err.message}`);
+                    result.errors.forEach((err2) => {
+                        grunt.log.error(`#/${err2.path.join('/')}: ${err.message}`);
                     });
                     grunt.log.error('');
                 }

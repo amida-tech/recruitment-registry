@@ -1,5 +1,7 @@
 'use strict';
 
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 const _ = require('lodash');
 
 const Answerer = require('./answerer');
@@ -31,8 +33,8 @@ class Generator {
         this.registryIndex = -1;
     }
 
-    updateSurveyGenerator(SurveyGenerator) {
-        this.surveyGenerator = this.surveyGenerator.newSurveyGenerator(SurveyGenerator);
+    updateSurveyGenerator(SurveyGeneratorClass) {
+        this.surveyGenerator = this.surveyGenerator.newSurveyGenerator(SurveyGeneratorClass);
     }
 
     updateAnswererClass(AnswererClass) {

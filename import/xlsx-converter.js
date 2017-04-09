@@ -26,9 +26,9 @@ module.exports = class XLSXConverter {
     }
 
     static convertDateTimes(content, properties) {
-        content.forEach((row) => {
-            properties.forEach((property) => {
-                row[property] = XLSXConverter.convertDateTime(row[property]);
+        content.forEach((r) => {
+            properties.forEach((p) => {
+                r[p] = XLSXConverter.convertDateTime(r[p]);
             });
         });
     }

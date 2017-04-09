@@ -2,6 +2,8 @@
 
 'use strict';
 
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 process.env.NODE_ENV = 'test';
 
 const jwt = require('jsonwebtoken');
@@ -50,9 +52,9 @@ describe('auth integration', () => {
                         return done(err);
                     }
                     const jwtCookie = rrSuperTest.getJWT();
-                    return jwt.verify(jwtCookie.value, config.jwt.secret, {}, (err, jwtObject) => {
-                        if (err) {
-                            return done(err);
+                    return jwt.verify(jwtCookie.value, config.jwt.secret, {}, (err2, jwtObject) => {
+                        if (err2) {
+                            return done(err2);
                         }
                         const id = hxUser.id(index);
                         expect(jwtObject.username).to.equal(client.username || client.email.toLowerCase());

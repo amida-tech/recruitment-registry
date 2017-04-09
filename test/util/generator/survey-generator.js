@@ -1,5 +1,7 @@
 'use strict';
 
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 const _ = require('lodash');
 
 const QuestionGenerator = require('./question-generator');
@@ -110,8 +112,8 @@ module.exports = class SurveyGenerator {
             const sectionSurveyQuestions = _.range(sectionCount).map(index => this.newSurveyQuestion(index));
             surveyQuestions[questionGroupIndex].sections = [{ questions: [...sectionSurveyQuestions] }];
             if (this.surveyIndex % 2) {
-                const sectionSurveyQuestions = _.range(sectionCount).map(index => this.newSurveyQuestion(index));
-                surveyQuestions[questionGroupIndex].sections.push({ name: 'addl_section_name', questions: [...sectionSurveyQuestions] });
+                const r = _.range(sectionCount).map(index => this.newSurveyQuestion(index));
+                surveyQuestions[questionGroupIndex].sections.push({ name: 'addl_section_name', questions: [...r] });
             }
         }
         if (!sectionType) {

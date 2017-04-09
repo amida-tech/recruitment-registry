@@ -59,15 +59,14 @@ module.exports = class ProfileSurveyDAO extends Base {
                                 .then(rawTypeIds => _.map(rawTypeIds, 'consentTypeId'))
                                 .then((typeIds) => {
                                     if (typeIds.length) {
-                                        return this.consentDocument.listConsentDocuments({ summary: true, typeIds })
+                                        return this.consentDocument.listConsentDocuments({ summary: true, typeIds }) // eslint-disable-line max-len
                                             .then((consentDocuments) => {
-                                                survey.consentDocuments = consentDocuments;
-                                                return survey;
+                                                survey.consentDocuments = consentDocuments; // eslint-disable-line no-param-reassign, max-len
                                             });
                                     }
-                                    return survey;
+                                    return null;
                                 })
-                                .then(survey => ({ exists: true, survey }));
+                                .then(() => ({ exists: true, survey }));
                         });
                 }
                 return { exists: false };

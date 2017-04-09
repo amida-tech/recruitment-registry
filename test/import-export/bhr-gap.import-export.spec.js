@@ -2,6 +2,8 @@
 
 'use strict';
 
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 process.env.NODE_ENV = 'test';
 
 const fs = require('fs');
@@ -39,8 +41,8 @@ xdescribe('bhr gap import-export', () => {
 
     it('load all choice sets', () => models.choiceSet.createChoiceSets(choiceSets)
             .then(() => models.choiceSet.listChoiceSets())
-            .then((choiceSets) => {
-                const promises = choiceSets.map(({ id }) => models.choiceSet.getChoiceSet(id));
+            .then((sets) => {
+                const promises = sets.map(({ id }) => models.choiceSet.getChoiceSet(id));
                 return SPromise.all(promises).then(result => comparator.updateChoiceSetMap(result));
             }));
 
@@ -75,8 +77,8 @@ xdescribe('bhr gap import-export', () => {
     });
 
     it('export subject answer', () => {
-        const filepath = path.join(outputDir, 'Subjects_exported.csv');
-        return bhrGapExport.writeSubjectsData(filepath, {
+        const fpExported = path.join(outputDir, 'Subjects_exported.csv');
+        return bhrGapExport.writeSubjectsData(fpExported, {
             order: 'SubjectCode',
             surveyIdentifier: {
                 type: 'bhr-gap',
@@ -95,8 +97,8 @@ xdescribe('bhr gap import-export', () => {
                         return result;
                     })
                     .then((result) => {
-                        const filepath = path.join(outputDir, 'Subjects_original.csv');
-                        fs.writeFileSync(filepath, exportConverter.dataToCSV(result));
+                        const fpOriginal = path.join(outputDir, 'Subjects_original.csv');
+                        fs.writeFileSync(fpOriginal, exportConverter.dataToCSV(result));
                     });
             });
     });
@@ -118,8 +120,8 @@ xdescribe('bhr gap import-export', () => {
 
     const exportTableDataFn = function (surveyType, answerType, filenamebase) {
         return function exportTableData() {
-            const filepath = path.join(outputDir, `${filenamebase}_exported.csv`);
-            return bhrGapExport.writeTableData({ type: 'bhr-gap', value: surveyType }, answerType, filepath, ['SubjectCode', 'Timepoint'])
+            const fpExported = path.join(outputDir, `${filenamebase}_exported.csv`);
+            return bhrGapExport.writeTableData({ type: 'bhr-gap', value: surveyType }, answerType, fpExported, ['SubjectCode', 'Timepoint'])
                 .then(({ columns }) => {
                     const exportConverter = new CSVConverterExport({ fields: columns });
                     const filepath = path.join(fixtureDir, `${filenamebase}.csv`);
@@ -130,8 +132,8 @@ xdescribe('bhr gap import-export', () => {
                             return result;
                         })
                         .then((result) => {
-                            const filepath = path.join(outputDir, `${filenamebase}_original.csv`);
-                            fs.writeFileSync(filepath, exportConverter.dataToCSV(result));
+                            const fpOriginal = path.join(outputDir, `${filenamebase}_original.csv`);
+                            fs.writeFileSync(fpOriginal, exportConverter.dataToCSV(result));
                         });
                 });
         };

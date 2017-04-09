@@ -2,6 +2,8 @@
 
 'use strict';
 
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 process.env.NODE_ENV = 'test';
 
 const _ = require('lodash');
@@ -61,9 +63,9 @@ describe('survey (conditional questions) integration', () => {
             const newSurvey = ConditionalSurveyGenerator.newSurveyFromPrevious(clientSurvey, survey);
             rrSuperTest.post('/surveys', newSurvey, 201)
                 .expect((res) => {
-                    const survey = _.cloneDeep(hxSurvey.server(surveyIndex));
-                    survey.id = res.body.id;
-                    hxSurvey.push(newSurvey, survey);
+                    const server = _.cloneDeep(hxSurvey.server(surveyIndex));
+                    server.id = res.body.id;
+                    hxSurvey.push(newSurvey, server);
                 })
                 .end(done);
         });

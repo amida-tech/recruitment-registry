@@ -1,5 +1,7 @@
 'use strict';
 
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 const answerSequence = [{ // user 0, survey 0
     userIndex: 0,
     surveyIndex: 0,

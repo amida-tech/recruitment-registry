@@ -1,5 +1,7 @@
 'use strict';
 
+/* eslint no-param-reassign: 0, max-len: 0 */
+
 const chai = require('chai');
 const _ = require('lodash');
 const moment = require('moment');
@@ -22,27 +24,29 @@ const comparator = {
                 }
                 clientRule.id = serverRule.id;
                 const answer = clientRule.answer;
-                const question = options.serverQuestionMap[serverRule.questionId];
-                if (answer && answer.choiceText) {
-                    const enableWhenChoice = question.choices.find(choice => (choice.text === answer.choiceText));
-                    answer.choice = enableWhenChoice.id;
-                    delete answer.choiceText;
-                }
-                if (answer && answer.choices) {
-                    answer.choices.forEach((answerChoice) => {
-                        const enableWhenChoice = question.choices.find(choice => (choice.text === answerChoice.text));
-                        answerChoice.id = enableWhenChoice.id;
-                        delete answerChoice.text;
-                        if (Object.keys(answerChoice).length === 1) {
-                            answerChoice.boolValue = true;
-                        }
-                    });
-                    answer.choices = _.sortBy(answer.choices, 'id');
+                if (answer) {
+                    const question = options.serverQuestionMap[serverRule.questionId];
+                    if (answer.choiceText) {
+                        const enableWhenChoice = question.choices.find(choice => (choice.text === answer.choiceText));
+                        answer.choice = enableWhenChoice.id;
+                        delete answer.choiceText;
+                    }
+                    if (answer.choices) {
+                        answer.choices.forEach((answerChoice) => {
+                            const enableWhenChoice = question.choices.find(choice => (choice.text === answerChoice.text));
+                            answerChoice.id = enableWhenChoice.id;
+                            delete answerChoice.text;
+                            if (Object.keys(answerChoice).length === 1) {
+                                answerChoice.boolValue = true;
+                            }
+                        });
+                        answer.choices = _.sortBy(answer.choices, 'id');
+                    }
                 }
                 if (answer && (answer.code !== undefined)) {
                     const questionId = serverRule.questionId;
                     const question = options.serverQuestionMap[questionId];
-                    const choice = question.choices.find(choice => (choice.code === answer.code));
+                    const choice = question.choices.find(ch => (ch.code === answer.code));
                     answer.choice = choice.id;
                     delete answer.code;
                 }
@@ -103,10 +107,7 @@ const comparator = {
         if (options.identifiers) {
             const identifiers = options.identifiers[id];
             if (expected.type === 'choice' || expected.type === 'choices') {
-                const map = new Map(identifiers.answerIdentifiers.map((answerIdentifier) => {
-                    const id = answerIdentifier.questionChoiceId;
-                    return [id, answerIdentifier.identifier];
-                }));
+                const map = new Map(identifiers.answerIdentifiers.map(answerIdentifier => [answerIdentifier.questionChoiceId, answerIdentifier.identifier]));
                 expected.choices.forEach((choice) => {
                     choice.identifier = map.get(choice.id);
                 });
@@ -178,7 +179,10 @@ const comparator = {
     answeredSurvey(survey, answers, serverAnsweredSurvey, language) {
         const expected = _.cloneDeep(survey);
         const answerMap = new Map();
-        answers.forEach(({ questionId, answer, answers, language }) => answerMap.set(questionId, { answer, answers, language }));
+        answers.forEach((answer) => {
+            const questionId = answer.questionId;
+            answerMap.set(questionId, _.pick(answer, ['answer', 'answers', 'language']));
+        });
         const surveyQuestions = models.survey.getQuestions(expected);
         surveyQuestions.forEach((qx) => {
             const clientAnswers = answerMap.get(qx.id);

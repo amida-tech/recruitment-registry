@@ -11,7 +11,8 @@ module.exports = class AssessmentDAO extends Base {
 
     createAssessment({ name, sequenceType = 'ondemand', surveys }) {
         const Assessment = this.db.Assessment;
-        return this.transaction(transaction => Assessment.create({ name, sequenceType }, { transaction })
+        const record = { name, sequenceType };
+        return this.transaction(transaction => Assessment.create(record, { transaction })
                 .then(({ id }) => this.createAssessmentSurveys(id, surveys, transaction)
                         .then(() => ({ id }))));
     }
@@ -27,10 +28,10 @@ module.exports = class AssessmentDAO extends Base {
                 ],
                 raw: true,
             })
-                    .then((surveys) => {
-                        assessment.surveys = surveys;
-                        return assessment;
-                    }));
+                .then((surveys) => {
+                    assessment.surveys = surveys; // eslint-disable-line no-param-reassign
+                    return assessment;
+                }));
     }
 
     listAssessments() {
