@@ -79,7 +79,7 @@ module.exports = class ConsentDocumentDAO extends Translatable {
                             const result = typeIds.map((typeId) => {
                                 const docs = map[typeId];
                                 const fields = types[typeId];
-                                return ConsentDocumentDAO.finalizeDocumentFields(docs, fields, options);
+                                return ConsentDocumentDAO.finalizeDocumentFields(docs, fields, options); // eslint-disable-line max-len
                             });
                             return result;
                         }

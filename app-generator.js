@@ -23,11 +23,11 @@ const i18n = require('./i18n');
 /* jshint unused:false*/
 const errHandler = function (err, req, res, next) { // eslint-disable-line no-unused-vars
     logger.error(err);
-    err = jsutil.errToJSON(err);
+    const jsonErr = jsutil.errToJSON(err);
     if ((!res.statusCode) || (res.statusCode < 300)) {
         res.statusCode = 500;
     }
-    res.json(err);
+    res.json(jsonErr);
 };
 
 const userAudit = function (req, res, next) {
@@ -106,7 +106,7 @@ exports.initialize = function initialize(app, options, callback) {
         }));
 
         const m = options.models || (options.generatedb ? modelsGenerator(schema) : models);
-        app.locals.models = m;
+        app.locals.models = m; // eslint-disable-line no-param-reassign
         if (Array.isArray(schema)) {
             app.use(multiModelsSupplyFn(m));
         } else {

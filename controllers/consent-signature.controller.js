@@ -6,21 +6,27 @@ const shared = require('./shared.js');
 
 exports.createSignature = function createSignature(req, res) {
     const { consentDocumentId, language } = _.get(req, 'swagger.params.consent_document.value');
-    const userId = req.user.id;
-    const ip = req.ip;
-    const userAgent = _.get(req, 'headers.user-agent');
-    req.models.consentSignature.createSignature({ consentDocumentId, userId, language, ip, userAgent })
+    const signature = {
+        consentDocumentId,
+        userId: req.user.id,
+        language,
+        ip: req.ip,
+        userAgent: _.get(req, 'headers.user-agent'),
+    };
+    req.models.consentSignature.createSignature(signature)
         .then(({ id }) => res.status(201).json({ id }))
         .catch(shared.handleError(res));
 };
 
 exports.bulkCreateSignatures = function bulkCreateSignatures(req, res) {
     const input = _.get(req, 'swagger.params.consent_documents.value');
-    const userId = req.user.id;
-    const ip = req.ip;
-    const userAgent = _.get(req, 'headers.user-agent');
-    const language = input.language;
-    req.models.consentSignature.bulkCreateSignatures(input.consentDocumentIds, { userId, language, ip, userAgent })
+    const common = {
+        userId: req.user.id,
+        language: input.language,
+        ip: req.ip,
+        userAgent: _.get(req, 'headers.user-agent'),
+    };
+    req.models.consentSignature.bulkCreateSignatures(input.consentDocumentIds, common)
         .then(result => res.status(201).json(result))
         .catch(shared.handleError(res));
 };

@@ -181,7 +181,7 @@ const choiceValueToDBFormat = {
     choices(value) {
         return value.map((r) => {
             const questionChoiceId = r.id;
-            r = _.omit(r, 'id');
+            delete r.id;
             const keys = Object.keys(r);
             const numKeys = keys.length;
             if (numKeys > 1) {
