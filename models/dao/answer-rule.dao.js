@@ -44,11 +44,11 @@ module.exports = class AnswerRuleDAO extends Base {
                 })
                     .then((answerRuleValues) => {
                         if (answerRuleValues.length) {
-                            answerRuleValues.forEach((answer) => {
-                                if (answer['questionChoice.type']) {
-                                    answer.choiceType = answer['questionChoice.type'];
+                            answerRuleValues.forEach((r) => {
+                                if (r['questionChoice.type']) {
+                                    r.choiceType = r['questionChoice.type'];
                                 }
-                                delete answer['questionChoice.type'];
+                                delete r['questionChoice.type'];
                             });
                             const groupedResult = _.groupBy(answerRuleValues, 'ruleId');
                             ruleIds.forEach((ruleId) => {
@@ -115,7 +115,7 @@ module.exports = class AnswerRuleDAO extends Base {
                     raw: true,
                     order: 'id',
                 })
-                    .then(answerRuleValues => answerRuleValues.reduce((r, { ruleId, questionChoiceId, value }) => {
+                    .then(answerRuleValues => answerRuleValues.reduce((r, { ruleId, questionChoiceId, value }) => { // eslint-disable-line max-len
                         let current = r.get(ruleId);
                         if (!current) {
                             current = [];

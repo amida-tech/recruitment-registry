@@ -76,12 +76,16 @@ module.exports = class ConsentDocumentDAO extends Translatable {
                     .then((types) => {
                         if (options.typeOrder) {
                             const map = _.keyBy(documents, 'typeId');
-                            const result = typeIds.map(typeId => ConsentDocumentDAO.finalizeDocumentFields(map[typeId], types[typeId], options));
+                            const result = typeIds.map((typeId) => {
+                                const docs = map[typeId];
+                                const fields = types[typeId];
+                                return ConsentDocumentDAO.finalizeDocumentFields(docs, fields, options);
+                            });
                             return result;
                         }
-                        documents.forEach((document) => {
-                            const typeId = document.typeId;
-                            ConsentDocumentDAO.finalizeDocumentFields(document, types[typeId], options);
+                        documents.forEach((r) => {
+                            const typeId = r.typeId;
+                            ConsentDocumentDAO.finalizeDocumentFields(r, types[typeId], options);
                         });
                         return documents;
                     });

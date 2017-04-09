@@ -20,7 +20,7 @@ module.exports = class ConsentDAO extends Base {
         })
             .then(rawTypeIds => _.map(rawTypeIds, 'typeId'))
             .then((typeIds) => {
-                result.sections = typeIds;
+                result.sections = typeIds; // eslint-disable-line no-param-reassign
                 return result;
             });
     }
@@ -55,10 +55,10 @@ module.exports = class ConsentDAO extends Base {
         return Consent.findAll({ raw: true, attributes: ['id', 'name'], order: 'id' })
             .then(consents => ConsentSection.findAll({ raw: true, attributes: ['consentId', 'typeId', 'line'] })
                     .then(allSections => _.groupBy(allSections, 'consentId'))
-                    .then(allSections => consents.map((consent) => {
-                        const sections = _.sortBy(allSections[consent.id], 'line');
-                        consent.sections = _.map(sections, 'typeId');
-                        return consent;
+                    .then(allSections => consents.map((r) => {
+                        const sections = _.sortBy(allSections[r.id], 'line');
+                        r.sections = _.map(sections, 'typeId');
+                        return r;
                     })));
     }
 
@@ -83,7 +83,7 @@ module.exports = class ConsentDAO extends Base {
                     return consentDocument.listConsentDocuments(opt);
                 })
                 .then((sections) => {
-                    result.sections = sections;
+                    result.sections = sections; // eslint-disable-line no-param-reassign
                     return result;
                 });
         };
@@ -114,10 +114,10 @@ module.exports = class ConsentDAO extends Base {
             })
                 .then(signatures => _.keyBy(signatures, 'consentDocumentId'))
                 .then((signatures) => {
-                    result.sections.forEach((section) => {
-                        section.signature = Boolean(signatures[section.id]);
-                        if (section.signature) {
-                            section.language = signatures[section.id].language;
+                    result.sections.forEach((r) => {
+                        r.signature = Boolean(signatures[r.id]);
+                        if (r.signature) {
+                            r.language = signatures[r.id].language;
                         }
                     });
                     return result;

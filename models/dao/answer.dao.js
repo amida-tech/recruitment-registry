@@ -84,7 +84,7 @@ const requestPost = function (registryName, questions, url) {
     ));
 };
 
-const isEnabled = function ({ questionId, parents }, questionAnswerRulesMap, sectionAnswerRulesMap, answersByQuestionId) {
+const isEnabled = function ({ questionId, parents }, questionAnswerRulesMap, sectionAnswerRulesMap, answersByQuestionId) { // eslint-disable-line max-len
     const rules = questionAnswerRulesMap.get(questionId);
     if (rules && rules.length) {
         const enabled = evaluateEnableWhen(rules, answersByQuestionId);
@@ -123,21 +123,25 @@ module.exports = class AnswerDAO extends Base {
 
     fileAnswer({ userId, surveyId, language, answers }, transaction) {
         const Answer = this.db.Answer;
-        answers = answers.reduce((r, q) => {
-            const questionId = q.questionId;
-            const values = answerCommon.prepareAnswerForDB(q.answer || q.answers).map(value => ({
-                userId,
-                surveyId,
-                language,
-                questionId,
-                questionChoiceId: value.questionChoiceId || null,
-                multipleIndex: (value.multipleIndex || value.multipleIndex === 0) ? value.multipleIndex : null,
-                value: Object.prototype.hasOwnProperty.call(value, 'value') ? value.value : null,
-            }));
-            values.forEach(value => r.push(value));
+        const records = answers.reduce((r, p) => {
+            const questionId = p.questionId;
+            const dbValues = answerCommon.prepareAnswerForDB(p.answer || p.answers);
+            dbValues.forEach((v) => {
+                const mndx = v.multipleIndex;
+                const value = {
+                    userId,
+                    surveyId,
+                    language,
+                    questionId,
+                    questionChoiceId: v.questionChoiceId || null,
+                    multipleIndex: (mndx || mndx === 0) ? mndx : null,
+                    value: 'value' in v ? v.value : null,
+                };
+                r.push(value);
+            });
             return r;
         }, []);
-        return Answer.bulkCreate(answers, { transaction });
+        return Answer.bulkCreate(records, { transaction });
     }
 
     updateStatus(userId, surveyId, status, transaction) {
@@ -149,11 +153,12 @@ module.exports = class AnswerDAO extends Base {
             transaction,
         })
             .then((userSurvey) => {
+                const record = { userId, surveyId, status };
                 if (!userSurvey) {
-                    return UserSurvey.create({ userId, surveyId, status }, { transaction });
+                    return UserSurvey.create(record, { transaction });
                 } else if (userSurvey.status !== status) {
                     return UserSurvey.destroy({ where: { userId, surveyId }, transaction })
-                        .then(() => UserSurvey.create({ userId, surveyId, status }, { transaction }));
+                        .then(() => UserSurvey.create(record, { transaction }));
                 }
                 return null;
             });
@@ -182,25 +187,25 @@ module.exports = class AnswerDAO extends Base {
                 const answersByQuestionId = _.keyBy(answers, 'questionId');
                 return this.answerRule.getQuestionExpandedSurveyAnswerRules(surveyId)
                     .then(({ sectionAnswerRulesMap, questionAnswerRulesMap }) => {
-                        surveyQuestions.forEach((surveyQuestion) => {
-                            const questionId = surveyQuestion.questionId;
+                        surveyQuestions.forEach((r) => {
+                            const questionId = r.questionId;
                             const answer = answersByQuestionId[questionId];
                             if (sectionAnswerRulesMap || questionAnswerRulesMap) {
-                                const enabled = isEnabled(surveyQuestion, questionAnswerRulesMap, sectionAnswerRulesMap, answersByQuestionId);
+                                const enabled = isEnabled(r, questionAnswerRulesMap, sectionAnswerRulesMap, answersByQuestionId); // eslint-disable-line max-len
                                 if (!enabled) {
-                                    surveyQuestion.ignore = true;
+                                    r.ignore = true;
                                 }
                             }
-                            if (surveyQuestion.ignore) {
+                            if (r.ignore) {
                                 if (answer) {
                                     throw new RRError('answerToBeSkippedAnswered');
                                 }
-                                surveyQuestion.required = false;
+                                r.required = false;
                                 answers.push({ questionId });
                                 return;
                             }
                             if (answer && (answer.answer || answer.answers)) {
-                                surveyQuestion.required = false;
+                                r.required = false;
                             }
                         });
                         return surveyQuestions;
@@ -249,9 +254,9 @@ module.exports = class AnswerDAO extends Base {
             .then(() => this.validateConsent(userId, surveyId, 'create', transaction));
     }
 
-    createAnswersTx({ userId, surveyId, answers, language = 'en', status = 'completed' }, transaction) {
+    createAnswersTx({ userId, surveyId, answers, language = 'en', status = 'completed' }, transaction) { // eslint-disable-line max-len
         const Answer = this.db.Answer;
-        answers = _.cloneDeep(answers);
+        answers = _.cloneDeep(answers); // eslint-disable-line no-param-reassign
         return this.validateCreate(userId, surveyId, answers, status, transaction)
             .then(() => this.updateStatus(userId, surveyId, status, transaction))
             .then(() => {
@@ -260,7 +265,7 @@ module.exports = class AnswerDAO extends Base {
                 return Answer.destroy({ where, transaction });
             })
             .then(() => {
-                answers = _.filter(answers, answer => answer.answer || answer.answers);
+                answers = _.filter(answers, answer => answer.answer || answer.answers); // eslint-disable-line no-param-reassign, max-len
                 if (answers.length) {
                     return this.fileAnswer({ userId, surveyId, language, answers }, transaction);
                 }
@@ -276,7 +281,7 @@ module.exports = class AnswerDAO extends Base {
         const Answer = this.db.Answer;
         const Question = this.db.Question;
         const QuestionChoice = this.db.QuestionChoice;
-        scope = scope || 'survey';
+        scope = scope || 'survey'; // eslint-disable-line no-param-reassign
         const where = {};
         if (ids) {
             where.id = { $in: ids };
@@ -309,31 +314,31 @@ module.exports = class AnswerDAO extends Base {
         ];
         return Answer.findAll({ raw: true, where, attributes, include, paranoid: !history })
             .then((result) => {
-                result.forEach((answer) => {
-                    if (answer['question.type'] === 'choices') {
-                        answer.choiceType = answer['questionChoice.type'];
+                result.forEach((r) => {
+                    if (r['question.type'] === 'choices') {
+                        r.choiceType = r['questionChoice.type'];
                     }
-                    delete answer['questionChoice.type'];
+                    delete r['questionChoice.type'];
                 });
                 return result;
             })
             .then((result) => {
                 if (scope === 'export') {
-                    return result.map((answer) => {
-                        const r = { surveyId: answer.surveyId };
+                    return result.map((p) => {
+                        const r = { surveyId: p.surveyId };
                         if (userIds) {
-                            r.userId = answer.userId;
+                            r.userId = p.userId;
                         }
-                        r.questionId = answer['question.id'];
-                        r.questionType = answer['question.type'];
-                        if (answer.questionChoiceId) {
-                            r.questionChoiceId = answer.questionChoiceId;
+                        r.questionId = p['question.id'];
+                        r.questionType = p['question.type'];
+                        if (p.questionChoiceId) {
+                            r.questionChoiceId = p.questionChoiceId;
                         }
-                        if (answer.value) {
-                            r.value = answer.value;
+                        if (p.value) {
+                            r.value = p.value;
                         }
-                        if (answer.choiceType) {
-                            r.choiceType = answer.choiceType;
+                        if (p.choiceType) {
+                            r.choiceType = p.choiceType;
                         }
                         return r;
                     });
@@ -396,31 +401,31 @@ module.exports = class AnswerDAO extends Base {
         const { userId, surveyIdMap, questionIdMap, userIdMap } = maps;
         const converter = new ImportCSVConverter({ checkType: false });
         return converter.streamToRecords(stream)
-            .then(records => records.map((record) => {
-                record.surveyId = surveyIdMap[record.surveyId];
-                const questionIdInfo = questionIdMap[record.questionId];
-                record.questionId = questionIdInfo.questionId;
-                if (record.questionChoiceId) {
+            .then(records => records.map((r) => {
+                r.surveyId = surveyIdMap[r.surveyId];
+                const questionIdInfo = questionIdMap[r.questionId];
+                r.questionId = questionIdInfo.questionId;
+                if (r.questionChoiceId) {
                     const choicesIds = questionIdInfo.choicesIds;
-                    record.questionChoiceId = choicesIds[record.questionChoiceId];
+                    r.questionChoiceId = choicesIds[r.questionChoiceId];
                 } else {
-                    record.questionChoiceId = null;
+                    r.questionChoiceId = null;
                 }
-                if (record.value === '') {
-                    delete record.value;
+                if (r.value === '') {
+                    delete r.value;
                 } else {
-                    record.value = record.value.toString();
+                    r.value = r.value.toString();
                 }
-                if (record.choiceType === 'month' || record.questionType === 'month') {
-                    if (record.value.length === 1) {
-                        record.value = `0${record.value}`;
+                if (r.choiceType === 'month' || r.questionType === 'month') {
+                    if (r.value.length === 1) {
+                        r.value = `0${r.value}`;
                     }
                 }
-                delete record.questionType;
-                delete record.choiceType;
-                record.userId = userId || userIdMap[record.userId];
-                record.language = 'en';
-                return record;
+                delete r.questionType;
+                delete r.choiceType;
+                r.userId = userId || userIdMap[r.userId];
+                r.language = 'en';
+                return r;
             }))
             .then(records => this.db.Answer.bulkCreate(records));
     }
@@ -437,7 +442,10 @@ module.exports = class AnswerDAO extends Base {
         const createdAtColumn = this.timestampColumn('answer', 'created');
         return Answer.findAll({
             where: { id: { $in: ids } },
-            attributes: ['id', 'userId', 'surveyId', 'questionId', 'questionChoiceId', 'value', createdAtColumn],
+            attributes: [
+                'id', 'userId', 'surveyId', 'questionId',
+                'questionChoiceId', 'value', createdAtColumn,
+            ],
             include: [
                 { model: Question, as: 'question', attributes: ['id', 'type'] },
                 { model: QuestionChoice, as: 'questionChoice', attributes: ['type'] },
@@ -453,14 +461,17 @@ module.exports = class AnswerDAO extends Base {
      * @returns {integer}
      */
     searchUsers(criteria) {
-        if (!_.get(criteria, 'questions.length')) {
+        const n = _.get(criteria, 'questions.length');
+        if (!n) {
             const attributes = ['id'];
             return this.db.User.findAll({ raw: true, where: { role: 'participant' }, attributes })
                 .then(ids => ids.map(({ id }) => ({ userId: id })));
         }
 
         const questionIds = criteria.questions.map(question => question.id);
-        if (questionIds.length !== new Set(questionIds).size) { return RRError.reject('searchQuestionRepeat'); }
+        if (questionIds.length !== new Set(questionIds).size) {
+            return RRError.reject('searchQuestionRepeat');
+        }
 
         // find answers that match one of the search criteria
         const where = { $or: [] };
@@ -469,14 +480,14 @@ module.exports = class AnswerDAO extends Base {
                 where.$or.push({
                     question_id: question.id,
                     value: ('value' in answer) ? answer.value.toString() : null,
-                    question_choice_id: ('questionChoiceId' in answer) ? answer.questionChoiceId : null,
+                    question_choice_id: ('questionChoiceId' in answer) ? answer.questionChoiceId : null, // eslint-disable-line max-len
                 });
             });
         });
 
         // find users with a matching answer for each question (i.e., users who match all criteria)
         const include = [{ model: this.db.User, as: 'user', attributes: [] }];
-        const having = this.where(this.literal('COUNT(DISTINCT(question_id))'), criteria.questions.length);
+        const having = this.where(this.literal('COUNT(DISTINCT(question_id))'), n);
         const group = ['user_id'];
 
         // count resulting users

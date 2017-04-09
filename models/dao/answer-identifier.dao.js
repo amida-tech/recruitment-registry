@@ -22,7 +22,7 @@ module.exports = class QuestionIdentifierDAO extends Base {
                     return RRError.reject('answerIdentifierNotFound');
                 }
                 if (ids.questionChoiceId === null) {
-                    delete ids.questionChoiceId;
+                    delete ids.questionChoiceId; // eslint-disable-line no-param-reassign
                 }
                 return ids;
             });
