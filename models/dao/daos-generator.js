@@ -49,17 +49,31 @@ const doasPerSchema = function (db, daosGenerator) {
     const user = new UserDAO(db, { consentDocument });
     const auth = new AuthDAO(db);
     const surveyConsent = new SurveyConsentDAO(db, { consentType });
-    const surveyConsentDocument = new SurveyConsentDocumentDAO(db, { surveyConsent, userConsentDocument });
+    const surveyConsentDocument = new SurveyConsentDocumentDAO(db, {
+        surveyConsent, userConsentDocument,
+    });
     const section = new SectionDAO(db);
     const surveySectionQuestion = new SurveySectionQuestionDAO(db);
     const surveySection = new SurveySectionDAO(db, { section, surveySectionQuestion });
     const questionChoice = new QuestionChoiceDAO(db);
     const choiceSet = new ChoiceSetDAO(db, { questionChoice });
-    const question = new QuestionDAO(db, { questionChoice, choiceSet, questionIdentifier, answerIdentifier });
+    const question = new QuestionDAO(db, {
+        questionChoice, choiceSet, questionIdentifier, answerIdentifier,
+    });
     const surveyQuestion = new SurveyQuestionDAO(db);
     const answerRule = new AnswerRuleDAO(db);
-    const answer = new AnswerDAO(db, { surveyConsentDocument, surveyQuestion, answerRule, generator: daosGenerator });
-    const survey = new SurveyDAO(db, { answer, answerRule, surveySection, question, questionChoice, surveyIdentifier, surveyQuestion });
+    const answer = new AnswerDAO(db, {
+        surveyConsentDocument, surveyQuestion, answerRule, generator: daosGenerator,
+    });
+    const survey = new SurveyDAO(db, {
+        answer,
+        answerRule,
+        surveySection,
+        question,
+        questionChoice,
+        surveyIdentifier,
+        surveyQuestion,
+    });
     const userSurvey = new UserSurveyDAO(db, { survey, answer });
     const consent = new ConsentDAO(db, { consentDocument });
     const profileSurvey = new ProfileSurveyDAO(db, { survey, consentDocument, answer });

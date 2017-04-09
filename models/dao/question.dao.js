@@ -99,10 +99,10 @@ module.exports = class QuestionDAO extends Translatable {
                                 const nChoices = (choices && choices.length) || 0;
                                 if (nOneOfChoices || nChoices) {
                                     if (nOneOfChoices) {
-                                        choices = oneOfChoices.map(ch => ({ text: ch, type: 'bool' }));
+                                        choices = oneOfChoices.map(ch => ({ text: ch, type: 'bool' })); // eslint-disable-line max-len
                                     }
                                     return this.createChoicesTx(result.id, choices, transaction)
-                                        .then(chs => (result.choices = chs));
+                                        .then(chs => (result.choices = chs)); // eslint-disable-line no-param-reassign, max-len
                                 }
                                 return null;
                             })
@@ -110,7 +110,7 @@ module.exports = class QuestionDAO extends Translatable {
                                 if (question.questionIdentifier) {
                                     const questionId = result.id;
                                     const { type, value: identifier } = question.questionIdentifier;
-                                    return this.questionIdentifier.createQuestionIdentifier({ type, identifier, questionId }, transaction);
+                                    return this.questionIdentifier.createQuestionIdentifier({ type, identifier, questionId }, transaction);  // eslint-disable-line max-len
                                 }
                                 return null;
                             })
@@ -118,10 +118,10 @@ module.exports = class QuestionDAO extends Translatable {
                                 const questionId = result.id;
                                 if (question.answerIdentifier) {
                                     const { type, value: identifier } = question.answerIdentifier;
-                                    return this.answerIdentifier.createAnswerIdentifier({ type, identifier, questionId }, transaction);
+                                    return this.answerIdentifier.createAnswerIdentifier({ type, identifier, questionId }, transaction); // eslint-disable-line max-len
                                 } else if (question.answerIdentifiers) {
                                     const { type, values } = question.answerIdentifiers;
-                                    const promises = values.map((identifier, multipleIndex) => this.answerIdentifier.createAnswerIdentifier({ type, identifier, questionId, multipleIndex }, transaction));
+                                    const promises = values.map((identifier, multipleIndex) => this.answerIdentifier.createAnswerIdentifier({ type, identifier, questionId, multipleIndex }, transaction)); // eslint-disable-line max-len
                                     return SPromise.all(promises);
                                 }
                                 return null;
@@ -189,8 +189,8 @@ module.exports = class QuestionDAO extends Translatable {
                 if (question.choiceSetId) {
                     return this.questionChoice.listQuestionChoices(question.choiceSetId, language)
                         .then((choices) => {
-                            question.choices = choices.map(({ id, text, code }) => ({ id, text, code }));
-                            delete question.choiceSetId;
+                            question.choices = choices.map(({ id, text, code }) => ({ id, text, code })); // eslint-disable-line no-param-reassign, max-len
+                            delete question.choiceSetId; // eslint-disable-line no-param-reassign, max-len
                             return question;
                         });
                 }
@@ -204,16 +204,16 @@ module.exports = class QuestionDAO extends Translatable {
                 return this.questionChoice.findChoicesPerQuestion(question.id, options.language)
                     .then((choices) => {
                         if (question.type === 'choice') {
-                            choices.forEach(choice => delete choice.type);
+                            choices.forEach(r => delete r.type);
                         }
                         if (question.type === 'open-choice') {
-                            choices.forEach((choice) => {
-                                if (choice.type === 'bool') {
-                                    delete choice.type;
+                            choices.forEach((r) => {
+                                if (r.type === 'bool') {
+                                    delete r.type;
                                 }
                             });
                         }
-                        question.choices = choices;
+                        question.choices = choices;  // eslint-disable-line no-param-reassign, max-len
                         return question;
                     });
             })
@@ -229,16 +229,16 @@ module.exports = class QuestionDAO extends Translatable {
                                 return RRError.reject('questionNotFederated');
                             }
                             if (['choice', 'choices'].indexOf(question.type) < 0) {
-                                question.answerIdentifier = result[0].identifier;
+                                question.answerIdentifier = result[0].identifier;  // eslint-disable-line no-param-reassign, max-len
                                 return question;
                             }
-                            const map = new Map(result.map(({ questionChoiceId, identifier }) => [questionChoiceId, identifier]));
+                            const map = new Map(result.map(({ questionChoiceId, identifier }) => [questionChoiceId, identifier]));  // eslint-disable-line no-param-reassign, max-len
                             question.choices.forEach((choice) => {
                                 const identifier = map.get(choice.id);
                                 if (!identifier) {
                                     throw new RRError('questionNotFederatedChoice', choice.text);
                                 }
-                                choice.identifier = identifier;
+                                choice.identifier = identifier;   // eslint-disable-line no-param-reassign, max-len
                             });
                             return question;
                         });
@@ -308,7 +308,7 @@ module.exports = class QuestionDAO extends Translatable {
             const where = { surveyId };
             const sqOptions = { raw: true, where, include, attributes: [], order: 'question_id' };
             return this.db.SurveyQuestion.findAll(sqOptions)
-                .then(questions => questions.map(question => Object.keys(question).reduce((r, key) => {
+                .then(questions => questions.map(question => Object.keys(question).reduce((r, key) => {  // eslint-disable-line no-param-reassign, max-len
                     const newKey = key.split('.')[1];
                     r[newKey] = question[key];
                     return r;
@@ -360,16 +360,16 @@ module.exports = class QuestionDAO extends Translatable {
                 }
                 const map = new Map(questions.map(question => ([question.id, question])));
                 if (ids) {
-                    questions = ids.map(id => map.get(id)); // order by specified ids
+                    questions = ids.map(id => map.get(id));  // eslint-disable-line no-param-reassign, max-len
                 }
                 return this.updateAllTexts(questions, language)
                     .then(() => {
                         const promises = questions.reduce((r, question) => {
                             if (question.choiceSetId) {
-                                const promise = this.questionChoice.listQuestionChoices(question.choiceSetId, language)
+                                const promise = this.questionChoice.listQuestionChoices(question.choiceSetId, language)  // eslint-disable-line max-len
                                     .then((choices) => {
-                                        question.choices = choices.map(({ id, text, code }) => ({ id, text, code }));
-                                        delete question.choiceSetId;
+                                        question.choices = choices.map(({ id, text, code }) => ({ id, text, code }));  // eslint-disable-line no-param-reassign, max-len
+                                        delete question.choiceSetId;  // eslint-disable-line no-param-reassign, max-len
                                     });
                                 r.push(promise);
                             }
@@ -381,22 +381,22 @@ module.exports = class QuestionDAO extends Translatable {
                         if (scope !== 'summary') {
                             return this.questionChoice.getAllQuestionChoices(ids, language)
                                 .then((choices) => {
-                                    choices.forEach((choice) => {
-                                        const q = map.get(choice.questionId);
+                                    choices.forEach((r) => {
+                                        const q = map.get(r.questionId);
                                         if (q) {
-                                            delete choice.questionId;
+                                            delete r.questionId;
                                             if (q.type === 'choice' || q.type === 'choice-ref') {
-                                                delete choice.type;
+                                                delete r.type;
                                             }
                                             if (q.type === 'open-choice') {
-                                                if (choice.type === 'bool') {
-                                                    delete choice.type;
+                                                if (r.type === 'bool') {
+                                                    delete r.type;
                                                 }
                                             }
                                             if (q.choices) {
-                                                q.choices.push(choice);
+                                                q.choices.push(r);
                                             } else {
-                                                q.choices = [choice];
+                                                q.choices = [r];
                                             }
                                         }
                                     });
@@ -410,28 +410,33 @@ module.exports = class QuestionDAO extends Translatable {
 
     addQuestionIdentifiersTx(questionId, identifiers, transaction) {
         const QuestionIdentifier = this.db.QuestionIdentifier;
-        const AnswerIdentifier = this.db.AnswerIdentifier;
         const { type, identifier, answerIdentifier, answerIdentifiers } = identifiers;
         return QuestionIdentifier.create({ type, identifier, questionId }, { transaction })
             .then(() => {
                 if (answerIdentifier) {
-                    return AnswerIdentifier.create({ type, identifier: answerIdentifier, questionId }, { transaction });
+                    const record = { type, identifier: answerIdentifier, questionId };
+                    return this.db.AnswerIdentifier.create(record, { transaction });
                 }
-                const pxs = answerIdentifiers.map(r => AnswerIdentifier.create({ type, identifier: r.identifier, questionId, questionChoiceId: r.questionChoiceId }, { transaction }));
-                return SPromise.all(pxs);
+                const records = answerIdentifiers.map(r => ({
+                    type,
+                    identifier: r.identifier,
+                    questionId,
+                    questionChoiceId: r.questionChoiceId,
+                }));
+                return this.db.AnswerIdentifier.bulkCreate(records, { transaction });
             });
     }
 
     addQuestionIdentifiers(questionId, identifiers) {
-        return this.transaction(transaction => this.addQuestionIdentifiersTx(questionId, identifiers, transaction));
+        return this.transaction(transaction => this.addQuestionIdentifiersTx(questionId, identifiers, transaction)); // eslint-disable-line max-len
     }
 
     exportQuestions(options = {}) {
         return this.listQuestions({ scope: 'export' })
-            .then(questions => questions.reduce((r, { id, type, text, instruction, meta, choices }) => {
+            .then(questions => questions.reduce((r, { id, type, text, instruction, meta, choices }) => {  // eslint-disable-line no-param-reassign, max-len
                 const questionLine = { id, type, text, instruction };
                 if (meta && options.meta) {
-                    Object.assign(questionLine, exportMetaQuestionProperties(meta, options.meta, choices, true));
+                    Object.assign(questionLine, exportMetaQuestionProperties(meta, options.meta, choices, true)); // eslint-disable-line max-len
                 }
                 if (!choices) {
                     r.push(questionLine);
@@ -446,7 +451,7 @@ module.exports = class QuestionDAO extends Translatable {
                         line.choiceCode = choice.code;
                     }
                     if (choice.meta && options.meta) {
-                        Object.assign(questionLine, exportMetaQuestionProperties(choice.meta, options.meta, true, false));
+                        Object.assign(questionLine, exportMetaQuestionProperties(choice.meta, options.meta, true, false)); // eslint-disable-line max-len
                     }
                     if (index === 0) {
                         Object.assign(line, questionLine);
@@ -481,7 +486,7 @@ module.exports = class QuestionDAO extends Translatable {
                             question.instruction = record.instruction;
                         }
                         if (options.meta) {
-                            const meta = importMetaQuestionProperties(record, options.meta, 'question');
+                            const meta = importMetaQuestionProperties(record, options.meta, 'question'); // eslint-disable-line max-len
                             if (Object.keys(meta).length > 0) {
                                 question.meta = meta;
                             }
@@ -504,7 +509,7 @@ module.exports = class QuestionDAO extends Translatable {
                             choice.code = record.choiceCode;
                         }
                         if (options.meta) {
-                            const meta = importMetaQuestionProperties(record, options.meta, 'choice');
+                            const meta = importMetaQuestionProperties(record, options.meta, 'choice'); // eslint-disable-line max-len
                             if (Object.keys(meta).length > 0) {
                                 choice.meta = meta;
                             }
@@ -524,14 +529,14 @@ module.exports = class QuestionDAO extends Translatable {
                 return this.transaction((transaction) => {
                     const mapIds = {};
                     const pxs = records.map(({ id, question }) => {
-                        const questionProper = _.omit(question, ['choices', 'key', 'answerKey', 'tag']);
+                        const questionProper = _.omit(question, ['choices', 'key', 'answerKey', 'tag']); // eslint-disable-line max-len
                         return this.createQuestionTx(questionProper, transaction)
                             .then(({ id: questionId }) => {
                                 const type = options.sourceType;
                                 if (type && !question.choices) {
                                     const identifier = question.answerKey;
                                     const tag = parseInt(question.tag, 10);
-                                    return AnswerIdentifier.create({ type, identifier, questionId, tag }, { transaction })
+                                    return AnswerIdentifier.create({ type, identifier, questionId, tag }, { transaction }) // eslint-disable-line max-len
                                         .then(() => questionId);
                                 }
                                 return questionId;
@@ -539,16 +544,16 @@ module.exports = class QuestionDAO extends Translatable {
                             .then((questionId) => {
                                 const choices = question.choices;
                                 if (choices) {
-                                    const inputChoices = choices.map(choice => _.omit(choice, ['id', 'answerKey', 'tag']));
-                                    return this.createChoicesTx(questionId, inputChoices, transaction)
-                                        .then(choicesIds => choicesIds.map(choicesId => choicesId.id))
+                                    const inputChoices = choices.map(choice => _.omit(choice, ['id', 'answerKey', 'tag'])); // eslint-disable-line max-len
+                                    return this.createChoicesTx(questionId, inputChoices, transaction)  // eslint-disable-line no-param-reassign, max-len
+                                        .then(choicesIds => choicesIds.map(choicesId => choicesId.id))  // eslint-disable-line no-param-reassign, max-len
                                         .then((choicesIds) => {
                                             const type = options.sourceType;
                                             if (type) {
-                                                const pxs2 = choicesIds.map((questionChoiceId, index) => {
+                                                const pxs2 = choicesIds.map((questionChoiceId, index) => {  // eslint-disable-line no-param-reassign, max-len
                                                     const identifier = choices[index].answerKey;
                                                     const tag = parseInt(choices[index].tag, 10);
-                                                    return AnswerIdentifier.create({ type, identifier, questionId, questionChoiceId, tag }, { transaction });
+                                                    return AnswerIdentifier.create({ type, identifier, questionId, questionChoiceId, tag }, { transaction }); // eslint-disable-line max-len
                                                 });
                                                 return SPromise.all(pxs2)
                                                     .then(() => choicesIds);
@@ -558,7 +563,7 @@ module.exports = class QuestionDAO extends Translatable {
                                         .then((choicesIds) => {
                                             mapIds[id] = {
                                                 questionId,
-                                                choicesIds: _.zipObject(choices.map(choice => choice.id), choicesIds),
+                                                choicesIds: _.zipObject(choices.map(choice => choice.id), choicesIds), // eslint-disable-line max-len
                                             };
                                         });
                                 }

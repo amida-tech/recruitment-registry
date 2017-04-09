@@ -86,13 +86,13 @@ module.exports = class QuestionChoiceDAO extends Translatable {
         if (questionId && choiceSetId) {
             return RRError.reject('qxChoiceMultipleParent');
         }
-        return this.transaction(transaction => this.findNewQuestionChoiceLine(choice, questionId, choiceSetId, transaction)
-                .then((line) => {
-                    const ch = _.omit(choice, 'before');
-                    ch.line = line;
-                    ch.type = choice.type || (choiceSetId ? 'choice' : 'bool');
-                    return this.createQuestionChoiceTx(ch, transaction);
-                }));
+        return this.transaction(transaction => this.findNewQuestionChoiceLine(choice, questionId, choiceSetId, transaction)   // eslint-disable-line max-len
+            .then((line) => {
+                const ch = _.omit(choice, 'before');
+                ch.line = line;
+                ch.type = choice.type || (choiceSetId ? 'choice' : 'bool');
+                return this.createQuestionChoiceTx(ch, transaction);
+            }));
     }
 
     patchQuestionChoice(id, choicePatch) {
@@ -105,7 +105,7 @@ module.exports = class QuestionChoiceDAO extends Translatable {
         }
         return this.transaction((transaction) => {
             if (choicePatch.before) {
-                return this.findNewQuestionChoiceLine(choicePatch, questionId, choiceSetId, transaction)
+                return this.findNewQuestionChoiceLine(choicePatch, questionId, choiceSetId, transaction)   // eslint-disable-line max-len
                     .then((line) => {
                         const ch = _.omit(choicePatch, 'before');
                         ch.line = line;
@@ -159,7 +159,7 @@ module.exports = class QuestionChoiceDAO extends Translatable {
     }
 
     updateMultipleChoiceTexts(choices, language) {
-        return this.transaction(transaction => this.createMultipleTextsTx(choices, language, transaction));
+        return this.transaction(transaction => this.createMultipleTextsTx(choices, language, transaction)); // eslint-disable-line max-len
     }
 
     listQuestionChoices(choiceSetId, language) {
