@@ -2,8 +2,6 @@
 
 'use strict';
 
-/* eslint no-param-reassign: 0, max-len: 0 */
-
 process.env.NODE_ENV = 'test';
 
 const _ = require('lodash');
@@ -22,7 +20,7 @@ const expect = chai.expect;
 
 describe('user set-up and login use-case', () => {
     const userExample = userExamples.Alzheimer;
-    const surveyExample = surveyExamples.Alzheimer;
+    const surveyExample = surveyExamples.alzheimer;
 
     // -------- set up system (syncAndLoadAlzheimer)
 
@@ -33,7 +31,7 @@ describe('user set-up and login use-case', () => {
 
     it('login as super user', shared.loginFn(config.superUser));
 
-    it('create registry', shared.createSurveyProfileFn(surveyExample.survey));
+    it('create registry', shared.createSurveyProfileFn(surveyExample));
 
     it('logout as super user', shared.logoutFn());
 
@@ -43,29 +41,28 @@ describe('user set-up and login use-case', () => {
 
     let survey;
 
-    it('get profile survey', (done) => {
-        rrSuperTest.get('/profile-survey', false, 200)
-            .expect((res) => {
+    it('get profile survey', function getProfileSurvey() {
+        return rrSuperTest.get('/profile-survey', false, 200)
+            .then((res) => {
                 survey = res.body.survey;
-            })
-            .end(done);
+            });
     });
 
     // --------- set up account
 
     let answers;
 
-    it('fill user profile and submit', (done) => {
-        answers = helper.formAnswersToPost(survey, surveyExample.answer);
+    it('fill user profile and submit', function fileeProfile() {
+        answers = helper.formAnswersToPost(survey, surveyExamples.alzheimerAnswer);
         const user = userExample;
-        rrSuperTest.authPost('/profiles', { user, answers }, 201).end(done);
+        return rrSuperTest.authPost('/profiles', { user, answers }, 201);
     });
 
     // -------- verification
 
-    it('verify user profile', (done) => {
-        rrSuperTest.get('/profiles', true, 200)
-            .expect((res) => {
+    it('verify user profile', function verifyProfile() {
+        return rrSuperTest.get('/profiles', true, 200)
+            .then((res) => {
                 const result = res.body;
 
                 const expectedUser = _.cloneDeep(userExample);
@@ -79,29 +76,27 @@ describe('user set-up and login use-case', () => {
                 const actualSurvey = result.survey;
                 const expectedSurvey = helper.formAnsweredSurvey(survey, answers);
                 expect(actualSurvey).to.deep.equal(expectedSurvey);
-            })
-            .end(done);
+            });
     });
 
     // --------
 
-    it('update user profile', (done) => {
-        answers = helper.formAnswersToPost(survey, surveyExample.answerUpdate);
+    it('update user profile', function updateProfile() {
+        answers = helper.formAnswersToPost(survey, surveyExamples.alzheimerReanswer);
         const userUpdates = {
             email: 'updated@example.com',
         };
         const user = userUpdates;
-        rrSuperTest.patch('/profiles', { user, answers }, 204)
+        return rrSuperTest.patch('/profiles', { user, answers }, 204)
             .send({
                 user: userUpdates,
                 answers,
-            })
-            .end(done);
+            });
     });
 
-    it('verify user profile', (done) => {
-        rrSuperTest.get('/profiles', true, 200)
-            .expect((res) => {
+    it('verify user profile', function verifyUserProfile() {
+        return rrSuperTest.get('/profiles', true, 200)
+            .then((res) => {
                 const result = res.body;
 
                 const expectedUser = _.cloneDeep(userExample);
@@ -116,7 +111,6 @@ describe('user set-up and login use-case', () => {
                 const actualSurvey = result.survey;
                 const expectedSurvey = helper.formAnsweredSurvey(survey, answers);
                 expect(actualSurvey).to.deep.equal(expectedSurvey);
-            })
-            .end(done);
+            });
     });
 });

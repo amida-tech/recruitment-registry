@@ -8,15 +8,6 @@ module.exports = function (locals) {
     const choicesQxTurkish = {
         id: 4,
         text: 'Hangi eksersizleri yapıyorsunuz?',
-        actions: [{
-            id: 1,
-            text: 'Kabul Et',
-        },
-        {
-            id: 2,
-            text: 'Eksersiz yapmıyorum.',
-        },
-        ],
         choices: [{
             id: 5,
             text: 'Yürüyüş',

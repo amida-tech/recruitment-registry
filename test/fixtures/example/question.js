@@ -1,7 +1,5 @@
 'use strict';
 
-/* eslint no-param-reassign: 0, max-len: 0 */
-
 module.exports = [{
     text: 'Which sports do you like?',
     type: 'choices',
@@ -11,11 +9,6 @@ module.exports = [{
         { text: 'Soccer' },
         { text: 'Tennis', type: 'bool' },
     ],
-    actions: [
-        { text: 'Go there', type: 'yes' },
-        { text: 'Go here', type: 'no' },
-        { text: 'Go everywhere', type: 'yes' },
-    ],
 }, {
     text: 'What is your hair color?',
     type: 'choice',
@@ -24,10 +17,6 @@ module.exports = [{
         'Brown',
         'Blonde',
         'Other',
-    ],
-    actions: [
-        { text: 'Yesss', type: 'yes' },
-        { text: 'Huraaa', type: 'no' },
     ],
 }, {
     text: 'Where were you born?',

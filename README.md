@@ -158,11 +158,6 @@ This is a English first design where all logical records are assumed to be in En
 
 - `question_type`: This table stores available question types. Current supported types are `text`, `bool`, `choice`, and `choices` that respectively correspond to free text questions, yes/no questions, multiple choice questions and composite questions with multiply selectable choices and free text fields.
 
-- `question_action`: This table is primarily designed to store display texts and actions of buttons that are shown to the user when interacting with the question on the client.  It can also be used as storage for any other client setting such as question subtexts.  Only actual data column in this table is `type` whose value is client specific.
-There can be multiple `question_action` records for a question.  Order is preserved using `line` column.
-
-- `question_action_text`: This table stores translatable column `text` which is primarily designed to store labels for buttons that are shown to the user on the client but can be used for any other client settings. `language` is also a column and each record has a value for `text` in that language. `question_action_id` column links each record to `question_action` table.
-
 - `question_choice`: Each record in this table represents a choice in multiple choice question of types choice or choices.  Question id is a foreign key (column `question_id`).  To support composite questions that can have multiply selectable choices together with free text fields (ex: a list of check boxes with a free text other field), this table also stores type of choice (column `type`) with currently supported types of `bool` and `text`.  Order of choices for a particular question is preserved using a line item (column `line`).  Actual text of choice is stored in `question_choice_text`.
 
 - `question_choice_text`: This table stores translatable column `text` which stores question choice texts. `language` is also column and each record has a value for `text` in that language. `question_choice_id` column links each record to `question_choice` table.

@@ -83,7 +83,7 @@ module.exports = class QuestionDAO extends Translatable {
         const Question = this.db.Question;
         return this.updateChoiceSetReference(question.choiceSetReference, transaction)
             .then((choiceSetId) => {
-                const baseFields = _.omit(question, ['oneOfChoices', 'choices', 'actions']);
+                const baseFields = _.omit(question, ['oneOfChoices', 'choices']);
                 if (choiceSetId) {
                     baseFields.choiceSetId = choiceSetId;
                 }

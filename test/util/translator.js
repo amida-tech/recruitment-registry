@@ -72,9 +72,6 @@ const translator = {
         if (question.choices) {
             question.choices.forEach(choice => texts.push(choice.text));
         }
-        if (question.actions) {
-            question.actions.forEach(action => texts.push(action.text));
-        }
         this.isTranslated(texts, language);
     },
     isQuestionListTranslated(questions, language) {

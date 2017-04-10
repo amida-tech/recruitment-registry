@@ -8,13 +8,6 @@ module.exports = function (locals) {
     const surveyTurkish = {
         id: 1,
         name: 'Örnek',
-        sections: [{
-            id: 1,
-            name: 'Kişisel Bilgiler',
-        }, {
-            id: 2,
-            name: 'Sağlık',
-        }],
     };
 
     return locals.agent
