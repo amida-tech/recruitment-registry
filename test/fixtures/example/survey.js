@@ -112,13 +112,6 @@ exports.Alzheimer = {
                 { text: 'Brain Health' },
                 { text: 'Clinical Trials on Brain Health' },
             ],
-            actions: [{
-                type: 'true',
-                text: 'Subscribe',
-            }, {
-                type: 'false',
-                text: 'I don\'t want to receive emails',
-            }],
         }, {
             text: 'Are you interested in participating in clinical trials?',
             required: false,

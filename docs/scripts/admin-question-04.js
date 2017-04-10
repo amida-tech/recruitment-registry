@@ -25,13 +25,6 @@ module.exports = function (locals) {
             { text: 'Cycling', type: 'bool' },
             { text: 'Please specify other', type: 'text' },
         ],
-        actions: [{
-            type: 'true',
-            text: 'Confirm',
-        }, {
-            type: 'false',
-            text: 'I don\'t exercise.',
-        }],
     };
 
     let choicesQxId = null;

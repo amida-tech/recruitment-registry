@@ -86,13 +86,6 @@ module.exports = function (locals) {
 
     survey = {
         name: 'Example',
-        sections: [{
-            name: 'Demographics',
-            indices: [1, 2],
-        }, {
-            name: 'Health',
-            indices: [0, 3],
-        }],
         questions: [{
             required: false,
             id: textQxId,
@@ -117,13 +110,6 @@ module.exports = function (locals) {
 
     survey = {
         name: 'Example',
-        sections: [{
-            name: 'Demographics',
-            indices: [1, 2],
-        }, {
-            name: 'Health',
-            indices: [0, 3],
-        }],
         meta: {
             displayAsWizard: true,
             saveProgress: false,

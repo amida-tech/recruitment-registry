@@ -144,30 +144,6 @@ choiceQx = {
 
 It an error to specify `type` for a `choices` element for a `choice` question.
 
-For each question a client dependent `actions` property can be specified.  This field is designed to store button texts and actions that depend on client ui design but can be used for any other client specific functionality such as sub texts that needs to shown to user
-
-```js
-choicesQx = {
-    type: 'choices',
-    text: 'What kind of exercises do you do?',
-    choices: [
-        { text: 'Walking' },
-        { text: 'Jogging', type: 'bool' },
-        { text: 'Cycling', type: 'bool' },
-        { text: 'Please specify other', type: 'text' }
-    ],
-    actions: [{
-        type: 'true',
-        text: 'Confirm'
-    }, {
-        type: 'false',
-        text: 'I don\'t exercise.'
-    }]
-};
-```
-
-This API just store and retrieve `actions` property for the client.  There are no business logic related to `actions` property.
-
 Questions are created using the `/questions` resource
 
 ```js
@@ -284,13 +260,6 @@ Questions can be grouped into sections.  Currenly only one level deep sections a
 ```js
 survey = {
     name: 'Example',
-    sections: [{
-        name: 'Demographics',
-        indices: [1, 2]
-    }, {
-        name: 'Health',
-        indices: [0, 3]
-    }],
     questions: [{
         required: false,
         id: textQxId
@@ -314,20 +283,11 @@ survey = {
 };
 ```
 
-Section indices refer to the index of the question inside the survey.  This API only stores and retrieves section information and this information is not used in any business logic elsewhere.
-
 In addition this API supports a client specific `meta` property which can be used to store any settings that relates to user interface or any other client setting
 
 ```js
 survey = {
     name: 'Example',
-    sections: [{
-        name: 'Demographics',
-        indices: [1, 2]
-    }, {
-        name: 'Health',
-        indices: [0, 3]
-    }],
     meta: {
         displayAsWizard: true,
         saveProgress: false
@@ -1107,18 +1067,6 @@ Server responds with the list in the response body
         "id": 4,
         "type": "choices",
         "text": "What kind of exercises do you do?",
-        "actions": [
-            {
-                "id": 1,
-                "type": "true",
-                "text": "Confirm"
-            },
-            {
-                "id": 2,
-                "type": "false",
-                "text": "I don't exercise."
-            }
-        ],
         "choices": [
             {
                 "id": 5,
@@ -1349,18 +1297,6 @@ Server responds with all the survey details and in particular its questions
             "id": 4,
             "type": "choices",
             "text": "What kind of exercises do you do?",
-            "actions": [
-                {
-                    "id": 1,
-                    "type": "true",
-                    "text": "Confirm"
-                },
-                {
-                    "id": 2,
-                    "type": "false",
-                    "text": "I don't exercise."
-                }
-            ],
             "choices": [
                 {
                     "id": 5,
@@ -1384,24 +1320,6 @@ Server responds with all the survey details and in particular its questions
                 }
             ],
             "required": false
-        }
-    ],
-    "sections": [
-        {
-            "id": 1,
-            "indices": [
-                1,
-                2
-            ],
-            "name": "Demographics"
-        },
-        {
-            "id": 2,
-            "indices": [
-                0,
-                3
-            ],
-            "name": "Health"
         }
     ]
 }
@@ -1582,18 +1500,6 @@ Survey responds with the survey details in the response body.  Survey details is
             "id": 4,
             "type": "choices",
             "text": "What kind of exercises do you do?",
-            "actions": [
-                {
-                    "id": 1,
-                    "type": "true",
-                    "text": "Confirm"
-                },
-                {
-                    "id": 2,
-                    "type": "false",
-                    "text": "I don't exercise."
-                }
-            ],
             "choices": [
                 {
                     "id": 5,
@@ -1634,24 +1540,6 @@ Survey responds with the survey details in the response body.  Survey details is
                     }
                 ]
             }
-        }
-    ],
-    "sections": [
-        {
-            "id": 1,
-            "indices": [
-                1,
-                2
-            ],
-            "name": "Demographics"
-        },
-        {
-            "id": 2,
-            "indices": [
-                0,
-                3
-            ],
-            "name": "Health"
         }
     ]
 }
@@ -1865,18 +1753,6 @@ Server responds with the answered survey and the status in the body
                 "id": 4,
                 "type": "choices",
                 "text": "What kind of exercises do you do?",
-                "actions": [
-                    {
-                        "id": 1,
-                        "type": "true",
-                        "text": "Confirm"
-                    },
-                    {
-                        "id": 2,
-                        "type": "false",
-                        "text": "I don't exercise."
-                    }
-                ],
                 "choices": [
                     {
                         "id": 5,
@@ -1913,24 +1789,6 @@ Server responds with the answered survey and the status in the body
                         }
                     ]
                 }
-            }
-        ],
-        "sections": [
-            {
-                "id": 1,
-                "indices": [
-                    1,
-                    2
-                ],
-                "name": "Demographics"
-            },
-            {
-                "id": 2,
-                "indices": [
-                    0,
-                    3
-                ],
-                "name": "Health"
             }
         ]
     }
@@ -2379,16 +2237,6 @@ All question text fields are translated by `/questions/text/{language}` resource
 const choicesQxTurkish = {
     'id': 4,
     'text': 'Hangi eksersizleri yapıyorsunuz?',
-    'actions': [
-        {
-            'id': 1,
-            'text': 'Kabul Et'
-        },
-        {
-            'id': 2,
-            'text': 'Eksersiz yapmıyorum.'
-        }
-    ],
     'choices': [
         {
             'id': 5,
@@ -2435,18 +2283,7 @@ server responds with the Turkish translation in the body
 {
     "id": 4,
     "type": "choices",
-    "text": "Hangi eksersizleri yapıyorsunuz?",
-    "actions": [
-        {
-            "id": 1,
-            "type": "true",
-            "text": "Kabul Et"
-        },
-        {
-            "id": 2,
-            "type": "false",
-            "text": "Eksersiz yapmıyorum."
-        }
+    "text": "Hangi eksersizleri yapıyorsunuz?"
     ],
     "choices": [
         {
@@ -2561,18 +2398,6 @@ responds with the Turkish translation in the body
             "id": 4,
             "type": "choices",
             "text": "Hangi eksersizleri yapıyorsunuz?",
-            "actions": [
-                {
-                    "id": 1,
-                    "type": "true",
-                    "text": "Kabul Et"
-                },
-                {
-                    "id": 2,
-                    "type": "false",
-                    "text": "Eksersiz yapmıyorum."
-                }
-            ],
             "choices": [
                 {
                     "id": 5,
@@ -2596,24 +2421,6 @@ responds with the Turkish translation in the body
                 }
             ],
             "required": false
-        }
-    ],
-    "sections": [
-        {
-            "id": 1,
-            "indices": [
-                1,
-                2
-            ],
-            "name": "Kişisel Bilgiler"
-        },
-        {
-            "id": 2,
-            "indices": [
-                0,
-                3
-            ],
-            "name": "Sağlık"
         }
     ]
 }
