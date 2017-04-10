@@ -25,32 +25,39 @@ const expect = chai.expect;
 
 describe('consent demo simpler', () => {
     const userExample = userExamples.Alzheimer;
-    const surveyExample = surveyExamples.Alzheimer;
+    const surveyExample = surveyExamples.alzheimer;
 
     const rrSuperTest = new RRSuperTest();
     const generator = new Generator();
     const shared = new SharedIntegration(rrSuperTest, generator);
 
     //* ******
-    // Sync and seed the database.  This is part of syncAndLoadAlzheimer.js script.  It creates the consent documents.
-    // The document contents themselves are in test/fixtures/example/consent-demo.  Change the content however you wish.
+    // Sync and seed the database.  This is part of syncAndLoadAlzheimer.js script.
+    // It creates the consent documents.
+    // The document contents themselves are in test/fixtures/example/consent-demo.
+    // Change the content however you wish.
     // This also adds a profile survey.
     //* ****** START 1
 
     before(shared.setUpFn());
 
-    it('create Terms of Use and Consent Form records', () => models.profileSurvey.createProfileSurvey(surveyExample.survey));
+    it('create profile survey', function createProfile() {
+        return models.profileSurvey.createProfileSurvey(surveyExample);
+    });
 
-    it('create Terms of Use and Consent Form records', () => consentSeed(consentExample));
+    it('create consent Forms', function fnConsentSeed() {
+        return consentSeed(consentExample);
+    });
 
     let termsOfUse;
 
     //* ***** END 1
 
     //* *****
-    // Get Terms of Use before registration.  The content will be in res.body.content.  Show it to user.
-    // If user accepts note res.body.id.  That is what we rrSuperTest as signature for now.  However since
-    // user has not been created you can not save to db yet.  That is next.
+    // Get Terms of Use before registration.  The content will be in res.body.content.
+    // Show it to user.
+    // If user accepts note res.body.id.  That is what we rrSuperTest as signature for now.
+    // However since user has not been created you can not save to db yet.  That is next.
     //* ***** START 2
 
     it('get Terms of Use before registration', (done) => {
@@ -84,7 +91,7 @@ describe('consent demo simpler', () => {
     let answers;
 
     it('fill user profile and submit', (done) => {
-        answers = helper.formAnswersToPost(survey, surveyExample.answer);
+        answers = helper.formAnswersToPost(survey, surveyExamples.alzheimerAnswer);
         const input = {
             user: userExample,
             answers,

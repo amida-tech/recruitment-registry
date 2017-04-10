@@ -2,7 +2,7 @@
 
 /* eslint no-param-reassign: 0, max-len: 0 */
 
-exports.Example = {
+const example = {
     survey: {
         name: 'Example',
         questions: [{
@@ -63,7 +63,7 @@ exports.Example = {
     }],
 };
 
-exports.Alzheimer = {
+const alzheimer = {
     survey: {
         name: 'Alzheimer',
         questions: [{
@@ -148,4 +148,13 @@ exports.Alzheimer = {
     }, {
         boolValue: false,
     }],
+};
+
+module.exports = {
+    example: example.survey,
+    exampleAnswer: example.answer,
+    exampleReanswer: example.answerUpdate,
+    alzheimer: alzheimer.survey,
+    alzheimerAnswer: alzheimer.answer,
+    alzheimerReanswer: alzheimer.answerUpdate,
 };

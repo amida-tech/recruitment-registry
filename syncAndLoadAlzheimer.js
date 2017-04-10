@@ -10,21 +10,21 @@ const consentSeed = require('./test/util/consent-seed');
 const consentExample = require('./test/fixtures/example/consent-demo');
 
 const userExample = userExamples.Alzheimer;
-const sample = surveyExamples.Alzheimer;
 
 const helper = require('./test/util/survey-common');
 
 models.sequelize.sync({ force: true })
-    .then(() => models.profileSurvey.createProfileSurvey(sample.survey))
+    .then(() => models.profileSurvey.createProfileSurvey(surveyExamples.alzheimer))
     .then(() => models.profileSurvey.getProfileSurvey())
     .then((profileSurvey) => {
-        const answers = helper.formAnswersToPost(profileSurvey.survey, sample.answer);
+        const alzheimerAnswer = surveyExamples.alzheimerAnswer;
+        const answers = helper.formAnswersToPost(profileSurvey.survey, alzheimerAnswer);
         return models.profile.createProfile({
             user: userExample,
             answers,
         });
     })
-    .then(() => models.survey.createSurvey(surveyExamples.Example.survey))
+    .then(() => models.survey.createSurvey(surveyExamples.example))
     .then(() => consentSeed(consentExample))
     .then(() => {
         console.log('success');

@@ -7,7 +7,7 @@ module.exports = function (locals) {
 
     const surveyTurkish = {
         id: 1,
-        name: 'Örnek'
+        name: 'Örnek',
     };
 
     return locals.agent
