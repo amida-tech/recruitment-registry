@@ -84,7 +84,8 @@ const requestPost = function (registryName, questions, url) {
     ));
 };
 
-const isEnabled = function ({ questionId, parents }, questionAnswerRulesMap, sectionAnswerRulesMap, answersByQuestionId) { // eslint-disable-line max-len
+const isEnabled = function ({ questionId, parents }, maps) {
+    const { questionAnswerRulesMap, sectionAnswerRulesMap, answersByQuestionId } = maps;
     const rules = questionAnswerRulesMap.get(questionId);
     if (rules && rules.length) {
         const enabled = evaluateEnableWhen(rules, answersByQuestionId);
@@ -191,7 +192,12 @@ module.exports = class AnswerDAO extends Base {
                             const questionId = r.questionId;
                             const answer = answersByQuestionId[questionId];
                             if (sectionAnswerRulesMap || questionAnswerRulesMap) {
-                                const enabled = isEnabled(r, questionAnswerRulesMap, sectionAnswerRulesMap, answersByQuestionId); // eslint-disable-line max-len
+                                const maps = {
+                                    questionAnswerRulesMap,
+                                    sectionAnswerRulesMap,
+                                    answersByQuestionId,
+                                };
+                                const enabled = isEnabled(r, maps);
                                 if (!enabled) {
                                     r.ignore = true;
                                 }
@@ -254,20 +260,23 @@ module.exports = class AnswerDAO extends Base {
             .then(() => this.validateConsent(userId, surveyId, 'create', transaction));
     }
 
-    createAnswersTx({ userId, surveyId, answers, language = 'en', status = 'completed' }, transaction) { // eslint-disable-line max-len
-        const Answer = this.db.Answer;
-        answers = _.cloneDeep(answers); // eslint-disable-line no-param-reassign
+    createAnswersTx(inputRecord, transaction) {
+        const { userId, surveyId } = inputRecord;
+        const answers = _.cloneDeep(inputRecord.answers);
+        const status = inputRecord.status || 'completed';
         return this.validateCreate(userId, surveyId, answers, status, transaction)
             .then(() => this.updateStatus(userId, surveyId, status, transaction))
             .then(() => {
                 const ids = _.map(answers, 'questionId');
                 const where = { questionId: { $in: ids }, surveyId, userId };
-                return Answer.destroy({ where, transaction });
+                return this.db.Answer.destroy({ where, transaction });
             })
             .then(() => {
-                answers = _.filter(answers, answer => answer.answer || answer.answers); // eslint-disable-line no-param-reassign, max-len
-                if (answers.length) {
-                    return this.fileAnswer({ userId, surveyId, language, answers }, transaction);
+                const filteredAnswers = _.filter(answers, r => r.answer || r.answers);
+                if (filteredAnswers.length) {
+                    const language = inputRecord.language || 'en';
+                    const record = { userId, surveyId, language, answers: filteredAnswers };
+                    return this.fileAnswer(record, transaction);
                 }
                 return null;
             });
@@ -460,7 +469,7 @@ module.exports = class AnswerDAO extends Base {
      * @param {object} query questionId:value mapping to search users by
      * @returns {integer}
      */
-    searchUsers(criteria) {
+    searchParticipants(criteria) {
         const n = _.get(criteria, 'questions.length');
         if (!n) {
             const attributes = ['id'];
@@ -480,7 +489,7 @@ module.exports = class AnswerDAO extends Base {
                 where.$or.push({
                     question_id: question.id,
                     value: ('value' in answer) ? answer.value.toString() : null,
-                    question_choice_id: ('questionChoiceId' in answer) ? answer.questionChoiceId : null, // eslint-disable-line max-len
+                    question_choice_id: answer.questionChoiceId || null,
                 });
             });
         });
@@ -495,27 +504,27 @@ module.exports = class AnswerDAO extends Base {
         return this.db.Answer.findAll({ raw: true, where, attributes, include, having, group });
     }
 
+    countAllParticipants() {
+        return this.db.User.count({ where: { role: 'participant' } })
+            .then(count => ({ count }));
+    }
+
     /**
      * Search users by their survey answers. Returns a count of users only.
      * @param {object} query questionId:value mapping to search users by
      * @returns {integer}
      */
-    searchCountUsers(criteria) {
+    countParticipants(criteria) {
         // if criteria is empty, return count of all users
         if (!_.get(criteria, 'questions.length')) {
-            return this.db.User.count({ where: { role: 'participant' } })
-                .then(count => ({ count }));
+            return this.countAllParticipants();
         }
 
-        return this.searchUsers(criteria)
+        return this.searchParticipants(criteria)
             .then(results => ({ count: results.length }));
     }
 
-    countParticipantsIdentifiers(federatedCriteria) {
-        if (federatedCriteria.length < 1) {
-            return this.db.User.count({ where: { role: 'participant' } })
-                .then(count => ({ count }));
-        }
+    federatedCriteriaToLocalCriteria(federatedCriteria) {
         const identifiers = federatedCriteria.map(({ identifier }) => identifier);
         return this.db.AnswerIdentifier.findAll({
             raw: true,
@@ -541,11 +550,19 @@ module.exports = class AnswerDAO extends Base {
                     answers.push(answer);
                     return r;
                 }, []);
-                return this.searchCountUsers({ questions });
+                return { questions };
             });
     }
 
-    federatedSearchCountUsers(federatedModels, criteria) {
+    countParticipantsIdentifiers(federatedCriteria) {
+        if (federatedCriteria.length < 1) {
+            return this.countAllParticipants();
+        }
+        return this.federatedCriteriaToLocalCriteria(federatedCriteria)
+            .then(criteria => this.countParticipants(criteria));
+    }
+
+    federatedCountParticipants(federatedModels, criteria) {
         const attributes = ['id', 'name', 'url', 'schema'];
         return this.db.Registry.findAll({ raw: true, attributes })
             .then((registries) => {

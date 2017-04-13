@@ -71,7 +71,7 @@ describe('federated search unit', function federatedSearchUnit() {
             const { count: count2 } = searchTestsMap.get('recregone').getFederatedCriteria(0);
             const { count: count3 } = searchTestsMap.get('recregtwo').getFederatedCriteria(0);
             const { count, federatedCriteria: criteria } = searchTestsMap.get('current').getFederatedCriteria(0);
-            return tests.models.current.answer.federatedSearchCountUsers(tests.models, criteria)
+            return tests.models.current.answer.federatedCountParticipants(tests.models, criteria)
                 .then(result => expect(result.count).to.equal(count + count0 + count1 + count2 + count3));
         });
     });

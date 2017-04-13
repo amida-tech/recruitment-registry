@@ -88,7 +88,7 @@ exports.listAnswersMultiUserExport = function listAnswersMultiUserExport(req, re
 
 exports.searchAnswers = function searchAnswers(req, res) {
     const query = _.get(req, 'swagger.params.query.value');
-    req.models.answer.searchCountUsers(query)
+    req.models.answer.countParticipants(query)
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };
@@ -102,7 +102,7 @@ exports.countParticipantsIdentifiers = function countParticipantsIdentifiers(req
 
 exports.searchAnswerUsers = function searchAnswerUsers(req, res) {
     const query = _.get(req, 'swagger.params.query.value');
-    req.models.answer.searchUsers(query)
+    req.models.answer.searchParticipants(query)
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };
@@ -110,7 +110,7 @@ exports.searchAnswerUsers = function searchAnswerUsers(req, res) {
 exports.federatedSearchAnswers = function federatedSearchAnswers(req, res) {
     const query = _.get(req, 'swagger.params.query.value');
     const allModels = req.app.locals.models;
-    req.models.answer.federatedSearchCountUsers(allModels, query)
+    req.models.answer.federatedCountParticipants(allModels, query)
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };

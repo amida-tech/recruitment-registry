@@ -47,7 +47,7 @@ module.exports = class CohortDAO extends Base {
                             .then(() => filter);
                     });
             })
-            .then(filter => this.answer.searchUsers(filter))
+            .then(filter => this.answer.searchParticipants(filter))
             .then((userIds) => {
                 const ids = userIds.map(({ userId }) => userId);
                 if (count && count > ids.length) {
@@ -67,7 +67,7 @@ module.exports = class CohortDAO extends Base {
         const where = { cohortId: id };
         const order = this.qualifiedCol('cohort_answer', 'id');
         return answerCommon.getFilterAnswers(this, this.db.CohortAnswer, { where, order })
-            .then(questions => this.answer.searchUsers({ questions }))
+            .then(questions => this.answer.searchParticipants({ questions }))
             .then((userIds) => {
                 const ids = userIds.map(({ userId }) => userId);
                 if (count && count > ids.length) {

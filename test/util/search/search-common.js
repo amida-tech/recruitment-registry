@@ -294,7 +294,7 @@ const SpecTests = class SearchSpecTests extends Tests {
         const self = this;
         return function searchAnswerCount() {
             const criteria = self.formCriteria(answers);
-            return m.answer.searchCountUsers(criteria)
+            return m.answer.countParticipants(criteria)
                 .then(({ count: actual }) => expect(actual).to.equal(count));
         };
     }
@@ -314,7 +314,7 @@ const SpecTests = class SearchSpecTests extends Tests {
         const self = this;
         return function searchAnswerUsers() {
             const criteria = self.formCriteria(answers);
-            return m.answer.searchUsers(criteria)
+            return m.answer.searchParticipants(criteria)
                 .then((userIds) => {
                     const actual = userIds.map(({ userId }) => userId);
                     const expected = userIndices.map(index => self.hxUser.id(index));
@@ -339,7 +339,7 @@ const SpecTests = class SearchSpecTests extends Tests {
     searchEmptyFn(count) {
         const m = this.models;
         return function searchEmpty() {
-            return m.answer.searchCountUsers({})
+            return m.answer.countParticipants({})
                 .then(({ count: actual }) => expect(actual).to.equal(count));
         };
     }
