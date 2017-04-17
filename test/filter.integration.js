@@ -2,8 +2,6 @@
 
 'use strict';
 
-/* eslint no-param-reassign: 0, max-len: 0 */
-
 process.env.NODE_ENV = 'test';
 
 const _ = require('lodash');
@@ -53,6 +51,26 @@ describe('filter integration', function filterIntegration() {
         it(`get question ${index}`, qxTests.getQuestionFn(index));
     });
     count += 10;
+
+    it('error: create filter without answers (no property)', function errorCreateNoAnswers() {
+        const id = hxQuestion.id(0);
+        const filter = {
+            name: 'name',
+            maxCount: 0,
+            questions: [{ id }],
+        };
+        return rrSuperTest.post('/filters', filter, 400);
+    });
+
+    it('error: create filter without answers (empty array)', function errorCreateEmptyAnswers() {
+        const id = hxQuestion.id(0);
+        const filter = {
+            name: 'name',
+            maxCount: 0,
+            questions: [{ id, answers: [] }],
+        };
+        return rrSuperTest.post('/filters', filter, 400);
+    });
 
     _.range(20).forEach((index) => {
         it(`create filter ${index}`, tests.createFilterFn());
