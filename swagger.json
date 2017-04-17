@@ -3532,11 +3532,6 @@
             "type": "apiKey",
             "in": "header",
             "name": "Authorization"
-        },
-        "registry": {
-            "type": "apiKey",
-            "in": "header",
-            "name": "Authorization"
         }
     },
     "responses": {
@@ -4273,7 +4268,7 @@
         },
         "questionQuery": {
             "type": "object",
-            "required": ["id"],
+            "required": ["id", "answers"],
             "properties": {
                 "id": {
                     "type": "integer"
@@ -4282,7 +4277,8 @@
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/filterAnswer"
-                    }
+                    },
+                    "minItems": 1
                 }
             }
         },

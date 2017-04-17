@@ -2,18 +2,19 @@
 
 'use strict';
 
-/* eslint no-param-reassign: 0, max-len: 0 */
-
 process.env.NODE_ENV = 'test';
 
 const _ = require('lodash');
+
+const models = require('../models');
+
 const SharedSpec = require('./util/shared-spec.js');
 const Generator = require('./util/generator');
 const History = require('./util/history');
 const questionCommon = require('./util/question-common');
 const filterCommon = require('./util/filter-common');
 
-describe('filter unit', () => {
+describe('filter unit', function filterUnit() {
     const generator = new Generator();
     const shared = new SharedSpec(generator);
     const hxQuestion = new History();
@@ -47,6 +48,28 @@ describe('filter unit', () => {
         it(`get question ${index}`, qxTests.getQuestionFn(index));
     });
     count += 10;
+
+    it('error: create filter without answers (no property)', function errorCreateNoAnswers() {
+        const id = hxQuestion.id(0);
+        const filter = {
+            name: 'name',
+            maxCount: 0,
+            questions: [{ id }],
+        };
+        return models.filter.createFilter(filter)
+            .then(shared.throwingHandler, shared.expectedErrorHandler('filterMalformedNoAnswers'));
+    });
+
+    it('error: create filter without answers (empty array)', function errorCreateEmptyAnswers() {
+        const id = hxQuestion.id(0);
+        const filter = {
+            name: 'name',
+            maxCount: 0,
+            questions: [{ id, answers: [] }],
+        };
+        return models.filter.createFilter(filter)
+            .then(shared.throwingHandler, shared.expectedErrorHandler('filterMalformedNoAnswers'));
+    });
 
     _.range(20).forEach((index) => {
         it(`create filter ${index}`, tests.createFilterFn());

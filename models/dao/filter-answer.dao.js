@@ -2,10 +2,14 @@
 
 const Base = require('./base');
 const answerCommon = require('./answer-common');
+const RRError = require('../../lib/rr-error');
 
 module.exports = class FilterAnswerDAO extends Base {
     createFilterAnswersTx({ filterId, questions }, transaction) {
         const records = questions.reduce((r, { id: questionId, answers }) => {
+            if (!(answers && answers.length)) {
+                throw new RRError('filterMalformedNoAnswers');
+            }
             const answerRecords = answerCommon.prepareFilterAnswersForDB(answers);
             const baseRecord = { filterId, questionId };
             answerRecords.forEach((answerRecord) => {
