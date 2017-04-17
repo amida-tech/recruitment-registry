@@ -105,14 +105,18 @@ const SpecTests = class FederatedSearchSpecTests extends Tests {
         this.modelsdb0 = generator('public', 'recregone');
         this.modelsdb1 = generator('public', 'recregtwo');
         this.initMessage = 'sync models';
+        const partialOptions = { surveyCount: 4, noSync: true };
         this.searchTestsMap = this.schemas.reduce((r, schema, index) => {
             const m = this.models[schema];
-            const searchTests = new searchCommon.SpecTests(m, index * 7, 4, false);
+            const opt = Object.assign({ offset: index * 7 }, partialOptions);
+            const searchTests = new searchCommon.SpecTests(m, opt);
             r.set(schema, searchTests);
             return r;
         }, new Map());
-        this.searchTestsMap.set('recregone', new searchCommon.SpecTests(this.modelsdb0, 5, 4, false));
-        this.searchTestsMap.set('recregtwo', new searchCommon.SpecTests(this.modelsdb1, 10, 4, false));
+        const opt1 = Object.assign({ offset: 5 }, partialOptions);
+        this.searchTestsMap.set('recregone', new searchCommon.SpecTests(this.modelsdb0, opt1));
+        const opt2 = Object.assign({ offset: 10 }, partialOptions);
+        this.searchTestsMap.set('recregtwo', new searchCommon.SpecTests(this.modelsdb1, opt2));
     }
 
     initializeFn() {
@@ -135,16 +139,20 @@ const IntegrationTests = class FederatedSearchSpecTests extends Tests {
         }, {});
         this.rrSuperTest = this.rrSuperTests.current;
         this.initMessage = 'initialize app';
+        const partialOptions = { surveyCount: 4 };
         this.searchTestsMap = this.schemas.reduce((r, schema, index) => {
             const rrSuperTest = this.rrSuperTests[schema];
-            const searchTests = new searchCommon.IntegrationTests(rrSuperTest, index * 7, 4, false);
+            const opt = Object.assign({ offset: index * 7, noSync: true }, partialOptions);
+            const searchTests = new searchCommon.IntegrationTests(rrSuperTest, opt);
             r.set(schema, searchTests);
             return r;
         }, new Map());
         this.modelsdb0 = generator('public', 'recregone');
         this.modelsdb1 = generator('public', 'recregtwo');
-        this.searchTestsMap.set('recregone', new searchCommon.SpecTests(this.modelsdb0, 5, 4, true));
-        this.searchTestsMap.set('recregtwo', new searchCommon.SpecTests(this.modelsdb1, 10, 4, true));
+        const opt1 = Object.assign({ offset: 5, noSync: false }, partialOptions);
+        this.searchTestsMap.set('recregone', new searchCommon.SpecTests(this.modelsdb0, opt1));
+        const opt2 = Object.assign({ offset: 10, noSync: false }, partialOptions);
+        this.searchTestsMap.set('recregtwo', new searchCommon.SpecTests(this.modelsdb1, opt2));
     }
 
     initializeFn() {

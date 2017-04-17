@@ -54,6 +54,7 @@ describe('federated search integration', function federatedSearchIntegration() {
     const rrSuperTest = tests.rrSuperTest;
     const registryTests = new registryCommon.IntegrationTests(rrSuperTest, generator, hxRegistry);
     const shared = new SharedIntegration(rrSuperTest);
+
     describe('federated', function federated() {
         it('login as super', shared.loginFn(config.superUser));
 

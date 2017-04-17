@@ -110,9 +110,10 @@ const federatedAnswerGenerators = {
 };
 
 const Tests = class BaseTests {
-    constructor(offset = 5, surveyCount = 4) {
-        this.offset = offset;
-        this.surveyCount = surveyCount;
+    constructor(options = {}) {
+        this.offset = options.offset || 5;
+        this.surveyCount = options.surveyCount || 4;
+        this.noSync = options.noSync;
 
         const hxUser = new History();
         const hxSurvey = new SurveyHistory();
@@ -130,33 +131,33 @@ const Tests = class BaseTests {
         const types = [];
         const questions = [];
         ['choice', 'choices', 'text', 'bool'].forEach((type) => {
-            const options = { type, choiceCount: 6, noText: true, noOneOf: true };
+            const opt = { type, choiceCount: 6, noText: true, noOneOf: true };
             types.push(type);
             const indices = [];
             typeIndexMap.set(type, indices);
-            _.range(surveyCount).forEach((index) => {
-                indices.push(offset + questions.length);
-                options.identifiers = {
+            _.range(this.surveyCount).forEach((index) => {
+                indices.push(this.offset + questions.length);
+                opt.identifiers = {
                     type: 'federated',
                     postfix: `survey_${index}_${type}`,
                 };
-                const question = questionGenerator.newQuestion(options);
+                const question = questionGenerator.newQuestion(opt);
                 questions.push(question);
             });
         });
         ['choice', 'text', 'bool'].forEach((type) => {
-            const options = { type, choiceCount: 6, noOneOf: true, max: 5 };
+            const opt = { type, choiceCount: 6, noOneOf: true, max: 5 };
             const multiType = `multi${type}`;
             types.push(multiType);
             const indices = [];
             typeIndexMap.set(multiType, indices);
-            _.range(surveyCount).forEach((index) => {
-                options.identifiers = {
+            _.range(this.surveyCount).forEach((index) => {
+                opt.identifiers = {
                     type: 'federated',
                     postfix: `survey_${index}_${multiType}`,
                 };
-                indices.push(offset + questions.length);
-                const question = multiQuestionGenerator.newMultiQuestion(options);
+                indices.push(this.offset + questions.length);
+                const question = multiQuestionGenerator.newMultiQuestion(opt);
                 questions.push(question);
             });
         });
@@ -258,12 +259,11 @@ const Tests = class BaseTests {
 };
 
 const SpecTests = class SearchSpecTests extends Tests {
-    constructor(inputModels, offset = 5, surveyCount = 4, sync = true) {
-        super(offset, surveyCount);
+    constructor(inputModels, options) {
+        super(options);
         this.models = inputModels || models;
         const generator = new Generator();
 
-        this.sync = sync;
         this.shared = new SharedSpec(generator, this.models);
         this.answerTests = new answerCommon.SpecTests(generator, this.hxUser, this.hxSurvey, this.hxQuestion);
         const qxCommonParameters = { generator, hxQuestion: this.hxQuestion };
@@ -428,7 +428,7 @@ const SpecTests = class SearchSpecTests extends Tests {
     answerSearchUnitFn() {
         const self = this;
         return function answerSearchUnit() {
-            if (self.sync) {
+            if (!self.noSync) {
                 it('sync models', self.shared.setUpFn());
             }
 
@@ -499,12 +499,11 @@ const SpecTests = class SearchSpecTests extends Tests {
 };
 
 const IntegrationTests = class SearchIntegrationTests extends Tests {
-    constructor(rrSuperTest, offset = 5, surveyCount = 4, sync = true) {
-        super(offset, surveyCount);
+    constructor(rrSuperTest, options) {
+        super(options);
         this.rrSuperTest = rrSuperTest;
         const generator = new Generator();
 
-        this.sync = sync;
         this.shared = new SharedIntegration(rrSuperTest, generator);
         this.answerTests = new answerCommon.IntegrationTests(rrSuperTest, generator, this.hxUser, this.hxSurvey, this.hxQuestion);
         const qxCommonParameters = { generator, hxQuestion: this.hxQuestion };
@@ -674,7 +673,7 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
     answerSearchIntegrationFn() {
         const self = this;
         return function answerSearchIntegration() {
-            if (self.sync) {
+            if (!self.noSync) {
                 it('sync models', self.shared.setUpFn());
             }
             const generatedDirectory = path.join(__dirname, '../../generated');
