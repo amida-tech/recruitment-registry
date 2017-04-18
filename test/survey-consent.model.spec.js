@@ -35,7 +35,7 @@ describe('survey consent unit', () => {
     const hxUser = hxConsentDocument.hxUser;
     const hxSurveyConsents = new MultiIndexHistory();
     const surveyTests = new surveyCommon.SpecTests(generator, hxSurvey);
-    const answerTests = new answerCommon.SpecTests(generator, hxUser, hxSurvey);
+    const answerTests = new answerCommon.SpecTests({ generator, hxUser, hxSurvey });
 
     before(shared.setUpFn());
 

@@ -33,7 +33,7 @@ describe('answer unit', () => {
     const hxQuestion = new History();
     const hxChoiceSet = new History();
 
-    const tests = new answerCommon.SpecTests(generator, hxUser, hxSurvey, hxQuestion);
+    const tests = new answerCommon.SpecTests({ generator, hxUser, hxSurvey, hxQuestion });
     const hxAnswers = tests.hxAnswer;
 
     const questionTests = new questionCommon.SpecTests({ generator, hxQuestion });
