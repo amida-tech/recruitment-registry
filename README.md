@@ -4,35 +4,44 @@ Recruitment Registry API
 
 ## Features
 
-- Node.js v6
-- Express
-- Sequelize (Postgres)
-- Mocha + Chai + SuperTest
-- Grunt
+- [Node.js](https://nodejs.org/en/)
+- [Express](https://expressjs.com/)
+- [Postgres](https://www.postgresql.org/)
+- [Sequelize](http://docs.sequelizejs.com/en/v3/)
+- [Mocha + Chai + SuperTest](http://engineering.invisionapp.com/post/express-integration-testing-supertest/)
+- [Grunt](https://gruntjs.com/)
 
 ## Installation
 
-1. Install Node.js v6 - previous node versions may require Babel
-2. Install and initialize Postgres v9.5 or better
-3. Create a database `createdb recreg`
-4. Install Grunt
-5. Cd into api directory and install dependencies: `npm install`
-6. Create a `.env` file in the root level of this directory
-7. Run sync file:
-  `node syncDecember15.js`
-8. Run program:
+1. Install all dependencies:
+	* Node.js v6 (previous node versions may require Babel)
+	* Postgres (v9.5 or greater)  
+	> Note: Default installations of Postgres on macOS (such as through homebrew or DMG install) may not grant proper permission to your postgres user role. macOS users may need to alter their Postgres user role with [role attribute](https://www.postgresql.org/docs/9.5/static/role-attributes.html) `LOGIN`. See [ALTER ROLE – (postgres.org)](https://www.postgresql.org/docs/9.5/static/sql-alterrole.html) in the Postgres Documentation for more.
+	* Note: Windows users may be required to install Python 2.7 and Visual C++ Build Tools. Please follow [Installing Python and Visual C++ Build Tools (Windows)](#) prior to continuing installation.
+3. Create database recreg:  
+`createdb recreg`
+4. Install Grunt:  
+`npm install -g grunt`
+5. Install npm dependencies:  
+`npm install`
+6. Create a `.env` file in root.  
+> Note: See [Configuration](#Configuration) for more about configuring your `.env` file.
+7. Populate your database:  
+`node syncDecember15.js`
+8. Run:  
 `npm start`
 
-## Windows Caveat
+### Installing Python and Visual C++ Build Tools (Windows)
 
-Due to variances between Windows and Linux and Mac OSes, Windows users will have to add a few steps for
+Due to variances between Windows, Linux, and macOS; Windows users will have to add a few steps for
 installing the needed components for node-gyp. And all users will probably have to install Python 2.7 as well.
 
 1. Download & install Python 2.7.
 2. Set the Environmental Variables for the Python install, including the variable 'PYTHON.'
-3. Download & install Visual C++ Build Tools. (http://landinghub.visualstudio.com/visual-cpp-build-tools)
+3. Download & install [Visual C++ Build Tools – (visualstudio.com)](http://landinghub.visualstudio.com/visual-cpp-build-tools).
 4. Run 'npm config set msvs_version 2015 --global'
 5. If errors continue to occur, update to the latest version of npm with 'npm install npm -g'
+
 
 ## Configuration
 
