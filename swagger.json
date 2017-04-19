@@ -798,7 +798,7 @@
             "x-swagger-router-controller": "answer.controller",
             "post": {
                 "summary": "Searches all answers and returns user ids",
-                "operationId": "searchAnswerUsers",
+                "operationId": "searchParticipants",
                 "security": [{
                     "admin": []
                 }, {
@@ -840,7 +840,7 @@
             "x-swagger-router-controller": "answer.controller",
             "post": {
                 "summary": "Searches all answers and returns user ids",
-                "operationId": "searchAnswerUsersIdentifiers",
+                "operationId": "searchParticipantsIdentifiers",
                 "security": [{
                     "admin": []
                 }, {
