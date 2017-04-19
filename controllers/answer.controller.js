@@ -107,6 +107,13 @@ exports.searchAnswerUsers = function searchAnswerUsers(req, res) {
         .catch(shared.handleError(res));
 };
 
+exports.searchAnswerUsersIdentifiers = function searchAnswerUsersIdentifiers(req, res) {
+    const query = _.get(req, 'swagger.params.query.value');
+    req.models.answer.searchParticipantsIdentifiers(query)
+        .then(result => res.status(200).json(result))
+        .catch(shared.handleError(res));
+};
+
 exports.federatedSearchAnswers = function federatedSearchAnswers(req, res) {
     const query = _.get(req, 'swagger.params.query.value');
     const allModels = req.app.locals.models;

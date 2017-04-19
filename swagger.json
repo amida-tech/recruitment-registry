@@ -836,6 +836,48 @@
                 }
             }
         },
+        "/answers/identifier-user-ids": {
+            "x-swagger-router-controller": "answer.controller",
+            "post": {
+                "summary": "Searches all answers and returns user ids",
+                "operationId": "searchAnswerUsersIdentifiers",
+                "security": [{
+                    "admin": []
+                }, {
+                    "clinician": []
+                }],
+                "parameters": [{
+                    "name": "query",
+                    "in": "body",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/answerIdentifiersQuery"
+                    }
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response.",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "required": ["userId"],
+                                "properties": {
+                                    "userId": {
+                                        "type": "integer",
+                                        "minimum": 1
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        }
+                    },
+                   "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
         "/answers/federated-queries": {
             "x-swagger-router-controller": "answer.controller",
             "post": {

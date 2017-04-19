@@ -464,6 +464,12 @@ module.exports = class AnswerDAO extends Base {
         });
     }
 
+    searchAllParticipants() {
+        const attributes = ['id'];
+        return this.db.User.findAll({ raw: true, where: { role: 'participant' }, attributes })
+            .then(ids => ids.map(({ id }) => ({ userId: id })));
+    }
+
     /**
      * Search users by their survey answers. Returns a count of users only.
      * @param {object} query questionId:value mapping to search users by
@@ -472,9 +478,7 @@ module.exports = class AnswerDAO extends Base {
     searchParticipants(criteria) {
         const n = _.get(criteria, 'questions.length');
         if (!n) {
-            const attributes = ['id'];
-            return this.db.User.findAll({ raw: true, where: { role: 'participant' }, attributes })
-                .then(ids => ids.map(({ id }) => ({ userId: id })));
+            return this.searchAllParticipants();
         }
 
         const questionIds = criteria.questions.map(question => question.id);
@@ -552,6 +556,14 @@ module.exports = class AnswerDAO extends Base {
                 }, []);
                 return { questions };
             });
+    }
+
+    searchParticipantsIdentifiers(federatedCriteria) {
+        if (federatedCriteria.length < 1) {
+            return this.searchAllParticipants();
+        }
+        return this.federatedCriteriaToLocalCriteria(federatedCriteria)
+            .then(criteria => this.searchParticipants(criteria));
     }
 
     countParticipantsIdentifiers(federatedCriteria) {

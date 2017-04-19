@@ -256,6 +256,50 @@ const Tests = class BaseTests {
         const federatedCriteria = this.formFederatedCriteria(answers);
         return { count, federatedCriteria };
     }
+
+    countParticipantsFn({ count, answers }) {
+        const self = this;
+        return function searchAnswerCount() {
+            const criteria = self.formCriteria(answers);
+            return self.countParticipantsPx(criteria)
+                .then(({ count: actual }) => expect(actual).to.equal(count));
+        };
+    }
+
+    countParticipantsIdentifiersFn({ count, answers }) {
+        const self = this;
+        return function countParticipantsIdentifierst() {
+            const criteria = self.formFederatedCriteria(answers);
+            return self.countParticipantsIdentifiersPx(criteria)
+                .then(({ count: actual }) => expect(actual).to.equal(count));
+        };
+    }
+
+    searchParticipantsFn({ userIndices, answers }) {
+        const self = this;
+        return function searchParticipants() {
+            const criteria = self.formCriteria(answers);
+            return self.searchParticipantsPx(criteria)
+                .then((userIds) => {
+                    const actual = userIds.map(({ userId }) => userId);
+                    const expected = userIndices.map(index => self.hxUser.id(index));
+                    expect(actual).to.deep.equal(expected);
+                });
+        };
+    }
+
+    searchParticipantsIdentifiersFn({ userIndices, answers }) {
+        const self = this;
+        return function searchParticipantsIdentifiers() {
+            const criteria = self.formFederatedCriteria(answers);
+            return self.searchParticipantsIdentifiersPx(criteria)
+                .then((userIds) => {
+                    const actual = userIds.map(({ userId }) => userId);
+                    const expected = userIndices.map(index => self.hxUser.id(index));
+                    expect(actual).to.deep.equal(expected);
+                });
+        };
+    }
 };
 
 const SpecTests = class SearchSpecTests extends Tests {
@@ -289,38 +333,24 @@ const SpecTests = class SearchSpecTests extends Tests {
         };
     }
 
-    searchAnswerCountFn({ count, answers }) {
+    countParticipantsPx(criteria) {
         const m = this.models;
-        const self = this;
-        return function searchAnswerCount() {
-            const criteria = self.formCriteria(answers);
-            return m.answer.countParticipants(criteria)
-                .then(({ count: actual }) => expect(actual).to.equal(count));
-        };
+        return m.answer.countParticipants(criteria);
     }
 
-    countParticipantsIdentifiersFn({ count, answers }) {
+    countParticipantsIdentifiersPx(criteria) {
         const m = this.models;
-        const self = this;
-        return function countParticipantsIdentifierst() {
-            const criteria = self.formFederatedCriteria(answers);
-            return m.answer.countParticipantsIdentifiers(criteria)
-                .then(({ count: actual }) => expect(actual).to.equal(count));
-        };
+        return m.answer.countParticipantsIdentifiers(criteria);
     }
 
-    searchAnswerUsersFn({ userIndices, answers }) {
+    searchParticipantsPx(criteria) {
         const m = this.models;
-        const self = this;
-        return function searchAnswerUsers() {
-            const criteria = self.formCriteria(answers);
-            return m.answer.searchParticipants(criteria)
-                .then((userIds) => {
-                    const actual = userIds.map(({ userId }) => userId);
-                    const expected = userIndices.map(index => self.hxUser.id(index));
-                    expect(actual).to.deep.equal(expected);
-                });
-        };
+        return m.answer.searchParticipants(criteria);
+    }
+
+    searchParticipantsIdentifiersPx(criteria) {
+        const m = this.models;
+        return m.answer.searchParticipantsIdentifiers(criteria);
     }
 
     exportAnswersForUsersFn({ userIndices }, store) {
@@ -371,7 +401,7 @@ const SpecTests = class SearchSpecTests extends Tests {
                         .then((recordsCohort) => {
                             expect(recordsCohort.length).to.be.above(0);
                             if (limit) {
-                                const userIdSet = new Set(recordsCohort.map(({ userId }) => userId));
+                                const userIdSet = new Set(recordsCohort.map(r => r.userId));
                                 const filterRecordsFull = recordsFullExport.reduce((r, record) => {
                                     if (userIdSet.has(record.userId)) {
                                         r.push(record);
@@ -467,9 +497,10 @@ const SpecTests = class SearchSpecTests extends Tests {
 
             let cohortId = 1;
             searchCases.forEach((searchCase, index) => {
-                it(`search case ${index} count`, self.searchAnswerCountFn(searchCase));
-                it(`search case ${index} identifier count`, self.countParticipantsIdentifiersFn(searchCase));
-                it(`search case ${index} user ids`, self.searchAnswerUsersFn(searchCase));
+                it(`search case ${index} count (id)`, self.countParticipantsFn(searchCase));
+                it(`search case ${index} count (identifier)`, self.countParticipantsIdentifiersFn(searchCase));
+                it(`search case ${index} user ids (id)`, self.searchParticipantsFn(searchCase));
+                it(`search case ${index} user ids (identifier)`, self.searchParticipantsIdentifiersFn(searchCase));
                 if (searchCase.count > 1) {
                     const store = {};
                     it(`search case ${index} export answers`, self.exportAnswersForUsersFn(searchCase, store));
@@ -536,38 +567,24 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
         };
     }
 
-    searchAnswerCountFn({ count, answers }) {
-        const rrSuperTest = this.rrSuperTest;
-        const self = this;
-        return function searchAnswerCount() {
-            const criteria = self.formCriteria(answers);
-            return rrSuperTest.post('/answers/queries', criteria, 200)
-                .expect(res => expect(res.body.count).to.equal(count));
-        };
+    countParticipantsPx(criteria) {
+        const r = this.rrSuperTest;
+        return r.post('/answers/queries', criteria, 200).then(res => res.body);
     }
 
-    countParticipantsIdentifiersFn({ count, answers }) {
-        const rrSuperTest = this.rrSuperTest;
-        const self = this;
-        return function countParticipantsIdentifierst() {
-            const criteria = self.formFederatedCriteria(answers);
-            return rrSuperTest.post('/answers/identifier-queries', criteria, 200)
-                .expect(res => expect(res.body.count).to.equal(count));
-        };
+    countParticipantsIdentifiersPx(criteria) {
+        const r = this.rrSuperTest;
+        return r.post('/answers/identifier-queries', criteria, 200).then(res => res.body);
     }
 
-    searchAnswerUsersFn({ userIndices, answers }) {
-        const rrSuperTest = this.rrSuperTest;
-        const self = this;
-        return function searchAnswerUsers() {
-            const criteria = self.formCriteria(answers);
-            return rrSuperTest.post('/answers/user-ids', criteria, 200)
-                .then((res) => {
-                    const actual = res.body.map(({ userId }) => userId);
-                    const expected = userIndices.map(index => self.hxUser.id(index));
-                    expect(actual).to.deep.equal(expected);
-                });
-        };
+    searchParticipantsPx(criteria) {
+        const r = this.rrSuperTest;
+        return r.post('/answers/user-ids', criteria, 200).then(res => res.body);
+    }
+
+    searchParticipantsIdentifiersPx(criteria) {
+        const r = this.rrSuperTest;
+        return r.post('/answers/identifier-user-ids', criteria, 200).then(res => res.body);
     }
 
     exportAnswersForUsersFn({ userIndices }, filepath) {
@@ -725,9 +742,10 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
 
             let cohortId = 1;
             searchCases.forEach((searchCase, index) => {
-                it(`search case ${index} count`, self.searchAnswerCountFn(searchCase));
-                it(`search case ${index} identifier count`, self.countParticipantsIdentifiersFn(searchCase));
-                it(`search case ${index} user ids`, self.searchAnswerUsersFn(searchCase));
+                it(`search case ${index} count (id)`, self.countParticipantsFn(searchCase));
+                it(`search case ${index} count (identifier)`, self.countParticipantsIdentifiersFn(searchCase));
+                it(`search case ${index} user ids (id)`, self.searchParticipantsFn(searchCase));
+                it(`search case ${index} user ids (identifier)`, self.searchParticipantsIdentifiersFn(searchCase));
                 if (searchCase.count > 1) {
                     const store = {};
                     let cohortFilepath;
