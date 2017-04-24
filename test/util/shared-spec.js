@@ -212,6 +212,16 @@ class SharedSpec {
             return callback(null, typeof data === 'function' ? data() : data);
         });
     }
+
+    stubRequestPost(error, data) { // eslint-disable-line class-methods-use-this
+        return sinon.stub(request, 'post', (opts, callback) => {
+            if (typeof opts === 'function') { callback = opts; }
+            if (error) {
+                return callback(typeof error === 'function' ? error() : error, data);
+            }
+            return callback(null, typeof data === 'function' ? data() : data);
+        });
+    }
 }
 
 module.exports = SharedSpec;
