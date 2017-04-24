@@ -5,8 +5,7 @@ process.env.NODE_ENV = 'test';
 const chai = require('chai');
 const request = require('request');
 const sinon = require('sinon');
-const sinonChai = require('sinon-chai');
-const logger = require('../logger');
+const spyLogger = require('winston-spy');
 
 const SharedSpec = require('./util/shared-spec');
 const sendMail = require('../lib/email');
@@ -14,6 +13,8 @@ const ccConfig = require('../config').constantContact;
 
 var rewire = require('rewire');
 var email = rewire('../lib/email.js'); //Important: must reference WHOLE file.
+var winston = require('winston');
+var spy = sinon.spy();
 
 const shared = new SharedSpec();
 const expect = chai.expect;
@@ -23,6 +24,9 @@ describe('email unit', () => {
     id: 32,
     email: 'beet@vegetable.com'
   };
+
+  winston.remove(winston.transports.Console);
+  winston.add(winston.transports.SpyLogger, {spy: spy});
 
   const stubRequestPostSuccessful = function stubRequestPostSuccessful(){
     return shared.stubRequestPost(null, {
@@ -80,16 +84,42 @@ describe('email unit', () => {
   });
 
   it('confirms a logged message if sendCcEmailResponseHandler returns an error', () => {
-    sinon.spy(logger, 'log');
     var sendCcEmailResponseHandler = email.__get__('sendCcEmailResponseHandler');
     sendCcEmailResponseHandler('Doh!', {statusCode: 201});
-    expect(logger.log).to.have.been.calledWith('error', 'Doh!');
+    expect(spy.calledWith('error', 'Doh!'));
+    spy.reset();
   });
 
   it('confirms a logged message if sendCcEmailResponseHandler receives an improper status code', () => {
     var sendCcEmailResponseHandler = email.__get__('sendCcEmailResponseHandler');
     sendCcEmailResponseHandler(null, {statusCode: 301});
+    expect(spy.calledWith('error', 'Sending email has failed.'));
+    spy.reset();
+  });
 
-  })
+  it('confirms no logged message if sendCcEmailResponseHandler is accepted', () => {
+    var sendCcEmailResponseHandler = email.__get__('sendCcEmailResponseHandler');
+    sendCcEmailResponseHandler(null, {statusCode: 201});
+    expect(spy.called).to.be.equal(false);
+    spy.reset();
+  });
+
+  // it('confirms the request was rejected because of insufficient configuration ', () => {
+  //   var backup = ccConfig.apiKey;
+  //   ccConfig.apiKey = undefined;
+  //   var sendCcEmail = email.__get__('sendCcEmail');
+  //
+  //     const requestStub = stubRequestPostSuccessful();
+  //
+  //   sendCcEmail(user);
+  //   expect(requestStub.callCount).to.equal(0);
+  //   ccConfig.apiKey = backup;
+  // });
+
+  it('confirms the request was successfully sent ', () => {
+    var sendCcEmail = email.__get__('sendCcEmail');
+    var requestStub = stubRequestPostSuccessful();
+    expect(requestStub.callCount).to.equal(1);
+  });
 
 });
