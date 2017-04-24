@@ -1,13 +1,13 @@
 'use strict';
 
 const _ = require('lodash');
-const request = require('request');
 
 const Base = require('./base');
 const RRError = require('../../lib/rr-error');
 const SPromise = require('../../lib/promise');
 
 const answerCommon = require('./answer-common');
+const registryCommon = require('./registry-common');
 
 const ExportCSVConverter = require('../../export/csv-converter.js');
 const ImportCSVConverter = require('../../import/csv-converter.js');
@@ -54,35 +54,6 @@ const evaluateEnableWhen = function (rules, answersByQuestionId) {
 const basicExportFields = [
     'surveyId', 'questionId', 'questionChoiceId', 'questionType', 'choiceType', 'value',
 ];
-
-const requestPost = function (registryName, questions, url) {
-    const opts = {
-        json: true,
-        body: questions,
-        url: `${url}/answers/identifier-queries`,
-    };
-    const key = `RECREG_JWT_${registryName}`;
-    const jwt = process.env[key];
-    if (key) {
-        opts.headers = {
-            authorization: `Bearer ${jwt}`,
-        };
-    }
-
-    return new Promise((resolve, reject) => (
-        request.post(opts, (err, res) => {
-            if (err) {
-                const rrerror = new RRError('answerRemoteRegistryError', registryName, err.message);
-                return reject(rrerror);
-            }
-            if (res.statusCode !== 200) {
-                const rrerror = new RRError('answerRemoteRegistryError', registryName, res.body.message);
-                return reject(rrerror);
-            }
-            return resolve(res.body);
-        })
-    ));
-};
 
 const isEnabled = function ({ questionId, parents }, maps) {
     const { questionAnswerRulesMap, sectionAnswerRulesMap, answersByQuestionId } = maps;
@@ -575,21 +546,14 @@ module.exports = class AnswerDAO extends Base {
     }
 
     federatedCountParticipants(federatedModels, criteria) {
-        const attributes = ['id', 'name', 'url', 'schema'];
-        return this.db.Registry.findAll({ raw: true, attributes })
-            .then((registries) => {
-                if (!registries.length) {
-                    return RRError.reject('registryNoneFound');
-                }
-                return registries;
-            })
+        return this.registry.findRegistries()
             .then((registries) => {
                 const promises = registries.map(({ name, schema, url }) => {
                     if (schema) {
                         const models = federatedModels[schema];
                         return models.answer.countParticipantsIdentifiers(criteria);
                     }
-                    return requestPost(name, criteria, url);
+                    return registryCommon.requestPost(name, criteria, url, 'answers/identifier-queries');
                 });
                 return SPromise.all(promises);
             })
