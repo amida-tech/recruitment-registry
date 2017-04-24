@@ -28,24 +28,19 @@ describe('email unit', () => {
   winston.remove(winston.transports.Console);
   winston.add(winston.transports.SpyLogger, {spy: spy});
 
-  const stubRequestPostSuccessful = function stubRequestPostSuccessful(){
+  function stubRequestPostSuccessful(){
     return shared.stubRequestPost(null, {
       statusCode: 201
     });
   };
 
-  const stubRequestPostFailure = function stubRequestPostFailure(){
-    return shared.stubRequestPost('Bad news.', {
-      statusCode: 404
-    });
-  };
+  const requestStub = stubRequestPostSuccessful();
 
   const ensureConstantContactConfig = email.__get__('ensureConstantContactConfig');
 
   it('confirms makeNewConstantContactOptions is setup as intended', () => {
     var makeNewConstantContactOptions = email.__get__('makeNewConstantContactOptions');
     var results = makeNewConstantContactOptions(user.email);
-    expect(results.method).to.be.equal('POST');
     expect(results.url).to.be.equal(`${ccConfig.baseApiUrl}/contacts`);
     expect(results.headers.Authorization).to.be.equal(`Bearer ${ccConfig.token}`);
     expect(results.qs.api_key).to.be.equal(`${ccConfig.apiKey}`);
@@ -104,22 +99,21 @@ describe('email unit', () => {
     spy.reset();
   });
 
-  // it('confirms the request was rejected because of insufficient configuration ', () => {
-  //   var backup = ccConfig.apiKey;
-  //   ccConfig.apiKey = undefined;
-  //   var sendCcEmail = email.__get__('sendCcEmail');
-  //
-  //     const requestStub = stubRequestPostSuccessful();
-  //
-  //   sendCcEmail(user);
-  //   expect(requestStub.callCount).to.equal(0);
-  //   ccConfig.apiKey = backup;
-  // });
+  it('confirms the request was rejected because of insufficient configuration ', () => {
+    var backup = ccConfig.apiKey;
+    ccConfig.apiKey = undefined;
+    var sendCcEmail = email.__get__('sendCcEmail');
+    sendCcEmail(user);
+    expect(requestStub.callCount).to.equal(0);
+    ccConfig.apiKey = backup;
+    requestStub.reset();
+  });
 
   it('confirms the request was successfully sent ', () => {
     var sendCcEmail = email.__get__('sendCcEmail');
-    var requestStub = stubRequestPostSuccessful();
+    sendCcEmail(user);
     expect(requestStub.callCount).to.equal(1);
+    requestStub.reset();
   });
 
 });
