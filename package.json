@@ -20,7 +20,7 @@
   "homepage": "https://github.com/amida-tech/recruitment-registry#readme",
   "dependencies": {
     "ajv": "^4.7.6",
-    "bcrypt": "^0.8.7",
+    "bcryptjs": "^2.4.3",
     "body-parser": "^1.15.2",
     "cookie-parser": "^1.4.3",
     "cors": "^2.8.0",
@@ -49,6 +49,7 @@
     "eslint": "^3.19.0",
     "eslint-config-airbnb-base": "^11.1.0",
     "eslint-plugin-import": "^2.2.0",
+    "grunt": "^1.0.1",
     "grunt-contrib-jshint": "^1.0.0",
     "grunt-contrib-watch": "^1.0.0",
     "grunt-env": "^0.4.4",
