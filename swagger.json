@@ -258,6 +258,9 @@
                 },{
 
                     "participant": []
+                },{
+
+                    "clinician": []
                 }],
                 "parameters": [{
                     "name": "scope",
@@ -1092,6 +1095,8 @@
                 "operationId": "listQuestions",
                 "security": [{
                     "admin": []
+                },  {
+                  "clinician": []
                 }],
                 "parameters": [{
                     "name": "scope",
@@ -1201,6 +1206,8 @@
                 "operationId": "getQuestion",
                 "security": [{
                     "participant": []
+                }, {
+                    "clinician": []
                 }],
                 "parameters": [{
                     "name": "language",
@@ -2256,6 +2263,8 @@
                 "operationId": "listUserSurveys",
                 "security": [{
                     "participant": []
+                },{
+                    "clinician": []
                 }],
                 "parameters": [{
                     "name": "language",
