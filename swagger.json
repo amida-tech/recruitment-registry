@@ -881,6 +881,37 @@
                 }
             }
         },
+        "/answers/federated": {
+            "x-swagger-router-controller": "answer.controller",
+            "post": {
+                "summary": "Searches all answers and returns federated answers",
+                "operationId": "federatedListParticipants",
+                "security": [{
+                    "admin": []
+                }, {
+                    "clinician": []
+                }],
+                "parameters": [{
+                    "name": "query",
+                    "in": "body",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/answerIdentifiersQuery"
+                    }
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response.",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
         "/answers/federated-queries": {
             "x-swagger-router-controller": "answer.controller",
             "post": {

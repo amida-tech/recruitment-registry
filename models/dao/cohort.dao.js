@@ -3,8 +3,24 @@
 const _ = require('lodash');
 
 const RRError = require('../../lib/rr-error');
+const SPromise = require('../../lib/promise');
 const Base = require('./base');
 const answerCommon = require('./answer-common');
+const registryCommon = require('./registry-common');
+const ExportCSVConverter = require('../../export/csv-converter.js');
+
+const processFederatedCohortForRegistry = function (registry, federatedModels, filter) {
+    const { name, schema, url } = registry;
+    if (schema) {
+        const models = federatedModels[schema];
+        return models.answer.federatedListParticipants(filter);
+    }
+    return registryCommon.requestPost(name, filter, url, '/answers/federated');
+};
+
+const basicExportFields = [
+    'surveyId', 'questionId', 'questionChoiceId', 'questionType', 'choiceType', 'value',
+];
 
 module.exports = class CohortDAO extends Base {
     constructor(db, dependencies) {
@@ -38,12 +54,50 @@ module.exports = class CohortDAO extends Base {
     searchParticipants(filter, federated) {
         if (federated) {
             return this.answer.localCriteriaToFederatedCriteria(filter)
-                .then(fc => this.answer.searchParticipantsIdentifiers(fc));
+                .then((result) => {
+                    const fc = result.federatedCriteria;
+                    return this.answer.searchParticipantsIdentifiers(fc);
+                });
         }
         return this.answer.searchParticipants(filter);
     }
 
-    createCohort({ filterId, count, name, federated, local }) {
+    processFederatedCohort(filter, count, federatedModels) {
+        return this.registry.findRegistries()
+            .then((registries) => {
+                const pxs = registries.map((registry) => {
+                    const id = registry.id;
+                    return processFederatedCohortForRegistry(registry, federatedModels, filter)
+                        .then((answers) => {
+                            answers.forEach(r => (r.registryId = id));
+                            return answers;
+                        });
+                });
+                return SPromise.all(pxs);
+            })
+            .then(results => results.map((result) => {
+                if (count && count > result.count) {
+                    return result;
+                }
+                return _.sampleSize(result, count);
+            }))
+            .then(results => _.flatten(results))
+            .then((answers) => {
+                const fields = ['registryId', 'userId', ...basicExportFields];
+                const converter = new ExportCSVConverter({ fields });
+                return converter.dataToCSV(answers);
+            });
+    }
+
+    processCohort(filter, count, federated, local, federatedModels) {
+        if (federated && !local) {
+            return this.processFederatedCohort(filter, count, federatedModels);
+        }
+        return this.searchParticipants(filter, federated)
+            .then(userIds => this.exportForUsers(userIds, count));
+    }
+
+    createCohort({ filterId, count, name, federated, local, federatedModels }) {
         return this.filter.getFilter(filterId)
             .then((filter) => {
                 if (!filter) {
@@ -66,8 +120,7 @@ module.exports = class CohortDAO extends Base {
                             .then(() => filter);
                     });
             })
-            .then(filter => this.searchParticipants(filter, federated))
-            .then(userIds => this.exportForUsers(userIds, count));
+            .then(filter => this.processCohort(filter, count, federated, local, federatedModels));
     }
 
     getCohort(id) {
@@ -80,12 +133,11 @@ module.exports = class CohortDAO extends Base {
             raw: true,
             attributes: ['federated', 'local'],
         })
-            .then(({ federated }) => {
+            .then(({ federated, local }) => {
                 const where = { cohortId: id };
                 const order = this.qualifiedCol('cohort_answer', 'id');
                 return answerCommon.getFilterAnswers(this, this.db.CohortAnswer, { where, order })
-                    .then(questions => this.searchParticipants({ questions }, federated))
-                    .then(userIds => this.exportForUsers(userIds, count));
+                    .then(questions => this.processCohort({ questions }, count, federated, local));
             });
     }
 

@@ -566,7 +566,7 @@ module.exports = class AnswerDAO extends Base {
                     });
                     return r;
                 }, []);
-                return result;
+                return { federatedCriteria: result, identifierMap };
             });
     }
 
@@ -603,5 +603,30 @@ module.exports = class AnswerDAO extends Base {
                     const count = federated.reduce((r, p) => r + p.count, local.count);
                     return { count };
                 }));
+    }
+
+    federatedListParticipants(filter) {
+        return this.localCriteriaToFederatedCriteria(filter)
+            .then((fcInfo) => {
+                const fc = fcInfo.federatedCriteria;
+                return this.answer.searchParticipantsIdentifiers(fc)
+                    .then(userIds => this.listAnswers({ userIds, scope: 'export' }))
+                    .then((answers) => {
+                        const identifierMap = fcInfo.identifierMap;
+                        return answers.reduce((r, answer) => {
+                            const { questionId, questionChoiceId } = answer;
+                            const e = _.omit(answer, ['questionId', 'questionChoiceId']);
+                            const identifierInfo = identifierMap.get(questionId);
+                            if (questionChoiceId) {
+                                const identifier = identifierInfo.get(questionChoiceId);
+                                r.push(Object.assign({ identifier }, e));
+                            } else {
+                                const identifier = identifierInfo;
+                                r.push(Object.assign({ identifier }, e));
+                            }
+                            return r;
+                        }, []);
+                    });
+            });
     }
 };
