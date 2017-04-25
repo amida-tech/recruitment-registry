@@ -417,11 +417,16 @@ const SpecTests = class SearchSpecTests extends Tests {
         };
     }
 
-    createCohortFn(store, limited, userCount) {
+    createCohortFn(store, limited, userCount, localFederated) {
         const m = this.models;
         return function createCohort() {
             const count = limited ? userCount - 1 : 10000;
-            return m.cohort.createCohort(({ filterId: store.id, count }))
+            const newCohort = { filterId: store.id, count };
+            if (localFederated) {
+                newCohort.local = true;
+                newCohort.federated = true;
+            }
+            return m.cohort.createCohort(newCohort)
                 .then((result) => { store.cohort = result; });
         };
     }
@@ -504,6 +509,7 @@ const SpecTests = class SearchSpecTests extends Tests {
                 it('search empty criteria', self.searchEmptyFn(5));
 
                 let cohortId = 1;
+                const caseLen = 6;
                 searchCases.forEach((searchCase, index) => {
                     it(`search case ${index} count`, self.countParticipantsFn(searchCase));
                     it(`search case ${index} user ids`, self.searchParticipantsFn(searchCase));
@@ -515,32 +521,53 @@ const SpecTests = class SearchSpecTests extends Tests {
                         it(`search case ${index} export answers`, self.exportAnswersForUsersFn(searchCase, store));
                         it(`create filter ${index}`, self.createFilterFn(index, searchCase, store));
 
-                        cohortIndex = 3 * index;
+                        cohortIndex = caseLen * index;
                         it(`create cohort ${cohortIndex} (no count)`, self.createCohortFn(store, false));
                         it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(store, false));
                         it(`patch cohort ${cohortIndex} (no count)`, self.patchCohortFn(cohortId, store, false));
                         it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(store, false));
                         cohortId += 1;
 
-                        cohortIndex = (3 * index) + 1;
+                        cohortIndex = (caseLen * index) + 1;
                         it(`create cohort ${cohortIndex} (large count)`, self.createCohortFn(store, true, 10000));
                         it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(store, false));
                         it(`patch cohort ${cohortIndex} (large count)`, self.patchCohortFn(cohortId, store, true, 10000));
                         it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(store, false));
                         cohortId += 1;
 
-                        cohortIndex = (3 * index) + 2;
+                        cohortIndex = (caseLen * index) + 2;
                         it(`create cohort ${cohortIndex} (limited count`, self.createCohortFn(store, true, searchCase.count));
                         it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(store, true));
                         it(`patch cohort ${cohortIndex} (limited count)`, self.patchCohortFn(cohortId, store, true, searchCase.count));
                         it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(store, true));
+                        cohortId += 1;
+
+                        cohortIndex = (caseLen * index) + 3;
+                        it(`create cohort ${cohortIndex} (no count)`, self.createCohortFn(store, false, 0, true));
+                        it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(store, false));
+                        it(`patch cohort ${cohortIndex} (no count)`, self.patchCohortFn(cohortId, store, false, 0, true));
+                        it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(store, false));
+                        cohortId += 1;
+
+                        cohortIndex = (caseLen * index) + 4;
+                        it(`create cohort ${cohortIndex} (large count)`, self.createCohortFn(store, true, 10000, true));
+                        it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(store, false));
+                        it(`patch cohort ${cohortIndex} (large count)`, self.patchCohortFn(cohortId, store, true, 10000, true));
+                        it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(store, false));
+                        cohortId += 1;
+
+                        cohortIndex = (caseLen * index) + 5;
+                        it(`create cohort ${cohortIndex} (limited count`, self.createCohortFn(store, true, searchCase.count, true));
+                        it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(store, true));
+                        it(`patch cohort ${cohortIndex} (limited count)`, self.patchCohortFn(cohortId, store, true, searchCase.count, true));
+                        it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(store, true));
+                        cohortId += 1;
 
                         it(`patch filter ${index} for empty`, self.patchFilterFn(testCase0.emptyCase, store));
 
-                        cohortIndex = 3 * index;
-                        it(`patch cohort ${cohortIndex} filter edit (no count)`, self.patchCohortFn(cohortId, store, false));
+                        cohortIndex = caseLen * index;
+                        it(`patch cohort ${cohortIndex} filter edit (no count)`, self.patchCohortFn(cohortId - 1, store, false));
                         it(`compare cohort ${cohortIndex} filter edit`, self.compareExportToCohortFn(store, false));
-                        cohortId += 1;
                     }
                 });
             });
@@ -675,11 +702,15 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
         };
     }
 
-    createCohortFn(store, filepath, limited, userCount) {
+    createCohortFn(store, filepath, limited, userCount, localFederated) {
         const rrSuperTest = this.rrSuperTest;
         return function createCohort() {
             const count = limited ? userCount - 1 : 10000;
             const payload = { filterId: store.id, count };
+            if (localFederated) {
+                payload.local = true;
+                payload.federated = true;
+            }
             return rrSuperTest.post('/cohorts', payload, 201)
                 .then(res => fs.writeFileSync(filepath, res.text));
         };
@@ -781,6 +812,7 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
                 const searchCases = testCase0.searchCases;
 
                 let cohortId = 1;
+                const caseLen = 6;
                 searchCases.forEach((searchCase, index) => {
                     it(`search case ${index} count`, self.countParticipantsFn(searchCase));
                     it(`search case ${index} user ids`, self.searchParticipantsFn(searchCase));
@@ -795,7 +827,7 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
                         it(`search case ${index} export answers`, self.exportAnswersForUsersFn(searchCase, filepath));
                         it(`create filter ${index}`, self.createFilterFn(index, searchCase, store));
 
-                        cohortIndex = 3 * index;
+                        cohortIndex = caseLen * index;
                         cohortFilepath = path.join(generatedDirectory, `cohort_${cohortIndex}.csv`);
                         cohortPatchFilepath = path.join(generatedDirectory, `cohort_patch_${cohortIndex}.csv`);
                         it(`create cohort ${cohortIndex} (no count)`, self.createCohortFn(store, cohortFilepath, false));
@@ -804,7 +836,7 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
                         it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(filepath, cohortPatchFilepath, false));
                         cohortId += 1;
 
-                        cohortIndex = (3 * index) + 1;
+                        cohortIndex = (caseLen * index) + 1;
                         cohortFilepath = path.join(generatedDirectory, `cohort_${cohortIndex}.csv`);
                         cohortPatchFilepath = path.join(generatedDirectory, `cohort_patch_${cohortIndex}.csv`);
                         it(`create cohort ${cohortIndex} (large count)`, self.createCohortFn(store, cohortFilepath, true, 10000));
@@ -813,19 +845,46 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
                         it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(filepath, cohortPatchFilepath, false));
                         cohortId += 1;
 
-                        cohortIndex = (3 * index) + 2;
+                        cohortIndex = (caseLen * index) + 2;
                         cohortFilepath = path.join(generatedDirectory, `cohort_${cohortIndex}.csv`);
                         cohortPatchFilepath = path.join(generatedDirectory, `cohort_patch_${cohortIndex}.csv`);
                         it(`create cohort ${cohortIndex} (limited count`, self.createCohortFn(store, cohortFilepath, true, searchCase.count));
                         it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(filepath, cohortFilepath, true));
                         it(`patch cohort ${cohortIndex} (limited count)`, self.patchCohortFn(cohortId, store, cohortPatchFilepath, true, searchCase.count));
                         it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(filepath, cohortPatchFilepath, true));
-
-                        cohortIndex = 3 * index;
-                        it(`patch filter ${index} for empty`, self.patchFilterFn(testCase0.emptyCase, store));
-                        it(`patch cohort ${cohortIndex} filter edit (no count)`, self.patchCohortFn(cohortId, store, cohortPatchFilepath, false));
-                        it(`compare cohort ${cohortIndex} filter edit`, self.compareExportToCohortFn(filepath, cohortPatchFilepath, false));
                         cohortId += 1;
+
+                        cohortIndex = (caseLen * index) + 3;
+                        cohortFilepath = path.join(generatedDirectory, `cohort_${cohortIndex}.csv`);
+                        cohortPatchFilepath = path.join(generatedDirectory, `cohort_patch_${cohortIndex}.csv`);
+                        it(`create cohort ${cohortIndex} (no count)`, self.createCohortFn(store, cohortFilepath, false, 0, true));
+                        it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(filepath, cohortFilepath, false));
+                        it(`patch cohort ${cohortIndex} (no count)`, self.patchCohortFn(cohortId, store, cohortPatchFilepath, false, 0, true));
+                        it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(filepath, cohortPatchFilepath, false));
+                        cohortId += 1;
+
+                        cohortIndex = (caseLen * index) + 4;
+                        cohortFilepath = path.join(generatedDirectory, `cohort_${cohortIndex}.csv`);
+                        cohortPatchFilepath = path.join(generatedDirectory, `cohort_patch_${cohortIndex}.csv`);
+                        it(`create cohort ${cohortIndex} (large count)`, self.createCohortFn(store, cohortFilepath, true, 10000, true));
+                        it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(filepath, cohortFilepath, false));
+                        it(`patch cohort ${cohortIndex} (large count)`, self.patchCohortFn(cohortId, store, cohortPatchFilepath, true, 10000, true));
+                        it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(filepath, cohortPatchFilepath, false));
+                        cohortId += 1;
+
+                        cohortIndex = (caseLen * index) + 5;
+                        cohortFilepath = path.join(generatedDirectory, `cohort_${cohortIndex}.csv`);
+                        cohortPatchFilepath = path.join(generatedDirectory, `cohort_patch_${cohortIndex}.csv`);
+                        it(`create cohort ${cohortIndex} (limited count`, self.createCohortFn(store, cohortFilepath, true, searchCase.count, true));
+                        it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(filepath, cohortFilepath, true));
+                        it(`patch cohort ${cohortIndex} (limited count)`, self.patchCohortFn(cohortId, store, cohortPatchFilepath, true, searchCase.count, true));
+                        it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(filepath, cohortPatchFilepath, true));
+                        cohortId += 1;
+
+                        cohortIndex = caseLen * index;
+                        it(`patch filter ${index} for empty`, self.patchFilterFn(testCase0.emptyCase, store));
+                        it(`patch cohort ${cohortIndex} filter edit (no count)`, self.patchCohortFn(cohortId - 1, store, cohortPatchFilepath, false));
+                        it(`compare cohort ${cohortIndex} filter edit`, self.compareExportToCohortFn(filepath, cohortPatchFilepath, false));
                     }
                 });
 

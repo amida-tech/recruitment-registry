@@ -26,13 +26,32 @@ module.exports = class CohortDAO extends Base {
         return this.db.FilterAnswer.findAll(findOptions);
     }
 
-    createCohort({ filterId, count, name }) {
+    exportForUsers(userIds, count) {
+        const ids = userIds.map(({ userId }) => userId);
+        if (count && count > ids.length) {
+            return this.answer.exportForUsers(ids);
+        }
+        const limitedIds = _.sampleSize(ids, count);
+        return this.answer.exportForUsers(limitedIds);
+    }
+
+    searchParticipants(filter, federated) {
+        if (federated) {
+            return this.answer.localCriteriaToFederatedCriteria(filter)
+                .then(fc => this.answer.searchParticipantsIdentifiers(fc));
+        }
+        return this.answer.searchParticipants(filter);
+    }
+
+    createCohort({ filterId, count, name, federated, local }) {
         return this.filter.getFilter(filterId)
             .then((filter) => {
                 if (!filter) {
                     return RRError.reject('cohortNoSuchFilter');
                 }
                 const newCohort = { filterId };
+                newCohort.federated = federated || false;
+                newCohort.local = local || false;
                 if (name) {
                     newCohort.name = name;
                 } else {
@@ -42,20 +61,13 @@ module.exports = class CohortDAO extends Base {
                     .then(({ id }) => {
                         const cohortId = { cohortId: id };
                         return this.getFilterAnswers(filterId)
-                            .then(records => records.map(record => Object.assign(record, cohortId)))
+                            .then(records => records.map(r => Object.assign(r, cohortId)))
                             .then(records => this.db.CohortAnswer.bulkCreate(records))
                             .then(() => filter);
                     });
             })
-            .then(filter => this.answer.searchParticipants(filter))
-            .then((userIds) => {
-                const ids = userIds.map(({ userId }) => userId);
-                if (count && count > ids.length) {
-                    return this.answer.exportForUsers(ids);
-                }
-                const limitedIds = _.sampleSize(ids, count);
-                return this.answer.exportForUsers(limitedIds);
-            });
+            .then(filter => this.searchParticipants(filter, federated))
+            .then(userIds => this.exportForUsers(userIds, count));
     }
 
     getCohort(id) {
@@ -64,17 +76,16 @@ module.exports = class CohortDAO extends Base {
     }
 
     patchCohort(id, { count }) {
-        const where = { cohortId: id };
-        const order = this.qualifiedCol('cohort_answer', 'id');
-        return answerCommon.getFilterAnswers(this, this.db.CohortAnswer, { where, order })
-            .then(questions => this.answer.searchParticipants({ questions }))
-            .then((userIds) => {
-                const ids = userIds.map(({ userId }) => userId);
-                if (count && count > ids.length) {
-                    return this.answer.exportForUsers(ids);
-                }
-                const limitedIds = _.sampleSize(ids, count);
-                return this.answer.exportForUsers(limitedIds);
+        return this.db.Cohort.findById(id, {
+            raw: true,
+            attributes: ['federated', 'local'],
+        })
+            .then(({ federated }) => {
+                const where = { cohortId: id };
+                const order = this.qualifiedCol('cohort_answer', 'id');
+                return answerCommon.getFilterAnswers(this, this.db.CohortAnswer, { where, order })
+                    .then(questions => this.searchParticipants({ questions }, federated))
+                    .then(userIds => this.exportForUsers(userIds, count));
             });
     }
 

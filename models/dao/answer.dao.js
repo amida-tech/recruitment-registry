@@ -529,6 +529,47 @@ module.exports = class AnswerDAO extends Base {
             });
     }
 
+    localCriteriaToFederatedCriteria({ questions }) {
+        const questionIds = questions.map(({ id }) => id);
+        return this.db.AnswerIdentifier.findAll({
+            raw: true,
+            where: { questionId: { $in: questionIds }, type: 'federated' },
+            attributes: ['identifier', 'questionId', 'questionChoiceId'],
+        })
+            .then((records) => {
+                const identifierMap = records.reduce((r, record) => {
+                    const { identifier, questionId, questionChoiceId } = record;
+                    if (questionChoiceId) {
+                        let identifiers = r.get(questionId);
+                        if (!identifiers) {
+                            identifiers = new Map();
+                            r.set(questionId, identifiers);
+                        }
+                        identifiers.set(questionChoiceId, identifier);
+                        return r;
+                    }
+                    r.set(questionId, identifier);
+                    return r;
+                }, new Map());
+                const result = questions.reduce((r, { id, answers }) => {
+                    const identifierInfo = identifierMap.get(id);
+                    answers.forEach((answer) => {
+                        if (answer.choice) {
+                            const identifier = identifierInfo.get(answer.choice);
+                            const e = Object.assign({ identifier }, _.omit(answer, 'choice'));
+                            r.push(e);
+                        } else {
+                            const identifier = identifierInfo;
+                            const e = Object.assign({ identifier }, answer);
+                            r.push(Object.assign(e, answer));
+                        }
+                    });
+                    return r;
+                }, []);
+                return result;
+            });
+    }
+
     searchParticipantsIdentifiers(federatedCriteria) {
         if (federatedCriteria.length < 1) {
             return this.searchAllParticipants();

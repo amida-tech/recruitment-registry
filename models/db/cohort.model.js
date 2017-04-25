@@ -27,6 +27,12 @@ module.exports = function cohort(sequelize, Sequelize, schema) {
             type: Sequelize.DATE,
             field: 'deleted_at',
         },
+        federated: {
+            type: Sequelize.BOOLEAN,
+        },
+        local: {
+            type: Sequelize.BOOLEAN,
+        },
     }, {
         freezeTableName: true,
         tableName,

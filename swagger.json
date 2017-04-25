@@ -4444,6 +4444,12 @@
                 "count": {
                     "type": "integer",
                     "minimum": 1
+                },
+                "federated": {
+                    "type": "boolean"
+                },
+                "local": {
+                    "type": "boolean"
                 }
             },
             "additionalProperties": false
