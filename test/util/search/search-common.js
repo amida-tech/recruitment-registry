@@ -1,4 +1,4 @@
-/* global it*/
+/* global describe, it*/
 
 'use strict';
 
@@ -110,9 +110,10 @@ const federatedAnswerGenerators = {
 };
 
 const Tests = class BaseTests {
-    constructor(offset = 5, surveyCount = 4) {
-        this.offset = offset;
-        this.surveyCount = surveyCount;
+    constructor(options = {}) {
+        this.offset = options.offset || 5;
+        this.surveyCount = options.surveyCount || 4;
+        this.noSync = options.noSync;
 
         const hxUser = new History();
         const hxSurvey = new SurveyHistory();
@@ -130,33 +131,33 @@ const Tests = class BaseTests {
         const types = [];
         const questions = [];
         ['choice', 'choices', 'text', 'bool'].forEach((type) => {
-            const options = { type, choiceCount: 6, noText: true, noOneOf: true };
+            const opt = { type, choiceCount: 6, noText: true, noOneOf: true };
             types.push(type);
             const indices = [];
             typeIndexMap.set(type, indices);
-            _.range(surveyCount).forEach((index) => {
-                indices.push(offset + questions.length);
-                options.identifiers = {
+            _.range(this.surveyCount).forEach((index) => {
+                indices.push(this.offset + questions.length);
+                opt.identifiers = {
                     type: 'federated',
                     postfix: `survey_${index}_${type}`,
                 };
-                const question = questionGenerator.newQuestion(options);
+                const question = questionGenerator.newQuestion(opt);
                 questions.push(question);
             });
         });
         ['choice', 'text', 'bool'].forEach((type) => {
-            const options = { type, choiceCount: 6, noOneOf: true, max: 5 };
+            const opt = { type, choiceCount: 6, noOneOf: true, max: 5 };
             const multiType = `multi${type}`;
             types.push(multiType);
             const indices = [];
             typeIndexMap.set(multiType, indices);
-            _.range(surveyCount).forEach((index) => {
-                options.identifiers = {
+            _.range(this.surveyCount).forEach((index) => {
+                opt.identifiers = {
                     type: 'federated',
                     postfix: `survey_${index}_${multiType}`,
                 };
-                indices.push(offset + questions.length);
-                const question = multiQuestionGenerator.newMultiQuestion(options);
+                indices.push(this.offset + questions.length);
+                const question = multiQuestionGenerator.newMultiQuestion(opt);
                 questions.push(question);
             });
         });
@@ -255,17 +256,60 @@ const Tests = class BaseTests {
         const federatedCriteria = this.formFederatedCriteria(answers);
         return { count, federatedCriteria };
     }
+
+    countParticipantsFn({ count, answers }) {
+        const self = this;
+        return function searchAnswerCount() {
+            const criteria = self.formCriteria(answers);
+            return self.countParticipantsPx(criteria)
+                .then(({ count: actual }) => expect(actual).to.equal(count));
+        };
+    }
+
+    countParticipantsIdentifiersFn({ count, answers }) {
+        const self = this;
+        return function countParticipantsIdentifierst() {
+            const criteria = self.formFederatedCriteria(answers);
+            return self.countParticipantsIdentifiersPx(criteria)
+                .then(({ count: actual }) => expect(actual).to.equal(count));
+        };
+    }
+
+    searchParticipantsFn({ userIndices, answers }) {
+        const self = this;
+        return function searchParticipants() {
+            const criteria = self.formCriteria(answers);
+            return self.searchParticipantsPx(criteria)
+                .then((userIds) => {
+                    const actual = userIds.map(({ userId }) => userId);
+                    const expected = userIndices.map(index => self.hxUser.id(index));
+                    expect(actual).to.deep.equal(expected);
+                });
+        };
+    }
+
+    searchParticipantsIdentifiersFn({ userIndices, answers }) {
+        const self = this;
+        return function searchParticipantsIdentifiers() {
+            const criteria = self.formFederatedCriteria(answers);
+            return self.searchParticipantsIdentifiersPx(criteria)
+                .then((userIds) => {
+                    const actual = userIds.map(({ userId }) => userId);
+                    const expected = userIndices.map(index => self.hxUser.id(index));
+                    expect(actual).to.deep.equal(expected);
+                });
+        };
+    }
 };
 
 const SpecTests = class SearchSpecTests extends Tests {
-    constructor(inputModels, offset = 5, surveyCount = 4, sync = true) {
-        super(offset, surveyCount);
+    constructor(inputModels, options) {
+        super(options);
         this.models = inputModels || models;
         const generator = new Generator();
 
-        this.sync = sync;
         this.shared = new SharedSpec(generator, this.models);
-        this.answerTests = new answerCommon.SpecTests(generator, this.hxUser, this.hxSurvey, this.hxQuestion);
+        this.answerTests = new answerCommon.SpecTests(generator, this);
         const qxCommonParameters = { generator, hxQuestion: this.hxQuestion };
         this.questionTests = new questionCommon.SpecTests(qxCommonParameters, this.models);
         this.hxAnswers = this.answerTests.hxAnswer;
@@ -289,38 +333,24 @@ const SpecTests = class SearchSpecTests extends Tests {
         };
     }
 
-    searchAnswerCountFn({ count, answers }) {
+    countParticipantsPx(criteria) {
         const m = this.models;
-        const self = this;
-        return function searchAnswerCount() {
-            const criteria = self.formCriteria(answers);
-            return m.answer.searchCountUsers(criteria)
-                .then(({ count: actual }) => expect(actual).to.equal(count));
-        };
+        return m.answer.countParticipants(criteria);
     }
 
-    countParticipantsIdentifiersFn({ count, answers }) {
+    countParticipantsIdentifiersPx(criteria) {
         const m = this.models;
-        const self = this;
-        return function countParticipantsIdentifierst() {
-            const criteria = self.formFederatedCriteria(answers);
-            return m.answer.countParticipantsIdentifiers(criteria)
-                .then(({ count: actual }) => expect(actual).to.equal(count));
-        };
+        return m.answer.countParticipantsIdentifiers(criteria);
     }
 
-    searchAnswerUsersFn({ userIndices, answers }) {
+    searchParticipantsPx(criteria) {
         const m = this.models;
-        const self = this;
-        return function searchAnswerUsers() {
-            const criteria = self.formCriteria(answers);
-            return m.answer.searchUsers(criteria)
-                .then((userIds) => {
-                    const actual = userIds.map(({ userId }) => userId);
-                    const expected = userIndices.map(index => self.hxUser.id(index));
-                    expect(actual).to.deep.equal(expected);
-                });
-        };
+        return m.answer.searchParticipants(criteria);
+    }
+
+    searchParticipantsIdentifiersPx(criteria) {
+        const m = this.models;
+        return m.answer.searchParticipantsIdentifiers(criteria);
     }
 
     exportAnswersForUsersFn({ userIndices }, store) {
@@ -339,7 +369,7 @@ const SpecTests = class SearchSpecTests extends Tests {
     searchEmptyFn(count) {
         const m = this.models;
         return function searchEmpty() {
-            return m.answer.searchCountUsers({})
+            return m.answer.countParticipants({})
                 .then(({ count: actual }) => expect(actual).to.equal(count));
         };
     }
@@ -371,7 +401,7 @@ const SpecTests = class SearchSpecTests extends Tests {
                         .then((recordsCohort) => {
                             expect(recordsCohort.length).to.be.above(0);
                             if (limit) {
-                                const userIdSet = new Set(recordsCohort.map(({ userId }) => userId));
+                                const userIdSet = new Set(recordsCohort.map(r => r.userId));
                                 const filterRecordsFull = recordsFullExport.reduce((r, record) => {
                                     if (userIdSet.has(record.userId)) {
                                         r.push(record);
@@ -387,17 +417,27 @@ const SpecTests = class SearchSpecTests extends Tests {
         };
     }
 
-    createCohortFn(store, limited, userCount) {
+    createCohortFn(store, options) {
         const m = this.models;
+        const { limited, userCount, localFederated, federated } = options;
         return function createCohort() {
             const count = limited ? userCount - 1 : 10000;
-            return m.cohort.createCohort(({ filterId: store.id, count }))
+            const newCohort = { filterId: store.id, count };
+            if (localFederated) {
+                newCohort.local = true;
+                newCohort.federated = true;
+            }
+            if (federated) {
+                newCohort.federated = true;
+            }
+            return m.cohort.createCohort(newCohort, options.federatedModels)
                 .then((result) => { store.cohort = result; });
         };
     }
 
-    patchCohortFn(id, store, limited, userCount) {
+    patchCohortFn(id, store, options) {
         const m = this.models;
+        const { limited, userCount } = options;
         return function createCohort() {
             const count = limited ? userCount - 1 : 10000;
             return m.cohort.patchCohort(id, { count })
@@ -427,86 +467,143 @@ const SpecTests = class SearchSpecTests extends Tests {
 
     answerSearchUnitFn() {
         const self = this;
+        const qxTests = self.questionTests;
         return function answerSearchUnit() {
-            if (self.sync) {
-                it('sync models', self.shared.setUpFn());
-            }
-
-            _.range(5).forEach((index) => {
-                it(`create user ${index}`, self.shared.createUserFn(self.hxUser));
-            });
-
-            _.range(self.offset).forEach((index) => {
-                it(`create question ${index}`, self.questionTests.createQuestionFn());
-                it(`get question ${index}`, self.questionTests.getQuestionFn(index));
-            });
-
-            self.questions.forEach((question, index) => {
-                const actualIndex = self.offset + index;
-                it(`create question ${actualIndex}`, self.questionTests.createQuestionFn({ question }));
-                it(`get question ${actualIndex}`, self.questionTests.getQuestionFn(actualIndex, { federated: true }, { ignoreQuestionIdentifier: true }));
-            });
-
-            it('create a map of all choice/choice question choices', self.generateChoiceMapFn());
-
-            _.range(self.surveyCount).forEach((index) => {
-                const qxIndices = self.types.map(type => self.typeIndexMap.get(type)[index]);
-                it(`create survey ${index}`, self.createSurveyFn(qxIndices));
-            });
-
-            const answerSequence = testCase0.answerSequence;
-
-            answerSequence.forEach(({ userIndex, surveyIndex, answerInfo }) => {
-                const msg = `user ${userIndex} answers survey ${surveyIndex}`;
-                it(msg, self.createAnswersFn(userIndex, surveyIndex, answerInfo));
-            });
-
-            it('search empty criteria', self.searchEmptyFn(5));
-
-            const searchCases = testCase0.searchCases;
-
-            let cohortId = 1;
-            searchCases.forEach((searchCase, index) => {
-                it(`search case ${index} count`, self.searchAnswerCountFn(searchCase));
-                it(`search case ${index} identifier count`, self.countParticipantsIdentifiersFn(searchCase));
-                it(`search case ${index} user ids`, self.searchAnswerUsersFn(searchCase));
-                if (searchCase.count > 1) {
-                    const store = {};
-                    it(`search case ${index} export answers`, self.exportAnswersForUsersFn(searchCase, store));
-                    it(`create filter ${index}`, self.createFilterFn(index, searchCase, store));
-                    it(`create cohort ${3 * index} (no count)`, self.createCohortFn(store, false));
-                    it(`compare cohort ${3 * index}`, self.compareExportToCohortFn(store, false));
-                    it(`patch cohort ${3 * index} (no count)`, self.patchCohortFn(cohortId, store, false));
-                    it(`compare cohort ${3 * index}`, self.compareExportToCohortFn(store, false));
-                    cohortId += 1;
-                    it(`create cohort ${(3 * index) + 1} (large count)`, self.createCohortFn(store, true, 10000));
-                    it(`compare cohort ${3 * index}`, self.compareExportToCohortFn(store, false));
-                    it(`patch cohort ${(3 * index) + 1} (large count)`, self.patchCohortFn(cohortId, store, true, 10000));
-                    it(`compare cohort ${(3 * index) + 1}`, self.compareExportToCohortFn(store, false));
-                    cohortId += 1;
-                    it(`create cohort ${(3 * index) + 2} (limited count`, self.createCohortFn(store, true, searchCase.count));
-                    it(`compare cohort ${(3 * index) + 2}`, self.compareExportToCohortFn(store, true));
-                    it(`patch cohort ${(3 * index) + 3} (limited count)`, self.patchCohortFn(cohortId, store, true, searchCase.count));
-                    it(`compare cohort ${(3 * index) + 3}`, self.compareExportToCohortFn(store, true));
-                    it(`patch filter ${index} for empty`, self.patchFilterFn(testCase0.emptyCase, store));
-                    it(`patch cohort ${3 * index} filter edit (no count)`, self.patchCohortFn(cohortId, store, false));
-                    it(`compare cohort ${3 * index} filter edit`, self.compareExportToCohortFn(store, false));
-                    cohortId += 1;
+            describe('system setup', function systemSetup() {
+                if (!self.noSync) {
+                    it('sync models', self.shared.setUpFn());
                 }
+            });
+
+            describe('create users/questions', function createUsersQuestions() {
+                _.range(5).forEach((index) => {
+                    it(`create user ${index}`, self.shared.createUserFn(self.hxUser));
+                });
+
+                _.range(self.offset).forEach((index) => {
+                    it(`create question ${index}`, qxTests.createQuestionFn());
+                    it(`get question ${index}`, qxTests.getQuestionFn(index));
+                });
+
+                self.questions.forEach((question, index) => {
+                    const actualIndex = self.offset + index;
+                    it(`create question ${actualIndex}`, qxTests.createQuestionFn({ question }));
+                    it(`get question ${actualIndex}`, qxTests.getQuestionFn(actualIndex, { federated: true }, { ignoreQuestionIdentifier: true }));
+                });
+
+                it('create question choice map', self.generateChoiceMapFn());
+
+                _.range(self.surveyCount).forEach((index) => {
+                    const qxIndices = self.types.map(type => self.typeIndexMap.get(type)[index]);
+                    it(`create survey ${index}`, self.createSurveyFn(qxIndices));
+                });
+            });
+
+            describe('create answers', function createAnswers() {
+                const answerSequence = testCase0.answerSequence;
+
+                answerSequence.forEach(({ userIndex, surveyIndex, answerInfo }) => {
+                    const msg = `user ${userIndex} answers survey ${surveyIndex}`;
+                    it(msg, self.createAnswersFn(userIndex, surveyIndex, answerInfo));
+                });
+            });
+
+            describe('search with db ids', function searchWithDbIds() {
+                const searchCases = testCase0.searchCases;
+
+                it('search empty criteria', self.searchEmptyFn(5));
+
+                let cohortId = 1;
+                const caseLen = 6;
+                searchCases.forEach((searchCase, index) => {
+                    it(`search case ${index} count`, self.countParticipantsFn(searchCase));
+                    it(`search case ${index} user ids`, self.searchParticipantsFn(searchCase));
+
+                    if (searchCase.count > 1) {
+                        const store = {};
+                        let cohortIndex;
+                        let cohortOptions;
+
+                        it(`search case ${index} export answers`, self.exportAnswersForUsersFn(searchCase, store));
+                        it(`create filter ${index}`, self.createFilterFn(index, searchCase, store));
+
+                        cohortIndex = caseLen * index;
+                        cohortOptions = { limited: false };
+                        it(`create cohort ${cohortIndex} (no count)`, self.createCohortFn(store, cohortOptions));
+                        it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(store, false));
+                        it(`patch cohort ${cohortIndex} (no count)`, self.patchCohortFn(cohortId, store, cohortOptions));
+                        it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(store, false));
+                        cohortId += 1;
+
+                        cohortIndex = (caseLen * index) + 1;
+                        cohortOptions = { limited: true, userCount: 10000 };
+                        it(`create cohort ${cohortIndex} (large count)`, self.createCohortFn(store, cohortOptions));
+                        it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(store, false));
+                        it(`patch cohort ${cohortIndex} (large count)`, self.patchCohortFn(cohortId, store, cohortOptions));
+                        it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(store, false));
+                        cohortId += 1;
+
+                        cohortIndex = (caseLen * index) + 2;
+                        cohortOptions = { limited: true, userCount: searchCase.count };
+                        it(`create cohort ${cohortIndex} (limited count`, self.createCohortFn(store, cohortOptions));
+                        it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(store, true));
+                        it(`patch cohort ${cohortIndex} (limited count)`, self.patchCohortFn(cohortId, store, cohortOptions));
+                        it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(store, true));
+                        cohortId += 1;
+
+                        cohortIndex = (caseLen * index) + 3;
+                        cohortOptions = { limited: false, localFederated: true };
+                        it(`create cohort ${cohortIndex} (no count)`, self.createCohortFn(store, cohortOptions));
+                        it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(store, false));
+                        it(`patch cohort ${cohortIndex} (no count)`, self.patchCohortFn(cohortId, store, cohortOptions));
+                        it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(store, false));
+                        cohortId += 1;
+
+                        cohortIndex = (caseLen * index) + 4;
+                        cohortOptions = { limited: true, userCount: 10000, localFederated: true };
+                        it(`create cohort ${cohortIndex} (large count)`, self.createCohortFn(store, cohortOptions));
+                        it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(store, false));
+                        it(`patch cohort ${cohortIndex} (large count)`, self.patchCohortFn(cohortId, store, cohortOptions));
+                        it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(store, false));
+                        cohortId += 1;
+
+                        cohortIndex = (caseLen * index) + 5;
+                        cohortOptions = { limited: true, userCount: searchCase.count, localFederated: true };
+                        it(`create cohort ${cohortIndex} (limited count`, self.createCohortFn(store, cohortOptions));
+                        it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(store, true));
+                        it(`patch cohort ${cohortIndex} (limited count)`, self.patchCohortFn(cohortId, store, cohortOptions));
+                        it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(store, true));
+                        cohortId += 1;
+
+                        it(`patch filter ${index} for empty`, self.patchFilterFn(testCase0.emptyCase, store));
+
+                        cohortIndex = caseLen * index;
+                        it(`patch cohort ${cohortIndex} filter edit (no count)`, self.patchCohortFn(cohortId - 1, store, false));
+                        it(`compare cohort ${cohortIndex} filter edit`, self.compareExportToCohortFn(store, false));
+                    }
+                });
+            });
+
+            describe('search with assigned identifiers', function searchWithIdentifiers() {
+                const searchCases = testCase0.searchCases;
+
+                searchCases.forEach((searchCase, index) => {
+                    it(`search case ${index} count`, self.countParticipantsIdentifiersFn(searchCase));
+                    it(`search case ${index} user ids`, self.searchParticipantsIdentifiersFn(searchCase));
+                });
             });
         };
     }
 };
 
 const IntegrationTests = class SearchIntegrationTests extends Tests {
-    constructor(rrSuperTest, offset = 5, surveyCount = 4, sync = true) {
-        super(offset, surveyCount);
+    constructor(rrSuperTest, options) {
+        super(options);
         this.rrSuperTest = rrSuperTest;
         const generator = new Generator();
 
-        this.sync = sync;
         this.shared = new SharedIntegration(rrSuperTest, generator);
-        this.answerTests = new answerCommon.IntegrationTests(rrSuperTest, generator, this.hxUser, this.hxSurvey, this.hxQuestion);
+        this.answerTests = new answerCommon.IntegrationTests(rrSuperTest, this);
         const qxCommonParameters = { generator, hxQuestion: this.hxQuestion };
         this.questionTests = new questionCommon.IntegrationTests(rrSuperTest, qxCommonParameters);
         this.hxAnswers = this.answerTests.hxAnswer;
@@ -537,38 +634,24 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
         };
     }
 
-    searchAnswerCountFn({ count, answers }) {
-        const rrSuperTest = this.rrSuperTest;
-        const self = this;
-        return function searchAnswerCount() {
-            const criteria = self.formCriteria(answers);
-            return rrSuperTest.post('/answers/queries', criteria, 200)
-                .expect(res => expect(res.body.count).to.equal(count));
-        };
+    countParticipantsPx(criteria) {
+        const r = this.rrSuperTest;
+        return r.post('/answers/queries', criteria, 200).then(res => res.body);
     }
 
-    countParticipantsIdentifiersFn({ count, answers }) {
-        const rrSuperTest = this.rrSuperTest;
-        const self = this;
-        return function countParticipantsIdentifierst() {
-            const criteria = self.formFederatedCriteria(answers);
-            return rrSuperTest.post('/answers/identifier-queries', criteria, 200)
-                .expect(res => expect(res.body.count).to.equal(count));
-        };
+    countParticipantsIdentifiersPx(criteria) {
+        const r = this.rrSuperTest;
+        return r.post('/answers/identifier-queries', criteria, 200).then(res => res.body);
     }
 
-    searchAnswerUsersFn({ userIndices, answers }) {
-        const rrSuperTest = this.rrSuperTest;
-        const self = this;
-        return function searchAnswerUsers() {
-            const criteria = self.formCriteria(answers);
-            return rrSuperTest.post('/answers/user-ids', criteria, 200)
-                .then((res) => {
-                    const actual = res.body.map(({ userId }) => userId);
-                    const expected = userIndices.map(index => self.hxUser.id(index));
-                    expect(actual).to.deep.equal(expected);
-                });
-        };
+    searchParticipantsPx(criteria) {
+        const r = this.rrSuperTest;
+        return r.post('/answers/user-ids', criteria, 200).then(res => res.body);
+    }
+
+    searchParticipantsIdentifiersPx(criteria) {
+        const r = this.rrSuperTest;
+        return r.post('/answers/identifier-user-ids', criteria, 200).then(res => res.body);
     }
 
     exportAnswersForUsersFn({ userIndices }, filepath) {
@@ -631,18 +714,27 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
         };
     }
 
-    createCohortFn(store, filepath, limited, userCount) {
+    createCohortFn(store, filepath, options) {
         const rrSuperTest = this.rrSuperTest;
+        const { limited, userCount, localFederated, federated } = options;
         return function createCohort() {
             const count = limited ? userCount - 1 : 10000;
             const payload = { filterId: store.id, count };
+            if (localFederated) {
+                payload.local = true;
+                payload.federated = true;
+            }
+            if (federated) {
+                payload.federated = true;
+            }
             return rrSuperTest.post('/cohorts', payload, 201)
                 .then(res => fs.writeFileSync(filepath, res.text));
         };
     }
 
-    patchCohortFn(id, store, filepath, limited, userCount) {
+    patchCohortFn(id, store, filepath, options) {
         const rrSuperTest = this.rrSuperTest;
+        const { limited, userCount } = options;
         return function createCohort() {
             const count = limited ? userCount - 1 : 10000;
             const payload = { count };
@@ -673,96 +765,170 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
 
     answerSearchIntegrationFn() {
         const self = this;
+        const qxTests = self.questionTests;
         return function answerSearchIntegration() {
-            if (self.sync) {
-                it('sync models', self.shared.setUpFn());
-            }
             const generatedDirectory = path.join(__dirname, '../../generated');
 
-            it('create output directory if necessary', (done) => {
-                mkdirp(generatedDirectory, done);
-            });
-
-            it('login as super', self.shared.loginFn(config.superUser));
-
-            _.range(5).forEach((index) => {
-                it(`create user ${index}`, self.shared.createUserFn(self.hxUser));
-            });
-
-            _.range(self.offset).forEach((index) => {
-                it(`create question ${index}`, self.questionTests.createQuestionFn());
-                it(`get question ${index}`, self.questionTests.getQuestionFn(index));
-            });
-
-            self.questions.forEach((question, index) => {
-                const actualIndex = self.offset + index;
-                it(`create question ${actualIndex}`, self.questionTests.createQuestionFn({ question }));
-                it(`get question ${actualIndex}`, self.questionTests.getQuestionFn(actualIndex, { federated: true }, { ignoreQuestionIdentifier: true }));
-            });
-
-            it('create a map of all choice/choice question choices', self.generateChoiceMapFn());
-
-            _.range(self.surveyCount).forEach((index) => {
-                const qxIndices = self.types.map(type => self.typeIndexMap.get(type)[index]);
-                it(`create survey ${index}`, self.createSurveyFn(qxIndices));
-            });
-
-            it('logout as super', self.shared.logoutFn());
-
-            const answerSequence = testCase0.answerSequence;
-
-            answerSequence.forEach(({ userIndex, surveyIndex, answerInfo }) => {
-                it(`login as user ${userIndex}`, self.shared.loginIndexFn(self.hxUser, userIndex));
-                const msg = `user ${userIndex} answers survey ${surveyIndex}`;
-                it(msg, self.createAnswersFn(userIndex, surveyIndex, answerInfo));
-                it(`logout as user ${userIndex}`, self.shared.logoutFn());
-            });
-
-            it('login as super', self.shared.loginFn(config.superUser));
-
-            it('search empty criteria', self.searchEmptyFn(5));
-
-            const searchCases = testCase0.searchCases;
-
-            let cohortId = 1;
-            searchCases.forEach((searchCase, index) => {
-                it(`search case ${index} count`, self.searchAnswerCountFn(searchCase));
-                it(`search case ${index} identifier count`, self.countParticipantsIdentifiersFn(searchCase));
-                it(`search case ${index} user ids`, self.searchAnswerUsersFn(searchCase));
-                if (searchCase.count > 1) {
-                    const store = {};
-                    let cohortFilepath;
-                    let cohortPatchFilepath;
-                    const filepath = path.join(generatedDirectory, `answer-multi_${index}.csv`);
-                    it(`search case ${index} export answers`, self.exportAnswersForUsersFn(searchCase, filepath));
-                    it(`create filter ${index}`, self.createFilterFn(index, searchCase, store));
-                    cohortFilepath = path.join(generatedDirectory, `cohort_${3 * index}.csv`);
-                    cohortPatchFilepath = path.join(generatedDirectory, `cohort_patch_${3 * index}.csv`);
-                    it(`create cohort ${3 * index} (no count)`, self.createCohortFn(store, cohortFilepath, false));
-                    it(`compare cohort ${3 * index}`, self.compareExportToCohortFn(filepath, cohortFilepath, false));
-                    it(`patch cohort ${3 * index} (no count)`, self.patchCohortFn(cohortId, store, cohortPatchFilepath, false));
-                    it(`compare cohort ${3 * index}`, self.compareExportToCohortFn(filepath, cohortPatchFilepath, false));
-                    cohortId += 1;
-                    cohortFilepath = path.join(generatedDirectory, `cohort_${(3 * index) + 1}.csv`);
-                    cohortPatchFilepath = path.join(generatedDirectory, `cohort_patch_${(3 * index) + 1}.csv`);
-                    it(`create cohort ${(3 * index) + 1} (large count)`, self.createCohortFn(store, cohortFilepath, true, 10000));
-                    it(`compare cohort ${(3 * index) + 1}`, self.compareExportToCohortFn(filepath, cohortFilepath, false));
-                    it(`patch cohort ${(3 * index) + 1} (large count)`, self.patchCohortFn(cohortId, store, cohortPatchFilepath, true, 10000));
-                    it(`compare cohort ${(3 * index) + 1}`, self.compareExportToCohortFn(filepath, cohortPatchFilepath, false));
-                    cohortId += 1;
-                    cohortFilepath = path.join(generatedDirectory, `cohort_${(3 * index) + 2}.csv`);
-                    cohortPatchFilepath = path.join(generatedDirectory, `cohort_patch_${(3 * index) + 2}.csv`);
-                    it(`create cohort ${(3 * index) + 2} (limited count`, self.createCohortFn(store, cohortFilepath, true, searchCase.count));
-                    it(`compare cohort ${(3 * index) + 2}`, self.compareExportToCohortFn(filepath, cohortFilepath, true));
-                    it(`patch cohort ${(3 * index) + 2} (limited count)`, self.patchCohortFn(cohortId, store, cohortPatchFilepath, true, searchCase.count));
-                    it(`compare cohort ${(3 * index) + 2}`, self.compareExportToCohortFn(filepath, cohortPatchFilepath, true));
-                    it(`patch filter ${index} for empty`, self.patchFilterFn(testCase0.emptyCase, store));
-                    it(`patch cohort ${3 * index} filter edit (no count)`, self.patchCohortFn(cohortId, store, cohortPatchFilepath, false));
-                    it(`compare cohort ${3 * index} filter edit`, self.compareExportToCohortFn(filepath, cohortPatchFilepath, false));
-                    cohortId += 1;
+            describe('system setup', function systemSetup() {
+                if (!self.noSync) {
+                    it('sync models', self.shared.setUpFn());
                 }
+
+                it('create output directory if necessary', function mkdirpIfNecessary(done) {
+                    mkdirp(generatedDirectory, done);
+                });
             });
-            it('logout as super', self.shared.logoutFn());
+
+            describe('create users/questions', function createUsersQuestions() {
+                it('login as super', self.shared.loginFn(config.superUser));
+
+                _.range(5).forEach((index) => {
+                    it(`create user ${index}`, self.shared.createUserFn(self.hxUser));
+                });
+
+                _.range(self.offset).forEach((index) => {
+                    it(`create question ${index}`, qxTests.createQuestionFn());
+                    it(`get question ${index}`, qxTests.getQuestionFn(index));
+                });
+
+                self.questions.forEach((question, ndx) => {
+                    const index = self.offset + ndx;
+                    const q = { question };
+                    it(`create question ${index}`, qxTests.createQuestionFn(q));
+                    const opt1 = { federated: true };
+                    const opt2 = { ignoreQuestionIdentifier: true };
+                    it(`get question ${index}`, qxTests.getQuestionFn(index, opt1, opt2));
+                });
+
+                it('create question choice map', self.generateChoiceMapFn());
+
+                _.range(self.surveyCount).forEach((index) => {
+                    const qxIndices = self.types.map(type => self.typeIndexMap.get(type)[index]);
+                    it(`create survey ${index}`, self.createSurveyFn(qxIndices));
+                });
+
+                it('logout as super', self.shared.logoutFn());
+            });
+
+            describe('create answers', function createAnswers() {
+                const answerSequence = testCase0.answerSequence;
+
+                answerSequence.forEach(({ userIndex, surveyIndex, answerInfo }) => {
+                    it(`login as user ${userIndex}`, self.shared.loginIndexFn(self.hxUser, userIndex));
+                    const msg = `user ${userIndex} answers survey ${surveyIndex}`;
+                    it(msg, self.createAnswersFn(userIndex, surveyIndex, answerInfo));
+                    it(`logout as user ${userIndex}`, self.shared.logoutFn());
+                });
+            });
+
+            describe('search with db ids', function searchWithDbIds() {
+                it('login as super', self.shared.loginFn(config.superUser));
+
+                it('search empty criteria', self.searchEmptyFn(5));
+
+                const searchCases = testCase0.searchCases;
+
+                let cohortId = 1;
+                const caseLen = 6;
+                searchCases.forEach((searchCase, index) => {
+                    it(`search case ${index} count`, self.countParticipantsFn(searchCase));
+                    it(`search case ${index} user ids`, self.searchParticipantsFn(searchCase));
+
+                    if (searchCase.count > 1) {
+                        const store = {};
+                        let cohortFilepath;
+                        let cohortPatchFilepath;
+                        let cohortIndex;
+                        let cohortOptions;
+
+                        const filepath = path.join(generatedDirectory, `answer-multi_${index}.csv`);
+                        it(`search case ${index} export answers`, self.exportAnswersForUsersFn(searchCase, filepath));
+                        it(`create filter ${index}`, self.createFilterFn(index, searchCase, store));
+
+                        cohortIndex = caseLen * index;
+                        cohortFilepath = path.join(generatedDirectory, `cohort_${cohortIndex}.csv`);
+                        cohortPatchFilepath = path.join(generatedDirectory, `cohort_patch_${cohortIndex}.csv`);
+                        cohortOptions = { limited: false };
+                        it(`create cohort ${cohortIndex} (no count)`, self.createCohortFn(store, cohortFilepath, cohortOptions));
+                        it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(filepath, cohortFilepath, false));
+                        it(`patch cohort ${cohortIndex} (no count)`, self.patchCohortFn(cohortId, store, cohortPatchFilepath, cohortOptions));
+                        it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(filepath, cohortPatchFilepath, false));
+                        cohortId += 1;
+
+                        cohortIndex = (caseLen * index) + 1;
+                        cohortFilepath = path.join(generatedDirectory, `cohort_${cohortIndex}.csv`);
+                        cohortPatchFilepath = path.join(generatedDirectory, `cohort_patch_${cohortIndex}.csv`);
+                        cohortOptions = { limited: true, userCount: 10000 };
+                        it(`create cohort ${cohortIndex} (large count)`, self.createCohortFn(store, cohortFilepath, cohortOptions));
+                        it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(filepath, cohortFilepath, false));
+                        it(`patch cohort ${cohortIndex} (large count)`, self.patchCohortFn(cohortId, store, cohortPatchFilepath, cohortOptions));
+                        it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(filepath, cohortPatchFilepath, false));
+                        cohortId += 1;
+
+                        cohortIndex = (caseLen * index) + 2;
+                        cohortFilepath = path.join(generatedDirectory, `cohort_${cohortIndex}.csv`);
+                        cohortPatchFilepath = path.join(generatedDirectory, `cohort_patch_${cohortIndex}.csv`);
+                        cohortOptions = { limited: true, userCount: searchCase.count };
+                        it(`create cohort ${cohortIndex} (limited count`, self.createCohortFn(store, cohortFilepath, cohortOptions));
+                        it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(filepath, cohortFilepath, true));
+                        it(`patch cohort ${cohortIndex} (limited count)`, self.patchCohortFn(cohortId, store, cohortPatchFilepath, cohortOptions));
+                        it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(filepath, cohortPatchFilepath, true));
+                        cohortId += 1;
+
+                        cohortIndex = (caseLen * index) + 3;
+                        cohortFilepath = path.join(generatedDirectory, `cohort_${cohortIndex}.csv`);
+                        cohortPatchFilepath = path.join(generatedDirectory, `cohort_patch_${cohortIndex}.csv`);
+                        cohortOptions = { limited: false, localFederated: true };
+                        it(`create cohort ${cohortIndex} (no count)`, self.createCohortFn(store, cohortFilepath, cohortOptions));
+                        it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(filepath, cohortFilepath, false));
+                        it(`patch cohort ${cohortIndex} (no count)`, self.patchCohortFn(cohortId, store, cohortPatchFilepath, cohortOptions));
+                        it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(filepath, cohortPatchFilepath, false));
+                        cohortId += 1;
+
+                        cohortIndex = (caseLen * index) + 4;
+                        cohortFilepath = path.join(generatedDirectory, `cohort_${cohortIndex}.csv`);
+                        cohortPatchFilepath = path.join(generatedDirectory, `cohort_patch_${cohortIndex}.csv`);
+                        cohortOptions = { limited: true, userCount: 10000, localFederated: true };
+                        it(`create cohort ${cohortIndex} (large count)`, self.createCohortFn(store, cohortFilepath, cohortOptions));
+                        it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(filepath, cohortFilepath, false));
+                        it(`patch cohort ${cohortIndex} (large count)`, self.patchCohortFn(cohortId, store, cohortPatchFilepath, cohortOptions));
+                        it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(filepath, cohortPatchFilepath, false));
+                        cohortId += 1;
+
+                        cohortIndex = (caseLen * index) + 5;
+                        cohortFilepath = path.join(generatedDirectory, `cohort_${cohortIndex}.csv`);
+                        cohortPatchFilepath = path.join(generatedDirectory, `cohort_patch_${cohortIndex}.csv`);
+                        cohortOptions = { limited: true, userCount: searchCase.count, localFederated: true };
+                        it(`create cohort ${cohortIndex} (limited count`, self.createCohortFn(store, cohortFilepath, cohortOptions));
+                        it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(filepath, cohortFilepath, true));
+                        it(`patch cohort ${cohortIndex} (limited count)`, self.patchCohortFn(cohortId, store, cohortPatchFilepath, cohortOptions));
+                        it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(filepath, cohortPatchFilepath, true));
+                        cohortId += 1;
+
+                        cohortIndex = caseLen * index;
+                        it(`patch filter ${index} for empty`, self.patchFilterFn(testCase0.emptyCase, store));
+                        it(`patch cohort ${cohortIndex} filter edit (no count)`, self.patchCohortFn(cohortId - 1, store, cohortPatchFilepath, false));
+                        it(`compare cohort ${cohortIndex} filter edit`, self.compareExportToCohortFn(filepath, cohortPatchFilepath, false));
+                    }
+                });
+
+                it('logout as super', self.shared.logoutFn());
+            });
+
+            describe('search with assigned identifiers', function searchWithIdentifiers() {
+                it('login as super', self.shared.loginFn(config.superUser));
+
+                it('search empty criteria', self.searchEmptyFn(5));
+
+                const searchCases = testCase0.searchCases;
+
+                searchCases.forEach((searchCase, index) => {
+                    it(`search case ${index} count`, self.countParticipantsIdentifiersFn(searchCase));
+                    it(`search case ${index} user ids`, self.searchParticipantsIdentifiersFn(searchCase));
+                });
+
+                it('logout as super', self.shared.logoutFn());
+            });
         };
     }
 };

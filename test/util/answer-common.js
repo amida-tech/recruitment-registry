@@ -1,7 +1,5 @@
 'use strict';
 
-/* eslint no-param-reassign: 0, max-len: 0 */
-
 const _ = require('lodash');
 const chai = require('chai');
 
@@ -116,7 +114,7 @@ const answersToSearchQuery = function (inputAnswers) {
         if (inputAnswer.answers) {
             answers = inputAnswer.answers.map(r => _.omit(r, 'multipleIndex'));
         } else if (inputAnswer.answer.choices) {
-            answers = inputAnswer.answer.choices.map(choice => ({ choice: choice.id, boolValue: true }));
+            answers = inputAnswer.answer.choices.map(c => ({ choice: c.id, boolValue: true }));
         } else {
             answers = [inputAnswer.answer];
         }
@@ -128,26 +126,26 @@ const answersToSearchQuery = function (inputAnswers) {
 const compareImportedAnswers = function (actual, rawExpected, maps) {
     const { userIdMap, questionIdMap } = maps;
     const expected = _.cloneDeep(rawExpected);
-    expected.forEach((record) => {
-        const questionIdInfo = questionIdMap[record.questionId];
-        record.questionId = questionIdInfo.questionId;
-        if (record.questionChoiceId) {
+    expected.forEach((r) => {
+        const questionIdInfo = questionIdMap[r.questionId];
+        r.questionId = questionIdInfo.questionId;
+        if (r.questionChoiceId) {
             const choicesIds = questionIdInfo.choicesIds;
-            record.questionChoiceId = choicesIds[record.questionChoiceId];
+            r.questionChoiceId = choicesIds[r.questionChoiceId];
         }
         if (userIdMap) {
-            record.userId = userIdMap[record.userId];
+            r.userId = userIdMap[r.userId];
         }
     });
     expect(actual).to.deep.equal(expected);
 };
 
 const SpecTests = class AnswerSpecTests {
-    constructor(generator, hxUser, hxSurvey, hxQuestion) {
-        this.generator = generator;
-        this.hxUser = hxUser;
-        this.hxSurvey = hxSurvey;
-        this.hxQuestion = hxQuestion;
+    constructor(options) {
+        this.generator = options.generator;
+        this.hxUser = options.hxUser;
+        this.hxSurvey = options.hxSurvey;
+        this.hxQuestion = options.hxQuestion;
         this.hxAnswer = new AnswerHistory();
     }
 
@@ -243,12 +241,12 @@ const SpecTests = class AnswerSpecTests {
 };
 
 const IntegrationTests = class AnswerIntegrationTests {
-    constructor(rrSuperTest, generator, hxUser, hxSurvey, hxQuestion) {
+    constructor(rrSuperTest, options) {
         this.rrSuperTest = rrSuperTest;
-        this.generator = generator;
-        this.hxUser = hxUser;
-        this.hxSurvey = hxSurvey;
-        this.hxQuestion = hxQuestion;
+        this.generator = options.generator;
+        this.hxUser = options.hxUser;
+        this.hxSurvey = options.hxSurvey;
+        this.hxQuestion = options.hxQuestion;
         this.hxAnswer = new AnswerHistory();
     }
 

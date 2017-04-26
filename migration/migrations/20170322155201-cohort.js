@@ -129,6 +129,12 @@ const cohort = function (queryInterface, Sequelize) {
             type: Sequelize.DATE,
             field: 'deleted_at',
         },
+        federated: {
+            type: Sequelize.BOOLEAN,
+        },
+        local: {
+            type: Sequelize.BOOLEAN,
+        },
     }, {
         freezeTableName: true,
         timestamps: true,

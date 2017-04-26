@@ -33,7 +33,7 @@ describe('answer unit', () => {
     const hxQuestion = new History();
     const hxChoiceSet = new History();
 
-    const tests = new answerCommon.SpecTests(generator, hxUser, hxSurvey, hxQuestion);
+    const tests = new answerCommon.SpecTests({ generator, hxUser, hxSurvey, hxQuestion });
     const hxAnswers = tests.hxAnswer;
 
     const questionTests = new questionCommon.SpecTests({ generator, hxQuestion });
@@ -225,12 +225,12 @@ describe('answer unit', () => {
         expectedCount: 2,
     }];
 
-    const searchCountUsers = function searchCountUsers(query) {
-        return models.answer.searchCountUsers(query);
+    const countParticipants = function countParticipants(query) {
+        return models.answer.countParticipants(query);
     };
 
     const searchCountFromAnswers = function searchCountFromAnswers(answers) {
-        return searchCountUsers(answerCommon.answersToSearchQuery(answers));
+        return countParticipants(answerCommon.answersToSearchQuery(answers));
     };
 
     const generateAnswersFn = function generateAnswersFn(surveyIdx, qxIndices) {
@@ -270,7 +270,7 @@ describe('answer unit', () => {
         });
 
         it(`search survey ${surveyIdx} to find all users`, function searchFindAllUsers() {
-            return searchCountUsers({ questions: [] })
+            return countParticipants({ questions: [] })
                 .then(({ count }) => expect(count).to.be.at.least(userCount));
         });
 

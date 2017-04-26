@@ -1,13 +1,13 @@
 'use strict';
 
 const _ = require('lodash');
-const request = require('request');
 
 const Base = require('./base');
 const RRError = require('../../lib/rr-error');
 const SPromise = require('../../lib/promise');
 
 const answerCommon = require('./answer-common');
+const registryCommon = require('./registry-common');
 
 const ExportCSVConverter = require('../../export/csv-converter.js');
 const ImportCSVConverter = require('../../import/csv-converter.js');
@@ -55,36 +55,8 @@ const basicExportFields = [
     'surveyId', 'questionId', 'questionChoiceId', 'questionType', 'choiceType', 'value',
 ];
 
-const requestPost = function (registryName, questions, url) {
-    const opts = {
-        json: true,
-        body: questions,
-        url: `${url}/answers/identifier-queries`,
-    };
-    const key = `RECREG_JWT_${registryName}`;
-    const jwt = process.env[key];
-    if (key) {
-        opts.headers = {
-            authorization: `Bearer ${jwt}`,
-        };
-    }
-
-    return new Promise((resolve, reject) => (
-        request.post(opts, (err, res) => {
-            if (err) {
-                const rrerror = new RRError('answerRemoteRegistryError', registryName, err.message);
-                return reject(rrerror);
-            }
-            if (res.statusCode !== 200) {
-                const rrerror = new RRError('answerRemoteRegistryError', registryName, res.body.message);
-                return reject(rrerror);
-            }
-            return resolve(res.body);
-        })
-    ));
-};
-
-const isEnabled = function ({ questionId, parents }, questionAnswerRulesMap, sectionAnswerRulesMap, answersByQuestionId) { // eslint-disable-line max-len
+const isEnabled = function ({ questionId, parents }, maps) {
+    const { questionAnswerRulesMap, sectionAnswerRulesMap, answersByQuestionId } = maps;
     const rules = questionAnswerRulesMap.get(questionId);
     if (rules && rules.length) {
         const enabled = evaluateEnableWhen(rules, answersByQuestionId);
@@ -191,7 +163,12 @@ module.exports = class AnswerDAO extends Base {
                             const questionId = r.questionId;
                             const answer = answersByQuestionId[questionId];
                             if (sectionAnswerRulesMap || questionAnswerRulesMap) {
-                                const enabled = isEnabled(r, questionAnswerRulesMap, sectionAnswerRulesMap, answersByQuestionId); // eslint-disable-line max-len
+                                const maps = {
+                                    questionAnswerRulesMap,
+                                    sectionAnswerRulesMap,
+                                    answersByQuestionId,
+                                };
+                                const enabled = isEnabled(r, maps);
                                 if (!enabled) {
                                     r.ignore = true;
                                 }
@@ -254,20 +231,23 @@ module.exports = class AnswerDAO extends Base {
             .then(() => this.validateConsent(userId, surveyId, 'create', transaction));
     }
 
-    createAnswersTx({ userId, surveyId, answers, language = 'en', status = 'completed' }, transaction) { // eslint-disable-line max-len
-        const Answer = this.db.Answer;
-        answers = _.cloneDeep(answers); // eslint-disable-line no-param-reassign
+    createAnswersTx(inputRecord, transaction) {
+        const { userId, surveyId } = inputRecord;
+        const answers = _.cloneDeep(inputRecord.answers);
+        const status = inputRecord.status || 'completed';
         return this.validateCreate(userId, surveyId, answers, status, transaction)
             .then(() => this.updateStatus(userId, surveyId, status, transaction))
             .then(() => {
                 const ids = _.map(answers, 'questionId');
                 const where = { questionId: { $in: ids }, surveyId, userId };
-                return Answer.destroy({ where, transaction });
+                return this.db.Answer.destroy({ where, transaction });
             })
             .then(() => {
-                answers = _.filter(answers, answer => answer.answer || answer.answers); // eslint-disable-line no-param-reassign, max-len
-                if (answers.length) {
-                    return this.fileAnswer({ userId, surveyId, language, answers }, transaction);
+                const filteredAnswers = _.filter(answers, r => r.answer || r.answers);
+                if (filteredAnswers.length) {
+                    const language = inputRecord.language || 'en';
+                    const record = { userId, surveyId, language, answers: filteredAnswers };
+                    return this.fileAnswer(record, transaction);
                 }
                 return null;
             });
@@ -455,17 +435,21 @@ module.exports = class AnswerDAO extends Base {
         });
     }
 
+    searchAllParticipants() {
+        const attributes = ['id'];
+        return this.db.User.findAll({ raw: true, where: { role: 'participant' }, attributes })
+            .then(ids => ids.map(({ id }) => ({ userId: id })));
+    }
+
     /**
      * Search users by their survey answers. Returns a count of users only.
      * @param {object} query questionId:value mapping to search users by
      * @returns {integer}
      */
-    searchUsers(criteria) {
+    searchParticipants(criteria) {
         const n = _.get(criteria, 'questions.length');
         if (!n) {
-            const attributes = ['id'];
-            return this.db.User.findAll({ raw: true, where: { role: 'participant' }, attributes })
-                .then(ids => ids.map(({ id }) => ({ userId: id })));
+            return this.searchAllParticipants();
         }
 
         const questionIds = criteria.questions.map(question => question.id);
@@ -480,7 +464,7 @@ module.exports = class AnswerDAO extends Base {
                 where.$or.push({
                     question_id: question.id,
                     value: ('value' in answer) ? answer.value.toString() : null,
-                    question_choice_id: ('questionChoiceId' in answer) ? answer.questionChoiceId : null, // eslint-disable-line max-len
+                    question_choice_id: answer.questionChoiceId || null,
                 });
             });
         });
@@ -495,27 +479,27 @@ module.exports = class AnswerDAO extends Base {
         return this.db.Answer.findAll({ raw: true, where, attributes, include, having, group });
     }
 
+    countAllParticipants() {
+        return this.db.User.count({ where: { role: 'participant' } })
+            .then(count => ({ count }));
+    }
+
     /**
      * Search users by their survey answers. Returns a count of users only.
      * @param {object} query questionId:value mapping to search users by
      * @returns {integer}
      */
-    searchCountUsers(criteria) {
+    countParticipants(criteria) {
         // if criteria is empty, return count of all users
         if (!_.get(criteria, 'questions.length')) {
-            return this.db.User.count({ where: { role: 'participant' } })
-                .then(count => ({ count }));
+            return this.countAllParticipants();
         }
 
-        return this.searchUsers(criteria)
+        return this.searchParticipants(criteria)
             .then(results => ({ count: results.length }));
     }
 
-    countParticipantsIdentifiers(federatedCriteria) {
-        if (federatedCriteria.length < 1) {
-            return this.db.User.count({ where: { role: 'participant' } })
-                .then(count => ({ count }));
-        }
+    federatedCriteriaToLocalCriteria(federatedCriteria) {
         const identifiers = federatedCriteria.map(({ identifier }) => identifier);
         return this.db.AnswerIdentifier.findAll({
             raw: true,
@@ -541,26 +525,75 @@ module.exports = class AnswerDAO extends Base {
                     answers.push(answer);
                     return r;
                 }, []);
-                return this.searchCountUsers({ questions });
+                return { questions };
             });
     }
 
-    federatedSearchCountUsers(federatedModels, criteria) {
-        const attributes = ['id', 'name', 'url', 'schema'];
-        return this.db.Registry.findAll({ raw: true, attributes })
-            .then((registries) => {
-                if (!registries.length) {
-                    return RRError.reject('registryNoneFound');
-                }
-                return registries;
-            })
+    localCriteriaToFederatedCriteria({ questions }) {
+        const questionIds = questions.map(({ id }) => id);
+        return this.db.AnswerIdentifier.findAll({
+            raw: true,
+            where: { questionId: { $in: questionIds }, type: 'federated' },
+            attributes: ['identifier', 'questionId', 'questionChoiceId'],
+        })
+            .then((records) => {
+                const identifierMap = records.reduce((r, record) => {
+                    const { identifier, questionId, questionChoiceId } = record;
+                    if (questionChoiceId) {
+                        let identifiers = r.get(questionId);
+                        if (!identifiers) {
+                            identifiers = new Map();
+                            r.set(questionId, identifiers);
+                        }
+                        identifiers.set(questionChoiceId, identifier);
+                        return r;
+                    }
+                    r.set(questionId, identifier);
+                    return r;
+                }, new Map());
+                return questions.reduce((r, { id, answers }) => {
+                    const identifierInfo = identifierMap.get(id);
+                    answers.forEach((answer) => {
+                        if (answer.choice) {
+                            const identifier = identifierInfo.get(answer.choice);
+                            const e = Object.assign({ identifier }, _.omit(answer, 'choice'));
+                            r.push(e);
+                        } else {
+                            const identifier = identifierInfo;
+                            const e = Object.assign({ identifier }, answer);
+                            r.push(Object.assign(e, answer));
+                        }
+                    });
+                    return r;
+                }, []);
+            });
+    }
+
+    searchParticipantsIdentifiers(federatedCriteria) {
+        if (federatedCriteria.length < 1) {
+            return this.searchAllParticipants();
+        }
+        return this.federatedCriteriaToLocalCriteria(federatedCriteria)
+            .then(criteria => this.searchParticipants(criteria));
+    }
+
+    countParticipantsIdentifiers(federatedCriteria) {
+        if (federatedCriteria.length < 1) {
+            return this.countAllParticipants();
+        }
+        return this.federatedCriteriaToLocalCriteria(federatedCriteria)
+            .then(criteria => this.countParticipants(criteria));
+    }
+
+    federatedCountParticipants(federatedModels, criteria) {
+        return this.registry.findRegistries()
             .then((registries) => {
                 const promises = registries.map(({ name, schema, url }) => {
                     if (schema) {
                         const models = federatedModels[schema];
                         return models.answer.countParticipantsIdentifiers(criteria);
                     }
-                    return requestPost(name, criteria, url);
+                    return registryCommon.requestPost(name, criteria, url, 'answers/identifier-queries');
                 });
                 return SPromise.all(promises);
             })
@@ -569,5 +602,53 @@ module.exports = class AnswerDAO extends Base {
                     const count = federated.reduce((r, p) => r + p.count, local.count);
                     return { count };
                 }));
+    }
+
+    createIdentifierMap(federatedCriteria) {
+        const identifiers = federatedCriteria.map(({ identifier }) => identifier);
+        return this.db.AnswerIdentifier.findAll({
+            raw: true,
+            where: { identifier: { $in: identifiers }, type: 'federated' },
+            attributes: ['identifier', 'questionId', 'questionChoiceId'],
+        })
+            .then(records => records.reduce((r, record) => {
+                const { identifier, questionId, questionChoiceId } = record;
+                if (questionChoiceId) {
+                    let choiceMap = r.get(questionId);
+                    if (!choiceMap) {
+                        choiceMap = new Map();
+                        r.set(questionId, choiceMap);
+                    }
+                    choiceMap.set(questionChoiceId, identifier);
+                    return r;
+                }
+                r.set(questionId, identifier);
+                return r;
+            }, new Map()));
+    }
+
+    federatedListParticipants(federatedCriteria) {
+        return this.searchParticipantsIdentifiers(federatedCriteria)
+            .then(userIds => userIds.map(({ userId }) => userId))
+            .then(userIds => this.listAnswers({ userIds, scope: 'export' }))
+            .then(answers => this.createIdentifierMap(federatedCriteria)
+                .then(identifierMap => answers.reduce((r, answer) => {
+                    const { questionId, questionChoiceId } = answer;
+                    const e = _.omit(answer, ['questionId', 'questionChoiceId']);
+                    const identifierInfo = identifierMap.get(questionId);
+                    if (!identifierInfo) {
+                        return r;
+                    }
+                    if (questionChoiceId) {
+                        const identifier = identifierInfo.get(questionChoiceId);
+                        if (identifier) {
+                            r.push(Object.assign({ identifier }, e));
+                        }
+                    } else {
+                        const identifier = identifierInfo;
+                        r.push(Object.assign({ identifier }, e));
+                    }
+                    return r;
+                }, [])));
     }
 };

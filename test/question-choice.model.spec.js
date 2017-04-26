@@ -36,7 +36,7 @@ describe('question choice unit', () => {
     const questionTests = new questionCommon.SpecTests({ generator, hxQuestion });
     const choiceSetTests = new choiceSetCommon.SpecTests(generator, hxChoiceSet);
     const surveyTests = new surveyCommon.SpecTests(generator, hxSurvey, hxQuestion);
-    const answerTests = new answerCommon.SpecTests(generator, hxUser, hxSurvey, hxQuestion);
+    const answerTests = new answerCommon.SpecTests({ generator, hxUser, hxSurvey, hxQuestion });
 
     before(shared.setUpFn());
 

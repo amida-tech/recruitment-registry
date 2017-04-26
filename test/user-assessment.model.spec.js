@@ -37,7 +37,7 @@ describe('user assessment unit', () => {
 
     const surveyTests = new surveyCommon.SpecTests(generator, hxSurvey);
     const assessmentTests = new assessmentCommon.SpecTests(generator, hxSurvey, hxAssessment);
-    const answerTests = new answerCommon.SpecTests(generator, hxUser, hxSurvey);
+    const answerTests = new answerCommon.SpecTests({ generator, hxUser, hxSurvey });
     const hxAnswer = answerTests.hxAnswer;
 
     before(shared.setUpFn());

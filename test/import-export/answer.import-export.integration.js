@@ -31,7 +31,8 @@ describe('answer import-export integration', function answerIOIntegration() {
     const hxUser = new History();
     const hxSurvey = new SurveyHistory();
     const surveyTests = new surveyCommon.IntegrationTests(rrSuperTest, generator, hxSurvey);
-    const answerTests = new answerCommon.IntegrationTests(rrSuperTest, generator, hxUser, hxSurvey);
+    const opt = { generator, hxUser, hxSurvey };
+    const answerTests = new answerCommon.IntegrationTests(rrSuperTest, opt);
 
     before(shared.setUpFn());
 

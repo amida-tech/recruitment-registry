@@ -63,7 +63,7 @@ const doasPerSchema = function (db, daosGenerator) {
     const surveyQuestion = new SurveyQuestionDAO(db);
     const answerRule = new AnswerRuleDAO(db);
     const answer = new AnswerDAO(db, {
-        surveyConsentDocument, surveyQuestion, answerRule, generator: daosGenerator,
+        surveyConsentDocument, surveyQuestion, answerRule, registry, generator: daosGenerator,
     });
     const survey = new SurveyDAO(db, {
         answer,
@@ -87,7 +87,7 @@ const doasPerSchema = function (db, daosGenerator) {
     const macro = new Macro(db, { survey, profileSurvey });
     const filterAnswer = new FilterAnswerDAO(db);
     const filter = new FilterDAO(db, { filterAnswer });
-    const cohort = new CohortDAO(db, { answer, filter });
+    const cohort = new CohortDAO(db, { answer, filter, registry });
 
     return {
         sequelize: db.sequelize,
