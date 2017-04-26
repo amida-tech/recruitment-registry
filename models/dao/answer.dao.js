@@ -551,7 +551,7 @@ module.exports = class AnswerDAO extends Base {
                     r.set(questionId, identifier);
                     return r;
                 }, new Map());
-                const result = questions.reduce((r, { id, answers }) => {
+                return questions.reduce((r, { id, answers }) => {
                     const identifierInfo = identifierMap.get(id);
                     answers.forEach((answer) => {
                         if (answer.choice) {
@@ -566,7 +566,6 @@ module.exports = class AnswerDAO extends Base {
                     });
                     return r;
                 }, []);
-                return { federatedCriteria: result, identifierMap };
             });
     }
 
@@ -605,28 +604,51 @@ module.exports = class AnswerDAO extends Base {
                 }));
     }
 
-    federatedListParticipants(filter) {
-        return this.localCriteriaToFederatedCriteria(filter)
-            .then((fcInfo) => {
-                const fc = fcInfo.federatedCriteria;
-                return this.answer.searchParticipantsIdentifiers(fc)
-                    .then(userIds => this.listAnswers({ userIds, scope: 'export' }))
-                    .then((answers) => {
-                        const identifierMap = fcInfo.identifierMap;
-                        return answers.reduce((r, answer) => {
-                            const { questionId, questionChoiceId } = answer;
-                            const e = _.omit(answer, ['questionId', 'questionChoiceId']);
-                            const identifierInfo = identifierMap.get(questionId);
-                            if (questionChoiceId) {
-                                const identifier = identifierInfo.get(questionChoiceId);
-                                r.push(Object.assign({ identifier }, e));
-                            } else {
-                                const identifier = identifierInfo;
-                                r.push(Object.assign({ identifier }, e));
-                            }
-                            return r;
-                        }, []);
-                    });
-            });
+    createIdentifierMap(federatedCriteria) {
+        const identifiers = federatedCriteria.map(({ identifier }) => identifier);
+        return this.db.AnswerIdentifier.findAll({
+            raw: true,
+            where: { identifier: { $in: identifiers }, type: 'federated' },
+            attributes: ['identifier', 'questionId', 'questionChoiceId'],
+        })
+            .then(records => records.reduce((r, record) => {
+                const { identifier, questionId, questionChoiceId } = record;
+                if (questionChoiceId) {
+                    let choiceMap = r.get(questionId);
+                    if (!choiceMap) {
+                        choiceMap = new Map();
+                        r.set(questionId, choiceMap);
+                    }
+                    choiceMap.set(questionChoiceId, identifier);
+                    return r;
+                }
+                r.set(questionId, identifier);
+                return r;
+            }, new Map()));
+    }
+
+    federatedListParticipants(federatedCriteria) {
+        return this.searchParticipantsIdentifiers(federatedCriteria)
+            .then(userIds => userIds.map(({ userId }) => userId))
+            .then(userIds => this.listAnswers({ userIds, scope: 'export' }))
+            .then(answers => this.createIdentifierMap(federatedCriteria)
+                .then(identifierMap => answers.reduce((r, answer) => {
+                    const { questionId, questionChoiceId } = answer;
+                    const e = _.omit(answer, ['questionId', 'questionChoiceId']);
+                    const identifierInfo = identifierMap.get(questionId);
+                    if (!identifierInfo) {
+                        return r;
+                    }
+                    if (questionChoiceId) {
+                        const identifier = identifierInfo.get(questionChoiceId);
+                        if (identifier) {
+                            r.push(Object.assign({ identifier }, e));
+                        }
+                    } else {
+                        const identifier = identifierInfo;
+                        r.push(Object.assign({ identifier }, e));
+                    }
+                    return r;
+                }, [])));
     }
 };

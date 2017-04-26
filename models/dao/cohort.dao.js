@@ -15,11 +15,11 @@ const processFederatedCohortForRegistry = function (registry, federatedModels, f
         const models = federatedModels[schema];
         return models.answer.federatedListParticipants(filter);
     }
-    return registryCommon.requestPost(name, filter, url, '/answers/federated');
+    return registryCommon.requestPost(name, filter, url, 'answers/federated');
 };
 
 const basicExportFields = [
-    'surveyId', 'questionId', 'questionChoiceId', 'questionType', 'choiceType', 'value',
+    'surveyId', 'identifier', 'value',
 ];
 
 module.exports = class CohortDAO extends Base {
@@ -54,39 +54,43 @@ module.exports = class CohortDAO extends Base {
     searchParticipants(filter, federated) {
         if (federated) {
             return this.answer.localCriteriaToFederatedCriteria(filter)
-                .then((result) => {
-                    const fc = result.federatedCriteria;
-                    return this.answer.searchParticipantsIdentifiers(fc);
-                });
+                .then(fc => this.answer.searchParticipantsIdentifiers(fc));
         }
         return this.answer.searchParticipants(filter);
     }
 
     processFederatedCohort(filter, count, federatedModels) {
-        return this.registry.findRegistries()
-            .then((registries) => {
-                const pxs = registries.map((registry) => {
-                    const id = registry.id;
-                    return processFederatedCohortForRegistry(registry, federatedModels, filter)
+        return this.answer.localCriteriaToFederatedCriteria(filter)
+            .then(fc => this.registry.findRegistries()
+                .then((registries) => {
+                    const pxs = registries.map((registry) => {
+                        const id = registry.id;
+                        return processFederatedCohortForRegistry(registry, federatedModels, fc)
+                            .then((answers) => {
+                                answers.forEach(r => (r.registryId = id));
+                                return answers;
+                            });
+                    });
+                    const px = this.answer.federatedListParticipants(fc)
                         .then((answers) => {
-                            answers.forEach(r => (r.registryId = id));
+                            answers.forEach(r => (r.registryId = 0));
                             return answers;
                         });
-                });
-                return SPromise.all(pxs);
-            })
-            .then(results => results.map((result) => {
-                if (count && count > result.count) {
-                    return result;
-                }
-                return _.sampleSize(result, count);
-            }))
-            .then(results => _.flatten(results))
-            .then((answers) => {
-                const fields = ['registryId', 'userId', ...basicExportFields];
-                const converter = new ExportCSVConverter({ fields });
-                return converter.dataToCSV(answers);
-            });
+                    pxs.unshift(px);
+                    return SPromise.all(pxs);
+                })
+                .then(results => results.map((result) => {
+                    if (count && count > result.count) {
+                        return result;
+                    }
+                    return _.sampleSize(result, count);
+                }))
+                .then(results => _.flatten(results))
+                .then((answers) => {
+                    const fields = ['registryId', 'userId', ...basicExportFields];
+                    const converter = new ExportCSVConverter({ fields });
+                    return converter.dataToCSV(answers);
+                }));
     }
 
     processCohort(filter, count, federated, local, federatedModels) {
@@ -97,7 +101,7 @@ module.exports = class CohortDAO extends Base {
             .then(userIds => this.exportForUsers(userIds, count));
     }
 
-    createCohort({ filterId, count, name, federated, local, federatedModels }) {
+    createCohort({ filterId, count, name, federated, local }, federatedModels) {
         return this.filter.getFilter(filterId)
             .then((filter) => {
                 if (!filter) {

@@ -419,7 +419,7 @@ const SpecTests = class SearchSpecTests extends Tests {
 
     createCohortFn(store, options) {
         const m = this.models;
-        const { limited, userCount, localFederated } = options;
+        const { limited, userCount, localFederated, federated } = options;
         return function createCohort() {
             const count = limited ? userCount - 1 : 10000;
             const newCohort = { filterId: store.id, count };
@@ -427,7 +427,10 @@ const SpecTests = class SearchSpecTests extends Tests {
                 newCohort.local = true;
                 newCohort.federated = true;
             }
-            return m.cohort.createCohort(newCohort)
+            if (federated) {
+                newCohort.federated = true;
+            }
+            return m.cohort.createCohort(newCohort, options.federatedModels)
                 .then((result) => { store.cohort = result; });
         };
     }
@@ -713,12 +716,15 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
 
     createCohortFn(store, filepath, options) {
         const rrSuperTest = this.rrSuperTest;
-        const { limited, userCount, localFederated } = options;
+        const { limited, userCount, localFederated, federated } = options;
         return function createCohort() {
             const count = limited ? userCount - 1 : 10000;
             const payload = { filterId: store.id, count };
             if (localFederated) {
                 payload.local = true;
+                payload.federated = true;
+            }
+            if (federated) {
                 payload.federated = true;
             }
             return rrSuperTest.post('/cohorts', payload, 201)

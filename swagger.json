@@ -903,7 +903,10 @@
                     "200": {
                         "description": "Successful response.",
                         "schema": {
-                            "type": "object"
+                            "type": "array",
+                            "items": {
+                                "type": "object"
+                            }
                         }
                     },
                     "default": {

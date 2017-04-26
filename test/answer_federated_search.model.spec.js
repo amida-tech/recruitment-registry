@@ -77,10 +77,17 @@ describe('federated search unit', function federatedSearchUnit() {
         });
 
         const store = {};
-        it('create filter', function federatedSearch() {
+        it('create filter', function creteFilter() {
             const searchTestsMap = tests.searchTestsMap;
             const searchTests = searchTestsMap.get('current');
-            return searchTests.createFilterFn(100, testCase0[0], store);
+            return searchTests.createFilterFn(100, testCase0.searchCases[0], store)();
+        });
+
+        it('create cohort', function createCohort() {
+            const searchTestsMap = tests.searchTestsMap;
+            const searchTests = searchTestsMap.get('current');
+            const cohortOptions = { limited: false, federated: true, federatedModels: tests.models };
+            return searchTests.createCohortFn(store, cohortOptions)();
         });
     });
 

@@ -6,7 +6,9 @@
 
 process.env.NODE_ENV = 'test';
 
+const path = require('path');
 const chai = require('chai');
+const fs = require('fs');
 
 const config = require('../config');
 
@@ -16,6 +18,7 @@ const History = require('./util/history');
 const registryCommon = require('./util/registry-common');
 const federatedCommon = require('./util/search/federated-search-common');
 const SharedIntegration = require('./util/shared-integration');
+const testCase0 = require('./util/search/test-case-0');
 
 const expect = chai.expect;
 
@@ -53,6 +56,7 @@ describe('federated search integration', function federatedSearchIntegration() {
     const hxRegistry = new History();
     const rrSuperTest = tests.rrSuperTest;
     const registryTests = new registryCommon.IntegrationTests(rrSuperTest, generator, hxRegistry);
+
     const shared = new SharedIntegration(rrSuperTest);
 
     describe('federated', function federated() {
@@ -81,6 +85,25 @@ describe('federated search integration', function federatedSearchIntegration() {
             const { count, federatedCriteria: criteria } = searchTestsMap.get('current').getFederatedCriteria(0);
             return rrSuperTest.post('/answers/federated-queries', criteria, 200)
                 .then(res => expect(res.body.count).to.equal(count + count0 + count1 + count2 + count3));
+        });
+
+        const store = {};
+        it('create filter', function createFilter() {
+            const filter = { name: 'name_999', maxCount: 5 };
+            const searchTestsMap = tests.searchTestsMap;
+            const searchTests = searchTestsMap.get('current');
+            Object.assign(filter, searchTests.formCriteria(testCase0.searchCases[0].answers));
+            return rrSuperTest.post('/filters', filter, 201)
+                .then((res) => { store.id = res.body.id; });
+        });
+
+        const generatedDirectory = path.join(__dirname, './generated');
+
+        it('create cohort', function createCohort() {
+            const filepath = path.join(generatedDirectory, 'cohort_federated.csv');
+            const payload = { filterId: store.id, count: 10000, federated: true };
+            return rrSuperTest.post('/cohorts', payload, 201)
+                .then(res => fs.writeFileSync(filepath, res.text));
         });
 
         it('logout as super', shared.logoutFn());
