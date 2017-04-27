@@ -289,7 +289,8 @@ describe('survey integration', () => {
         return function listTranslatedSurveys(done) {
             rrSuperTest.get('/surveys', true, 200, { language })
                 .expect((res) => {
-                    const expected = hxSurvey.listTranslatedServers(language);
+                    const opt = { admin: rrSuperTest.userRole === 'admin' };
+                    const expected = hxSurvey.listTranslatedServers(language, 'published', opt);
                     expect(res.body).to.deep.equal(expected);
                 })
                 .end(done);
@@ -331,7 +332,7 @@ describe('survey integration', () => {
 
     it('create a new user', shared.createUserFn(hxUser, user));
 
-    it('login as user', shared.loginFn(user));
+    it('login as user', shared.loginIndexFn(hxUser, 0));
 
     it('error: create survey as non admin', (done) => {
         const survey = generator.newSurvey();
@@ -354,7 +355,7 @@ describe('survey integration', () => {
 
     let answers;
 
-    it('login as user', shared.loginFn(user));
+    it('login as user', shared.loginIndexFn(hxUser, 0));
 
     it('answer survey', (done) => {
         answers = generator.answerSurvey(hxSurvey.lastServer());
@@ -362,20 +363,25 @@ describe('survey integration', () => {
         rrSuperTest.post('/answers', { surveyId, answers }, 204).end(done);
     });
 
-    it('get answered survey', (done) => {
-        const server = hxSurvey.lastServer();
-        rrSuperTest.get(`/answered-surveys/${server.id}`, true, 200)
-            .expect((res) => {
+    it('get answered survey', function getAnsweredSurvey() {
+        const server = _.cloneDeep(hxSurvey.lastServer());
+        return rrSuperTest.get(`/answered-surveys/${server.id}`, true, 200)
+            .then((res) => {
+                if (rrSuperTest.userRole !== 'admin') {
+                    delete server.authorId;
+                }
                 comparator.answeredSurvey(server, answers, res.body);
-            })
-            .end(done);
+            });
     });
 
     it('get answered translated survey', (done) => {
         const id = hxSurvey.lastId();
         rrSuperTest.get(`/answered-surveys/${id}`, true, 200, { language: 'es' })
             .expect((res) => {
-                const server = hxSurvey.lastServer();
+                const server = _.cloneDeep(hxSurvey.lastServer());
+                if (rrSuperTest.userRole !== 'admin') {
+                    delete server.authorId;
+                }
                 const survey = _.cloneDeep(server);
                 survey.name = 'puenno';
                 survey.description = 'descripto';
@@ -419,7 +425,7 @@ describe('survey integration', () => {
 
     it('logout as super', shared.logoutFn());
 
-    it('login as user', shared.loginFn(user));
+    it('login as user', shared.loginIndexFn(hxUser, 0));
     _.range(surveyCount - 10, surveyCount - 3).forEach((index) => {
         it('answer survey', (done) => {
             const survey = hxSurvey.server(index);
@@ -432,6 +438,9 @@ describe('survey integration', () => {
             const server = hxSurvey.server(index);
             rrSuperTest.get(`/answered-surveys/${server.id}`, true, 200)
                 .expect((res) => {
+                    if (rrSuperTest.userRole !== 'admin') {
+                        delete server.authorId;
+                    }
                     comparator.answeredSurvey(server, answers, res.body);
                 })
                 .end(done);

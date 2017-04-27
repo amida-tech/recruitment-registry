@@ -526,6 +526,9 @@ module.exports = class SurveyDAO extends Translatable {
             attributes.push('groupId');
             attributes.push('version');
         }
+        if (opt.admin && scope !== 'export') {
+            attributes.push('authorId');
+        }
         const options = { raw: true, attributes, order: order || 'id', paranoid: !history };
         if (groupId || version || (status !== 'all')) {
             options.where = {};
@@ -584,7 +587,11 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     getSurvey(id, options = {}) {
-        let opt = { where: { id }, raw: true, attributes: ['id', 'meta', 'status'] };
+        const attributes = ['id', 'meta', 'status'];
+        if (options.admin) {
+            attributes.push('authorId');
+        }
+        let opt = { where: { id }, raw: true, attributes };
         if (options.override) {
             opt = _.assign({}, opt, options.override);
         }

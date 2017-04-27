@@ -26,7 +26,7 @@ const expect = chai.expect;
 const generator = new Generator();
 const shared = new SharedSpec(generator);
 
-describe('survey unit', () => {
+describe('survey unit', function surveyUnit() {
     before(shared.setUpFn());
 
     const userCount = 1;
@@ -39,10 +39,12 @@ describe('survey unit', () => {
     const choceSetTests = new choiceSetCommon.SpecTests(generator, hxChoiceSet);
     let surveyTemp = null;
 
-    it('verify no surveys', () => models.survey.listSurveys()
+    it('verify no surveys', function verifyNoSurveys() {
+        return models.survey.listSurveys()
             .then((surveys) => {
                 expect(surveys).to.have.length(0);
-            }));
+            });
+    });
 
     const verifySurveyFn = function (index, { noSectionId } = {}) {
         return function verifySurvey() {

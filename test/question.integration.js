@@ -48,7 +48,7 @@ describe('question integration', () => {
 
     it('logout as super', shared.logoutFn());
 
-    it('login as user', shared.loginFn(user));
+    it('login as user', shared.loginIndexFn(hxUser, 0));
 
     it('error: create question as non admin', (done) => {
         const question = generator.newQuestion();

@@ -4154,6 +4154,9 @@
                 "description": {
                     "type": "string"
                 },
+                "authorId": {
+                    "type": "integer"
+                },
                 "status": {
                     "$ref": "#/definitions/surveyStatus"
                 },
@@ -4322,6 +4325,9 @@
                 },
                 "description": {
                     "type": "string"
+                },
+                "authorId": {
+                    "type": "integer"
                 },
                 "status": {
                     "$ref": "#/definitions/surveyStatus"
