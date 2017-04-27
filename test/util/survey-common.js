@@ -346,20 +346,22 @@ const IntegrationTests = class SurveyIntegrationTests {
     listSurveysFn(options = {}, count = -1) {
         const rrSuperTest = this.rrSuperTest;
         const hxSurvey = this.hxSurvey;
-        return function listSurveys(done) {
-            rrSuperTest.get('/surveys', true, 200, options)
-                .expect((res) => {
+        return function listSurveys() {
+            return rrSuperTest.get('/surveys', true, 200, options)
+                .then((res) => {
                     if (count >= 0) {
                         expect(res.body).to.have.length(count);
                     }
                     const opt = _.cloneDeep(options);
                     if (rrSuperTest.userRole === 'admin') {
                         opt.admin = true;
+                    } else {
+                        res.body.forEach(({ authorId }) => expect(authorId).to.equal(undefined));
                     }
                     const expected = hxSurvey.listServersByScope(opt);
                     expect(res.body).to.deep.equal(expected);
-                })
-                .end(done);
+                    return res;
+                });
         };
     }
 };

@@ -28,7 +28,7 @@ const invalidSurveysSwagger = require('./fixtures/swagger-invalid/new-survey');
 
 const expect = chai.expect;
 
-describe('survey integration', () => {
+describe('survey integration', function surveyIntegration() {
     const rrSuperTest = new RRSuperTest();
     const generator = new Generator();
     const shared = new SharedIntegration(rrSuperTest, generator);
@@ -50,6 +50,9 @@ describe('survey integration', () => {
     });
 
     it('login as super', shared.loginFn(config.superUser));
+
+    it('create a new participant', shared.createUserFn(hxUser, user));
+    it('create a new admin', shared.createUserFn(hxUser, undefined, { role: 'admin' }));
 
     const verifySurveyFn = function (index, { noSectionId } = {}) {
         return function verifySurvey(done) {
@@ -173,6 +176,10 @@ describe('survey integration', () => {
     });
 
     _.range(surveyCount).forEach((index) => {
+        if (index === 3) {
+            it('logout as super', shared.logoutFn());
+            it('login as admin', shared.loginIndexFn(hxUser, 1)); // so that seperate authors
+        }
         it(`create survey ${index}`, tests.createSurveyFn());
         it(`get survey ${index}`, tests.getSurveyFn(index));
         it(`update survey ${index}`, patchSurveyMetaFn(index));
@@ -189,6 +196,15 @@ describe('survey integration', () => {
             it(`get survey ${index}`, tests.getSurveyFn(index));
         }
         it('list surveys and verify', tests.listSurveysFn());
+    });
+
+    it('verify author ids', function verifyAuthorIds() {
+        const expected = [1, 1, 1];
+        const adminId = hxUser.id(1);
+        _.range(3, 8).forEach(() => expected.push(adminId));
+        const list = hxSurvey.listServers(['authorId', 'status']);
+        const actual = _.map(list, 'authorId');
+        expect(actual).to.deep.equal(expected);
     });
 
     _.range(9).forEach((index) => {
@@ -249,6 +265,10 @@ describe('survey integration', () => {
     [surveyCount - 9, surveyCount - 8, surveyCount - 5].forEach((index) => {
         it(`verify survey ${index}`, verifySurveyFn(index));
     });
+
+    it('logout as admin', shared.logoutFn());
+
+    it('login as super', shared.loginFn(config.superUser));
 
     it('list surveys', tests.listSurveysFn(undefined, surveyCount - 6));
     it('list surveys (published)', tests.listSurveysFn({ status: 'published' }, surveyCount - 6));
@@ -330,7 +350,7 @@ describe('survey integration', () => {
     });
     it('list surveys and verify', tests.listSurveysFn());
 
-    it('create a new user', shared.createUserFn(hxUser, user));
+    it('logout as super', shared.logoutFn());
 
     it('login as user', shared.loginIndexFn(hxUser, 0));
 
@@ -338,6 +358,10 @@ describe('survey integration', () => {
         const survey = generator.newSurvey();
         rrSuperTest.post('/surveys', survey, 403).end(done);
     });
+
+    it('list surveys (all)', tests.listSurveysFn());
+
+    it('logout as user', shared.logoutFn());
 
     it('login as super', shared.loginFn(config.superUser));
 
@@ -352,6 +376,8 @@ describe('survey integration', () => {
         const id = hxSurvey.lastId();
         rrSuperTest.patch('/surveys/text/es', { id, name, description }, 204).end(done);
     });
+
+    it('logout as super', shared.logoutFn());
 
     let answers;
 
@@ -393,6 +419,8 @@ describe('survey integration', () => {
     it('update survey generator for multi questions', () => {
         generator.updateSurveyGenerator(MultiQuestionSurveyGenerator);
     });
+
+    it('logout as user', shared.logoutFn());
 
     it('login as super', shared.loginFn(config.superUser));
 
@@ -446,4 +474,6 @@ describe('survey integration', () => {
                 .end(done);
         });
     });
+
+    it('logout as user', shared.logoutFn());
 });
