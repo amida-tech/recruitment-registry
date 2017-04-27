@@ -19,7 +19,8 @@ exports.createSurvey = function createSurvey(req, res) {
     if (!jsonSchema('newSurvey', req.body, res)) {
         return;
     }
-    req.models.survey.createOrReplaceSurvey(req.body)
+    const userId = req.user.id;
+    req.models.survey.createOrReplaceSurvey(req.body, userId)
         .then(id => res.status(201).json({ id }))
         .catch(shared.handleError(res));
 };

@@ -314,13 +314,15 @@ module.exports = class SurveyDAO extends Translatable {
             });
     }
 
-    createSurveyTx(survey, transaction) {
+    createSurveyTx(survey, userId, transaction) {
         const fields = _.omit(survey, ['name', 'description', 'sections', 'questions', 'identifier']);
-        return this.db.Survey.create(fields, { transaction }).then(({ id }) => this.updateSurveyTx(id, survey, transaction)); // eslint-disable-line max-len
+        fields.authorId = userId;
+        return this.db.Survey.create(fields, { transaction })
+            .then(({ id }) => this.updateSurveyTx(id, survey, transaction));
     }
 
-    createSurvey(survey) {
-        return this.transaction(transaction => this.createSurveyTx(survey, transaction));
+    createSurvey(survey, userId = 1) {
+        return this.transaction(transaction => this.createSurveyTx(survey, userId, transaction));
     }
 
     patchSurveyTextTx({ id, name, description, sections }, language, transaction) {
@@ -455,7 +457,7 @@ module.exports = class SurveyDAO extends Translatable {
         return this.transaction(transaction => this.patchSurveyTx(id, surveyPatch, transaction));
     }
 
-    replaceSurveyTx(originalId, replacement, transaction) {
+    replaceSurveyTx(originalId, replacement, userId, transaction) {
         return this.db.Survey.findById(originalId)
             .then((survey) => {
                 if (!survey) {
@@ -469,7 +471,7 @@ module.exports = class SurveyDAO extends Translatable {
                     version: version + 1,
                     groupId: survey.groupId || survey.id,
                 }, replacement);
-                return this.createSurveyTx(newSurvey, transaction)
+                return this.createSurveyTx(newSurvey, userId, transaction)
                     .then((id) => {
                         if (!survey.version) {
                             const record = { version: 1, groupId: survey.id };
@@ -490,17 +492,17 @@ module.exports = class SurveyDAO extends Translatable {
             });
     }
 
-    replaceSurvey(id, replacement) {
-        return this.transaction(tx => this.replaceSurveyTx(id, replacement, tx));
+    replaceSurvey(id, replacement, userId = 1) {
+        return this.transaction(tx => this.replaceSurveyTx(id, replacement, userId, tx));
     }
 
-    createOrReplaceSurvey(input) {
-        const survey = _.omit(input, 'parentId');
-        const parentId = input.parentId;
+    createOrReplaceSurvey(surveyInfo, userId = 1) {
+        const newSurvey = _.omit(surveyInfo, 'parentId');
+        const parentId = surveyInfo.parentId;
         if (parentId) {
-            return this.replaceSurvey(parentId, survey);
+            return this.replaceSurvey(parentId, newSurvey, userId);
         }
-        return this.createSurvey(survey);
+        return this.createSurvey(newSurvey, userId);
     }
 
     deleteSurvey(id) {
