@@ -28,7 +28,7 @@ const invalidSurveysSwagger = require('./fixtures/swagger-invalid/new-survey');
 
 const expect = chai.expect;
 
-describe('survey integration', () => {
+describe('survey integration', function surveyIntegration() {
     const rrSuperTest = new RRSuperTest();
     const generator = new Generator();
     const shared = new SharedIntegration(rrSuperTest, generator);
@@ -51,19 +51,8 @@ describe('survey integration', () => {
 
     it('login as super', shared.loginFn(config.superUser));
 
-    const verifySurveyFn = function (index, { noSectionId } = {}) {
-        return function verifySurvey(done) {
-            const server = hxSurvey.server(index);
-            rrSuperTest.get(`/surveys/${server.id}`, true, 200)
-                .expect((res) => {
-                    if (noSectionId) {
-                        surveyCommon.removeSurveySectionIds(res.body);
-                    }
-                    expect(res.body).to.deep.equal(server);
-                })
-                .end(done);
-        };
-    };
+    it('create a new participant', shared.createUserFn(hxUser, user));
+    it('create a new admin', shared.createUserFn(hxUser, undefined, { role: 'admin' }));
 
     const patchSurveyMetaFn = function (index) {
         return function patchSurveyMeta(done) {
@@ -173,22 +162,35 @@ describe('survey integration', () => {
     });
 
     _.range(surveyCount).forEach((index) => {
+        if (index === 3) {
+            it('logout as super', shared.logoutFn());
+            it('login as admin', shared.loginIndexFn(hxUser, 1)); // so that seperate authors
+        }
         it(`create survey ${index}`, tests.createSurveyFn());
         it(`get survey ${index}`, tests.getSurveyFn(index));
         it(`update survey ${index}`, patchSurveyMetaFn(index));
-        it(`verify survey ${index}`, verifySurveyFn(index));
+        it(`verify survey ${index}`, tests.verifySurveyFn(index));
         it(`update survey ${index}`, revertPatchedSurveyMetaFn(index));
         it(`update survey text ${index}`, patchSurveyTextFn(index));
-        it(`verify survey ${index}`, verifySurveyFn(index));
+        it(`verify survey ${index}`, tests.verifySurveyFn(index));
         it(`revert update survey ${index}`, revertUpdateSurveyTextFn(index));
-        it(`verify survey ${index}`, verifySurveyFn(index));
+        it(`verify survey ${index}`, tests.verifySurveyFn(index));
         if (index > 0) {
             it(`patch survey ${index} from survey ${index - 1} (questions/sections)`, patchSurveyQuestionsSectionsFn(index, index - 1));
-            it(`verify survey ${index}`, verifySurveyFn(index, { noSectionId: true }));
+            it(`verify survey ${index}`, tests.verifySurveyFn(index, { noSectionId: true }));
             it(`revert patched survey ${index} back (question/sections)`, revertPatchedSurveyQuestionSectionsFn(index));
             it(`get survey ${index}`, tests.getSurveyFn(index));
         }
         it('list surveys and verify', tests.listSurveysFn());
+    });
+
+    it('verify author ids', function verifyAuthorIds() {
+        const expected = [1, 1, 1];
+        const adminId = hxUser.id(1);
+        _.range(3, 8).forEach(() => expected.push(adminId));
+        const list = hxSurvey.listServers(['authorId', 'status']);
+        const actual = _.map(list, 'authorId');
+        expect(actual).to.deep.equal(expected);
     });
 
     _.range(9).forEach((index) => {
@@ -247,8 +249,12 @@ describe('survey integration', () => {
     });
 
     [surveyCount - 9, surveyCount - 8, surveyCount - 5].forEach((index) => {
-        it(`verify survey ${index}`, verifySurveyFn(index));
+        it(`verify survey ${index}`, tests.verifySurveyFn(index));
     });
+
+    it('logout as admin', shared.logoutFn());
+
+    it('login as super', shared.loginFn(config.superUser));
 
     it('list surveys', tests.listSurveysFn(undefined, surveyCount - 6));
     it('list surveys (published)', tests.listSurveysFn({ status: 'published' }, surveyCount - 6));
@@ -256,7 +262,7 @@ describe('survey integration', () => {
     it('list surveys (retired)', tests.listSurveysFn({ status: 'retired' }, 4));
     it('list surveys (draft)', tests.listSurveysFn({ status: 'draft' }, 2));
 
-    it('get survey 3 in spanish when no name translation', verifySurveyFn(3));
+    it('get survey 3 in spanish when no name translation', tests.verifySurveyFn(3));
 
     it('list surveys in spanish when no translation', tests.listSurveysFn());
 
@@ -289,7 +295,8 @@ describe('survey integration', () => {
         return function listTranslatedSurveys(done) {
             rrSuperTest.get('/surveys', true, 200, { language })
                 .expect((res) => {
-                    const expected = hxSurvey.listTranslatedServers(language);
+                    const opt = { admin: rrSuperTest.userRole === 'admin' };
+                    const expected = hxSurvey.listTranslatedServers(language, 'published', opt);
                     expect(res.body).to.deep.equal(expected);
                 })
                 .end(done);
@@ -329,14 +336,18 @@ describe('survey integration', () => {
     });
     it('list surveys and verify', tests.listSurveysFn());
 
-    it('create a new user', shared.createUserFn(hxUser, user));
+    it('logout as super', shared.logoutFn());
 
-    it('login as user', shared.loginFn(user));
+    it('login as user', shared.loginIndexFn(hxUser, 0));
 
     it('error: create survey as non admin', (done) => {
         const survey = generator.newSurvey();
         rrSuperTest.post('/surveys', survey, 403).end(done);
     });
+
+    it('list surveys (all)', tests.listSurveysFn());
+
+    it('logout as user', shared.logoutFn());
 
     it('login as super', shared.loginFn(config.superUser));
 
@@ -352,9 +363,11 @@ describe('survey integration', () => {
         rrSuperTest.patch('/surveys/text/es', { id, name, description }, 204).end(done);
     });
 
+    it('logout as super', shared.logoutFn());
+
     let answers;
 
-    it('login as user', shared.loginFn(user));
+    it('login as user', shared.loginIndexFn(hxUser, 0));
 
     it('answer survey', (done) => {
         answers = generator.answerSurvey(hxSurvey.lastServer());
@@ -362,20 +375,25 @@ describe('survey integration', () => {
         rrSuperTest.post('/answers', { surveyId, answers }, 204).end(done);
     });
 
-    it('get answered survey', (done) => {
-        const server = hxSurvey.lastServer();
-        rrSuperTest.get(`/answered-surveys/${server.id}`, true, 200)
-            .expect((res) => {
+    it('get answered survey', function getAnsweredSurvey() {
+        const server = _.cloneDeep(hxSurvey.lastServer());
+        return rrSuperTest.get(`/answered-surveys/${server.id}`, true, 200)
+            .then((res) => {
+                if (rrSuperTest.userRole !== 'admin') {
+                    delete server.authorId;
+                }
                 comparator.answeredSurvey(server, answers, res.body);
-            })
-            .end(done);
+            });
     });
 
     it('get answered translated survey', (done) => {
         const id = hxSurvey.lastId();
         rrSuperTest.get(`/answered-surveys/${id}`, true, 200, { language: 'es' })
             .expect((res) => {
-                const server = hxSurvey.lastServer();
+                const server = _.cloneDeep(hxSurvey.lastServer());
+                if (rrSuperTest.userRole !== 'admin') {
+                    delete server.authorId;
+                }
                 const survey = _.cloneDeep(server);
                 survey.name = 'puenno';
                 survey.description = 'descripto';
@@ -387,6 +405,8 @@ describe('survey integration', () => {
     it('update survey generator for multi questions', () => {
         generator.updateSurveyGenerator(MultiQuestionSurveyGenerator);
     });
+
+    it('logout as user', shared.logoutFn());
 
     it('login as super', shared.loginFn(config.superUser));
 
@@ -419,7 +439,7 @@ describe('survey integration', () => {
 
     it('logout as super', shared.logoutFn());
 
-    it('login as user', shared.loginFn(user));
+    it('login as user', shared.loginIndexFn(hxUser, 0));
     _.range(surveyCount - 10, surveyCount - 3).forEach((index) => {
         it('answer survey', (done) => {
             const survey = hxSurvey.server(index);
@@ -432,9 +452,14 @@ describe('survey integration', () => {
             const server = hxSurvey.server(index);
             rrSuperTest.get(`/answered-surveys/${server.id}`, true, 200)
                 .expect((res) => {
+                    if (rrSuperTest.userRole !== 'admin') {
+                        delete server.authorId;
+                    }
                     comparator.answeredSurvey(server, answers, res.body);
                 })
                 .end(done);
         });
     });
+
+    it('logout as user', shared.logoutFn());
 });

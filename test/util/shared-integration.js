@@ -5,6 +5,7 @@
 /* eslint no-param-reassign: 0, max-len: 0 */
 
 const chai = require('chai');
+const _ = require('lodash');
 
 const config = require('../../config');
 
@@ -60,19 +61,21 @@ class SharedIntegration {
         };
     }
 
-    loginFn(login) {
+    loginFn(user) {
         const rrSuperTest = this.rrSuperTest;
-        return function loginfn(done) {
-            rrSuperTest.authBasic(login).end(done);
+        return function login() {
+            const fullUser = Object.assign({ id: 1, role: 'admin' }, user);
+            return rrSuperTest.authBasic(fullUser);
         };
     }
 
-    loginIndexFn(history, index) {
-        const shared = this;
-        return function loginIndex(done) {
-            const login = history.client(index);
-            login.username = login.username || login.email.toLowerCase();
-            shared.loginFn(login)(done);
+    loginIndexFn(hxUser, index) {
+        const self = this;
+        return function loginIndex() {
+            const user = _.cloneDeep(hxUser.client(index));
+            user.username = user.username || user.email.toLowerCase();
+            user.id = hxUser.id(index);
+            return self.rrSuperTest.authBasic(user);
         };
     }
 
@@ -100,7 +103,10 @@ class SharedIntegration {
                     if (err) {
                         return done(err);
                     }
-                    hxSurvey.push(clientSurvey, res.body);
+                    const userId = rrSuperTest.userId;
+                    const server = { id: res.body.id, authorId: userId };
+                    Object.assign(server, clientSurvey);
+                    hxSurvey.push(clientSurvey, server);
                     return done();
                 });
         };
@@ -115,8 +121,12 @@ class SharedIntegration {
                     const survey = res.body.survey;
                     const id = hxSurvey.id(index);
                     expect(survey.id).to.equal(id);
+                    const expected = _.cloneDeep(hxSurvey.server(index));
+                    if (rrSuperTest.userRole !== 'admin') {
+                        delete expected.authorId;
+                    }
+                    comparator.survey(expected, survey);
                     hxSurvey.updateServer(index, survey);
-                    comparator.survey(hxSurvey.client(index), survey);
                 })
                 .end(done);
         };
@@ -125,17 +135,13 @@ class SharedIntegration {
     createUserFn(history, user, override) {
         const generator = this.generator;
         const rrSuperTest = this.rrSuperTest;
-        return function createUser(done) {
+        return function createUser() {
             if (!user) {
                 user = generator.newUser(override);
             }
-            rrSuperTest.post('/users', user, 201)
-                .end((err, res) => {
-                    if (err) {
-                        return done(err);
-                    }
+            return rrSuperTest.post('/users', user, 201)
+                .then((res) => {
                     history.push(user, { id: res.body.id });
-                    return done();
                 });
         };
     }

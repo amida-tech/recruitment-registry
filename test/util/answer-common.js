@@ -295,10 +295,14 @@ const IntegrationTests = class AnswerIntegrationTests {
         const hxAnswer = this.hxAnswer;
         const rrSuperTest = this.rrSuperTest;
         return function verifyAnsweredSurvey(done) {
-            const survey = hxSurvey.server(surveyIndex);
+            const survey = _.cloneDeep(hxSurvey.server(surveyIndex));
             const { answers } = hxAnswer.getLast(userIndex, surveyIndex);
             rrSuperTest.get(`/answered-surveys/${survey.id}`, true, 200)
                 .expect((res) => {
+                    if (rrSuperTest.userRole !== 'admin') {
+                        delete survey.authorId;
+                        delete survey.consentTypeIds;
+                    }
                     comparator.answeredSurvey(survey, answers, res.body);
                 })
                 .end(done);

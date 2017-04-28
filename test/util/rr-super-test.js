@@ -33,19 +33,23 @@ module.exports = class RRSupertest {
         return this.app.locals.models.sequelize.close();
     }
 
-    authBasic(credentials, status = 200) {
+    authBasic(user, status = 200) {
         if (status === 200) {
-            this.username = credentials.username;
+            this.username = user.username;
+            this.userId = user.id;
+            this.userRole = user.role;
         }
         return this.server
             .get(`${this.baseUrl}/auth/basic`)
-            .auth(credentials.username, credentials.password)
+            .auth(user.username, user.password)
             .expect(status);
     }
 
     resetAuth() {
         this.server = session(this.app);
         this.username = null;
+        this.userId = null;
+        this.userRole = null;
     }
 
     getJWT() {
