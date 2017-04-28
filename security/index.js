@@ -89,4 +89,9 @@ module.exports = {
     self(req, def, header, callback) {
         jwtAuth(req, header, _.constant(null), callback);
     },
+    any(req, def, header, callback) {
+        jwtAuth(req, header, _.constant(null), function nullFunction() {
+            callback(null);
+        });
+    },
 };

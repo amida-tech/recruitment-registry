@@ -63,6 +63,7 @@ module.exports = class SurveyHistory extends History {
             const fields = ['id', 'name', 'description', 'status'];
             if (options.admin) {
                 fields.push('authorId');
+                fields.push('consentTypeIds');
             }
             return this.listServers(fields, undefined, options.status);
         }

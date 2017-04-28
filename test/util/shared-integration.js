@@ -103,7 +103,10 @@ class SharedIntegration {
                     if (err) {
                         return done(err);
                     }
-                    hxSurvey.push(clientSurvey, res.body);
+                    const userId = rrSuperTest.userId;
+                    const server = { id: res.body.id, authorId: userId };
+                    Object.assign(server, clientSurvey);
+                    hxSurvey.push(clientSurvey, server);
                     return done();
                 });
         };
@@ -118,8 +121,12 @@ class SharedIntegration {
                     const survey = res.body.survey;
                     const id = hxSurvey.id(index);
                     expect(survey.id).to.equal(id);
+                    const expected = _.cloneDeep(hxSurvey.server(index));
+                    if (rrSuperTest.userRole !== 'admin') {
+                        delete expected.authorId;
+                    }
+                    comparator.survey(expected, survey);
                     hxSurvey.updateServer(index, survey);
-                    comparator.survey(hxSurvey.client(index), survey);
                 })
                 .end(done);
         };

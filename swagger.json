@@ -975,6 +975,9 @@
             "get": {
                 "summary": "Gets profile survey",
                 "operationId": "getProfileSurvey",
+                "security": [{
+                    "any": []
+                }],
                 "parameters": [{
                     "name": "language",
                     "in": "query",
@@ -3617,6 +3620,11 @@
             "type": "apiKey",
             "in": "header",
             "name": "Authorization"
+        },
+        "any": {
+            "type": "apiKey",
+            "in": "header",
+            "name": "Authorization"
         }
     },
     "responses": {
@@ -4157,6 +4165,12 @@
                 "authorId": {
                     "type": "integer"
                 },
+                "consentTypeIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
                 "status": {
                     "$ref": "#/definitions/surveyStatus"
                 },
@@ -4328,6 +4342,12 @@
                 },
                 "authorId": {
                     "type": "integer"
+                },
+                "consentTypeIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
                 },
                 "status": {
                     "$ref": "#/definitions/surveyStatus"

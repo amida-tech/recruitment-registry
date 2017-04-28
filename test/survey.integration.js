@@ -54,20 +54,6 @@ describe('survey integration', function surveyIntegration() {
     it('create a new participant', shared.createUserFn(hxUser, user));
     it('create a new admin', shared.createUserFn(hxUser, undefined, { role: 'admin' }));
 
-    const verifySurveyFn = function (index, { noSectionId } = {}) {
-        return function verifySurvey(done) {
-            const server = hxSurvey.server(index);
-            rrSuperTest.get(`/surveys/${server.id}`, true, 200)
-                .expect((res) => {
-                    if (noSectionId) {
-                        surveyCommon.removeSurveySectionIds(res.body);
-                    }
-                    expect(res.body).to.deep.equal(server);
-                })
-                .end(done);
-        };
-    };
-
     const patchSurveyMetaFn = function (index) {
         return function patchSurveyMeta(done) {
             const id = hxSurvey.id(index);
@@ -183,15 +169,15 @@ describe('survey integration', function surveyIntegration() {
         it(`create survey ${index}`, tests.createSurveyFn());
         it(`get survey ${index}`, tests.getSurveyFn(index));
         it(`update survey ${index}`, patchSurveyMetaFn(index));
-        it(`verify survey ${index}`, verifySurveyFn(index));
+        it(`verify survey ${index}`, tests.verifySurveyFn(index));
         it(`update survey ${index}`, revertPatchedSurveyMetaFn(index));
         it(`update survey text ${index}`, patchSurveyTextFn(index));
-        it(`verify survey ${index}`, verifySurveyFn(index));
+        it(`verify survey ${index}`, tests.verifySurveyFn(index));
         it(`revert update survey ${index}`, revertUpdateSurveyTextFn(index));
-        it(`verify survey ${index}`, verifySurveyFn(index));
+        it(`verify survey ${index}`, tests.verifySurveyFn(index));
         if (index > 0) {
             it(`patch survey ${index} from survey ${index - 1} (questions/sections)`, patchSurveyQuestionsSectionsFn(index, index - 1));
-            it(`verify survey ${index}`, verifySurveyFn(index, { noSectionId: true }));
+            it(`verify survey ${index}`, tests.verifySurveyFn(index, { noSectionId: true }));
             it(`revert patched survey ${index} back (question/sections)`, revertPatchedSurveyQuestionSectionsFn(index));
             it(`get survey ${index}`, tests.getSurveyFn(index));
         }
@@ -263,7 +249,7 @@ describe('survey integration', function surveyIntegration() {
     });
 
     [surveyCount - 9, surveyCount - 8, surveyCount - 5].forEach((index) => {
-        it(`verify survey ${index}`, verifySurveyFn(index));
+        it(`verify survey ${index}`, tests.verifySurveyFn(index));
     });
 
     it('logout as admin', shared.logoutFn());
@@ -276,7 +262,7 @@ describe('survey integration', function surveyIntegration() {
     it('list surveys (retired)', tests.listSurveysFn({ status: 'retired' }, 4));
     it('list surveys (draft)', tests.listSurveysFn({ status: 'draft' }, 2));
 
-    it('get survey 3 in spanish when no name translation', verifySurveyFn(3));
+    it('get survey 3 in spanish when no name translation', tests.verifySurveyFn(3));
 
     it('list surveys in spanish when no translation', tests.listSurveysFn());
 

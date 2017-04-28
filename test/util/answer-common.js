@@ -301,6 +301,7 @@ const IntegrationTests = class AnswerIntegrationTests {
                 .expect((res) => {
                     if (rrSuperTest.userRole !== 'admin') {
                         delete survey.authorId;
+                        delete survey.consentTypeIds;
                     }
                     comparator.answeredSurvey(survey, answers, res.body);
                 })

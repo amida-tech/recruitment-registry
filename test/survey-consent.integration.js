@@ -92,6 +92,16 @@ describe('survey consent integration', () => {
         };
     };
 
+    const updateSurveyServerForConsentTypeFn = function (surveyIndex, typeIndices) {
+        return function updateSurveyServerForConsentType() {
+            const survey = hxSurvey.server(surveyIndex);
+            survey.consentTypeIds = typeIndices.map((index) => {
+                const consentType = hxConsentDocument.type(index);
+                return consentType.id;
+            });
+        };
+    };
+
     [0, 1].forEach((index) => {
         it(`require consent type ${index} in profile survey answer create`, createSurveyConsentFn(0, index, 'create'));
         it(`require consent type ${index} in profile survey answer read`, createSurveyConsentFn(0, index, 'read'));
@@ -114,6 +124,17 @@ describe('survey consent integration', () => {
     [1, 3].forEach((index) => {
         it(`require consent type ${index} in survey 3 answer read`, createSurveyConsentFn(3, index, 'read'));
     });
+
+    it('update consent type ids for survey 0', updateSurveyServerForConsentTypeFn(0, [0, 1]));
+    it('update consent type ids for survey 1', updateSurveyServerForConsentTypeFn(1, [1, 2, 3]));
+    it('update consent type ids for survey 2', updateSurveyServerForConsentTypeFn(2, [2, 3]));
+    it('update consent type ids for survey 3', updateSurveyServerForConsentTypeFn(3, [0, 1, 2, 3]));
+
+    _.range(7).forEach((index) => {
+        it(`verify survey ${index}`, surveyTests.verifySurveyFn(index));
+    });
+
+    it('verify list surveys', surveyTests.listSurveysFn());
 
     it('error: require consent type with inconsistent consent', (done) => {
         const consentTypeId = hxConsentDocument.typeId(0);

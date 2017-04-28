@@ -558,7 +558,36 @@ module.exports = class SurveyDAO extends Translatable {
                 if (scope === 'export') {
                     return this.updateSurveyListExport(surveys);
                 }
-                return surveys;
+                if (!opt.admin) {
+                    return surveys;
+                }
+                const surveyIds = surveys.map(({ id }) => id);
+                return this.db.SurveyConsent.findAll({
+                    where: { surveyId: { $in: surveyIds } },
+                    raw: true,
+                    attributes: ['surveyId', 'consentTypeId'],
+                    order: 'consent_type_id',
+                })
+                    .then(records => records.reduce((r, record) => {
+                        const id = record.surveyId;
+                        const current = r.get(id);
+                        if (!current) {
+                            r.set(id, [record.consentTypeId]);
+                            return r;
+                        }
+                        current.push(record.consentTypeId);
+                        return r;
+                    }, new Map()))
+                    .then((map) => {
+                        surveys.forEach((r) => {
+                            const id = r.id;
+                            const consentTypeIds = map.get(id);
+                            if (consentTypeIds) {
+                                r.consentTypeIds = _.uniq(consentTypeIds);
+                            }
+                        });
+                        return surveys;
+                    });
             });
     }
 
@@ -645,6 +674,24 @@ module.exports = class SurveyDAO extends Translatable {
                                         }
                                         return survey;
                                     })));
+            })
+            .then((survey) => {
+                if (!options.admin) {
+                    return survey;
+                }
+                return this.db.SurveyConsent.findAll({
+                    where: { surveyId: survey.id },
+                    raw: true,
+                    attributes: ['consentTypeId'],
+                    order: 'consent_type_id',
+                })
+                    .then(records => records.map(r => r.consentTypeId))
+                    .then((consentTypeIds) => {
+                        if (consentTypeIds.length) {
+                            survey.consentTypeIds = _.uniq(consentTypeIds); // eslint-disable-line max-len, no-param-reassign
+                        }
+                        return survey;
+                    });
             });
     }
 

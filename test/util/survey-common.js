@@ -330,6 +330,21 @@ const IntegrationTests = class SurveyIntegrationTests {
         };
     }
 
+    verifySurveyFn(index, { noSectionId } = {}) {
+        const rrSuperTest = this.rrSuperTest;
+        const hxSurvey = this.hxSurvey;
+        return function verifySurvey() {
+            const server = hxSurvey.server(index);
+            return rrSuperTest.get(`/surveys/${server.id}`, true, 200)
+                .then((res) => {
+                    if (noSectionId) {
+                        removeSurveySectionIds(res.body);
+                    }
+                    expect(res.body).to.deep.equal(server);
+                });
+        };
+    }
+
     deleteSurveyFn(index) {
         const rrSuperTest = this.rrSuperTest;
         const hxSurvey = this.hxSurvey;
@@ -356,7 +371,10 @@ const IntegrationTests = class SurveyIntegrationTests {
                     if (rrSuperTest.userRole === 'admin') {
                         opt.admin = true;
                     } else {
-                        res.body.forEach(({ authorId }) => expect(authorId).to.equal(undefined));
+                        res.body.forEach(({ authorId, consentTypeIds }) => {
+                            expect(consentTypeIds).to.equal(undefined);
+                            expect(authorId).to.equal(undefined);
+                        });
                     }
                     const expected = hxSurvey.listServersByScope(opt);
                     expect(res.body).to.deep.equal(expected);
