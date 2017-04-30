@@ -4833,9 +4833,16 @@
         },
         "answerIdentifierQuery": {
             "type": "object",
-            "required": ["identifier"],
             "properties": {
                 "identifier": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "questionText": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "questionChoiceText": {
                     "type": "string",
                     "minLength": 1
                 },
@@ -4897,7 +4904,8 @@
                     "pattern": "^\\d{2}$"
                 }
             },
-            "maxProperties": 2,
+            "minProperties": 2,
+            "maxProperties": 4,
             "additionalProperties": false
         },
         "newRuleChoicesItem": {

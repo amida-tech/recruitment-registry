@@ -4,13 +4,17 @@ const _ = require('lodash');
 
 const Base = require('./base');
 const RRError = require('../../lib/rr-error');
+const logger = require('../../logger');
 const SPromise = require('../../lib/promise');
+const queryrize = require('../../lib/queryrize');
 
 const answerCommon = require('./answer-common');
 const registryCommon = require('./registry-common');
 
 const ExportCSVConverter = require('../../export/csv-converter.js');
 const ImportCSVConverter = require('../../import/csv-converter.js');
+
+const fedQxChoiceQuery = queryrize.readQuerySync('federated-question-choice-select.sql');
 
 const evaluateAnswerRule = function ({ logic, answer }, questionAnswer) {
     if (logic === 'exists') {
@@ -500,29 +504,95 @@ module.exports = class AnswerDAO extends Base {
     }
 
     federatedCriteriaToLocalCriteria(federatedCriteria) {
-        const identifiers = federatedCriteria.map(({ identifier }) => identifier);
+        const identifiers = federatedCriteria.reduce((r, { identifier }) => {
+            if (identifier) {
+                r.push(identifier);
+            }
+            return r;
+        }, []);
         return this.db.AnswerIdentifier.findAll({
             raw: true,
             where: { identifier: { $in: identifiers }, type: 'federated' },
             attributes: ['identifier', 'questionId', 'questionChoiceId'],
         })
             .then((records) => {
-                const identifierMap = new Map(federatedCriteria.map(r => [r.identifier, r]));
-                const questionMap = new Map();
-                const questions = records.reduce((r, record) => {
-                    const { identifier, questionId, questionChoiceId } = record;
-                    let answers = questionMap.get(questionId);
-                    if (!answers) {
-                        answers = [];
-                        questionMap.set(questionId, answers);
-                        r.push({ id: questionId, answers });
+                const identifierMap = new Map(records.map(r => [r.identifier, r]));
+                const texts = federatedCriteria.map(r => r.questionText);
+                const sequelize = this.db.sequelize;
+                const fn = sequelize.fn('lower', sequelize.col('text'));
+                const where = sequelize.where(fn, { $in: texts });
+                return this.db.QuestionText.findAll({
+                    where, raw: true, attributes: ['questionId', 'text'],
+                })
+                    .then((qRecords) => {
+                        const questionMap = new Map(qRecords.map(r => [r.text, r.questionId]));
+                        return { questionMap, identifierMap, records };
+                    });
+            })
+            .then(({ identifierMap, questionMap }) => {
+                const qxids = [...questionMap.values()];
+                const texts = federatedCriteria.reduce((r, p) => {
+                    const text = p.questionChoiceText;
+                    if (text) {
+                        r.push(`'${text}'`);
                     }
-                    const criterion = identifierMap.get(identifier);
-                    const answer = _.omit(criterion, 'identifier');
+                    return r;
+                }, []);
+                const replacements = {
+                    qxids: `(${qxids.join(', ')})`,
+                    texts: `(${texts.join(', ')})`,
+                };
+                const query = queryrize.replaceParameters(fedQxChoiceQuery, replacements);
+                return this.selectQuery(query, replacements)
+                    .then((result) => {
+                        const choiceMap = result.reduce((r, p) => {
+                            let choices = r.get(p.questionId);
+                            if (!choices) {
+                                choices = new Map();
+                                r.set(p.questionId, choices);
+                            }
+                            choices.set(p.choiceText, p.questionChoiceId);
+                            return r;
+                        }, new Map());
+                        return choiceMap;
+                    })
+                    .then(choiceMap => ({ identifierMap, questionMap, choiceMap }));
+            })
+            .then(({ identifierMap, questionMap, choiceMap }) => {
+                const runnningMap = new Map();
+                const questions = federatedCriteria.reduce((r, criterion) => {
+                    const { identifier, questionText, questionChoiceText } = criterion;
+                    let { questionId, questionChoiceId } = identifierMap.get(identifier) || {};
+                    if (!questionId) {
+                        questionId = questionMap.get(questionText);
+                        if (!questionId) {
+                            logger.error(`Question '${questionText}' does not exists.`);
+                            return r;
+                        }
+                    }
+                    if (!questionChoiceId && questionChoiceText) {
+                        const choices = choiceMap.get(questionId);
+                        if (!choices) {
+                            logger.error(`Question ('${questionText}') does not have choices.`);
+                            return r;
+                        }
+                        questionChoiceId = choices.get(questionChoiceText);
+                        if (!questionChoiceId) {
+                            logger.error(`Question '${questionText}' does not have choice '${questionChoiceText}'.`);
+                            return r;
+                        }
+                    }
+                    let qx = runnningMap.get(questionId);
+                    if (!qx) {
+                        qx = { id: questionId, answers: [] };
+                        runnningMap.set(questionId, qx);
+                        r.push(qx);
+                    }
+                    const answer = _.omit(criterion, ['identifier', 'questionText', 'questionChoiceText']);
                     if (questionChoiceId) {
                         answer.choice = questionChoiceId;
                     }
-                    answers.push(answer);
+                    qx.answers.push(answer);
                     return r;
                 }, []);
                 return { questions };
@@ -551,22 +621,74 @@ module.exports = class AnswerDAO extends Base {
                     r.set(questionId, identifier);
                     return r;
                 }, new Map());
-                return questions.reduce((r, { id, answers }) => {
-                    const identifierInfo = identifierMap.get(id);
+                return { identifierMap };
+            })
+            .then(({ identifierMap }) => {
+                const qxIds = questions.map(q => q.id);
+                if (qxIds.length) {
+                    return this.db.QuestionText.findAll({
+                        raw: true,
+                        where: { questionId: { $in: qxIds } },
+                        attributes: ['questionId', 'text'],
+                    })
+                        .then((r) => {
+                            const qxMap = new Map(r.map(p => [
+                                p.questionId, p.text.toLowerCase(),
+                            ]));
+                            return { identifierMap, qxMap };
+                        });
+                }
+                return { identifierMap, qxMap: new Map() };
+            })
+            .then(({ identifierMap, qxMap }) => {
+                const qxChoiceIds = questions.reduce((r, { answers }) => {
                     answers.forEach((answer) => {
-                        if (answer.choice) {
-                            const identifier = identifierInfo.get(answer.choice);
-                            const e = Object.assign({ identifier }, _.omit(answer, 'choice'));
-                            r.push(e);
-                        } else {
-                            const identifier = identifierInfo;
-                            const e = Object.assign({ identifier }, answer);
-                            r.push(Object.assign(e, answer));
+                        const choice = answer.choice;
+                        if (choice) {
+                            r.push(choice);
                         }
                     });
                     return r;
                 }, []);
-            });
+                if (qxChoiceIds.length) {
+                    return this.db.QuestionChoiceText.findAll({
+                        raw: true,
+                        where: { questionChoiceId: { $in: qxChoiceIds } },
+                        attributes: ['questionChoiceId', 'text'],
+                    })
+                        .then((r) => {
+                            const qxChoiceMap = new Map(r.map(p => [
+                                p.questionChoiceId, p.text.toLowerCase(),
+                            ]));
+                            return { identifierMap, qxMap, qxChoiceMap };
+                        });
+                }
+                return { identifierMap, qxMap, qxChoiceMap: new Map() };
+            })
+            .then(({ identifierMap, qxMap, qxChoiceMap }) => questions.reduce((r, { id, answers }) => { // eslint-disable-line max-len
+                const identifierInfo = identifierMap.get(id);
+                const questionText = qxMap.get(id);
+                answers.forEach((answer) => {
+                    const e = { questionText };
+                    if (answer.choice) {
+                        e.questionChoiceText = qxChoiceMap.get(answer.choice);
+                        if (identifierInfo) {
+                            const identifier = identifierInfo.get(answer.choice);
+                            if (identifier) {
+                                e.identifier = identifier;
+                            }
+                        }
+                        Object.assign(e, _.omit(answer, 'choice'));
+                    } else {
+                        if (identifierInfo) {
+                            e.identifier = identifierInfo;
+                        }
+                        Object.assign(e, answer);
+                    }
+                    r.push(e);
+                });
+                return r;
+            }, []));
     }
 
     searchParticipantsIdentifiers(federatedCriteria) {

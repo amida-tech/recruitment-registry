@@ -71,39 +71,52 @@ const answerGenerators = {
 const federatedAnswerGenerators = {
     text(question, spec) {
         const identifier = question.answerIdentifier;
-        return [{ identifier, textValue: spec.value }];
+        const questionText = question.text;
+        return [{ identifier, questionText, textValue: spec.value }];
     },
     bool(question, spec) {
         const identifier = question.answerIdentifier;
-        return [{ identifier, boolValue: spec.value }];
+        const questionText = question.text;
+        return [{ identifier, questionText, boolValue: spec.value }];
     },
     choice(question, spec) {
-        const identifier = question.choices[spec.choiceIndex].identifier;
-        return [{ identifier }];
+        const choice = question.choices[spec.choiceIndex];
+        const identifier = choice.identifier;
+        const questionChoiceText = choice.text;
+        const questionText = question.text;
+        return [{ identifier, questionText, questionChoiceText }];
     },
     choices(question, spec) {
+        const questionText = question.text;
         const identifiers = spec.choiceIndices.map((choiceIndex) => {
-            const identifier = question.choices[choiceIndex].identifier;
-            return { identifier };
+            const choice = question.choices[choiceIndex];
+            const identifier = choice.identifier;
+            const questionChoiceText = choice.text;
+            return { identifier, questionText, questionChoiceText };
         });
         return identifiers;
     },
     multitext(question, spec) {
         const values = spec.values;
         const identifier = question.answerIdentifier;
-        const fn = textValue => ({ identifier, textValue });
+        const questionText = question.text;
+        const fn = textValue => ({ identifier, textValue, questionText });
         return values.map(fn);
     },
     multibool(question, spec) {
         const values = spec.values;
         const identifier = question.answerIdentifier;
-        const fn = boolValue => ({ identifier, boolValue });
+        const questionText = question.text;
+        const fn = boolValue => ({ identifier, boolValue, questionText });
         return values.map(fn);
     },
     multichoice(question, spec) {
+        const questionText = question.text;
         const identifiers = spec.choiceIndices.map((choiceIndex) => {
-            const identifier = question.choices[choiceIndex].identifier;
-            return { identifier };
+            const choice = question.choices[choiceIndex];
+            const identifier = choice.identifier;
+            const questionChoiceText = choice.text;
+            return { identifier, questionText, questionChoiceText };
         });
         return identifiers;
     },
@@ -123,13 +136,13 @@ const Tests = class BaseTests {
         this.hxSurvey = hxSurvey;
         this.hxQuestion = hxQuestion;
 
-        const questionGenerator = new QuestionGenerator();
-        const multiQuestionGenerator = new MultiQuestionGenerator();
         this.surveyGenerator = new SurveyGenerator();
 
         const typeIndexMap = new Map();
         const types = [];
         const questions = [];
+        let addIdentifier = true;
+        const questionGenerator = new QuestionGenerator();
         ['choice', 'choices', 'text', 'bool'].forEach((type) => {
             const opt = { type, choiceCount: 6, noText: true, noOneOf: true };
             types.push(type);
@@ -137,14 +150,20 @@ const Tests = class BaseTests {
             typeIndexMap.set(type, indices);
             _.range(this.surveyCount).forEach((index) => {
                 indices.push(this.offset + questions.length);
-                opt.identifiers = {
-                    type: 'federated',
-                    postfix: `survey_${index}_${type}`,
-                };
+                if (addIdentifier) {
+                    opt.identifiers = {
+                        type: 'federated',
+                        postfix: `survey_${index}_${type}`,
+                    };
+                } else {
+                    delete opt.identifiers;
+                }
+                addIdentifier = !addIdentifier;
                 const question = questionGenerator.newQuestion(opt);
                 questions.push(question);
             });
         });
+        const multiQuestionGenerator = new MultiQuestionGenerator(questionGenerator);
         ['choice', 'text', 'bool'].forEach((type) => {
             const opt = { type, choiceCount: 6, noOneOf: true, max: 5 };
             const multiType = `multi${type}`;
@@ -152,10 +171,15 @@ const Tests = class BaseTests {
             const indices = [];
             typeIndexMap.set(multiType, indices);
             _.range(this.surveyCount).forEach((index) => {
-                opt.identifiers = {
-                    type: 'federated',
-                    postfix: `survey_${index}_${multiType}`,
-                };
+                if (addIdentifier) {
+                    opt.identifiers = {
+                        type: 'federated',
+                        postfix: `survey_${index}_${multiType}`,
+                    };
+                } else {
+                    delete opt.identifiers;
+                }
+                addIdentifier = !addIdentifier;
                 indices.push(this.offset + questions.length);
                 const question = multiQuestionGenerator.newMultiQuestion(opt);
                 questions.push(question);
@@ -496,6 +520,21 @@ const SpecTests = class SearchSpecTests extends Tests {
                 _.range(self.surveyCount).forEach((index) => {
                     const qxIndices = self.types.map(type => self.typeIndexMap.get(type)[index]);
                     it(`create survey ${index}`, self.createSurveyFn(qxIndices));
+                });
+            });
+
+            describe('criteria to federated criteria', function criteriaConversions() {
+                const searchCases = testCase0.searchCases;
+                searchCases.forEach((searchCase, index) => {
+                    it(`criteria ${index}`, function criteriaConversion() {
+                        const answerDao = self.models.answer;
+                        const c = self.formCriteria(searchCase.answers);
+                        return answerDao.localCriteriaToFederatedCriteria(c)
+                            .then(f => answerDao.federatedCriteriaToLocalCriteria(f))
+                            .then((actual) => {
+                                expect(actual).to.deep.equal(c);
+                            });
+                    });
                 });
             });
 

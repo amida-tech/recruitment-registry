@@ -47,5 +47,10 @@ module.exports = function questionChoiceText(sequelize, Sequelize, schema) {
         createdAt: 'createdAt',
         updatedAt: false,
         deletedAt: 'deletedAt',
+        indexes: [{
+            name: 'question_choice_text_lower_text_key',
+            fields: [sequelize.fn('lower', sequelize.col('text'))],
+            where: { deleted_at: { $eq: null }, language_code: 'en' },
+        }],
     });
 };
