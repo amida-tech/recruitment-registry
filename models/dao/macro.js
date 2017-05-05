@@ -9,10 +9,10 @@ module.exports = class Macro extends Base {
         Object.assign(this, dependencies);
     }
 
-    createSurveys(surveys) {
+    createSurveys(surveys, userId = 1) {
         return this.transaction((transaction) => {
             const pxs = surveys.map((survey) => {
-                const px = this.survey.createSurveyTx(survey, transaction);
+                const px = this.survey.createSurveyTx(survey, userId, transaction);
                 return px;
             });
             pxs[0] = pxs[0].then((id) => {

@@ -38,6 +38,17 @@ module.exports = function survey(sequelize, Sequelize, schema) {
             type: Sequelize.DATE,
             field: 'deleted_at',
         },
+        authorId: {
+            type: Sequelize.INTEGER,
+            field: 'author_id',
+            references: {
+                model: {
+                    schema,
+                    tableName: 'registry_user',
+                },
+                key: 'id',
+            },
+        },
     }, {
         freezeTableName: true,
         tableName,

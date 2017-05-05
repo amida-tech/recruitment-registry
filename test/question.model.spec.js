@@ -2,8 +2,6 @@
 
 'use strict';
 
-/* eslint no-param-reassign: 0, max-len: 0 */
-
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
@@ -25,7 +23,7 @@ const expect = chai.expect;
 const generator = new Generator();
 const shared = new SharedSpec(generator);
 
-describe('question unit', () => {
+describe('question unit', function questionUnit() {
     before(shared.setUpFn());
 
     const hxQuestion = new History();
@@ -34,10 +32,12 @@ describe('question unit', () => {
     const tests = new questionCommon.SpecTests({ generator, hxQuestion });
     const choceSetTests = new choiceSetCommon.SpecTests(generator, hxChoiceSet);
 
-    it('list all questions when none', () => models.question.listQuestions()
+    it('list all questions when none', function listWhenNone() {
+        return models.question.listQuestions()
             .then((questions) => {
                 expect(questions).to.have.length(0);
-            }));
+            });
+    });
 
     const updateQuestionTextFn = function (index) {
         return function updateQuestionText() {
@@ -99,8 +99,10 @@ describe('question unit', () => {
 
     it('list all questions (default - summary)', tests.listQuestionsFn());
 
-    it('error: get multiple with non-existent id', () => models.question.listQuestions({ ids: [1, 99999] })
-            .then(shared.throwingHandler, shared.expectedErrorHandler('qxNotFound')));
+    it('error: get multiple with non-existent id', function errorMultipleNonExistant() {
+        return models.question.listQuestions({ ids: [1, 99999] })
+            .then(shared.throwingHandler, shared.expectedErrorHandler('qxNotFound'));
+    });
 
     const translateQuestionFn = function (index, language) {
         return function translateQuestion() {
@@ -143,9 +145,9 @@ describe('question unit', () => {
         };
     };
 
-    it('get question 3 in spanish when no name translation', getTranslatedQuestionFn(3, 'es', true));
+    it('get question 3 in es when no name translation', getTranslatedQuestionFn(3, 'es', true));
 
-    it('list questions in spanish when no translation', listTranslatedQuestionsFn('es', true));
+    it('list questions in es when no translation', listTranslatedQuestionsFn('es', true));
 
     _.range(10).forEach((i) => {
         it(`add translated (es) question ${i}`, translateQuestionFn(i, 'es'));
@@ -180,7 +182,8 @@ describe('question unit', () => {
         it(`verify question ${i}`, tests.verifyQuestionFn(i));
     });
 
-    it('list common questions', () => models.question.listQuestions({ commonOnly: true })
+    it('list common questions', function listCommonQx() {
+        return models.question.listQuestions({ commonOnly: true })
             .then((questions) => {
                 let expected = hxQuestion.listServers();
                 expected = expected.filter(q => q.common);
@@ -188,7 +191,8 @@ describe('question unit', () => {
                 const fields = questionCommon.getFieldsForList('summary');
                 expected = expected.map(r => _.pick(r, fields));
                 expect(questions).to.deep.equal(expected);
-            }));
+            });
+    });
 
     const createSurveyFn = function (questionIndices) {
         return function createSurvey() {
@@ -203,42 +207,48 @@ describe('question unit', () => {
         [2, 7, 9],
         [7, 11, 13],
         [5, 8, 11, 14, 15],
-    ].forEach((questionIndices, index) => {
-        it(`create survey ${index} from questions ${questionIndices}`, createSurveyFn(questionIndices));
+    ].forEach((indices, index) => {
+        it(`create survey ${index} from questions ${indices}`, createSurveyFn(indices));
         it(`list survey ${index} questions`, function listSurveyQuestions() {
             const surveyId = hxSurvey.id(index);
             return models.question.listQuestions({ scope: 'complete', surveyId })
                 .then((questions) => {
-                    const expected = hxQuestion.listServers(null, questionIndices);
+                    const expected = hxQuestion.listServers(null, indices);
                     expect(questions).to.deep.equal(expected);
                 });
         });
     });
 
 
-    _.forEach([2, 7, 11, 13, 14], (questionIndex) => {
-        it(`error: delete question ${questionIndex} on an active survey`, () => models.question.deleteQuestion(hxQuestion.id(questionIndex))
-                .then(shared.throwingHandler, shared.expectedErrorHandler('qxReplaceWhenActiveSurveys')));
+    const replaceQxOnActiveSurveyFn = function (questionIndex) {
+        return function replaceQxOnActiveSurvey() {
+            const id = hxQuestion.id(questionIndex);
+            const errorCode = 'qxReplaceWhenActiveSurveys';
+            return models.question.deleteQuestion(id)
+                .then(shared.throwingHandler, shared.expectedErrorHandler(errorCode));
+        };
+    };
+
+    _.forEach([2, 7, 11, 13, 14], (ndx) => {
+        it(`error: delete question ${ndx} on an active survey`, replaceQxOnActiveSurveyFn(ndx));
     });
 
     it('delete survey 1', () => models.survey.deleteSurvey(hxSurvey.id(1))
             .then(() => hxSurvey.remove(1)));
 
-    _.forEach([2, 7, 11, 14], (questionIndex) => {
-        it(`error: delete question ${questionIndex} on an active survey`, () => models.question.deleteQuestion(hxQuestion.id(questionIndex))
-                .then(shared.throwingHandler, shared.expectedErrorHandler('qxReplaceWhenActiveSurveys')));
+    _.forEach([2, 7, 11, 14], (ndx) => {
+        it(`error: delete question ${ndx} on an active survey`, replaceQxOnActiveSurveyFn(ndx));
     });
 
     it('delete survey 2', () => models.survey.deleteSurvey(hxSurvey.id(2))
             .then(() => hxSurvey.remove(2)));
 
-    _.forEach([2, 7], (questionIndex) => {
-        it(`error: delete question ${questionIndex} on an active survey`, () => models.question.deleteQuestion(hxQuestion.id(questionIndex))
-                .then(shared.throwingHandler, shared.expectedErrorHandler('qxReplaceWhenActiveSurveys')));
+    _.forEach([2, 7], (ndx) => {
+        it(`error: delete question ${ndx} on an active survey`, replaceQxOnActiveSurveyFn(ndx));
     });
 
-    _.forEach([5, 11, 15], (index) => {
-        it(`delete question ${index}`, tests.deleteQuestionFn(index));
+    _.forEach([5, 11, 15], (ndx) => {
+        it(`delete question ${ndx}`, tests.deleteQuestionFn(ndx));
     });
 
     it('error: replace a non-existent question', () => {
@@ -250,15 +260,16 @@ describe('question unit', () => {
     [
         [7, 10, 17],
         [3, 8, 9],
-    ].forEach((questionIndices, index) => {
-        it(`create survey ${index + 3} from questions ${questionIndices}`, createSurveyFn(questionIndices));
+    ].forEach((indices, index) => {
+        it(`create survey ${index + 3} from questions ${indices}`, createSurveyFn(indices));
     });
 
     _.forEach([2, 7, 9], (questionIndex) => {
         it(`error: replace question ${questionIndex} on an active survey`, () => {
             const replacement = generator.newQuestion();
+            const errorCode = 'qxReplaceWhenActiveSurveys';
             return models.question.replaceQuestion(hxQuestion.id(questionIndex), replacement)
-                .then(shared.throwingHandler, shared.expectedErrorHandler('qxReplaceWhenActiveSurveys'));
+                .then(shared.throwingHandler, shared.expectedErrorHandler(errorCode));
         });
     });
 
@@ -268,13 +279,16 @@ describe('question unit', () => {
     _.forEach([7, 9], (questionIndex) => {
         it(`error: replace question ${questionIndex} on an active survey`, () => {
             const replacement = generator.newQuestion();
+            const errorCode = 'qxReplaceWhenActiveSurveys';
             return models.question.replaceQuestion(hxQuestion.id(questionIndex), replacement)
-                .then(shared.throwingHandler, shared.expectedErrorHandler('qxReplaceWhenActiveSurveys'));
+                .then(shared.throwingHandler, shared.expectedErrorHandler(errorCode));
         });
     });
 
-    it('delete survey 3', () => models.survey.deleteSurvey(hxSurvey.id(3))
-            .then(() => hxSurvey.remove(3)));
+    it('delete survey 3', function deleteSurvey() {
+        return models.survey.deleteSurvey(hxSurvey.id(3))
+            .then(() => hxSurvey.remove(3));
+    });
 
     [7, 10, 14, 21, 22, 24].forEach((questionIndex, index) => {
         it(`replace question ${questionIndex} with question ${20 + index}`, () => {
@@ -304,7 +318,8 @@ describe('question unit', () => {
                     if (versionInfo.version === null) {
                         expect(versionInfo.groupId).to.equal(null);
                     } else {
-                        return Question.count({ where: { groupId: versionInfo.groupId }, paranoid: false })
+                        const where = { groupId: versionInfo.groupId };
+                        return Question.count({ where, paranoid: false })
                             .then(count => expect(count).to.equal(versionInfo.version));
                     }
                     return null;
@@ -316,7 +331,8 @@ describe('question unit', () => {
         return function verifyDeletedVersioning() {
             const id = hxQuestion.id(index);
             const Question = models.question.db.Question;
-            return Question.findById(id, { attributes: ['groupId', 'version'], raw: true, paranoid: false })
+            const attributes = ['groupId', 'version'];
+            return Question.findById(id, { attributes, raw: true, paranoid: false })
                 .then((versionInfo) => {
                     expect(versionInfo.version).to.equal(expectedVersion);
                     expect(versionInfo.groupId).to.equal(expectedVersion ? id : null);
@@ -349,7 +365,8 @@ describe('question unit', () => {
 
     it('replace generator to choice set question generator', () => {
         const choiceSets = _.range(8).map(index => hxChoiceSet.server(index));
-        const choiceSetGenerator = new ChoiceSetQuestionGenerator(generator.questionGenerator, choiceSets);
+        const qxGenerator = generator.questionGenerator;
+        const choiceSetGenerator = new ChoiceSetQuestionGenerator(qxGenerator, choiceSets);
         generator.questionGenerator = choiceSetGenerator;
         comparator.updateChoiceSetMap(choiceSets);
     });

@@ -13,6 +13,7 @@ const Generator = require('./util/generator');
 const History = require('./util/history');
 const registryCommon = require('./util/registry-common');
 const federatedCommon = require('./util/search/federated-search-common');
+const testCase0 = require('./util/search/test-case-0');
 
 const expect = chai.expect;
 
@@ -62,7 +63,7 @@ describe('federated search unit', function federatedSearchUnit() {
             }
         });
 
-        it('search case 0', function federatedSearch() {
+        it('count search case 0', function federatedSearchCount() {
             const searchTestsMap = tests.searchTestsMap;
             const schema0 = tests.registries[0].schema;
             const schema1 = tests.registries[1].schema;
@@ -71,8 +72,22 @@ describe('federated search unit', function federatedSearchUnit() {
             const { count: count2 } = searchTestsMap.get('recregone').getFederatedCriteria(0);
             const { count: count3 } = searchTestsMap.get('recregtwo').getFederatedCriteria(0);
             const { count, federatedCriteria: criteria } = searchTestsMap.get('current').getFederatedCriteria(0);
-            return tests.models.current.answer.federatedSearchCountUsers(tests.models, criteria)
+            return tests.models.current.answer.federatedCountParticipants(tests.models, criteria)
                 .then(result => expect(result.count).to.equal(count + count0 + count1 + count2 + count3));
+        });
+
+        const store = {};
+        it('create filter', function creteFilter() {
+            const searchTestsMap = tests.searchTestsMap;
+            const searchTests = searchTestsMap.get('current');
+            return searchTests.createFilterFn(100, testCase0.searchCases[0], store)();
+        });
+
+        it('create cohort', function createCohort() {
+            const searchTestsMap = tests.searchTestsMap;
+            const searchTests = searchTestsMap.get('current');
+            const cohortOptions = { limited: false, federated: true, federatedModels: tests.models };
+            return searchTests.createCohortFn(store, cohortOptions)();
         });
     });
 

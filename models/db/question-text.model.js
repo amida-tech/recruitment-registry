@@ -51,5 +51,10 @@ module.exports = function questionText(sequelize, Sequelize, schema) {
         updatedAt: false,
         deletedAt: 'deletedAt',
         paranoid: true,
+        indexes: [{
+            name: 'question_text_lower_text_key',
+            fields: [sequelize.fn('lower', sequelize.col('text'))],
+            where: { deleted_at: { $eq: null }, language_code: 'en' },
+        }],
     });
 };

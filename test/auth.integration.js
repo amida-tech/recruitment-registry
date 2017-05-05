@@ -38,7 +38,7 @@ describe('auth integration', () => {
     });
 
     const successfullLoginFn = function (index) {
-        return function successfullLogin(done) {
+        return function successfullLogin() {
             const client = hxUser.client(index);
             let username = client.username;
             const email = client.email;
@@ -46,20 +46,16 @@ describe('auth integration', () => {
             if (!username) {
                 username = email;
             }
-            rrSuperTest.authBasic({ username, password })
-                .end((err) => {
-                    if (err) {
-                        return done(err);
-                    }
+            return rrSuperTest.authBasic({ username, password })
+                .then(() => {
                     const jwtCookie = rrSuperTest.getJWT();
                     return jwt.verify(jwtCookie.value, config.jwt.secret, {}, (err2, jwtObject) => {
                         if (err2) {
-                            return done(err2);
+                            throw err2;
                         }
                         const id = hxUser.id(index);
                         expect(jwtObject.username).to.equal(client.username || client.email.toLowerCase());
                         expect(jwtObject.id).to.equal(id);
-                        return done();
                     });
                 });
         };

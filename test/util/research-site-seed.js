@@ -7,8 +7,9 @@
 const models = require('../../models');
 const SPromise = require('../../lib/promise');
 
-module.exports = function researchSiteSeed(example) {
-    const researchSitePxs = example.researchSiteExamples.map(researchSite => models.researchSite.createResearchSite(researchSite));
+module.exports = function researchSiteSeed(example, inputModels) {
+    const m = inputModels || models;
+    const researchSitePxs = example.researchSiteExamples.map(researchSite => m.researchSite.createResearchSite(researchSite));
     return SPromise.all(researchSitePxs)
     .then(() => {
         console.log('Research sites added!');

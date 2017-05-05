@@ -162,15 +162,15 @@ class History {
         return _.get(this.translations, `${id}.${language}`);
     }
 
-    listTranslatedServers(language) {
+    listTranslatedServers(language, fields) {
         let result = this.servers;
         result = result.map((server) => {
             const id = server.id;
             const tr = _.get(this.translations, `${id}.${language}`);
             return tr || server;
         });
-        if (this.listFields) {
-            result = result.map(element => _.pick(element, this.listFields));
+        if (fields || this.listFields) {
+            result = result.map(element => _.pick(element, fields || this.listFields));
         }
         return result;
     }

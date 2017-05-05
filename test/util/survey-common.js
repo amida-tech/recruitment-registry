@@ -319,10 +319,29 @@ const IntegrationTests = class SurveyIntegrationTests {
             rrSuperTest.get(`/surveys/${id}`, true, 200)
                 .expect((res) => {
                     hxSurvey.reloadServer(res.body);
-                    const expected = hxSurvey.client(index);
+                    let expected = hxSurvey.client(index);
+                    if (rrSuperTest.userRole === 'admin') {
+                        expected = _.cloneDeep(expected);
+                        expected.authorId = rrSuperTest.userId;
+                    }
                     comparator.survey(expected, res.body);
                 })
                 .end(done);
+        };
+    }
+
+    verifySurveyFn(index, { noSectionId } = {}) {
+        const rrSuperTest = this.rrSuperTest;
+        const hxSurvey = this.hxSurvey;
+        return function verifySurvey() {
+            const server = hxSurvey.server(index);
+            return rrSuperTest.get(`/surveys/${server.id}`, true, 200)
+                .then((res) => {
+                    if (noSectionId) {
+                        removeSurveySectionIds(res.body);
+                    }
+                    expect(res.body).to.deep.equal(server);
+                });
         };
     }
 
@@ -339,19 +358,28 @@ const IntegrationTests = class SurveyIntegrationTests {
         };
     }
 
-    listSurveysFn(options, count = -1) {
+    listSurveysFn(options = {}, count = -1) {
         const rrSuperTest = this.rrSuperTest;
         const hxSurvey = this.hxSurvey;
-        return function listSurveys(done) {
-            rrSuperTest.get('/surveys', true, 200, options)
-                .expect((res) => {
+        return function listSurveys() {
+            return rrSuperTest.get('/surveys', true, 200, options)
+                .then((res) => {
                     if (count >= 0) {
                         expect(res.body).to.have.length(count);
                     }
-                    const expected = hxSurvey.listServersByScope(options);
+                    const opt = _.cloneDeep(options);
+                    if (rrSuperTest.userRole === 'admin') {
+                        opt.admin = true;
+                    } else {
+                        res.body.forEach(({ authorId, consentTypeIds }) => {
+                            expect(consentTypeIds).to.equal(undefined);
+                            expect(authorId).to.equal(undefined);
+                        });
+                    }
+                    const expected = hxSurvey.listServersByScope(opt);
                     expect(res.body).to.deep.equal(expected);
-                })
-                .end(done);
+                    return res;
+                });
         };
     }
 };

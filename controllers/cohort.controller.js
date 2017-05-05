@@ -5,7 +5,8 @@ const _ = require('lodash');
 const shared = require('./shared.js');
 
 exports.createCohort = function createCohort(req, res) {
-    req.models.cohort.createCohort(req.body)
+    const allModels = req.app.locals.models;
+    req.models.cohort.createCohort(req.body, allModels)
         .then((csvContent) => {
             res.header('Content-disposition', 'attachment; filename=cohort.csv');
             res.type('text/csv');

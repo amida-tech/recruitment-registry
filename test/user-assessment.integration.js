@@ -39,7 +39,8 @@ describe('user assessment integration', () => {
     const shared = new SharedIntegration(rrSuperTest, generator);
     const surveyTests = new surveyCommon.IntegrationTests(rrSuperTest, generator, hxSurvey);
     const assessmentTests = new assessmentCommon.IntegrationTests(rrSuperTest, generator, hxSurvey, hxAssessment);
-    const answerTests = new answerCommon.IntegrationTests(rrSuperTest, generator, hxUser, hxSurvey);
+    const opt = { generator, hxUser, hxSurvey };
+    const answerTests = new answerCommon.IntegrationTests(rrSuperTest, opt);
     const hxAnswer = answerTests.hxAnswer;
 
     before(shared.setUpFn());

@@ -19,7 +19,7 @@ Recruitment Registry API
 5. Cd into api directory and install dependencies: `npm install`
 6. Create a `.env` file in the root level of this directory
 7. Run sync file:
-  `node syncDecember15.js`
+  `node seed.js`
 8. Run program:
 `npm start`
 

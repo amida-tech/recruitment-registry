@@ -314,13 +314,15 @@ module.exports = class SurveyDAO extends Translatable {
             });
     }
 
-    createSurveyTx(survey, transaction) {
+    createSurveyTx(survey, userId, transaction) {
         const fields = _.omit(survey, ['name', 'description', 'sections', 'questions', 'identifier']);
-        return this.db.Survey.create(fields, { transaction }).then(({ id }) => this.updateSurveyTx(id, survey, transaction)); // eslint-disable-line max-len
+        fields.authorId = userId;
+        return this.db.Survey.create(fields, { transaction })
+            .then(({ id }) => this.updateSurveyTx(id, survey, transaction));
     }
 
-    createSurvey(survey) {
-        return this.transaction(transaction => this.createSurveyTx(survey, transaction));
+    createSurvey(survey, userId = 1) {
+        return this.transaction(transaction => this.createSurveyTx(survey, userId, transaction));
     }
 
     patchSurveyTextTx({ id, name, description, sections }, language, transaction) {
@@ -455,7 +457,7 @@ module.exports = class SurveyDAO extends Translatable {
         return this.transaction(transaction => this.patchSurveyTx(id, surveyPatch, transaction));
     }
 
-    replaceSurveyTx(originalId, replacement, transaction) {
+    replaceSurveyTx(originalId, replacement, userId, transaction) {
         return this.db.Survey.findById(originalId)
             .then((survey) => {
                 if (!survey) {
@@ -469,7 +471,7 @@ module.exports = class SurveyDAO extends Translatable {
                     version: version + 1,
                     groupId: survey.groupId || survey.id,
                 }, replacement);
-                return this.createSurveyTx(newSurvey, transaction)
+                return this.createSurveyTx(newSurvey, userId, transaction)
                     .then((id) => {
                         if (!survey.version) {
                             const record = { version: 1, groupId: survey.id };
@@ -490,17 +492,17 @@ module.exports = class SurveyDAO extends Translatable {
             });
     }
 
-    replaceSurvey(id, replacement) {
-        return this.transaction(tx => this.replaceSurveyTx(id, replacement, tx));
+    replaceSurvey(id, replacement, userId = 1) {
+        return this.transaction(tx => this.replaceSurveyTx(id, replacement, userId, tx));
     }
 
-    createOrReplaceSurvey(input) {
-        const survey = _.omit(input, 'parentId');
-        const parentId = input.parentId;
+    createOrReplaceSurvey(surveyInfo, userId = 1) {
+        const newSurvey = _.omit(surveyInfo, 'parentId');
+        const parentId = surveyInfo.parentId;
         if (parentId) {
-            return this.replaceSurvey(parentId, survey);
+            return this.replaceSurvey(parentId, newSurvey, userId);
         }
-        return this.createSurvey(survey);
+        return this.createSurvey(newSurvey, userId);
     }
 
     deleteSurvey(id) {
@@ -523,6 +525,9 @@ module.exports = class SurveyDAO extends Translatable {
         if (scope === 'version-only' || scope === 'version') {
             attributes.push('groupId');
             attributes.push('version');
+        }
+        if (opt.admin && scope !== 'export') {
+            attributes.push('authorId');
         }
         const options = { raw: true, attributes, order: order || 'id', paranoid: !history };
         if (groupId || version || (status !== 'all')) {
@@ -553,7 +558,36 @@ module.exports = class SurveyDAO extends Translatable {
                 if (scope === 'export') {
                     return this.updateSurveyListExport(surveys);
                 }
-                return surveys;
+                if (!opt.admin) {
+                    return surveys;
+                }
+                const surveyIds = surveys.map(({ id }) => id);
+                return this.db.SurveyConsent.findAll({
+                    where: { surveyId: { $in: surveyIds } },
+                    raw: true,
+                    attributes: ['surveyId', 'consentTypeId'],
+                    order: 'consent_type_id',
+                })
+                    .then(records => records.reduce((r, record) => {
+                        const id = record.surveyId;
+                        const current = r.get(id);
+                        if (!current) {
+                            r.set(id, [record.consentTypeId]);
+                            return r;
+                        }
+                        current.push(record.consentTypeId);
+                        return r;
+                    }, new Map()))
+                    .then((map) => {
+                        surveys.forEach((r) => {
+                            const id = r.id;
+                            const consentTypeIds = map.get(id);
+                            if (consentTypeIds) {
+                                r.consentTypeIds = _.uniq(consentTypeIds);
+                            }
+                        });
+                        return surveys;
+                    });
             });
     }
 
@@ -582,7 +616,11 @@ module.exports = class SurveyDAO extends Translatable {
     }
 
     getSurvey(id, options = {}) {
-        let opt = { where: { id }, raw: true, attributes: ['id', 'meta', 'status'] };
+        const attributes = ['id', 'meta', 'status'];
+        if (options.admin) {
+            attributes.push('authorId');
+        }
+        let opt = { where: { id }, raw: true, attributes };
         if (options.override) {
             opt = _.assign({}, opt, options.override);
         }
@@ -636,6 +674,24 @@ module.exports = class SurveyDAO extends Translatable {
                                         }
                                         return survey;
                                     })));
+            })
+            .then((survey) => {
+                if (!options.admin) {
+                    return survey;
+                }
+                return this.db.SurveyConsent.findAll({
+                    where: { surveyId: survey.id },
+                    raw: true,
+                    attributes: ['consentTypeId'],
+                    order: 'consent_type_id',
+                })
+                    .then(records => records.map(r => r.consentTypeId))
+                    .then((consentTypeIds) => {
+                        if (consentTypeIds.length) {
+                            survey.consentTypeIds = _.uniq(consentTypeIds); // eslint-disable-line max-len, no-param-reassign
+                        }
+                        return survey;
+                    });
             });
     }
 
