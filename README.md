@@ -17,6 +17,7 @@ Recruitment Registry API
 	* Node.js v6 (previous node versions may require Babel)
 	* Postgres (v9.5 or greater)  
 	> Note: Default installations of Postgres on macOS (such as through homebrew or DMG install) may not grant proper permission to your postgres user role. macOS users may need to alter their Postgres user role with [role attribute](https://www.postgresql.org/docs/9.5/static/role-attributes.html) `LOGIN`. See [ALTER ROLE – (postgres.org)](https://www.postgresql.org/docs/9.5/static/sql-alterrole.html) in the Postgres Documentation for more.  
+	
 	> Note: Windows users may be required to install Python 2.7 and Visual C++ Build Tools. Please follow [Installing Python and Visual C++ Build Tools (Windows)](#installing-python-and-visual-c-build-tools-windows) prior to continuing installation.
 3. Create database recreg:  
 `createdb recreg`
