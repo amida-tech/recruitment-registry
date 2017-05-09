@@ -28,15 +28,15 @@ describe('email unit', () => {
     winston.remove(winston.transports.Console);
     winston.add(winston.transports.SpyLogger, { spy });
 
-    function stubRequestPostSuccessful() {
-        return shared.stubRequestPost(null, {
-            statusCode: 201,
-        });
-    }
-
-    const requestStub = stubRequestPostSuccessful();
+    let requestStub;
 
     const ensureConstantContactConfig = email.__get__('ensureConstantContactConfig'); // eslint-disable-line no-underscore-dangle
+
+    it('stub request', function stubRequest() {
+        requestStub = shared.stubRequestPost(null, {
+            statusCode: 201,
+        });
+    });
 
     it('confirms makeNewConstantContactOptions is setup as intended', () => {
         const makeNewConstantContactOptions = email.__get__('makeNewConstantContactOptions'); // eslint-disable-line no-underscore-dangle
@@ -114,5 +114,9 @@ describe('email unit', () => {
         sendCcEmail(user);
         expect(requestStub.calledOnce);
         requestStub.reset();
+    });
+
+    it('restore original request', function restoreRequestModule() {
+        requestStub.restore();
     });
 });

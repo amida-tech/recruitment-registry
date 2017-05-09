@@ -50,7 +50,6 @@
     "eslint-config-airbnb-base": "^11.1.0",
     "eslint-plugin-import": "^2.2.0",
     "grunt": "^1.0.1",
-    "grunt-contrib-jshint": "^1.0.0",
     "grunt-contrib-watch": "^1.0.0",
     "grunt-env": "^0.4.4",
     "grunt-eslint": "^19.0.0",
