@@ -16,8 +16,8 @@ Recruitment Registry API
 1. Install all dependencies:
 	* Node.js v6 (previous node versions may require Babel)
 	* Postgres (v9.5 or greater)  
-	> Note: Default installations of Postgres on macOS (such as through homebrew or DMG install) may not grant proper permission to your postgres user role. macOS users may need to alter their Postgres user role with [role attribute](https://www.postgresql.org/docs/9.5/static/role-attributes.html) `LOGIN`. See [ALTER ROLE – (postgres.org)](https://www.postgresql.org/docs/9.5/static/sql-alterrole.html) in the Postgres Documentation for more.
-	* Note: Windows users may be required to install Python 2.7 and Visual C++ Build Tools. Please follow [Installing Python and Visual C++ Build Tools (Windows)](#installing-python-and-visual-c-build-tools-windows) prior to continuing installation.
+	> Note: Default installations of Postgres on macOS (such as through homebrew or DMG install) may not grant proper permission to your postgres user role. macOS users may need to alter their Postgres user role with [role attribute](https://www.postgresql.org/docs/9.5/static/role-attributes.html) `LOGIN`. See [ALTER ROLE – (postgres.org)](https://www.postgresql.org/docs/9.5/static/sql-alterrole.html) in the Postgres Documentation for more.  
+	> Note: Windows users may be required to install Python 2.7 and Visual C++ Build Tools. Please follow [Installing Python and Visual C++ Build Tools (Windows)](#installing-python-and-visual-c-build-tools-windows) prior to continuing installation.
 3. Create database recreg:  
 `createdb recreg`
 4. Install Grunt:  
@@ -33,7 +33,7 @@ Recruitment Registry API
 
 ### Installing Python and Visual C++ Build Tools (Windows)
 
-Due to variances between Windows, Linux, and macOS; Windows users will have to add a few steps for
+Due to variances between Windows, Linux, and macOS, Windows users will have to add a few steps for
 installing the needed components for node-gyp. And all users will probably have to install Python 2.7 as well.
 
 1. Download & install Python 2.7.
