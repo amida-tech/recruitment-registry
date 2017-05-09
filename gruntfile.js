@@ -79,7 +79,6 @@ module.exports = function gruntmain(grunt) {
             options: {
                 configFile: '.eslintrc.js',
                 fix: true,
-                //quiet: true,
             },
             target: [
                 '**/*.js',
@@ -88,6 +87,8 @@ module.exports = function gruntmain(grunt) {
                 'gruntfile.js',
                 'index.js',
                 'app.js',
+                '.eslintrc.js',
+                'test/.eslintrc.js',
             ],
         },
         watch: {

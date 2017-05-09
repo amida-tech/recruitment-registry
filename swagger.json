@@ -258,6 +258,9 @@
                 },{
 
                     "participant": []
+                },{
+
+                    "clinician": []
                 }],
                 "parameters": [{
                     "name": "scope",
@@ -798,7 +801,7 @@
             "x-swagger-router-controller": "answer.controller",
             "post": {
                 "summary": "Searches all answers and returns user ids",
-                "operationId": "searchAnswerUsers",
+                "operationId": "searchParticipants",
                 "security": [{
                     "admin": []
                 }, {
@@ -831,6 +834,82 @@
                         }
                     },
                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/answers/identifier-user-ids": {
+            "x-swagger-router-controller": "answer.controller",
+            "post": {
+                "summary": "Searches all answers and returns user ids",
+                "operationId": "searchParticipantsIdentifiers",
+                "security": [{
+                    "admin": []
+                }, {
+                    "clinician": []
+                }],
+                "parameters": [{
+                    "name": "query",
+                    "in": "body",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/answerIdentifiersQuery"
+                    }
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response.",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "required": ["userId"],
+                                "properties": {
+                                    "userId": {
+                                        "type": "integer",
+                                        "minimum": 1
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        }
+                    },
+                   "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/answers/federated": {
+            "x-swagger-router-controller": "answer.controller",
+            "post": {
+                "summary": "Searches all answers and returns federated answers",
+                "operationId": "federatedListParticipants",
+                "security": [{
+                    "admin": []
+                }, {
+                    "clinician": []
+                }],
+                "parameters": [{
+                    "name": "query",
+                    "in": "body",
+                    "required": true,
+                    "schema": {
+                        "$ref": "#/definitions/answerIdentifiersQuery"
+                    }
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response.",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "object"
+                            }
+                        }
+                    },
+                    "default": {
                         "$ref": "#/responses/genericError"
                     }
                 }
@@ -896,6 +975,9 @@
             "get": {
                 "summary": "Gets profile survey",
                 "operationId": "getProfileSurvey",
+                "security": [{
+                    "any": []
+                }],
                 "parameters": [{
                     "name": "language",
                     "in": "query",
@@ -1092,6 +1174,8 @@
                 "operationId": "listQuestions",
                 "security": [{
                     "admin": []
+                },  {
+                  "clinician": []
                 }],
                 "parameters": [{
                     "name": "scope",
@@ -1201,6 +1285,8 @@
                 "operationId": "getQuestion",
                 "security": [{
                     "participant": []
+                }, {
+                    "clinician": []
                 }],
                 "parameters": [{
                     "name": "language",
@@ -2256,6 +2342,8 @@
                 "operationId": "listUserSurveys",
                 "security": [{
                     "participant": []
+                },{
+                    "clinician": []
                 }],
                 "parameters": [{
                     "name": "language",
@@ -3532,6 +3620,11 @@
             "type": "apiKey",
             "in": "header",
             "name": "Authorization"
+        },
+        "any": {
+            "type": "apiKey",
+            "in": "header",
+            "name": "Authorization"
         }
     },
     "responses": {
@@ -4069,6 +4162,15 @@
                 "description": {
                     "type": "string"
                 },
+                "authorId": {
+                    "type": "integer"
+                },
+                "consentTypeIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
                 "status": {
                     "$ref": "#/definitions/surveyStatus"
                 },
@@ -4238,6 +4340,15 @@
                 "description": {
                     "type": "string"
                 },
+                "authorId": {
+                    "type": "integer"
+                },
+                "consentTypeIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
                 "status": {
                     "$ref": "#/definitions/surveyStatus"
                 },
@@ -4393,6 +4504,12 @@
                 "count": {
                     "type": "integer",
                     "minimum": 1
+                },
+                "federated": {
+                    "type": "boolean"
+                },
+                "local": {
+                    "type": "boolean"
                 }
             },
             "additionalProperties": false
@@ -4716,9 +4833,16 @@
         },
         "answerIdentifierQuery": {
             "type": "object",
-            "required": ["identifier"],
             "properties": {
                 "identifier": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "questionText": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "questionChoiceText": {
                     "type": "string",
                     "minLength": 1
                 },
@@ -4780,7 +4904,8 @@
                     "pattern": "^\\d{2}$"
                 }
             },
-            "maxProperties": 2,
+            "minProperties": 2,
+            "maxProperties": 4,
             "additionalProperties": false
         },
         "newRuleChoicesItem": {

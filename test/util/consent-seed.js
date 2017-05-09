@@ -5,8 +5,9 @@
 const models = require('../../models');
 const SPromise = require('../../lib/promise');
 
-module.exports = function consentSeed(example) {
-    const consentTypePxs = example.consentTypes.map(consentType => models.consentType.createConsentType(consentType));
+module.exports = function consentSeed(example, inputModels) {
+    const m = inputModels || models;
+    const consentTypePxs = example.consentTypes.map(consentType => m.consentType.createConsentType(consentType));
     return SPromise.all(consentTypePxs)
         .then(ids => example.consentTypes.reduce((r, consentType, index) => {
             r[consentType.name] = ids[index].id;
@@ -21,10 +22,10 @@ module.exports = function consentSeed(example) {
                 name,
                 sections: sectionsByName.map(sectionName => typeMap[sectionName]),
             }));
-            const documentsPx = documents.map(doc => models.consentDocument.createConsentDocument(doc));
+            const documentsPx = documents.map(doc => m.consentDocument.createConsentDocument(doc));
             return SPromise.all(documentsPx)
                 .then(() => {
-                    const consentsPx = consents.map(consent => models.consent.createConsent(consent));
+                    const consentsPx = consents.map(consent => m.consent.createConsent(consent));
                     return SPromise.all(consentsPx);
                 });
         });

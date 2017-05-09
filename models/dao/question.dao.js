@@ -219,30 +219,33 @@ module.exports = class QuestionDAO extends Translatable {
             })
             .then((question) => {
                 if (options.federated) {
-                    return this.db.AnswerIdentifier.findAll({
-                        raw: true,
-                        attributes: ['identifier', 'questionChoiceId'],
-                        where: { type: 'federated', questionId: question.id },
-                    })
-                        .then((result) => {
-                            if (result.length < 1) {
-                                return RRError.reject('questionNotFederated');
-                            }
-                            if (['choice', 'choices'].indexOf(question.type) < 0) {
-                                question.answerIdentifier = result[0].identifier;  // eslint-disable-line no-param-reassign, max-len
-                                return question;
-                            }
-                            const map = new Map(result.map(({ questionChoiceId, identifier }) => [questionChoiceId, identifier]));  // eslint-disable-line no-param-reassign, max-len
-                            question.choices.forEach((choice) => {
-                                const identifier = map.get(choice.id);
-                                if (!identifier) {
-                                    throw new RRError('questionNotFederatedChoice', choice.text);
-                                }
-                                choice.identifier = identifier;   // eslint-disable-line no-param-reassign, max-len
-                            });
-                            return question;
-                        });
+                    return this.updateFederatedIdentifier(question);
                 }
+                return question;
+            });
+    }
+
+    updateFederatedIdentifier(question) {
+        return this.db.AnswerIdentifier.findAll({
+            raw: true,
+            attributes: ['identifier', 'questionChoiceId'],
+            where: { type: 'federated', questionId: question.id },
+        })
+            .then((result) => {
+                if (result.length < 1) {
+                    return question;
+                }
+                if (['choice', 'choices'].indexOf(question.type) < 0) {
+                    question.answerIdentifier = result[0].identifier;  // eslint-disable-line no-param-reassign, max-len
+                    return question;
+                }
+                const map = new Map(result.map(({ questionChoiceId, identifier }) => [questionChoiceId, identifier]));  // eslint-disable-line no-param-reassign, max-len
+                question.choices.forEach((r) => {
+                    const identifier = map.get(r.id);
+                    if (identifier) {
+                        r.identifier = identifier;
+                    }
+                });
                 return question;
             });
     }

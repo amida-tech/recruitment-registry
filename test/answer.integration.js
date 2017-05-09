@@ -38,7 +38,8 @@ describe('answer integration', () => {
     const hxQuestion = new History();
     const hxChoiceSet = new History();
 
-    const tests = new answerCommon.IntegrationTests(rrSuperTest, generator, hxUser, hxSurvey, hxQuestion);
+    const opt = { generator, hxUser, hxSurvey, hxQuestion };
+    const tests = new answerCommon.IntegrationTests(rrSuperTest, opt);
 
     const questionTests = new questionCommon.IntegrationTests(rrSuperTest, { generator, hxQuestion });
     const choceSetTests = new choiceSetCommon.SpecTests(generator, hxChoiceSet);

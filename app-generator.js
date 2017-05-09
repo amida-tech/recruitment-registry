@@ -84,7 +84,7 @@ const formSwaggerObject = function (schema, effectiveConfig, effectiveSwaggerJso
     return effectiveSwaggerJson;
 };
 
-const extractSchema = function (configSchema) {
+exports.extractSchema = function extractSchema(configSchema) {
     const schemas = configSchema.split('~');
     if (schemas.length > 1) {
         return schemas;
@@ -94,7 +94,7 @@ const extractSchema = function (configSchema) {
 
 exports.initialize = function initialize(app, options, callback) {
     const effectiveConfig = options.config || config;
-    const schema = extractSchema(effectiveConfig.db.schema);
+    const schema = exports.extractSchema(effectiveConfig.db.schema);
     const effSwaggerJson = options.swaggerJson || swaggerJson;
     const swaggerObject = formSwaggerObject(schema, effectiveConfig, effSwaggerJson);
     app.use(i18n.init);
@@ -105,7 +105,8 @@ exports.initialize = function initialize(app, options, callback) {
             validateResponse: true,
         }));
 
-        const m = options.models || (options.generatedb ? modelsGenerator(schema) : models);
+        const generatedb = options.generatedb || effectiveConfig.env !== 'test';
+        const m = options.models || (generatedb ? modelsGenerator(schema) : models);
         app.locals.models = m; // eslint-disable-line no-param-reassign
         if (Array.isArray(schema)) {
             app.use(multiModelsSupplyFn(m));

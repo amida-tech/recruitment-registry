@@ -69,7 +69,7 @@ describe('consent demo', () => {
 
     it('logout as super', shared.logoutFn());
 
-    it('login as user', shared.loginFn(user));
+    it('login as user', shared.loginIndexFn(hxUser, 0));
 
     // This us the actual signing of the terms of use document
 

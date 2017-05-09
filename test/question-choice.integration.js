@@ -38,7 +38,8 @@ describe('question choice integration', () => {
     const questionTests = new questionCommon.IntegrationTests(rrSuperTest, { generator, hxQuestion });
     const choiceSetTests = new choiceSetCommon.IntegrationTests(rrSuperTest, generator, hxChoiceSet);
     const surveyTests = new surveyCommon.IntegrationTests(rrSuperTest, generator, hxSurvey, hxQuestion);
-    const answerTests = new answerCommon.IntegrationTests(rrSuperTest, generator, hxUser, hxSurvey, hxQuestion);
+    const opt = { generator, hxUser, hxSurvey, hxQuestion };
+    const answerTests = new answerCommon.IntegrationTests(rrSuperTest, opt);
 
     before(shared.setUpFn());
 

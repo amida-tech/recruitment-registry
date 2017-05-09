@@ -5,6 +5,7 @@
 process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
+const _ = require('lodash');
 
 const SharedIntegration = require('../util/shared-integration');
 const RRSuperTest = require('../util/rr-super-test');
@@ -66,7 +67,12 @@ describe('create-show-survey use case', () => {
     it('show the new survey', function showNew() {
         return rrSuperTest.get(`/surveys/${rrSuperTest.lastId}`, true, 200)
             .then((res) => {
-                comparator.survey(surveyExamples.example, res.body);
+                let expected = surveyExamples.example;
+                if (rrSuperTest.userRole === 'admin') {
+                    expected = _.cloneDeep(expected);
+                    expected.authorId = rrSuperTest.userId;
+                }
+                comparator.survey(expected, res.body);
             });
     });
 });

@@ -28,7 +28,7 @@ Recruitment Registry API
 > Note: See [Configuration](#Configuration) for more about configuring your `.env` file.
 7. Populate your database:  
 `node syncDecember15.js`
-8. Run:  
+8. Run:
 `npm start`
 
 ### Installing Python and Visual C++ Build Tools (Windows)
@@ -38,7 +38,7 @@ installing the needed components for node-gyp. And all users will probably have 
 
 1. Download & install Python 2.7.
 2. Set the Environmental Variables for the Python install, including the variable 'PYTHON.'
-3. Download & install [Visual C++ Build Tools – (visualstudio.com)](http://landinghub.visualstudio.com/visual-cpp-build-tools).
+3. Download & install [Visual C++ Build Tools](http://landinghub.visualstudio.com/visual-cpp-build-tools).
 4. Run 'npm config set msvs_version 2015 --global'
 5. If errors continue to occur, update to the latest version of npm with 'npm install npm -g'
 

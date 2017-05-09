@@ -15,6 +15,7 @@ const smtpServer = require('smtp-server');
 const SharedIntegration = require('./util/shared-integration');
 const RRSuperTest = require('./util/rr-super-test');
 const Generator = require('./util/generator');
+const History = require('./util/history');
 
 const config = require('../config');
 
@@ -26,6 +27,7 @@ describe('reset-token integration', () => {
     const shared = new SharedIntegration(rrSuperTest, generator);
     const userExample = generator.newUser();
     const surveyExample = generator.newSurvey();
+    const hxUser = new History();
 
     // -------- set up system (syncAndLoadAlzheimer)
 
@@ -101,15 +103,18 @@ describe('reset-token integration', () => {
 
     let answers;
 
-    it('fill user profile and submit', (done) => {
+    it('fill user profile and submit', function registerUser() {
         answers = generator.answerQuestions(survey.questions);
         const user = userExample;
-        rrSuperTest.post('/profiles', { user, answers }, 201).end(done);
+        return rrSuperTest.post('/profiles', { user, answers }, 201)
+            .then((res) => {
+                hxUser.push(user, { id: res.body.id });
+            });
     });
 
     // --------- login
 
-    it('verify user can login', shared.loginFn(userExample));
+    it('verify user can login', shared.loginIndexFn(hxUser, 0));
 
     let token = null;
 
@@ -206,17 +211,18 @@ describe('reset-token integration', () => {
         expect(token).to.not.equal(null);
     });
 
-    it('reset password', (done) => {
+    it('reset password', function resetPassword() {
         const password = 'newPassword';
-        rrSuperTest.post('/users/password', { token, password }, 204).end(done);
+        return rrSuperTest.post('/users/password', { token, password }, 204);
     });
 
     it('verify user can not login with old password', shared.badLoginFn(userExample));
 
-    it('verify user can login', shared.loginFn({
-        username: userExample.username,
-        password: 'newPassword',
-    }));
+    it('update client password', function updatePassword() {
+        hxUser.client(0).password = 'newPassword';
+    });
+
+    it('verify user can login', shared.loginIndexFn(hxUser, 0));
 
     after((done) => {
         server.close(done);

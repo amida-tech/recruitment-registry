@@ -27,7 +27,7 @@ describe('answer import-export unit', function answerIOSpec() {
     const hxUser = new History();
     const hxSurvey = new SurveyHistory();
     const surveyTests = new surveyCommon.SpecTests(generator, hxSurvey);
-    const answerTests = new answerCommon.SpecTests(generator, hxUser, hxSurvey);
+    const answerTests = new answerCommon.SpecTests({ generator, hxUser, hxSurvey });
 
     before(shared.setUpFn());
 

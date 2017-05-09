@@ -32,8 +32,12 @@ module.exports = class SurveyHistory extends History {
         return this.filterListServersByStatus(result, status);
     }
 
-    listTranslatedServers(language, status) {
-        const result = super.listTranslatedServers(language);
+    listTranslatedServers(language, status = 'published', options = {}) {
+        const fields = ['id', 'name', 'description', 'status'];
+        if (options.admin) {
+            fields.push('authorId');
+        }
+        const result = super.listTranslatedServers(language, fields);
         return this.filterListServersByStatus(result, status);
     }
 
@@ -56,7 +60,12 @@ module.exports = class SurveyHistory extends History {
     listServersByScope(options = {}) {
         const scope = options.scope || 'summary';
         if (scope === 'summary') {
-            return this.listServers(undefined, undefined, options.status);
+            const fields = ['id', 'name', 'description', 'status'];
+            if (options.admin) {
+                fields.push('authorId');
+                fields.push('consentTypeIds');
+            }
+            return this.listServers(fields, undefined, options.status);
         }
         if (scope === 'export') {
             const result = this.listServers(['id', 'name', 'description', 'questions', 'sections', 'status']);
