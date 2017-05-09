@@ -1,7 +1,5 @@
 'use strict';
 
-/* eslint no-param-reassign: 0, max-len: 0 */
-
 const answerSequence = [{ // user 0, survey 0
     userIndex: 0,
     surveyIndex: 0,
@@ -205,6 +203,16 @@ const searchCases = [{
         answerInfo: [{
             questionType: 'choice',
             choiceIndex: 3,
+        }],
+    }],
+}, {
+    count: 2,
+    userIndices: [0, 1],
+    answers: [{
+        surveyIndex: 2,
+        answerInfo: [{
+            questionType: 'choices',
+            choiceIndices: [2, 3],
         }],
     }],
 }, {

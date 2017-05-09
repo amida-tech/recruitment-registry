@@ -66,7 +66,20 @@ const answerGenerators = {
         const answers = spec.choiceIndices.map(fn);
         return { answers };
     },
+    $idProperty: 'questionId',
 };
+
+const filterAnswerGenerators = Object.assign(Object.create(answerGenerators), {
+    choices(questionId, spec, choiceIdMap) {
+        const choiceIds = choiceIdMap.get(questionId);
+        const answers = spec.choiceIndices.map(choiceIndex => ({
+            choice: choiceIds[choiceIndex],
+            boolValue: true,
+        }));
+        return { answers };
+    },
+    $idProperty: 'id',
+});
 
 const federatedAnswerGenerators = {
     text(question, spec) {
@@ -92,7 +105,7 @@ const federatedAnswerGenerators = {
             const choice = question.choices[choiceIndex];
             const identifier = choice.identifier;
             const questionChoiceText = choice.text;
-            return { identifier, questionText, questionChoiceText };
+            return { identifier, questionText, questionChoiceText, boolValue: true };
         });
         return identifiers;
     },
@@ -219,13 +232,15 @@ const Tests = class BaseTests {
         };
     }
 
-    answerInfoToObject(surveyIndex, answerInfo, idProperty = 'questionId') {
+    answerInfoToObject(surveyIndex, answerInfo, forFilter) {
         return answerInfo.map((info) => {
             const questionType = info.questionType;
             const questionIndex = this.typeIndexMap.get(questionType)[surveyIndex];
             const questionId = this.hxQuestion.id(questionIndex);
-            const answerGenerator = answerGenerators[questionType];
+            const generators = forFilter ? filterAnswerGenerators : answerGenerators;
+            const answerGenerator = generators[questionType];
             const answerObject = answerGenerator(questionId, info, this.choiceIdMap);
+            const idProperty = generators.$idProperty;
             return Object.assign({ [idProperty]: questionId }, answerObject);
         });
     }
@@ -247,7 +262,7 @@ const Tests = class BaseTests {
 
     formCriteria(inputAnswers) {
         const rawQuestions = inputAnswers.reduce((r, { surveyIndex, answerInfo }) => {
-            const answers = this.answerInfoToObject(surveyIndex, answerInfo, 'id');
+            const answers = this.answerInfoToObject(surveyIndex, answerInfo, true);
             r.push(...answers);
             return r;
         }, []);
@@ -407,7 +422,7 @@ const SpecTests = class SearchSpecTests extends Tests {
         return function createAnswers() {
             const userId = hxUser.id(userIndex);
             const surveyId = hxSurvey.id(surveyIndex);
-            const answers = self.answerInfoToObject(surveyIndex, answerInfo);
+            const answers = self.answerInfoToObject(surveyIndex, answerInfo, false);
             const input = { userId, surveyId, answers };
             return m.answer.createAnswers(input)
                 .then(() => hxAnswers.push(userIndex, surveyIndex, answers));
@@ -415,14 +430,17 @@ const SpecTests = class SearchSpecTests extends Tests {
     }
 
     compareExportToCohortFn(store, limit) { // eslint-disable-line class-methods-use-this
+        const sortFields = ['userId', 'surveyId', 'questionId', 'questionChoiceId', 'value'];
         return function compareExportToCohort() {
             const converter = new ImportCSVConverter({ checkType: false });
             const streamFullExport = intoStream(store.allContent);
             return converter.streamToRecords(streamFullExport)
-                .then((recordsFullExport) => {
+                .then((recordsFullExportRaw) => {
+                    const recordsFullExport = _.sortBy(recordsFullExportRaw, sortFields);
                     const streamCohort = intoStream(store.cohort);
                     return converter.streamToRecords(streamCohort)
-                        .then((recordsCohort) => {
+                        .then((recordsCohortRaw) => {
+                            const recordsCohort = _.sortBy(recordsCohortRaw, sortFields);
                             expect(recordsCohort.length).to.be.above(0);
                             if (limit) {
                                 const userIdSet = new Set(recordsCohort.map(r => r.userId));
@@ -718,7 +736,7 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
         const rrSuperTest = this.rrSuperTest;
         return function createAnswers() {
             const surveyId = hxSurvey.id(surveyIndex);
-            const answers = self.answerInfoToObject(surveyIndex, answerInfo);
+            const answers = self.answerInfoToObject(surveyIndex, answerInfo, false);
             const input = { surveyId, answers, language: 'en' };
             return rrSuperTest.post('/answers', input, 204)
                 .expect(() => hxAnswers.push(userIndex, surveyIndex, answers));
