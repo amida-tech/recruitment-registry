@@ -72,10 +72,13 @@ const answerGenerators = {
 const filterAnswerGenerators = Object.assign(Object.create(answerGenerators), {
     choices(questionId, spec, choiceIdMap) {
         const choiceIds = choiceIdMap.get(questionId);
-        const answers = spec.choiceIndices.map(choiceIndex => ({
-            choice: choiceIds[choiceIndex],
-            boolValue: true,
-        }));
+        const answers = spec.choiceIndices.map((choiceIndex) => {
+            const result = { choice: choiceIds[choiceIndex] };
+            if (!spec.ignoreBoolValue) {
+                result.boolValue = true;
+            }
+            return result;
+        });
         return { answers };
     },
     $idProperty: 'id',

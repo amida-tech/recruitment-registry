@@ -461,26 +461,43 @@ module.exports = class AnswerDAO extends Base {
             return RRError.reject('searchQuestionRepeat');
         }
 
-        // find answers that match one of the search criteria
-        const where = { $or: [] };
-        criteria.questions.forEach((question) => {
-            answerCommon.prepareFilterAnswersForDB(question.answers).forEach((answer) => {
-                where.$or.push({
-                    question_id: question.id,
-                    value: ('value' in answer) ? answer.value.toString() : null,
-                    question_choice_id: answer.questionChoiceId || null,
+        return this.db.Question.findAll({
+            where: { id: { $in: questionIds } },
+            raw: true,
+            attributes: ['id', 'type'],
+        })
+            .then(records => new Map(records.map(r => [r.id, r.type])))
+            .then((typeMap) => {
+                // find answers that match one of the search criteria
+                const where = { $or: [] };
+                criteria.questions.forEach((question) => {
+                    answerCommon.prepareFilterAnswersForDB(question.answers).forEach((answer) => {
+                        let value = ('value' in answer) ? answer.value.toString() : null;
+                        if (answer.questionChoiceId && !value) {
+                            const type = typeMap.get(question.id);
+                            if (type === 'choices') {
+                                value = 'true';
+                            }
+                        }
+                        where.$or.push({
+                            question_id: question.id,
+                            value,
+                            question_choice_id: answer.questionChoiceId || null,
+                        });
+                    });
                 });
+
+                // find users with a matching answer for each question
+                // (i.e., users who match all criteria)
+                const include = [{ model: this.db.User, as: 'user', attributes: [] }];
+                const having = this.where(this.literal('COUNT(DISTINCT(question_id))'), n);
+                const group = ['user_id'];
+
+                // count resulting users
+                const attributes = ['userId'];
+                const options = { raw: true, where, attributes, include, having, group };
+                return this.db.Answer.findAll(options);
             });
-        });
-
-        // find users with a matching answer for each question (i.e., users who match all criteria)
-        const include = [{ model: this.db.User, as: 'user', attributes: [] }];
-        const having = this.where(this.literal('COUNT(DISTINCT(question_id))'), n);
-        const group = ['user_id'];
-
-        // count resulting users
-        const attributes = ['userId'];
-        return this.db.Answer.findAll({ raw: true, where, attributes, include, having, group });
     }
 
     countAllParticipants() {

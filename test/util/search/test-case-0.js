@@ -216,6 +216,17 @@ const searchCases = [{
         }],
     }],
 }, {
+    count: 2,
+    userIndices: [0, 3],
+    answers: [{
+        surveyIndex: 2,
+        answerInfo: [{
+            ignoreBoolValue: true,
+            questionType: 'choices',
+            choiceIndices: [4, 5],
+        }],
+    }],
+}, {
     count: 0,
     userIndices: [],
     answers: [{
