@@ -115,6 +115,7 @@ module.exports = class CohortDAO extends Base {
                 } else {
                     newCohort.name = filter.name;
                 }
+                newCohort.count = count || 0;
                 return this.db.Cohort.create(newCohort)
                     .then(({ id }) => {
                         const cohortId = { cohortId: id };
@@ -129,15 +130,16 @@ module.exports = class CohortDAO extends Base {
 
     getCohort(id) {
         const findOptions = this.findOptions();
+        findOptions.attributes.push('count');
         return this.db.Cohort.findById(id, findOptions);
     }
 
-    patchCohort(id, { count }) {
+    patchCohort(id) {
         return this.db.Cohort.findById(id, {
             raw: true,
-            attributes: ['federated', 'local'],
+            attributes: ['federated', 'local', 'count'],
         })
-            .then(({ federated, local }) => {
+            .then(({ federated, local, count }) => {
                 const where = { cohortId: id };
                 const order = this.qualifiedCol('cohort_answer', 'id');
                 return answerCommon.getFilterAnswers(this, this.db.CohortAnswer, { where, order })

@@ -48,7 +48,7 @@ const SpecTests = class FilterSpecTests {
             return models.filter.listFilters()
                 .then((filters) => {
                     expect(filters.length).to.equal(count);
-                    const fields = ['id', 'name', 'maxCount', 'createdAt'];
+                    const fields = ['id', 'name', 'createdAt'];
                     const expected = hxFilter.listServers(fields);
                     expect(filters).to.deep.equal(expected);
                 });
@@ -131,7 +131,7 @@ const IntegrationTests = class FilterIntegrationTests {
                 .then((res) => {
                     const filters = res.body;
                     expect(filters.length).to.equal(count);
-                    const fields = ['id', 'name', 'maxCount', 'createdAt'];
+                    const fields = ['id', 'name', 'createdAt'];
                     const expected = hxFilter.listServers(fields);
                     expect(filters).to.deep.equal(expected);
                 });

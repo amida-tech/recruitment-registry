@@ -17,9 +17,6 @@ module.exports = class FilterGenerator {
         this.index += 1;
         const index = this.index;
         const filter = { name: `name_${index}` };
-        if ((index % 5) !== 2) {
-            filter.maxCount = (index + 1) * 50;
-        }
         return filter;
     }
 

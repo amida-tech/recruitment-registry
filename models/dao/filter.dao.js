@@ -13,14 +13,11 @@ module.exports = class FilterDAO extends Base {
 
     attributes() {
         const created = this.timestampColumn('filter', 'created');
-        return ['id', 'name', 'maxCount', created];
+        return ['id', 'name', created];
     }
 
-    createFilterTx({ name, maxCount, questions }, transaction) {
+    createFilterTx({ name, questions }, transaction) {
         const record = { name };
-        if (maxCount) {
-            record.maxCount = maxCount;
-        }
         return this.db.Filter.create(record, { transaction })
             .then(({ id }) => {
                 const filterAnswers = { filterId: id, questions };
@@ -61,16 +58,13 @@ module.exports = class FilterDAO extends Base {
             .then(records => records.map(record => _.omitBy(record, _.isNil)));
     }
 
-    patchFilterTx(id, { name, maxCount, questions }, transaction) {
+    patchFilterTx(id, { name, questions }, transaction) {
         return SPromise.resolve()
             .then(() => {
-                if (name || maxCount) {
-                    const record = {};
+                if (name) {
+                    const record = { name };
                     if (name) {
                         record.name = name;
-                    }
-                    if (maxCount) {
-                        record.maxCount = maxCount;
                     }
                     return this.db.Filter.update(record, { where: { id }, transaction });
                 }

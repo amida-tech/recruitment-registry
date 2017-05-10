@@ -599,7 +599,7 @@ const SpecTests = class SearchSpecTests extends Tests {
         const self = this;
         const m = this.models;
         return function createFilter() {
-            const filter = { name: `name_${index}`, maxCount: 5 };
+            const filter = { name: `name_${index}` };
             Object.assign(filter, self.formCriteria(searchCase.answers));
             return m.filter.createFilter(filter)
                 .then(({ id }) => { store.id = id; });
@@ -741,10 +741,6 @@ const SpecTests = class SearchSpecTests extends Tests {
                         cohortId += 1;
 
                         it(`patch filter ${index} for empty`, self.patchFilterFn(testCase0.emptyCase, store));
-
-                        cohortIndex = caseLen * index;
-                        it(`patch cohort ${cohortIndex} filter edit (no count)`, self.patchCohortFn(cohortId - 1, store, false));
-                        it(`compare cohort ${cohortIndex} filter edit`, self.compareExportToCohortFn(store, false));
                     }
                 });
             });
@@ -918,7 +914,7 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
         const self = this;
         const rrSuperTest = this.rrSuperTest;
         return function createFilter() {
-            const filter = { name: `name_${index}`, maxCount: 5 };
+            const filter = { name: `name_${index}` };
             Object.assign(filter, self.formCriteria(searchCase.answers));
             return rrSuperTest.post('/filters', filter, 201)
                 .then((res) => { store.id = res.body.id; });
@@ -1075,11 +1071,6 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
                         it(`patch cohort ${cohortIndex} (limited count)`, self.patchCohortFn(cohortId, store, cohortPatchFilepath, cohortOptions));
                         it(`compare cohort ${cohortIndex}`, self.compareExportToCohortFn(filepath, cohortPatchFilepath, true));
                         cohortId += 1;
-
-                        cohortIndex = caseLen * index;
-                        it(`patch filter ${index} for empty`, self.patchFilterFn(testCase0.emptyCase, store));
-                        it(`patch cohort ${cohortIndex} filter edit (no count)`, self.patchCohortFn(cohortId - 1, store, cohortPatchFilepath, false));
-                        it(`compare cohort ${cohortIndex} filter edit`, self.compareExportToCohortFn(filepath, cohortPatchFilepath, false));
                     }
                 });
 

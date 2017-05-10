@@ -89,7 +89,7 @@ describe('federated search integration', function federatedSearchIntegration() {
 
         const store = {};
         it('create filter', function createFilter() {
-            const filter = { name: 'name_999', maxCount: 5 };
+            const filter = { name: 'name_999' };
             const searchTestsMap = tests.searchTestsMap;
             const searchTests = searchTestsMap.get('current');
             Object.assign(filter, searchTests.formCriteria(testCase0.searchCases[0].answers));

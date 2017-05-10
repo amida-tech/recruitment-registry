@@ -11,10 +11,6 @@ const filter = function (queryInterface, Sequelize) {
             type: Sequelize.TEXT,
             allowNull: false,
         },
-        maxCount: {
-            type: Sequelize.INTEGER,
-            field: 'max_count',
-        },
         createdAt: {
             type: Sequelize.DATE,
             field: 'created_at',
@@ -120,6 +116,9 @@ const cohort = function (queryInterface, Sequelize) {
         },
         name: {
             type: Sequelize.TEXT,
+        },
+        count: {
+            type: Sequelize.INTEGER,
         },
         createdAt: {
             type: Sequelize.DATE,

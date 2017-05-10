@@ -53,7 +53,6 @@ describe('filter unit', function filterUnit() {
         const id = hxQuestion.id(0);
         const filter = {
             name: 'name',
-            maxCount: 0,
             questions: [{ id }],
         };
         return models.filter.createFilter(filter)
@@ -64,7 +63,6 @@ describe('filter unit', function filterUnit() {
         const id = hxQuestion.id(0);
         const filter = {
             name: 'name',
-            maxCount: 0,
             questions: [{ id, answers: [] }],
         };
         return models.filter.createFilter(filter)
@@ -98,7 +96,7 @@ describe('filter unit', function filterUnit() {
     });
 
     [22, 23].forEach((index) => {
-        const fields = ['name', 'maxCount'];
+        const fields = ['name'];
         it(`patch filter ${index} name`, tests.patchFilterFn(index, fields));
         it(`verify filter ${index}`, tests.verifyFilterFn(index));
     });
@@ -110,7 +108,7 @@ describe('filter unit', function filterUnit() {
     });
 
     [26, 27].forEach((index) => {
-        const fields = ['name', 'maxCount', 'questions'];
+        const fields = ['name', 'questions'];
         it(`patch filter ${index} name`, tests.patchFilterFn(index, fields));
         it(`verify filter ${index}`, tests.verifyFilterFn(index));
     });
