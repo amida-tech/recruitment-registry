@@ -6,7 +6,9 @@
 
 process.env.NODE_ENV = 'test';
 
+const _ = require('lodash');
 const chai = require('chai');
+const intoStream = require('into-stream');
 
 const tokener = require('../lib/tokener');
 const Generator = require('./util/generator');
@@ -14,6 +16,7 @@ const History = require('./util/history');
 const registryCommon = require('./util/registry-common');
 const federatedCommon = require('./util/search/federated-search-common');
 const testCase0 = require('./util/search/test-case-0');
+const ImportCSVConverter = require('../import/csv-converter.js');
 
 const expect = chai.expect;
 
@@ -88,6 +91,39 @@ describe('federated search unit', function federatedSearchUnit() {
             const searchTests = searchTestsMap.get('current');
             const cohortOptions = { limited: false, federated: true, federatedModels: tests.models };
             return searchTests.createCohortFn(store, cohortOptions)();
+        });
+
+        it('compare cohort', function compareCohort() {
+            const fields = ['registryId', 'userId', 'questionText', 'questionChoiceText', 'identifier', 'value'];
+            const converter = new ImportCSVConverter({ checkType: false });
+            const streamFullExport = intoStream(store.cohort);
+            return converter.streamToRecords(streamFullExport)
+                .then((cohortResult) => {
+                    const searchTestsMap = tests.searchTestsMap;
+                    const searchTests = searchTestsMap.get('current');
+                    const { userIndices } = testCase0.searchCases[0];
+                    const answerSequence = testCase0.answerSequence;
+                    const loneExpected = searchTests.federatedListAnswersExpected(answerSequence, userIndices);
+                    const rawExpected = _.range(5).reduce((r, index) => {
+                        const wr = loneExpected.map((p) => {
+                            const row = Object.assign({ registryId: index.toString() }, p);
+                            row.userId = row.userId.toString();
+                            return row;
+                        });
+                        r.push(...wr);
+                        return r;
+                    }, []);
+                    cohortResult.forEach((r) => {
+                        ['identifier', 'value', 'questionChoiceText'].forEach((key) => {
+                            if (!r[key]) {
+                                delete r[key];
+                            }
+                        });
+                    });
+                    const expected = _.sortBy(rawExpected, fields);
+                    const result = _.sortBy(cohortResult, fields);
+                    expect(result).to.deep.equal(expected);
+                });
         });
     });
 
