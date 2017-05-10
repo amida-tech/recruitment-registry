@@ -15,13 +15,10 @@ module.exports = {
     },
     tmpDirectory: path.join(__dirname, '../test/generated'),
     constantContact: {
-      baseApiUrl: 'http://turnip.test',
-      token: 'turnip',
-      apiKey: 'turnip api',
-      secret: 'secret turnip',
-      listId: 42,
+        baseApiUrl: 'http://turnip.test',
+        token: 'turnip',
+        apiKey: 'turnip api',
+        secret: 'secret turnip',
+        listId: 42,
     },
-    logging: {
-        level: 'info',
-    }
 };

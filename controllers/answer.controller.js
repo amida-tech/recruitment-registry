@@ -122,9 +122,9 @@ exports.federatedSearchAnswers = function federatedSearchAnswers(req, res) {
         .catch(shared.handleError(res));
 };
 
-exports.federatedListParticipants = function federatedListParticipants(req, res) {
+exports.federatedListAnswers = function federatedListAnswers(req, res) {
     const query = _.get(req, 'swagger.params.query.value');
-    req.models.answer.federatedListParticipants(query)
+    req.models.answer.federatedListAnswers(query)
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };

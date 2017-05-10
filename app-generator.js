@@ -20,7 +20,6 @@ const logger = require('./logger');
 const jsutil = require('./lib/jsutil');
 const i18n = require('./i18n');
 
-/* jshint unused:false*/
 const errHandler = function (err, req, res, next) { // eslint-disable-line no-unused-vars
     logger.error(err);
     const jsonErr = jsutil.errToJSON(err);
@@ -51,7 +50,6 @@ const userAudit = function (req, res, next) {
     next();
 };
 
-/* jshint unused:false*/
 const modelsSupplyFn = function (inputModels) {
     return function modelsSupply(req, res, next) { // eslint-disable-line no-unused-vars
         req.models = inputModels;
@@ -59,7 +57,6 @@ const modelsSupplyFn = function (inputModels) {
     };
 };
 
-/* jshint unused:false*/
 const multiModelsSupplyFn = function (inputModels) {
     return function multiModelsSupply(req, res, next) { // eslint-disable-line no-unused-vars
         const schema = _.get(req, 'swagger.params.schema.value');
@@ -183,7 +180,6 @@ exports.newExpress = function newExpress(options = {}) {
     app.enable('trust proxy');
     app.use(passport.initialize());
 
-    /* jshint unused:vars */
     app.use((req, res, next) => {
         const isAuth = req.url.indexOf('/auth/basic') >= 0;
         const token = _.get(req, 'cookies.rr-jwt-token');

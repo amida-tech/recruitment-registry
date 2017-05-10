@@ -13,7 +13,7 @@ const processFederatedCohortForRegistry = function (registry, federatedModels, f
     const { name, schema, url } = registry;
     if (schema) {
         const models = federatedModels[schema];
-        return models.answer.federatedListParticipants(filter);
+        return models.answer.federatedListAnswers(filter);
     }
     return registryCommon.requestPost(name, filter, url, 'answers/federated');
 };
@@ -71,7 +71,7 @@ module.exports = class CohortDAO extends Base {
                                 return answers;
                             });
                     });
-                    const px = this.answer.federatedListParticipants(fc)
+                    const px = this.answer.federatedListAnswers(fc)
                         .then((answers) => {
                             answers.forEach(r => (r.registryId = 0));
                             return answers;

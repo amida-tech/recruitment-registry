@@ -334,6 +334,16 @@ const comparator = {
         expected.id = server.id;
         this.createdAt(server);
         expected.createdAt = server.createdAt;
+        expected.questions.forEach(({ answers }, index) => {
+            answers.forEach((answer, index2) => {
+                if (answer.choice) {
+                    const serverAnswer = server.questions[index].answers[index2];
+                    if ('boolValue' in serverAnswer) {
+                        answer.boolValue = serverAnswer.boolValue;
+                    }
+                }
+            });
+        });
         expect(server).to.deep.equal(expected);
     },
     cohort(client, server) {

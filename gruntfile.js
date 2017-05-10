@@ -6,7 +6,6 @@ const swaggerTools = require('swagger-tools');
 const swaggerObject = require('./swagger.json');
 
 module.exports = function gruntmain(grunt) {
-    grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-mocha-test');
     grunt.loadNpmTasks('grunt-shell');
@@ -61,20 +60,6 @@ module.exports = function gruntmain(grunt) {
             'index.js',
             'app.js',
         ],
-        jshint: {
-            files: [
-                '**/*.js',
-                '!node_modules/**/*.js',
-                '!coverage/**/*.js',
-                'gruntfile.js',
-                'index.js',
-                'app.js',
-                '.eslintrc.js',
-            ],
-            options: {
-                jshintrc: '.jshintrc',
-            },
-        },
         eslint: {
             options: {
                 configFile: '.eslintrc.js',
@@ -122,7 +107,7 @@ module.exports = function gruntmain(grunt) {
     grunt.registerTask('mocha', ['env:test', 'mochaTest']);
     grunt.registerTask('coverage', ['shell:runIstanbul']);
     grunt.registerTask('swagger', 'Validates api definition', swaggerValidation);
-    grunt.registerTask('default', ['eslint', 'jshint', 'swagger', 'mocha']);
+    grunt.registerTask('default', ['eslint', 'swagger', 'mocha']);
 
     // Print a timestamp (useful for when watching)
     grunt.registerTask('timestamp', () => {

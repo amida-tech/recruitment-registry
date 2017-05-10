@@ -66,7 +66,23 @@ const answerGenerators = {
         const answers = spec.choiceIndices.map(fn);
         return { answers };
     },
+    $idProperty: 'questionId',
 };
+
+const filterAnswerGenerators = Object.assign(Object.create(answerGenerators), {
+    choices(questionId, spec, choiceIdMap) {
+        const choiceIds = choiceIdMap.get(questionId);
+        const answers = spec.choiceIndices.map((choiceIndex) => {
+            const result = { choice: choiceIds[choiceIndex] };
+            if (!spec.ignoreBoolValue) {
+                result.boolValue = true;
+            }
+            return result;
+        });
+        return { answers };
+    },
+    $idProperty: 'id',
+});
 
 const federatedAnswerGenerators = {
     text(question, spec) {
@@ -92,7 +108,7 @@ const federatedAnswerGenerators = {
             const choice = question.choices[choiceIndex];
             const identifier = choice.identifier;
             const questionChoiceText = choice.text;
-            return { identifier, questionText, questionChoiceText };
+            return { identifier, questionText, questionChoiceText, boolValue: true };
         });
         return identifiers;
     },
@@ -108,6 +124,60 @@ const federatedAnswerGenerators = {
         const identifier = question.answerIdentifier;
         const questionText = question.text;
         const fn = boolValue => ({ identifier, boolValue, questionText });
+        return values.map(fn);
+    },
+    multichoice(question, spec) {
+        const questionText = question.text;
+        const identifiers = spec.choiceIndices.map((choiceIndex) => {
+            const choice = question.choices[choiceIndex];
+            const identifier = choice.identifier;
+            const questionChoiceText = choice.text;
+            return { identifier, questionText, questionChoiceText };
+        });
+        return identifiers;
+    },
+};
+
+const federatedAnswerListGenerators = {
+    text(question, spec) {
+        const identifier = question.answerIdentifier;
+        const questionText = question.text;
+        return [{ identifier, questionText, value: spec.value }];
+    },
+    bool(question, spec) {
+        const identifier = question.answerIdentifier;
+        const questionText = question.text;
+        return [{ identifier, questionText, value: spec.value ? 'true' : 'false' }];
+    },
+    choice(question, spec) {
+        const choice = question.choices[spec.choiceIndex];
+        const identifier = choice.identifier;
+        const questionChoiceText = choice.text;
+        const questionText = question.text;
+        return [{ identifier, questionText, questionChoiceText }];
+    },
+    choices(question, spec) {
+        const questionText = question.text;
+        const identifiers = spec.choiceIndices.map((choiceIndex) => {
+            const choice = question.choices[choiceIndex];
+            const identifier = choice.identifier;
+            const questionChoiceText = choice.text;
+            return { identifier, questionText, questionChoiceText, value: 'true' };
+        });
+        return identifiers;
+    },
+    multitext(question, spec) {
+        const values = spec.values;
+        const identifier = question.answerIdentifier;
+        const questionText = question.text;
+        const fn = textValue => ({ identifier, value: textValue, questionText });
+        return values.map(fn);
+    },
+    multibool(question, spec) {
+        const values = spec.values;
+        const identifier = question.answerIdentifier;
+        const questionText = question.text;
+        const fn = boolValue => ({ identifier, value: boolValue ? 'true' : 'false', questionText });
         return values.map(fn);
     },
     multichoice(question, spec) {
@@ -219,13 +289,15 @@ const Tests = class BaseTests {
         };
     }
 
-    answerInfoToObject(surveyIndex, answerInfo, idProperty = 'questionId') {
+    answerInfoToObject(surveyIndex, answerInfo, forFilter) {
         return answerInfo.map((info) => {
             const questionType = info.questionType;
             const questionIndex = this.typeIndexMap.get(questionType)[surveyIndex];
             const questionId = this.hxQuestion.id(questionIndex);
-            const answerGenerator = answerGenerators[questionType];
+            const generators = forFilter ? filterAnswerGenerators : answerGenerators;
+            const answerGenerator = generators[questionType];
             const answerObject = answerGenerator(questionId, info, this.choiceIdMap);
+            const idProperty = generators.$idProperty;
             return Object.assign({ [idProperty]: questionId }, answerObject);
         });
     }
@@ -241,13 +313,29 @@ const Tests = class BaseTests {
         });
     }
 
+    answerInfoToFederatedListObject(surveyIndex, answerInfo) {
+        return answerInfo.map((info) => {
+            const questionType = info.questionType;
+            const questionIndex = this.typeIndexMap.get(questionType)[surveyIndex];
+            const question = this.hxQuestion.server(questionIndex);
+            const answerGenerator = federatedAnswerListGenerators[questionType];
+            const answerObject = answerGenerator(question, info);
+            answerObject.forEach((r) => {
+                if (!r.identifier) {
+                    delete r.identifier;
+                }
+            });
+            return answerObject;
+        });
+    }
+
     getCase(index) { // eslint-disable-line class-methods-use-this
         return testCase0.searchCases[index];
     }
 
     formCriteria(inputAnswers) {
         const rawQuestions = inputAnswers.reduce((r, { surveyIndex, answerInfo }) => {
-            const answers = this.answerInfoToObject(surveyIndex, answerInfo, 'id');
+            const answers = this.answerInfoToObject(surveyIndex, answerInfo, true);
             r.push(...answers);
             return r;
         }, []);
@@ -324,6 +412,36 @@ const Tests = class BaseTests {
                 });
         };
     }
+
+    federatedListAnswersExpected(answerSequence, userIndices) {
+        const userIndexSet = new Set(userIndices);
+        return answerSequence.reduce((r, { userIndex, surveyIndex, answerInfo }) => {
+            if (!userIndexSet.has(userIndex)) {
+                return r;
+            }
+            const userId = this.hxUser.id(userIndex);
+            const answers = this.answerInfoToFederatedListObject(surveyIndex, answerInfo);
+            const flattenedAnswers = _.flatten(answers);
+            flattenedAnswers.forEach((p) => { p.userId = userId; });
+            r.push(...flattenedAnswers);
+            return r;
+        }, []);
+    }
+
+    federatedListAnswersFn({ userIndices, answers }, answerSequence) {
+        const fields = ['userId', 'questionText', 'questionChoiceText', 'identifier', 'value'];
+        const self = this;
+        return function federatedListAnswers() {
+            const criteria = self.formFederatedCriteria(answers);
+            return self.federatedListAnswersPx(criteria)
+                .then((rawRecords) => {
+                    const expectedRaw = self.federatedListAnswersExpected(answerSequence, userIndices);
+                    const expected = _.sortBy(expectedRaw, fields);
+                    const records = _.sortBy(rawRecords, fields);
+                    expect(records).to.deep.equal(expected);
+                });
+        };
+    }
 };
 
 const SpecTests = class SearchSpecTests extends Tests {
@@ -377,6 +495,11 @@ const SpecTests = class SearchSpecTests extends Tests {
         return m.answer.searchParticipantsIdentifiers(criteria);
     }
 
+    federatedListAnswersPx(federatedCriteria) {
+        const m = this.models;
+        return m.answer.federatedListAnswers(federatedCriteria);
+    }
+
     exportAnswersForUsersFn({ userIndices }, store) {
         const m = this.models;
         const self = this;
@@ -407,7 +530,7 @@ const SpecTests = class SearchSpecTests extends Tests {
         return function createAnswers() {
             const userId = hxUser.id(userIndex);
             const surveyId = hxSurvey.id(surveyIndex);
-            const answers = self.answerInfoToObject(surveyIndex, answerInfo);
+            const answers = self.answerInfoToObject(surveyIndex, answerInfo, false);
             const input = { userId, surveyId, answers };
             return m.answer.createAnswers(input)
                 .then(() => hxAnswers.push(userIndex, surveyIndex, answers));
@@ -415,14 +538,17 @@ const SpecTests = class SearchSpecTests extends Tests {
     }
 
     compareExportToCohortFn(store, limit) { // eslint-disable-line class-methods-use-this
+        const sortFields = ['userId', 'surveyId', 'questionId', 'questionChoiceId', 'value'];
         return function compareExportToCohort() {
             const converter = new ImportCSVConverter({ checkType: false });
             const streamFullExport = intoStream(store.allContent);
             return converter.streamToRecords(streamFullExport)
-                .then((recordsFullExport) => {
+                .then((recordsFullExportRaw) => {
+                    const recordsFullExport = _.sortBy(recordsFullExportRaw, sortFields);
                     const streamCohort = intoStream(store.cohort);
                     return converter.streamToRecords(streamCohort)
-                        .then((recordsCohort) => {
+                        .then((recordsCohortRaw) => {
+                            const recordsCohort = _.sortBy(recordsCohortRaw, sortFields);
                             expect(recordsCohort.length).to.be.above(0);
                             if (limit) {
                                 const userIdSet = new Set(recordsCohort.map(r => r.userId));
@@ -547,7 +673,7 @@ const SpecTests = class SearchSpecTests extends Tests {
                 });
             });
 
-            describe('search with db ids', function searchWithDbIds() {
+            describe('search participants/answers (local filters)', function searchAnswersLocal() {
                 const searchCases = testCase0.searchCases;
 
                 it('search empty criteria', self.searchEmptyFn(5));
@@ -623,12 +749,13 @@ const SpecTests = class SearchSpecTests extends Tests {
                 });
             });
 
-            describe('search with assigned identifiers', function searchWithIdentifiers() {
+            describe('search participants/answers (federated filters)', function searchWithIdentifiers() {
                 const searchCases = testCase0.searchCases;
 
                 searchCases.forEach((searchCase, index) => {
                     it(`search case ${index} count`, self.countParticipantsIdentifiersFn(searchCase));
                     it(`search case ${index} user ids`, self.searchParticipantsIdentifiersFn(searchCase));
+                    it(`search case ${index} answers`, self.federatedListAnswersFn(searchCase, testCase0.answerSequence));
                 });
             });
         };
@@ -693,6 +820,11 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
         return r.post('/answers/identifier-user-ids', criteria, 200).then(res => res.body);
     }
 
+    federatedListAnswersPx(criteria) {
+        const r = this.rrSuperTest;
+        return r.post('/answers/federated', criteria, 200).then(res => res.body);
+    }
+
     exportAnswersForUsersFn({ userIndices }, filepath) {
         const rrSuperTest = this.rrSuperTest;
         const self = this;
@@ -718,7 +850,7 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
         const rrSuperTest = this.rrSuperTest;
         return function createAnswers() {
             const surveyId = hxSurvey.id(surveyIndex);
-            const answers = self.answerInfoToObject(surveyIndex, answerInfo);
+            const answers = self.answerInfoToObject(surveyIndex, answerInfo, false);
             const input = { surveyId, answers, language: 'en' };
             return rrSuperTest.post('/answers', input, 204)
                 .expect(() => hxAnswers.push(userIndex, surveyIndex, answers));
@@ -860,7 +992,7 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
                 });
             });
 
-            describe('search with db ids', function searchWithDbIds() {
+            describe('search participants/answers (local filters)', function searchWithDbIds() {
                 it('login as super', self.shared.loginFn(config.superUser));
 
                 it('search empty criteria', self.searchEmptyFn(5));
@@ -954,7 +1086,7 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
                 it('logout as super', self.shared.logoutFn());
             });
 
-            describe('search with assigned identifiers', function searchWithIdentifiers() {
+            describe('search participants/answers (federated filters)', function searchWithIdentifiers() {
                 it('login as super', self.shared.loginFn(config.superUser));
 
                 it('search empty criteria', self.searchEmptyFn(5));
@@ -964,6 +1096,7 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
                 searchCases.forEach((searchCase, index) => {
                     it(`search case ${index} count`, self.countParticipantsIdentifiersFn(searchCase));
                     it(`search case ${index} user ids`, self.searchParticipantsIdentifiersFn(searchCase));
+                    it(`search case ${index} answers`, self.federatedListAnswersFn(searchCase, testCase0.answerSequence));
                 });
 
                 it('logout as super', self.shared.logoutFn());

@@ -106,11 +106,13 @@ const getFilterAnswerGenerator = (function getFilterAnswerGeneratorGen() {
         choiceRef(answer) { return { choice: answer.questionChoiceId }; },
         choices(answer) {
             const result = { choice: answer.questionChoiceId };
-            const choiceType = answer.choiceType;
-            if (choiceType && choiceType !== 'bool') {
-                const fn = getValueAnswerGenerator(choiceType);
-                Object.assign(result, fn(answer.value));
+            const choiceType = answer.choiceType || 'bool';
+            let value = answer.value;
+            if ((value === null) && (choiceType === 'bool')) {
+                value = 'true';
             }
+            const fn = getValueAnswerGenerator(choiceType);
+            Object.assign(result, fn(value));
             return result;
         },
     };
