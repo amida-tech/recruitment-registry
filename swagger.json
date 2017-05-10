@@ -885,7 +885,7 @@
             "x-swagger-router-controller": "answer.controller",
             "post": {
                 "summary": "Searches all answers and returns federated answers",
-                "operationId": "federatedListParticipants",
+                "operationId": "federatedListAnswers",
                 "security": [{
                     "admin": []
                 }, {

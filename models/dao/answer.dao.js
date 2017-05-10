@@ -743,51 +743,111 @@ module.exports = class AnswerDAO extends Base {
                 }));
     }
 
-    createIdentifierMap(federatedCriteria) {
-        const identifiers = federatedCriteria.map(({ identifier }) => identifier);
+    fillAnswerIdentifiers(answers) {
+        const questionIds = answers.map(r => r.questionId);
+        const questionIdSet = new Set(questionIds);
+        const uniqQuestionIds = [...questionIdSet];
         return this.db.AnswerIdentifier.findAll({
             raw: true,
-            where: { identifier: { $in: identifiers }, type: 'federated' },
+            where: { questionId: { $in: uniqQuestionIds }, type: 'federated' },
             attributes: ['identifier', 'questionId', 'questionChoiceId'],
         })
-            .then(records => records.reduce((r, record) => {
-                const { identifier, questionId, questionChoiceId } = record;
-                if (questionChoiceId) {
-                    let choiceMap = r.get(questionId);
-                    if (!choiceMap) {
-                        choiceMap = new Map();
-                        r.set(questionId, choiceMap);
-                    }
-                    choiceMap.set(questionChoiceId, identifier);
-                    return r;
+            .then((records) => {
+                if (records.length === 0) {
+                    return new Map();
                 }
-                r.set(questionId, identifier);
-                return r;
-            }, new Map()));
+                return records.reduce((r, record) => {
+                    const { identifier, questionId, questionChoiceId } = record;
+                    if (questionChoiceId) {
+                        let choiceMap = r.get(questionId);
+                        if (!choiceMap) {
+                            choiceMap = new Map();
+                            r.set(questionId, choiceMap);
+                        }
+                        choiceMap.set(questionChoiceId, identifier);
+                        return r;
+                    }
+                    r.set(questionId, identifier);
+                    return r;
+                }, new Map());
+            })
+            .then(identifierMap => answers.map((answer) => {
+                const { questionId, questionChoiceId } = answer;
+                const e = _.cloneDeep(answer);
+                const identifierInfo = identifierMap.get(questionId);
+                if (!identifierInfo) {
+                    return e;
+                }
+                if (questionChoiceId) {
+                    const identifier = identifierInfo.get(questionChoiceId);
+                    if (identifier) {
+                        return Object.assign({ identifier }, e);
+                    }
+                } else {
+                    const identifier = identifierInfo;
+                    return Object.assign({ identifier }, e);
+                }
+                return e;
+            }));
     }
 
-    federatedListParticipants(federatedCriteria) {
+    federatedListAnswers(federatedCriteria) {
         return this.searchParticipantsIdentifiers(federatedCriteria)
             .then(userIds => userIds.map(({ userId }) => userId))
             .then(userIds => this.listAnswers({ userIds, scope: 'export' }))
-            .then(answers => this.createIdentifierMap(federatedCriteria)
-                .then(identifierMap => answers.reduce((r, answer) => {
-                    const { questionId, questionChoiceId } = answer;
-                    const e = _.omit(answer, ['questionId', 'questionChoiceId']);
-                    const identifierInfo = identifierMap.get(questionId);
-                    if (!identifierInfo) {
-                        return r;
-                    }
+            .then(answers => this.fillAnswerIdentifiers(answers, federatedCriteria))
+            .then((answers) => {
+                if (answers.length === 0) {
+                    return answers;
+                }
+                const questionIds = answers.map(r => r.questionId);
+                const questionIdSet = new Set(questionIds);
+                const uniqQuestionIds = [...questionIdSet];
+                return this.db.QuestionText.findAll({
+                    raw: true,
+                    where: { questionId: { $in: uniqQuestionIds }, language_code: 'en' },
+                    attributes: ['questionId', 'text'],
+                })
+                    .then((records) => {
+                        const map = new Map(records.map(r => [r.questionId, r.text]));
+                        answers.forEach((r) => {
+                            r.questionText = map.get(r.questionId);
+                            delete r.questionId;
+                            delete r.questionType;
+                            delete r.choiceType;
+                            delete r.surveyId;
+                        });
+                        return answers;
+                    });
+            })
+            .then((answers) => {
+                if (answers.length === 0) {
+                    return answers;
+                }
+                const questionChoiceIds = answers.reduce((r, { questionChoiceId }) => {
                     if (questionChoiceId) {
-                        const identifier = identifierInfo.get(questionChoiceId);
-                        if (identifier) {
-                            r.push(Object.assign({ identifier }, e));
-                        }
-                    } else {
-                        const identifier = identifierInfo;
-                        r.push(Object.assign({ identifier }, e));
+                        r.push(questionChoiceId);
                     }
                     return r;
-                }, [])));
+                }, []);
+                if (questionChoiceIds.length === 0) {
+                    return answers;
+                }
+                return this.db.QuestionChoiceText.findAll({
+                    raw: true,
+                    where: { questionChoiceId: { $in: questionChoiceIds }, language_code: 'en' },
+                    attributes: ['questionChoiceId', 'text'],
+                })
+                    .then((records) => {
+                        const map = new Map(records.map(r => [r.questionChoiceId, r.text]));
+                        answers.forEach((r) => {
+                            if (r.questionChoiceId) {
+                                r.questionChoiceText = map.get(r.questionChoiceId);
+                            }
+                            delete r.questionChoiceId;
+                        });
+                        return answers;
+                    });
+            });
     }
 };

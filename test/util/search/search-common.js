@@ -138,6 +138,60 @@ const federatedAnswerGenerators = {
     },
 };
 
+const federatedAnswerListGenerators = {
+    text(question, spec) {
+        const identifier = question.answerIdentifier;
+        const questionText = question.text;
+        return [{ identifier, questionText, value: spec.value }];
+    },
+    bool(question, spec) {
+        const identifier = question.answerIdentifier;
+        const questionText = question.text;
+        return [{ identifier, questionText, value: spec.value ? 'true' : 'false' }];
+    },
+    choice(question, spec) {
+        const choice = question.choices[spec.choiceIndex];
+        const identifier = choice.identifier;
+        const questionChoiceText = choice.text;
+        const questionText = question.text;
+        return [{ identifier, questionText, questionChoiceText }];
+    },
+    choices(question, spec) {
+        const questionText = question.text;
+        const identifiers = spec.choiceIndices.map((choiceIndex) => {
+            const choice = question.choices[choiceIndex];
+            const identifier = choice.identifier;
+            const questionChoiceText = choice.text;
+            return { identifier, questionText, questionChoiceText, value: 'true' };
+        });
+        return identifiers;
+    },
+    multitext(question, spec) {
+        const values = spec.values;
+        const identifier = question.answerIdentifier;
+        const questionText = question.text;
+        const fn = textValue => ({ identifier, value: textValue, questionText });
+        return values.map(fn);
+    },
+    multibool(question, spec) {
+        const values = spec.values;
+        const identifier = question.answerIdentifier;
+        const questionText = question.text;
+        const fn = boolValue => ({ identifier, value: boolValue ? 'true' : 'false', questionText });
+        return values.map(fn);
+    },
+    multichoice(question, spec) {
+        const questionText = question.text;
+        const identifiers = spec.choiceIndices.map((choiceIndex) => {
+            const choice = question.choices[choiceIndex];
+            const identifier = choice.identifier;
+            const questionChoiceText = choice.text;
+            return { identifier, questionText, questionChoiceText };
+        });
+        return identifiers;
+    },
+};
+
 const Tests = class BaseTests {
     constructor(options = {}) {
         this.offset = options.offset || 5;
@@ -259,6 +313,22 @@ const Tests = class BaseTests {
         });
     }
 
+    answerInfoToFederatedListObject(surveyIndex, answerInfo) {
+        return answerInfo.map((info) => {
+            const questionType = info.questionType;
+            const questionIndex = this.typeIndexMap.get(questionType)[surveyIndex];
+            const question = this.hxQuestion.server(questionIndex);
+            const answerGenerator = federatedAnswerListGenerators[questionType];
+            const answerObject = answerGenerator(question, info);
+            answerObject.forEach((r) => {
+                if (!r.identifier) {
+                    delete r.identifier;
+                }
+            });
+            return answerObject;
+        });
+    }
+
     getCase(index) { // eslint-disable-line class-methods-use-this
         return testCase0.searchCases[index];
     }
@@ -342,6 +412,36 @@ const Tests = class BaseTests {
                 });
         };
     }
+
+    federatedListAnswersExpected(answerSequence, userIndices) {
+        const userIndexSet = new Set(userIndices);
+        return answerSequence.reduce((r, { userIndex, surveyIndex, answerInfo }) => {
+            if (!userIndexSet.has(userIndex)) {
+                return r;
+            }
+            const userId = this.hxUser.id(userIndex);
+            const answers = this.answerInfoToFederatedListObject(surveyIndex, answerInfo);
+            const flattenedAnswers = _.flatten(answers);
+            flattenedAnswers.forEach((p) => { p.userId = userId; });
+            r.push(...flattenedAnswers);
+            return r;
+        }, []);
+    }
+
+    federatedListAnswersFn({ userIndices, answers }, answerSequence) {
+        const fields = ['userId', 'questionText', 'questionChoiceText', 'identifier', 'value'];
+        const self = this;
+        return function federatedListAnswers() {
+            const criteria = self.formFederatedCriteria(answers);
+            return self.federatedListAnswersPx(criteria)
+                .then((rawRecords) => {
+                    const expectedRaw = self.federatedListAnswersExpected(answerSequence, userIndices);
+                    const expected = _.sortBy(expectedRaw, fields);
+                    const records = _.sortBy(rawRecords, fields);
+                    expect(records).to.deep.equal(expected);
+                });
+        };
+    }
 };
 
 const SpecTests = class SearchSpecTests extends Tests {
@@ -393,6 +493,11 @@ const SpecTests = class SearchSpecTests extends Tests {
     searchParticipantsIdentifiersPx(criteria) {
         const m = this.models;
         return m.answer.searchParticipantsIdentifiers(criteria);
+    }
+
+    federatedListAnswersPx(federatedCriteria) {
+        const m = this.models;
+        return m.answer.federatedListAnswers(federatedCriteria);
     }
 
     exportAnswersForUsersFn({ userIndices }, store) {
@@ -568,7 +673,7 @@ const SpecTests = class SearchSpecTests extends Tests {
                 });
             });
 
-            describe('search with db ids', function searchWithDbIds() {
+            describe('search participants/answers (local filters)', function searchAnswersLocal() {
                 const searchCases = testCase0.searchCases;
 
                 it('search empty criteria', self.searchEmptyFn(5));
@@ -644,12 +749,13 @@ const SpecTests = class SearchSpecTests extends Tests {
                 });
             });
 
-            describe('search with assigned identifiers', function searchWithIdentifiers() {
+            describe('search participants/answers (federated filters)', function searchWithIdentifiers() {
                 const searchCases = testCase0.searchCases;
 
                 searchCases.forEach((searchCase, index) => {
                     it(`search case ${index} count`, self.countParticipantsIdentifiersFn(searchCase));
                     it(`search case ${index} user ids`, self.searchParticipantsIdentifiersFn(searchCase));
+                    it(`search case ${index} answers`, self.federatedListAnswersFn(searchCase, testCase0.answerSequence));
                 });
             });
         };
@@ -712,6 +818,11 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
     searchParticipantsIdentifiersPx(criteria) {
         const r = this.rrSuperTest;
         return r.post('/answers/identifier-user-ids', criteria, 200).then(res => res.body);
+    }
+
+    federatedListAnswersPx(criteria) {
+        const r = this.rrSuperTest;
+        return r.post('/answers/federated', criteria, 200).then(res => res.body);
     }
 
     exportAnswersForUsersFn({ userIndices }, filepath) {
@@ -881,7 +992,7 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
                 });
             });
 
-            describe('search with db ids', function searchWithDbIds() {
+            describe('search participants/answers (local filters)', function searchWithDbIds() {
                 it('login as super', self.shared.loginFn(config.superUser));
 
                 it('search empty criteria', self.searchEmptyFn(5));
@@ -975,7 +1086,7 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
                 it('logout as super', self.shared.logoutFn());
             });
 
-            describe('search with assigned identifiers', function searchWithIdentifiers() {
+            describe('search participants/answers (federated filters)', function searchWithIdentifiers() {
                 it('login as super', self.shared.loginFn(config.superUser));
 
                 it('search empty criteria', self.searchEmptyFn(5));
@@ -985,6 +1096,7 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
                 searchCases.forEach((searchCase, index) => {
                     it(`search case ${index} count`, self.countParticipantsIdentifiersFn(searchCase));
                     it(`search case ${index} user ids`, self.searchParticipantsIdentifiersFn(searchCase));
+                    it(`search case ${index} answers`, self.federatedListAnswersFn(searchCase, testCase0.answerSequence));
                 });
 
                 it('logout as super', self.shared.logoutFn());
