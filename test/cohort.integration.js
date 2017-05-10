@@ -42,10 +42,26 @@ describe('cohort integration', function cohortIntegeration() {
     const createCohortFn = function (filterIndex) {
         return function createCohort() {
             const filter = filterTests.hxFilter.server(filterIndex);
-            const name = (filterIndex % 4) === 0 ? filter.name : `cohort_${cohortId}`;
-            return rrSuperTest.post('/cohorts', { filterId: filter.id, name }, 201)
+            const newCohort = { filterId: filter.id };
+            const client = {};
+            if ((filterIndex % 4) === 0) {
+                client.name = filter.name;
+            } else {
+                newCohort.name = `cohort_${cohortId}`;
+                client.name = newCohort.name;
+            }
+            const countFlag = (filterIndex % 6);
+            if (countFlag < 2) {
+                newCohort.count = filterIndex + 10;
+                client.count = filterIndex + 10;
+            } else if (countFlag < 4) {
+                newCohort.count = 0;
+                client.count = 0;
+            } else {
+                client.count = 0;
+            }
+            return rrSuperTest.post('/cohorts', newCohort, 201)
                 .then(() => {
-                    const client = { name };
                     hxCohort.push(client, { id: cohortId });
                     cohortId += 1;
                 });

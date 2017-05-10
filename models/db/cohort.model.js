@@ -19,6 +19,9 @@ module.exports = function cohort(sequelize, Sequelize, schema) {
         name: {
             type: Sequelize.TEXT,
         },
+        count: {
+            type: Sequelize.INTEGER,
+        },
         createdAt: {
             type: Sequelize.DATE,
             field: 'created_at',

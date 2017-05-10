@@ -56,7 +56,6 @@ describe('filter integration', function filterIntegration() {
         const id = hxQuestion.id(0);
         const filter = {
             name: 'name',
-            maxCount: 0,
             questions: [{ id }],
         };
         return rrSuperTest.post('/filters', filter, 400);
@@ -66,7 +65,6 @@ describe('filter integration', function filterIntegration() {
         const id = hxQuestion.id(0);
         const filter = {
             name: 'name',
-            maxCount: 0,
             questions: [{ id, answers: [] }],
         };
         return rrSuperTest.post('/filters', filter, 400);
@@ -99,7 +97,7 @@ describe('filter integration', function filterIntegration() {
     });
 
     [22, 23].forEach((index) => {
-        const fields = ['name', 'maxCount'];
+        const fields = ['name'];
         it(`patch filter ${index} name`, tests.patchFilterFn(index, fields));
         it(`verify filter ${index}`, tests.verifyFilterFn(index));
     });
@@ -111,7 +109,7 @@ describe('filter integration', function filterIntegration() {
     });
 
     [26, 27].forEach((index) => {
-        const fields = ['name', 'maxCount', 'questions'];
+        const fields = ['name', 'questions'];
         it(`patch filter ${index} name`, tests.patchFilterFn(index, fields));
         it(`verify filter ${index}`, tests.verifyFilterFn(index));
     });

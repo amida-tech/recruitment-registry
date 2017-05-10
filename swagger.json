@@ -4413,9 +4413,6 @@
                     "type": "string",
                     "minLength": 1
                 },
-                "maxCount": {
-                    "type": "integer"
-                },
                 "questions": {
                     "$ref": "#/definitions/questionQueries"
                 }
@@ -4433,9 +4430,6 @@
                 "name": {
                     "type": "string",
                     "minLength": 1
-                },
-                "maxCount": {
-                    "type": "integer"
                 },
                 "questions": {
                     "$ref": "#/definitions/questionQueries"
@@ -4461,9 +4455,6 @@
                         "type": "string",
                         "minLength": 1
                     },
-                    "maxCount": {
-                        "type": "integer"
-                    },
                     "createdAt": {
                         "type": "string",
                         "format": "dateTime"
@@ -4478,9 +4469,6 @@
                 "name": {
                     "type": "string",
                     "minLength": 1
-                },
-                "maxCount": {
-                    "type": "integer"
                 },
                 "questions": {
                     "$ref": "#/definitions/questionQueries"
@@ -4502,8 +4490,7 @@
                     "minLength": 1
                 },
                 "count": {
-                    "type": "integer",
-                    "minimum": 1
+                    "type": "integer"
                 },
                 "federated": {
                     "type": "boolean"
@@ -4525,6 +4512,9 @@
                 "name": {
                     "type": "string",
                     "minLength": 1
+                },
+                "count": {
+                    "type": "integer"
                 },
                 "createdAt": {
                     "type": "string",

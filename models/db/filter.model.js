@@ -8,10 +8,6 @@ module.exports = function filter(sequelize, Sequelize, schema) {
             type: Sequelize.TEXT,
             allowNull: false,
         },
-        maxCount: {
-            type: Sequelize.INTEGER,
-            field: 'max_count',
-        },
         createdAt: {
             type: Sequelize.DATE,
             field: 'created_at',
