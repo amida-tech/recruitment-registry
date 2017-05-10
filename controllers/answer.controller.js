@@ -88,7 +88,8 @@ exports.listAnswersMultiUserExport = function listAnswersMultiUserExport(req, re
 
 exports.searchAnswers = function searchAnswers(req, res) {
     const query = _.get(req, 'swagger.params.query.value');
-    req.models.answer.countParticipants(query)
+    const allModels = req.app.locals.models;
+    req.models.answer.countParticipants(query, allModels)
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };

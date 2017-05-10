@@ -4374,8 +4374,12 @@
             "properties": {
                 "questions": {
                     "$ref": "#/definitions/questionQueries"
+                },
+                "federated": {
+                    "type": "boolean"
                 }
-            }
+            },
+            "additionalProperties": false
         },
         "questionQuery": {
             "type": "object",

@@ -66,7 +66,7 @@ describe('federated search unit', function federatedSearchUnit() {
             }
         });
 
-        it('count search case 0', function federatedSearchCount() {
+        it('federated count search using federated criteria directly', function federatedSearchCount() {
             const searchTestsMap = tests.searchTestsMap;
             const schema0 = tests.registries[0].schema;
             const schema1 = tests.registries[1].schema;
@@ -77,6 +77,15 @@ describe('federated search unit', function federatedSearchUnit() {
             const { count, federatedCriteria: criteria } = searchTestsMap.get('current').getFederatedCriteria(0);
             return tests.models.current.answer.federatedCountParticipants(tests.models, criteria)
                 .then(result => expect(result.count).to.equal(count + count0 + count1 + count2 + count3));
+        });
+
+        it('federated count', function federatedSearchCount() {
+            const searchTestsMap = tests.searchTestsMap;
+            const searchTests = searchTestsMap.get('current');
+            const { count, criteria } = searchTests.getCriteria(0);
+            const fedCriteria = Object.assign({ federated: true }, criteria);
+            return tests.models.current.answer.countParticipants(fedCriteria, tests.models)
+                .then(result => expect(result.count).to.equal(5 * count));
         });
 
         const store = {};

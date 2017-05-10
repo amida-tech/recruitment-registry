@@ -89,6 +89,15 @@ describe('federated search integration', function federatedSearchIntegration() {
                 .then(res => expect(res.body.count).to.equal(count + count0 + count1 + count2 + count3));
         });
 
+        it('federated count', function federatedSearchCount() {
+            const searchTestsMap = tests.searchTestsMap;
+            const searchTests = searchTestsMap.get('current');
+            const { count, criteria } = searchTests.getCriteria(0);
+            const fedCriteria = Object.assign({ federated: true }, criteria);
+            return rrSuperTest.post('/answers/queries', fedCriteria, 200)
+                 .then(res => expect(res.body.count).to.equal(5 * count));
+        });
+
         const store = {};
         it('create filter', function createFilter() {
             const filter = { name: 'name_999' };
