@@ -27,7 +27,7 @@ module.exports = {
                 return AnswerType.destroy({ where: { $or: types } });
             });
     },
-    down(queryInterface) {
-        return queryInterface.removeColumn('section', 'meta');
-    },
+    // down(queryInterface) {
+    //     return queryInterface.removeColumn('section', 'meta');
+    // },
 };

@@ -97,24 +97,8 @@ module.exports = function User(sequelize, DataTypes) {
             beforeCreate(user) {
                 return user.updatePassword();
             },
-            beforeUpdate(user) {
-                if (user.changed('password')) {
-                    return user.updatePassword();
-                }
-                return null;
-            },
         },
     });
-
-    Table.prototype.authenticate = function authenticate(password) {
-        return bccompare(password, this.password)
-            .then((result) => {
-                if (!result) {
-                    throw new RRError('authenticationError');
-                }
-            });
-    };
-
 
     Table.prototype.updatePassword = function updatePassword() {
         return bchash(this.password, config.crypt.hashrounds)
@@ -122,26 +106,6 @@ module.exports = function User(sequelize, DataTypes) {
                 this.password = hash;
             });
     };
-
-    Table.prototype.updateResetPWToken = function updateResetPWToken() {
-        return randomBytes(config.crypt.resetTokenLength)
-            .then(buf => buf.toString('hex'))
-            .then(token => randomBytes(config.crypt.resetPasswordLength)
-                    .then(passwordBuf => ({
-                        token,
-                        password: passwordBuf.toString('hex'),
-                    })))
-            .then((result) => {
-                this.resetPasswordToken = result.token;
-                this.password = result.password;
-                const m = moment.utc();
-                m.add(config.crypt.resetExpires, config.crypt.resetExpiresUnit);
-                this.resetPasswordExpires = m.toISOString();
-                return this.save()
-                    .then(() => result.token);
-            });
-    };
-
 
     return Table;
 };

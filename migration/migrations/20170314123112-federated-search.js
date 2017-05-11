@@ -59,7 +59,7 @@ module.exports = {
         }));
     },
 
-    down(queryInterface) {
-        return queryInterface.dropTable('registry');
-    },
+    // down(queryInterface) {
+    //     return queryInterface.dropTable('registry');
+    // },
 };

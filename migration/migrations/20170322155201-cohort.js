@@ -231,10 +231,10 @@ module.exports = {
         .then(() => questionCommon(queryInterface, Sequelize));
     },
 
-    down(queryInterface) {
-        return queryInterface.dropTable('cohort')
-          .then(() => queryInterface.dropTable('filter_answer'))
-          .then(() => queryInterface.dropTable('filter'))
-          .then(() => queryInterface.dropColumn('question', 'common'));
-    },
+    // down(queryInterface) {
+    //     return queryInterface.dropTable('cohort')
+    //       .then(() => queryInterface.dropTable('filter_answer'))
+    //       .then(() => queryInterface.dropTable('filter'))
+    //       .then(() => queryInterface.dropColumn('question', 'common'));
+    // },
 };

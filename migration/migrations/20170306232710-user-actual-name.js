@@ -24,9 +24,9 @@ module.exports = {
             .then(() => userLastnameColumn(queryInterface, Sequelize))
             .then(() => userInstitutionColumn(queryInterface, Sequelize));
     },
-    down(queryInterface) {
-        return queryInterface.removeColumn('registry_user', 'lastname')
-            .then(() => queryInterface.removeColumn('registry_user', 'firstname'))
-            .then(() => queryInterface.removeColumn('registry_user', 'institution'));
-    },
+    // down(queryInterface) {
+    //     return queryInterface.removeColumn('registry_user', 'lastname')
+    //         .then(() => queryInterface.removeColumn('registry_user', 'firstname'))
+    //         .then(() => queryInterface.removeColumn('registry_user', 'institution'));
+    // },
 };
