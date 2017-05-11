@@ -25,12 +25,6 @@ const valueConverterByChoiceType = {
         }
         return undefined;
     },
-    integer(value) {
-        return parseInt(value, 10);
-    },
-    float(value) {
-        return parseFloat(value);
-    },
 };
 
 const valueConverterByType = {
