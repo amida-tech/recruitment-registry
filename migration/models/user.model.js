@@ -1,22 +1,13 @@
 'use strict';
 
 const bcrypt = require('bcryptjs');
-const crypto = require('crypto');
-const moment = require('moment');
 
 const config = require('../../config');
 const SPromise = require('../../lib/promise');
-const RRError = require('../../lib/rr-error');
 
 module.exports = function User(sequelize, DataTypes) {
-    const bccompare = SPromise.promisify(bcrypt.compare, {
-        context: bcrypt,
-    });
     const bchash = SPromise.promisify(bcrypt.hash, {
         context: bcrypt,
-    });
-    const randomBytes = SPromise.promisify(crypto.randomBytes, {
-        context: crypto,
     });
 
     const Table = sequelize.define('registry_user', {

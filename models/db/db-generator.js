@@ -1,7 +1,5 @@
 'use strict';
 
-const _ = require('lodash');
-
 const config = require('../../config');
 
 const sequelizeGenerator = require('./sequelize-generator');
@@ -55,6 +53,36 @@ const filterAnswer = require('./filter-answer.model');
 const cohort = require('./cohort.model');
 const cohortAnswer = require('./cohort-answer.model');
 
+const questionBelongsTo = function () {
+    const result = {
+        as: 'question',
+        foreignKey: {
+            allowNull: false,
+            fieldName: 'questionId',
+            field: 'question_id',
+            references: {
+                model: 'question',
+                key: 'id',
+            },
+        },
+    };
+    return result;
+};
+
+const questionChoiceBelongsTo = function () {
+    return {
+        as: 'questionChoice',
+        foreignKey: {
+            fileName: 'questionChoiceId',
+            field: 'question_choice_id',
+            references: {
+                model: 'question_choice',
+                key: 'id',
+            },
+        },
+    };
+};
+
 const defineTables = function (sequelize, Sequelize, schema) {
     const SurveyStatus = surveyStatus(sequelize, Sequelize, schema);
     const User = user(sequelize, Sequelize, schema);
@@ -106,32 +134,9 @@ const defineTables = function (sequelize, Sequelize, schema) {
     const Cohort = cohort(sequelize, Sequelize, schema);
     const CohortAnswer = cohortAnswer(sequelize, Sequelize, schema);
 
-    const questionBelongsToArgument = {
-        as: 'question',
-        foreignKey: {
-            allowNull: false,
-            fieldName: 'questionId',
-            field: 'question_id',
-            references: {
-                model: 'question',
-                key: 'id',
-            },
-        },
-    };
-
-    const questionChoiceBelongsToArgument = {
-        as: 'questionChoice',
-        foreignKey: {
-            fileName: 'questionChoiceId',
-            field: 'question_choice_id',
-            references: {
-                model: 'question_choice',
-                key: 'id',
-            },
-        },
-    };
-
-    const userBelongsToArgument = {
+    Answer.belongsTo(Question, questionBelongsTo());
+    Answer.belongsTo(QuestionChoice, questionChoiceBelongsTo());
+    Answer.belongsTo(User, {
         as: 'user',
         foreignKey: {
             fieldName: 'userId',
@@ -141,19 +146,15 @@ const defineTables = function (sequelize, Sequelize, schema) {
                 key: 'id',
             },
         },
-    };
+    });
 
-    Answer.belongsTo(Question, questionBelongsToArgument);
-    Answer.belongsTo(QuestionChoice, questionChoiceBelongsToArgument);
-    Answer.belongsTo(User, userBelongsToArgument);
+    QuestionIdentifier.belongsTo(Question, questionBelongsTo());
+    AnswerIdentifier.belongsTo(Question, questionBelongsTo());
+    AnswerIdentifier.belongsTo(QuestionChoice, questionChoiceBelongsTo());
 
-    QuestionIdentifier.belongsTo(Question, questionBelongsToArgument);
-    AnswerIdentifier.belongsTo(Question, questionBelongsToArgument);
-    AnswerIdentifier.belongsTo(QuestionChoice, questionChoiceBelongsToArgument);
+    AnswerRuleValue.belongsTo(QuestionChoice, questionChoiceBelongsTo());
 
-    AnswerRuleValue.belongsTo(QuestionChoice, questionChoiceBelongsToArgument);
-
-    AnswerRule.belongsTo(Question, questionBelongsToArgument);
+    AnswerRule.belongsTo(Question, questionBelongsTo());
     AnswerRule.belongsTo(Question, {
         as: 'answerQuestion',
         foreignKey: {
@@ -167,7 +168,7 @@ const defineTables = function (sequelize, Sequelize, schema) {
         },
     });
 
-    SurveyQuestion.belongsTo(Question, questionBelongsToArgument);
+    SurveyQuestion.belongsTo(Question, questionBelongsTo());
 
     SurveySection.belongsTo(Section, {
         as: 'section',
@@ -208,10 +209,10 @@ const defineTables = function (sequelize, Sequelize, schema) {
         },
     });
 
-    FilterAnswer.belongsTo(Question, _.cloneDeep(questionBelongsToArgument));
-    FilterAnswer.belongsTo(QuestionChoice, _.cloneDeep(questionChoiceBelongsToArgument));
-    CohortAnswer.belongsTo(Question, _.cloneDeep(questionBelongsToArgument));
-    CohortAnswer.belongsTo(QuestionChoice, _.cloneDeep(questionChoiceBelongsToArgument));
+    FilterAnswer.belongsTo(Question, questionBelongsTo());
+    FilterAnswer.belongsTo(QuestionChoice, questionChoiceBelongsTo());
+    CohortAnswer.belongsTo(Question, questionBelongsTo());
+    CohortAnswer.belongsTo(QuestionChoice, questionChoiceBelongsTo());
 
     return {
         sequelize,
