@@ -510,7 +510,12 @@ module.exports = class AnswerDAO extends Base {
      * @param {object} query questionId:value mapping to search users by
      * @returns {integer}
      */
-    countParticipants(criteria) {
+    countParticipants(criteria, federatedModels) {
+        if (criteria.federated) {
+            return this.localCriteriaToFederatedCriteria(criteria)
+                .then(fc => this.federatedCountParticipants(federatedModels, fc));
+        }
+
         // if criteria is empty, return count of all users
         if (!_.get(criteria, 'questions.length')) {
             return this.countAllParticipants();

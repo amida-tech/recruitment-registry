@@ -19,7 +19,7 @@ const processFederatedCohortForRegistry = function (registry, federatedModels, f
 };
 
 const basicExportFields = [
-    'surveyId', 'identifier', 'value',
+    'questionText', 'questionChoiceText', 'identifier', 'value',
 ];
 
 module.exports = class CohortDAO extends Base {
