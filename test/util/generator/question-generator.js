@@ -6,7 +6,7 @@ const _ = require('lodash');
 
 const singleQuestionTypes = [
     'text', 'choice', 'open-choice', 'bool',
-    'integer', 'zip', 'pounds',
+    'integer', 'zip', 'pounds', 'float',
     'date', 'year', 'month', 'day',
     'feet-inches', 'blood-pressure',
 ];

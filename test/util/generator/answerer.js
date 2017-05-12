@@ -78,6 +78,11 @@ module.exports = class Answerer {
         return { integerValue: answerIndex };
     }
 
+    float() {
+        const answerIndex = this.answerIndex;
+        return { floatValue: answerIndex + 0.1 };
+    }
+
     pounds() {
         const answerIndex = this.answerIndex;
         const numberValue = 100 + answerIndex;
