@@ -12,8 +12,9 @@ module.exports = {
         }));
     },
 
-    down(queryInterface) {
-        return queryInterface.removeIndex('question_text', 'question_text_lower_text_key')
-            .then(() => queryInterface.removeIndex('question_choice_text', 'question_choice_text_lower_text_key'));
-    },
+    // down(queryInterface) {
+    //     return queryInterface.removeIndex('question_text', 'question_text_lower_text_key')
+    //         .then(() => queryInterface.removeIndex('question_choice_text',
+    // 'question_choice_text_lower_text_key'));
+    // },
 };

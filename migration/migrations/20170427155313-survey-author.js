@@ -18,7 +18,7 @@ module.exports = {
                 return queryInterface.sequelize.query(query);
             });
     },
-    down(queryInterface) {
-        return queryInterface.removeColumn('survey', 'author_id');
-    },
+    // down(queryInterface) {
+    //     return queryInterface.removeColumn('survey', 'author_id');
+    // },
 };

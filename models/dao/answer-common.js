@@ -15,7 +15,7 @@ const getValueAnswerGenerator = (function getValueAnswerGeneratorGen() {
         bool(value) { return { boolValue: value === 'true' }; },
         pounds(value) { return { numberValue: parseInt(value, 10) }; },
         integer(value) { return { integerValue: parseInt(value, 10) }; },
-        float(value) { return { integerValue: parseFloat(value) }; },
+        float(value) { return { floatValue: parseFloat(value) }; },
         bloodPressure(value) {
             const pieces = value.split('-');
             return {

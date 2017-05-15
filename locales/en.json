@@ -47,7 +47,6 @@
 	"ccfInconsistentAnswerForType": "Inconsistent answer ({{$1}}) specified for the question type {{$0}}.",
 	"ccfMultipleSelectionsForChoice": "Multiple selections are specified choice type question.",
 	"ccfNoSelectionsForChoice": "No selection is specified choice type question.",
-	"surveyIdentifierNotFound": "No survey identifier {{$1}} of type {{$0}} is found.",
 	"choiceSetNotFound": "No choice set named {{$0}} is found.",
 	"questionChoiceCodeNotFound": "Question choice code is not found.",
 	"searchQuestionRepeat": "Questions were specified multiple times in the criteria.",

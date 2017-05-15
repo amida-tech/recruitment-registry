@@ -1,7 +1,6 @@
 'use strict';
 
 const Base = require('./base');
-const RRError = require('../../lib/rr-error');
 
 module.exports = class SurveyIdentifierDAO extends Base {
     createSurveyIdentifier(surveyIdentifier, transaction) {
@@ -42,17 +41,6 @@ module.exports = class SurveyIdentifierDAO extends Base {
             .then((records) => {
                 const map = records.map(({ surveyId, identifier }) => [identifier, surveyId]);
                 return new Map(map);
-            });
-    }
-
-    getIdBySurveyIdentifier(type, identifier) {
-        const SurveyIdentifier = this.db.SurveyIdentifier;
-        return SurveyIdentifier.findOne({ where: { type, identifier }, raw: true, attributes: ['surveyId'] })
-            .then((record) => {
-                if (!record) {
-                    return RRError.reject('surveyIdentifierNotFound', type, identifier);
-                }
-                return record.surveyId;
             });
     }
 };

@@ -21,7 +21,6 @@ module.exports = {
         return researchSiteStreet(queryInterface, Sequelize)
         .then(() => researchSiteStreet2(queryInterface, Sequelize));
     },
-    down() {
-
-    },
+    // down() {
+    // },
 };

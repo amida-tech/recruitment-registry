@@ -29,6 +29,7 @@ module.exports = function Table(sequelize, DataTypes) {
             type: DataTypes.INTEGER,
             field: 'question_id',
             allowNull: true,
+            onDelete: 'SET NULL',
             references: {
                 model: {
                     schema: sequelize.options.schema,
