@@ -1592,17 +1592,18 @@
                 }
             }
         },
-        "/consent-documents/type-name/{typeName}": {
+        "/consent-documents/type/{typeId}": {
             "x-swagger-router-controller": "consent-document.controller",
             "parameters": [{
-                "name": "typeName",
+                "name": "typeId",
                 "in": "path",
                 "required": true,
-                "type": "string"
+                "type": "integer",
+                "minimum": 1
             }],
             "get": {
                 "summary": "Gets consent document (section)",
-                "operationId": "getConsentDocumentByTypeName",
+                "operationId": "getConsentDocumentByTypeId",
                 "parameters": [{
                     "name": "language",
                     "in": "query",
@@ -1839,17 +1840,18 @@
                 }
             }
         },
-        "/user-consent-documents/type-name/{typeName}": {
+        "/user-consent-documents/type/{typeId}": {
             "x-swagger-router-controller": "user-consent-document.controller",
             "parameters": [{
-                "name": "typeName",
+                "name": "typeId",
                 "in": "path",
                 "required": true,
-                "type": "string"
+                "type": "integer",
+                "minimum": 1
             }],
             "get": {
-                "summary": "Gets consent document (section)/signature by type name",
-                "operationId": "getUserConsentDocumentByTypeName",
+                "summary": "Gets consent document (section)/signature by type id",
+                "operationId": "getUserConsentDocumentByTypeId",
                 "security": [{
                     "participant": []
                 }],

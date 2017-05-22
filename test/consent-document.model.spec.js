@@ -62,11 +62,11 @@ describe('consent document/type/signature unit', () => {
         };
     };
 
-    const verifyConsentDocumentByTypeNameFn = function (typeIndex) {
+    const verifyConsentDocumentByTypeIdFn = function (typeIndex) {
         return function verifyConsentDocumentByTypeName() {
             const cs = history.server(typeIndex);
-            const typeName = history.type(typeIndex).name;
-            return models.consentDocument.getConsentDocumentByTypeName(typeName)
+            const typeId = history.type(typeIndex).id;
+            return models.consentDocument.getConsentDocumentByTypeId(typeId)
                 .then((result) => {
                     expect(result).to.deep.equal(cs);
                 });
@@ -87,12 +87,12 @@ describe('consent document/type/signature unit', () => {
     _.range(2).forEach((i) => {
         it(`create consent document of type ${i}`, shared.createConsentDocumentFn(history, i));
         it(`verify consent document of type ${i}`, verifyConsentDocumentFn(i));
-        it(`verify consent document of type ${i} (type name)`, verifyConsentDocumentByTypeNameFn(i));
+        it(`verify consent document of type ${i} (type name)`, verifyConsentDocumentByTypeIdFn(i));
         it(`add translated (es) consent document ${i}`, shared.translateConsentDocumentFn(i, 'es', history));
         it(`verify translated (es) consent document of type ${i}`, verifyTranslatedConsentDocumentFn(i, 'es'));
     });
 
-    it('error: no consent documents with type name', () => models.consentDocument.getConsentDocumentByTypeName('Not Here')
+    it('error: no consent documents with type name', () => models.consentDocument.getConsentDocumentByTypeId(99999)
             .then(shared.throwingHandler, shared.expectedErrorHandler('consentTypeNotFound')));
 
     const verifyConsentDocuments = function (userIndex, expectedIndices) {

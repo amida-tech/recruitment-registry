@@ -62,8 +62,8 @@ module.exports = class UserConsentDocumentDAO extends Base {
             .then(result => this.fillSignature(result, userId, id));
     }
 
-    getUserConsentDocumentByTypeName(userId, typeName, options = {}) {
-        return this.consentDocument.getConsentDocumentByTypeName(typeName, options)
+    getUserConsentDocumentByTypeId(userId, typeId, options = {}) {
+        return this.consentDocument.getConsentDocumentByTypeId(typeId, options)
             .then(result => this.fillSignature(result, userId, result.id));
     }
 };

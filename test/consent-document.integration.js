@@ -73,10 +73,10 @@ describe('consent document integration', () => {
         };
     };
 
-    const getConsentDocumentByTypeNameFn = function (typeIndex) {
-        return function getConsentDocumentByTypeName(done) {
-            const typeName = history.type(typeIndex).name;
-            rrSuperTest.get(`/consent-documents/type-name/${typeName}`, false, 200)
+    const getConsentDocumentByTypeIdFn = function (typeIndex) {
+        return function getConsentDocumentByTypeId(done) {
+            const typeId = history.type(typeIndex).id;
+            rrSuperTest.get(`/consent-documents/type/${typeId}`, false, 200)
                 .expect((res) => {
                     const expected = history.server(typeIndex);
                     expect(res.body).to.deep.equal(expected);
@@ -102,7 +102,7 @@ describe('consent document integration', () => {
         it(`create consent document of type ${i}`, shared.createConsentDocumentFn(history, i));
         it('logout as super', shared.logoutFn());
         it(`get/verify consent document content of type ${i}`, getConsentDocumentFn(i));
-        it(`get/verify consent document content of type ${i} (type name)`, getConsentDocumentByTypeNameFn(i));
+        it(`get/verify consent document content of type ${i} (type id)`, getConsentDocumentByTypeIdFn(i));
         it('login as super', shared.loginFn(config.superUser));
         it(`add translated (es) consent document ${i}`, shared.translateConsentDocumentFn(i, 'es', history));
         it('logout as super', shared.logoutFn());

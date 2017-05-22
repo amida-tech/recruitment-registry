@@ -120,23 +120,15 @@ module.exports = class ConsentDocumentDAO extends Translatable {
             .then(result => this.updateText(result, options.language));
     }
 
-    getConsentDocumentByTypeName(typeName, options = {}) {
-        const ConsentType = this.db.ConsentType;
-        const ConsentDocument = this.db.ConsentDocument;
-        return ConsentType.findOne({
+    getConsentDocumentByTypeId(typeId, options = {}) {
+        return this.db.ConsentDocument.findOne({
             raw: true,
-            where: { name: typeName },
-            attributes: ['id'],
+            where: { typeId },
+            attributes: ['id', 'typeId'],
         })
-            .then((consentType) => {
-                if (consentType) {
-                    const typeId = consentType.id;
-                    return ConsentDocument.findOne({
-                        raw: true,
-                        where: { typeId },
-                        attributes: ['id', 'typeId'],
-                    })
-                        .then(result => this.updateText(result, options.language));
+            .then((result) => {
+                if (result) {
+                    return this.updateText(result, options.language);
                 }
                 return RRError.reject('consentTypeNotFound');
             });
