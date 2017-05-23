@@ -145,9 +145,9 @@ describe('profile unit', () => {
         language = language || 'en';
         return function verifySignedDocumentByTypeName() {
             const server = hxConsentDoc.server(0);
-            const typeName = hxConsentDoc.type(0).name;
+            const typeId = hxConsentDoc.type(0).id;
             const userId = hxUser.id(userIndex);
-            return models.userConsentDocument.getUserConsentDocumentByTypeName(userId, typeName)
+            return models.userConsentDocument.getUserConsentDocumentByTypeId(userId, typeId)
                 .then((result) => {
                     expect(result.content).to.equal(server.content);
                     expect(result.signature).to.equal(expected);

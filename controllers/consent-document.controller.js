@@ -18,10 +18,10 @@ exports.getConsentDocument = function getConsentDocument(req, res) {
         .catch(shared.handleError(res));
 };
 
-exports.getConsentDocumentByTypeName = function getConsentDocumentByTypeName(req, res) {
-    const typeName = _.get(req, 'swagger.params.typeName.value');
+exports.getConsentDocumentByTypeId = function getConsentDocumentByTypeId(req, res) {
+    const typeId = _.get(req, 'swagger.params.typeId.value');
     const language = _.get(req, 'swagger.params.language.value');
-    req.models.consentDocument.getConsentDocumentByTypeName(typeName, { language })
+    req.models.consentDocument.getConsentDocumentByTypeId(typeId, { language })
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };

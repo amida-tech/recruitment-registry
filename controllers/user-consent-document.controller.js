@@ -22,11 +22,11 @@ exports.getUserConsentDocument = function getUserConsentDocument(req, res) {
         .catch(shared.handleError(res));
 };
 
-exports.getUserConsentDocumentByTypeName = function getUserConsentDocumentByTypeName(req, res) {
+exports.getUserConsentDocumentByTypeId = function getUserConsentDocumentByTypeId(req, res) {
     const userId = req.user.id;
-    const typeName = _.get(req, 'swagger.params.typeName.value');
+    const typeId = _.get(req, 'swagger.params.typeId.value');
     const language = _.get(req, 'swagger.params.language.value');
-    req.models.userConsentDocument.getUserConsentDocumentByTypeName(userId, typeName, { language })
+    req.models.userConsentDocument.getUserConsentDocumentByTypeId(userId, typeId, { language })
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };

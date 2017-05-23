@@ -23,7 +23,7 @@
 	"answerToBeSkippedAnswered": "Conditionally to be skipped questions are answered.",
 	"answerQxNotInSurvey": "Invalid question ids for answers.",
 	"qxReplaceWhenActiveSurveys": "Question in active surveys cannot be removed or replaced.",
-	"consentTypeNotFound": "No such consent type.",
+	"consentTypeNotFound": "No active document of consent type is found.",
 	"consentTypeDeleteOnConsent": "Consent type cannot be removed because it is used by one or more consents.",
 	"smtpNotSpecified": "Smtp specifications are not specified.",
 	"smtpTextNotSpecified": "Email content and/or subject not specified for reset token.",

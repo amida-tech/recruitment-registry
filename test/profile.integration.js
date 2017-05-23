@@ -177,11 +177,11 @@ describe('profile integration', () => {
         };
     };
 
-    const verifySignedDocumentByTypeNameFn = function (expected) {
-        return function verifySignedDocumentByTypeName(done) {
+    const verifySignedDocumentByTypeIdFn = function (expected) {
+        return function verifySignedDocumentByTypeId(done) {
             const server = hxConsentDoc.server(0);
-            const typeName = hxConsentDoc.type(0).name;
-            rrSuperTest.get(`/user-consent-documents/type-name/${typeName}`, true, 200)
+            const typeId = hxConsentDoc.type(0).id;
+            rrSuperTest.get(`/user-consent-documents/type/${typeId}`, true, 200)
                 .expect((res) => {
                     const result = res.body;
                     expect(result.content).to.equal(server.content);
@@ -227,7 +227,7 @@ describe('profile integration', () => {
         it(`register user ${index} with profile survey`, createProfileWithSurveyFn(0));
         it(`verify user ${index} profile`, verifyProfileWithSurveyFn(0, index));
         it(`verify document 0 is not signed by user ${index}`, verifySignedDocumentFn(false));
-        it(`verify document 0 is not signed by user ${index} (type name)`, verifySignedDocumentByTypeNameFn(false));
+        it(`verify document 0 is not signed by user ${index} (type name)`, verifySignedDocumentByTypeIdFn(false));
         it(`update user ${index} profile`, updateProfileWithSurveyFn(0, index));
         it(`verify user ${index} profile`, verifyProfileWithSurveyFn(0, index));
         it(`logout as user ${index}`, shared.logoutFn());
@@ -237,7 +237,7 @@ describe('profile integration', () => {
         it(`register user ${index} with profile survey 0 and doc 0 signature`, createProfileWithSurveyFn(0, [0]));
         it(`verify user ${index} profile`, verifyProfileWithSurveyFn(0, index));
         it(`verify document 0 is signed by user ${index}`, verifySignedDocumentFn(true));
-        it(`verify document 0 is not signed by user ${index} (type name)`, verifySignedDocumentByTypeNameFn(true));
+        it(`verify document 0 is not signed by user ${index} (type name)`, verifySignedDocumentByTypeIdFn(true));
         it(`logout as user ${index}`, shared.logoutFn());
     });
 

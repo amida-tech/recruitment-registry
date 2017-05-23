@@ -61,7 +61,7 @@ describe('consent demo simpler', () => {
     //* ***** START 2
 
     it('get Terms of Use before registration', (done) => {
-        rrSuperTest.get('/consent-documents/type-name/terms-of-use', false, 200)
+        rrSuperTest.get('/consent-documents/type/1', false, 200)
             .expect((res) => {
                 const result = res.body;
                 expect(!!result.content).to.equal(true);
@@ -110,7 +110,7 @@ describe('consent demo simpler', () => {
     it('login as user', shared.loginFn(userExample));
 
     it('get the Terms of Use document with signature', (done) => {
-        rrSuperTest.get('/user-consent-documents/type-name/terms-of-use', true, 200)
+        rrSuperTest.get('/user-consent-documents/type/1', true, 200)
             .expect((res) => {
                 expect(res.body.content).to.equal(termsOfUse.content);
                 expect(res.body.signature).to.equal(true);
@@ -129,7 +129,7 @@ describe('consent demo simpler', () => {
     //* ***** START 5
 
     it('get the Consents document', (done) => {
-        rrSuperTest.get('/user-consent-documents/type-name/consent', true, 200)
+        rrSuperTest.get('/user-consent-documents/type/2', true, 200)
             .expect((res) => {
                 consents = res.body;
                 expect(res.body.signature).to.equal(false);
@@ -156,7 +156,7 @@ describe('consent demo simpler', () => {
     //* ***** START 7
 
     it('get the Consents document', (done) => {
-        rrSuperTest.get('/user-consent-documents/type-name/consent', true, 200)
+        rrSuperTest.get('/user-consent-documents/type/2', true, 200)
             .expect((res) => {
                 consents = res.body;
                 expect(res.body.signature).to.equal(true);
