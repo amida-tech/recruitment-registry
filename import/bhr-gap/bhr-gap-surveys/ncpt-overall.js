@@ -14,7 +14,7 @@ module.exports = {
     }, {
         text: 'StandardScore',
         required: false,
-        type: 'text',
+        type: 'integer',
         answerIdentifier: { type: 'bhr-gap-ncpt-overall-column', value: 'StandardScore' },
     }, {
         text: 'Percentile',

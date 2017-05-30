@@ -14,7 +14,7 @@ module.exports = {
     }, {
         text: 'Seconds',
         required: false,
-        type: 'text',
+        type: 'integer',
         answerIdentifier: { type: 'bhr-gap-ncpt-trailmakingb-column', value: 'Seconds' },
     }, {
         text: 'Errors',
