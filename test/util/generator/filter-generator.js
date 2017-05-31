@@ -1,10 +1,8 @@
 'use strict';
 
-/* eslint no-param-reassign: 0, max-len: 0 */
-
 const _ = require('lodash');
 
-const Answerer = require('./answerer');
+const Answerer = require('./filter-answerer');
 
 module.exports = class FilterGenerator {
     constructor() {
@@ -31,7 +29,7 @@ module.exports = class FilterGenerator {
             const question = hxQuestion.server(questionIndex);
             const answerCount = (questionIndex % 3) + 1;
             const questionId = question.id;
-            const answers = _.range(answerCount).map(() => this.answerer.answerFilterQuestion(question));
+            const answers = _.range(answerCount).map(() => this.answerer.answerFilterQuestion(question)); // eslint-disable-line max-len
             return { id: questionId, answers };
         });
         return filter;

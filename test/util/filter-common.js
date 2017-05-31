@@ -12,13 +12,41 @@ const History = require('./history');
 
 const expect = chai.expect;
 
-const SpecTests = class FilterSpecTests {
+const FilterTests = class FilterTests {
     constructor(hxQuestion) {
         this.hxQuestion = hxQuestion;
         this.hxFilter = new History();
         this.filterGenerator = new FilterGenerator();
     }
 
+    patchFilterFn(index, fields) {
+        const self = this;
+        return function patchFilter() {
+            const hxQuestion = self.hxQuestion;
+            const filter = self.filterGenerator.newFilter(hxQuestion);
+            const filterPatch = _.pick(filter, fields);
+            const server = self.hxFilter.server(index);
+            return self.patchFilterPx(server.id, filterPatch)
+                .then(() => {
+                    if (fields.indexOf('questions') >= 0) {
+                        filterPatch.questions.forEach(({ id, answers }) => {
+                            const type = hxQuestion.serverById(id).type;
+                            if (type === 'choices') {
+                                answers.forEach((p) => {
+                                    if (Object.keys(p).length === 1) {
+                                        p.boolValue = true;
+                                    }
+                                });
+                            }
+                        });
+                    }
+                    Object.assign(server, filterPatch);
+                });
+        };
+    }
+};
+
+const SpecTests = class FilterSpecTests extends FilterTests {
     createFilterFn() {
         const filterGenerator = this.filterGenerator;
         const hxFilter = this.hxFilter;
@@ -64,17 +92,8 @@ const SpecTests = class FilterSpecTests {
         };
     }
 
-    patchFilterFn(index, fields) {
-        const filterGenerator = this.filterGenerator;
-        const hxFilter = this.hxFilter;
-        const hxQuestion = this.hxQuestion;
-        return function patchFilter() {
-            const filter = filterGenerator.newFilter(hxQuestion);
-            const filterPatch = _.pick(filter, fields);
-            const server = hxFilter.server(index);
-            return models.filter.patchFilter(server.id, filterPatch)
-                .then(() => Object.assign(server, filterPatch));
-        };
+    patchFilterPx(id, filterPatch) { // eslint-disable-line class-methods-use-this
+        return models.filter.patchFilter(id, filterPatch);
     }
 
     verifyFilterFn(index) {
@@ -90,12 +109,10 @@ const SpecTests = class FilterSpecTests {
     }
 };
 
-const IntegrationTests = class FilterIntegrationTests {
+const IntegrationTests = class FilterIntegrationTests extends FilterTests {
     constructor(rrSuperTest, hxQuestion) {
+        super(hxQuestion);
         this.rrSuperTest = rrSuperTest;
-        this.hxQuestion = hxQuestion;
-        this.hxFilter = new History();
-        this.filterGenerator = new FilterGenerator();
     }
 
     createFilterFn() {
@@ -148,18 +165,9 @@ const IntegrationTests = class FilterIntegrationTests {
         };
     }
 
-    patchFilterFn(index, fields) {
+    patchFilterPx(id, filterPatch) {
         const rrSuperTest = this.rrSuperTest;
-        const filterGenerator = this.filterGenerator;
-        const hxFilter = this.hxFilter;
-        const hxQuestion = this.hxQuestion;
-        return function patchFilter() {
-            const filter = filterGenerator.newFilter(hxQuestion);
-            const filterPatch = _.pick(filter, fields);
-            const server = hxFilter.server(index);
-            return rrSuperTest.patch(`/filters/${server.id}`, filterPatch, 204)
-                .then(() => Object.assign(server, filterPatch));
-        };
+        return rrSuperTest.patch(`/filters/${id}`, filterPatch, 204);
     }
 
     verifyFilterFn(index) {

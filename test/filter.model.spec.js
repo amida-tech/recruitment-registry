@@ -24,17 +24,12 @@ describe('filter unit', function filterUnit() {
 
     before(shared.setUpFn());
 
-    ['choice', 'choices'].forEach((type) => {
-        _.range(count, count + 3).forEach((index) => {
+    ['choice', 'choices', 'integer'].forEach((type) => {
+        _.range(count, count + 6).forEach((index) => {
             it(`create question ${index}`, qxTests.createQuestionFn({ type }));
             it(`get question ${index}`, qxTests.getQuestionFn(index));
         });
-        count += 3;
-        _.range(count, count + 3).forEach((index) => {
-            it(`create question ${index}`, qxTests.createQuestionFn({ type }));
-            it(`get question ${index}`, qxTests.getQuestionFn(index));
-        });
-        count += 3;
+        count += 6;
     });
 
     _.range(count, count + 10).forEach((index) => {
@@ -113,5 +108,12 @@ describe('filter unit', function filterUnit() {
         it(`verify filter ${index}`, tests.verifyFilterFn(index));
     });
 
-    it('list filters', tests.listFiltersFn(28, true));
+    it('list filters', tests.listFiltersFn(28));
+
+    _.range(30, 40).forEach((index) => {
+        it(`create filter ${index}`, tests.createFilterFn());
+        it(`get filter ${index}`, tests.getFilterFn(index));
+    });
+
+    it('list filters', tests.listFiltersFn(38));
 });
