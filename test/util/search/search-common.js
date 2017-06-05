@@ -107,6 +107,9 @@ const federatedAnswerGenerators = {
     integer(question, spec) {
         const identifier = question.answerIdentifier;
         const questionText = question.text;
+        if (spec.rangeValue) {
+            return [{ identifier, questionText, integerRange: spec.rangeValue }];
+        }
         return [{ identifier, questionText, integerValue: spec.value }];
     },
     choice(question, spec) {

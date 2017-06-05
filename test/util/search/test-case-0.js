@@ -260,58 +260,58 @@ const searchCases = [{
         }],
     }],
 }, {
-//     count: 2,
-//     userIndices: [4, 5],
-//     answers: [{
-//         surveyIndex: 3,
-//         answerInfo: [{
-//             questionType: 'integer',
-//             rangeValue: { min: 25, max: 100 },
-//         }, {
-//             questionType: 'choices',
-//             choiceIndices: [0, 2],
-//         }],
-//     }],
-// }, {
-//     count: 2,
-//     userIndices: [4, 5],
-//     answers: [{
-//         surveyIndex: 3,
-//         answerInfo: [{
-//             questionType: 'integer',
-//             rangeValue: { min: 25 },
-//         }, {
-//             questionType: 'choices',
-//             choiceIndices: [0, 2],
-//         }],
-//     }],
-// }, {
-//     count: 2,
-//     userIndices: [4, 5],
-//     answers: [{
-//         surveyIndex: 3,
-//         answerInfo: [{
-//             questionType: 'integer',
-//             rangeValue: { max: 100 },
-//         }, {
-//             questionType: 'choices',
-//             choiceIndices: [0, 2],
-//         }],
-//     }],
-// }, {
-//     count: 1,
-//     userIndices: [5],
-//     answers: [{
-//         surveyIndex: 3,
-//         answerInfo: [{
-//             questionType: 'integer',
-//             rangeValue: { min: 60, max: 100 },
-//         }, {
-//             questionType: 'choices',
-//             choiceIndices: [0, 2],
-//         }],
-//     }],
-// }, {
+    count: 2,
+    userIndices: [4, 5],
+    answers: [{
+        surveyIndex: 3,
+        answerInfo: [{
+            questionType: 'integer',
+            rangeValue: { min: 25, max: 100 },
+        }, {
+            questionType: 'choices',
+            choiceIndices: [0, 2],
+        }],
+    }],
+}, {
+    count: 2,
+    userIndices: [4, 5],
+    answers: [{
+        surveyIndex: 3,
+        answerInfo: [{
+            questionType: 'integer',
+            rangeValue: { min: 25 },
+        }, {
+            questionType: 'choices',
+            choiceIndices: [0, 2],
+        }],
+    }],
+}, {
+    count: 2,
+    userIndices: [4, 5],
+    answers: [{
+        surveyIndex: 3,
+        answerInfo: [{
+            questionType: 'integer',
+            rangeValue: { max: 100 },
+        }, {
+            questionType: 'choices',
+            choiceIndices: [0, 2],
+        }],
+    }],
+}, {
+    count: 1,
+    userIndices: [5],
+    answers: [{
+        surveyIndex: 3,
+        answerInfo: [{
+            questionType: 'integer',
+            rangeValue: { min: 60, max: 100 },
+        }, {
+            questionType: 'choices',
+            choiceIndices: [0, 2],
+        }],
+    }],
+}, {
     count: 0,
     userIndices: [],
     answers: [{
