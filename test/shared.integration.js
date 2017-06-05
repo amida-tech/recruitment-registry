@@ -24,7 +24,7 @@ describe('shared integration', () => {
     const rrSuperTest = new RRSuperTest();
     const shared = new SharedIntegration(rrSuperTest);
 
-    before(shared.setUpFn({ models }));
+    before(shared.setUpFn());
 
     it('error: unknown end point', (done) => {
         rrSuperTest.get('/xxxxxxx', false, 404).end(done);

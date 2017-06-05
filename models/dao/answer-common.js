@@ -14,7 +14,20 @@ const getValueAnswerGenerator = (function getValueAnswerGeneratorGen() {
         day(value) { return { dayValue: value }; },
         bool(value) { return { boolValue: value === 'true' }; },
         pounds(value) { return { numberValue: parseInt(value, 10) }; },
-        integer(value) { return { integerValue: parseInt(value, 10) }; },
+        integer(value) {
+            if (value.indexOf(':') < 0) {
+                return { integerValue: parseInt(value, 10) };
+            }
+            const [min, max] = value.split(':');
+            const integerRange = {};
+            if (max) {
+                integerRange.max = parseInt(max, 10);
+            }
+            if (min) {
+                integerRange.min = parseInt(min, 10);
+            }
+            return { integerRange };
+        },
         float(value) { return { floatValue: parseFloat(value) }; },
         bloodPressure(value) {
             const pieces = value.split('-');
@@ -176,6 +189,11 @@ const answerValueToDBFormat = {
         const systolic = value.systolic || 0;
         const diastolic = value.diastolic || 0;
         return { value: `${systolic}-${diastolic}` };
+    },
+    integerRange(value) {
+        const max = value.max || '';
+        const min = value.min || '';
+        return { value: `${min}:${max}` };
     },
 };
 

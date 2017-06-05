@@ -161,6 +161,26 @@ const answerSequence = [{ // user 0, survey 0
         questionType: 'multichoice',
         choiceIndices: [2, 4],
     }],
+}, {
+    userIndex: 4,
+    surveyIndex: 3,
+    answerInfo: [{
+        questionType: 'choices',
+        choiceIndices: [0, 2],
+    }, {
+        questionType: 'integer',
+        value: 50,
+    }],
+}, {
+    userIndex: 5,
+    surveyIndex: 3,
+    answerInfo: [{
+        questionType: 'choices',
+        choiceIndices: [0, 1, 3],
+    }, {
+        questionType: 'integer',
+        value: 75,
+    }],
 }];
 
 const searchCases = [{
@@ -224,6 +244,71 @@ const searchCases = [{
             ignoreBoolValue: true,
             questionType: 'choices',
             choiceIndices: [4, 5],
+        }],
+    }],
+}, {
+    count: 1,
+    userIndices: [4],
+    answers: [{
+        surveyIndex: 3,
+        answerInfo: [{
+            questionType: 'integer',
+            value: 50,
+        }, {
+            questionType: 'choices',
+            choiceIndices: [0],
+        }],
+    }],
+}, {
+    count: 2,
+    userIndices: [4, 5],
+    answers: [{
+        surveyIndex: 3,
+        answerInfo: [{
+            questionType: 'integer',
+            rangeValue: { min: 25, max: 100 },
+        }, {
+            questionType: 'choices',
+            choiceIndices: [0, 2],
+        }],
+    }],
+}, {
+    count: 2,
+    userIndices: [4, 5],
+    answers: [{
+        surveyIndex: 3,
+        answerInfo: [{
+            questionType: 'integer',
+            rangeValue: { min: 25 },
+        }, {
+            questionType: 'choices',
+            choiceIndices: [0, 2],
+        }],
+    }],
+}, {
+    count: 2,
+    userIndices: [4, 5],
+    answers: [{
+        surveyIndex: 3,
+        answerInfo: [{
+            questionType: 'integer',
+            rangeValue: { max: 100 },
+        }, {
+            questionType: 'choices',
+            choiceIndices: [0, 2],
+        }],
+    }],
+}, {
+    count: 1,
+    userIndices: [5],
+    answers: [{
+        surveyIndex: 3,
+        answerInfo: [{
+            questionType: 'integer',
+            rangeValue: { min: 60, max: 100 },
+        }, {
+            questionType: 'choices',
+            choiceIndices: [0, 2],
         }],
     }],
 }, {

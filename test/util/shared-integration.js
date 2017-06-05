@@ -10,6 +10,7 @@ const _ = require('lodash');
 const config = require('../../config');
 
 const appgen = require('../../app-generator');
+const models = require('../../models');
 const RRError = require('../../lib/rr-error');
 const Generator = require('./generator');
 const translator = require('./translator');
@@ -25,10 +26,10 @@ class SharedIntegration {
         this.rrSuperTest = rrSuperTest;
     }
 
-    setUpFn(options = {}) {
+    setUpFn(options) {
         const rrSuperTest = this.rrSuperTest;
         return function setup(done) {
-            appgen.generate(options, (err, app) => {
+            appgen.generate(options || { models }, (err, app) => {
                 if (err) {
                     return done(err);
                 }

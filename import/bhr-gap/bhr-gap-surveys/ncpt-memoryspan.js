@@ -14,7 +14,7 @@ module.exports = {
     }, {
         text: 'Correct',
         required: false,
-        type: 'text',
+        type: 'integer',
         answerIdentifier: { type: 'bhr-gap-ncpt-memoryspan-column', value: 'Correct' },
     }, {
         text: 'WasInterrupted',

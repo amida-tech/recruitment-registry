@@ -4781,6 +4781,19 @@
                 "integerValue": {
                     "type": "integer"
                 },
+                "integerRange": {
+                    "type": "object",
+                    "properties": {
+                        "min": {
+                            "type": "integer"
+                        },
+                        "max": {
+                            "type": "integer"
+                        }
+                    },
+                    "minProperties": 1,
+                    "additionalProperties": false
+                },
                 "floatValue": {
                     "type": "number"
                 },
@@ -4857,6 +4870,19 @@
                 },
                 "integerValue": {
                     "type": "integer"
+                },
+                "integerRange": {
+                    "type": "object",
+                    "properties": {
+                        "min": {
+                            "type": "integer"
+                        },
+                        "max": {
+                            "type": "integer"
+                        }
+                    },
+                    "minProperties": 1,
+                    "additionalProperties": false
                 },
                 "floatValue": {
                     "type": "number"

@@ -10,7 +10,6 @@ const passport = require('passport');
 const expressWinston = require('express-winston');
 const swaggerTools = require('swagger-tools');
 
-const models = require('./models');
 const modelsGenerator = require('./models/generator');
 const swaggerUtil = require('./lib/swagger-util');
 
@@ -102,8 +101,7 @@ exports.initialize = function initialize(app, options, callback) {
             validateResponse: true,
         }));
 
-        const generatedb = options.generatedb || effectiveConfig.env !== 'test';
-        const m = options.models || (generatedb ? modelsGenerator(schema) : models);
+        const m = options.models || modelsGenerator(schema);
         app.locals.models = m; // eslint-disable-line no-param-reassign
         if (Array.isArray(schema)) {
             app.use(multiModelsSupplyFn(m));

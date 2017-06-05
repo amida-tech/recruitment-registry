@@ -38,6 +38,9 @@ const answerGenerators = {
     bool(questionId, spec) {
         return { answer: { boolValue: spec.value } };
     },
+    integer(questionId, spec) {
+        return { answer: { integerValue: spec.value } };
+    },
     choice(questionId, spec, choiceIdMap) {
         const choiceIds = choiceIdMap.get(questionId);
         const choice = choiceIds[spec.choiceIndex];
@@ -81,6 +84,12 @@ const filterAnswerGenerators = Object.assign(Object.create(answerGenerators), {
         });
         return { answers };
     },
+    integer(questionId, spec) {
+        if (spec.rangeValue) {
+            return { answer: { integerRange: spec.rangeValue } };
+        }
+        return { answer: { integerValue: spec.value } };
+    },
     $idProperty: 'id',
 });
 
@@ -94,6 +103,14 @@ const federatedAnswerGenerators = {
         const identifier = question.answerIdentifier;
         const questionText = question.text;
         return [{ identifier, questionText, boolValue: spec.value }];
+    },
+    integer(question, spec) {
+        const identifier = question.answerIdentifier;
+        const questionText = question.text;
+        if (spec.rangeValue) {
+            return [{ identifier, questionText, integerRange: spec.rangeValue }];
+        }
+        return [{ identifier, questionText, integerValue: spec.value }];
     },
     choice(question, spec) {
         const choice = question.choices[spec.choiceIndex];
@@ -143,6 +160,11 @@ const federatedAnswerListGenerators = {
         const identifier = question.answerIdentifier;
         const questionText = question.text;
         return [{ identifier, questionText, value: spec.value }];
+    },
+    integer(question, spec) {
+        const identifier = question.answerIdentifier;
+        const questionText = question.text;
+        return [{ identifier, questionText, value: spec.value.toString() }];
     },
     bool(question, spec) {
         const identifier = question.answerIdentifier;
@@ -196,6 +218,7 @@ const Tests = class BaseTests {
     constructor(options = {}) {
         this.offset = options.offset || 5;
         this.surveyCount = options.surveyCount || 4;
+        this.userCount = 6;
         this.noSync = options.noSync;
 
         const hxUser = new History();
@@ -213,7 +236,7 @@ const Tests = class BaseTests {
         const questions = [];
         let addIdentifier = true;
         const questionGenerator = new QuestionGenerator();
-        ['choice', 'choices', 'text', 'bool'].forEach((type) => {
+        ['choice', 'choices', 'text', 'bool', 'integer'].forEach((type) => {
             const opt = { type, choiceCount: 6, noText: true, noOneOf: true };
             types.push(type);
             const indices = [];
@@ -626,7 +649,7 @@ const SpecTests = class SearchSpecTests extends Tests {
             });
 
             describe('create users/questions', function createUsersQuestions() {
-                _.range(5).forEach((index) => {
+                _.range(6).forEach((index) => {
                     it(`create user ${index}`, self.shared.createUserFn(self.hxUser));
                 });
 
@@ -676,7 +699,7 @@ const SpecTests = class SearchSpecTests extends Tests {
             describe('search participants/answers (local filters)', function searchAnswersLocal() {
                 const searchCases = testCase0.searchCases;
 
-                it('search empty criteria', self.searchEmptyFn(5));
+                it('search empty criteria', self.searchEmptyFn(self.userCount));
 
                 let cohortId = 1;
                 const caseLen = 6;
@@ -949,7 +972,7 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
             describe('create users/questions', function createUsersQuestions() {
                 it('login as super', self.shared.loginFn(config.superUser));
 
-                _.range(5).forEach((index) => {
+                _.range(self.userCount).forEach((index) => {
                     it(`create user ${index}`, self.shared.createUserFn(self.hxUser));
                 });
 
@@ -991,7 +1014,7 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
             describe('search participants/answers (local filters)', function searchWithDbIds() {
                 it('login as super', self.shared.loginFn(config.superUser));
 
-                it('search empty criteria', self.searchEmptyFn(5));
+                it('search empty criteria', self.searchEmptyFn(self.userCount));
 
                 const searchCases = testCase0.searchCases;
 
@@ -1080,7 +1103,7 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
             describe('search participants/answers (federated filters)', function searchWithIdentifiers() {
                 it('login as super', self.shared.loginFn(config.superUser));
 
-                it('search empty criteria', self.searchEmptyFn(5));
+                it('search empty criteria', self.searchEmptyFn(self.userCount));
 
                 const searchCases = testCase0.searchCases;
 

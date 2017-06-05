@@ -91,6 +91,18 @@ const isEnabled = function ({ questionId, parents }, maps) {
     return true;
 };
 
+const integerRangeCondition = function (min, max) {
+    const minValue = min ? parseInt(min, 10) : null;
+    const maxValue = max ? parseInt(max, 10) : null;
+    if (max && min) {
+        return { $gt: minValue, $lt: maxValue };
+    }
+    if (max) {
+        return { $lt: maxValue };
+    }
+    return { $gt: minValue };
+};
+
 module.exports = class AnswerDAO extends Base {
     constructor(db, dependencies) {
         super(db);
@@ -472,12 +484,20 @@ module.exports = class AnswerDAO extends Base {
                 const where = { $or: [] };
                 criteria.questions.forEach((question) => {
                     answerCommon.prepareFilterAnswersForDB(question.answers).forEach((answer) => {
+                        const type = typeMap.get(question.id);
                         let value = ('value' in answer) ? answer.value.toString() : null;
                         if (answer.questionChoiceId && !value) {
-                            const type = typeMap.get(question.id);
                             if (type === 'choices') {
                                 value = 'true';
                             }
+                        }
+                        if (value && (type === 'integer') && (value.indexOf(':') >= 0)) {
+                            const [min, max] = value.split(':');
+                            const qColName = this.qualifiedCol('answer', 'value');
+                            const col = this.db.sequelize.col(qColName);
+                            const fn = this.db.sequelize.fn('TO_NUMBER', col, '99999');
+                            const condition = integerRangeCondition(min, max);
+                            value = this.db.sequelize.where(fn, condition);
                         }
                         where.$or.push({
                             question_id: question.id,

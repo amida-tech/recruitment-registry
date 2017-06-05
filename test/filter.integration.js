@@ -27,17 +27,12 @@ describe('filter integration', function filterIntegration() {
 
     it('login as super', shared.loginFn(config.superUser));
 
-    ['choice', 'choices'].forEach((type) => {
-        _.range(count, count + 3).forEach((index) => {
+    ['choice', 'choices', 'integer'].forEach((type) => {
+        _.range(count, count + 6).forEach((index) => {
             it(`create question ${index}`, qxTests.createQuestionFn({ type }));
             it(`get question ${index}`, qxTests.getQuestionFn(index));
         });
-        count += 3;
-        _.range(count, count + 3).forEach((index) => {
-            it(`create question ${index}`, qxTests.createQuestionFn({ type }));
-            it(`get question ${index}`, qxTests.getQuestionFn(index));
-        });
-        count += 3;
+        count += 6;
     });
 
     _.range(count, count + 10).forEach((index) => {
@@ -115,6 +110,15 @@ describe('filter integration', function filterIntegration() {
     });
 
     it('list filters', tests.listFiltersFn(28, true));
+
+    it('list filters', tests.listFiltersFn(28));
+
+    _.range(30, 40).forEach((index) => {
+        it(`create filter ${index}`, tests.createFilterFn());
+        it(`get filter ${index}`, tests.getFilterFn(index));
+    });
+
+    it('list filters', tests.listFiltersFn(38));
 
     it('logout as user', shared.logoutFn());
 });
