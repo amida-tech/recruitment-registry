@@ -172,13 +172,13 @@ const answerValueToDBFormat = {
         return { value };
     },
     numberValue(value) {
-        return { value };
+        return { value: `${value}` };
     },
     integerValue(value) {
-        return { value };
+        return { value: `${value}` };
     },
     floatValue(value) {
-        return { value };
+        return { value: `${value}` };
     },
     feetInchesValue(value) {
         const feet = value.feet || 0;

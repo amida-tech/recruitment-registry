@@ -103,6 +103,39 @@ const integerRangeCondition = function (min, max) {
     return { $gt: minValue };
 };
 
+const searchParticipantConditionMaker = {
+    integer(dao, answer) {
+        const value = answer.value;
+        if (value.indexOf(':') < 0) {
+            return { value };
+        }
+        const [min, max] = value.split(':');
+        const qColName = dao.qualifiedCol('answer', 'value');
+        const col = dao.db.sequelize.col(qColName);
+        const fn = dao.db.sequelize.fn('TO_NUMBER', col, '99999');
+        const condition = integerRangeCondition(min, max);
+        return { value: dao.db.sequelize.where(fn, condition) };
+    },
+    text(dao, answer) {
+        return { value: answer.value };
+    },
+    choices(dao, answer) {
+        if (answer.value) {
+            return {
+                value: answer.value,
+                question_choice_id: answer.questionChoiceId,
+            };
+        }
+        return { question_choice_id: answer.questionChoiceId };
+    },
+    choice(dao, answer) {
+        return { question_choice_id: answer.questionChoiceId };
+    },
+    choiceRef(dao, answer) {
+        return { question_choice_id: answer.questionChoiceId };
+    },
+};
+
 module.exports = class AnswerDAO extends Base {
     constructor(db, dependencies) {
         super(db);
@@ -483,28 +516,22 @@ module.exports = class AnswerDAO extends Base {
                 // find answers that match one of the search criteria
                 const where = { $or: [] };
                 criteria.questions.forEach((question) => {
+                    const qxConds = [];
                     answerCommon.prepareFilterAnswersForDB(question.answers).forEach((answer) => {
                         const type = typeMap.get(question.id);
-                        let value = ('value' in answer) ? answer.value.toString() : null;
-                        if (answer.questionChoiceId && !value) {
-                            if (type === 'choices') {
-                                value = 'true';
-                            }
+                        const conditionMaker = searchParticipantConditionMaker[_.camelCase(type)];
+                        let qxCond;
+                        if (conditionMaker) {
+                            qxCond = conditionMaker(this, answer);
+                        } else {
+                            const value = ('value' in answer) ? answer.value : null;
+                            qxCond = { value };
                         }
-                        if (value && (type === 'integer') && (value.indexOf(':') >= 0)) {
-                            const [min, max] = value.split(':');
-                            const qColName = this.qualifiedCol('answer', 'value');
-                            const col = this.db.sequelize.col(qColName);
-                            const fn = this.db.sequelize.fn('TO_NUMBER', col, '99999');
-                            const condition = integerRangeCondition(min, max);
-                            value = this.db.sequelize.where(fn, condition);
-                        }
-                        where.$or.push({
-                            question_id: question.id,
-                            value,
-                            question_choice_id: answer.questionChoiceId || null,
-                        });
+                        qxConds.push(qxCond);
                     });
+                    const qxCondsAll = qxConds.length > 1 ? { $or: qxConds } : qxConds[0];
+                    const condition = Object.assign({ question_id: question.id }, qxCondsAll);
+                    where.$or.push(condition);
                 });
 
                 // find users with a matching answer for each question
@@ -603,7 +630,7 @@ module.exports = class AnswerDAO extends Base {
             .then(({ identifierMap, questionMap, choiceMap }) => {
                 const runnningMap = new Map();
                 const questions = federatedCriteria.reduce((r, criterion) => {
-                    const { identifier, questionText, questionChoiceText } = criterion;
+                    const { identifier, questionText, questionChoiceText, exclude } = criterion;
                     let { questionId, questionChoiceId } = identifierMap.get(identifier) || {};
                     if (!questionId) {
                         questionId = questionMap.get(questionText);
@@ -627,10 +654,13 @@ module.exports = class AnswerDAO extends Base {
                     let qx = runnningMap.get(questionId);
                     if (!qx) {
                         qx = { id: questionId, answers: [] };
+                        if (exclude) {
+                            qx.exclude = true;
+                        }
                         runnningMap.set(questionId, qx);
                         r.push(qx);
                     }
-                    const answer = _.omit(criterion, ['identifier', 'questionText', 'questionChoiceText']);
+                    const answer = _.omit(criterion, ['identifier', 'questionText', 'questionChoiceText', 'exclude']);
                     if (questionChoiceId) {
                         answer.choice = questionChoiceId;
                     }
@@ -707,11 +737,14 @@ module.exports = class AnswerDAO extends Base {
                 }
                 return { identifierMap, qxMap, qxChoiceMap: new Map() };
             })
-            .then(({ identifierMap, qxMap, qxChoiceMap }) => questions.reduce((r, { id, answers }) => { // eslint-disable-line max-len
+            .then(({ identifierMap, qxMap, qxChoiceMap }) => questions.reduce((r, { id, exclude, answers }) => { // eslint-disable-line max-len
                 const identifierInfo = identifierMap.get(id);
                 const questionText = qxMap.get(id);
                 answers.forEach((answer) => {
                     const e = { questionText };
+                    if (exclude) {
+                        e.exclude = true;
+                    }
                     if (answer.choice) {
                         e.questionChoiceText = qxChoiceMap.get(answer.choice);
                         if (identifierInfo) {
