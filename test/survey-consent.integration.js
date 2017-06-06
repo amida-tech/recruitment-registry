@@ -78,7 +78,6 @@ describe('survey consent integration', () => {
             rrSuperTest.post('/survey-consents', surveyConsent, 201)
                 .expect((res) => {
                     const id = res.body.id;
-                    delete surveyConsent.surveyId;
                     surveyConsent.consentTypeName = consentType.name;
                     surveyConsent.consentTypeTitle = consentType.title;
                     if (consentIndex === undefined) {

@@ -5914,9 +5914,13 @@
         },
         "surveyConsentInfo": {
             "type": "object",
-            "required": ["id", "consentTypeId", "action"],
+            "required": ["id", "consentTypeId", "action", "surveyId"],
             "properties": {
                 "id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "surveyId": {
                     "type": "integer",
                     "minimum": 1
                 },

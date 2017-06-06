@@ -71,7 +71,6 @@ describe('survey consent unit', () => {
             }
             return models.surveyConsent.createSurveyConsent(surveyConsent)
                 .then(({ id }) => {
-                    delete surveyConsent.surveyId;
                     surveyConsent.consentTypeName = consentType.name;
                     surveyConsent.consentTypeTitle = consentType.title;
                     if (consentIndex === undefined) {
