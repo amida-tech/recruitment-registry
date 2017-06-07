@@ -4390,6 +4390,9 @@
                 "id": {
                     "type": "integer"
                 },
+                "exclude": {
+                    "type": "boolean"
+                },
                 "answers": {
                     "type": "array",
                     "items": {
@@ -4397,7 +4400,8 @@
                     },
                     "minItems": 1
                 }
-            }
+            },
+            "additionalProperties": false
         },
         "answerIdentifiersQuery": {
             "type": "array",
@@ -4851,6 +4855,9 @@
                     "type": "string",
                     "minLength": 1
                 },
+                "exclude": {
+                    "type": "boolean"
+                },
                 "questionChoiceText": {
                     "type": "string",
                     "minLength": 1
@@ -4927,7 +4934,7 @@
                 }
             },
             "minProperties": 2,
-            "maxProperties": 4,
+            "maxProperties": 5,
             "additionalProperties": false
         },
         "newRuleChoicesItem": {

@@ -529,7 +529,10 @@ module.exports = class AnswerDAO extends Base {
                         }
                         qxConds.push(qxCond);
                     });
-                    const qxCondsAll = qxConds.length > 1 ? { $or: qxConds } : qxConds[0];
+                    let qxCondsAll = qxConds.length > 1 ? { $or: qxConds } : qxConds[0];
+                    if (question.exclude) {
+                        qxCondsAll = { $not: qxCondsAll };
+                    }
                     const condition = Object.assign({ question_id: question.id }, qxCondsAll);
                     where.$or.push(condition);
                 });

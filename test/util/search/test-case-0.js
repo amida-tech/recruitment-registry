@@ -347,42 +347,41 @@ const searchCases = [{
         }],
     }],
 }, {
-//     count: 2,
-//     userIndices: [3, 4, 5],
-//     answers: [{
-//         surveyIndex: 0,
-//         answerInfo: [{
-//             exclude: true,
-//             questionType: 'text',
-//             value: 'textvalue_00',
-//         }],
-//     }, {
-//         surveyIndex: 1,
-//         answerInfo: [{
-//             exclude: true,
-//             questionType: 'multichoice',
-//             choiceIndices: [2, 3],
-//         }],
-//     }],
-// }, {
-//     count: 2,
-//     userIndices: [3, 4],
-//     answers: [{
-//         surveyIndex: 0,
-//         answerInfo: [{
-//             exclude: true,
-//             questionType: 'text',
-//             value: 'somethingelse',
-//         }],
-//     }, {
-//         surveyIndex: 1,
-//         answerInfo: [{
-//             exclude: true,
-//             questionType: 'multichoice',
-//             choiceIndices: [2, 3],
-//         }],
-//     }],
-// }, {
+    count: 3,
+    userIndices: [3, 4, 5],
+    answers: [{
+        surveyIndex: 0,
+        answerInfo: [{
+            exclude: true,
+            questionType: 'text',
+            value: 'textvalue_00',
+        }],
+    }, {
+        surveyIndex: 1,
+        answerInfo: [{
+            exclude: true,
+            questionType: 'multichoice',
+            choiceIndices: [2, 3],
+        }],
+    }],
+}, {
+    count: 2,
+    userIndices: [3, 4],
+    answers: [{
+        surveyIndex: 0,
+        answerInfo: [{
+            questionType: 'text',
+            value: 'somethingelse',
+        }],
+    }, {
+        surveyIndex: 1,
+        answerInfo: [{
+            exclude: true,
+            questionType: 'multichoice',
+            choiceIndices: [2, 3],
+        }],
+    }],
+}, {
     count: 0,
     userIndices: [],
     answers: [{

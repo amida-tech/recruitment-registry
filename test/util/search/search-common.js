@@ -335,6 +335,9 @@ const Tests = class BaseTests {
             const question = this.hxQuestion.server(questionIndex);
             const answerGenerator = federatedAnswerGenerators[questionType];
             const answerObject = answerGenerator(question, info);
+            if (info.exclude) {
+                answerObject.forEach((r) => { r.exclude = true; });
+            }
             return answerObject;
         });
     }

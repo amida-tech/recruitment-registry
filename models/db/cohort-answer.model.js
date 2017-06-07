@@ -28,6 +28,9 @@ module.exports = function cohortAnswer(sequelize, Sequelize, schema) {
                 key: 'id',
             },
         },
+        exclude: {
+            type: Sequelize.BOOLEAN,
+        },
         questionChoiceId: {
             type: Sequelize.INTEGER,
             field: 'question_choice_id',

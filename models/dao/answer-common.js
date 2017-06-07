@@ -275,7 +275,7 @@ const prepareFilterAnswersForDB = function (answers) {
 };
 
 const getFilterAnswers = function (dao, Table, { where, order }) {
-    const attributes = ['questionId', 'questionChoiceId', 'value'];
+    const attributes = ['questionId', 'questionChoiceId', 'value', 'exclude'];
     const include = [
         { model: dao.db.Question, as: 'question', attributes: ['type'] },
         { model: dao.db.QuestionChoice, as: 'questionChoice', attributes: ['type'] },
@@ -289,6 +289,9 @@ const getFilterAnswers = function (dao, Table, { where, order }) {
                 if (!questionInfo) {
                     const type = record['question.type'];
                     questionInfo = { type, rows: [] };
+                    if (record.exclude !== null) {
+                        questionInfo.exclude = record.exclude;
+                    }
                     r.set(questionId, questionInfo);
                 }
                 const { questionChoiceId, value } = record;
@@ -300,8 +303,11 @@ const getFilterAnswers = function (dao, Table, { where, order }) {
                 return r;
             }, new Map());
             const questions = [];
-            groupedRecords.forEach(({ type, rows }, id) => {
+            groupedRecords.forEach(({ type, exclude, rows }, id) => {
                 const question = { id };
+                if (exclude !== undefined) {
+                    question.exclude = exclude;
+                }
                 question.answers = generateFilterAnswers(type, rows);
                 questions.push(question);
             });

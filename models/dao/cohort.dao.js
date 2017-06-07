@@ -37,7 +37,7 @@ module.exports = class CohortDAO extends Base {
     getFilterAnswers(filterId) {
         const where = { filterId };
         const order = this.qualifiedCol('filter_answer', 'id');
-        const attributes = ['questionId', 'questionChoiceId', 'value'];
+        const attributes = ['questionId', 'exclude', 'questionChoiceId', 'value'];
         const findOptions = { raw: true, where, attributes, order };
         return this.db.FilterAnswer.findAll(findOptions);
     }

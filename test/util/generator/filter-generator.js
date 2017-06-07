@@ -30,7 +30,13 @@ module.exports = class FilterGenerator {
             const answerCount = (questionIndex % 3) + 1;
             const questionId = question.id;
             const answers = _.range(answerCount).map(() => this.answerer.answerFilterQuestion(question)); // eslint-disable-line max-len
-            return { id: questionId, answers };
+            const result = { id: questionId, answers };
+            const excludeIndex = questionIndex % 3;
+            if (!excludeIndex) {
+                return result;
+            }
+            result.exclude = (excludeIndex === 1);
+            return result;
         });
         return filter;
     }
