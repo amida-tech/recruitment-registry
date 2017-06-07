@@ -321,6 +321,9 @@ const Tests = class BaseTests {
             const answerGenerator = generators[questionType];
             const answerObject = answerGenerator(questionId, info, this.choiceIdMap);
             const idProperty = generators.$idProperty;
+            if (forFilter && info.exclude) {
+                answerObject.exclude = true;
+            }
             return Object.assign({ [idProperty]: questionId }, answerObject);
         });
     }
@@ -332,6 +335,9 @@ const Tests = class BaseTests {
             const question = this.hxQuestion.server(questionIndex);
             const answerGenerator = federatedAnswerGenerators[questionType];
             const answerObject = answerGenerator(question, info);
+            if (info.exclude) {
+                answerObject.forEach((r) => { r.exclude = true; });
+            }
             return answerObject;
         });
     }
@@ -368,6 +374,11 @@ const Tests = class BaseTests {
             }
             const a = answers.map(r => _.omit(r, 'multipleIndex'));
             return { id, answers: a };
+        });
+        rawQuestions.forEach(({ exclude }, index) => {
+            if (exclude) {
+                questions[index].exclude = true;
+            }
         });
         return { questions };
     }

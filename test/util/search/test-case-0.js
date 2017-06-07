@@ -132,6 +132,13 @@ const answerSequence = [{ // user 0, survey 0
         questionType: 'multichoice',
         choiceIndices: [2, 5],
     }],
+}, {                      // user 3, survey 0
+    userIndex: 3,
+    surveyIndex: 0,
+    answerInfo: [{
+        questionType: 'text',
+        value: 'somethingelse',
+    }],
 }, {                      // user 3, survey 1
     userIndex: 3,
     surveyIndex: 1,
@@ -161,7 +168,21 @@ const answerSequence = [{ // user 0, survey 0
         questionType: 'multichoice',
         choiceIndices: [2, 4],
     }],
-}, {
+}, {                      // user 4, survey 0
+    userIndex: 4,
+    surveyIndex: 0,
+    answerInfo: [{
+        questionType: 'text',
+        value: 'somethingelse',
+    }],
+}, {                      // user 4, survey 1
+    userIndex: 4,
+    surveyIndex: 1,
+    answerInfo: [{
+        questionType: 'multichoice',
+        choiceIndices: [5],
+    }],
+}, {                      // user 4, survey 3
     userIndex: 4,
     surveyIndex: 3,
     answerInfo: [{
@@ -171,7 +192,21 @@ const answerSequence = [{ // user 0, survey 0
         questionType: 'integer',
         value: 50,
     }],
-}, {
+}, {                      // user 4, survey 0
+    userIndex: 5,
+    surveyIndex: 0,
+    answerInfo: [{
+        questionType: 'text',
+        value: 'somethingelse2',
+    }],
+}, {                      // user 4, survey 1
+    userIndex: 5,
+    surveyIndex: 1,
+    answerInfo: [{
+        questionType: 'multichoice',
+        choiceIndices: [4, 5],
+    }],
+}, {                      // user 5, survey 3
     userIndex: 5,
     surveyIndex: 3,
     answerInfo: [{
@@ -309,6 +344,41 @@ const searchCases = [{
         }, {
             questionType: 'choices',
             choiceIndices: [0, 2],
+        }],
+    }],
+}, {
+    count: 3,
+    userIndices: [3, 4, 5],
+    answers: [{
+        surveyIndex: 0,
+        answerInfo: [{
+            exclude: true,
+            questionType: 'text',
+            value: 'textvalue_00',
+        }],
+    }, {
+        surveyIndex: 1,
+        answerInfo: [{
+            exclude: true,
+            questionType: 'multichoice',
+            choiceIndices: [2, 3],
+        }],
+    }],
+}, {
+    count: 2,
+    userIndices: [3, 4],
+    answers: [{
+        surveyIndex: 0,
+        answerInfo: [{
+            questionType: 'text',
+            value: 'somethingelse',
+        }],
+    }, {
+        surveyIndex: 1,
+        answerInfo: [{
+            exclude: true,
+            questionType: 'multichoice',
+            choiceIndices: [2, 3],
         }],
     }],
 }, {

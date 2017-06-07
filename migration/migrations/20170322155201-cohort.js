@@ -63,6 +63,9 @@ const filterAnswer = function (queryInterface, Sequelize) {
                 key: 'id',
             },
         },
+        exclude: {
+            type: Sequelize.BOOLEAN,
+        },
         questionChoiceId: {
             type: Sequelize.INTEGER,
             field: 'question_choice_id',
@@ -173,6 +176,9 @@ const cohortAnswer = function (queryInterface, Sequelize) {
                 },
                 key: 'id',
             },
+        },
+        exclude: {
+            type: Sequelize.BOOLEAN,
         },
         questionChoiceId: {
             type: Sequelize.INTEGER,
