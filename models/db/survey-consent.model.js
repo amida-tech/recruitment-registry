@@ -61,7 +61,7 @@ module.exports = function surveyConsent(sequelize, Sequelize, schema) {
         paranoid: true,
         indexes: [{
             unique: true,
-            fields: ['survey_id', 'consent_type_id', 'action'],
+            fields: ['survey_id', 'consent_type_id', 'action', 'deleted_at'],
         }],
     });
 };
