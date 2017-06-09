@@ -365,8 +365,9 @@
                 "security": [{
                     "admin": []
                 },{
-
                     "participant": []
+                },{
+                    "clinician": []
                 }],
                 "parameters": [{
                     "name": "language",
