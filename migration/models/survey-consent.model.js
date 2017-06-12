@@ -58,7 +58,7 @@ module.exports = function Table(sequelize, DataTypes) {
         paranoid: true,
         indexes: [{
             unique: true,
-            fields: ['survey_id', 'consent_type_id', 'action', 'deleted_at'],
+            fields: ['survey_id', 'consent_type_id', 'action'],
         }],
     });
 };
