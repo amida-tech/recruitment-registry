@@ -25,11 +25,11 @@ describe('filter unit', function filterUnit() {
     before(shared.setUpFn());
 
     ['choice', 'choices', 'integer'].forEach((type) => {
-        _.range(count, count + 6).forEach((index) => {
+        _.range(count, count + 8).forEach((index) => {
             it(`create question ${index}`, qxTests.createQuestionFn({ type }));
             it(`get question ${index}`, qxTests.getQuestionFn(index));
         });
-        count += 6;
+        count += 8;
     });
 
     _.range(count, count + 10).forEach((index) => {

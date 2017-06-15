@@ -207,8 +207,8 @@ const answerValueToDBFormat = {
         return { value: `${systolic}-${diastolic}` };
     },
     integerRange(value) {
-        const max = value.max || '';
-        const min = value.min || '';
+        const max = (value.max === 0) ? '0' : (value.max || '');
+        const min = (value.min === 0) ? '0' : (value.min || '');
         return { value: `${min}:${max}` };
     },
     filename(value) {
