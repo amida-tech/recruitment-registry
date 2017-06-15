@@ -155,6 +155,7 @@ module.exports = class AnswerDAO extends Base {
                     language,
                     questionId,
                     questionChoiceId: v.questionChoiceId || null,
+                    fileId: v.fileId || null,
                     multipleIndex: (mndx || mndx === 0) ? mndx : null,
                     value: 'value' in v ? v.value : null,
                 };
@@ -327,7 +328,7 @@ module.exports = class AnswerDAO extends Base {
         if (scope === 'history-only') {
             where.deletedAt = { $ne: null };
         }
-        const attributes = ['questionChoiceId', 'language', 'multipleIndex', 'value'];
+        const attributes = ['questionChoiceId', 'fileId', 'language', 'multipleIndex', 'value'];
         if (scope === 'export' || !surveyId) {
             attributes.push('surveyId');
         }

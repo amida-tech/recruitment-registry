@@ -3601,6 +3601,66 @@
                     }
                 }
             }
+        },
+        "/files": {
+            "x-swagger-router-controller": "file.controller",
+            "post": {
+                "summary": "Stores file in database",
+                "operationId": "createFile",
+                "consumes": ["multipart/form-data"],
+                "security": [{
+                    "participant": []
+                }],
+                "parameters": [{
+                    "name": "file",
+                    "in": "formData",
+                    "description": "File to be stored in db",
+                    "required": true,
+                    "type": "file"
+                }, {
+                    "name": "filename",
+                    "in": "formData",
+                    "description": "Name of the file",
+                    "required": true,
+                    "type": "string"
+                }],
+                "responses": {
+                    "201" : {
+                        "$ref": "#/responses/idSuccess"
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
+        },
+        "/files/{id}": {
+            "x-swagger-router-controller": "file.controller",
+            "parameters": [{
+                "name": "id",
+                "in": "path",
+                "required": true,
+                "type": "integer"
+            }],
+            "get": {
+                "summary": "Get contents of file",
+                "operationId": "getFile",
+                "produces": ["application/octet-stream"],
+                "security": [{
+                    "participant": []
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
+            }
         }
     },
     "securityDefinitions": {
@@ -4745,6 +4805,26 @@
                         }
                     },
                     "additionalProperties": false
+                },
+                "fileValue": {
+                    "type": "object",
+                    "properties": {
+                        "id": {
+                            "type": "integer",
+                            "minimum": 1
+                        },
+                        "name": {
+                            "type": "string",
+                            "minLength": 1
+                        },
+                        "content": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Base64 encoded binary or text content"
+                        }
+                    },
+                    "minProperties": 1,
+                    "maxProperties": 2
                 },
                 "yearValue": {
                     "type": "string",

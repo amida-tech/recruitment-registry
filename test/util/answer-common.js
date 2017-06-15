@@ -183,6 +183,7 @@ const SpecTests = class AnswerSpecTests {
                 .then((result) => {
                     const expected = hxAnswer.expectedAnswers(userIndex, surveyIndex);
                     comparator.answers(expected, result);
+                    hxAnswer.pushServer(userIndex, surveyIndex, result);
                 });
         };
     }
@@ -285,6 +286,7 @@ const IntegrationTests = class AnswerIntegrationTests {
                 .expect((res) => {
                     const expected = hxAnswer.expectedAnswers(userIndex, surveyIndex);
                     comparator.answers(expected, res.body);
+                    hxAnswer.pushServer(userIndex, surveyIndex, res.body);
                 })
                 .end(done);
         };
