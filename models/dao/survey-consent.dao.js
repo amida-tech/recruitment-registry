@@ -52,7 +52,7 @@ module.exports = class SurveyConsentDAO extends Base {
     }
 
     listSurveyConsents(options) {
-        const attributes = ['id', 'consentId', 'consentTypeId', 'action'];
+        const attributes = ['id', 'surveyId', 'consentId', 'consentTypeId', 'action'];
         return this.db.SurveyConsent.findAll({ raw: true, attributes })
             .then((surveyConsents) => {
                 if (surveyConsents.length < 1) {
