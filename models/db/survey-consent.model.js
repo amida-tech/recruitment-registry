@@ -62,6 +62,7 @@ module.exports = function surveyConsent(sequelize, Sequelize, schema) {
         indexes: [{
             unique: true,
             fields: ['survey_id', 'consent_type_id', 'action'],
+            where: { deleted_at: { $eq: null } },
         }],
     });
 };
