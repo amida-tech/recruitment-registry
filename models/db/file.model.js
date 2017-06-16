@@ -5,6 +5,18 @@ module.exports = function File(sequelize, Sequelize, schema) {
 
     const modelName = `${schema}_${tableName}`;
     return sequelize.define(modelName, {
+        userId: {
+            type: Sequelize.INTEGER,
+            allowNull: false,
+            field: 'user_id',
+            references: {
+                model: {
+                    schema,
+                    tableName: 'registry_user',
+                },
+                key: 'id',
+            },
+        },
         name: {
             type: Sequelize.TEXT,
             allowNull: false,

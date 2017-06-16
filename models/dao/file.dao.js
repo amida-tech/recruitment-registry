@@ -4,14 +4,14 @@ const Base = require('./base');
 const RRError = require('../../lib/rr-error');
 
 module.exports = class FileDAO extends Base {
-    createFile({ name, content }) {
-        return this.db.File.create({ name, content })
+    createFile(userId, { name, content }) {
+        return this.db.File.create({ userId, name, content })
             .then(({ id }) => ({ id }));
     }
 
-    getFile(id) {
+    getFile(userId, id) {
         const attributes = ['name', 'content'];
-        return this.db.File.findById(id, { raw: true, attributes })
+        return this.db.File.findById(id, { raw: true, where: { userId }, attributes })
             .then((record) => {
                 if (!record) {
                     return RRError.reject('fileNoSuchFile');

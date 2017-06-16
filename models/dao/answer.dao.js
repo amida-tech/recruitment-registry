@@ -142,7 +142,7 @@ module.exports = class AnswerDAO extends Base {
         Object.assign(this, dependencies);
     }
 
-    saveFiles(answers, transaction) {
+    saveFiles(userId, answers, transaction) {
         if (answers.length < 1) {
             return answers;
         }
@@ -169,7 +169,7 @@ module.exports = class AnswerDAO extends Base {
         }
         const records = fileValues.map((fileValue) => {
             const content = new Buffer(fileValue.content, 'base64');
-            return { name: fileValue.name, content };
+            return { userId, name: fileValue.name, content };
         });
         return this.db.File.bulkCreate(records, { transaction, returning: true })
             .then(result => result.forEach(({ id }, index) => {
@@ -334,7 +334,7 @@ module.exports = class AnswerDAO extends Base {
                 const filteredAnswers = _.filter(answers, r => r.answer || r.answers);
                 return filteredAnswers;
             })
-            .then(filteredAnswers => this.saveFiles(filteredAnswers, transaction))
+            .then(filteredAnswers => this.saveFiles(userId, filteredAnswers, transaction))
             .then((filteredAnswers) => {
                 if (filteredAnswers.length) {
                     const language = inputRecord.language || 'en';

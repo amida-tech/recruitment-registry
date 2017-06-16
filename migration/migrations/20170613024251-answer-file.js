@@ -11,6 +11,17 @@ const file = function file(queryInterface, Sequelize) {
             primaryKey: true,
             autoIncrement: true,
         },
+        userId: {
+            type: Sequelize.INTEGER,
+            allowNull: false,
+            field: 'user_id',
+            references: {
+                model: {
+                    tableName: 'registry_user',
+                },
+                key: 'id',
+            },
+        },
         name: {
             type: Sequelize.TEXT,
             allowNull: false,
