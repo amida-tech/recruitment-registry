@@ -142,6 +142,44 @@ module.exports = class AnswerDAO extends Base {
         Object.assign(this, dependencies);
     }
 
+    saveFiles(answers, transaction) {
+        if (answers.length < 1) {
+            return answers;
+        }
+        const fileValues = answers.reduce((r, p) => {
+            if (p.answers) {
+                p.answers.forEach((answer) => {
+                    const fileValue = answer.fileValue;
+                    if (fileValue && fileValue.content) {
+                        r.push(fileValue);
+                    }
+                });
+                return r;
+            }
+            if (p.answer) {
+                const fileValue = p.answer.fileValue;
+                if (fileValue && fileValue.content) {
+                    r.push(fileValue);
+                }
+            }
+            return r;
+        }, []);
+        if (fileValues.length < 1) {
+            return answers;
+        }
+        const records = fileValues.map((fileValue) => {
+            const content = new Buffer(fileValue.content, 'base64');
+            return { name: fileValue.name, content };
+        });
+        return this.db.File.bulkCreate(records, { transaction, returning: true })
+            .then(result => result.forEach(({ id }, index) => {
+                fileValues[index].id = id;
+                delete fileValues[index].content;
+            }))
+            .then(() => answers);
+    }
+
+
     fileAnswer({ userId, surveyId, language, answers }, transaction) {
         const Answer = this.db.Answer;
         const records = answers.reduce((r, p) => {
@@ -294,6 +332,10 @@ module.exports = class AnswerDAO extends Base {
             })
             .then(() => {
                 const filteredAnswers = _.filter(answers, r => r.answer || r.answers);
+                return filteredAnswers;
+            })
+            .then(filteredAnswers => this.saveFiles(filteredAnswers, transaction))
+            .then((filteredAnswers) => {
                 if (filteredAnswers.length) {
                     const language = inputRecord.language || 'en';
                     const record = { userId, surveyId, language, answers: filteredAnswers };

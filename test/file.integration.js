@@ -36,10 +36,22 @@ const binaryParser = function binaryParser(res, callback) {
 describe('answer file integration', function answerFileIntegration() {
     const fileIds = [];
 
+    const genFilepath = name => path.join(__dirname, `fixtures/answer-files/${name}`);
+
     const AnswererWithFile = class extends Answerer {
+        provideFile(value) {
+            this.provideFile = value;
+        }
+
         file() {
             const fileIndex = this.answerIndex % 4;
-            const name = `cat${fileIndex}.jpeg`;
+            const name = `cat${fileIndex + 1}.jpeg`;
+            if (this.provideFile) {
+                const filepath = genFilepath(name);
+                const content = fs.readFileSync(filepath);
+                const base64 = content.toString('base64');
+                return { fileValue: { name, content: base64 } };
+            }
             const id = fileIds[fileIndex];
             return { fileValue: { id, name } };
         }
@@ -49,7 +61,8 @@ describe('answer file integration', function answerFileIntegration() {
     const surveyCount = 3;
 
     const rrSuperTest = new RRSuperTest();
-    const generator = new Generator({ answerer: new AnswererWithFile() });
+    const answerer = new AnswererWithFile();
+    const generator = new Generator({ answerer });
     const shared = new SharedIntegration(rrSuperTest, generator);
     const hxUser = new History();
     const hxQuestion = new History();
@@ -60,8 +73,6 @@ describe('answer file integration', function answerFileIntegration() {
         generator, hxUser, hxSurvey, hxQuestion,
     });
 
-    const genFilepath = name => path.join(__dirname, `fixtures/answer-files/${name}`);
-
     before(shared.setUpFn());
 
     it('login as super', shared.loginFn(config.superUser));
@@ -70,7 +81,7 @@ describe('answer file integration', function answerFileIntegration() {
     });
     it('logout as super', shared.logoutFn());
 
-    _.range(4).forEach((index) => {
+    _.range(2).forEach((index) => {
         it(`login as user ${index}`, shared.loginIndexFn(hxUser, index));
         it(`post file ${index}`, function postFile() {
             const filename = `cat${index + 1}.jpeg`;
@@ -105,11 +116,37 @@ describe('answer file integration', function answerFileIntegration() {
     });
     it('logout as super', shared.logoutFn());
 
-    _.range(userCount).forEach((userIndex) => {
+    _.range(2).forEach((userIndex) => {
         _.range(surveyCount).forEach((surveyIndex) => {
             it(`login as user ${userIndex}`, shared.loginIndexFn(hxUser, userIndex));
             it(`user ${userIndex} answers survey ${surveyIndex}`, answerTests.answerSurveyFn(userIndex, surveyIndex));
             it(`user ${userIndex} gets answers to survey ${surveyIndex}`, answerTests.getAnswersFn(userIndex, surveyIndex));
+            it(`logout as user ${userIndex}`, shared.logoutFn());
+        });
+    });
+
+    it('switch to post files with answers', function switchAnswerer() {
+        answerer.provideFile(true);
+    });
+
+    _.range(2, 4).forEach((userIndex) => {
+        _.range(surveyCount).forEach((surveyIndex) => {
+            it(`login as user ${userIndex}`, shared.loginIndexFn(hxUser, userIndex));
+            it(`user ${userIndex} answers survey ${surveyIndex}`, answerTests.answerSurveyFn(userIndex, surveyIndex));
+            it(`user ${userIndex} gets answers to survey ${surveyIndex}`, answerTests.getAnswersFn(userIndex, surveyIndex));
+            it(`verify ${userIndex} survey ${surveyIndex} file`, function verifyFile() {
+                const lastServer = answerTests.hxAnswer.getLastServer(userIndex, surveyIndex);
+                const fileValue = lastServer.find(r => r.answer.fileValue).answer.fileValue;
+                return rrSuperTest.get(`/files/${fileValue.id}`, true, 200)
+                    .buffer()
+                    .parse(binaryParser)
+                    .then((res) => {
+                        const filename = fileValue.name;
+                        const filepath = genFilepath(filename);
+                        const content = fs.readFileSync(filepath);
+                        expect(res.body).to.deep.equal(content);
+                    });
+            });
             it(`logout as user ${userIndex}`, shared.logoutFn());
         });
     });

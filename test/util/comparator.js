@@ -211,8 +211,9 @@ const comparator = {
         expect(serverAnsweredSurvey).to.deep.equal(expected);
     },
     answers(answers, serverAnswers, language) {
-        const expected = _.cloneDeep(answers);
-        expected.forEach((answer) => {
+        const expected = _.sortBy(_.cloneDeep(answers), 'questionId');
+        const actual = _.sortBy(serverAnswers, 'questionId');
+        expected.forEach((answer, index) => {
             answer.language = answer.language || language || 'en';
             if (answer.answer && answer.answer.choices) {
                 answer.answer.choices.forEach((choice) => {
@@ -227,10 +228,13 @@ const comparator = {
                     }
                 });
             }
+            const fileValue = _.get(answer, 'answer.fileValue');
+            if (fileValue && fileValue.content) {
+                delete fileValue.content;
+                fileValue.id = actual[index].answer.fileValue.id;
+            }
         });
-        const orderedExpected = _.sortBy(expected, 'questionId');
-        const orderedActual = _.sortBy(serverAnswers, 'questionId');
-        expect(orderedActual).to.deep.equal(orderedExpected);
+        expect(actual).to.deep.equal(expected);
     },
     createdAt(server) {
         const compareDateTime = moment().subtract(2, 'second');
