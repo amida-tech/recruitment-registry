@@ -19,4 +19,9 @@ module.exports = class FileDAO extends Base {
                 return record;
             });
     }
+
+    listFiles(userId) {
+        const attributes = ['id', 'name'];
+        return this.db.File.findAll({ raw: true, where: { userId }, attributes, order: 'id' });
+    }
 };

@@ -24,3 +24,10 @@ exports.getFile = function getFile(req, res) {
         })
         .catch(shared.handleError(res));
 };
+
+exports.listFiles = function listFiles(req, res) {
+    const userId = req.user.id;
+    req.models.file.listFiles(userId)
+        .then(result => res.status(200).json(result))
+        .catch(shared.handleError(res));
+};

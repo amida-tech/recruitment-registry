@@ -35,6 +35,7 @@ const binaryParser = function binaryParser(res, callback) {
 
 describe('answer file integration', function answerFileIntegration() {
     const fileIds = [];
+    const hxFiles = [];
 
     const genFilepath = name => path.join(__dirname, `fixtures/answer-files/${name}`);
 
@@ -87,7 +88,10 @@ describe('answer file integration', function answerFileIntegration() {
             const filename = `cat${index + 1}.jpeg`;
             const filepath = genFilepath(filename);
             return rrSuperTest.postFile('/files', 'file', filepath, { filename }, 201)
-                .then(res => fileIds.push(res.body.id));
+                .then((res) => {
+                    hxFiles.push({ userIndex: index, id: res.body.id, name: filename });
+                    fileIds.push(res.body.id);
+                });
         });
         it(`get file ${index}`, function getFile() {
             const id = fileIds[index];
@@ -145,9 +149,28 @@ describe('answer file integration', function answerFileIntegration() {
                         const filepath = genFilepath(filename);
                         const content = fs.readFileSync(filepath);
                         expect(res.body).to.deep.equal(content);
+                        hxFiles.push({ userIndex, id: fileValue.id, name: fileValue.name });
                     });
             });
             it(`logout as user ${userIndex}`, shared.logoutFn());
         });
+    });
+
+    _.range(2, 4).forEach((index) => {
+        it(`login as user ${index}`, shared.loginIndexFn(hxUser, index));
+        it('list files', function listFiles() {
+            return rrSuperTest.get('/files', true, 200)
+                .then((res) => {
+                    const actual = res.body;
+                    const expected = hxFiles.reduce((r, { userIndex, id, name }) => {
+                        if (userIndex === index) {
+                            r.push({ id, name });
+                        }
+                        return r;
+                    }, []);
+                    expect(actual).to.deep.equal(expected);
+                });
+        });
+        it(`logout as user ${index}`, shared.logoutFn());
     });
 });
