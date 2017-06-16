@@ -23,6 +23,7 @@ module.exports = class AnswerHistory {
     constructor() {
         this.historyIndexMap = new Map();
         this.store = [];
+        this.serverStore = [];
     }
 
     static key(userIndex, surveyIndex) {
@@ -56,13 +57,30 @@ module.exports = class AnswerHistory {
         const record = toAnswerRecord(answers, language);
         const value = Object.assign({ userIndex, surveyIndex }, record);
         this.store.push(value);
+        this.serverStore.push(null);
         indexHistory.push(index);
+    }
+
+    getLastIndex(userIndex, surveyIndex) {
+        const key = AnswerHistory.key(userIndex, surveyIndex);
+        const keyIndices = this.historyIndexMap.get(key);
+        return keyIndices[keyIndices.length - 1];
+    }
+
+    pushServer(userIndex, surveyIndex, answers) {
+        const index = this.getLastIndex(userIndex, surveyIndex);
+        this.serverStore[index] = answers;
     }
 
     getLast(userIndex, surveyIndex) {
         const all = this.getAll(userIndex, surveyIndex);
         const length = all.length;
         return all[length - 1];
+    }
+
+    getLastServer(userIndex, surveyIndex) {
+        const index = this.getLastIndex(userIndex, surveyIndex);
+        return this.serverStore[index];
     }
 
     getAll(userIndex, surveyIndex) {
@@ -72,6 +90,15 @@ module.exports = class AnswerHistory {
             return [];
         }
         return _.at(this.store, keyIndices);
+    }
+
+    getAllServer(userIndex, surveyIndex) {
+        const key = AnswerHistory.key(userIndex, surveyIndex);
+        const keyIndices = this.historyIndexMap.get(key);
+        if (!keyIndices) {
+            return [];
+        }
+        return _.at(this.serverStore, keyIndices);
     }
 
     listFlatForUser(userIndex) {

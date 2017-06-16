@@ -52,6 +52,7 @@ const filter = require('./filter.model');
 const filterAnswer = require('./filter-answer.model');
 const cohort = require('./cohort.model');
 const cohortAnswer = require('./cohort-answer.model');
+const file = require('./file.model');
 
 const questionBelongsTo = function () {
     const result = {
@@ -133,6 +134,7 @@ const defineTables = function (sequelize, Sequelize, schema) {
     const FilterAnswer = filterAnswer(sequelize, Sequelize, schema);
     const Cohort = cohort(sequelize, Sequelize, schema);
     const CohortAnswer = cohortAnswer(sequelize, Sequelize, schema);
+    const File = file(sequelize, Sequelize, schema);
 
     Answer.belongsTo(Question, questionBelongsTo());
     Answer.belongsTo(QuestionChoice, questionChoiceBelongsTo());
@@ -265,6 +267,7 @@ const defineTables = function (sequelize, Sequelize, schema) {
         FilterAnswer,
         Cohort,
         CohortAnswer,
+        File,
         schema,
     };
 };

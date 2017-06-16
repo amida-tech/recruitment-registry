@@ -38,7 +38,7 @@ const getValueAnswerGenerator = (function getValueAnswerGeneratorGen() {
                 },
             };
         },
-        feetInches: (value) => {
+        feetInches(value) {
             const pieces = value.split('-');
             return {
                 feetInchesValue: {
@@ -91,12 +91,28 @@ const generateAnswer = function (type, entries, multiple) {
             if (type === 'choice' || type === 'open-choice') {
                 const fnChoice = getChoiceAnswerGenerator(type);
                 Object.assign(answer, fnChoice([entry]));
+            } else if (type === 'file') {
+                Object.assign(answer, {
+                    fileValue: {
+                        name: entry.value,
+                        id: entry.fileId,
+                    },
+                });
             } else {
                 Object.assign(answer, fn(entry.value));
             }
             return answer;
         });
         return _.sortBy(result, 'multipleIndex');
+    }
+    if (type === 'file') {
+        const entry = entries[0];
+        return {
+            fileValue: {
+                name: entry.value,
+                id: entry.fileId,
+            },
+        };
     }
     const fnChoices = getChoiceAnswerGenerator(type);
     if (fnChoices) {
@@ -195,6 +211,9 @@ const answerValueToDBFormat = {
         const min = (value.min === 0) ? '0' : (value.min || '');
         return { value: `${min}:${max}` };
     },
+    filename(value) {
+        return { value };
+    },
 };
 
 const choiceValueToDBFormat = {
@@ -244,6 +263,13 @@ const prepareAnswerForDB = function (answer) {
         throw new RRError('answerMultipleTypeAnswers', keys.join(', '));
     }
     const key = keys[0];
+    if (key === 'fileValue') {
+        const answerValue = answer[key];
+        return [{
+            fileId: answerValue.id,
+            value: answerValue.name,
+        }];
+    }
     let fn = choiceValueToDBFormat[key];
     if (fn) {
         return fn(answer[key]);

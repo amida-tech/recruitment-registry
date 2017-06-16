@@ -63,6 +63,17 @@ module.exports = function answer(sequelize, Sequelize, schema) {
                 key: 'id',
             },
         },
+        fileId: {
+            type: Sequelize.INTEGER,
+            field: 'file_id',
+            references: {
+                model: {
+                    schema,
+                    tableName: 'file',
+                },
+                key: 'id',
+            },
+        },
         multipleIndex: {
             type: Sequelize.INTEGER,
             field: 'multiple_index',

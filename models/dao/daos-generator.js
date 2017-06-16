@@ -36,6 +36,7 @@ const Macro = require('./macro');
 const FilterDAO = require('./filter.dao');
 const FilterAnswerDAO = require('./filter-answer.dao');
 const CohortDAO = require('./cohort.dao');
+const FileDAO = require('./file.dao');
 
 const doasPerSchema = function (db, daosGenerator) {
     const registry = new Registry(db);
@@ -88,6 +89,7 @@ const doasPerSchema = function (db, daosGenerator) {
     const filterAnswer = new FilterAnswerDAO(db);
     const filter = new FilterDAO(db, { filterAnswer });
     const cohort = new CohortDAO(db, { answer, filter, registry });
+    const file = new FileDAO(db);
 
     return {
         sequelize: db.sequelize,
@@ -126,6 +128,7 @@ const doasPerSchema = function (db, daosGenerator) {
         filter,
         filterAnswer,
         cohort,
+        file,
     };
 };
 

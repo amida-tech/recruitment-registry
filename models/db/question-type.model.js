@@ -1,7 +1,5 @@
 'use strict';
 
-const SPromise = require('../../lib/promise');
-
 module.exports = function questionType(sequelize, Sequelize, schema) {
     const tableName = 'question_type';
     const modelName = `${schema}_${tableName}`;
@@ -25,12 +23,12 @@ module.exports = function questionType(sequelize, Sequelize, schema) {
             afterSync(options) {
                 if (options.force) {
                     const names = [
-                        'text', 'choice', 'choices', 'bool', 'integer', 'float',
-                        'zip', 'date', 'pounds', 'year', 'month', 'day',
-                        'feet-inches', 'blood-pressure', 'choice-ref', 'open-choice',
+                        'text', 'choice', 'choices', 'bool', 'integer',
+                        'float', 'zip', 'date', 'pounds', 'year', 'month',
+                        'day', 'feet-inches', 'blood-pressure', 'choice-ref',
+                        'open-choice', 'file',
                     ];
-                    const ps = names.map(name => this.create({ name }));
-                    return SPromise.all(ps);
+                    return this.bulkCreate(names.map(name => ({ name })));
                 }
                 return null;
             },

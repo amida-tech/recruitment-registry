@@ -67,5 +67,6 @@
 	"answerRemoteRegistryError": "Cannot get data from registry {{0}}: {{1}}",
 	"qxChoiceNoDeleteAnswered": "Cannot delete question choice: there are answers using the choice.",
 	"qxChoiceNoDeleteInFilter": "Cannot delete question choice: there are filters using the choice.",
-	"filterMalformedNoAnswers": "Filter is malformed: No answers for some questions."
+	"filterMalformedNoAnswers": "Filter is malformed: No answers for some questions.",
+	"fileNoSuchFile": "No such file is found."
 }

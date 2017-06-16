@@ -142,6 +142,44 @@ module.exports = class AnswerDAO extends Base {
         Object.assign(this, dependencies);
     }
 
+    saveFiles(userId, answers, transaction) {
+        if (answers.length < 1) {
+            return answers;
+        }
+        const fileValues = answers.reduce((r, p) => {
+            if (p.answers) {
+                p.answers.forEach((answer) => {
+                    const fileValue = answer.fileValue;
+                    if (fileValue && fileValue.content) {
+                        r.push(fileValue);
+                    }
+                });
+                return r;
+            }
+            if (p.answer) {
+                const fileValue = p.answer.fileValue;
+                if (fileValue && fileValue.content) {
+                    r.push(fileValue);
+                }
+            }
+            return r;
+        }, []);
+        if (fileValues.length < 1) {
+            return answers;
+        }
+        const records = fileValues.map((fileValue) => {
+            const content = new Buffer(fileValue.content, 'base64');
+            return { userId, name: fileValue.name, content };
+        });
+        return this.db.File.bulkCreate(records, { transaction, returning: true })
+            .then(result => result.forEach(({ id }, index) => {
+                fileValues[index].id = id;
+                delete fileValues[index].content;
+            }))
+            .then(() => answers);
+    }
+
+
     fileAnswer({ userId, surveyId, language, answers }, transaction) {
         const Answer = this.db.Answer;
         const records = answers.reduce((r, p) => {
@@ -155,6 +193,7 @@ module.exports = class AnswerDAO extends Base {
                     language,
                     questionId,
                     questionChoiceId: v.questionChoiceId || null,
+                    fileId: v.fileId || null,
                     multipleIndex: (mndx || mndx === 0) ? mndx : null,
                     value: 'value' in v ? v.value : null,
                 };
@@ -293,6 +332,10 @@ module.exports = class AnswerDAO extends Base {
             })
             .then(() => {
                 const filteredAnswers = _.filter(answers, r => r.answer || r.answers);
+                return filteredAnswers;
+            })
+            .then(filteredAnswers => this.saveFiles(userId, filteredAnswers, transaction))
+            .then((filteredAnswers) => {
                 if (filteredAnswers.length) {
                     const language = inputRecord.language || 'en';
                     const record = { userId, surveyId, language, answers: filteredAnswers };
@@ -327,7 +370,7 @@ module.exports = class AnswerDAO extends Base {
         if (scope === 'history-only') {
             where.deletedAt = { $ne: null };
         }
-        const attributes = ['questionChoiceId', 'language', 'multipleIndex', 'value'];
+        const attributes = ['questionChoiceId', 'fileId', 'language', 'multipleIndex', 'value'];
         if (scope === 'export' || !surveyId) {
             attributes.push('surveyId');
         }
