@@ -45,6 +45,13 @@ const all = {
         baseUrl: 'https://www.zipwise.com/webservices/radius.php',
         distance: 50,
     },
+    awsApi: {
+        baseUrl: '',
+        apiKey: '',
+        apiSecret: '',
+        s3: {},
+    },
+
 };
 
 const main = {
@@ -96,6 +103,12 @@ const main = {
         baseUrl: process.env.RECREG_ZIP_BASE_URL,
         apiKey: process.env.RECREG_ZIP_API_KEY,
         distance: process.env.RECREG_ZIP_DISTANCE,
+    },
+    awsApi: {
+        baseUrl: '',
+        apiKey: '',
+        apiSecret: '',
+        s3: {},
     },
 };
 

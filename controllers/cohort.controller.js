@@ -3,11 +3,19 @@
 const _ = require('lodash');
 
 const shared = require('./shared.js');
+const awsUtil = require('../lib/aws-util.js');
 
 exports.createCohort = function createCohort(req, res) {
+    console.log("WHAT IS UP KEVIN");
+    // console.dir(req);
+
+
     const allModels = req.app.locals.models;
     req.models.cohort.createCohort(req.body, allModels)
         .then((csvContent) => {
+            console.log(csvContent);
+            awsUtil.zipAndUploadToS3(csvContent);
+            console.log(csvContent);
             res.header('Content-disposition', 'attachment; filename=cohort.csv');
             res.type('text/csv');
             res.status(201).send(csvContent);
