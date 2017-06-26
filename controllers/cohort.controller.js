@@ -8,14 +8,10 @@ const awsUtil = require('../lib/aws-util.js');
 exports.createCohort = function createCohort(req, res) {
     const allModels = req.app.locals.models;
     req.models.cohort.createCohort(req.body, allModels)
-        .then((csvContent) => {
-            console.log(csvContent);
-            awsUtil.uploadCohortCSV(csvContent);
-            console.log(csvContent);
-            res.header('Content-disposition', 'attachment; filename=cohort.csv');
-            res.type('text/csv');
-            res.status(201).send(csvContent);
-        })
+        .then(awsUtil.uploadCohortCSV)
+        .then((s3Data) => {
+            res.status(201).json(s3Data)
+        }, err => shared.handleError(res))
         .catch(shared.handleError(res));
 };
 
