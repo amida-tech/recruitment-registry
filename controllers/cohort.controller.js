@@ -4,15 +4,19 @@ const _ = require('lodash');
 
 const shared = require('./shared.js');
 const csvEmailUtil = require('../lib/csv-email-util');
+const smtpHelper = require('../lib/smtp-helper');
 
 exports.createCohort = function createCohort(req, res) {
     const allModels = req.app.locals.models;
+    const language = _.get(req, 'swagger.params.language.value');
     req.models.cohort.createCohort(req.body, allModels)
         .then(csvEmailUtil.uploadCohortCSV)
         .then((s3Data) => {
-            csvEmailutil.sendS3LinkEmail(req.models, s3Data);
-            res.status(201).json(s3Data)
-        }, err => shared.handleError(res))
+            const models = req.models;
+            const email = req.user.email;
+            return smtpHelper.sendS3LinkEmail(models, email, language, s3Data);
+        })
+        .then(result => res.status(201).json(result))
         .catch(shared.handleError(res));
 };
 
