@@ -27,7 +27,8 @@ describe('smtp integration', () => {
     let smtpTextTranslation = {};
 
     const checkNull = function (done) {
-        rrSuperTest.get('/smtp', true, 200)
+        const type = 'reset-password';
+        rrSuperTest.get(`/smtp/${type}`, true, 200)
             .expect((res) => {
                 expect(res.body.exists).to.equal(false);
             })
@@ -56,14 +57,14 @@ describe('smtp integration', () => {
         };
     };
 
-    const createSmtpFn = function (index, withText) {
+    const createSmtpFn = function (index, withText, type = 'reset-password') {
         return function createSmtp(done) {
             const newSmtp = createNewSmtp(index);
             const newSmtpText = createNewSmtpText(index);
             if (withText) {
                 Object.assign(newSmtp, newSmtpText);
             }
-            rrSuperTest.post('/smtp', newSmtp, 204)
+            rrSuperTest.post(`/smtp/${type}`, newSmtp, 204)
                 .expect(() => {
                     smtp = newSmtp;
                     if (withText) {
@@ -75,11 +76,11 @@ describe('smtp integration', () => {
         };
     };
 
-    const updateSmtpTextFn = function (index, language) {
+    const updateSmtpTextFn = function (index, language, type = 'reset-password') {
         return function updateSmtpText(done) {
             const text = createNewSmtpText(index);
             language = language || 'en';
-            rrSuperTest.patch(`/smtp/text/${language}`, text, 204)
+            rrSuperTest.patch(`/smtp/${type}/text/${language}`, text, 204)
                 .expect(() => {
                     smtpText = text;
                 })
@@ -87,9 +88,10 @@ describe('smtp integration', () => {
         };
     };
 
-    const getSmtpFn = function () {
+    const getSmtpFn = function (explicit, type = 'reset-password') {
         return function getSmtp(done) {
-            rrSuperTest.get('/smtp', true, 200)
+            const options = explicit ? { language: 'en' } : undefined;
+            rrSuperTest.get(`/smtp/${type}`, true, 200, options)
                 .expect((res) => {
                     const expected = _.cloneDeep(smtp);
                     if (smtpText) {
@@ -102,9 +104,9 @@ describe('smtp integration', () => {
         };
     };
 
-    const getTranslatedSmtpFn = function (language, checkFields) {
+    const getTranslatedSmtpFn = function (language, checkFields, type = 'reset-password') {
         return function getTranslatedSmtp(done) {
-            rrSuperTest.get('/smtp', true, 200, { language })
+            rrSuperTest.get(`/smtp/${type}`, true, 200, { language })
                 .end((err, res) => {
                     if (err) {
                         return done(err);
@@ -138,10 +140,10 @@ describe('smtp integration', () => {
             };
         };
 
-        return function transSmtp(language) {
+        return function transSmtp(language, type = 'reset-password') {
             return function transSmtp2(done) {
                 const translation = translateSmtp(smtpText, language);
-                rrSuperTest.patch(`/smtp/text/${language}`, translation, 204)
+                rrSuperTest.patch(`/smtp/${type}/text/${language}`, translation, 204)
                     .expect(() => {
                         smtpTextTranslation[language] = translation;
                     })
@@ -150,9 +152,9 @@ describe('smtp integration', () => {
         };
     }());
 
-    const deleteSmtpFn = function () {
+    const deleteSmtpFn = function (type = 'reset-password') {
         return function deleteSmtp(done) {
-            rrSuperTest.delete('/smtp', 204).end(done);
+            rrSuperTest.delete(`/smtp/${type}`, 204).end(done);
         };
     };
 
@@ -178,7 +180,7 @@ describe('smtp integration', () => {
 
     it('get/verify smtp settings', getSmtpFn());
 
-    it('get/verify smtp settings in explicit english', getSmtpFn('en'));
+    it('get/verify smtp settings in explicit english', getSmtpFn(true));
 
     it('get/verify smtp settings in spanish', getTranslatedSmtpFn('es', true));
 

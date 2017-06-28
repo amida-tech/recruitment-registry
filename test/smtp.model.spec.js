@@ -23,13 +23,14 @@ describe('smtp unit', () => {
     let smtpText;
     let smtpTextTranslation = {};
 
-    const checkNull = function () {
-        return models.smtp.getSmtp()
+    const checkNull = function (type = 'reset-password') {
+        return models.smtp.getSmtp(type)
             .then(result => expect(result).to.equal(null));
     };
 
-    const createNewSmtp = function (index) {
+    const createNewSmtp = function (index, type = 'reset-password') {
         return {
+            type,
             protocol: `protocol_${index}`,
             username: `username_${index}`,
             password: `password_${index}`,
@@ -42,18 +43,19 @@ describe('smtp unit', () => {
         };
     };
 
-    const createNewSmtpText = function (index) {
+    const createNewSmtpText = function (index, type = 'reset-password') {
         const actualLink = '${link}'; // eslint-disable-line no-template-curly-in-string
         return {
+            type,
             subject: `subject_${index}`,
             content: `content_${index} with link:${actualLink}`,
         };
     };
 
-    const createSmtpFn = function (index, withText) {
+    const createSmtpFn = function (index, withText, type = 'reset-password') {
         return function createSmtp() {
-            const newSmtp = createNewSmtp(index);
-            const newSmtpText = createNewSmtpText(index);
+            const newSmtp = createNewSmtp(index, type);
+            const newSmtpText = createNewSmtpText(index, type);
             if (withText) {
                 Object.assign(newSmtp, newSmtpText);
             }
@@ -68,17 +70,21 @@ describe('smtp unit', () => {
         };
     };
 
-    const updateSmtpTextFn = function (index, language) {
+    const updateSmtpTextFn = function (index, language, type = 'reset-password') {
         return function updateSmtpText() {
-            const text = createNewSmtpText(index);
+            const text = createNewSmtpText(index, type);
             return models.smtp.updateSmtpText(text, language)
                 .then(() => (smtpText = text));
         };
     };
 
-    const getSmtpFn = function () {
+    const getSmtpFn = function (explicit, type = 'reset-password') {
         return function getSmtp() {
-            return models.smtp.getSmtp()
+            const options = { type };
+            if (explicit) {
+                options.language = 'en';
+            }
+            return models.smtp.getSmtp(options)
                 .then((result) => {
                     const expected = _.cloneDeep(smtp);
                     if (smtpText) {
@@ -89,9 +95,9 @@ describe('smtp unit', () => {
         };
     };
 
-    const getTranslatedSmtpFn = function (language, checkFields) {
+    const getTranslatedSmtpFn = function (language, checkFields, type = 'reset-password') {
         return function getTranslatedSmtp() {
-            return models.smtp.getSmtp({ language })
+            return models.smtp.getSmtp({ type, language })
                 .then((result) => {
                     const expected = _.cloneDeep(smtp);
                     let translation = smtpTextTranslation[language];
@@ -112,17 +118,18 @@ describe('smtp unit', () => {
     };
 
     const translateSmtpFn = (function translateSmtpGen() {
-        const translateSmtp = function (server, language) {
+        const translateSmtp = function (server, language, type) {
             return {
+                type,
                 subject: `${server.subject} (${language})`,
                 content: `${server.content} (${language})`,
             };
         };
 
-        return function transSmtp(language) {
+        return function transSmtp(language, type = 'reset-password') {
             return function transSmtp2() {
-                const translation = translateSmtp(smtpText, language);
-                return models.smtp.updateSmtpText(translation, language)
+                const translation = translateSmtp(smtpText, language, type);
+                return models.smtp.updateSmtpText(translation, language, type)
                     .then(() => {
                         smtpTextTranslation[language] = translation;
                     });
@@ -131,8 +138,8 @@ describe('smtp unit', () => {
     }());
 
     const deleteSmtpFn = function () {
-        return function deleteSmtp() {
-            return models.smtp.deleteSmtp();
+        return function deleteSmtp(type = 'reset-password') {
+            return models.smtp.deleteSmtp(type);
         };
     };
 
@@ -156,7 +163,7 @@ describe('smtp unit', () => {
 
     it('get/verify smtp settings', getSmtpFn());
 
-    it('get/verify smtp settings in explicit english', getSmtpFn('en'));
+    it('get/verify smtp settings in explicit english', getSmtpFn(true));
 
     it('get/verify smtp settings in spanish', getTranslatedSmtpFn('es', true));
 
