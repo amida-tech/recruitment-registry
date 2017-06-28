@@ -139,7 +139,7 @@ describe('reset-token integration', () => {
     };
 
     it('setup server specifications', (done) => {
-        rrSuperTest.post('/smtp', smtpSpec, 204).end(done);
+        rrSuperTest.post('/smtp/reset-password', smtpSpec, 204).end(done);
     });
 
     it('logout as super', shared.logoutFn());
@@ -160,7 +160,7 @@ describe('reset-token integration', () => {
     };
 
     it('setup server specifications', (done) => {
-        rrSuperTest.patch('/smtp/text/en', smtpText, 204).end(done);
+        rrSuperTest.patch('/smtp/reset-password/text/en', smtpText, 204).end(done);
     });
 
     it('logout as super', shared.logoutFn());
@@ -174,7 +174,7 @@ describe('reset-token integration', () => {
 
     it('setup server specifications', (done) => {
         smtpSpec.from = 'smtp@rr.com';
-        rrSuperTest.post('/smtp', smtpSpec, 204).end(done);
+        rrSuperTest.post('/smtp/reset-password', smtpSpec, 204).end(done);
     });
 
     it('logout as super', shared.logoutFn());
