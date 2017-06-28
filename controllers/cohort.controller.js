@@ -3,13 +3,14 @@
 const _ = require('lodash');
 
 const shared = require('./shared.js');
-const awsUtil = require('../lib/aws-util.js');
+const csvEmailUtil = require('../lib/csv-email-util.js);
 
 exports.createCohort = function createCohort(req, res) {
     const allModels = req.app.locals.models;
     req.models.cohort.createCohort(req.body, allModels)
-        .then(awsUtil.uploadCohortCSV)
+        .then(csvEmailUtil.uploadCohortCSV)
         .then((s3Data) => {
+            csvEmailutil.sendS3LinkEmail(req.models, s3Data);
             res.status(201).json(s3Data)
         }, err => shared.handleError(res))
         .catch(shared.handleError(res));
