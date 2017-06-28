@@ -3,7 +3,7 @@
 const _ = require('lodash');
 
 const shared = require('./shared.js');
-const csvEmailUtil = require('../lib/csv-email-util.js);
+const csvEmailUtil = require('../lib/csv-email-util');
 
 exports.createCohort = function createCohort(req, res) {
     const allModels = req.app.locals.models;
