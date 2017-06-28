@@ -2236,8 +2236,15 @@
                 }
             }
         },
-        "/smtp": {
+        "/smtp/{type}": {
             "x-swagger-router-controller": "smtp.controller",
+            "parameters": [{
+                "name": "type",
+                "in": "path",
+                "required": true,
+                "type": "string",
+                "enum": ["reset-password", "cohort-csv"]
+            }],
             "post": {
                 "summary": "Update smtp settings",
                 "operationId": "createSmtp",
@@ -2304,8 +2311,15 @@
                 }
             }
         },
-        "/smtp/text/{language}": {
+        "/smtp/{type}/text/{language}": {
             "x-swagger-router-controller": "smtp.controller",
+            "parameters": [{
+                "name": "type",
+                "in": "path",
+                "required": true,
+                "type": "string",
+                "enum": ["reset-password", "cohort-csv"]
+            }],
             "patch": {
                 "summary": "Updates or translates reset password text fields",
                 "operationId": "updateSmtpText",

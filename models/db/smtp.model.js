@@ -38,6 +38,18 @@ module.exports = function smtp(sequelize, Sequelize, schema) {
             type: Sequelize.DATE,
             field: 'deleted_at',
         },
+        type: {
+            type: Sequelize.TEXT,
+            allowNull: false,
+            references: {
+                model: {
+                    schema,
+                    tableName: 'smtp_type',
+                },
+                key: 'name',
+            },
+            default: 'reset-password',
+        },
     }, {
         freezeTableName: true,
         tableName,
