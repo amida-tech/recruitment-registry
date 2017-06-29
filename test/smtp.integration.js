@@ -11,6 +11,8 @@ const _ = require('lodash');
 
 const SharedIntegration = require('./util/shared-integration');
 const RRSuperTest = require('./util/rr-super-test');
+const SmtpGenerator = require('./util/generator/smtp-generator');
+const translator = require('./util/translator');
 
 const config = require('../config');
 
@@ -26,91 +28,64 @@ describe('smtp integration', () => {
     let smtpText;
     let smtpTextTranslation = {};
 
-    const checkNull = function (done) {
+    const generator = new SmtpGenerator();
+
+    const checkNull = function () {
         const type = 'reset-password';
         rrSuperTest.get(`/smtp/${type}`, true, 200)
-            .expect((res) => {
+            .then((res) => {
                 expect(res.body.exists).to.equal(false);
-            })
-            .end(done);
-    };
-
-    const createNewSmtp = function (index) {
-        return {
-            protocol: `protocol_${index}`,
-            username: `username_${index}`,
-            password: `password_${index}`,
-            host: `host_${index}`,
-            from: `from_${index}`,
-            otherOptions: {
-                key1: `key1_${index}`,
-                key2: `key2_${index}`,
-            },
-        };
-    };
-
-    const createNewSmtpText = function (index) {
-        const actualLink = '${link}'; // eslint-disable-line no-template-curly-in-string
-        return {
-            subject: `subject_${index}`,
-            content: `content_${index} with link:${actualLink}`,
-        };
+            });
     };
 
     const createSmtpFn = function (index, withText, type = 'reset-password') {
-        return function createSmtp(done) {
-            const newSmtp = createNewSmtp(index);
-            const newSmtpText = createNewSmtpText(index);
+        return function createSmtp() {
+            const newSmtp = generator.newSmtp(index);
+            const newSmtpText = generator.newSmtpText(index);
             if (withText) {
                 Object.assign(newSmtp, newSmtpText);
             }
-            rrSuperTest.post(`/smtp/${type}`, newSmtp, 204)
-                .expect(() => {
+            return rrSuperTest.post(`/smtp/${type}`, newSmtp, 204)
+                .then(() => {
                     smtp = newSmtp;
                     if (withText) {
                         smtpText = newSmtpText;
                         smtpTextTranslation = {};
                     }
-                })
-                .end(done);
+                });
         };
     };
 
     const updateSmtpTextFn = function (index, language, type = 'reset-password') {
-        return function updateSmtpText(done) {
-            const text = createNewSmtpText(index);
+        return function updateSmtpText() {
+            const text = generator.newSmtpText(index);
             language = language || 'en';
             rrSuperTest.patch(`/smtp/${type}/text/${language}`, text, 204)
-                .expect(() => {
+                .then(() => {
                     smtpText = text;
-                })
-                .end(done);
+                });
         };
     };
 
     const getSmtpFn = function (explicit, type = 'reset-password') {
-        return function getSmtp(done) {
+        return function getSmtp() {
             const options = explicit ? { language: 'en' } : undefined;
-            rrSuperTest.get(`/smtp/${type}`, true, 200, options)
-                .expect((res) => {
+            return rrSuperTest.get(`/smtp/${type}`, true, 200, options)
+                .then((res) => {
                     const expected = _.cloneDeep(smtp);
                     if (smtpText) {
                         Object.assign(expected, smtpText);
                     }
                     expect(res.body.exists).to.equal(true);
                     expect(res.body.smtp).to.deep.equal(expected);
-                })
-                .end(done);
+                });
         };
     };
 
     const getTranslatedSmtpFn = function (language, checkFields, type = 'reset-password') {
-        return function getTranslatedSmtp(done) {
-            rrSuperTest.get(`/smtp/${type}`, true, 200, { language })
-                .end((err, res) => {
-                    if (err) {
-                        return done(err);
-                    }
+        return function getTranslatedSmtp() {
+            return rrSuperTest.get(`/smtp/${type}`, true, 200, { language })
+                .then((res) => {
                     const expected = _.cloneDeep(smtp);
                     let translation = smtpTextTranslation[language];
                     if (!translation) {
@@ -127,34 +102,23 @@ describe('smtp integration', () => {
                             expect(location).to.be.above(0);
                         });
                     }
-                    return done();
                 });
         };
     };
 
-    const translateSmtpFn = (function translateSmtpGen() {
-        const translateSmtp = function (server, language) {
-            return {
-                subject: `${server.subject} (${language})`,
-                content: `${server.content} (${language})`,
-            };
+    const translateSmtpFn = function (language, type = 'reset-password') {
+        return function transSmtp2() {
+            const translation = translator.translateSmtp(smtpText, language);
+            return rrSuperTest.patch(`/smtp/${type}/text/${language}`, translation, 204)
+                .then(() => {
+                    smtpTextTranslation[language] = translation;
+                });
         };
-
-        return function transSmtp(language, type = 'reset-password') {
-            return function transSmtp2(done) {
-                const translation = translateSmtp(smtpText, language);
-                rrSuperTest.patch(`/smtp/${type}/text/${language}`, translation, 204)
-                    .expect(() => {
-                        smtpTextTranslation[language] = translation;
-                    })
-                    .end(done);
-            };
-        };
-    }());
+    };
 
     const deleteSmtpFn = function (type = 'reset-password') {
-        return function deleteSmtp(done) {
-            rrSuperTest.delete(`/smtp/${type}`, 204).end(done);
+        return function deleteSmtp() {
+            return rrSuperTest.delete(`/smtp/${type}`, 204);
         };
     };
 

@@ -11,6 +11,8 @@ const _ = require('lodash');
 
 const SharedSpec = require('./util/shared-spec');
 const models = require('../models');
+const SmtpGenerator = require('./util/generator/smtp-generator');
+const translator = require('./util/translator');
 
 const expect = chai.expect;
 
@@ -23,42 +25,21 @@ describe('smtp unit', () => {
     let smtpText;
     let smtpTextTranslation = {};
 
+    const generator = new SmtpGenerator();
+
     const checkNull = function (type = 'reset-password') {
         return models.smtp.getSmtp(type)
             .then(result => expect(result).to.equal(null));
     };
 
-    const createNewSmtp = function (index, type = 'reset-password') {
-        return {
-            type,
-            protocol: `protocol_${index}`,
-            username: `username_${index}`,
-            password: `password_${index}`,
-            host: `host_${index}`,
-            from: `from_${index}`,
-            otherOptions: {
-                key1: `key1_${index}`,
-                key2: `key2_${index}`,
-            },
-        };
-    };
-
-    const createNewSmtpText = function (index, type = 'reset-password') {
-        const actualLink = '${link}'; // eslint-disable-line no-template-curly-in-string
-        return {
-            type,
-            subject: `subject_${index}`,
-            content: `content_${index} with link:${actualLink}`,
-        };
-    };
-
     const createSmtpFn = function (index, withText, type = 'reset-password') {
         return function createSmtp() {
-            const newSmtp = createNewSmtp(index, type);
-            const newSmtpText = createNewSmtpText(index, type);
+            const newSmtp = generator.newSmtp(index, type);
+            const newSmtpText = generator.newSmtpText(index, type);
             if (withText) {
                 Object.assign(newSmtp, newSmtpText);
             }
+            Object.assign(newSmtp, { type });
             return models.smtp.createSmtp(newSmtp)
                 .then(() => {
                     smtp = newSmtp;
@@ -72,7 +53,8 @@ describe('smtp unit', () => {
 
     const updateSmtpTextFn = function (index, language, type = 'reset-password') {
         return function updateSmtpText() {
-            const text = createNewSmtpText(index, type);
+            const text = generator.newSmtpText(index, type);
+            Object.assign(text, { type });
             return models.smtp.updateSmtpText(text, language)
                 .then(() => (smtpText = text));
         };
@@ -117,25 +99,16 @@ describe('smtp unit', () => {
         };
     };
 
-    const translateSmtpFn = (function translateSmtpGen() {
-        const translateSmtp = function (server, language, type) {
-            return {
-                type,
-                subject: `${server.subject} (${language})`,
-                content: `${server.content} (${language})`,
-            };
+    const translateSmtpFn = function (language, type = 'reset-password') {
+        return function translateSmtp() {
+            const translation = translator.translateSmtp(smtpText, language);
+            Object.assign(translation, { type });
+            return models.smtp.updateSmtpText(translation, language, type)
+                .then(() => {
+                    smtpTextTranslation[language] = translation;
+                });
         };
-
-        return function transSmtp(language, type = 'reset-password') {
-            return function transSmtp2() {
-                const translation = translateSmtp(smtpText, language, type);
-                return models.smtp.updateSmtpText(translation, language, type)
-                    .then(() => {
-                        smtpTextTranslation[language] = translation;
-                    });
-            };
-        };
-    }());
+    };
 
     const deleteSmtpFn = function () {
         return function deleteSmtp(type = 'reset-password') {
