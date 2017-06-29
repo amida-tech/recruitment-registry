@@ -10,8 +10,12 @@ const chai = require('chai');
 const _ = require('lodash');
 const intoStream = require('into-stream');
 const mkdirp = require('mkdirp');
+const sinon = require('sinon');
 
 const config = require('../../../config');
+const csvEmailUtil = require('../../../lib/csv-email-util');
+const smtpHelper = require('../../../lib/smtp-helper');
+const SPromise = require('../../../lib/promise');
 
 const models = require('../../../models');
 const SharedSpec = require('../shared-spec');
@@ -919,6 +923,13 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
         const rrSuperTest = this.rrSuperTest;
         const { limited, userCount, localFederated, federated } = options;
         return function createCohort() {
+            let csvText = '';
+            sinon.stub(csvEmailUtil, 'uploadCohortCSV', (csv) => {
+                csvText = csv;
+                return SPromise.resolve({});
+            });
+            sinon.stub(smtpHelper, 'sendS3LinkEmail', () => SPromise.resolve({}));
+
             const count = limited ? userCount - 1 : 10000;
             const payload = { filterId: store.id, count };
             if (localFederated) {
@@ -929,7 +940,11 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
                 payload.federated = true;
             }
             return rrSuperTest.post('/cohorts', payload, 201)
-                .then(res => fs.writeFileSync(filepath, res.text));
+                .then(() => {
+                    fs.writeFileSync(filepath, csvText);
+                    csvEmailUtil.uploadCohortCSV.restore();
+                    smtpHelper.sendS3LinkEmail.restore();
+                });
         };
     }
 
