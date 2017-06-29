@@ -17,15 +17,15 @@ describe('smtp unit', () => {
 
     it('get null when no smtp server ever specified', tests.checkNullFn());
 
-    it('create smtp server setting without subject/content', tests.createSmtpFn(0));
+    it('create smtp server setting without subject/content', tests.createSmtpFn());
 
     it('get/verify smtp settings', tests.getSmtpFn());
 
-    it('add subject/content', tests.updateSmtpTextFn(0, 'en'));
+    it('add subject/content', tests.updateSmtpTextFn('en'));
 
     it('get/verify smtp settings', tests.getSmtpFn());
 
-    it('update smtp server setting with subject/content', tests.createSmtpFn(1, true));
+    it('update smtp server setting with subject/content', tests.createSmtpFn(true));
 
     it('get/verify smtp settings', tests.getSmtpFn());
 
@@ -39,7 +39,7 @@ describe('smtp unit', () => {
 
     it('get/verify smtp settings in spanish', tests.getTranslatedSmtpFn('es', true));
 
-    it('update smtp server setting without subject/content', tests.createSmtpFn(2));
+    it('update smtp server setting without subject/content', tests.createSmtpFn());
 
     it('get/verify smtp settings', tests.getSmtpFn());
 
@@ -49,11 +49,11 @@ describe('smtp unit', () => {
 
     it('get null when smtp server settings deactivated', tests.checkNullFn());
 
-    it('update smtp server setting without subject/content', tests.createSmtpFn(3));
+    it('update smtp server setting without subject/content', tests.createSmtpFn());
 
     it('get/verify smtp settings', tests.getSmtpFn());
 
-    it('add subject/content', tests.updateSmtpTextFn(1));
+    it('add subject/content', tests.updateSmtpTextFn());
 
     it('get/verify smtp settings', tests.getSmtpFn());
 
