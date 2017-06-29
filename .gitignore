@@ -21,3 +21,5 @@ migration/sequelize-meta.json
 
 # OS specifics
 *.DS_Store
+
+tmp/*

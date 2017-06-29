@@ -8,6 +8,10 @@ process.env.NODE_ENV = 'test';
 
 const _ = require('lodash');
 const chai = require('chai');
+const sinon = require('sinon');
+const csvEmailUtil = require('../lib/csv-email-util');
+const smtpHelper = require('../lib/smtp-helper');
+const SPromise = require('../lib/promise');
 
 const SharedIntegration = require('./util/shared-integration.js');
 const config = require('../config');
@@ -31,6 +35,11 @@ describe('cohort integration', function cohortIntegeration() {
     let cohortId = 1;
 
     before(shared.setUpFn());
+
+    it('set up pass thru csvEmailUtil and smtpHelper', () => {
+        sinon.stub(csvEmailUtil, 'uploadCohortCSV', () => SPromise.resolve({}));
+        sinon.stub(smtpHelper, 'sendS3LinkEmail', () => SPromise.resolve({}));
+    });
 
     it('login as super', shared.loginFn(config.superUser));
 
@@ -125,4 +134,9 @@ describe('cohort integration', function cohortIntegeration() {
     it('list cohorts', listCohortsFn(4));
 
     it('logout as user', shared.logoutFn());
+
+    it('release pass thru csvEmailUtil and smtpHelper', function releaseUtilities() {
+        csvEmailUtil.uploadCohortCSV.restore();
+        smtpHelper.sendS3LinkEmail.restore();
+    });
 });

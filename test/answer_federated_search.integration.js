@@ -10,8 +10,12 @@ const path = require('path');
 const chai = require('chai');
 const fs = require('fs');
 const _ = require('lodash');
+const sinon = require('sinon');
 
 const config = require('../config');
+const csvEmailUtil = require('../lib/csv-email-util');
+const smtpHelper = require('../lib/smtp-helper');
+const SPromise = require('../lib/promise');
 
 const tokener = require('../lib/tokener');
 const Generator = require('./util/generator');
@@ -111,10 +115,20 @@ describe('federated search integration', function federatedSearchIntegration() {
         const generatedDirectory = path.join(__dirname, './generated');
 
         it('create cohort', function createCohort() {
+            let csvText = '';
+            sinon.stub(csvEmailUtil, 'uploadCohortCSV', (csv) => {
+                csvText = csv;
+                return SPromise.resolve({});
+            });
+            sinon.stub(smtpHelper, 'sendS3LinkEmail', () => SPromise.resolve({}));
             const filepath = path.join(generatedDirectory, 'cohort_federated.csv');
             const payload = { filterId: store.id, count: 10000, federated: true };
             return rrSuperTest.post('/cohorts', payload, 201)
-                .then(res => fs.writeFileSync(filepath, res.text));
+                .then(() => {
+                    fs.writeFileSync(filepath, csvText);
+                    csvEmailUtil.uploadCohortCSV.restore();
+                    smtpHelper.sendS3LinkEmail.restore();
+                });
         });
 
         it('compare cohort', function compareCohort() {

@@ -28,7 +28,7 @@ Recruitment Registry API
 6. Create a `.env` file in root.  
 > Note: See [Configuration](#Configuration) for more about configuring your `.env` file.
 7. Populate your database:  
-`node syncDecember15.js`
+`node seed.js`
 8. Run:
 `npm start`
 
@@ -101,6 +101,8 @@ A list of full environment variable settings is below.  They can be either manua
 - RECREG_ZIP_API_KEY: API key for Zipwise.
 - RECREG_ZIP_DISTANCE: Distance to query when finding zip code vicinities (`50`).
 - RECREG_JWT_<registry name>: JWT for remote registries for federated search.
+- RECREG_AWS_ACCESS_KEY: Amazon Web Services access key ID
+- RECREG_AWS_SECRET: Amazon Web Service secret access key 
 
 ## Commands
 
@@ -180,7 +182,7 @@ This is a English first design where all logical records are assumed to be in En
 
 - `rr_section`: Each record in this tables represents a section in a survey. Content of sections are represented as local indices of questions in column `indices`.  The name of the section is stored in `section_text` table.
 
-- `section_text`: This table stores translatable column `name` which stores section name. `language` is also a column and each record has a value for `name` in that language.  `section_id` column links each record to `rr_section` table.
+- `section_text`: This table stores translatable column `name` which stores section name. `language` is also a column and each record has a value for `name` in that language.  `section_id` column links each record to `rr_sectionnc` table.
 
 - `survey_section`: This table links surveys (column `survey_id`) to sections (column `section_id`).  Order of sections preserved using column `line`.
 
