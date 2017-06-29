@@ -68,5 +68,7 @@
 	"qxChoiceNoDeleteAnswered": "Cannot delete question choice: there are answers using the choice.",
 	"qxChoiceNoDeleteInFilter": "Cannot delete question choice: there are filters using the choice.",
 	"filterMalformedNoAnswers": "Filter is malformed: No answers for some questions.",
-	"fileNoSuchFile": "No such file is found."
+	"fileNoSuchFile": "No such file is found.",
+	"cohortZipFileNotGenerated": "Cohort csv file cannot be zipped.",
+	"cohortS3NoZipUpload": "S3 Upload error ({{0}})"
 }
