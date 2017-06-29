@@ -29,7 +29,7 @@
             "get": {
                 "summary": "Gets authorization token (JWT)",
                 "operationId": "authenticateBasic",
-                "parameters": [{
+                "parameters": [{/
                     "name": "Authorization",
                     "description": "Basic authentication header 'Basic ...' where '...' is base64 encoded string for 'username:password'",
                     "in": "header",
@@ -3512,7 +3512,6 @@
             "post": {
                 "operationId": "createCohort",
                 "summary": "Creates new cohort",
-                "produces": ["text/csv", "application/json"],
                 "security": [{
                     "admin": []
                 }, {
@@ -3531,7 +3530,7 @@
                     "201": {
                         "description": "Successful response",
                         "schema": {
-                            "type": "file"
+                            "type": "object"
                         }
                     },
                     "default": {

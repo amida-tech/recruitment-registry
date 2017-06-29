@@ -14,7 +14,8 @@ exports.createCohort = function createCohort(req, res) {
         .then((s3Data) => {
             const models = req.models;
             const email = req.user.email;
-            return smtpHelper.sendS3LinkEmail(models, email, language, s3Data);
+            const link = s3Data.s3Url;
+            return smtpHelper.sendS3LinkEmail(models, email, language, link).then(() => s3Data);
         })
         .then(result => res.status(201).json(result))
         .catch(shared.handleError(res));
