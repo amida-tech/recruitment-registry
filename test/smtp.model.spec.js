@@ -6,184 +6,56 @@
 
 process.env.NODE_ENV = 'test';
 
-const chai = require('chai');
-const _ = require('lodash');
-
 const SharedSpec = require('./util/shared-spec');
-const models = require('../models');
-
-const expect = chai.expect;
-
-const shared = new SharedSpec();
+const smtpCommon = require('./util/smtp-common');
 
 describe('smtp unit', () => {
+    const shared = new SharedSpec();
+    const tests = new smtpCommon.SpecTests();
+
     before(shared.setUpFn());
 
-    let smtp;
-    let smtpText;
-    let smtpTextTranslation = {};
+    it('get null when no smtp server ever specified', tests.checkNullFn());
 
-    const checkNull = function (type = 'reset-password') {
-        return models.smtp.getSmtp(type)
-            .then(result => expect(result).to.equal(null));
-    };
+    it('create smtp server setting without subject/content', tests.createSmtpFn());
 
-    const createNewSmtp = function (index, type = 'reset-password') {
-        return {
-            type,
-            protocol: `protocol_${index}`,
-            username: `username_${index}`,
-            password: `password_${index}`,
-            host: `host_${index}`,
-            from: `from_${index}`,
-            otherOptions: {
-                key1: `key1_${index}`,
-                key2: `key2_${index}`,
-            },
-        };
-    };
+    it('get/verify smtp settings', tests.getSmtpFn());
 
-    const createNewSmtpText = function (index, type = 'reset-password') {
-        const actualLink = '${link}'; // eslint-disable-line no-template-curly-in-string
-        return {
-            type,
-            subject: `subject_${index}`,
-            content: `content_${index} with link:${actualLink}`,
-        };
-    };
+    it('add subject/content', tests.updateSmtpTextFn('en'));
 
-    const createSmtpFn = function (index, withText, type = 'reset-password') {
-        return function createSmtp() {
-            const newSmtp = createNewSmtp(index, type);
-            const newSmtpText = createNewSmtpText(index, type);
-            if (withText) {
-                Object.assign(newSmtp, newSmtpText);
-            }
-            return models.smtp.createSmtp(newSmtp)
-                .then(() => {
-                    smtp = newSmtp;
-                    if (withText) {
-                        smtpText = newSmtpText;
-                        smtpTextTranslation = {};
-                    }
-                });
-        };
-    };
+    it('get/verify smtp settings', tests.getSmtpFn());
 
-    const updateSmtpTextFn = function (index, language, type = 'reset-password') {
-        return function updateSmtpText() {
-            const text = createNewSmtpText(index, type);
-            return models.smtp.updateSmtpText(text, language)
-                .then(() => (smtpText = text));
-        };
-    };
+    it('update smtp server setting with subject/content', tests.createSmtpFn(true));
 
-    const getSmtpFn = function (explicit, type = 'reset-password') {
-        return function getSmtp() {
-            const options = { type };
-            if (explicit) {
-                options.language = 'en';
-            }
-            return models.smtp.getSmtp(options)
-                .then((result) => {
-                    const expected = _.cloneDeep(smtp);
-                    if (smtpText) {
-                        Object.assign(expected, smtpText);
-                    }
-                    expect(result).to.deep.equal(expected);
-                });
-        };
-    };
+    it('get/verify smtp settings', tests.getSmtpFn());
 
-    const getTranslatedSmtpFn = function (language, checkFields, type = 'reset-password') {
-        return function getTranslatedSmtp() {
-            return models.smtp.getSmtp({ type, language })
-                .then((result) => {
-                    const expected = _.cloneDeep(smtp);
-                    let translation = smtpTextTranslation[language];
-                    if (!translation) {
-                        translation = smtpText;
-                    }
-                    Object.assign(expected, translation);
-                    expect(result).to.deep.equal(expected);
-                    if (checkFields) { // sanity check
-                        ['subject', 'content'].forEach((property) => {
-                            const text = result[property];
-                            const location = text.indexOf(`(${language})`);
-                            expect(location).to.be.above(0);
-                        });
-                    }
-                });
-        };
-    };
+    it('get/verify smtp settings in spanish when no translation', tests.getTranslatedSmtpFn('es'));
 
-    const translateSmtpFn = (function translateSmtpGen() {
-        const translateSmtp = function (server, language, type) {
-            return {
-                type,
-                subject: `${server.subject} (${language})`,
-                content: `${server.content} (${language})`,
-            };
-        };
+    it('translate to spanish', tests.translateSmtpFn('es'));
 
-        return function transSmtp(language, type = 'reset-password') {
-            return function transSmtp2() {
-                const translation = translateSmtp(smtpText, language, type);
-                return models.smtp.updateSmtpText(translation, language, type)
-                    .then(() => {
-                        smtpTextTranslation[language] = translation;
-                    });
-            };
-        };
-    }());
+    it('get/verify smtp settings', tests.getSmtpFn());
 
-    const deleteSmtpFn = function () {
-        return function deleteSmtp(type = 'reset-password') {
-            return models.smtp.deleteSmtp(type);
-        };
-    };
+    it('get/verify smtp settings in explicit english', tests.getSmtpFn(true));
 
-    it('get null when no smtp server ever specified', checkNull);
+    it('get/verify smtp settings in spanish', tests.getTranslatedSmtpFn('es', true));
 
-    it('create smtp server setting without subject/content', createSmtpFn(0));
+    it('update smtp server setting without subject/content', tests.createSmtpFn());
 
-    it('get/verify smtp settings', getSmtpFn());
+    it('get/verify smtp settings', tests.getSmtpFn());
 
-    it('add subject/content', updateSmtpTextFn(0, 'en'));
+    it('get/verify smtp settings in spanish', tests.getTranslatedSmtpFn('es', true));
 
-    it('get/verify smtp settings', getSmtpFn());
+    it('delete smtp server settings', tests.deleteSmtpFn());
 
-    it('update smtp server setting with subject/content', createSmtpFn(1, true));
+    it('get null when smtp server settings deactivated', tests.checkNullFn());
 
-    it('get/verify smtp settings', getSmtpFn());
+    it('update smtp server setting without subject/content', tests.createSmtpFn());
 
-    it('get/verify smtp settings in spanish when no translation', getTranslatedSmtpFn('es'));
+    it('get/verify smtp settings', tests.getSmtpFn());
 
-    it('translate to spanish', translateSmtpFn('es'));
+    it('add subject/content', tests.updateSmtpTextFn());
 
-    it('get/verify smtp settings', getSmtpFn());
+    it('get/verify smtp settings', tests.getSmtpFn());
 
-    it('get/verify smtp settings in explicit english', getSmtpFn(true));
-
-    it('get/verify smtp settings in spanish', getTranslatedSmtpFn('es', true));
-
-    it('update smtp server setting without subject/content', createSmtpFn(2));
-
-    it('get/verify smtp settings', getSmtpFn());
-
-    it('get/verify smtp settings in spanish', getTranslatedSmtpFn('es', true));
-
-    it('delete smtp server settings', deleteSmtpFn());
-
-    it('get null when smtp server settings deactivated', checkNull);
-
-    it('update smtp server setting without subject/content', createSmtpFn(3));
-
-    it('get/verify smtp settings', getSmtpFn());
-
-    it('add subject/content', updateSmtpTextFn(1));
-
-    it('get/verify smtp settings', getSmtpFn());
-
-    it('get/verify smtp settings in spanish', getTranslatedSmtpFn('es', true));
+    it('get/verify smtp settings in spanish', tests.getTranslatedSmtpFn('es', true));
 });
