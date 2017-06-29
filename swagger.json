@@ -29,7 +29,7 @@
             "get": {
                 "summary": "Gets authorization token (JWT)",
                 "operationId": "authenticateBasic",
-                "parameters": [{/
+                "parameters": [{
                     "name": "Authorization",
                     "description": "Basic authentication header 'Basic ...' where '...' is base64 encoded string for 'username:password'",
                     "in": "header",
