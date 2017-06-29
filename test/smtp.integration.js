@@ -6,6 +6,8 @@
 
 process.env.NODE_ENV = 'test';
 
+const constNames = require('../models/const-names');
+
 const SharedIntegration = require('./util/shared-integration');
 const RRSuperTest = require('./util/rr-super-test');
 const smtpCommon = require('./util/smtp-common');
@@ -17,53 +19,48 @@ describe('smtp integration', () => {
     const shared = new SharedIntegration(rrSuperTest);
     const tests = new smtpCommon.IntegrationTests(rrSuperTest);
 
+    const types = constNames.smtpTypes;
+
     before(shared.setUpFn());
 
     it('login as super', shared.loginFn(config.superUser));
 
-    it('get null when no smtp server ever specified', tests.checkNullFn());
+    types.forEach((type) => {
+        it(`handle smtp ${type} not specified`, tests.checkNullFn(type));
+        it(`create smtp ${type}  without subject/content`, tests.createSmtpFn(type));
+        it(`get/verify smtp s${type} `, tests.getSmtpFn(type));
+        it(`add subject/content to smtp ${type}`, tests.updateSmtpTextFn(type, 'en'));
+        it(`get/verify smtp ${type}`, tests.getSmtpFn(type));
+        it(`update smtp server ${type} with subject/content`, tests.createSmtpFn(type, true));
+        it(`get/verify smtp ${type}`, tests.getSmtpFn(type));
+        it(`get/verify smtp ${type} in spanish when no translation`, tests.getTranslatedSmtpFn(type, 'es'));
+        it(`translate smtp ${type} to spanish`, tests.translateSmtpFn(type, 'es'));
+        it(`get/verify smtp ${type}`, tests.getSmtpFn(type));
+        it(`get/verify smtp ${type} in explicit english`, tests.getSmtpFn(type, true));
+        it(`get/verify smtp ${type} in spanish`, tests.getTranslatedSmtpFn(type, 'es', true));
+        it(`update smtp ${type} without subject/content`, tests.createSmtpFn(type));
+        it(`get/verify smtp ${type}`, tests.getSmtpFn(type));
+        it(`get/verify smtp ${type} in spanish`, tests.getTranslatedSmtpFn(type, 'es', true));
+    });
 
-    it('create smtp server setting without subject/content', tests.createSmtpFn());
+    types.forEach((type, index) => {
+        it(`delete smtp ${type}`, tests.deleteSmtpFn(type));
+        it(`get null when smtp ${type} deactivated`, tests.checkNullFn(type));
 
-    it('get/verify smtp settings', tests.getSmtpFn());
+        if (index < types.length - 1) {
+            const nextType = types[index + 1];
+            it(`get/verify smtp ${nextType} `, tests.getSmtpFn(nextType));
+            it(`get/verify smtp ${nextType}  in spanish`, tests.getTranslatedSmtpFn(nextType, 'es', true));
+        }
+    });
 
-    it('add subject/content', tests.updateSmtpTextFn('en'));
-
-    it('get/verify smtp settings', tests.getSmtpFn());
-
-    it('update smtp server setting with subject/content', tests.createSmtpFn(tests.true));
-
-    it('get/verify smtp settings', tests.getSmtpFn());
-
-    it('get/verify smtp settings in spanish when no translation', tests.getTranslatedSmtpFn('es'));
-
-    it('translate to spanish', tests.translateSmtpFn('es'));
-
-    it('get/verify smtp settings', tests.getSmtpFn());
-
-    it('get/verify smtp settings in explicit english', tests.getSmtpFn(true));
-
-    it('get/verify smtp settings in spanish', tests.getTranslatedSmtpFn('es', true));
-
-    it('update smtp server setting without subject/content', tests.createSmtpFn());
-
-    it('get/verify smtp settings', tests.getSmtpFn());
-
-    it('get/verify smtp settings in spanish', tests.getTranslatedSmtpFn('es', true));
-
-    it('delete smtp server settings', tests.deleteSmtpFn());
-
-    it('get null when smtp server settings deactivated', tests.checkNullFn());
-
-    it('update smtp server setting without subject/content', tests.createSmtpFn());
-
-    it('get/verify smtp settings', tests.getSmtpFn());
-
-    it('add subject/content', tests.updateSmtpTextFn());
-
-    it('get/verify smtp settings', tests.getSmtpFn());
-
-    it('get/verify smtp settings in spanish', tests.getTranslatedSmtpFn('es', true));
+    types.forEach((type) => {
+        it(`update smtp ${type} without subject/content`, tests.createSmtpFn(type));
+        it(`get/verify smtp ${type}`, tests.getSmtpFn(type));
+        it(`add subject/content to smtp ${type}`, tests.updateSmtpTextFn(type));
+        it(`get/verify smtp ${type}`, tests.getSmtpFn(type));
+        it(`get/verify smtp ${type} in spanish`, tests.getTranslatedSmtpFn(type, 'es', true));
+    });
 
     it('logout as super', shared.logoutFn());
 

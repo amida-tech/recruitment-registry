@@ -64,7 +64,7 @@ module.exports = class SMTPDAO extends Base {
                         if (!text && (language !== 'en')) {
                             return SmtpText.findOne({
                                 raw: true,
-                                where: { language: 'en' },
+                                where: { type, language: 'en' },
                                 attributes: ['subject', 'content'],
                             });
                         }

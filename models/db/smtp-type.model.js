@@ -1,5 +1,7 @@
 'use strict';
 
+const names = require('../const-names');
+
 module.exports = function smtpType(sequelize, Sequelize, schema) {
     const tableName = 'smtp_type';
     const modelName = `${schema}_${tableName}`;
@@ -22,8 +24,7 @@ module.exports = function smtpType(sequelize, Sequelize, schema) {
         hooks: {
             afterSync(options) {
                 if (options.force) {
-                    const names = ['reset-password', 'cohort-csv'];
-                    return this.bulkCreate(names.map(name => ({ name })));
+                    return this.bulkCreate(names.smtpTypes.map(name => ({ name })));
                 }
                 return null;
             },

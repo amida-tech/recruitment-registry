@@ -13,22 +13,60 @@ const expect = chai.expect;
 
 const SmtpTests = class SmtpTests {
     constructor() {
-        this.smtp = null;
-        this.smtpText = null;
-        this.smtpTextTranslation = {};
+        this.smtp = new Map();
+        this.smtpText = new Map();
+        this.smtpTextTranslation = new Map();
 
         this.generator = new SmtpGenerator();
     }
 
-    checkNullFn() {
+    setSmtp(type, smtp) {
+        this.smtp.set(type, smtp);
+    }
+
+    setSmtpText(type, text, language = 'en') {
+        if (language === 'en') {
+            this.smtpText.set(type, text);
+        } else {
+            let typeTranslations = this.smtpTextTranslation.get(type);
+            if (!typeTranslations) {
+                typeTranslations = {};
+                this.smtpTextTranslation.set(type, typeTranslations);
+            }
+            typeTranslations[language] = text;
+        }
+    }
+
+    getSmtpText(type, language = 'en') {
+        if (language === 'en') {
+            return this.smtpText.get(type);
+        }
+        const typeTranslations = this.smtpTextTranslation.get(type) || {};
+        return typeTranslations[language];
+    }
+
+    getFullSmtp(type, language = 'en') {
+        const result = _.cloneDeep(this.smtp.get(type));
+        let smtpText = this.smtpText.get(type);
+        if (language !== 'en') {
+            const typeTranslations = this.smtpTextTranslation.get(type) || {};
+            smtpText = typeTranslations[language] || smtpText;
+        }
+        if (smtpText) {
+            Object.assign(result, smtpText);
+        }
+        return result;
+    }
+
+    checkNullFn(type) {
         const self = this;
-        return function checkNull(type = 'reset-password') {
+        return function checkNull() {
             return self.checkNullPx(type)
                 .then(result => expect(result).to.equal(null));
         };
     }
 
-    createSmtpFn(withText, type = 'reset-password') {
+    createSmtpFn(type, withText) {
         const generator = this.generator;
         const self = this;
         return function createSmtp() {
@@ -39,50 +77,41 @@ const SmtpTests = class SmtpTests {
             }
             return self.createSmtpPx(newSmtp, type)
                 .then(() => {
-                    self.smtp = newSmtp;
+                    self.setSmtp(type, newSmtp);
                     if (withText) {
-                        self.smtpText = newSmtpText;
-                        self.smtpTextTranslation = {};
+                        self.setSmtpText(type, newSmtpText);
                     }
                 });
         };
     }
 
-    updateSmtpTextFn(language, type = 'reset-password') {
+    updateSmtpTextFn(type, language) {
         const generator = this.generator;
         const self = this;
         return function updateSmtpText() {
             const text = generator.newSmtpText();
             return self.updateSmtpTextPx(text, type, language)
-                .then(() => (self.smtpText = text));
+                .then(() => self.setSmtpText(type, text));
         };
     }
 
-    getSmtpFn(explicit, type = 'reset-password') {
+    getSmtpFn(type, explicit) {
         const self = this;
         return function getSmtp() {
             return self.getSmtpPx(type, explicit)
                 .then((result) => {
-                    const expected = _.cloneDeep(self.smtp);
-                    if (self.smtpText) {
-                        Object.assign(expected, self.smtpText);
-                    }
+                    const expected = self.getFullSmtp(type);
                     expect(result).to.deep.equal(expected);
                 });
         };
     }
 
-    getTranslatedSmtpFn(language, checkFields, type = 'reset-password') {
+    getTranslatedSmtpFn(type, language, checkFields) {
         const self = this;
         return function getTranslatedSmtp() {
             return self.getTranslatedSmtpPx(type, language)
                 .then((result) => {
-                    const expected = _.cloneDeep(self.smtp);
-                    let translation = self.smtpTextTranslation[language];
-                    if (!translation) {
-                        translation = self.smtpText;
-                    }
-                    Object.assign(expected, translation);
+                    const expected = self.getFullSmtp(type, language);
                     expect(result).to.deep.equal(expected);
                     if (checkFields) { // sanity check
                         ['subject', 'content'].forEach((property) => {
@@ -95,18 +124,17 @@ const SmtpTests = class SmtpTests {
         };
     }
 
-    translateSmtpFn(language, type = 'reset-password') {
+    translateSmtpFn(type, language) {
         const self = this;
         return function translateSmtp() {
-            const translation = translator.translateSmtp(self.smtpText, language);
+            const smtpText = self.getSmtpText(type);
+            const translation = translator.translateSmtp(smtpText, language);
             return self.translateSmtpPx(translation, language, type)
-                .then(() => {
-                    self.smtpTextTranslation[language] = translation;
-                });
+                .then(() => self.setSmtpText(type, translation, language));
         };
     }
 
-    deleteSmtpFn(type = 'reset-password') {
+    deleteSmtpFn(type) {
         const self = this;
         return function deleteSmtp() {
             return self.deleteSmtpPx(type);
