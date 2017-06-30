@@ -145,6 +145,7 @@ describe('cohort email integration', function cohortEmailIntegration() {
     it('restore mock libraries', function restoreSinonedLibs() {
         const models = rrSuperTest.getModels();
         models.cohort.createCohort.restore();
+        csvEmailUtil.uploadCohortCSV.restore();
     });
 
     after((done) => {
