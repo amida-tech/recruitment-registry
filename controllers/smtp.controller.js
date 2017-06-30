@@ -19,7 +19,6 @@ exports.getSmtp = function getSmtp(req, res) {
     req.models.smtp.getSmtp(options)
         .then((smtp) => {
             if (smtp) {
-                delete smtp.type; // eslint-disable-line no-param-reassign
                 res.status(200).json({ exists: true, smtp });
             } else {
                 res.status(200).json({ exists: false });

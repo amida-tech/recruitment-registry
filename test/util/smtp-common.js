@@ -148,7 +148,7 @@ const SpecTests = class SmtpSpecTests extends SmtpTests {
     }
 
     createSmtpPx(newSmtp, type) { // eslint-disable-line class-methods-use-this
-        const data = Object.assign(newSmtp, { type });
+        const data = Object.assign({ type }, newSmtp);
         return models.smtp.createSmtp(data);
     }
 

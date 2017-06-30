@@ -14,7 +14,7 @@ const smtpCommon = require('./util/smtp-common');
 
 const config = require('../config');
 
-describe('smtp integration', () => {
+describe('smtp integration', function smtpIntegration() {
     const rrSuperTest = new RRSuperTest();
     const shared = new SharedIntegration(rrSuperTest);
     const tests = new smtpCommon.IntegrationTests(rrSuperTest);

@@ -11,7 +11,7 @@ const constNames = require('../models/const-names');
 const SharedSpec = require('./util/shared-spec');
 const smtpCommon = require('./util/smtp-common');
 
-describe('smtp unit', () => {
+describe('smtp unit', function smtpUnit() {
     const shared = new SharedSpec();
     const tests = new smtpCommon.SpecTests();
 
