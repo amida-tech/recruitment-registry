@@ -29,7 +29,7 @@ describe('reset-token integration', function resetTokenIntegration() {
 
     before(shared.setUpFn());
 
-    it('start smtp server', () => {
+    it('start smtp server', function startSmtpServer() {
         server.listen(9001);
     });
 
