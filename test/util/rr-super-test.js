@@ -29,6 +29,10 @@ module.exports = class RRSupertest {
         this.username = null;
     }
 
+    getModels() {
+        return this.app.locals.models;
+    }
+
     shutDown() {
         return this.app.locals.models.sequelize.close();
     }

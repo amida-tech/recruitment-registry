@@ -46,7 +46,7 @@ module.exports = class SMTPDAO extends Base {
         const Smtp = this.db.Smtp;
         const SmtpText = this.db.SmtpText;
         const attributes = {
-            exclude: ['id', 'createdAt', 'deletedAt'],
+            exclude: ['id', 'createdAt', 'deletedAt', 'type'],
         };
         const type = options.type;
         return Smtp.findOne({ where: { type }, raw: true, attributes })
@@ -64,7 +64,7 @@ module.exports = class SMTPDAO extends Base {
                         if (!text && (language !== 'en')) {
                             return SmtpText.findOne({
                                 raw: true,
-                                where: { language: 'en' },
+                                where: { type, language: 'en' },
                                 attributes: ['subject', 'content'],
                             });
                         }
