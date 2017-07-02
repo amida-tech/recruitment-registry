@@ -15,7 +15,7 @@ const Generator = require('./util/generator');
 const History = require('./util/history');
 const SMTPServer = require('./util/smtp-server');
 const SPromise = require('../lib/promise');
-const csvEmailUtil = require('../lib/csv-email-util');
+const aws = require('../lib/aws');
 const questionCommon = require('./util/question-common');
 const filterCommon = require('./util/filter-common');
 
@@ -41,12 +41,13 @@ describe('cohort email integration', function cohortEmailIntegration() {
         server.listen(9001);
     });
 
-    it('set up pass thru csvEmailUtil and smtpHelper', () => {
+
+    it('set up sinon mockup', () => {
         const models = rrSuperTest.getModels();
         sinon.stub(models.cohort, 'createCohort', () => SPromise.resolve(testCSV));
-        sinon.stub(csvEmailUtil, 'uploadCohortCSV', () => SPromise.resolve({
-            s3Url: '/dalink',
-        }));
+        sinon.stub(aws, 'putObject', (params, callback) => {
+            callback(null, 's3datatest');
+        });
     });
 
     it('login as super user', shared.loginFn(config.superUser));
@@ -109,8 +110,13 @@ describe('cohort email integration', function cohortEmailIntegration() {
 
     it('login as clinician', shared.loginIndexFn(hxUser, 0));
 
+    let cohortInfo;
+
     it('create cohort', function noSmtp() {
-        return rrSuperTest.post('/cohorts', cohort, 201);
+        return rrSuperTest.post('/cohorts', cohort, 201)
+            .then((res) => {
+                cohortInfo = res.body;
+            });
     });
 
     it('check received email and link', function checkEmail() {
@@ -128,16 +134,17 @@ describe('cohort email integration', function cohortEmailIntegration() {
                 expect(subject).to.equal(smtpSpec.subject);
                 subjectFound = true;
             }
-            if (line.startsWith('Click on this please:')) {
-                const linkPieces = line.split('/');
-                link = linkPieces[linkPieces.length - 1];
-                if (link.charAt(link.length - 1) === '=') {
-                    link = link.slice(0, link.length - 1) + lines[index + 1];
+            const lineStarts = 'Click on this please: ';
+            if (line.startsWith(lineStarts)) {
+                link = line.split('Click on this please: ')[1];
+                const last = link.length - 1;
+                if (link.charAt(last) === '=') {
+                    link = link.slice(0, last) + lines[index + 1];
                 }
             }
         });
         expect(subjectFound).to.equal(true);
-        expect(link).to.equal('dalink');
+        expect(link).to.equal(cohortInfo.s3Url);
     });
 
     it('logout as clinician', shared.logoutFn());
@@ -145,7 +152,7 @@ describe('cohort email integration', function cohortEmailIntegration() {
     it('restore mock libraries', function restoreSinonedLibs() {
         const models = rrSuperTest.getModels();
         models.cohort.createCohort.restore();
-        csvEmailUtil.uploadCohortCSV.restore();
+        aws.putObject.restore();
     });
 
     after((done) => {
