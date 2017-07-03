@@ -41,6 +41,7 @@ const all = {
         resetExpiresUnit: 'seconds',
     },
     tmpDirectory: '/tmp',
+    cohortBucket: 'recreg-dev-cohorts',
     zipCodeApi: {
         baseUrl: 'https://www.zipwise.com/webservices/radius.php',
         distance: 50,
@@ -92,6 +93,7 @@ const main = {
     },
     clientBaseUrl: process.env.RECREG_CLIENT_BASE_URL,
     tmpDirectory: process.env.RECREG_TMP_DIRECTORY,
+    cohortBucket: process.env.RECREG_COHORT_BUCKET,
     constantContact: {
         baseApiUrl: process.env.RECREG_CONSTANT_CONTACT__URL,
         token: process.env.RECREG_CONSTANT_CONSTANT_TOKEN,
