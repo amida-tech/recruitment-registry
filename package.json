@@ -64,6 +64,7 @@
     "superagent": "^2.3.0",
     "supertest": "^2.0.0",
     "supertest-session": "^3.0.0",
+    "unzipper": "^0.8.9",
     "winston-spy": "^0.2.0"
   }
 }
