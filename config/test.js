@@ -14,6 +14,7 @@ module.exports = {
         poolIdle: 1000,
     },
     tmpDirectory: path.join(__dirname, '../test/generated'),
+    cohortBucket: 'recregtest',
     constantContact: {
         baseApiUrl: 'http://turnip.test',
         token: 'turnip',
