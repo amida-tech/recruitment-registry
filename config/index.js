@@ -42,8 +42,8 @@ const all = {
     },
     tmpDirectory: '/tmp',
     cohortBucket: 'recreg-dev-cohorts',
-    awsSecretAccessKeyId: null,
     awsSecretAccessKey: null,
+    awsAccessKeyId: null,
     zipCodeApi: {
         baseUrl: 'https://www.zipwise.com/webservices/radius.php',
         distance: 50,
