@@ -56,7 +56,7 @@ describe('cohort email integration', function cohortEmailIntegration() {
     const testCSV = 'a,b,c,d\n1,2,3,4';
 
     // set AWS_SECRET_ACCESS_KEY and AWS_ACCESS_KEY_ID to turn on actual bucket testing
-    const awsActive = config.awsSecretAccessKeyId && config.awsAccessKey;
+    const awsActive = config.awsSecretAccessKey && config.awsAccessKeyId;
 
     before(shared.setUpFn());
 
@@ -193,7 +193,7 @@ describe('cohort email integration', function cohortEmailIntegration() {
                 res.pipe(fs.createWriteStream(zipfilepath))
                     .on('error', done)
                     .on('finish', () => done());
-            });
+            }).on('error', done);
         });
     } else {
         it('set zip file location', function zipFileLocation() {
