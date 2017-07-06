@@ -56,7 +56,7 @@ describe('cohort email integration', function cohortEmailIntegration() {
     const testCSV = 'a,b,c,d\n1,2,3,4';
 
     // set AWS_SECRET_ACCESS_KEY and AWS_ACCESS_KEY_ID to turn on actual bucket testing
-    const awsActive = config.awsSecretAccessKeyId && config.awsSecretAccessKey;
+    const awsActive = config.awsSecretAccessKeyId && config.awsAccessKey;
 
     before(shared.setUpFn());
 
