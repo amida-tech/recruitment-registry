@@ -6,16 +6,15 @@ process.env.NODE_ENV = 'test';
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 const path = require('path');
-const fs = require('fs');
 const chai = require('chai');
 const sinon = require('sinon');
 const _ = require('lodash');
 const stream = require('stream');
 const unzipper = require('unzipper');
 const mkdirp = require('mkdirp');
-const request = require('request');
 
 const aws = require('../lib/aws');
+const utils = require('../lib/utils');
 const config = require('../config');
 
 const SharedIntegration = require('./util/shared-integration');
@@ -41,8 +40,6 @@ const Accumulator = class extends stream.Writable {
     }
 };
 
-// Set AWS_SECRET_ACCESS_KEY and AWS_ACCESS_KEY_ID to turn on actual bucket testing
-// Otherwise s3 (putObject) calls are mocked
 describe('cohort email integration', function cohortEmailIntegration() {
     const generator = new Generator();
     const rrSuperTest = new RRSuperTest();
@@ -54,9 +51,7 @@ describe('cohort email integration', function cohortEmailIntegration() {
 
     const server = new SMTPServer();
     const testCSV = 'a,b,c,d\n1,2,3,4';
-
-    // set AWS_SECRET_ACCESS_KEY and AWS_ACCESS_KEY_ID to turn on actual bucket testing
-    const awsActive = config.awsSecretAccessKey && config.awsAccessKeyId;
+    const randomString = 'cohorttest';
 
     before(shared.setUpFn());
 
@@ -71,11 +66,10 @@ describe('cohort email integration', function cohortEmailIntegration() {
     it('set up sinon mockup', () => {
         const models = rrSuperTest.getModels();
         sinon.stub(models.cohort, 'createCohort', () => SPromise.resolve(testCSV));
-        if (!awsActive) {
-            sinon.stub(aws, 'putObject', (params, callback) => {
-                callback(null, 's3datatest');
-            });
-        }
+        sinon.stub(aws, 'putObject', (params, callback) => {
+            callback(null, 's3datatest');
+        });
+        sinon.stub(utils, 'makeRandomString', () => randomString);
     });
 
     it('login as super user', shared.loginFn(config.superUser));
@@ -177,33 +171,10 @@ describe('cohort email integration', function cohortEmailIntegration() {
 
     it('logout as clinician', shared.logoutFn());
 
-    let zipfilepath = null;
-
-    const formFilepathFromUrl = function (s3Url, prefix = '') {
-        const pieces = s3Url.split('/');
-        const filename = pieces[pieces.length - 1];
-        return path.resolve(config.tmpDirectory, `${prefix}${filename}.zip`);
-    };
-
-    if (awsActive) {
-        it('get cohort zip file from s3', function unzipContentFromS3(done) {
-            const req = request(cohortInfo.s3Url);
-            zipfilepath = formFilepathFromUrl(cohortInfo.s3Url, 'res_');
-            req.on('response', (res) => {
-                res.pipe(fs.createWriteStream(zipfilepath))
-                    .on('error', done)
-                    .on('finish', () => done());
-            }).on('error', done);
-        });
-    } else {
-        it('set zip file location', function zipFileLocation() {
-            zipfilepath = formFilepathFromUrl(cohortInfo.s3Url);
-        });
-    }
-
-    it('check content of the zip file', function unzipContent() {
+    it('check content of zipped file', function unzipContent() {
+        const filepath = path.resolve(config.tmpDirectory, `${randomString}.zip`);
         const accumulator = new Accumulator();
-        return unzipper.Open.file(zipfilepath)
+        return unzipper.Open.file(filepath)
             .then(dir => new Promise((resolve, reject) => {
                 dir.files[0].stream(cohortInfo.zipPassword)
                     .pipe(accumulator)
@@ -218,9 +189,8 @@ describe('cohort email integration', function cohortEmailIntegration() {
     it('restore mock libraries', function restoreSinonedLibs() {
         const models = rrSuperTest.getModels();
         models.cohort.createCohort.restore();
-        if (!awsActive) {
-            aws.putObject.restore();
-        }
+        aws.putObject.restore();
+        utils.makeRandomString.restore();
     });
 
     after((done) => {
