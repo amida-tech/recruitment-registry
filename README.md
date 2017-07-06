@@ -84,6 +84,7 @@ A list of full environment variable settings is below.  They can be either manua
 - RECREG_DB_POOL_MAX: Maximum number of connections in pool.
 - RECREG_DB_POOL_MIN: Minimum number of connections in pool.
 - RECREG_DB_POOL_IDLE: The maximum time, in milliseconds, that a connection can be idle before being released.
+- RECREG_DB_SSL: Use secure connections with SSL.
 - RECREG_SUPER_USER_USERNAME: Super user username (super).
 - RECREG_SUPER_USER_PASSWORD: Super user password (Am!d@2017PW).
 - RECREG_SUPER_USER_EMAIL: Super user email (rr_demo@amida.com).
@@ -101,8 +102,8 @@ A list of full environment variable settings is below.  They can be either manua
 - RECREG_ZIP_API_KEY: API key for Zipwise.
 - RECREG_ZIP_DISTANCE: Distance to query when finding zip code vicinities (`50`).
 - RECREG_JWT_<registry name>: JWT for remote registries for federated search.
-- RECREG_AWS_ACCESS_KEY: Amazon Web Services access key ID
-- RECREG_AWS_SECRET: Amazon Web Service secret access key 
+- RECREG_AWS_ACCESS_KEY: Amazon Web Services access key ID.
+- RECREG_AWS_SECRET: Amazon Web Service secret access key.
 
 ## Commands
 
