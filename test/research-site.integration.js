@@ -129,7 +129,7 @@ describe('research site integration', () => {
             it(`get research site ${index}`, getResearchSiteFn(index));
             it('login as super', shared.loginFn(config.superUser));
             it(`update some research site meta fields ${index}`, updateResearchSiteFn(index, ['name', 'state']));
-            it(`update all research site meta fields ${index}`, updateResearchSiteFn(index, ['name', 'url', 'street', 'street2', 'city', 'state'], true));
+            it(`update all research site meta fields ${index}`, updateResearchSiteFn(index, ['name', 'phone', 'ext', 'phone2', 'ext2', 'url', 'street', 'street2', 'city', 'state'], true));
             it('logout as super', shared.logoutFn());
             it(`verify research site ${index}`, verifyResearchSiteFn(index));
         } else {
@@ -139,7 +139,7 @@ describe('research site integration', () => {
             it(`get research site ${index}`, getResearchSiteFn(index));
             it('login as super', shared.loginFn(config.superUser));
             it(`update some research site meta fields ${index}`, updateResearchSiteFn(index, ['name', 'state']));
-            it(`update all research site meta fields ${index}`, updateResearchSiteFn(index, ['name', 'url', 'street', 'city', 'state'], false));
+            it(`update all research site meta fields ${index}`, updateResearchSiteFn(index, ['name', 'phone', 'url', 'street', 'city', 'state'], false));
             it('logout as super', shared.logoutFn());
             it(`verify research site ${index}`, verifyResearchSiteFn(index));
         }
