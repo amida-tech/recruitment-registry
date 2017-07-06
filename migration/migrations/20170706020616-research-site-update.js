@@ -4,6 +4,7 @@ const phone = function (queryInterface, Sequelize) {
     return queryInterface.addColumn('research_site', 'phone', {
         type: Sequelize.TEXT,
         allowNull: false,
+        defaultValue: '999-999-9999',
         field: 'phone',
     });
 };
