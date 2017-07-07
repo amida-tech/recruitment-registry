@@ -24,6 +24,7 @@ const all = {
         poolMin: 0,
         poolIdle: 10000,
         schema: 'public',
+        ssl: false,
     },
     superUser: {
         username: 'super',
@@ -77,6 +78,7 @@ const main = {
         poolMin: process.env.RECREG_DB_POOL_MIN,
         poolIdle: process.env.RECREG_DB_POOL_IDLE,
         schema: process.env.RECREG_DB_SCHEMA,
+        ssl: process.env.RECREG_DB_SSL,
     },
     superUser: {
         username: process.env.RECREG_SUPER_USER_USERNAME,

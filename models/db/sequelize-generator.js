@@ -14,7 +14,7 @@ module.exports = function sequelizeGenerator(prependSearchPath, inputDbName) {
         dialect: config.db.dialect,
         native: false,
         dialectOptions: {
-            ssl: (config.env === 'production'),
+            ssl: !!config.db.ssl,
             prependSearchPath,
         },
         port: config.db.port,
