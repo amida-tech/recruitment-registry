@@ -11,6 +11,7 @@ module.exports = function researchSite(sequelize, Sequelize, schema) {
         phone: {
             type: Sequelize.TEXT,
             allowNull: false,
+            defaultValue: '999-999-9999',
         },
         ext: {
             type: Sequelize.TEXT,

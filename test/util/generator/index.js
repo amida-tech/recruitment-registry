@@ -179,9 +179,7 @@ class Generator {
     }
 
     newResearchSite(zip, hasOptionalFields) {
-        if (hasOptionalFields === undefined) {
-            hasOptionalFields = false;
-        }
+        hasOptionalFields = !!hasOptionalFields;
         this.researchSiteIndex += 1;
         const index = this.researchSiteIndex;
         const withOptionalFields = {
