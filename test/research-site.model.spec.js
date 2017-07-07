@@ -117,13 +117,13 @@ describe('research site unit', () => {
             it(`create research site ${index}`, createResearchSiteFn(index, true));
             it(`get research site ${index}`, getResearchSiteFn(index));
             it(`update some research site meta fields ${index}`, updateResearchSiteFn(index, ['name', 'state']));
-            it(`update all research site meta fields ${index}`, updateResearchSiteFn(index, ['name', 'url', 'street', 'street2', 'city', 'state'], true));
+            it(`update all research site meta fields ${index}`, updateResearchSiteFn(index, ['name', 'url', 'phone', 'ext', 'phone2', 'ext2', 'street', 'street2', 'city', 'state'], true));
             it(`verify research site ${index}`, verifyResearchSiteFn(index));
         } else {
             it(`create research site ${index}`, createResearchSiteFn(index, false));
             it(`get research site ${index}`, getResearchSiteFn(index));
             it(`update some research site meta fields ${index}`, updateResearchSiteFn(index, ['name', 'state']));
-            it(`update all research site meta fields ${index}`, updateResearchSiteFn(index, ['name', 'url', 'street', 'city', 'state'], false));
+            it(`update all research site meta fields ${index}`, updateResearchSiteFn(index, ['name', 'url', 'phone', 'street', 'city', 'state'], false));
             it(`verify research site ${index}`, verifyResearchSiteFn(index));
         }
     });

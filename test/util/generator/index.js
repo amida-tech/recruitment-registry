@@ -179,13 +179,15 @@ class Generator {
     }
 
     newResearchSite(zip, hasOptionalFields) {
-        if (hasOptionalFields === undefined) {
-            hasOptionalFields = false;
-        }
+        hasOptionalFields = !!hasOptionalFields;
         this.researchSiteIndex += 1;
         const index = this.researchSiteIndex;
         const withOptionalFields = {
             name: `name_${index}`,
+            phone: `phone_${index}`,
+            ext: `ext_${index}`,
+            phone2: `phone2_${index}`,
+            ext2: `ext2_${index}`,
             url: `server_${index}@example.com`,
             street: `street_${index}`,
             street2: `suite_${index}`,
@@ -195,6 +197,7 @@ class Generator {
         };
         const withoutOptionalFields = {
             name: `name_${index}`,
+            phone: `phone_${index}`,
             url: `server_${index}@example.com`,
             street: `street_${index}`,
             city: `city_${index}`,

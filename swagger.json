@@ -6468,9 +6468,25 @@
         },
         "newResearchSite": {
             "type": "object",
-            "required": ["name", "url", "street", "city", "state", "zip"],
+            "required": ["name", "phone", "url", "street", "city", "state", "zip"],
             "properties": {
                 "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "phone": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "ext": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "phone2": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "ext2": {
                     "type": "string",
                     "minLength": 1
                 },
@@ -6504,13 +6520,29 @@
         },
         "researchSite": {
             "type": "object",
-            "required": ["id", "name", "url", "street", "city", "state", "zip"],
+            "required": ["id", "name", "phone", "url", "street", "city", "state", "zip"],
             "properties": {
                 "id": {
                     "type": "integer",
                     "minimum": 1
                 },
                 "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "phone": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "ext": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "phone2": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "ext2": {
                     "type": "string",
                     "minLength": 1
                 },
@@ -6552,6 +6584,22 @@
             "type": "object",
             "properties": {
                 "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "phone": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "ext": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "phone2": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "ext2": {
                     "type": "string",
                     "minLength": 1
                 },

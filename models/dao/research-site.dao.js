@@ -5,7 +5,7 @@ const _ = require('lodash');
 const Base = require('./base');
 const zipUtil = require('../../lib/zip-util');
 
-const attributes = ['id', 'name', 'url', 'street', 'street2', 'city', 'state', 'zip'];
+const attributes = ['id', 'name', 'phone', 'ext', 'phone2', 'ext2', 'url', 'street', 'street2', 'city', 'state', 'zip'];
 
 const formatZip = function formatZip(zip) {
     return zip ? zip.replace(/ /g, '') : zip;

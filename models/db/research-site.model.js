@@ -8,6 +8,23 @@ module.exports = function researchSite(sequelize, Sequelize, schema) {
             type: Sequelize.TEXT,
             allowNull: false,
         },
+        phone: {
+            type: Sequelize.TEXT,
+            allowNull: false,
+            defaultValue: '999-999-9999',
+        },
+        ext: {
+            type: Sequelize.TEXT,
+            allowNull: true,
+        },
+        phone2: {
+            type: Sequelize.TEXT,
+            allowNull: true,
+        },
+        ext2: {
+            type: Sequelize.TEXT,
+            allowNull: true,
+        },
         url: {
             type: Sequelize.TEXT,
             allowNull: false,

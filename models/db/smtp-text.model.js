@@ -42,7 +42,7 @@ module.exports = function smtpText(sequelize, Sequelize, schema) {
                 },
                 key: 'name',
             },
-            default: 'reset-password',
+            defaultValue: 'reset-password',
         },
     }, {
         freezeTableName: true,
