@@ -26,7 +26,7 @@ const smtpColumnType = function (queryInterface, Sequelize) {
             model: 'smtp_type',
             key: 'name',
         },
-        default: 'reset-password',
+        defaultValue: 'reset-password',
     });
 };
 
@@ -38,7 +38,7 @@ const smtpTextColumnType = function (queryInterface, Sequelize) {
             model: 'smtp_type',
             key: 'name',
         },
-        default: 'reset-password',
+        defaultValue: 'reset-password',
     });
 };
 

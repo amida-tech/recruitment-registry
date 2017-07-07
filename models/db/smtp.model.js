@@ -48,7 +48,7 @@ module.exports = function smtp(sequelize, Sequelize, schema) {
                 },
                 key: 'name',
             },
-            default: 'reset-password',
+            defaultValue: 'reset-password',
         },
     }, {
         freezeTableName: true,
