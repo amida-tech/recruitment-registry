@@ -13,9 +13,7 @@ module.exports = function authentication01(locals) {
         .auth('super', 'Am!d@2017PW')
         .then((res) => {
             console.log(res.status); // 200
-            const cookie = res.header['set-cookie'][0];
-            const jwt = cookie.split(';')[0].split('=')[1];
-            console.log(jwt);
+            console.log(res.header); // 200
         })
         .then(() => {
             console.log(`------ end ${module.filename}`);
