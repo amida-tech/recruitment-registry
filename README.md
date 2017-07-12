@@ -15,21 +15,21 @@ Recruitment Registry API
 
 1. Install all dependencies:
 	* Node.js v6 (previous node versions may require Babel)
-	* Postgres (v9.5 or greater)  
-	> Note: Default installations of Postgres on macOS (such as through homebrew or DMG install) may not grant proper permission to your postgres user role. macOS users may need to alter their Postgres user role with [role attribute](https://www.postgresql.org/docs/9.5/static/role-attributes.html) `LOGIN`. See [ALTER ROLE – (postgres.org)](https://www.postgresql.org/docs/9.5/static/sql-alterrole.html) in the Postgres Documentation for more.  
-	
+	* Postgres (v9.5 or greater)
+	> Note: Default installations of Postgres on macOS (such as through homebrew or DMG install) may not grant proper permission to your postgres user role. macOS users may need to alter their Postgres user role with [role attribute](https://www.postgresql.org/docs/9.5/static/role-attributes.html) `LOGIN`. See [ALTER ROLE – (postgres.org)](https://www.postgresql.org/docs/9.5/static/sql-alterrole.html) in the Postgres Documentation for more.
+
 	> Note: Windows users may be required to install Python 2.7 and Visual C++ Build Tools. Please follow [Installing Python and Visual C++ Build Tools (Windows)](#installing-python-and-visual-c-build-tools-windows) prior to continuing installation.
-3. Create database recreg:  
+2. Create database recreg:
 `createdb recreg`
-4. Install Grunt:  
+3. Install Grunt:
 `npm install -g grunt`
-5. Install npm dependencies:  
+4. Install npm dependencies:
 `npm install`
-6. Create a `.env` file in root.  
+5. Create a `.env` file in root.
 > Note: See [Configuration](#Configuration) for more about configuring your `.env` file.
-7. Populate your database:  
+6. Populate your database:
 `node seed.js`
-8. Run:
+7. Run:
 `npm start`
 
 ### Installing Python and Visual C++ Build Tools (Windows)
@@ -48,7 +48,7 @@ installing the needed components for node-gyp. And all users will probably have 
 
 Use `export NODE_ENV=development` (or `production` or `test`) to set node environment in Bash compatible shells or equivalent in others.
 
-Add to `PATH` `export PATH=$PATH:/Applications/Postgres.app/Contents/Versions/latest/bin`. Note: You'll have to preform this operation for each new shell session, or add the Postgres  `bin` file to your `$PATH` variable.
+Add to `PATH` `export PATH=$PATH:/Applications/Postgres.app/Contents/Versions/latest/bin`. Note: You'll have to preform this operation for each new shell session, or add the Postgres `bin` file to your `$PATH` variable.
 
 A minimal sample `.env` file is below.  Change according to your database
 ```
@@ -141,7 +141,7 @@ $ mocha test/survey.model.spec.js --bail
 
 Each test in a file may depend on some of the previous tests so using flag `bail` is recommended.
 
-Most API resources are documented in snippets in the [integration document](./docs/api.md).  A script that exercises most snippets is.  This script however is not yet part of the testing suite and needs to be run independently and updated according to changes.
+Most API resources are documented in snippets in the [integration document](./docs/api.md).  A [top level script](./docs/scripts/run-all.js) that exercises snippets is also included.
 
 ## API
 

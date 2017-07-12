@@ -17,7 +17,7 @@ module.exports = function (locals) {
     };
 
     return locals.agent
-        .post('http://localhost:9005/api/v1.0/smtp')
+        .post('http://localhost:9005/api/v1.0/smtp/reset-password')
         .send(smtpSpec)
         .then((res) => {
             console.log(res.status); // 204
