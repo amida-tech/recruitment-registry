@@ -2,7 +2,7 @@
 
 ### Introduction
 
-This document gives examples for most resources available in Recruitment Registry API.
+This document gives examples for resources available in Recruitment Registry API.
 
 ##### Code Snippets
 
@@ -67,9 +67,9 @@ When server responds with an error status, an error object is always included in
 ### System Administration
 <a name="system-administration"/>
 
-Before any participant can use the system, questions and surveys that are to be answered by the participants must be created.  If use cases involve consent documents and/or profile survey (asurvey that needs to be answered during registration), those artifacts need to be created as well.
+Before any participant can use the system, questions and surveys that are to be answered by the participants must be created.  If use cases involve consent documents and/or profile survey (a survey that needs to be answered during registration), those artifacts need to be created as well.
 
-This section administrative API to achieve these tasks.  Majority of these tasks can also be done during installation with registry specific system initialization scripts.  In addition the input format of resources (questions, surveys, consent documents, etc.) are examplified.
+This section discusses administrative API to achieve these tasks.  Majority of these tasks can also be done during installation with registry specific system initialization scripts.  In addition the input format of resources (questions, surveys, consent documents, etc.) are examplified.
 
 All API requests in this section requires `admin` authorization.
 
@@ -595,7 +595,7 @@ Based on use-cases clients can require consent documents of certain types to be 
 ```js
 let touDocument;
 agent
-	.get('http://localhost:9005/api/v1.0/consent-documents/type-name/terms-of-use')
+	.get('http://localhost:9005/api/v1.0/consent-documents/type/1')
 	.then(res => {
 		console.log(res.status);  // 200
 		touDocument = res.body;
@@ -1880,7 +1880,7 @@ Same information is also available using the type name of the consent document
 
 ```js
 agent
-    .get('http://localhost:9005/api/v1.0/consent-documents/type-name/consent')
+    .get('http://localhost:9005/api/v1.0/consent-documents/type/2')
     .then(res => {
         console.log(res.status);  // 200
         console.log(JSON.stringify(res.body, undefined, 4)); // unsigned consent documents
@@ -1903,7 +1903,7 @@ Consent documents can be shown with the signature information
 
 ```js
 agent
-    .get('http://localhost:9005/api/v1.0/user-consent-documents/type-name/consent')
+    .get('http://localhost:9005/api/v1.0/user-consent-documents/type/2')
     .then(res => {
         console.log(res.status);  // 200
         console.log(JSON.stringify(res.body, undefined, 4)); // consent document with signature
@@ -1996,7 +1996,7 @@ const smtpSpec = {
 };
 
 agent
-    .post('http://localhost:9005/api/v1.0/smtp')
+    .post('http://localhost:9005/api/v1.0/smtp/reset-password')
     .send(smtpSpec)
     .then(res => {
         console.log(res.status);  // 204
@@ -2009,7 +2009,7 @@ SMTP specification is available using `/smtp` resource
 
 ```js
 agent
-    .get('http://localhost:9005/api/v1.0/smtp')
+    .get('http://localhost:9005/api/v1.0/smtp/reset-password')
     .then(res => {
         console.log(res.status);  // 200
         console.log(JSON.stringify(res.body, undefined, 4));

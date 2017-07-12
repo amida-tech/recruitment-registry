@@ -7,7 +7,7 @@ module.exports = function (locals) {
 
     let touDocument;
     return locals.agent
-        .get('http://localhost:9005/api/v1.0/consent-documents/type-name/terms-of-use')
+        .get('http://localhost:9005/api/v1.0/consent-documents/type/1')
         .then((res) => {
             console.log(res.status); // 200
             touDocument = res.body;

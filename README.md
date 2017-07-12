@@ -15,21 +15,21 @@ Recruitment Registry API
 
 1. Install all dependencies:
 	* Node.js v6 (previous node versions may require Babel)
-	* Postgres (v9.5 or greater)  
-	> Note: Default installations of Postgres on macOS (such as through homebrew or DMG install) may not grant proper permission to your postgres user role. macOS users may need to alter their Postgres user role with [role attribute](https://www.postgresql.org/docs/9.5/static/role-attributes.html) `LOGIN`. See [ALTER ROLE – (postgres.org)](https://www.postgresql.org/docs/9.5/static/sql-alterrole.html) in the Postgres Documentation for more.  
-	
+	* Postgres (v9.5 or greater)
+	> Note: Default installations of Postgres on macOS (such as through homebrew or DMG install) may not grant proper permission to your postgres user role. macOS users may need to alter their Postgres user role with [role attribute](https://www.postgresql.org/docs/9.5/static/role-attributes.html) `LOGIN`. See [ALTER ROLE – (postgres.org)](https://www.postgresql.org/docs/9.5/static/sql-alterrole.html) in the Postgres Documentation for more.
+
 	> Note: Windows users may be required to install Python 2.7 and Visual C++ Build Tools. Please follow [Installing Python and Visual C++ Build Tools (Windows)](#installing-python-and-visual-c-build-tools-windows) prior to continuing installation.
-3. Create database recreg:  
+2. Create database recreg:
 `createdb recreg`
-4. Install Grunt:  
+3. Install Grunt:
 `npm install -g grunt`
-5. Install npm dependencies:  
+4. Install npm dependencies:
 `npm install`
-6. Create a `.env` file in root.  
+5. Create a `.env` file in root.
 > Note: See [Configuration](#Configuration) for more about configuring your `.env` file.
-7. Populate your database:  
+6. Populate your database:
 `node seed.js`
-8. Run:
+7. Run:
 `npm start`
 
 ### Installing Python and Visual C++ Build Tools (Windows)
@@ -48,7 +48,7 @@ installing the needed components for node-gyp. And all users will probably have 
 
 Use `export NODE_ENV=development` (or `production` or `test`) to set node environment in Bash compatible shells or equivalent in others.
 
-Add to `PATH` `export PATH=$PATH:/Applications/Postgres.app/Contents/Versions/latest/bin`. Note: You'll have to preform this operation for each new shell session, or add the Postgres  `bin` file to your `$PATH` variable.
+Add to `PATH` `export PATH=$PATH:/Applications/Postgres.app/Contents/Versions/latest/bin`. Note: You'll have to preform this operation for each new shell session, or add the Postgres `bin` file to your `$PATH` variable.
 
 A minimal sample `.env` file is below.  Change according to your database
 ```
@@ -141,7 +141,7 @@ $ mocha test/survey.model.spec.js --bail
 
 Each test in a file may depend on some of the previous tests so using flag `bail` is recommended.
 
-Most API resources are documented in snippets in the [integration document](./docs/api.md).  A script that exercises most snippets is.  This script however is not yet part of the testing suite and needs to be run independently and updated according to changes.
+Most API resources are documented in snippets in the [integration document](./docs/api.md).  A [top level script](./docs/scripts/run-all.js) that exercises snippets is also included.
 
 ## API
 
@@ -155,7 +155,7 @@ Detailed description of the API with working examples is provided in the [integr
 
 ### General
 
-All table and column names are in snake case to follow Postgres convention and for ability to write Postgres queries easily.  All tables have `created_at` columns.  All tables for which records can be updated have an `updated_at` column.  All tables for which records can be soft deleted have a `deleted_at` column.  If there is a timestamp value at the `deleted_at` column, the record is soft deleted.  No record on any table is ever hard deleted.  Currently only a handful of uniqueness contraints are enforced on the database level.  No indexes have been created yet.
+All table and column names are in snake case to follow Postgres convention and for ability to write Postgres queries easily.  All tables have `created_at` columns.  All tables for which records can be updated have an `updated_at` column.  All tables for which records can be soft deleted have a `deleted_at` column.  If there is a timestamp value at the `deleted_at` column, the record is soft deleted.  No record on any table is ever hard deleted.  If exists column `line` is used to order records for client presentation.
 
 ### Multi Lingual Support
 
@@ -163,23 +163,100 @@ This is a English first design where all logical records are assumed to be in En
 
 ### Tables
 
+- `answer`: This table stores all the answers to questions.  Each record represents an answer to a question (column `question_id`) in a survey (column `survey_id`) by a user (column `user_id`).  Actual answer data can be a choice from question multiple choices (column `question_choice_id`), a free value field (column `value`) or a file (column `file_id`).
+
+- `answer_identifier`: This table stores client specific (column `type`) identifiers (colum `identifier`) for possible answers to questions (columns `question_id`, `question_choice_id`, `multiple_index`).
+
+- `answer_rule`: This table stores conditions (column `logic`) for survey (column `survey_id`) questions (column `question_id`) or sections (column `section_id`) to be enabled or disabled. Conditions are based on answers to other questions (column `answer_question_id`).  Conditon answers themselves are defined in table `answer_rule_value`.
+
+- `answer_rule_logic`: This table defines possible condition types (column `name`, exs: equals, exists) that can be used in `answer_rule` table.
+
+- `answer_rule_value`: This table stores answers (columns `question_choice_id` and `value`) that are used in rules (column `answer_rule_id`) in conditional questions.
+
+- `answer_type`: This table stores available answer types. Current supported types are `text`, `bool` and `choice`.
+
+- `assessment`: This table defines assesments (column `name`) together with table `assesment_survey`.  Assessment are set of surveys whose answers are tracked over time.
+
+- `assessment_survey`: This table stores the surveys (column `survey_id`) that forms an assessment (column `assessment_id`).
+
+- `choice_set`: This table defines a choice set (column `reference`) that can be used to for shared choices that can be used in questions.
+
+- `cohort`: This table stores a named shaped cohort (column `name`) that used the filter (colum `filter_id`) and with a possible limited number of participants (column `count`).
+
+- `cohort_answer`: This table stores the filter specifics (columns `question_id`, `exclude`, `question_choice_id`, `value`) for cohort (column `cohort_id`) at the time of creation.  Copied from `filter_answer` at the time of creation.
+
+- `consent`: Each record in this table represents a collection of consent documents.  Column `name` is used to identify the collection in API but otherwise this table does not have a data column.
+
+- `consent_document`: Each record in this table represents a consent document of a certain type (column `type_id`).  This table is designed to have at most one active record for each consent type at any point in time.  All other records of the same types will be in soft deleted state.  Actual content of the consent documents are stored in `consent_document_text`.
+
+- `consent_document_text`: This table stores translatable columns `content` and `update_comment` of consent documents.  `language` is also a column and each record has values for `content` and `update_comment` in that language.  `consent_document_id` column links each record to `consent_document` table.
+
+- `consent_section`: Each record in this table represents a section of consent type (column `consent_type_id`) in consent (column `consent_id`).
+
+- `consent_signature`: This table stores each instance (column `created_at`) of a user (column `user_id`) signing a consent document (column `consent_document_id`).  This table also stores ip (column `ip`) and browser information (column `user_agent`) during the signing of the document.
+
+- `consent_type`: Each record in this table represent a consent document type.  Column `name` is used in API to refer to the consent type and column `type` is client only field that identify how consent documents of this type are presented on the user interface. Title for the consent type is stored in table `consent_type_text`.
+
+- `consent_type_text`: This table stores translatable column `title` which stores consent type title. `language` is also a column and each record has a value for `title` in that language.  `consent_type_id` column links each record to `consent_type` table.
+
+- `file`: This table stores users' (column `user_id`) answers that are files (columns `name` and `content`).
+
+- `filter`: This table stores filter that can be used in cohort shaping.
+
+- `filter_answer`: This table stores filter specifics (columns `question_id`, `exclude`, `question_choice_id`, `value`) for filter (column `filter_id`).
+
 - `language`: Each record in this table represents a supported language.  `code` column is used as the primary key and designed to store two or three character ISO codes.  Columns `name` and `native_name` can be used for language selection on the client.
 
-- `question`: Each record in this table represents a question that is being or can be used in surveys .  Questions can be stand alone, can belong to a survey or can belong to multiple surveys.  Link to surveys (table `survey`) is achieved through `survey_question` table.  Question records can be soft deleted but when no other active record in any other table does not reference it.  Versioning is supported using columns `version` and `group_id`.  Version is a number and `group_id` is the `id` of the first question in the group.  Only actual data column in this table is `type`.
+- `profile_survey`: This table stores the profile survey (column `survey_id`) that is to be used during registration.
 
-- `question_text`: This table stores translatable logical question field `text` in the column with the same name.  `language` is also a column and each record has a value for `text` in that language.  `question_id` column links each record to `question` table.
+- `question`: Each record in this table represents a question that is being or can be used in surveys .  Questions can be stand alone, can belong to a survey or can belong to multiple surveys.  Link to surveys (table `survey`) is achieved through `survey_question` table.  Question records can be soft deleted but when no other active record in any other table does not reference it.  Versioning is supported using columns `version` and `group_id`.  Version is a number and `group_id` is the `id` of the first question in the group.  A set of types are supported (column `type`).
 
-- `question_type`: This table stores available question types. Current supported types are `text`, `bool`, `choice`, and `choices` that respectively correspond to free text questions, yes/no questions, multiple choice questions and composite questions with multiply selectable choices and free text fields.
-
-- `question_choice`: Each record in this table represents a choice in multiple choice question of types choice or choices.  Question id is a foreign key (column `question_id`).  To support composite questions that can have multiply selectable choices together with free text fields (ex: a list of check boxes with a free text other field), this table also stores type of choice (column `type`) with currently supported types of `bool` and `text`.  Order of choices for a particular question is preserved using a line item (column `line`).  Actual text of choice is stored in `question_choice_text`.
+- `question_choice`: Each record in this table represents a choice in multiple choice question of types choice, choiceref, choices or open choice.  Each record can belong to a specific question (column `question_id`) or to a choice set that can be shared by multiple questions (column `choice_set_id`).  To support composite questions that can have multiply selectable choices together with free text fields (ex: a list of check boxes with a free text other field), this table also stores type of choice (column `type`) with currently supported types of `bool` and `text`.  Actual text of choice is stored in `question_choice_text`.
 
 - `question_choice_text`: This table stores translatable column `text` which stores question choice texts. `language` is also column and each record has a value for `text` in that language. `question_choice_id` column links each record to `question_choice` table.
 
+- `question_identifier`: This table stores client specific (column `type`) identifiers (colum `identifier`) for questions (columns `question_id`).
+
+- `question_text`: This table stores translatable logical question field `text` in the column with the same name.  `language` is also a column and each record has a value for `text` in that language.  `question_id` column links each record to `question` table.
+
+- `question_type`: This table stores available question types.
+
+- `registry`: This table stores all other registries that this registry should be aware of.  These registries can be in other servers (column `url`) or share the same database (column `schema`) for multi tenant setup.
+
+- `registry_user`: This table stores patient first name, last name, email, role, and login information (username, password, password reset through email token and its expiration date).
+
+- `research_site`: This stores the research centers for the registry.
+
+- `research_site_vicinity`: This stores closest research sites (column `research_site_id`) for a zip code (column `zip`).
+
+- `section`: This stores sections that can be used in surveys to group questions.
+
+- `section_text`: This table stores translatable logical section fields `text` and `description` in the column with the same name.  `language` is also a column and each record has a value for `text` in that language.  `ection_id` column links each record to `question` table.
+
+- `smtp`: This table stores email service specifics that can be used for various services (column `type`) that require outgoing email such as password reset functionality. The subject and content of password reset emails are stored in `smtp_text`.
+
+- `smtp_text`: This table stores translatable columns `content` and `subject` for outgoing email for various services (column `type`).
+
+- `smtp_type`: This table defines types of services that require outgoing emails.
+
+- `staging_bhr_gap`: This table is used during importing of data.
+
 - `survey`: Each record in this table represents a survey.  Surveys can be deleted. Versioning is supported using columns `version` and `group_id`.  Version is a number and `group_id` is the `id` of the first survey in the group.  Questions in surveys are represented using another table `survey_question`.  Only actual data column is `meta` which is designed to store client settings.
 
-- `survey_text`: This table stores translatable column `name` which stores survey name. `language` is also a column and each record has a value for `name` in that language. `survey_id` column links each record to `survey` table.
+- `survey_consent`: This table stores consents (either column `consent_id` or `consent_type_id`) that assigned to surveys (column `survey_id`).
+
+- `survey_identifier`: This table stores client specific (column `type`) identifiers (colum `identifier`) for surveys (columns `survey_id`).
 
 - `survey_question`: This table stores questions in particular surveys.  Each record represents a question (column `question_id`) in a survey (column `survey_id`).  Question order is preserved using field line (column `line`).  Questions can also be marked required (column `required`).
+
+- `survey_section_question`: This table stores sections in particular surveys.  Each record represents a section (column `section_id`) in a survey (column `survey_id`).  Section can be under a question (column `parent_question_id`) or another section (column `section_id`).
+
+- `survey_section_question`:   This table stores questions in survey sections. Each record represents a question (column `question_id`) in a section (column `surveys_section_id`).
+
+- `survey_status`: This defines statuses during answering of surveys,
+
+- `survey_text`: This table stores translatable columns `name` and `description`. `language` is also a column and each record has a value for `name` in that language. `survey_id` column links each record to `survey` table.
+
 
 - `rr_section`: Each record in this tables represents a section in a survey. Content of sections are represented as local indices of questions in column `indices`.  The name of the section is stored in `section_text` table.
 
@@ -187,35 +264,13 @@ This is a English first design where all logical records are assumed to be in En
 
 - `survey_section`: This table links surveys (column `survey_id`) to sections (column `section_id`).  Order of sections preserved using column `line`.
 
-- `answer`: This table stores all the answers to questions.  Each record represents an answer to a question (column `question_id`) in a survey (column `survey_id`) by a user (column `user_id`).  Actual answer data can be a choice from question multiple choices (column `question_choice_id`) and/or a free value field (column `value`) whose type is also stored (column `type`).  Current supported types are `text`, `bool` or `choice`.
+- `user_assessment`: This stores an instance of an assessment (column `assessment_id`) for a paricular participant (column `user_id`).
 
-- `answer_type`: This table stores available answer types. Current supported types are `text`, `bool` and `choice`.
+- `user_assessment_answer`: This stores user answers (column `answer_id`) for a particular assessment (coilumn `user_assessment_id).
 
-- `registry_user`: This table stores patient email, role, and login information (username, password, password reset through email token and its expiration date).
-
-- `consent_type`: Each record in this table represent a consent document type.  Column `name` is used in API tp refer to the consent type and column `type` is client only field that identify how consent documents of this type are presented on the user interface. Title for the consent type is stored in `consent_type_text`.
-
-- `consent_type_text`: This table stores translatable column `title` which stores consent type title. `language` is also a column and each record has a value for `title` in that language.  `consent_type_id` column links each record to `consent_type` table.
-
-- `consent_document`: Each record in this table represents a consent document.  This table is designed to have at most one active record for each consent type at any point in time.  All other records of the same types will be in soft deleted state.  Actual content of the consent documents are stored in `consent_document_text`.
-
-- `consent_document_text`: This table stores translatable columns `content` and `update_comment` of consent documents.  `language` is also a column and each record has values for `content` and `update_comment` in that language.  `consent_document_id` column links each record to `consent_document` table.
-
-- `consent_signature`: This table stores each instance (column `created_at`) of a user (column `user_id`) signing a consent document (column `consent_document_id`).  This table also stores ip (column `ip` and browser information (column `user_agent`) during the signing of the document.
-
-- `consent`: Each record in this table represents a collection of consent documents.  Column `name` is used to identify the collection in API but otherwise this table does not have a data column.
-
-- `consent_section`: Each record in this table represents a section of consent type (column `consent_type_id`) in consent (column `consent_id`).  Column `line` is used preserve order.
-
-- `survey_consent_type`: Each record represents a consent section (column `consent_type_id`) that needs to signed by a user before a survey (column `survey_id`) can be read, submitted or edited (column `action`).  Functionality related to this table is not currently activated.
-
-- `profile_survey`: This table stores profile survey; a survey which is can be used during registration to collect information from participants.  At any time only one active record exists.
+- `user_audit`: This is an audit table for endpoints (column `endpoint`) that users (column ``user_id`) accessed.
 
 - `user_survey`: This table stores status of a survey for a participant.  The status can be `in-progress` or `completed`.
-
-- `smtp`: This table stores email service specifics that are used for password reset functionality.  At any point it only contains one active record.  The subject and content of password reset email are stored in `smtp_text`.
-
-- `smtp_text`: This table stores translatable columns `content` and `subject` for password reset email.
 
 ### Record Updates
 

@@ -13,6 +13,7 @@ module.exports = function authentication01(locals) {
         .auth('super', 'Am!d@2017PW')
         .then((res) => {
             console.log(res.status); // 200
+            console.log(res.header); // 200
         })
         .then(() => {
             console.log(`------ end ${module.filename}`);

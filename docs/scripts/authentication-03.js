@@ -13,6 +13,7 @@ module.exports = function authentication03(locals) {
         .auth('test2participant', 'test2password')
         .then((res) => {
             console.log(res.status); // 200
+            console.log(res.header); // {... 'set-cookie': [ 'rr-jwt-token=eyJh ...}
         })
         .then(() => {
             console.log(`------ end ${module.filename}`);
