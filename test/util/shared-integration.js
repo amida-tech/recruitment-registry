@@ -305,8 +305,7 @@ class SharedIntegration {
                 }))
                 .then((expected) => {
                     const px = rrSuperTest.get('/user-audits', true, 200);
-                    px.then(resAudit => expect(resAudit.body).to.deep.equal(expected));
-                    return px;
+                    return px.then(resAudit => expect(resAudit.body).to.deep.equal(expected));
                 });
         });
 

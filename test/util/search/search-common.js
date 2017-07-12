@@ -892,14 +892,17 @@ const IntegrationTests = class SearchIntegrationTests extends Tests {
     }
 
     compareExportToCohortFn(filepath, cohortFilepath, limit) { // eslint-disable-line class-methods-use-this
+        const sortFields = ['userId', 'surveyId', 'questionId', 'questionChoiceId', 'value'];
         return function compareExportToCohort() {
             const converter = new ImportCSVConverter({ checkType: false });
             const streamFullExport = fs.createReadStream(filepath);
             return converter.streamToRecords(streamFullExport)
-                .then((recordsFullExport) => {
+                .then((recordsFullExportRaw) => {
+                    const recordsFullExport = _.sortBy(recordsFullExportRaw, sortFields);
                     const streamCohort = fs.createReadStream(cohortFilepath);
                     return converter.streamToRecords(streamCohort)
-                        .then((recordsCohort) => {
+                        .then((recordsCohortRaw) => {
+                            const recordsCohort = _.sortBy(recordsCohortRaw, sortFields);
                             expect(recordsFullExport.length).to.be.above(2);
                             expect(recordsCohort.length).to.be.above(2);
                             if (limit) {

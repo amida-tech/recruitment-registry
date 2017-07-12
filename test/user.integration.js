@@ -131,6 +131,75 @@ describe('user integration', () => {
 
     it('logout as super', shared.logoutFn());
 
+    const verifySelfUserFn = function (index) {
+        return function verifySelfUser() {
+            return rrSuperTest.get('/users/me', true, 200)
+                .then((res) => {
+                    const expected = _.omit(hxUser.server(index), ['createdAt', 'firstname', 'institution', 'lastname']);
+                    expect(res.body).to.deep.equal(expected);
+                });
+        };
+    };
+
+    const patchSelfUserEmailFn = function (index) {
+        return function patchSelfUserEmail() {
+            const { email } = generator.newUser();
+            return rrSuperTest.patch('/users/me', { email }, 204)
+                .then(() => {
+                    const client = hxUser.client(index);
+                    const server = hxUser.server(index);
+                    if (!client.username) {
+                        server.username = email.toLowerCase();
+                    }
+                    server.email = email;
+                    client.email = email;
+                });
+        };
+    };
+
+    _.range(userCount).forEach((index) => {
+        it(`login as user ${index}`, shared.loginIndexFn(hxUser, index));
+        it(`self patch user ${index} email`, patchSelfUserEmailFn(index));
+        it(`self verify user ${index}`, verifySelfUserFn(index));
+        it(`logout as user ${index}`, shared.logoutFn());
+    });
+
+    const verifyUserFn = function (index) {
+        return function verifyUser() {
+            const id = hxUser.id(index);
+            return rrSuperTest.get(`/users/${id}`, true, 200)
+                .expect((res) => {
+                    expect(res.body).to.deep.equal(hxUser.server(index));
+                });
+        };
+    };
+
+    const patchUserEmailFn = function (index) {
+        return function patchUserEmail() {
+            const { email } = generator.newUser();
+            const id = hxUser.id(index);
+            return rrSuperTest.patch(`/users/${id}`, { email }, 204)
+                .then(() => {
+                    const client = hxUser.client(index);
+                    const server = hxUser.server(index);
+                    if (!client.username) {
+                        server.username = email.toLowerCase();
+                    }
+                    server.email = email;
+                    client.email = email;
+                });
+        };
+    };
+
+    it('login as super', shared.loginFn(config.superUser));
+
+    _.range(userCount).forEach((index) => {
+        it(`patch user ${index} email`, patchUserEmailFn(index));
+        it(`verify user ${index}`, verifyUserFn(index));
+    });
+
+    it('logout as super', shared.logoutFn());
+
     it('login as new user', shared.loginIndexFn(hxUser, 0));
 
     const userUpdate = {
@@ -185,16 +254,6 @@ describe('user integration', () => {
         };
     };
 
-    const verifyUserFn = function (index) {
-        return function verifyUser() {
-            const id = hxUser.id(index);
-            return rrSuperTest.get(`/users/${id}`, true, 200)
-                .expect((res) => {
-                    expect(res.body).to.deep.equal(hxUser.server(index));
-                });
-        };
-    };
-
     it('login as super', shared.loginFn(config.superUser));
 
     it(`create user ${userCount}`, shared.createUserFn(hxUser, null, {
@@ -212,5 +271,5 @@ describe('user integration', () => {
 
     it('logout as super', shared.logoutFn());
 
-    shared.verifyUserAudit();
+    // shared.verifyUserAudit();
 });

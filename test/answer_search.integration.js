@@ -10,4 +10,4 @@ const RRSuperTest = require('./util/rr-super-test');
 const rrSuperTest = new RRSuperTest();
 const tests = new searchCommon.IntegrationTests(rrSuperTest);
 
-describe('answer search unit', tests.answerSearchIntegrationFn());
+describe('answer search integration', tests.answerSearchIntegrationFn());
