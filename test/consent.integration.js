@@ -18,6 +18,7 @@ const ConsentCommon = require('./util/consent-common');
 const config = require('../config');
 const translator = require('./util/translator');
 const models = require('../models');
+const comparator = require('./util/comparator');
 
 const expect = chai.expect;
 
@@ -113,7 +114,7 @@ describe('consent integration', () => {
                         return r;
                     }, {});
                     const expected = consentCommon.formExpectedConsent(index, typeIndices, signatures);
-                    expect(res.body).to.deep.equal(expected);
+                    comparator.consent(expected, res.body);
                 })
                 .end(done);
         };
@@ -134,7 +135,7 @@ describe('consent integration', () => {
                         return r;
                     }, {});
                     const expected = consentCommon.formTranslatedExpectedConsent(index, typeIndices, signatures, language);
-                    expect(res.body).to.deep.equal(expected);
+                    comparator.consent(expected, res.body);
                     translator.isConsentDocumentTranslated(res.body, language);
                 })
                 .end(done);
@@ -156,7 +157,7 @@ describe('consent integration', () => {
                         return r;
                     }, {});
                     const expected = consentCommon.formExpectedConsent(index, typeIndices, signatures);
-                    expect(res.body).to.deep.equal(expected);
+                    comparator.consent(expected, res.body);
                 })
                 .end(done);
         };
@@ -177,7 +178,7 @@ describe('consent integration', () => {
                         return r;
                     }, {});
                     const expected = consentCommon.formTranslatedExpectedConsent(index, typeIndices, signatures, language);
-                    expect(res.body).to.deep.equal(expected);
+                    comparator.consent(expected, res.body);
                     translator.isConsentDocumentTranslated(res.body, language);
                 })
                 .end(done);
@@ -198,7 +199,7 @@ describe('consent integration', () => {
                 .expect((res) => {
                     const typeIndices = consentSpecs[consentIndex];
                     const expected = consentCommon.formExpectedConsent(consentIndex, typeIndices);
-                    expect(res.body).to.deep.equal(expected);
+                    comparator.consent(expected, res.body);
                 })
                 .end(done);
         });
@@ -209,7 +210,7 @@ describe('consent integration', () => {
                 .expect((res) => {
                     const typeIndices = consentSpecs[consentIndex];
                     const expected = consentCommon.formTranslatedExpectedConsent(consentIndex, typeIndices, undefined, 'es');
-                    expect(res.body).to.deep.equal(expected);
+                    comparator.consent(expected, res.body);
                     translator.isConsentDocumentTranslated(res.body, 'es');
                 })
                 .end(done);
@@ -221,7 +222,7 @@ describe('consent integration', () => {
                 .expect((res) => {
                     const typeIndices = consentSpecs[consentIndex];
                     const expected = consentCommon.formExpectedConsent(consentIndex, typeIndices);
-                    expect(res.body).to.deep.equal(expected);
+                    comparator.consent(expected, res.body);
                 })
                 .end(done);
         });
@@ -232,7 +233,7 @@ describe('consent integration', () => {
                 .expect((res) => {
                     const typeIndices = consentSpecs[consentIndex];
                     const expected = consentCommon.formTranslatedExpectedConsent(consentIndex, typeIndices, undefined, 'es');
-                    expect(res.body).to.deep.equal(expected);
+                    comparator.consent(expected, res.body);
                     translator.isConsentDocumentTranslated(res.body, 'es');
                 })
                 .end(done);

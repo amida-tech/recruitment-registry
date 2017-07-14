@@ -88,7 +88,7 @@ describe('survey consent unit', function surveyConsentUnit() {
         };
     };
 
-    //it('error: get profile survey with no consent documents of existing types', () => models.profileSurvey.getProfileSurvey()
+    // it('error: get profile survey with no consent documents of existing types', () => models.profileSurvey.getProfileSurvey()
     //        .then(shared.throwingHandler, shared.expectedErrorHandler('noSystemConsentDocuments')));
     //
 
@@ -98,21 +98,21 @@ describe('survey consent unit', function surveyConsentUnit() {
 
     const listConsentDocumentsFn = function () {
         return function listConsentDocuments() {
-            return models.consentDocument.listConsentDocuments({ summary: true })
+            return models.consentDocument.listConsentDocuments({ summary: true, keepTypeId: true })
                 .then((consentDocuments) => {
                     const types = _.range(10);
-                    const expected = hxConsentDocument.serversInList(types);
-                    expect(consentDocuments).to.deep.equal(expected);
+                    const expected = hxConsentDocument.serversInList(types, true);
+                    comparator.consentDocuments(expected, consentDocuments);
                 });
         };
     };
 
     const listConsentDocumentsSurveyFn = function () {
         return function listConsentDocumentsSurvey() {
-            return models.consentDocument.listConsentDocuments({ summary: true, surveys: true })
+            return models.consentDocument.listConsentDocuments({ summary: true, surveys: true, keepTypeId: true })
                 .then((consentDocuments) => {
                     const types = _.range(10);
-                    const expected = hxConsentDocument.serversInList(types);
+                    const expected = _.cloneDeep(hxConsentDocument.serversInList(types, true));
                     expected.forEach((r, typeIndex) => {
                         const surveyIndices = surveysPerConsentType[typeIndex];
                         if (surveyIndices.length) {
@@ -122,7 +122,7 @@ describe('survey consent unit', function surveyConsentUnit() {
                             });
                         }
                     });
-                    expect(consentDocuments).to.deep.equal(expected);
+                    comparator.consentDocuments(expected, consentDocuments);
                 });
         };
     };
@@ -196,7 +196,7 @@ describe('survey consent unit', function surveyConsentUnit() {
                 const id = hxSurvey.id(0);
                 expect(actual.id).to.equal(id);
                 const expected = hxConsentDocument.serversInList([0, 1]);
-                expect(actual.consentDocuments).to.deep.equal(expected);
+                comparator.consentDocuments(expected, actual.consentDocuments);
             }));
 
     const verifyConsentDocumentContentFn = function (typeIndex) {
@@ -229,7 +229,7 @@ describe('survey consent unit', function surveyConsentUnit() {
                 .then(shared.throwingHandler, shared.expectedErrorHandler('profileSignaturesMissing'))
                 .then((err) => {
                     const expected = hxConsentDocument.serversInList(documentIndices);
-                    expect(err.consentDocuments).to.deep.equal(expected);
+                    comparator.consentDocuments(expected, err.consentDocuments);
                 });
         };
     };
@@ -276,7 +276,7 @@ describe('survey consent unit', function surveyConsentUnit() {
                 .then(shared.throwingHandler, shared.expectedErrorHandler('profileSignaturesMissing'))
                 .then((err) => {
                     const expected = hxConsentDocument.serversInList(documentIndices);
-                    expect(err.consentDocuments).to.deep.equal(expected);
+                    comparator.consentDocuments(expected, err.consentDocuments);
                 });
         };
     };
@@ -317,7 +317,7 @@ describe('survey consent unit', function surveyConsentUnit() {
                 .then(shared.throwingHandler, shared.expectedErrorHandler('profileSignaturesMissing'))
                 .then((err) => {
                     const expected = consentCommon.getSurveyConsentDocuments(expectedInfo);
-                    expect(err.consentDocuments).to.deep.equal(expected);
+                    comparator.consentDocuments(expected, err.consentDocuments);
                 });
         };
     };
@@ -338,7 +338,7 @@ describe('survey consent unit', function surveyConsentUnit() {
                         const contents = hxConsentDocument.getContents(ids);
                         expected.forEach((r, index) => { r.content = contents[index]; });
                     }
-                    expect(result).to.deep.equal(expected);
+                    comparator.consentDocuments(expected, result);
                 });
         };
     };
@@ -454,7 +454,7 @@ describe('survey consent unit', function surveyConsentUnit() {
                 .then(shared.throwingHandler, shared.expectedErrorHandler('profileSignaturesMissing'))
                 .then((err) => {
                     const expected = consentCommon.getSurveyConsentDocuments(expectedInfo);
-                    expect(err.consentDocuments).to.deep.equal(expected);
+                    comparator.consentDocuments(expected, err.consentDocuments);
                 });
         };
     };

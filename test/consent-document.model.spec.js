@@ -15,6 +15,7 @@ const Generator = require('./util/generator');
 const History = require('./util/history');
 const ConsentDocumentHistory = require('./util/consent-document-history');
 const models = require('../models');
+const comparator = require('./util/comparator');
 
 const expect = chai.expect;
 
@@ -99,7 +100,7 @@ describe('consent document/type/signature unit', () => {
         it(`verify consent document list (required) for user ${userIndex}`, () => models.userConsentDocument.listUserConsentDocuments(history.userId(userIndex))
                 .then((consentDocuments) => {
                     const expected = history.serversInList(expectedIndices);
-                    expect(consentDocuments).to.deep.equal(expected);
+                    comparator.consentDocuments(expected, consentDocuments);
                     return expected;
                 }));
         it(`verify consent documents (required) for user ${userIndex}`, () => {
@@ -112,7 +113,7 @@ describe('consent document/type/signature unit', () => {
         it(`verify consent document list (all) for user ${userIndex}`, () => models.userConsentDocument.listUserConsentDocuments(history.userId(userIndex), { includeSigned: true })
                 .then((consentDocuments) => {
                     const expected = history.serversInListWithSigned(userIndex);
-                    expect(consentDocuments).to.deep.equal(expected);
+                    comparator.consentDocuments(expected, consentDocuments);
                     return expected;
                 }));
     };
@@ -121,7 +122,7 @@ describe('consent document/type/signature unit', () => {
         it(`verify translated consent document list (required) for user ${userIndex}`, () => models.userConsentDocument.listUserConsentDocuments(history.userId(userIndex), { language })
                 .then((consentDocuments) => {
                     const expected = history.translatedServersInList(expectedIndices, language);
-                    expect(consentDocuments).to.deep.equal(expected);
+                    comparator.consentDocuments(expected, consentDocuments);
                     return expected;
                 }));
         it(`verify translated consent documents (required) for user ${userIndex}`, () => {
@@ -289,11 +290,11 @@ describe('consent document/type/signature unit', () => {
 
     it('verify all consent documents still exists', () => models.consentDocument.listConsentDocuments({ noTypeExpand: true, paranoid: false })
             .then((consentDocuments) => {
-                expect(consentDocuments).to.deep.equal(history.serversHistory());
+                comparator.consentDocuments(history.serversHistory(), consentDocuments);
             })
             .then(() => models.consentDocument.listConsentDocuments({ noTypeExpand: true }))
             .then((consentDocuments) => {
                 const expected = _.sortBy([history.server(0), history.server(2)], 'id');
-                expect(consentDocuments).to.deep.equal(expected);
+                comparator.consentDocuments(expected, consentDocuments);
             }));
 });

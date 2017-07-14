@@ -357,6 +357,31 @@ const comparator = {
         expected.createdAt = server.createdAt;
         expect(server).to.deep.equal(expected);
     },
+    consentDocument(client, server) {
+        const expected = _.cloneDeep(client);
+        const createdAt = server.createdAt;
+        expect(!!createdAt).to.equal(true);
+        comparator.createdAt(createdAt);
+        expected.createdAt = createdAt;
+        expect(server).to.deep.equal(expected);
+        return expected;
+    },
+    consentDocuments(client, server) {
+        let expected = _.cloneDeep(client);
+        expect(client.length).to.equal(server.length);
+        if (client.length) {
+            expected = client.map((r, index) => this.consentDocument(r, server[index]));
+            expect(server).to.deep.equal(expected);
+        } else {
+            expect(client.length).to.equal(0);
+        }
+        return expected;
+    },
+    consent(client, server) {
+        const expected = _.cloneDeep(client);
+        expected.sections = this.consentDocuments(expected.sections, server.sections);
+        expect(server).to.deep.equal(expected);
+    },
 };
 
 module.exports = comparator;

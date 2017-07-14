@@ -189,7 +189,7 @@ describe('survey consent integration', () => {
                 const id = hxSurvey.id(0);
                 expect(actual.id).to.equal(id);
                 const expected = hxConsentDocument.serversInList([0, 1]);
-                expect(actual.consentDocuments).to.deep.equal(expected);
+                comparator.consentDocuments(expected, actual.consentDocuments);
             })
             .end(done);
     });
@@ -228,7 +228,7 @@ describe('survey consent integration', () => {
                 .expect((res) => {
                     shared.verifyErrorMessage(res, 'profileSignaturesMissing');
                     const expected = hxConsentDocument.serversInList(documentIndices);
-                    expect(res.body.consentDocuments).to.deep.equal(expected);
+                    comparator.consentDocuments(expected, res.body.consentDocuments);
                 })
                 .end(done);
         };
@@ -278,7 +278,7 @@ describe('survey consent integration', () => {
                 .expect((res) => {
                     shared.verifyErrorMessage(res, 'profileSignaturesMissing');
                     const expected = hxConsentDocument.serversInList(documentIndices);
-                    expect(res.body.consentDocuments).to.deep.equal(expected);
+                    comparator.consentDocuments(expected, res.body.consentDocuments);
                 })
                 .end(done);
         };
@@ -342,7 +342,7 @@ describe('survey consent integration', () => {
                 .expect((res) => {
                     shared.verifyErrorMessage(res, 'profileSignaturesMissing');
                     const expected = consentCommon.getSurveyConsentDocuments(expectedInfo);
-                    expect(res.body.consentDocuments).to.deep.equal(expected);
+                    comparator.consentDocuments(expected, res.body.consentDocuments);
                 })
                 .end(done);
         };
@@ -363,7 +363,7 @@ describe('survey consent integration', () => {
                         const contents = hxConsentDocument.getContents(ids);
                         expected.forEach((r, index) => { r.content = contents[index]; });
                     }
-                    expect(res.body).to.deep.equal(expected);
+                    comparator.consentDocuments(expected, res.body);
                 })
                 .end(done);
         };
@@ -628,7 +628,7 @@ describe('survey consent integration', () => {
                 .expect((res) => {
                     shared.verifyErrorMessage(res, 'profileSignaturesMissing');
                     const expected = consentCommon.getSurveyConsentDocuments(expectedInfo);
-                    expect(res.body.consentDocuments).to.deep.equal(expected);
+                    comparator.consentDocuments(expected, res.body.consentDocuments);
                 })
                 .end(done);
         };

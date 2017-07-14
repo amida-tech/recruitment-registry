@@ -4232,6 +4232,10 @@
                     "type": "string",
                     "minLength": 1
                 },
+                "createdAt": {
+                    "type": "string",
+                    "format": "dateTime"
+                },
                 "title": {
                     "type": "string"
                 }
@@ -5599,6 +5603,10 @@
                     "type": "string",
                     "minLength": 1
                 },
+                "createdAt": {
+                    "type": "string",
+                    "format": "dateTime"
+                },
                 "title": {
                     "type": "string",
                     "minLength": 1
@@ -5696,6 +5704,10 @@
                 "id": {
                     "type": "integer"
                 },
+                "createdAt": {
+                    "type": "string",
+                    "format": "dateTime"
+                },
                 "typeId": {
                     "type": "integer"
                 },
@@ -5718,6 +5730,10 @@
                 },
                 "typeId": {
                     "type": "integer"
+                },
+                "createdAt": {
+                    "type": "string",
+                    "format": "dateTime"
                 },
                 "content": {
                     "type": "string",
@@ -5757,6 +5773,10 @@
                 "title": {
                     "type": "string",
                     "minLength": 1
+                },
+                "createdAt": {
+                    "type": "string",
+                    "format": "dateTime"
                 },
                 "type": {
                     "type": "string",
@@ -6107,6 +6127,10 @@
                 "id": {
                     "type": "integer",
                     "minimum": 1
+                },
+                "createdAt": {
+                    "type": "string",
+                    "format": "dateTime"
                 },
                 "consentId": {
                     "type": "integer",

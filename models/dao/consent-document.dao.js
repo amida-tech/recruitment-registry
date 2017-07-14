@@ -26,7 +26,6 @@ module.exports = class ConsentDocumentDAO extends Translatable {
         return this.db.SurveyConsent.findAll({ raw: true, attributes })
             .then((surveyConsents) => {
                 if (!surveyConsents.length) {
-                    console.log('here');
                     return surveyConsents;
                 }
                 const surveyIdSet = new Set(surveyConsents.map(({ surveyId }) => surveyId));
@@ -58,9 +57,10 @@ module.exports = class ConsentDocumentDAO extends Translatable {
         const ConsentDocument = this.db.ConsentDocument;
 
         const typeIds = options.typeIds;
+        const createdAtColumn = this.timestampColumn('consent_document', 'created');
         const query = {
             raw: true,
-            attributes: ['id', 'typeId'],
+            attributes: ['id', 'typeId', createdAtColumn],
             order: 'id',
         };
         if (options.transaction) {
