@@ -15,6 +15,7 @@ const Generator = require('./util/generator');
 const ConsentDocumentHistory = require('./util/consent-document-history');
 const config = require('../config');
 const models = require('../models');
+const comparator = require('./util/comparator');
 
 const expect = chai.expect;
 
@@ -114,7 +115,7 @@ describe('consent document integration', () => {
             rrSuperTest.get('/user-consent-documents', true, 200)
                 .expect((res) => {
                     const expected = history.serversInList(expectedIndices);
-                    expect(res.body).to.deep.equal(expected);
+                    comparator.consentDocuments(expected, res.body);
                 })
                 .end(done);
         };
@@ -125,7 +126,7 @@ describe('consent document integration', () => {
             rrSuperTest.get('/user-consent-documents', true, 200, { 'include-signed': true })
                 .expect((res) => {
                     const expected = history.serversInListWithSigned(userIndex);
-                    expect(res.body).to.deep.equal(expected);
+                    comparator.consentDocuments(expected, res.body);
                 })
                 .end(done);
         };
@@ -136,7 +137,7 @@ describe('consent document integration', () => {
             rrSuperTest.get('/user-consent-documents', true, 200, { language })
                 .expect((res) => {
                     const expected = history.translatedServersInList(expectedIndices, language);
-                    expect(res.body).to.deep.equal(expected);
+                    comparator.consentDocuments(expected, res.body);
                 })
                 .end(done);
         };

@@ -213,6 +213,20 @@ const defineTables = function (sequelize, Sequelize, schema) {
         },
     });
 
+    SurveyConsent.belongsTo(Survey, {
+        as: 'survey',
+        onUpdate: 'NO ACTION',
+        foreignKey: {
+            allowNull: false,
+            fieldName: 'surveyId',
+            field: 'survey_id',
+            references: {
+                model: 'survey',
+                key: 'id',
+            },
+        },
+    });
+
     FilterAnswer.belongsTo(Question, questionBelongsTo());
     FilterAnswer.belongsTo(QuestionChoice, questionChoiceBelongsTo());
     CohortAnswer.belongsTo(Question, questionBelongsTo());

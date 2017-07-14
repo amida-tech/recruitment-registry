@@ -75,6 +75,7 @@ const doasPerSchema = function (db, daosGenerator) {
         surveyIdentifier,
         surveyQuestion,
     });
+    consentDocument.survey = survey;
     const userSurvey = new UserSurveyDAO(db, { survey, answer });
     const consent = new ConsentDAO(db, { consentDocument });
     const profileSurvey = new ProfileSurveyDAO(db, { survey, consentDocument, answer });

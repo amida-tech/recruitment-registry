@@ -1,4 +1,4 @@
-/* global describe,before,it*/
+/* global describe,before,it,xit*/
 
 'use strict';
 
@@ -65,6 +65,18 @@ describe('survey consent integration', () => {
         it(`get survey ${i}`, surveyTests.getSurveyFn(i));
     });
 
+    xit('error: get profile survey with no consent documents of existing types', (done) => {
+        rrSuperTest.get('/profile-survey', false, 400)
+            .expect(res => shared.verifyErrorMessage(res, 'noSystemConsentDocuments'))
+            .end(done);
+    });
+
+    _.range(10).forEach((i) => {
+        it(`create consent document of type ${i}`, shared.createConsentDocumentFn(hxConsentDocument, i));
+    });
+
+    const surveysPerConsentType = _.range(10).map(() => []);
+
     const createSurveyConsentFn = function (surveyIndex, typeIndex, action, consentIndex) {
         return function createSurveyConsent(done) {
             const consentType = hxConsentDocument.type(typeIndex);
@@ -86,6 +98,9 @@ describe('survey consent integration', () => {
                         surveyConsent.consentName = hxConsent.client(consentIndex).name;
                         hxSurveyConsents.pushWithId([surveyIndex, typeIndex, action, consentIndex], surveyConsent, id);
                     }
+                    if (surveysPerConsentType[typeIndex].find(r => (r === surveyIndex)) === undefined) {
+                        surveysPerConsentType[typeIndex].push(surveyIndex);
+                    }
                 })
                 .end(done);
         };
@@ -100,6 +115,41 @@ describe('survey consent integration', () => {
             });
         };
     };
+
+    const listConsentDocumentsFn = function () {
+        return function listConsentDocuments() {
+            return rrSuperTest.get('/consent-documents', false, 200)
+                .then((res) => {
+                    const types = _.range(10);
+                    const expected = hxConsentDocument.serversInList(types, true);
+                    comparator.consentDocuments(expected, res.body);
+                });
+        };
+    };
+
+    const listConsentDocumentsSurveyFn = function () {
+        return function listConsentDocumentsSurvey() {
+            return rrSuperTest.get('/consent-documents', false, 200, { surveys: true })
+                .then((res) => {
+                    const types = _.range(10);
+                    const expected = _.cloneDeep(hxConsentDocument.serversInList(types, true));
+                    expected.forEach((r, typeIndex) => {
+                        const surveyIndices = surveysPerConsentType[typeIndex];
+                        if (surveyIndices.length) {
+                            r.surveys = surveyIndices.map((surveyIndex) => {
+                                const { id, name } = hxSurvey.server(surveyIndex);
+                                return { id, name };
+                            });
+                        }
+                    });
+                    comparator.consentDocuments(expected, res.body);
+                });
+        };
+    };
+
+    it('list consent documents', listConsentDocumentsFn());
+
+    it('list consent documents with surveys', listConsentDocumentsSurveyFn());
 
     [0, 1].forEach((index) => {
         it(`require consent type ${index} in profile survey answer create`, createSurveyConsentFn(0, index, 'create'));
@@ -134,6 +184,10 @@ describe('survey consent integration', () => {
     });
 
     it('verify list surveys', surveyTests.listSurveysFn());
+
+    it('list consent documents', listConsentDocumentsFn());
+
+    it('list consent documents with surveys', listConsentDocumentsSurveyFn());
 
     it('error: require consent type with inconsistent consent', (done) => {
         const consentTypeId = hxConsentDocument.typeId(0);
@@ -170,16 +224,6 @@ describe('survey consent integration', () => {
             .end(done);
     });
 
-    it('error: get profile survey with no consent documents of existing types', (done) => {
-        rrSuperTest.get('/profile-survey', false, 400)
-            .expect(res => shared.verifyErrorMessage(res, 'noSystemConsentDocuments'))
-            .end(done);
-    });
-
-    _.range(10).forEach((i) => {
-        it(`create consent document of type ${i}`, shared.createConsentDocumentFn(hxConsentDocument, i));
-    });
-
     it('get profile survey with required consentDocuments', (done) => {
         rrSuperTest.get('/profile-survey', false, 200)
             .expect((res) => {
@@ -189,7 +233,7 @@ describe('survey consent integration', () => {
                 const id = hxSurvey.id(0);
                 expect(actual.id).to.equal(id);
                 const expected = hxConsentDocument.serversInList([0, 1]);
-                expect(actual.consentDocuments).to.deep.equal(expected);
+                comparator.consentDocuments(expected, actual.consentDocuments);
             })
             .end(done);
     });
@@ -228,7 +272,7 @@ describe('survey consent integration', () => {
                 .expect((res) => {
                     shared.verifyErrorMessage(res, 'profileSignaturesMissing');
                     const expected = hxConsentDocument.serversInList(documentIndices);
-                    expect(res.body.consentDocuments).to.deep.equal(expected);
+                    comparator.consentDocuments(expected, res.body.consentDocuments);
                 })
                 .end(done);
         };
@@ -278,7 +322,7 @@ describe('survey consent integration', () => {
                 .expect((res) => {
                     shared.verifyErrorMessage(res, 'profileSignaturesMissing');
                     const expected = hxConsentDocument.serversInList(documentIndices);
-                    expect(res.body.consentDocuments).to.deep.equal(expected);
+                    comparator.consentDocuments(expected, res.body.consentDocuments);
                 })
                 .end(done);
         };
@@ -342,7 +386,7 @@ describe('survey consent integration', () => {
                 .expect((res) => {
                     shared.verifyErrorMessage(res, 'profileSignaturesMissing');
                     const expected = consentCommon.getSurveyConsentDocuments(expectedInfo);
-                    expect(res.body.consentDocuments).to.deep.equal(expected);
+                    comparator.consentDocuments(expected, res.body.consentDocuments);
                 })
                 .end(done);
         };
@@ -363,7 +407,7 @@ describe('survey consent integration', () => {
                         const contents = hxConsentDocument.getContents(ids);
                         expected.forEach((r, index) => { r.content = contents[index]; });
                     }
-                    expect(res.body).to.deep.equal(expected);
+                    comparator.consentDocuments(expected, res.body);
                 })
                 .end(done);
         };
@@ -628,7 +672,7 @@ describe('survey consent integration', () => {
                 .expect((res) => {
                     shared.verifyErrorMessage(res, 'profileSignaturesMissing');
                     const expected = consentCommon.getSurveyConsentDocuments(expectedInfo);
-                    expect(res.body.consentDocuments).to.deep.equal(expected);
+                    comparator.consentDocuments(expected, res.body.consentDocuments);
                 })
                 .end(done);
         };

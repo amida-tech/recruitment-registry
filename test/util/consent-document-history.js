@@ -68,14 +68,18 @@ module.exports = class ConsentDocumentHistory {
         return tr || server;
     }
 
-    serversInList(typeIndices) {
+    serversInList(typeIndices, keepTypeId) {
         const result = typeIndices.map((index) => {
             const type = this.hxType.server(index);
-            return {
+            const doc = {
                 id: this.activeConsentDocuments[index].id,
                 name: type.name,
                 title: type.title,
             };
+            if (keepTypeId) {
+                doc.typeId = type.id;
+            }
+            return doc;
         });
         return _.sortBy(result, 'id');
     }

@@ -1559,6 +1559,35 @@
                         "$ref": "#/responses/genericError"
                     }
                 }
+            },
+            "get": {
+                "summary": "Gets consent documents",
+                "operationId": "listConsentDocuments",
+                "parameters": [{
+                    "name": "language",
+                    "in": "query",
+                    "description": "Language code",
+                    "required": false,
+                    "type": "string",
+                    "minLength": 2
+                }, {
+                    "name": "surveys",
+                    "in": "query",
+                    "description": "Include survey information",
+                    "required": false,
+                    "type": "boolean"
+                }],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "schema": {
+                            "$ref": "#/definitions/consentDocumentDashboard"
+                        }
+                    },
+                    "default": {
+                        "$ref": "#/responses/genericError"
+                    }
+                }
             }
         },
         "/consent-documents/{id}": {
@@ -4232,6 +4261,10 @@
                     "type": "string",
                     "minLength": 1
                 },
+                "createdAt": {
+                    "type": "string",
+                    "format": "dateTime"
+                },
                 "title": {
                     "type": "string"
                 }
@@ -5599,6 +5632,10 @@
                     "type": "string",
                     "minLength": 1
                 },
+                "createdAt": {
+                    "type": "string",
+                    "format": "dateTime"
+                },
                 "title": {
                     "type": "string",
                     "minLength": 1
@@ -5696,6 +5733,10 @@
                 "id": {
                     "type": "integer"
                 },
+                "createdAt": {
+                    "type": "string",
+                    "format": "dateTime"
+                },
                 "typeId": {
                     "type": "integer"
                 },
@@ -5718,6 +5759,10 @@
                 },
                 "typeId": {
                     "type": "integer"
+                },
+                "createdAt": {
+                    "type": "string",
+                    "format": "dateTime"
                 },
                 "content": {
                     "type": "string",
@@ -5758,6 +5803,14 @@
                     "type": "string",
                     "minLength": 1
                 },
+                "typeId": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "createdAt": {
+                    "type": "string",
+                    "format": "dateTime"
+                },
                 "type": {
                     "type": "string",
                     "minLength": 1
@@ -5768,6 +5821,12 @@
                 "language": {
                     "type": "string",
                     "minLength": 2
+                },
+                "surveys": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/surveyInfo"
+                    }
                 }
             },
             "additionalProperties": false
@@ -6107,6 +6166,10 @@
                 "id": {
                     "type": "integer",
                     "minimum": 1
+                },
+                "createdAt": {
+                    "type": "string",
+                    "format": "dateTime"
                 },
                 "consentId": {
                     "type": "integer",

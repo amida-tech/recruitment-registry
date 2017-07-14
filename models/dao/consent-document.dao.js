@@ -21,13 +21,46 @@ module.exports = class ConsentDocumentDAO extends Translatable {
         return r;
     }
 
+    listSurveyConsents() {
+        const attributes = ['id', 'surveyId', 'consentTypeId'];
+        return this.db.SurveyConsent.findAll({ raw: true, attributes })
+            .then((surveyConsents) => {
+                if (!surveyConsents.length) {
+                    return surveyConsents;
+                }
+                const surveyIdSet = new Set(surveyConsents.map(({ surveyId }) => surveyId));
+                return this.survey.listSurveys({ id: Array.from(surveyIdSet) })
+                    .then((surveys) => {
+                        const surveyMap = new Map(surveys.map(survey => [survey.id, survey]));
+                        return surveyMap;
+                    })
+                    .then((surveyMap) => {
+                        const result = new Map();
+                        surveyConsents.forEach(({ consentTypeId, surveyId }) => {
+                            let typeSurveys = result.get(consentTypeId);
+                            if (!typeSurveys) {
+                                typeSurveys = [];
+                                result.set(consentTypeId, typeSurveys);
+                            }
+                            if (!typeSurveys.find(({ id }) => (surveyId === id))) {
+                                const survey = surveyMap.get(surveyId);
+                                typeSurveys.push({ id: surveyId, name: survey.name });
+                            }
+                        });
+                        result.forEach(surveys => surveys.sort((r, p) => (r.id - p.id)));
+                        return result;
+                    });
+            });
+    }
+
     listConsentDocuments(options = {}) {
         const ConsentDocument = this.db.ConsentDocument;
 
         const typeIds = options.typeIds;
+        const createdAtColumn = this.timestampColumn('consent_document', 'created');
         const query = {
             raw: true,
-            attributes: ['id', 'typeId'],
+            attributes: ['id', 'typeId', createdAtColumn],
             order: 'id',
         };
         if (options.transaction) {
@@ -72,6 +105,18 @@ module.exports = class ConsentDocumentDAO extends Translatable {
                             return RRError.reject('noSystemConsentDocuments');
                         }
                         return _.keyBy(types, 'id');
+                    })
+                    .then((types) => {
+                        if (options.surveys) {
+                            return this.listSurveyConsents()
+                                .then((surveysMap) => {
+                                    surveysMap.forEach((surveys, typeId) => {
+                                        Object.assign(types[typeId], { surveys });
+                                    });
+                                    return types;
+                                });
+                        }
+                        return types;
                     })
                     .then((types) => {
                         if (options.typeOrder) {

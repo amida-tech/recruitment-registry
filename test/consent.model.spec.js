@@ -16,6 +16,7 @@ const ConsentCommon = require('./util/consent-common');
 const ConsentDocumentHistory = require('./util/consent-document-history');
 const models = require('../models');
 const translator = require('./util/translator');
+const comparator = require('./util/comparator');
 
 const expect = chai.expect;
 const generator = new Generator();
@@ -99,7 +100,7 @@ describe('consent unit', () => {
                     return r;
                 }, {});
                 const expected = consentCommon.formExpectedConsent(index, typeIndices, signatures);
-                expect(consent).to.deep.equal(expected);
+                comparator.consent(expected, consent);
             });
     };
 
@@ -118,7 +119,7 @@ describe('consent unit', () => {
                     return r;
                 }, {});
                 const expected = consentCommon.formTranslatedExpectedConsent(index, typeIndices, signatures, language);
-                expect(consent).to.deep.equal(expected);
+                comparator.consent(expected, consent);
                 translator.isConsentDocumentTranslated(consent, language);
             });
     };
@@ -138,7 +139,7 @@ describe('consent unit', () => {
                     return r;
                 }, {});
                 const expected = consentCommon.formExpectedConsent(index, typeIndices, signatures);
-                expect(consent).to.deep.equal(expected);
+                comparator.consent(expected, consent);
             });
     };
 
@@ -158,7 +159,7 @@ describe('consent unit', () => {
                 }, {});
                 const expected = consentCommon.formTranslatedExpectedConsent(index, typeIndices, signatures, language);
                 translator.isConsentDocumentTranslated(consent, language);
-                expect(consent).to.deep.equal(expected);
+                comparator.consent(expected, consent);
             });
     };
 
@@ -185,7 +186,7 @@ describe('consent unit', () => {
                 .then((consent) => {
                     const typeIndices = consentSpecs[consentIndex];
                     const expected = consentCommon.formExpectedConsent(consentIndex, typeIndices);
-                    expect(consent).to.deep.equal(expected);
+                    comparator.consent(expected, consent);
                 });
         });
 
@@ -195,7 +196,7 @@ describe('consent unit', () => {
                 .then((consent) => {
                     const typeIndices = consentSpecs[consentIndex];
                     const expected = consentCommon.formTranslatedExpectedConsent(consentIndex, typeIndices, undefined, 'es');
-                    expect(consent).to.deep.equal(expected);
+                    comparator.consent(expected, consent);
                     translator.isConsentDocumentTranslated(consent, 'es');
                 });
         });
@@ -206,7 +207,7 @@ describe('consent unit', () => {
                 .then((consent) => {
                     const typeIndices = consentSpecs[consentIndex];
                     const expected = consentCommon.formExpectedConsent(consentIndex, typeIndices);
-                    expect(consent).to.deep.equal(expected);
+                    comparator.consent(expected, consent);
                 });
         });
 
@@ -216,7 +217,7 @@ describe('consent unit', () => {
                 .then((consent) => {
                     const typeIndices = consentSpecs[consentIndex];
                     const expected = consentCommon.formTranslatedExpectedConsent(consentIndex, typeIndices, undefined, 'es');
-                    expect(consent).to.deep.equal(expected);
+                    comparator.consent(expected, consent);
                     translator.isConsentDocumentTranslated(consent, 'es');
                 });
         });

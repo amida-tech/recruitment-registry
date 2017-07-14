@@ -40,3 +40,12 @@ exports.getUpdateCommentHistory = function getUpdateCommentHistory(req, res) {
         .then(result => res.status(200).json(result))
         .catch(shared.handleError(res));
 };
+
+exports.listConsentDocuments = function listConsentDocuments(req, res) {
+    const surveys = _.get(req, 'swagger.params.surveys.value');
+    const language = _.get(req, 'swagger.params.language.value');
+    const options = { language, surveys, summary: true, keepTypeId: true };
+    req.models.consentDocument.listConsentDocuments(options)
+        .then(result => res.status(200).json(result))
+        .catch(shared.handleError(res));
+};
