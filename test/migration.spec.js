@@ -32,7 +32,7 @@ const checkData = function (query) {
 
 const checkBootstrapData = function (tableName) {
     const query = `SELECT name FROM ${tableName} ORDER BY name`;
-    checkData(query);
+    return checkData(query);
 };
 
 describe('migration spec', () => {

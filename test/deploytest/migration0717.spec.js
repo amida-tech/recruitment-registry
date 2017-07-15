@@ -1,4 +1,4 @@
-/* global describe,it*/
+/* global xdescribe,it*/
 
 'use strict';
 
@@ -19,7 +19,7 @@ const converter = require('./converter');
 
 const expect = chai.expect;
 
-describe('migration spec', () => {
+xdescribe('migration spec', () => {
     if (!config.db.schema || config.db.schema === 'public') {
         it('drop/create database', function dropDb() {
             childProcess.execSync('dropdb --if-exists recregtest');

@@ -219,22 +219,22 @@ const questionCommon = function (queryInterface, Sequelize) {
 module.exports = {
     up(queryInterface, Sequelize) {
         return filter(queryInterface, Sequelize)
-        .then(() => queryInterface.addIndex('filter', ['name'], {
-            indexName: 'filter_name',
-            unique: true,
-            where: { deleted_at: { $eq: null } },
-        }))
-        .then(() => filterAnswer(queryInterface, Sequelize))
-        .then(() => queryInterface.addIndex('filter_answer', ['filter_id'], {
-            indexName: 'filter_answer_filter_id',
-            where: { deleted_at: { $eq: null } },
-        }))
-        .then(() => cohort(queryInterface, Sequelize))
-        .then(() => cohortAnswer(queryInterface, Sequelize))
-        .then(() => queryInterface.addIndex('cohort_answer', ['cohort_id'], {
-            indexName: 'cohort_answer_cohort_id',
-        }))
-        .then(() => questionCommon(queryInterface, Sequelize));
+            .then(() => queryInterface.addIndex('filter', ['name'], {
+                indexName: 'filter_name',
+                unique: true,
+                where: { deleted_at: { $eq: null } },
+            }))
+            .then(() => filterAnswer(queryInterface, Sequelize))
+            .then(() => queryInterface.addIndex('filter_answer', ['filter_id'], {
+                indexName: 'filter_answer_filter_id',
+                where: { deleted_at: { $eq: null } },
+            }))
+            .then(() => cohort(queryInterface, Sequelize))
+            .then(() => cohortAnswer(queryInterface, Sequelize))
+            .then(() => queryInterface.addIndex('cohort_answer', ['cohort_id'], {
+                indexName: 'cohort_answer_cohort_id',
+            }))
+            .then(() => questionCommon(queryInterface, Sequelize));
     },
 
     // down(queryInterface) {

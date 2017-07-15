@@ -19,7 +19,7 @@ const researchSiteStreet2 = function (queryInterface, Sequelize) {
 module.exports = {
     up(queryInterface, Sequelize) {
         return researchSiteStreet(queryInterface, Sequelize)
-        .then(() => researchSiteStreet2(queryInterface, Sequelize));
+            .then(() => researchSiteStreet2(queryInterface, Sequelize));
     },
     // down() {
     // },
