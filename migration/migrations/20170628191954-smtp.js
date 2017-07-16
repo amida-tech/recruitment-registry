@@ -45,8 +45,8 @@ const smtpTextColumnType = function (queryInterface, Sequelize) {
 module.exports = {
     up(queryInterface, Sequelize) {
         return smtpType(queryInterface, Sequelize)
-          .then(() => queryInterface.sequelize.query('INSERT INTO smtp_type(name) VALUES (\'reset-password\')'))
-          .then(() => queryInterface.sequelize.query('INSERT INTO smtp_type(name) VALUES (\'cohort-csv\')'))
+          .then(() => queryInterface.sequelize.query('INSERT INTO smtp_type(name, created_at) VALUES (\'reset-password\', NOW())'))
+          .then(() => queryInterface.sequelize.query('INSERT INTO smtp_type(name, created_at) VALUES (\'cohort-csv\', NOW())'))
           .then(() => smtpColumnType(queryInterface, Sequelize))
           .then(() => smtpTextColumnType(queryInterface, Sequelize));
     },

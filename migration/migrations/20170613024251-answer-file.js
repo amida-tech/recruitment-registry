@@ -1,8 +1,6 @@
 'use strict';
 
-const config = require('../../config');
-
-const sql = 'INSERT INTO question_type (name) VALUES (\'file\')';
+const sql = 'INSERT INTO question_type (name, created_at) VALUES (\'file\', NOW())';
 
 const file = function file(queryInterface, Sequelize) {
     return queryInterface.createTable('file', {
@@ -36,7 +34,6 @@ const file = function file(queryInterface, Sequelize) {
         },
     }, {
         freezeTableName: true,
-        schema: config.db.schema,
         createdAt: 'createdAt',
         updatedAt: false,
     });

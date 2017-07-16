@@ -1,7 +1,5 @@
 'use strict';
 
-const _ = require('lodash');
-
 const oldAnswerChoices = [
     'zip', 'date', 'year', 'month', 'day', 'bool-sole',
     'integer', 'float', 'pounds', 'feet-inches', 'blood-pressure',
@@ -17,14 +15,11 @@ const sectionMetaColumn = function (queryInterface, Sequelize) {
 module.exports = {
     up(queryInterface, Sequelize) {
         return sectionMetaColumn(queryInterface, Sequelize)
+            .then(() => queryInterface.sequelize.query('INSERT INTO question_type(name, created_at) VALUES (\'open-choice\', NOW())'))
             .then(() => {
-                const QuestionType = _.get(queryInterface, 'sequelize.models.question_type');
-                return QuestionType.create({ name: 'open-choice' });
-            })
-            .then(() => {
-                const AnswerType = _.get(queryInterface, 'sequelize.models.answer_type');
-                const types = oldAnswerChoices.map(type => ({ name: type }));
-                return AnswerType.destroy({ where: { $or: types } });
+                const choices = oldAnswerChoices.map(r => `'${r}'`);
+                const sqlChoices = `(${choices.join(',')})`;
+                return queryInterface.sequelize.query(`DELETE FROM answer_type WHERE name IN ${sqlChoices}`);
             });
     },
     // down(queryInterface) {
