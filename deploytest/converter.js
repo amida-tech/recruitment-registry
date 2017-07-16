@@ -1,6 +1,6 @@
 'use strict';
 
-const chai = require('chai');
+const chai = require('chai'); // eslint-disable-line import/no-extraneous-dependencies
 
 const expect = chai.expect;
 

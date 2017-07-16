@@ -1,4 +1,4 @@
-/* global xdescribe,it*/
+/* global describe,it*/
 
 'use strict';
 
@@ -12,14 +12,14 @@ const chai = require('chai');
 const childProcess = require('child_process');
 const _ = require('lodash');
 
-const models = require('../../models');
-const dbMigrate = require('../../migration/models');
-const config = require('../../config');
+const models = require('../models');
+const dbMigrate = require('../migration/models');
+const config = require('../config');
 const converter = require('./converter');
 
 const expect = chai.expect;
 
-xdescribe('migration spec', () => {
+describe('migration spec', () => {
     if (!config.db.schema || config.db.schema === 'public') {
         it('drop/create database', function dropDb() {
             childProcess.execSync('dropdb --if-exists recregtest');
@@ -41,7 +41,7 @@ xdescribe('migration spec', () => {
         it('apply all migrations', function appluAllMigrations() {
             const queryInterface = dbMigrate.sequelize.getQueryInterface();
             const Sequelize = dbMigrate.Sequelize;
-            const migrateDirectory = path.join(__dirname, '../../migration/migrations');
+            const migrateDirectory = path.join(__dirname, '../migration/migrations');
             const filenames = fs.readdirSync(migrateDirectory);
             filenames.sort();
             const pxs = filenames.map((filename) => {

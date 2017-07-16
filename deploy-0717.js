@@ -3,7 +3,7 @@
 /* eslint no-console: 0 */
 
 const models = require('./models');
-const converter = require('./test/deploytest/converter');
+const converter = require('./deploytest/converter');
 
 converter(models)
     .then(() => {
