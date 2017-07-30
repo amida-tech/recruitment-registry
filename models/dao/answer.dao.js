@@ -529,7 +529,7 @@ module.exports = class AnswerDAO extends Base {
 
     searchAllParticipants() {
         const attributes = ['id'];
-        return this.db.User.findAll({ raw: true, where: { role: 'participant' }, attributes })
+        return this.db.User.findAll({ raw: true, where: { role: 'participant' }, attributes }) // TODO: Can this move to service?
             .then(ids => ids.map(({ id }) => ({ userId: id })));
     }
 
@@ -594,7 +594,7 @@ module.exports = class AnswerDAO extends Base {
     }
 
     countAllParticipants() {
-        return this.db.User.count({ where: { role: 'participant' } })
+        return this.db.User.count({ where: { role: 'participant' } }) // TODO: Figure out of this can move into service
             .then(count => ({ count }));
     }
 

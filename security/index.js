@@ -34,19 +34,16 @@ const jwtAuth = function (req, header, verifyUserFn, callback) {
         const matches = header.match(/(\S+)\s+(\S+)/);
         if (matches && matches[1] === 'Bearer') {
             const token = matches[2];
-            return jwt.verify(token, config.jwt.secret, {}, (err, payload) => {
+            return jwt.verify(token, process.env.JWT_SECRET, {}, (err, user) => {
                 if (err) {
                     return callback(invalidAuth);
                 }
-                return req.models.auth.getUser(payload)
-                    .then((user) => {
-                        if (user) {
-                            const err2 = verifyUserFn(user);
-                            req.user = user;
-                            return callback(err2);
-                        }
-                        return callback(invalidUser);
-                    });
+                if (user.sub) {
+                    const err2 = verifyUserFn(user.sub);
+                    req.user = Object.assign({originalUsername:user.sub.username}, user.sub);
+                    return callback(err2);
+                }
+                return callback(invalidUser);
             });
         }
         return callback(invalidAuth);

@@ -1,7 +1,6 @@
 'use strict';
 
-const UserDAO = require('./user.dao');
-const AuthDAO = require('./auth.dao');
+
 const QuestionChoiceDAO = require('./question-choice.dao');
 const QuestionDAO = require('./question.dao');
 const AnswerDAO = require('./answer.dao');
@@ -47,8 +46,6 @@ const doasPerSchema = function (db, daosGenerator) {
     const consentDocument = new ConsentDocumentDAO(db, { consentType });
     const consentSignature = new ConsentSignatureDAO(db);
     const userConsentDocument = new UserConsentDocumentDAO(db, { consentDocument });
-    const user = new UserDAO(db, { consentDocument });
-    const auth = new AuthDAO(db);
     const surveyConsent = new SurveyConsentDAO(db, { consentType });
     const surveyConsentDocument = new SurveyConsentDocumentDAO(db, {
         surveyConsent, userConsentDocument,
@@ -79,7 +76,7 @@ const doasPerSchema = function (db, daosGenerator) {
     const userSurvey = new UserSurveyDAO(db, { survey, answer });
     const consent = new ConsentDAO(db, { consentDocument });
     const profileSurvey = new ProfileSurveyDAO(db, { survey, consentDocument, answer });
-    const profile = new ProfileDAO(db, { profileSurvey, survey, answer, user, consentSignature });
+    const profile = new ProfileDAO(db, { profileSurvey, survey, answer, consentSignature });
     const language = new LanguageDAO(db);
     const smtp = new SmtpDAO(db);
     const assessment = new AssessmentDAO(db);
@@ -94,8 +91,6 @@ const doasPerSchema = function (db, daosGenerator) {
 
     return {
         sequelize: db.sequelize,
-        user,
-        auth,
         section,
         surveySection,
         questionChoice,

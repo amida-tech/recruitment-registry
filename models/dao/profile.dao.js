@@ -11,7 +11,7 @@ module.exports = class ProfileDAO extends Base {
 
     createProfile(input, language) {
         return this.transaction(tx => this.profileSurvey.getProfileSurveyId()
-            .then(profileSurveyId => this.user.createUser(input.user, tx)
+            .then(profileSurveyId => this.user.createUser(input.user, tx) // TODO: Does the profile service really need to create user?
                     .then((user) => {
                         if (input.signatures && input.signatures.length) {
                             return SPromise.all(input.signatures.map((consentDocumentId) => {
