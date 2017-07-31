@@ -3961,10 +3961,6 @@
             "description": "Describes either a brand new question (no 'id') or an existing question ('id' only with 'required').",
             "required": ["required"],
             "properties": {
-                "description": {
-                    "type": "string",
-                    "minLength": 1
-                },
                 "required": {
                     "type": "boolean"
                 },
