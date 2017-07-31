@@ -29,7 +29,7 @@ module.exports = class ConsentDocumentDAO extends Translatable {
                     return surveyConsents;
                 }
                 const surveyIdSet = new Set(surveyConsents.map(({ surveyId }) => surveyId));
-                return this.survey.listSurveys({ id: Array.from(surveyIdSet) })
+                return this.survey.listSurveys({ ids: Array.from(surveyIdSet) })
                     .then((surveys) => {
                         const surveyMap = new Map(surveys.map(survey => [survey.id, survey]));
                         return surveyMap;
@@ -43,10 +43,19 @@ module.exports = class ConsentDocumentDAO extends Translatable {
                                 result.set(consentTypeId, typeSurveys);
                             }
                             if (!typeSurveys.find(({ id }) => (surveyId === id))) {
-                                const survey = surveyMap.get(surveyId);
-                                typeSurveys.push({ id: surveyId, name: survey.name });
+                                let survey = surveyMap.get(surveyId);
+                                if (survey) {
+                                    typeSurveys.push({ id: surveyId, name: survey.name });
+                                }
                             }
                         });
+                        // Remove empty elements ()
+                        const resultKeys = Array.from(result.keys());
+                        for(let index in resultKeys) {
+                            if(result.get(resultKeys[index]).length === 0) {
+                              result.delete(resultKeys[index]);
+                            }
+                        }
                         result.forEach(surveys => surveys.sort((r, p) => (r.id - p.id)));
                         return result;
                     });
