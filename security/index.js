@@ -32,15 +32,22 @@ const unauthorizedUser = {
 const jwtAuth = function (req, header, verifyUserFn, callback) {
     if (header) {
         const matches = header.match(/(\S+)\s+(\S+)/);
+
+        // Here, we are simply going to trust the identity in the token. If it validates and is in date, it is good to go
         if (matches && matches[1] === 'Bearer') {
             const token = matches[2];
-            return jwt.verify(token, process.env.JWT_SECRET, {}, (err, user) => {
+            return jwt.verify(token, process.env.JWT_SECRET, {}, (err, decodedToken) => {
                 if (err) {
-                    return callback(invalidAuth);
+                    return callback(invalidAuth);   
                 }
-                if (user.sub) {
-                    const err2 = verifyUserFn(user.sub);
-                    req.user = Object.assign({originalUsername:user.sub.username}, user.sub);
+                // IF the the token contains a timeout claim, check the expiration
+                if(decodedToken.iat && decodedToken.iat < Date.now())
+                {
+                    return callback(invalidAuth);   
+                }
+                if (decodedToken.sub) {
+                    const err2 = verifyUserFn(decodedToken.sub);
+                    req.user = Object.assign({originalUsername:decodedToken.sub.username}, decodedToken.sub);
                     return callback(err2);
                 }
                 return callback(invalidUser);

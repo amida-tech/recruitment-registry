@@ -136,6 +136,7 @@ const determineOrigin = function (origin) {
     }
     const corsWhitelist = origin.split(' ');
     return function dofn(requestOrigin, callback) {
+
         const originStatus = corsWhitelist.indexOf(requestOrigin) > -1;
         const errorMsg = originStatus ? null : 'CORS Error';
         callback(errorMsg, originStatus);
@@ -178,6 +179,7 @@ exports.newExpress = function newExpress(options = {}) {
     app.enable('trust proxy');
     app.use(passport.initialize());
 
+    // Ahhhhh. Here it is. I was expecting this to be done on the client.
     app.use((req, res, next) => {
         const isAuth = req.url.indexOf('/auth/basic') >= 0;
         const token = _.get(req, 'cookies.rr-jwt-token');
