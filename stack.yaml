@@ -1,0 +1,42 @@
+version: "3"
+services:
+  db:
+    # replace username/repo:tag with your name and image details
+    image: postgres
+    environment: 
+      POSTGRES_PASSWORD: 1111
+  auth:
+    # replace username/repo:tag with your name and image details
+    image: authservice
+    environment: 
+      JWT_SECRET: this is a test
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: authServer
+      POSTGRES_USER: Rob
+      POSTGRES_PASSWORD: 1111
+    ports:
+      - "3000:3000"
+  api:
+    image: rrapi
+    environment:
+      RECREG_DB_NAME: recreg
+      RECREG_DB_USER: postgres
+      RECREG_DB_PASS: $c0rmR0ck$
+      RECREG_DB_HOST: localhost
+      RECREG_DB_PORT: 5432
+      RECREG_DB_DIALECT: postgres
+      RECREG_DB_POOL_MAX: 5
+      RECREG_DB_POOL_MIN: 0
+      RECREG_DB_POOL_IDLE: 10000
+      RECREG_LOGGING_LEVEL: emerg
+      RECREG_CLIENT_BASE_URL: "http://localhost:4000/reset-tokens/"
+      RECREG_CLIENT_SECRET: "this is a secret"
+      RECREG_CORS_ORIGIN: http://localhost:4000
+      RECREG_ZIP_BASE_URL: "https://www.zipwise.com/webservices/radius.php"
+      RECREG_ZIP_API_KEY: pwoy0hqicy3e49qd
+      RECREG_ZIP_DISTANCE: 1
+      RECREG_ZIP_UNITS: mile
+      JWT_SECRET: this is a test
+    ports:
+      - "9006:9006"
