@@ -12,7 +12,7 @@ exports.createProfile = function createProfile(req, res) {
             sendMail(user, 'new_contact', {});
 
             const token = tokener.createJWT(record);
-            res.cookie('rr-jwt-token', token);
+            res.cookie('rr-jwt-token', token, { httpOnly: true });
             res.status(201).json({ id: user.id });
         })
         .catch(shared.handleError(res));

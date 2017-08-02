@@ -133,7 +133,7 @@ This project primarily uses [Mocha](http://mochajs.org/), [Chai](http://chaijs.c
 
 All tests are located in `test` directory in a mostly flat directory structure.  All API entries both get a HTTP integration test and an equivalent model test.  Unit tests for other utility modules are also included in the root directory.  In addition `test/use-cases` directory includes informative tests designed to instruct how to use the API from a client.
 
-Individual test suites can be run using mocha
+Individual test suites can be run using mocha. In order to run the tests, make sure you first run `createdb recregtest`.
 
 ```
 $ mocha test/survey.model.spec.js --bail

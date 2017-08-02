@@ -26,7 +26,7 @@ exports.authenticateBasic = function authenticateBasic(req, res) {
             return res.status(401).json(json);
         }
         const token = tokener.createJWT(req.user);
-        res.cookie('rr-jwt-token', token);
+        res.cookie('rr-jwt-token', token, { httpOnly: true });
         return res.status(200).json({});
     });
 };

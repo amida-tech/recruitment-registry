@@ -1,22 +1,27 @@
-node_modules
-coverage
-public
+# build directories
 .tmp
 .sass-cache
 .idea
 client/bower_components
-dist
-/server/config/local.env.js
-npm-debug.log
 coverage
+dist
+node_modules
+npm-debug.log
+package-lock.json
+public
+test/generated
+
+# environment
 .env
 .env.gfi
 .env.transmitting
 env.sh
-sandbox
 env.production.user
 env.production.head
-test/generated
+sandbox
+/server/config/local.env.js
+
+# DB
 migration/sequelize-meta.json
 
 # OS specifics
