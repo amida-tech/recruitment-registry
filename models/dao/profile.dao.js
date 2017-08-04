@@ -2,7 +2,7 @@
 
 const Base = require('./base');
 const SPromise = require('../../lib/promise');
-
+const userServiceInterface = require('../../lib/userServiceInterface');
 module.exports = class ProfileDAO extends Base {
     constructor(db, dependencies) {
         super(db);
@@ -11,7 +11,7 @@ module.exports = class ProfileDAO extends Base {
 
     createProfile(input, language) {
         return this.transaction(tx => this.profileSurvey.getProfileSurveyId()
-            .then(profileSurveyId => this.user.createUser(input.user, tx) // TODO: Does the profile service really need to create user?
+            .then(profileSurveyId => userServiceInterface.createUser(input.user.username, input.user.email, input.user.password, input.user.role) // TODO: Does the profile service really need to create user?
                     .then((user) => {
                         if (input.signatures && input.signatures.length) {
                             return SPromise.all(input.signatures.map((consentDocumentId) => {

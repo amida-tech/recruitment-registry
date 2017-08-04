@@ -7,7 +7,7 @@ const RRError = require('../../lib/rr-error');
 const logger = require('../../logger');
 const SPromise = require('../../lib/promise');
 const queryrize = require('../../lib/queryrize');
-
+const userServiceInterface = require('../../lib/userServiceInterface')
 const answerCommon = require('./answer-common');
 const registryCommon = require('./registry-common');
 
@@ -529,7 +529,8 @@ module.exports = class AnswerDAO extends Base {
 
     searchAllParticipants() {
         const attributes = ['id'];
-        return this.db.User.findAll({ raw: true, where: { role: 'participant' }, attributes }) // TODO: Can this move to service?
+        return this.userServiceInterface.findByRole('participant')
+        //return this.db.User.findAll({ raw: true, where: { role: 'participant' }, attributes }) // TODO: Can this move to service?
             .then(ids => ids.map(({ id }) => ({ userId: id })));
     }
 
@@ -582,20 +583,22 @@ module.exports = class AnswerDAO extends Base {
 
                 // find users with a matching answer for each question
                 // (i.e., users who match all criteria)
-                const include = [{ model: this.db.User, as: 'user', attributes: [] }];
+
+                // I actually think that we can remove this? Not 100% sure about how it is being used, but looks like it is not needed.
+                // const include = [{ model: this.db.User, as: 'user', attributes: [] }];
                 const having = this.where(this.literal('COUNT(DISTINCT(question_id))'), n);
                 const group = ['user_id'];
 
                 // count resulting users
                 const attributes = ['userId'];
-                const options = { raw: true, where, attributes, include, having, group };
+                const options = { raw: true, where, attributes, include:null, having, group };
                 return this.db.Answer.findAll(options);
             });
     }
 
     countAllParticipants() {
-        return this.db.User.count({ where: { role: 'participant' } }) // TODO: Figure out of this can move into service
-            .then(count => ({ count }));
+        return userServiceInterface.findByRole('participant').then(ids => ({ count : ids.length }));
+        //return this.db.User.count({ where: { role: 'participant' } }) // TODO: Figure out of this can move into service  
     }
 
     /**

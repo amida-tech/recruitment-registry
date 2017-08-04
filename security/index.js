@@ -36,13 +36,16 @@ const jwtAuth = function (req, header, verifyUserFn, callback) {
         // Here, we are simply going to trust the identity in the token. If it validates and is in date, it is good to go
         if (matches && matches[1] === 'Bearer') {
             const token = matches[2];
+            console.log("verify token")
             return jwt.verify(token, process.env.JWT_SECRET, {}, (err, decodedToken) => {
                 if (err) {
+                    console.log(err)
                     return callback(invalidAuth);   
                 }
                 // IF the the token contains a timeout claim, check the expiration
-                if(decodedToken.iat && decodedToken.iat < Date.now())
+                if(decodedToken.iat && decodedToken.iat < Date.now() - 1000 *60 * 60 * 24)
                 {
+                    console.log("bad iat!",decodedToken.iat)
                     return callback(invalidAuth);   
                 }
                 if (decodedToken.sub) {
