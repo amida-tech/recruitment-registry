@@ -26,7 +26,7 @@ Recruitment Registry API
 4. Install npm dependencies:
 `npm install`
 5. Create a `.env` file in root.
-> Note: See [Configuration](#Configuration) for more about configuring your `.env` file.
+> Note: See [Configuration](#configuration) for more about configuring your `.env` file.
 6. Populate your database:
 `node seed.js`
 7. Run:
@@ -280,7 +280,7 @@ Except account columns `email` and `password` in users table, none of the user f
 
 This project uses [sequelize-cli](https://github.com/sequelize/cli) for migrations.  The bootstrap model is located [here](./migration/models) and corresponds to the state of the database during first go-live.
 
-All migrations can be run using sequelize-cli](https://github.com/sequelize/cli) in migration directory
+All migrations can be run using [sequelize-cli](https://github.com/sequelize/cli) in the migration directory:
 ```bash
 cd migration
 sequelize
